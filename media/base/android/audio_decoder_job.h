@@ -6,7 +6,9 @@
 #define MEDIA_BASE_ANDROID_AUDIO_DECODER_JOB_H_
 
 #include <jni.h>
+#include <vector>
 
+#include "base/callback.h"
 #include "media/base/android/media_decoder_job.h"
 
 namespace media {
@@ -17,33 +19,24 @@ class AudioTimestampHelper;
 // Class for managing audio decoding jobs.
 class AudioDecoderJob : public MediaDecoderJob {
  public:
+  // Creates a new AudioDecoderJob instance for decoding audio.
+  // |request_data_cb| - Callback used to request more data for the decoder.
+  // |on_demuxer_config_changed_cb| - Callback used to inform the caller that
+  // demuxer config has changed.
+  AudioDecoderJob(const base::Closure& request_data_cb,
+                  const base::Closure& on_demuxer_config_changed_cb);
   virtual ~AudioDecoderJob();
 
-  // Creates a new AudioDecoderJob instance for decoding audio.
-  // |audio_codec| - The audio format the object needs to decode.
-  // |sample_rate| - The sample rate of the decoded output.
-  // |channel_count| - The number of channels in the decoded output.
-  // |extra_data|, |extra_data_size| - Extra data buffer needed for initializing
-  // the decoder.
-  // |media_crypto| - Handle to a Java object that handles the encryption for
-  // the audio data.
-  // |request_data_cb| - Callback used to request more data for the decoder.
-  static AudioDecoderJob* Create(
-      const AudioCodec audio_codec, int sample_rate, int channel_count,
-      const uint8* extra_data, size_t extra_data_size, jobject media_crypto,
-      const base::Closure& request_data_cb);
+  // MediaDecoderJob implementation.
+  virtual bool HasStream() const OVERRIDE;
 
+  // Sets the volume of the audio output.
   void SetVolume(double volume);
 
   // Sets the base timestamp for |audio_timestamp_helper_|.
   void SetBaseTimestamp(base::TimeDelta base_timestamp);
 
  private:
-  AudioDecoderJob(scoped_ptr<AudioTimestampHelper> audio_timestamp_helper,
-                  scoped_ptr<AudioCodecBridge> audio_decoder_bridge,
-                  int bytes_per_frame,
-                  const base::Closure& request_data_cb);
-
   // MediaDecoderJob implementation.
   virtual void ReleaseOutputBuffer(
       int output_buffer_index,
@@ -51,16 +44,30 @@ class AudioDecoderJob : public MediaDecoderJob {
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) OVERRIDE;
-
   virtual bool ComputeTimeToRender() const OVERRIDE;
+  virtual bool AreDemuxerConfigsChanged(
+      const DemuxerConfigs& configs) const OVERRIDE;
+  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) OVERRIDE;
+  virtual bool CreateMediaCodecBridgeInternal() OVERRIDE;
 
-  // number of bytes per audio frame;
+  // Helper method to set the audio output volume.
+  void SetVolumeInternal();
+
+  // Audio configs from the demuxer.
+  AudioCodec audio_codec_;
+  int num_channels_;
+  int sampling_rate_;
+  std::vector<uint8> audio_extra_data_;
+  double volume_;
   int bytes_per_frame_;
 
-  scoped_ptr<AudioCodecBridge> audio_codec_bridge_;
+  // Base timestamp for the |audio_timestamp_helper_|.
+  base::TimeDelta base_timestamp_;
 
   // Object to calculate the current audio timestamp for A/V sync.
   scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioDecoderJob);
 };
 
 }  // namespace media

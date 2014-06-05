@@ -10,12 +10,15 @@
 #include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace media {
+
+class MediaDrmBridge;
 
 // Class for managing all the decoding tasks. Each decoding task will be posted
 // onto the same thread. The thread will be stopped once Stop() is called.
@@ -54,16 +57,13 @@ class MediaDecoderJob {
   // Called by MediaSourcePlayer to decode some data.
   // |callback| - Run when decode operation has completed.
   //
-  // Returns a scoped pointer to a DemuxerConfig if a config change is detected,
-  // or an empty scoped pointer otherwise. In the case of requiring further data
-  // before commencing decode, an empty scoped pointer will also be returned
-  // although config change may be the next received access unit. |callback|
-  // will be called when the decode operation is complete. If a config change
-  // is detected, |callback| is ignored and will not be called.
-  scoped_ptr<DemuxerConfigs> Decode(
-      base::TimeTicks start_time_ticks,
-      base::TimeDelta start_presentation_timestamp,
-      const DecoderCallback& callback);
+  // Returns true if the next decode was started and |callback| will be
+  // called when the decode operation is complete.
+  // Returns false if |media_codec_bridge_| cannot be created; |callback| is
+  // ignored and will not be called.
+  bool Decode(base::TimeTicks start_time_ticks,
+              base::TimeDelta start_presentation_timestamp,
+              const DecoderCallback& callback);
 
   // Called to stop the last Decode() early.
   // If the decoder is in the process of decoding the next frame, then
@@ -75,25 +75,42 @@ class MediaDecoderJob {
   // reflects whether data was actually decoded or the decode terminated early.
   void StopDecode();
 
-  // Flush the decoder.
-  void Flush();
+  // Flushes the decoder and abandons all the data that is being decoded.
+  virtual void Flush();
 
   // Enter prerolling state. The job must not currently be decoding.
   void BeginPrerolling(base::TimeDelta preroll_timestamp);
 
-  bool prerolling() const { return prerolling_; }
+  // Releases all the decoder resources as the current tab is going background.
+  virtual void ReleaseDecoderResources();
+
+  // Sets the demuxer configs. Returns true if configs has changed, or false
+  // otherwise.
+  bool SetDemuxerConfigs(const DemuxerConfigs& configs);
+
+  // Returns whether the decoder has finished decoding all the data.
+  bool OutputEOSReached() const;
+
+  // Returns true if the audio/video stream is available, implemented by child
+  // classes.
+  virtual bool HasStream() const = 0;
+
+  void SetDrmBridge(MediaDrmBridge* drm_bridge);
 
   bool is_decoding() const { return !decode_cb_.is_null(); }
 
-  bool is_requesting_demuxer_data() const {
-    return is_requesting_demuxer_data_;
-  }
+  bool is_content_encrypted() const { return is_content_encrypted_; }
 
  protected:
+  // Creates a new MediaDecoderJob instance.
+  // |decoder_task_runner| - Thread on which the decoder task will run.
+  // |request_data_cb| - Callback to request more data for the decoder.
+  // |config_changed_cb| - Callback to inform the caller that
+  // demuxer config has changed.
   MediaDecoderJob(
       const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
-      MediaCodecBridge* media_codec_bridge,
-      const base::Closure& request_data_cb);
+      const base::Closure& request_data_cb,
+      const base::Closure& config_changed_cb);
 
   // Release the output buffer at index |output_buffer_index| and render it if
   // |render_output| is true. Upon completion, |callback| will be called.
@@ -108,12 +125,29 @@ class MediaDecoderJob {
   // this decoder job.
   virtual bool ComputeTimeToRender() const = 0;
 
+  // Gets MediaCrypto object from |drm_bridge_|.
+  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
+
+  // Releases the |media_codec_bridge_|.
+  void ReleaseMediaCodecBridge();
+
+  MediaDrmBridge* drm_bridge() { return drm_bridge_; }
+
+  void set_is_content_encrypted(bool is_content_encrypted) {
+    is_content_encrypted_ = is_content_encrypted;
+  }
+
+  bool need_to_reconfig_decoder_job_;
+
+  scoped_ptr<MediaCodecBridge> media_codec_bridge_;
+
  private:
   friend class MediaSourcePlayerTest;
 
   // Causes this instance to be deleted on the thread it is bound to.
   void Release();
 
+  // Queues an access unit into |media_codec_bridge_|'s input buffer.
   MediaCodecStatus QueueInputBuffer(const AccessUnit& unit);
 
   // Returns true if this object has data to decode.
@@ -128,12 +162,17 @@ class MediaDecoderJob {
       base::TimeTicks start_time_ticks,
       base::TimeDelta start_presentation_timestamp);
 
-  // Helper function to decoder data on |thread_|. |unit| contains all the data
-  // to be decoded. |start_time_ticks| and |start_presentation_timestamp|
-  // represent the system time and the presentation timestamp when the first
-  // frame is rendered. We use these information to estimate when the current
-  // frame should be rendered. If |needs_flush| is true, codec needs to be
-  // flushed at the beginning of this call.
+  // Helper function to decode data on |decoder_task_runner_|. |unit| contains
+  // the data to be decoded. |start_time_ticks| and
+  // |start_presentation_timestamp| represent the system time and the
+  // presentation timestamp when the first frame is rendered. We use these
+  // information to estimate when the current frame should be rendered.
+  // If |needs_flush| is true, codec needs to be flushed at the beginning of
+  // this call.
+  // It is possible that |stop_decode_pending_| or |release_resources_pending_|
+  // becomes true while DecodeInternal() is called. However, they should have
+  // no impact on DecodeInternal(). They will be handled after DecoderInternal()
+  // finishes and OnDecodeCompleted() is posted on the UI thread.
   void DecodeInternal(const AccessUnit& unit,
                       base::TimeTicks start_time_ticks,
                       base::TimeDelta start_presentation_timestamp,
@@ -160,14 +199,38 @@ class MediaDecoderJob {
   // chunk.
   bool NoAccessUnitsRemainingInChunk(bool is_active_chunk) const;
 
-  // Clearn all the received data.
-  void ClearData();
-
-  // Request new data for the current chunk if it runs out of data.
+  // Requests new data for the current chunk if it runs out of data.
   void RequestCurrentChunkIfEmpty();
 
-  // Initialize |received_data_| and |access_unit_index_|.
+  // Initializes |received_data_| and |access_unit_index_|.
   void InitializeReceivedData();
+
+  // Called when the decoder is completely drained and is ready to be released.
+  void OnDecoderDrained();
+
+  // Creates |media_codec_bridge_| for decoding purpose. Returns true if it is
+  // created, or false otherwise.
+  bool CreateMediaCodecBridge();
+
+  // Called when an access unit is consumed by the decoder. |is_config_change|
+  // indicates whether the current access unit is a config change. If it is
+  // true, the next access unit is guarateed to be an I-frame.
+  virtual void CurrentDataConsumed(bool is_config_change) {}
+
+  // Called when |media_codec_bridge_| is released
+  virtual void OnMediaCodecBridgeReleased() {}
+
+  // Implemented by the child class to create |media_codec_bridge_| for a
+  // particular stream. Returns true if it is created, or false otherwise.
+  virtual bool CreateMediaCodecBridgeInternal() = 0;
+
+  // Returns true if the |configs| doesn't match the current demuxer configs
+  // the decoder job has.
+  virtual bool AreDemuxerConfigsChanged(
+      const DemuxerConfigs& configs) const = 0;
+
+  // Update the demuxer configs.
+  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) = 0;
 
   // Return the index to |received_data_| that is not currently being decoded.
   size_t inactive_demuxer_data_index() const {
@@ -179,10 +242,6 @@ class MediaDecoderJob {
 
   // The task runner that decoder job runs on.
   scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
-
-  // The media codec bridge used for decoding. Owned by derived class.
-  // NOTE: This MUST NOT be accessed in the destructor.
-  MediaCodecBridge* media_codec_bridge_;
 
   // Whether the decoder needs to be flushed.
   bool needs_flush_;
@@ -216,8 +275,11 @@ class MediaDecoderJob {
   // Callback used to request more data.
   base::Closure request_data_cb_;
 
+  // Callback to notify the caller config has changed.
+  base::Closure config_changed_cb_;
+
   // Callback to run when new data has been received.
-  base::Closure on_data_received_cb_;
+  base::Closure data_received_cb_;
 
   // Callback to run when the current Decode() operation completes.
   DecoderCallback decode_cb_;
@@ -240,6 +302,11 @@ class MediaDecoderJob {
   // If the index is uninitialized or invalid, it must be -1.
   int input_buf_index_;
 
+  // Indicates whether content is encrypted.
+  bool is_content_encrypted_;
+
+  // Indicates the decoder job should stop after decoding the current access
+  // unit.
   bool stop_decode_pending_;
 
   // Indicates that this object should be destroyed once the current
@@ -253,10 +320,21 @@ class MediaDecoderJob {
   // Indicates whether the incoming data should be ignored.
   bool is_incoming_data_invalid_;
 
-  // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
-  // the decoder thread.
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaDecoderJob> weak_factory_;
+  // Indicates that |media_codec_bridge_| should be released once the current
+  // Decode() has completed. This gets set when ReleaseDecoderResources() gets
+  // called while there is a decode in progress.
+  bool release_resources_pending_;
+
+  // Pointer to a DRM object that will be used for encrypted streams.
+  MediaDrmBridge* drm_bridge_;
+
+  // Indicates whether |media_codec_bridge_| is in the middle of being drained
+  // due to a config change.
+  bool drain_decoder_;
+
+  // This access unit is passed to the decoder during config changes to drain
+  // the decoder.
+  AccessUnit eos_unit_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaDecoderJob);
 };

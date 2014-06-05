@@ -16,33 +16,36 @@ class VideoCodecBridge;
 // Class for managing video decoding jobs.
 class VideoDecoderJob : public MediaDecoderJob {
  public:
-  virtual ~VideoDecoderJob();
-
   // Create a new VideoDecoderJob instance.
-  // |video_codec| - The video format the object needs to decode.
-  // |is_secure| - Whether secure decoding is required.
-  // |size| -  The natural size of the output frames.
-  // |surface| - The surface to render the frames to.
-  // |media_crypto| - Handle to a Java object responsible for decrypting the
-  // video data.
   // |request_data_cb| - Callback used to request more data for the decoder.
   // |request_resources_cb| - Callback used to request resources.
   // |release_resources_cb| - Callback used to release resources.
-  static VideoDecoderJob* Create(const VideoCodec video_codec,
-                                 bool is_secure,
-                                 const gfx::Size& size,
-                                 jobject surface,
-                                 jobject media_crypto,
-                                 const base::Closure& request_data_cb,
-                                 const base::Closure& request_resources_cb,
-                                 const base::Closure& release_resources_cb);
+  // |on_demuxer_config_changed_cb| - Callback used to inform the caller that
+  // demuxer config has changed.
+  VideoDecoderJob(
+      const base::Closure& request_data_cb,
+      const base::Closure& request_resources_cb,
+      const base::Closure& release_resources_cb,
+      const base::Closure& on_demuxer_config_changed_cb);
+  virtual ~VideoDecoderJob();
+
+  // Passes a java surface object to the codec. Returns true if the surface
+  // can be used by the decoder, or false otherwise.
+  bool SetVideoSurface(gfx::ScopedJavaSurface surface);
+
+  // MediaDecoderJob implementation.
+  virtual bool HasStream() const OVERRIDE;
+  virtual void Flush() OVERRIDE;
+  virtual void ReleaseDecoderResources() OVERRIDE;
+
+  bool next_video_data_is_iframe() {
+    return next_video_data_is_iframe_;
+  }
+
+  int width() const { return width_; }
+  int height() const { return height_; }
 
  private:
-  VideoDecoderJob(scoped_ptr<VideoCodecBridge> video_codec_bridge,
-                  const base::Closure& request_data_cb,
-                  const base::Closure& request_resources_cb,
-                  const base::Closure& release_resources_cb);
-
   // MediaDecoderJob implementation.
   virtual void ReleaseOutputBuffer(
       int output_buffer_index,
@@ -50,12 +53,35 @@ class VideoDecoderJob : public MediaDecoderJob {
       bool render_output,
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) OVERRIDE;
-
   virtual bool ComputeTimeToRender() const OVERRIDE;
+  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) OVERRIDE;
+  virtual bool AreDemuxerConfigsChanged(
+      const DemuxerConfigs& configs) const OVERRIDE;
+  virtual bool CreateMediaCodecBridgeInternal() OVERRIDE;
+  virtual void CurrentDataConsumed(bool is_config_change) OVERRIDE;
+  virtual void OnMediaCodecBridgeReleased() OVERRIDE;
 
-  scoped_ptr<VideoCodecBridge> video_codec_bridge_;
+  // Returns true if a protected surface is required for video playback.
+  bool IsProtectedSurfaceRequired();
 
+  // Video configs from the demuxer.
+  VideoCodec video_codec_;
+  int width_;
+  int height_;
+
+  // The surface object currently owned by the player.
+  gfx::ScopedJavaSurface surface_;
+
+  // Callbacks to inform the caller about decoder resources change.
+  base::Closure request_resources_cb_;
   base::Closure release_resources_cb_;
+
+  // Track whether the next access unit is an I-frame. The first access
+  // unit after Flush() and CurrentDataConsumed(true) is guaranteed to be an
+  // I-frame.
+  bool next_video_data_is_iframe_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderJob);
 };
 
 }  // namespace media

@@ -99,15 +99,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Handle pending events if all the decoder jobs are not currently decoding.
   void ProcessPendingEvents();
 
-  // Helper method to clear any pending |SURFACE_CHANGE_EVENT_PENDING|
-  // and reset |video_decoder_job_| to null.
-  void ResetVideoDecoderJob();
-  void ResetAudioDecoderJob();
-
-  // Helper methods to configure the decoder jobs.
-  void ConfigureVideoDecoderJob();
-  void ConfigureAudioDecoderJob();
-
   // Flush the decoders and clean up all the data needs to be decoded.
   void ClearDecodingData();
 
@@ -154,9 +145,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // since last keyframe. See http://crbug.com/304234.
   void BrowserSeekToCurrentTime();
 
-  // Helper function to set the volume.
-  void SetVolumeInternal();
-
   // Helper function to determine whether a protected surface is needed for
   // video playback.
   bool IsProtectedSurfaceRequired();
@@ -167,8 +155,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // resync with audio and starts decoding.
   void OnPrefetchDone();
 
-  // Sets the demuxer configs for audio or video stream.
-  void SetDemuxerConfigs(const DemuxerConfigs& configs, bool is_audio);
+  // Called when the demuxer config changes.
+  void OnDemuxerConfigsChanged();
 
   // Called when new decryption key becomes available.
   void OnKeyAdded();
@@ -184,22 +172,23 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
     decode_callback_for_testing_ = test_decode_cb;
   }
 
-  // TODO(qinmin/wolenetz): Reorder these based on their priority from
-  // ProcessPendingEvents(). Release() and other routines are dependent upon
-  // priority consistency.
+  // Please keep this in sync with |kPendingEventNames| in GetEventName().
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
-    SEEK_EVENT_PENDING = 1 << 0,
-    SURFACE_CHANGE_EVENT_PENDING = 1 << 1,
-    CONFIG_CHANGE_EVENT_PENDING = 1 << 2,
+    PREFETCH_DONE_EVENT_PENDING = 1 << 0,
+    SEEK_EVENT_PENDING = 1 << 1,
+    DECODER_CREATION_EVENT_PENDING = 1 << 2,
     PREFETCH_REQUEST_EVENT_PENDING = 1 << 3,
-    PREFETCH_DONE_EVENT_PENDING = 1 << 4,
   };
 
   static const char* GetEventName(PendingEventFlags event);
   bool IsEventPending(PendingEventFlags event) const;
   void SetPendingEvent(PendingEventFlags event);
   void ClearPendingEvent(PendingEventFlags event);
+
+  // If the player is previously waiting for audio or video decoder job, retry
+  // creating the decoders identified by |audio| and |video|.
+  void RetryDecoderCreation(bool audio, bool video);
 
   scoped_ptr<DemuxerAndroid> demuxer_;
 
@@ -208,20 +197,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // Stats about the media.
   base::TimeDelta duration_;
-  int width_;
-  int height_;
-  AudioCodec audio_codec_;
-  VideoCodec video_codec_;
-  int num_channels_;
-  int sampling_rate_;
-  // TODO(xhwang/qinmin): Add |video_extra_data_|.
-  std::vector<uint8> audio_extra_data_;
-  bool reached_audio_eos_;
-  bool reached_video_eos_;
   bool playing_;
-  bool is_audio_encrypted_;
-  bool is_video_encrypted_;
-  double volume_;
 
   // base::TickClock used by |clock_|.
   base::DefaultTickClock default_tick_clock_;
@@ -237,16 +213,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // due to network or decoding problem.
   base::TimeTicks start_time_ticks_;
   base::TimeDelta start_presentation_timestamp_;
-
-  // The surface object currently owned by the player.
-  gfx::ScopedJavaSurface surface_;
-
-  // Track whether or not the player has received any video data since the most
-  // recent of player construction, end of last seek, or receiving and
-  // detecting a |kConfigChanged| access unit from the demuxer.
-  // If no such video data has been received, the next video data begins with
-  // an I-frame. Otherwise, we have no such guarantee.
-  bool next_video_data_is_iframe_;
 
   // Flag that is true if doing a hack browser seek or false if doing a
   // regular seek. Only valid when |SEEK_EVENT_PENDING| is pending.
@@ -265,9 +231,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   scoped_ptr<AudioDecoderJob, MediaDecoderJob::Deleter> audio_decoder_job_;
   scoped_ptr<VideoDecoderJob, MediaDecoderJob::Deleter> video_decoder_job_;
 
-  bool reconfig_audio_decoder_;
-  bool reconfig_video_decoder_;
-
   // Track the most recent preroll target. Decoder re-creation needs this to
   // resume any in-progress preroll.
   base::TimeDelta preroll_timestamp_;
@@ -285,15 +248,17 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // try to start playback again.
   bool is_waiting_for_key_;
 
+  // Indicates whether the player is waiting for audio or video decoder to be
+  // created. This could happen if video surface is not available or key is
+  // not added.
+  bool is_waiting_for_audio_decoder_;
+  bool is_waiting_for_video_decoder_;
+
   // Test-only callback for hooking the completion of the next decode cycle.
   base::Closure decode_callback_for_testing_;
 
   // Whether |surface_| is currently used by the player.
   bool is_surface_in_use_;
-
-  // Whether there are pending data requests by the decoder.
-  bool has_pending_audio_data_request_;
-  bool has_pending_video_data_request_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
