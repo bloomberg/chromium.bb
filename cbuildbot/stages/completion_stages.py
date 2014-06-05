@@ -403,7 +403,10 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       A list of ValidationFailedMessage objects.
     """
     msgs = self._GetFailedMessages(failing)
-    return [x for x in msgs if
+    # Filter out None messages because we cannot analyze them.
+    # TODO: We should treat NoneType messages as infra failures
+    # (crbug.com/381297).
+    return [x for x in msgs if x and
             x.HasFailureType(failures_lib.InfrastructureFailure)]
 
   def SendInfraAlertIfNeeded(self, failing, inflight, no_stat):
