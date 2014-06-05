@@ -11,13 +11,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/mock_password_manager_driver.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,6 +44,12 @@ void RunAllPendingTasks() {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   run_loop.Run();
 }
+
+class MockPasswordManagerDriver : public StubPasswordManagerDriver {
+ public:
+  MOCK_METHOD0(IsOffTheRecord, bool());
+  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
+};
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
@@ -186,7 +192,7 @@ class PasswordFormManagerTest : public testing::Test {
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
 
@@ -245,7 +251,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // saw this form and need to find matching logins.
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
 
@@ -285,7 +291,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
 TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
 
@@ -307,7 +313,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
 
@@ -329,7 +335,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
 
@@ -352,7 +358,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
 
@@ -604,7 +610,7 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   scoped_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient(NULL));
-  scoped_ptr<MockPasswordManagerDriver> driver;
+  scoped_ptr<StubPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
   PasswordForm credentials(*observed_form());

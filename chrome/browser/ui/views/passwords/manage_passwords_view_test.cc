@@ -18,11 +18,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/mock_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 void ManagePasswordsViewTest::SetUpOnMainThread() {
@@ -67,7 +66,7 @@ void ManagePasswordsViewTest::SetupManagingPasswords() {
 
 void ManagePasswordsViewTest::SetupPendingPassword() {
   password_manager::StubPasswordManagerClient client;
-  password_manager::MockPasswordManagerDriver driver;
+  password_manager::StubPasswordManagerDriver driver;
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           NULL, &client, &driver, *test_form(), false));

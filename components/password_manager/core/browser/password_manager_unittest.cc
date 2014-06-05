@@ -10,13 +10,13 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/mock_password_manager_driver.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +46,13 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
+};
+
+class MockPasswordManagerDriver : public StubPasswordManagerDriver {
+ public:
+  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
+  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
+  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
 
 ACTION_P(InvokeConsumer, forms) { arg0->OnGetPasswordStoreResults(forms); }
@@ -82,14 +89,8 @@ class PasswordManagerTest : public testing::Test {
     password_autofill_manager_.reset(
         new PasswordAutofillManager(&client_, NULL));
 
-    EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(driver_, IsOffTheRecord()).WillRepeatedly(Return(false));
-    EXPECT_CALL(driver_, GetPasswordGenerationManager())
-        .WillRepeatedly(Return(static_cast<PasswordGenerationManager*>(NULL)));
     EXPECT_CALL(driver_, GetPasswordManager())
         .WillRepeatedly(Return(manager_.get()));
-    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_)).Times(AnyNumber());
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
   }

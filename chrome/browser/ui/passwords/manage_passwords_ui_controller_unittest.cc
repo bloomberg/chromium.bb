@@ -14,10 +14,9 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/mock_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -81,7 +80,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   password_manager::StubPasswordManagerClient client;
-  password_manager::MockPasswordManagerDriver driver;
+  password_manager::StubPasswordManagerDriver driver;
   password_manager::PasswordFormManager* test_form_manager =
       new password_manager::PasswordFormManager(
           NULL, &client, &driver, test_form(), false);
@@ -106,7 +105,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
       ->NavigateAndCommit(GURL("chrome://sign-in"));
 
   password_manager::StubPasswordManagerClient client;
-  password_manager::MockPasswordManagerDriver driver;
+  password_manager::StubPasswordManagerDriver driver;
   password_manager::PasswordFormManager* test_form_manager =
       new password_manager::PasswordFormManager(
           NULL, &client, &driver, test_form(), false);

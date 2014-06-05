@@ -9,8 +9,8 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
-#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -33,25 +33,12 @@ namespace password_manager {
 
 namespace {
 
-// TODO(dubroy): Implement a TestPasswordManagerDriver that can be shared by
-// all the tests that need it (crbug.com/352566).
-class MockPasswordManagerDriver : public PasswordManagerDriver {
+class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
-  MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
-  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
-  MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
-  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
-  MOCK_METHOD1(AccountCreationFormsFound,
-               void(const std::vector<autofill::FormData>&));
   MOCK_METHOD2(FillSuggestion,
                void(const base::string16&, const base::string16&));
   MOCK_METHOD2(PreviewSuggestion,
                void(const base::string16&, const base::string16&));
-  MOCK_METHOD0(ClearPreviewedForm, void());
-  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
