@@ -1,4 +1,7 @@
 {
+  "compile_targets": [
+    "all"
+  ],
   "gtest_tests": [
     "accessibility_unittests",
     "app_list_unittests",
