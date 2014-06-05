@@ -4,6 +4,7 @@
 
 #include "athena/main/athena_launcher.h"
 
+#include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/home/public/home_card.h"
 #include "athena/main/placeholder.h"
@@ -49,7 +50,6 @@ void StartAthena(aura::Window* root_window) {
   athena::WindowManager::Create();
   athena::HomeCard::Create();
   athena::ActivityManager::Create();
-
   SetupBackgroundImage();
 }
 

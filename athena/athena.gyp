@@ -21,6 +21,14 @@
       ],
       'sources': [
         # All .cc, .h under athena, except unittests
+        'activity/activity_factory.cc',
+        'activity/activity_manager_impl.cc',
+        'activity/activity_view_manager_impl.cc',
+        'activity/public/activity.h',
+        'activity/public/activity_factory.h',
+        'activity/public/activity_manager.h',
+        'activity/public/activity_view_manager.h',
+        'activity/public/activity_view_model.h',
         'athena_export.h',
         'home/home_card_delegate_view.cc',
         'home/home_card_delegate_view.h',
@@ -30,16 +38,27 @@
         'screen/background_controller.h',
         'screen/public/screen_manager.h',
         'screen/screen_manager_impl.cc',
-        'activity/public/activity.h',
-        'activity/public/activity_manager.h',
-        'activity/public/activity_view_manager.h',
-        'activity/public/activity_view_model.h',
-        'activity/activity_manager_impl.cc',
-        'activity/activity_view_manager_impl.cc',
         'wm/public/window_manager.h',
         'wm/window_manager_impl.cc',
         'wm/window_overview_mode.cc',
         'wm/window_overview_mode.h',
+      ],
+    },
+    {
+      'target_name': 'athena_content_lib',
+      'type': '<(component)',
+      'dependencies': [
+        'athena_lib',
+        '../content/content.gyp:content_browser',
+      ],
+      'defines': [
+        'ATHENA_IMPLEMENTATION',
+      ],
+      'sources': [
+        'content/public/content_activity_factory.h',
+        'content/content_activity_factory.cc',
+        'content/web_activity.h',
+        'content/web_activity.cc',
       ],
     },
     {

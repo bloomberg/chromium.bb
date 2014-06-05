@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/main/web_activity.h"
+#include "athena/content/web_activity.h"
 
 #include "athena/activity/public/activity_manager.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+
+namespace athena {
 
 WebActivity::WebActivity(content::WebContents* contents)
     : content::WebContentsObserver(contents) {
 }
 
 WebActivity::~WebActivity() {
-  athena::ActivityManager::Get()->RemoveActivity(this);
+  ActivityManager::Get()->RemoveActivity(this);
 }
 
-athena::ActivityViewModel* WebActivity::GetActivityViewModel() {
+ActivityViewModel* WebActivity::GetActivityViewModel() {
   return this;
 }
 
@@ -35,10 +37,12 @@ aura::Window* WebActivity::GetNativeWindow() {
 
 void WebActivity::TitleWasSet(content::NavigationEntry* entry,
                               bool explicit_set) {
-  athena::ActivityManager::Get()->UpdateActivity(this);
+  ActivityManager::Get()->UpdateActivity(this);
 }
 
 void WebActivity::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
-  athena::ActivityManager::Get()->UpdateActivity(this);
+  ActivityManager::Get()->UpdateActivity(this);
 }
+
+}  // namespace athena

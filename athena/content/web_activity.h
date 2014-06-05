@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_MAIN_WEB_ACTIVITY_H_
-#define ATHENA_MAIN_WEB_ACTIVITY_H_
+#ifndef ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
+#define ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
@@ -13,18 +13,20 @@ namespace content {
 class WebContents;
 }
 
-class WebActivity : public athena::Activity,
-                    public athena::ActivityViewModel,
+namespace athena {
+
+class WebActivity : public Activity,
+                    public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
   explicit WebActivity(content::WebContents* contents);
   virtual ~WebActivity();
 
  protected:
-  // athena::Activity:
+  // Activity:
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
 
-  // athena::ActivityViewModel:
+  // ActivityViewModel:
   virtual SkColor GetRepresentativeColor() OVERRIDE;
   virtual std::string GetTitle() OVERRIDE;
   virtual aura::Window* GetNativeWindow() OVERRIDE;
@@ -39,4 +41,6 @@ class WebActivity : public athena::Activity,
   DISALLOW_COPY_AND_ASSIGN(WebActivity);
 };
 
-#endif  // ATHENA_MAIN_WEB_ACTIVITY_H_
+}  // namespace athena
+
+#endif  // ATHENA_CONTENT_WEB_ACTIVITY_H_

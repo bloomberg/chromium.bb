@@ -12,6 +12,7 @@
       'type': 'executable',
       'dependencies': [
         '../athena.gyp:athena_lib',
+        '../athena.gyp:athena_content_lib',
         '../../apps/shell/app_shell.gyp:app_shell_lib',
         '../../skia/skia.gyp:skia',
         '../../ui/accessibility/accessibility.gyp:ax_gen',
@@ -28,8 +29,6 @@
         'placeholder.h',
         'placeholder_content.cc',
         'placeholder_content.h',
-        'web_activity.cc',
-        'web_activity.h',
       ],
     },
     {

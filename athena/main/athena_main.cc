@@ -5,6 +5,7 @@
 #include "apps/shell/app/shell_main_delegate.h"
 #include "apps/shell/browser/shell_browser_main_delegate.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
+#include "athena/content/public/content_activity_factory.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/placeholder_content.h"
@@ -21,11 +22,18 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     athena::StartAthena(
         apps::ShellDesktopController::instance()->host()->window());
+    athena::ActivityFactory::RegisterActivityFactory(
+        new athena::ContentActivityFactory());
     CreateTestWindows();
     CreateTestPages(context);
   }
 
-  virtual void Shutdown() OVERRIDE { athena::ShutdownAthena(); }
+  virtual void Shutdown() OVERRIDE {
+    // TODO(mukai):cleanup the start/shutdown processes and the dependency to
+    // ContentActivityFactory.
+    athena::ActivityFactory::Shutdown();
+    athena::ShutdownAthena();
+  }
 
   virtual apps::ShellDesktopController* CreateDesktopController() OVERRIDE {
     // TODO(mukai): create Athena's own ShellDesktopController subclass so that
