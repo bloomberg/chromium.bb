@@ -75,16 +75,16 @@ static bool isCharsetSpecifyingNode(const Node& node)
         return false;
 
     const HTMLMetaElement& element = toHTMLMetaElement(node);
-    HTMLAttributeList attributes;
+    HTMLAttributeList attributeList;
     if (element.hasAttributes()) {
-        unsigned attributeCount = element.attributeCount();
-        for (unsigned i = 0; i < attributeCount; ++i) {
-            const Attribute& attribute = element.attributeItem(i);
+        AttributeIteratorAccessor attributes = element.attributesIterator();
+        AttributeConstIterator end = attributes.end();
+        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
             // FIXME: We should deal appropriately with the attribute if they have a namespace.
-            attributes.append(std::make_pair(attribute.name().localName(), attribute.value().string()));
+            attributeList.append(std::make_pair(it->name().localName(), it->value().string()));
         }
     }
-    WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributes);
+    WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributeList);
     return textEncoding.isValid();
 }
 

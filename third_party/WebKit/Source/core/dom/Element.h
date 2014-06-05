@@ -169,6 +169,7 @@ public:
     // Internal methods that assume the existence of attribute storage, one should use hasAttributes()
     // before calling them. This is not a trivial getter and its return value should be cached for
     // performance.
+    AttributeIteratorAccessor attributesIterator() const { return elementData()->attributesIterator(); }
     size_t attributeCount() const;
     const Attribute& attributeItem(unsigned index) const;
     const Attribute* getAttributeItem(const QualifiedName&) const;

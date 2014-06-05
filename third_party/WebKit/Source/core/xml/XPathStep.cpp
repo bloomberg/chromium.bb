@@ -360,9 +360,10 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             if (!contextElement->hasAttributes())
                 return;
 
-            unsigned attributeCount = contextElement->attributeCount();
-            for (unsigned i = 0; i < attributeCount; ++i) {
-                RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(contextElement->attributeItem(i).name());
+            AttributeIteratorAccessor attributes = contextElement->attributesIterator();
+            AttributeConstIterator end = attributes.end();
+            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
                 if (nodeMatches(attr.get(), AttributeAxis, nodeTest()))
                     nodes.append(attr.release());
             }

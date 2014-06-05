@@ -500,9 +500,10 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
     const AtomicString& selectorValue =  selector.value();
 
-    unsigned attributeCount = element.attributeCount();
-    for (size_t i = 0; i < attributeCount; ++i) {
-        const Attribute& attributeItem = element.attributeItem(i);
+    AttributeIteratorAccessor attributes = element.attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        const Attribute& attributeItem = **it;
 
         if (!attributeItem.matches(selectorAttr))
             continue;

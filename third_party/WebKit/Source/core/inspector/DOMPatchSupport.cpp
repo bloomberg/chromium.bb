@@ -199,10 +199,10 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
 
         // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
         if (newElement->hasAttributesWithoutUpdate()) {
-            size_t numAttrs = newElement->attributeCount();
-            for (size_t i = 0; i < numAttrs; ++i) {
-                const Attribute& attribute = newElement->attributeItem(i);
-                if (!m_domEditor->setAttribute(oldElement, attribute.name().localName(), attribute.value(), exceptionState))
+            AttributeIteratorAccessor attributes = newElement->attributesIterator();
+            AttributeConstIterator end = attributes.end();
+            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                if (!m_domEditor->setAttribute(oldElement, it->name().localName(), it->value(), exceptionState))
                     return false;
             }
         }
@@ -431,12 +431,12 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
         }
 
         if (element.hasAttributesWithoutUpdate()) {
-            size_t numAttrs = element.attributeCount();
             OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
-            for (size_t i = 0; i < numAttrs; ++i) {
-                const Attribute& attribute = element.attributeItem(i);
-                addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
-                addStringToDigestor(attrsDigestor.get(), attribute.value().string());
+            AttributeIteratorAccessor attributes = element.attributesIterator();
+            AttributeConstIterator end = attributes.end();
+            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                addStringToDigestor(attrsDigestor.get(), it->name().toString());
+                addStringToDigestor(attrsDigestor.get(), it->value().string());
             }
             finishDigestor(attrsDigestor.get(), digestResult);
             digest->m_attrsSHA1 = base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);

@@ -157,11 +157,11 @@ void DatasetDOMStringMap::getNames(Vector<String>& names)
     if (!m_element->hasAttributes())
         return;
 
-    unsigned length = m_element->attributeCount();
-    for (unsigned i = 0; i < length; i++) {
-        const Attribute& attribute = m_element->attributeItem(i);
-        if (isValidAttributeName(attribute.localName()))
-            names.append(convertAttributeNameToPropertyName(attribute.localName()));
+    AttributeIteratorAccessor attributes = m_element->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (isValidAttributeName(it->localName()))
+            names.append(convertAttributeNameToPropertyName(it->localName()));
     }
 }
 
@@ -170,11 +170,11 @@ String DatasetDOMStringMap::item(const String& name)
     if (!m_element->hasAttributes())
         return String();
 
-    unsigned length = m_element->attributeCount();
-    for (unsigned i = 0; i < length; i++) {
-        const Attribute& attribute = m_element->attributeItem(i);
-        if (propertyNameMatchesAttributeName(name, attribute.localName()))
-            return attribute.value();
+    AttributeIteratorAccessor attributes = m_element->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (propertyNameMatchesAttributeName(name, it->localName()))
+            return it->value();
     }
 
     return String();
@@ -185,13 +185,12 @@ bool DatasetDOMStringMap::contains(const String& name)
     if (!m_element->hasAttributes())
         return false;
 
-    unsigned length = m_element->attributeCount();
-    for (unsigned i = 0; i < length; i++) {
-        const Attribute& attribute = m_element->attributeItem(i);
-        if (propertyNameMatchesAttributeName(name, attribute.localName()))
+    AttributeIteratorAccessor attributes = m_element->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (propertyNameMatchesAttributeName(name, it->localName()))
             return true;
     }
-
     return false;
 }
 

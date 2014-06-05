@@ -1323,18 +1323,17 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
 
     switch (nodeType()) {
         case ELEMENT_NODE: {
-            const Element* elem = toElement(this);
+            const Element& element = toElement(*this);
 
-            if (elem->prefix().isNull())
-                return elem->namespaceURI() == namespaceURI;
+            if (element.prefix().isNull())
+                return element.namespaceURI() == namespaceURI;
 
-            if (elem->hasAttributes()) {
-                unsigned attributeCount = elem->attributeCount();
-                for (unsigned i = 0; i < attributeCount; ++i) {
-                    const Attribute& attr = elem->attributeItem(i);
-
-                    if (attr.localName() == xmlnsAtom)
-                        return attr.value() == namespaceURI;
+            if (element.hasAttributes()) {
+                AttributeIteratorAccessor attributes = element.attributesIterator();
+                AttributeConstIterator end = attributes.end();
+                for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                    if (it->localName() == xmlnsAtom)
+                        return it->value() == namespaceURI;
                 }
             }
 
@@ -1409,26 +1408,23 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
 
     switch (nodeType()) {
         case ELEMENT_NODE: {
-            const Element *elem = toElement(this);
+            const Element& element = toElement(*this);
 
-            if (!elem->namespaceURI().isNull() && elem->prefix() == prefix)
-                return elem->namespaceURI();
+            if (!element.namespaceURI().isNull() && element.prefix() == prefix)
+                return element.namespaceURI();
 
-            if (elem->hasAttributes()) {
-                unsigned attributeCount = elem->attributeCount();
-                for (unsigned i = 0; i < attributeCount; ++i) {
-                    const Attribute& attr = elem->attributeItem(i);
-
-                    if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
-                        if (!attr.value().isEmpty())
-                            return attr.value();
-
+            if (element.hasAttributes()) {
+                AttributeIteratorAccessor attributes = element.attributesIterator();
+                AttributeConstIterator end = attributes.end();
+                for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                    if (it->prefix() == xmlnsAtom && it->localName() == prefix) {
+                        if (!it->value().isEmpty())
+                            return it->value();
                         return nullAtom;
                     }
-                    if (attr.localName() == xmlnsAtom && prefix.isNull()) {
-                        if (!attr.value().isEmpty())
-                            return attr.value();
-
+                    if (it->localName() == xmlnsAtom && prefix.isNull()) {
+                        if (!it->value().isEmpty())
+                            return it->value();
                         return nullAtom;
                     }
                 }
@@ -1581,17 +1577,17 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         const Element* owner1 = attr1->ownerElement();
         owner1->synchronizeAllAttributes();
-        unsigned length = owner1->attributeCount();
-        for (unsigned i = 0; i < length; ++i) {
+        AttributeIteratorAccessor attributes = owner1->attributesIterator();
+        AttributeConstIterator end = attributes.end();
+        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
             // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an
             // implementation-dependent order between the determining nodes is returned. This order is stable as long as no nodes of
             // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
             // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
-            const Attribute& attribute = owner1->attributeItem(i);
-            if (attr1->qualifiedName() == attribute.name())
+            if (attr1->qualifiedName() == it->name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_FOLLOWING;
-            if (attr2->qualifiedName() == attribute.name())
+            if (attr2->qualifiedName() == it->name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
         }
 

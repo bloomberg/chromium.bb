@@ -100,27 +100,27 @@ bool ElementData::isEquivalent(const ElementData* other) const
     if (!other)
         return isEmpty();
 
-    unsigned length = this->length();
-    if (length != other->length())
+    AttributeIteratorAccessor attributes = attributesIterator();
+    if (attributes.size() != other->length())
         return false;
 
-    for (unsigned i = 0; i < length; ++i) {
-        const Attribute& attribute = attributeItem(i);
-        const Attribute* otherAttr = other->getAttributeItem(attribute.name());
-        if (!otherAttr || attribute.value() != otherAttr->value())
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        const Attribute* otherAttr = other->getAttributeItem(it->name());
+        if (!otherAttr || it->value() != otherAttr->value())
             return false;
     }
-
     return true;
 }
 
 size_t ElementData::getAttrIndex(Attr* attr) const
 {
     // This relies on the fact that Attr's QualifiedName == the Attribute's name.
-    unsigned length = this->length();
-    for (unsigned i = 0; i < length; ++i) {
-        if (attributeItem(i).name() == attr->qualifiedName())
-            return i;
+    AttributeIteratorAccessor attributes = attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (it->name() == attr->qualifiedName())
+            return it.index();
     }
     return kNotFound;
 }
@@ -128,20 +128,20 @@ size_t ElementData::getAttrIndex(Attr* attr) const
 size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     // Continue to checking case-insensitively and/or full namespaced names if necessary:
-    unsigned length = this->length();
-    for (unsigned i = 0; i < length; ++i) {
-        const Attribute& attribute = attributeItem(i);
+    AttributeIteratorAccessor attributes = attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
         // FIXME: Why check the prefix? Namespace is all that should matter
         // and all HTML/SVG attributes have a null namespace!
-        if (!attribute.name().hasPrefix()) {
-            if (shouldIgnoreAttributeCase && equalIgnoringCase(name, attribute.localName()))
-                return i;
+        if (!it->name().hasPrefix()) {
+            if (shouldIgnoreAttributeCase && equalIgnoringCase(name, it->localName()))
+                return it.index();
         } else {
             // FIXME: Would be faster to do this comparison without calling toString, which
             // generates a temporary string by concatenation. But this branch is only reached
             // if the attribute name has a prefix, which is rare in HTML.
-            if (equalPossiblyIgnoringCase(name, attribute.name().toString(), shouldIgnoreAttributeCase))
-                return i;
+            if (equalPossiblyIgnoringCase(name, it->name().toString(), shouldIgnoreAttributeCase))
+                return it.index();
         }
     }
     return kNotFound;
@@ -217,7 +217,7 @@ PassRefPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
 
 Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)
 {
-    unsigned length = this->length();
+    unsigned length = m_attributeVector.size();
     for (unsigned i = 0; i < length; ++i) {
         if (m_attributeVector.at(i).name().matches(name))
             return &m_attributeVector.at(i);

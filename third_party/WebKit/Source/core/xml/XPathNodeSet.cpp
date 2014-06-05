@@ -228,9 +228,10 @@ void NodeSet::traversalSort() const
         if (!element->hasAttributes())
             continue;
 
-        unsigned attributeCount = element->attributeCount();
-        for (unsigned i = 0; i < attributeCount; ++i) {
-            RefPtrWillBeRawPtr<Attr> attr = element->attrIfExists(element->attributeItem(i).name());
+        AttributeIteratorAccessor attributes = element->attributesIterator();
+        AttributeConstIterator end = attributes.end();
+        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+            RefPtrWillBeRawPtr<Attr> attr = element->attrIfExists(it->name());
             if (attr && nodes.contains(attr.get()))
                 sortedNodes.append(attr);
         }

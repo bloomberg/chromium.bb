@@ -115,11 +115,11 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<St
     if (!hasAttributes())
         return;
 
-    unsigned attributeCount = this->attributeCount();
-    for (unsigned i = 0; i < attributeCount; ++i) {
-        const Attribute& attribute = attributeItem(i);
-        paramNames.append(attribute.localName().string());
-        paramValues.append(attribute.value().string());
+    AttributeIteratorAccessor attributes = attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        paramNames.append(it->localName().string());
+        paramValues.append(it->value().string());
     }
 }
 

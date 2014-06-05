@@ -168,10 +168,10 @@ inline bool SelectorChecker::checkExactAttribute(const Element& element, const Q
 {
     if (!element.hasAttributesWithoutUpdate())
         return false;
-    unsigned size = element.attributeCount();
-    for (unsigned i = 0; i < size; ++i) {
-        const Attribute& attribute = element.attributeItem(i);
-        if (attribute.matches(selectorAttributeName) && (!value || attribute.value().impl() == value))
+    AttributeIteratorAccessor attributes = element.attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (it->matches(selectorAttributeName) && (!value || it->value().impl() == value))
             return true;
     }
     return false;

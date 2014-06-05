@@ -721,15 +721,15 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     }
 
     bool foundOriginalAttribute = false;
-    unsigned numAttrs = parsedElement->attributeCount();
-    for (unsigned i = 0; i < numAttrs; ++i) {
+    AttributeIteratorAccessor attributes = parsedElement->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
         // Add attribute pair
-        const Attribute& attribute = parsedElement->attributeItem(i);
-        String attributeName = attribute.name().toString();
+        String attributeName = it->name().toString();
         if (shouldIgnoreCase)
             attributeName = attributeName.lower();
         foundOriginalAttribute |= name && attributeName == caseAdjustedName;
-        if (!m_domEditor->setAttribute(element, attributeName, attribute.value(), errorString))
+        if (!m_domEditor->setAttribute(element, attributeName, it->value(), errorString))
             return;
     }
 
@@ -981,17 +981,17 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 if (!element->hasAttributes())
                     break;
 
-                unsigned numAttrs = element->attributeCount();
-                for (unsigned i = 0; i < numAttrs; ++i) {
+                AttributeIteratorAccessor attributes = element->attributesIterator();
+                AttributeConstIterator end = attributes.end();
+                for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
                     // Add attribute pair
-                    const Attribute& attribute = element->attributeItem(i);
-                    if (attribute.localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
+                    if (it->localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
-                    size_t foundPosition = attribute.value().find(attributeQuery, 0, false);
+                    size_t foundPosition = it->value().find(attributeQuery, 0, false);
                     if (foundPosition != kNotFound) {
-                        if (!exactAttributeMatch || (!foundPosition && attribute.value().length() == attributeQuery.length())) {
+                        if (!exactAttributeMatch || (!foundPosition && it->value().length() == attributeQuery.length())) {
                             resultCollector.add(node);
                             break;
                         }
@@ -1597,12 +1597,12 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
     // Go through all attributes and serialize them.
     if (!element->hasAttributes())
         return attributesValue.release();
-    unsigned numAttrs = element->attributeCount();
-    for (unsigned i = 0; i < numAttrs; ++i) {
+    AttributeIteratorAccessor attributes = element->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
         // Add attribute pair
-        const Attribute& attribute = element->attributeItem(i);
-        attributesValue->addItem(attribute.name().toString());
-        attributesValue->addItem(attribute.value());
+        attributesValue->addItem(it->name().toString());
+        attributesValue->addItem(it->value());
     }
     return attributesValue.release();
 }

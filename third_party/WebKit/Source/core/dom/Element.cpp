@@ -1241,12 +1241,11 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
         return prefix();
 
     if (hasAttributes()) {
-        unsigned attributeCount = this->attributeCount();
-        for (unsigned i = 0; i < attributeCount; ++i) {
-            const Attribute& attr = attributeItem(i);
-
-            if (attr.prefix() == xmlnsAtom && attr.value() == namespaceToLocate)
-                return attr.localName();
+        AttributeIteratorAccessor attributes = attributesIterator();
+        AttributeConstIterator end = attributes.end();
+        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+            if (it->prefix() == xmlnsAtom && it->value() == namespaceToLocate)
+                return it->localName();
         }
     }
 
@@ -3013,11 +3012,11 @@ void Element::detachAllAttrNodesFromElement()
     AttrNodeList* attrNodeList = attrNodeListForElement(this);
     ASSERT(attrNodeList);
 
-    unsigned attributeCount = this->attributeCount();
-    for (unsigned i = 0; i < attributeCount; ++i) {
-        const Attribute& attribute = attributeItem(i);
-        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute.name()))
-            attrNode->detachFromElementWithValue(attribute.value());
+    AttributeIteratorAccessor attributes = attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, it->name()))
+            attrNode->detachFromElementWithValue(it->value());
     }
 
     removeAttrNodeListForElement(this);
@@ -3081,11 +3080,10 @@ void Element::cloneAttributesFromElement(const Element& other)
     else
         m_elementData = other.m_elementData->makeUniqueCopy();
 
-    unsigned length = m_elementData->length();
-    for (unsigned i = 0; i < length; ++i) {
-        const Attribute& attribute = m_elementData->attributeItem(i);
-        attributeChangedFromParserOrByCloning(attribute.name(), attribute.value(), ModifiedByCloning);
-    }
+    AttributeIteratorAccessor attributes = m_elementData->attributesIterator();
+    AttributeConstIterator end = attributes.end();
+    for (AttributeConstIterator it = attributes.begin(); it != end; ++it)
+        attributeChangedFromParserOrByCloning(it->name(), it->value(), ModifiedByCloning);
 }
 
 void Element::cloneDataFromElement(const Element& other)

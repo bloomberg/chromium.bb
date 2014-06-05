@@ -801,13 +801,13 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     for (; !elemStack.isEmpty(); elemStack.removeLast()) {
         Element* element = elemStack.last();
         if (element->hasAttributes()) {
-            unsigned attributeCount = element->attributeCount();
-            for (unsigned i = 0; i < attributeCount; ++i) {
-                const Attribute& attribute = element->attributeItem(i);
-                if (attribute.localName() == xmlnsAtom)
-                    m_defaultNamespaceURI = attribute.value();
-                else if (attribute.prefix() == xmlnsAtom)
-                    m_prefixToNamespaceMap.set(attribute.localName(), attribute.value());
+            AttributeIteratorAccessor attributes = element->attributesIterator();
+            AttributeConstIterator end = attributes.end();
+            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                if (it->localName() == xmlnsAtom)
+                    m_defaultNamespaceURI = it->value();
+                else if (it->prefix() == xmlnsAtom)
+                    m_prefixToNamespaceMap.set(it->localName(), it->value());
             }
         }
     }
