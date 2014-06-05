@@ -145,7 +145,9 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
 
 }  // namespace
 
-FakeServer::FakeServer() : version_(0), store_birthday_(kDefaultStoreBirthday) {
+FakeServer::FakeServer() : version_(0),
+                           store_birthday_(kDefaultStoreBirthday),
+                           authenticated_(true) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
   CHECK(CreateDefaultPermanentItems());
 }
@@ -214,6 +216,11 @@ void FakeServer::SaveEntity(FakeServerEntity* entity) {
 
 void FakeServer::HandleCommand(const string& request,
                                const HandleCommandCallback& callback) {
+  if (!authenticated_) {
+    callback.Run(0, net::HTTP_UNAUTHORIZED, string());
+    return;
+  }
+
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
   DCHECK(parsed);
@@ -488,6 +495,14 @@ bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {
 
   store_birthday_ = store_birthday;
   return true;
+}
+
+void FakeServer::SetAuthenticated() {
+  authenticated_ = true;
+}
+
+void FakeServer::SetUnauthenticated() {
+  authenticated_ = false;
 }
 
 void FakeServer::AddObserver(Observer* observer) {

@@ -62,6 +62,14 @@ class FakeServer {
   // returned and this method has no effect.
   bool SetNewStoreBirthday(const std::string& store_birthday);
 
+  // Puts the server in a state where it acts as if authentication has
+  // succeeded.
+  void SetAuthenticated();
+
+  // Puts the server in a state where all commands will fail with an
+  // authentication error.
+  void SetUnauthenticated();
+
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
   void AddObserver(Observer* observer);
@@ -122,6 +130,10 @@ class FakeServer {
 
   // The current store birthday value.
   std::string store_birthday_;
+
+  // Whether the server should act as if incoming connections are properly
+  // authenticated.
+  bool authenticated_;
 
   // All SyncEntity objects saved by the server. The key value is the entity's
   // id string.

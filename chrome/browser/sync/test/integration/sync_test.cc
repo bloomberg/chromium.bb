@@ -924,14 +924,6 @@ void SyncTest::TriggerTransientError() {
                     GetTitle()));
 }
 
-void SyncTest::TriggerAuthState(PythonServerAuthState auth_state) {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/cred";
-  path.append(auth_state == AUTHENTICATED_TRUE ? "?valid=True" :
-                                                 "?valid=False");
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-}
-
 void SyncTest::TriggerXmppAuthError() {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/xmppcred";

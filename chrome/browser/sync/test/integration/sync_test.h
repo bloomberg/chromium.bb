@@ -110,15 +110,6 @@ class SyncTest : public InProcessBrowserTest {
     ERROR_FREQUENCY_TWO_THIRDS
   };
 
-  // Authentication state used by the python sync server.
-  enum PythonServerAuthState {
-    // Python server processes sync requests normally.
-    AUTHENTICATED_TRUE,
-
-    // Python server responds to sync requests with an authentication error.
-    AUTHENTICATED_FALSE
-  };
-
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
 
@@ -237,12 +228,6 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a transient error on the server. Note the server will stay in
   // this state until shut down.
   void TriggerTransientError();
-
-  // Sets / unsets an auth error on the server. Can be used to simulate the case
-  // when the user's gaia password is changed at another location, or their
-  // OAuth2 tokens have expired. The server will stay in this state until
-  // this method is called with a different value.
-  void TriggerAuthState(PythonServerAuthState auth_state);
 
   // Triggers an XMPP auth error on the server.  Note the server will
   // stay in this state until shut down.
