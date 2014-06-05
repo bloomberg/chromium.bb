@@ -17,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tuple.h"
 #include "device/hid/hid_service.h"
-#include "device/hid/hid_service_linux.h"
 
 // These are already defined in newer versions of linux/hidraw.h.
 #ifndef HIDIOCSFEATURE

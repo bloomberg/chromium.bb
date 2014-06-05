@@ -67,6 +67,15 @@
             }],
           ],
         }],
+        ['OS=="linux" and use_udev==0', {
+          # Udev is the only Linux implementation. If we're compiling without
+          # Udev, disable these unittests.
+          'sources!': [
+            'hid/hid_connection_unittest.cc',
+            'hid/hid_service_unittest.cc',
+            'hid/input_service_linux_unittest.cc',
+          ],
+        }],
       ],
     },
   ],

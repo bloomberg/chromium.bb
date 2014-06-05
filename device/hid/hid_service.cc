@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_UDEV)
 #include "device/hid/hid_service_linux.h"
 #elif defined(OS_MACOSX)
 #include "device/hid/hid_service_mac.h"
@@ -65,7 +65,7 @@ HidService::~HidService() {
 }
 
 HidService* HidService::CreateInstance() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_UDEV)
     return new HidServiceLinux();
 #elif defined(OS_MACOSX)
     return new HidServiceMac();

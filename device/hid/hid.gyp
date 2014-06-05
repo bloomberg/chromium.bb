@@ -13,13 +13,6 @@
       'include_dirs': [
         '../..',
       ],
-      'conditions': [
-        ['use_udev==1', {
-          'dependencies': [
-            '../udev_linux/udev.gyp:udev_linux',
-          ],
-        }],
-      ],
       'sources': [
         'device_monitor_linux.cc',
         'device_monitor_linux.h',
@@ -51,6 +44,23 @@
         'hid_utils_mac.h',
         'input_service_linux.cc',
         'input_service_linux.h',
+      ],
+      'conditions': [
+        ['use_udev==1', {
+          'dependencies': [
+            '../udev_linux/udev.gyp:udev_linux',
+          ],
+        }, {  # use_udev==0
+          # The Linux implementation is based on Udev.
+          'sources!': [
+            'device_monitor_linux.cc',
+            'device_monitor_linux.h',
+            'hid_service_linux.cc',
+            'hid_service_linux.h',
+            'input_service_linux.cc',
+            'input_service_linux.h',
+          ],
+        }],
       ],
     },
   ],
