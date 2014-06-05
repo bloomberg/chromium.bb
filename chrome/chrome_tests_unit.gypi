@@ -2749,6 +2749,7 @@
         ['enable_wifi_bootstrapping', {
            'sources' : [
               'browser/local_discovery/wifi/bootstrapping_device_lister_unittest.cc',
+              'browser/local_discovery/wifi/bootstrapping_network_switcher_unittest.cc',
            ]
         }],
       ],
