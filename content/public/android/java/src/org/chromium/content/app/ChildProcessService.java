@@ -283,7 +283,7 @@ public class ChildProcessService extends Service {
         }
 
         try {
-            return mCallback.getViewSurface(surfaceId);
+            return mCallback.getViewSurface(surfaceId).getSurface();
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call establishSurfaceTexturePeer: " + e);
             return null;
@@ -299,7 +299,7 @@ public class ChildProcessService extends Service {
         }
 
         try {
-            return mCallback.getSurfaceTextureSurface(primaryId, secondaryId);
+            return mCallback.getSurfaceTextureSurface(primaryId, secondaryId).getSurface();
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call getSurfaceTextureSurface: " + e);
             return null;

@@ -22,6 +22,7 @@ import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
+import org.chromium.content.common.SurfaceWrapper;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -464,7 +465,7 @@ public class ChildProcessLauncher {
             }
 
             @Override
-            public Surface getViewSurface(int surfaceId) {
+            public SurfaceWrapper getViewSurface(int surfaceId) {
                 // Do not allow a malicious renderer to get to our view surface.
                 if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
                     Log.e(TAG, "Illegal callback for non-GPU process.");
@@ -476,11 +477,12 @@ public class ChildProcessLauncher {
                     Log.e(TAG, "Invalid surfaceId.");
                     return null;
                 }
-                return surface;
+                assert surface.isValid();
+                return new SurfaceWrapper(surface);
             }
 
             @Override
-            public Surface getSurfaceTextureSurface(int primaryId, int secondaryId) {
+            public SurfaceWrapper getSurfaceTextureSurface(int primaryId, int secondaryId) {
                 if (callbackType != CALLBACK_FOR_RENDERER_PROCESS) {
                     Log.e(TAG, "Illegal callback for non-renderer process.");
                     return null;
@@ -498,7 +500,8 @@ public class ChildProcessLauncher {
                     Log.e(TAG, "Invalid Id for surface texture.");
                     return null;
                 }
-                return surface;
+                assert surface.isValid();
+                return new SurfaceWrapper(surface);
             }
         };
     }

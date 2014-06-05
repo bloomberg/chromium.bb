@@ -366,10 +366,12 @@
           'type': 'none',
           'variables': {
             'aidl_interface_file': 'public/android/java/src/org/chromium/content/common/common.aidl',
+            'aidl_import_include': 'public/android/java/src',
           },
           'sources': [
             'public/android/java/src/org/chromium/content/common/IChildProcessCallback.aidl',
             'public/android/java/src/org/chromium/content/common/IChildProcessService.aidl',
+            'public/android/java/src/org/chromium/content/common/SurfaceWrapper.aidl',
           ],
           'includes': [ '../build/java_aidl.gypi' ],
         },
