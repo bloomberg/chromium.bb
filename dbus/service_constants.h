@@ -1129,6 +1129,18 @@ const char kUUIDProperty[] = "UUID";
 const char kServiceProperty[] = "Service";
 const char kValueProperty[] = "Value";  // TODO(armansito): Remove
 const char kFlagsProperty[] = "Flags";
+
+// Possible values for the "Flags" property.
+const char kFlagBroadcast[] = "broadcast";
+const char kFlagRead[] = "read";
+const char kFlagWriteWithoutResponse[] = "write-without-response";
+const char kFlagWrite[] = "write";
+const char kFlagNotify[] = "notify";
+const char kFlagIndicate[] = "indicate";
+const char kFlagAuthenticatedSignedWrites[] = "authenticated-signed-writes";
+const char kFlagExtendedProperties[] = "extended-properties";
+const char kFlagReliableWrite[] = "reliable-write";
+const char kFlagWritableAuxiliaries[] = "writable-auxiliaries";
 }  // namespace bluetooth_gatt_characteristic
 
 namespace bluetooth_gatt_descriptor {
