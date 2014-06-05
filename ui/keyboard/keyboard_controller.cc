@@ -251,18 +251,23 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
       aura::Window *root_window = keyboard_window->GetRootWindow();
       while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
         content::RenderWidgetHostView* view = widget->GetView();
-        aura::Window *window = view->GetNativeView();
-        if (window != keyboard_window && window->GetRootWindow() == root_window)
-        {
-          gfx::Rect window_bounds = window->GetBoundsInScreen();
-          gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
-          int overlap = intersect.height();
-          if (overlap > 0 && overlap < window_bounds.height())
-            view->SetInsets(gfx::Insets(0, 0, overlap, 0));
-          else
-            view->SetInsets(gfx::Insets(0, 0, 0, 0));
-          // TODO(kevers): Add window observer to native window to update insets
-          // on a window move or resize.
+        // Can be NULL, e.g. if the RenderWidget is being destroyed or
+        // the render process crashed.
+        if (view) {
+          aura::Window *window = view->GetNativeView();
+          if (window != keyboard_window &&
+              window->GetRootWindow() == root_window) {
+            gfx::Rect window_bounds = window->GetBoundsInScreen();
+            gfx::Rect intersect = gfx::IntersectRects(window_bounds,
+                                                      new_bounds);
+            int overlap = intersect.height();
+            if (overlap > 0 && overlap < window_bounds.height())
+              view->SetInsets(gfx::Insets(0, 0, overlap, 0));
+            else
+              view->SetInsets(gfx::Insets(0, 0, 0, 0));
+            // TODO(kevers): Add window observer to native window to update
+            // insets on a window move or resize.
+          }
         }
       }
     }
