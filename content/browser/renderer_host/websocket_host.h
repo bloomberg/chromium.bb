@@ -50,7 +50,8 @@ class CONTENT_EXPORT WebSocketHost {
 
   void OnAddChannelRequest(const GURL& socket_url,
                            const std::vector<std::string>& requested_protocols,
-                           const url::Origin& origin);
+                           const url::Origin& origin,
+                           int render_frame_id);
 
   void OnSendFrame(bool fin,
                    WebSocketMessageType type,
@@ -63,8 +64,14 @@ class CONTENT_EXPORT WebSocketHost {
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;
 
+  // The WebSocketHostDispatcher that created this object.
+  WebSocketDispatcherHost* const dispatcher_;
+
+  // The URL request context for the channel.
+  net::URLRequestContext* const url_request_context_;
+
   // The ID used to route messages.
-  int routing_id_;
+  const int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHost);
 };

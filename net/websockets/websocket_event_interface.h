@@ -12,8 +12,11 @@
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "net/base/net_export.h"
 
+class GURL;
+
 namespace net {
 
+class SSLInfo;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
 
@@ -98,6 +101,32 @@ class NET_EXPORT WebSocketEventInterface {
   virtual ChannelState OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response)
       WARN_UNUSED_RESULT = 0;
+
+  // Callbacks to be used in response to a call to OnSSLCertificateError. Very
+  // similar to content::SSLErrorHandler::Delegate (which we can't use directly
+  // due to layering constraints).
+  class NET_EXPORT SSLErrorCallbacks {
+   public:
+    virtual ~SSLErrorCallbacks() {}
+
+    // Cancels the SSL response in response to the error.
+    virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) = 0;
+
+    // Continue with the SSL connection despite the error.
+    virtual void ContinueSSLRequest() = 0;
+  };
+
+  // Called on SSL Certificate Error during the SSL handshake. Should result in
+  // a call to either ssl_error_callbacks->ContinueSSLRequest() or
+  // ssl_error_callbacks->CancelSSLRequest(). Normally the implementation of
+  // this method will delegate to content::SSLManager::OnSSLCertificateError to
+  // make the actual decision. The callbacks must not be called after the
+  // WebSocketChannel has been destroyed.
+  virtual ChannelState OnSSLCertificateError(
+      scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
+      const GURL& url,
+      const SSLInfo& ssl_info,
+      bool fatal) WARN_UNUSED_RESULT = 0;
 
  protected:
   WebSocketEventInterface() {}

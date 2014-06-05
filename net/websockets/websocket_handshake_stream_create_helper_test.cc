@@ -67,6 +67,11 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
       scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {}
   virtual void OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {}
+  virtual void OnSSLCertificateError(
+      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+          ssl_error_callbacks,
+      const SSLInfo& ssl_info,
+      bool fatal) OVERRIDE {}
 };
 
 class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {

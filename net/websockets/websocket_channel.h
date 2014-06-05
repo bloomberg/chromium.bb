@@ -204,6 +204,15 @@ class NET_EXPORT WebSocketChannel {
   // failure to the event interface. May delete |this|.
   void OnConnectFailure(const std::string& message);
 
+  // SSL certificate error callback from
+  // WebSocketStream::CreateAndConnectStream(). Forwards the request to the
+  // event interface.
+  void OnSSLCertificateError(
+      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+          ssl_error_callbacks,
+      const SSLInfo& ssl_info,
+      bool fatal);
+
   // Posts a task that sends pending notifications relating WebSocket Opening
   // Handshake to the renderer.
   void ScheduleOpeningHandshakeNotification();

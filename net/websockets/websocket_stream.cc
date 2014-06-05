@@ -13,6 +13,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
+#include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_constants.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
@@ -42,6 +43,17 @@ class Delegate : public URLRequest::Delegate {
   }
 
   // Implementation of URLRequest::Delegate methods.
+  virtual void OnReceivedRedirect(URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE {
+    // HTTP status codes returned by HttpStreamParser are filtered by
+    // WebSocketBasicHandshakeStream, and only 101, 401 and 407 are permitted
+    // back up the stack to HttpNetworkTransaction. In particular, redirect
+    // codes are never allowed, and so URLRequest never sees a redirect on a
+    // WebSocket request.
+    NOTREACHED();
+  }
+
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
 
   virtual void OnAuthRequired(URLRequest* request,
@@ -125,6 +137,10 @@ class StreamRequestImpl : public WebSocketStreamRequest {
     connect_delegate_->OnFailure(failure_message);
   }
 
+  WebSocketStream::ConnectDelegate* connect_delegate() const {
+    return connect_delegate_.get();
+  }
+
  private:
   // |delegate_| needs to be declared before |url_request_| so that it gets
   // initialised first.
@@ -140,7 +156,35 @@ class StreamRequestImpl : public WebSocketStreamRequest {
   WebSocketHandshakeStreamCreateHelper* create_helper_;
 };
 
+class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
+ public:
+  explicit SSLErrorCallbacks(URLRequest* url_request)
+      : url_request_(url_request) {}
+
+  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) OVERRIDE {
+    if (ssl_info) {
+      url_request_->CancelWithSSLError(error, *ssl_info);
+    } else {
+      url_request_->CancelWithError(error);
+    }
+  }
+
+  virtual void ContinueSSLRequest() OVERRIDE {
+    url_request_->ContinueDespiteLastError();
+  }
+
+ private:
+  URLRequest* url_request_;
+};
+
 void Delegate::OnResponseStarted(URLRequest* request) {
+  if (!request->status().is_success()) {
+    DVLOG(3) << "OnResponseStarted (request failed)";
+    owner_->ReportFailure();
+    return;
+  }
+  DVLOG(3) << "OnResponseStarted (response code " << request->GetResponseCode()
+           << ")";
   switch (request->GetResponseCode()) {
     case HTTP_SWITCHING_PROTOCOLS:
       result_ = CONNECTED;
@@ -159,18 +203,29 @@ void Delegate::OnResponseStarted(URLRequest* request) {
 
 void Delegate::OnAuthRequired(URLRequest* request,
                               AuthChallengeInfo* auth_info) {
+  // This should only be called if credentials are not already stored.
   request->CancelAuth();
 }
 
 void Delegate::OnCertificateRequested(URLRequest* request,
                                       SSLCertRequestInfo* cert_request_info) {
-  request->ContinueWithCertificate(NULL);
+  // This method is called when a client certificate is requested, and the
+  // request context does not already contain a client certificate selection for
+  // the endpoint. In this case, a main frame resource request would pop-up UI
+  // to permit selection of a client certificate, but since WebSockets are
+  // sub-resources they should not pop-up UI and so there is nothing more we can
+  // do.
+  request->Cancel();
 }
 
 void Delegate::OnSSLCertificateError(URLRequest* request,
                                      const SSLInfo& ssl_info,
                                      bool fatal) {
-  request->Cancel();
+  owner_->connect_delegate()->OnSSLCertificateError(
+      scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>(
+          new SSLErrorCallbacks(request)),
+      ssl_info,
+      fatal);
 }
 
 void Delegate::OnReadCompleted(URLRequest* request, int bytes_read) {

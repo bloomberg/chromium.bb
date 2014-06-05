@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/socket/socket_test_util.h"
@@ -72,7 +73,8 @@ struct WebSocketDeterministicMockClientSocketFactoryMaker::Detail {
   std::string return_to_read;
   std::vector<MockRead> reads;
   MockWrite write;
-  scoped_ptr<DeterministicSocketData> data;
+  ScopedVector<DeterministicSocketData> socket_data_vector;
+  ScopedVector<SSLSocketDataProvider> ssl_socket_data_vector;
   DeterministicMockClientSocketFactory factory;
 };
 
@@ -117,13 +119,20 @@ void WebSocketDeterministicMockClientSocketFactoryMaker::SetExpectations(
                                   1));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   socket_data->SetStop(sequence);
-  SetRawExpectations(socket_data.Pass());
+  AddRawExpectations(socket_data.Pass());
 }
 
-void WebSocketDeterministicMockClientSocketFactoryMaker::SetRawExpectations(
+void WebSocketDeterministicMockClientSocketFactoryMaker::AddRawExpectations(
     scoped_ptr<DeterministicSocketData> socket_data) {
-  detail_->data = socket_data.Pass();
-  detail_->factory.AddSocketDataProvider(detail_->data.get());
+  detail_->factory.AddSocketDataProvider(socket_data.get());
+  detail_->socket_data_vector.push_back(socket_data.release());
+}
+
+void
+WebSocketDeterministicMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
+    scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
+  detail_->factory.AddSSLSocketDataProvider(ssl_socket_data.get());
+  detail_->ssl_socket_data_vector.push_back(ssl_socket_data.release());
 }
 
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
@@ -133,9 +142,14 @@ WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
 
 WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() {}
 
-void WebSocketTestURLRequestContextHost::SetRawExpectations(
+void WebSocketTestURLRequestContextHost::AddRawExpectations(
     scoped_ptr<DeterministicSocketData> socket_data) {
-  maker_.SetRawExpectations(socket_data.Pass());
+  maker_.AddRawExpectations(socket_data.Pass());
+}
+
+void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
+    scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
+  maker_.AddSSLSocketDataProvider(ssl_socket_data.Pass());
 }
 
 TestURLRequestContext*

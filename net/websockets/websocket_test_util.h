@@ -21,10 +21,11 @@ class Origin;
 namespace net {
 
 class BoundNetLog;
+class DeterministicMockClientSocketFactory;
 class DeterministicSocketData;
 class URLRequestContext;
 class WebSocketHandshakeStreamCreateHelper;
-class DeterministicMockClientSocketFactory;
+struct SSLSocketDataProvider;
 
 class LinearCongruentialGenerator {
  public:
@@ -65,15 +66,26 @@ class WebSocketDeterministicMockClientSocketFactoryMaker {
   WebSocketDeterministicMockClientSocketFactoryMaker();
   ~WebSocketDeterministicMockClientSocketFactoryMaker();
 
-  // The socket created by the factory will expect |expect_written| to be
-  // written to the socket, and will respond with |return_to_read|. The test
-  // will fail if the expected text is not written, or all the bytes are not
-  // read.
+  // Tell the factory to create a socket which expects |expect_written| to be
+  // written, and responds with |return_to_read|. The test will fail if the
+  // expected text is not written, or all the bytes are not read. This adds data
+  // for a new mock-socket using AddRawExpections(), and so can be called
+  // multiple times to queue up multiple mock sockets, but usually in those
+  // cases the lower-level AddRawExpections() interface is more appropriate.
   void SetExpectations(const std::string& expect_written,
                        const std::string& return_to_read);
 
-  // A low-level interface to permit arbitrary expectations to be set.
-  void SetRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
+  // A low-level interface to permit arbitrary expectations to be added. The
+  // mock sockets will be created in the same order that they were added.
+  void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
+
+  // Allow an SSL socket data provider to be added. You must also supply a mock
+  // transport socket for it to use. If the mock SSL handshake fails then the
+  // mock transport socket will connect but have nothing read or written. If the
+  // mock handshake succeeds then the data from the underlying transport socket
+  // will be passed through unchanged (without encryption).
+  void AddSSLSocketDataProvider(
+      scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
 
   // Call to get a pointer to the factory, which remains owned by this object.
   DeterministicMockClientSocketFactory* factory();
@@ -98,9 +110,13 @@ struct WebSocketTestURLRequestContextHost {
     maker_.SetExpectations(expect_written, return_to_read);
   }
 
-  void SetRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
+  void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
 
-  // Call after calling one of SetExpections() or SetRawExpectations(). The
+  // Allow an SSL socket data provider to be added.
+  void AddSSLSocketDataProvider(
+      scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
+
+  // Call after calling one of SetExpections() or AddRawExpectations(). The
   // returned pointer remains owned by this object. This should only be called
   // once.
   TestURLRequestContext* GetURLRequestContext();

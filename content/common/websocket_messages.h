@@ -58,10 +58,11 @@ IPC_STRUCT_TRAITS_END()
 // The browser process will not send |channel_id| as-is to the remote server; it
 // will try to use a short id on the wire. This saves the renderer from
 // having to try to choose the ids cleverly.
-IPC_MESSAGE_ROUTED3(WebSocketHostMsg_AddChannelRequest,
+IPC_MESSAGE_ROUTED4(WebSocketHostMsg_AddChannelRequest,
                     GURL /* socket_url */,
                     std::vector<std::string> /* requested_protocols */,
-                    url::Origin /* origin */)
+                    url::Origin /* origin */,
+                    int /* render_frame_id */)
 
 // WebSocket messages sent from the browser to the renderer.
 

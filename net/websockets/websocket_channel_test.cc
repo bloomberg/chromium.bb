@@ -97,6 +97,7 @@ using ::testing::AnyNumber;
 using ::testing::DefaultValue;
 using ::testing::InSequence;
 using ::testing::MockFunction;
+using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
@@ -171,9 +172,21 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
     OnFinishOpeningHandshakeCalled();
     return CHANNEL_ALIVE;
   }
+  virtual ChannelState OnSSLCertificateError(
+      scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
+      const GURL& url,
+      const SSLInfo& ssl_info,
+      bool fatal) OVERRIDE {
+    OnSSLCertificateErrorCalled(
+        ssl_error_callbacks.get(), url, ssl_info, fatal);
+    return CHANNEL_ALIVE;
+  }
 
   MOCK_METHOD0(OnStartOpeningHandshakeCalled, void());  // NOLINT
   MOCK_METHOD0(OnFinishOpeningHandshakeCalled, void());  // NOLINT
+  MOCK_METHOD4(
+      OnSSLCertificateErrorCalled,
+      void(SSLErrorCallbacks*, const GURL&, const SSLInfo&, bool));  // NOLINT
 };
 
 // This fake EventInterface is for tests which need a WebSocketEventInterface
@@ -208,6 +221,13 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
   }
   virtual ChannelState OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
+    return CHANNEL_ALIVE;
+  }
+  virtual ChannelState OnSSLCertificateError(
+      scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
+      const GURL& url,
+      const SSLInfo& ssl_info,
+      bool fatal) OVERRIDE {
     return CHANNEL_ALIVE;
   }
 };
@@ -713,6 +733,13 @@ std::vector<char> AsVector(const std::string& s) {
   return std::vector<char>(s.begin(), s.end());
 }
 
+class FakeSSLErrorCallbacks
+    : public WebSocketEventInterface::SSLErrorCallbacks {
+ public:
+  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) OVERRIDE {}
+  virtual void ContinueSSLRequest() OVERRIDE {}
+};
+
 // Base class for all test fixtures.
 class WebSocketChannelTest : public ::testing::Test {
  protected:
@@ -797,6 +824,7 @@ enum EventInterfaceCall {
   EVENT_ON_DROP_CHANNEL = 0x20,
   EVENT_ON_START_OPENING_HANDSHAKE = 0x40,
   EVENT_ON_FINISH_OPENING_HANDSHAKE = 0x80,
+  EVENT_ON_SSL_CERTIFICATE_ERROR = 0x100,
 };
 
 class WebSocketChannelDeletingTest : public WebSocketChannelTest {
@@ -818,7 +846,8 @@ class WebSocketChannelDeletingTest : public WebSocketChannelTest {
                   EVENT_ON_FAIL_CHANNEL |
                   EVENT_ON_DROP_CHANNEL |
                   EVENT_ON_START_OPENING_HANDSHAKE |
-                  EVENT_ON_FINISH_OPENING_HANDSHAKE) {}
+                  EVENT_ON_FINISH_OPENING_HANDSHAKE |
+                  EVENT_ON_SSL_CERTIFICATE_ERROR) {}
   // Create a ChannelDeletingFakeWebSocketEventInterface. Defined out-of-line to
   // avoid circular dependency.
   virtual scoped_ptr<WebSocketEventInterface> CreateEventInterface() OVERRIDE;
@@ -876,6 +905,13 @@ class ChannelDeletingFakeWebSocketEventInterface
   virtual ChannelState OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
     return fixture_->DeleteIfDeleting(EVENT_ON_FINISH_OPENING_HANDSHAKE);
+  }
+  virtual ChannelState OnSSLCertificateError(
+      scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
+      const GURL& url,
+      const SSLInfo& ssl_info,
+      bool fatal) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_SSL_CERTIFICATE_ERROR);
   }
 
  private:
@@ -3207,6 +3243,24 @@ TEST_F(WebSocketChannelEventInterfaceTest, DataFramesNonEmptyOrFinal) {
       OnDataFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("")));
 
   CreateChannelAndConnectSuccessfully();
+}
+
+// Calls to OnSSLCertificateError() must be passed through to the event
+// interface with the correct URL attached.
+TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
+  const GURL wss_url("wss://example.com/sslerror");
+  connect_data_.socket_url = wss_url;
+  const SSLInfo ssl_info;
+  const bool fatal = true;
+  scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> fake_callbacks(
+      new FakeSSLErrorCallbacks);
+
+  EXPECT_CALL(*event_interface_,
+              OnSSLCertificateErrorCalled(NotNull(), wss_url, _, fatal));
+
+  CreateChannelAndConnect();
+  connect_data_.creator.connect_delegate->OnSSLCertificateError(
+      fake_callbacks.Pass(), ssl_info, fatal);
 }
 
 // If we receive another frame after Close, it is not valid. It is not

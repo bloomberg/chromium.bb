@@ -227,11 +227,8 @@ void WebSocketBridge::connect(
            << JoinString(protocols_to_pass, ", ") << "), "
            << origin_to_pass.string() << ")";
 
-  ChildThread::current()->Send(
-      new WebSocketHostMsg_AddChannelRequest(channel_id_,
-                                             url,
-                                             protocols_to_pass,
-                                             origin_to_pass));
+  ChildThread::current()->Send(new WebSocketHostMsg_AddChannelRequest(
+      channel_id_, url, protocols_to_pass, origin_to_pass, render_frame_id_));
 }
 
 void WebSocketBridge::send(bool fin,

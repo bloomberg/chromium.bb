@@ -16,10 +16,12 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_data_directory.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/cert_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_frame.h"
@@ -79,7 +81,7 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
 
 class WebSocketStreamCreateTest : public ::testing::Test {
  public:
-  WebSocketStreamCreateTest(): has_failed_(false) {}
+  WebSocketStreamCreateTest() : has_failed_(false), ssl_fatal_(false) {}
 
   void CreateAndConnectCustomResponse(
       const std::string& socket_url,
@@ -116,7 +118,7 @@ class WebSocketStreamCreateTest : public ::testing::Test {
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
       scoped_ptr<DeterministicSocketData> socket_data) {
-    url_request_context_host_.SetRawExpectations(socket_data.Pass());
+    url_request_context_host_.AddRawExpectations(socket_data.Pass());
     CreateAndConnectStream(socket_url, sub_protocols, origin);
   }
 
@@ -125,6 +127,12 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
                               const std::string& origin) {
+    for (size_t i = 0; i < ssl_data_.size(); ++i) {
+      scoped_ptr<SSLSocketDataProvider> ssl_data(ssl_data_[i]);
+      ssl_data_[i] = NULL;
+      url_request_context_host_.AddSSLSocketDataProvider(ssl_data.Pass());
+    }
+    ssl_data_.clear();
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
         new TestConnectDelegate(this));
     WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();
@@ -175,6 +183,15 @@ class WebSocketStreamCreateTest : public ::testing::Test {
         ADD_FAILURE();
       owner_->response_info_ = response.Pass();
     }
+    virtual void OnSSLCertificateError(
+        scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+            ssl_error_callbacks,
+        const SSLInfo& ssl_info,
+        bool fatal) OVERRIDE {
+      owner_->ssl_error_callbacks_ = ssl_error_callbacks.Pass();
+      owner_->ssl_info_ = ssl_info;
+      owner_->ssl_fatal_ = fatal;
+    }
 
    private:
     WebSocketStreamCreateTest* owner_;
@@ -189,6 +206,10 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   bool has_failed_;
   scoped_ptr<WebSocketHandshakeRequestInfo> request_info_;
   scoped_ptr<WebSocketHandshakeResponseInfo> response_info_;
+  scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks> ssl_error_callbacks_;
+  SSLInfo ssl_info_;
+  bool ssl_fatal_;
+  ScopedVector<SSLSocketDataProvider> ssl_data_;
 };
 
 // There are enough tests of the Sec-WebSocket-Extensions header that they
@@ -1032,6 +1053,48 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
             failure_message());
 }
 
+TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
+  ssl_data_.push_back(
+      new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
+  ssl_data_[0]->cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  ASSERT_TRUE(ssl_data_[0]->cert);
+  scoped_ptr<DeterministicSocketData> raw_socket_data(
+      new DeterministicSocketData(NULL, 0, NULL, 0));
+  CreateAndConnectRawExpectations("wss://localhost/",
+                                  NoSubProtocols(),
+                                  "http://localhost",
+                                  raw_socket_data.Pass());
+  RunUntilIdle();
+  EXPECT_FALSE(has_failed());
+  ASSERT_TRUE(ssl_error_callbacks_);
+  ssl_error_callbacks_->CancelSSLRequest(ERR_CERT_AUTHORITY_INVALID,
+                                         &ssl_info_);
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+}
+
+TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
+  scoped_ptr<SSLSocketDataProvider> ssl_data(
+      new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
+  ssl_data->cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  ASSERT_TRUE(ssl_data->cert);
+  ssl_data_.push_back(ssl_data.release());
+  ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
+  ssl_data_.push_back(ssl_data.release());
+  url_request_context_host_.AddRawExpectations(
+      make_scoped_ptr(new DeterministicSocketData(NULL, 0, NULL, 0)));
+  CreateAndConnectStandard(
+      "wss://localhost/", "/", NoSubProtocols(), "http://localhost", "", "");
+  RunUntilIdle();
+  ASSERT_TRUE(ssl_error_callbacks_);
+  ssl_error_callbacks_->ContinueSSLRequest();
+  RunUntilIdle();
+  EXPECT_FALSE(has_failed());
+  EXPECT_TRUE(stream_);
+}
+
 TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
   const std::string name("Net.WebSocket.HandshakeResult");
   scoped_ptr<base::HistogramSamples> original(GetSamples(name));
@@ -1107,9 +1170,9 @@ TEST_F(WebSocketStreamCreateUMATest, Failed) {
   if (original) {
     samples->Subtract(*original);  // Cancel the original values.
   }
-  EXPECT_EQ(0, samples->GetCount(INCOMPLETE));
+  EXPECT_EQ(1, samples->GetCount(INCOMPLETE));
   EXPECT_EQ(0, samples->GetCount(CONNECTED));
-  EXPECT_EQ(1, samples->GetCount(FAILED));
+  EXPECT_EQ(0, samples->GetCount(FAILED));
 }
 
 }  // namespace

@@ -111,6 +111,8 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // Returns whether the associated renderer process can read raw cookies.
   bool CanReadRawCookies() const;
 
+  int render_process_id() const { return process_id_; }
+
  private:
   typedef base::hash_map<int, WebSocketHost*> WebSocketHostTable;
 

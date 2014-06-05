@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
 
@@ -74,6 +75,15 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // Called when the WebSocket Opening Handshake ends.
     virtual void OnFinishOpeningHandshake(
         scoped_ptr<WebSocketHandshakeResponseInfo> response) = 0;
+
+    // Called when there is an SSL certificate error. Should call
+    // ssl_error_callbacks->ContinueSSLRequest() or
+    // ssl_error_callbacks->CancelSSLRequest().
+    virtual void OnSSLCertificateError(
+        scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
+            ssl_error_callbacks,
+        const SSLInfo& ssl_info,
+        bool fatal) = 0;
   };
 
   // Create and connect a WebSocketStream of an appropriate type. The actual

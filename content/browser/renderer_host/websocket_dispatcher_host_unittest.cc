@@ -20,6 +20,9 @@
 namespace content {
 namespace {
 
+// This number is unlikely to occur by chance.
+static const int kMagicRenderProcessId = 506116062;
+
 // A mock of WebsocketHost which records received messages.
 class MockWebSocketHost : public WebSocketHost {
  public:
@@ -43,7 +46,7 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
  public:
   WebSocketDispatcherHostTest() {
     dispatcher_host_ = new WebSocketDispatcherHost(
-        0,
+        kMagicRenderProcessId,
         base::Bind(&WebSocketDispatcherHostTest::OnGetRequestContext,
                    base::Unretained(this)),
         base::Bind(&WebSocketDispatcherHostTest::CreateWebSocketHost,
@@ -81,14 +84,19 @@ TEST_F(WebSocketDispatcherHostTest, UnrelatedMessage) {
   EXPECT_FALSE(dispatcher_host_->OnMessageReceived(message));
 }
 
+TEST_F(WebSocketDispatcherHostTest, RenderProcessIdGetter) {
+  EXPECT_EQ(kMagicRenderProcessId, dispatcher_host_->render_process_id());
+}
+
 TEST_F(WebSocketDispatcherHostTest, AddChannelRequest) {
   int routing_id = 123;
   GURL socket_url("ws://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
   url::Origin origin("http://example.com/test");
+  int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest message(
-      routing_id, socket_url, requested_protocols, origin);
+      routing_id, socket_url, requested_protocols, origin, render_frame_id);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message));
 
@@ -120,8 +128,9 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
   url::Origin origin("http://example.com/test");
+  int render_frame_id = -2;
   WebSocketHostMsg_AddChannelRequest add_channel_message(
-      routing_id, socket_url, requested_protocols, origin);
+      routing_id, socket_url, requested_protocols, origin, render_frame_id);
 
   ASSERT_TRUE(dispatcher_host_->OnMessageReceived(add_channel_message));
 
