@@ -2916,6 +2916,10 @@ void RenderFrameImpl::WasShown() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
 }
 
+bool RenderFrameImpl::IsHidden() {
+  return GetRenderWidget()->is_hidden();
+}
+
 // Tell the embedding application that the URL of the active page has changed.
 void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);

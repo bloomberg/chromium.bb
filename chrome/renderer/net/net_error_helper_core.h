@@ -112,7 +112,10 @@ class NetErrorHelperCore {
     GURL search_url;
   };
 
-  explicit NetErrorHelperCore(Delegate* delegate);
+  NetErrorHelperCore(Delegate* delegate,
+                     bool auto_reload_enabled,
+                     bool auto_reload_visible_only,
+                     bool is_visible);
   ~NetErrorHelperCore();
 
   // Examines |frame| and |error| to see if this is an error worthy of a DNS
@@ -133,6 +136,8 @@ class NetErrorHelperCore {
   void OnCommitLoad(FrameType frame_type, const GURL& url);
   void OnFinishLoad(FrameType frame_type);
   void OnStop();
+  void OnWasShown();
+  void OnWasHidden();
 
   void CancelPendingFetches();
 
@@ -163,10 +168,6 @@ class NetErrorHelperCore {
   //
   // TODO(rdsmith): prevent the reload storm.
   void NetworkStateChanged(bool online);
-
-  void set_auto_reload_enabled(bool auto_reload_enabled) {
-    auto_reload_enabled_ = auto_reload_enabled;
-  }
 
   int auto_reload_count() const { return auto_reload_count_; }
 
@@ -207,6 +208,7 @@ class NetErrorHelperCore {
   bool MaybeStartAutoReloadTimer();
   void StartAutoReloadTimer();
   void AutoReloadTimerFired();
+  void PauseAutoReloadTimer();
 
   static bool IsReloadableError(const ErrorPageInfo& info);
 
@@ -226,7 +228,10 @@ class NetErrorHelperCore {
   NavigationCorrectionParams navigation_correction_params_;
 
   // True if auto-reload is enabled at all.
-  bool auto_reload_enabled_;
+  const bool auto_reload_enabled_;
+
+  // True if auto-reload should only run when the observed frame is visible.
+  const bool auto_reload_visible_only_;
 
   // Timer used to wait for auto-reload attempts.
   scoped_ptr<base::Timer> auto_reload_timer_;
@@ -246,6 +251,9 @@ class NetErrorHelperCore {
 
   // Is the browser online?
   bool online_;
+
+  // Is the RenderFrame this object is observing visible?
+  bool visible_;
 
   int auto_reload_count_;
 

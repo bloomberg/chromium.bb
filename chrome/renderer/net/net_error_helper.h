@@ -50,6 +50,8 @@ class NetErrorHelper
   virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
   virtual void DidFinishLoad() OVERRIDE;
   virtual void OnStop() OVERRIDE;
+  virtual void WasShown() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -117,7 +119,7 @@ class NetErrorHelper
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;
   scoped_ptr<content::ResourceFetcher> tracking_fetcher_;
 
-  NetErrorHelperCore core_;
+  scoped_ptr<NetErrorHelperCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };

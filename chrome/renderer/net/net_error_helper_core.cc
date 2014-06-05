@@ -430,15 +430,20 @@ bool NetErrorHelperCore::IsReloadableError(
          !info.was_failed_post;
 }
 
-NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate)
+NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
+                                       bool auto_reload_enabled,
+                                       bool auto_reload_visible_only,
+                                       bool is_visible)
     : delegate_(delegate),
       last_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
-      auto_reload_enabled_(false),
+      auto_reload_enabled_(auto_reload_enabled),
+      auto_reload_visible_only_(auto_reload_visible_only),
       auto_reload_timer_(new base::Timer(false, false)),
       auto_reload_paused_(false),
       uncommitted_load_started_(false),
       // TODO(ellyjones): Make online_ accurate at object creation.
       online_(true),
+      visible_(is_visible),
       auto_reload_count_(0),
       navigation_from_button_(NO_BUTTON) {
 }
@@ -473,6 +478,21 @@ void NetErrorHelperCore::OnStop() {
   CancelPendingFetches();
   uncommitted_load_started_ = false;
   auto_reload_count_ = 0;
+}
+
+void NetErrorHelperCore::OnWasShown() {
+  visible_ = true;
+  if (!auto_reload_visible_only_)
+    return;
+  if (auto_reload_paused_)
+    MaybeStartAutoReloadTimer();
+}
+
+void NetErrorHelperCore::OnWasHidden() {
+  visible_ = false;
+  if (!auto_reload_visible_only_)
+    return;
+  PauseAutoReloadTimer();
 }
 
 void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
@@ -777,7 +797,7 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
 
   committed_error_page_info_->auto_reload_triggered = true;
 
-  if (!online_) {
+  if (!online_ || (!visible_ && auto_reload_visible_only_)) {
     auto_reload_paused_ = true;
     return;
   }
@@ -795,6 +815,16 @@ void NetErrorHelperCore::AutoReloadTimerFired() {
   Reload();
 }
 
+void NetErrorHelperCore::PauseAutoReloadTimer() {
+  if (!auto_reload_timer_->IsRunning())
+    return;
+  DCHECK(committed_error_page_info_);
+  DCHECK(!auto_reload_paused_);
+  DCHECK(committed_error_page_info_->auto_reload_triggered);
+  auto_reload_timer_->Stop();
+  auto_reload_paused_ = true;
+}
+
 void NetErrorHelperCore::NetworkStateChanged(bool online) {
   bool was_online = online_;
   online_ = online;
@@ -804,14 +834,9 @@ void NetErrorHelperCore::NetworkStateChanged(bool online) {
       MaybeStartAutoReloadTimer();
   } else if (was_online && !online) {
     // Transitioning online -> offline
-    if (auto_reload_timer_->IsRunning()) {
-      DCHECK(committed_error_page_info_);
-      DCHECK(!auto_reload_paused_);
-      DCHECK(committed_error_page_info_->auto_reload_triggered);
-      auto_reload_timer_->Stop();
+    if (auto_reload_timer_->IsRunning())
       auto_reload_count_ = 0;
-      auto_reload_paused_ = true;
-    }
+    PauseAutoReloadTimer();
   }
 }
 

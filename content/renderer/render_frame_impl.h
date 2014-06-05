@@ -225,6 +225,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy) OVERRIDE;
   virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
+  virtual bool IsHidden() OVERRIDE;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,

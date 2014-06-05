@@ -85,6 +85,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Execute a string of JavaScript in this frame's context.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
 
+  // Return true if this frame is hidden.
+  virtual bool IsHidden() = 0;
+
  protected:
   virtual ~RenderFrame() {}
 

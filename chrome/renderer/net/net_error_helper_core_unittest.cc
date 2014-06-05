@@ -144,8 +144,7 @@ std::string NetErrorString(net::Error net_error) {
 class NetErrorHelperCoreTest : public testing::Test,
                                public NetErrorHelperCore::Delegate {
  public:
-  NetErrorHelperCoreTest() : timer_(new base::MockTimer(false, false)),
-                             core_(this),
+  NetErrorHelperCoreTest() : timer_(NULL),
                              update_count_(0),
                              error_html_update_count_(0),
                              reload_count_(0),
@@ -154,8 +153,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                              default_url_(GURL(kFailedUrl)),
                              error_url_(GURL(content::kUnreachableWebDataURL)),
                              tracking_request_count_(0) {
-    core_.set_auto_reload_enabled(false);
-    core_.set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
+    SetUpCore(false, false, true);
   }
 
   virtual ~NetErrorHelperCoreTest() {
@@ -167,7 +165,20 @@ class NetErrorHelperCoreTest : public testing::Test,
     base::StatisticsRecorder::Initialize();
   }
 
-  NetErrorHelperCore& core() { return core_; }
+  void SetUpCore(bool auto_reload_enabled,
+                 bool auto_reload_visible_only,
+                 bool visible) {
+    // The old value of timer_, if any, will be freed by the old core_ being
+    // destructed, since core_ takes ownership of the timer.
+    timer_ = new base::MockTimer(false, false);
+    core_.reset(new NetErrorHelperCore(this,
+                                       auto_reload_enabled,
+                                       auto_reload_visible_only,
+                                       visible));
+    core_->set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
+  }
+
+  NetErrorHelperCore* core() { return core_.get(); }
 
   const GURL& url_being_fetched() const { return url_being_fetched_; }
   bool is_url_being_fetched() const { return !url_being_fetched_.is_empty(); }
@@ -226,35 +237,35 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void NavigationCorrectionsLoadFinished(const std::string& result) {
     url_being_fetched_ = GURL();
-    core().OnNavigationCorrectionsFetched(result, "en", false);
+    core()->OnNavigationCorrectionsFetched(result, "en", false);
   }
 
   void DoErrorLoad(net::Error error) {
-    core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                        NetErrorHelperCore::NON_ERROR_PAGE);
     std::string html;
-    core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+    core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                         NetError(error), false, &html);
     EXPECT_FALSE(html.empty());
     EXPECT_EQ(NetErrorString(error), html);
 
-    core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                        NetErrorHelperCore::ERROR_PAGE);
-    core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
+    core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
                         error_url());
-    core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+    core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
 
   void DoSuccessLoad() {
-    core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                        NetErrorHelperCore::NON_ERROR_PAGE);
-    core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-    core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+    core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
+    core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
 
   void DoDnsProbe(chrome_common_net::DnsProbeStatus final_status) {
-    core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-    core().OnNetErrorInfo(final_status);
+    core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+    core()->OnNetErrorInfo(final_status);
   }
 
   void EnableNavigationCorrections() {
@@ -276,7 +287,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
  private:
   void SetNavigationCorrectionURL(const GURL& navigation_correction_url) {
-    core().OnSetNavigationCorrectionInfo(navigation_correction_url,
+    core()->OnSetNavigationCorrectionInfo(navigation_correction_url,
                                          kLanguage, kCountry, kApiKey,
                                          GURL(kSearchUrl));
   }
@@ -375,7 +386,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockTimer* timer_;
 
-  NetErrorHelperCore core_;
+  scoped_ptr<NetErrorHelperCore> core_;
 
   GURL url_being_fetched_;
   std::string request_body_;
@@ -417,32 +428,32 @@ TEST_F(NetErrorHelperCoreTest, Null) {
 }
 
 TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoad) {
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoadWithNavigationCorrections) {
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
   // Should have returned a local error page.
   EXPECT_FALSE(html.empty());
@@ -450,10 +461,10 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
 
   // Error page loads.
   EXPECT_EQ(0, enable_page_helper_functions_count());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
   EXPECT_EQ(1, enable_page_helper_functions_count());
@@ -463,22 +474,22 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorWithCorrections) {
   EnableNavigationCorrections();
 
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
   // Should have returned a local error page.
   EXPECT_FALSE(html.empty());
   EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -487,16 +498,16 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorWithCorrections) {
 // should have no effect.
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET),
                       false, &html);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // Should have returned a local error page.
   EXPECT_FALSE(html.empty());
@@ -504,15 +515,15 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
 
   // Error page loads.
 
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
@@ -520,22 +531,22 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
 
 TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page.
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -544,22 +555,22 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorWithCorrections) {
   EnableNavigationCorrections();
 
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page.
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -568,31 +579,31 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorWithCorrections) {
 // should have no effect.
 TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::SUB_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   // Should have returned a local error page.
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
 
   // Error page loads.
 
-  core().OnStartLoad(NetErrorHelperCore::SUB_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
-  core().OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
-  core().OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
@@ -607,37 +618,37 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
 // probe messages.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -645,33 +656,33 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
 // Same as above, but the probe is not run.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
   // When the not run status arrives, the page should revert to the normal dns
   // error page.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_NOT_RUN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_NOT_RUN);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -679,37 +690,37 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
 // Same as above, but the probe result is inconclusive.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -717,38 +728,38 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
 // Same as above, but the probe result is no internet.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -756,38 +767,38 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
 // Same as above, but the probe result is bad config.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
   // When the inconclusive status arrives, the page should revert to the normal
   // dns error page.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -796,42 +807,42 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
 // DNS probe message.
 TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
 
   // Nothing should be done when a probe status comes in before loading
   // finishes.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(0, update_count());
 
   // When loading finishes, however, the buffered probe status should be sent
   // to the page.
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
   // Should update the page again when the probe result comes in.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_NOT_RUN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_NOT_RUN);
   EXPECT_EQ(2, update_count());
 }
 
@@ -839,12 +850,12 @@ TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
 // probe messages and the request is a POST.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       true, &html);
   // Should have returned a local error page indicating a probe may run.
@@ -855,20 +866,20 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
 
   // Error page loads.
   EXPECT_EQ(0, enable_page_helper_functions_count());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, enable_page_helper_functions_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ErrorToString(
                 ProbeError(chrome_common_net::DNS_PROBE_STARTED), true),
             last_error_html());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ErrorToString(
                 ProbeError(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
@@ -880,40 +891,40 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
 // Test case where the probe finishes before the page is committed.
 TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
 
   // Nothing should be done when the probe statuses come in before loading
   // finishes.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   EXPECT_EQ(0, update_count());
 
   // When loading finishes, however, the buffered probe status should be sent
   // to the page.
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // Any other probe updates should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
 }
 
@@ -921,26 +932,26 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
 // results in another error page.  Probes are run for both pages.
 TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe results come in.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
@@ -948,30 +959,30 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   // The process starts again.
 
   // Normal page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(2, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(3, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
   // The probe returns a different result this time.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(4, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
@@ -983,56 +994,56 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
 // received after the second load starts, but before it commits.
 TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // The process starts again.
 
   // Normal page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts to load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
 
   // Probe results come in, and the first page is updated.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // Second page finishes loading, and is updated using the same probe result.
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(3, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // Other probe results should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(3, update_count());
   EXPECT_EQ(0, error_html_update_count());
 }
@@ -1040,47 +1051,47 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
 // Same as above, but a new page is loaded before the error page commits.
 TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
   // Original page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and an error page is requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   // Probe statuses come in, but should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // A new navigation begins while the error page is loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // And fails.
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_POSSIBLE), html);
 
   // Error page finishes loading.
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe results come in.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
@@ -1095,14 +1106,14 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
 TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // The HTTPS page fails to load.
   std::string html;
   blink::WebURLError error = NetError(net::ERR_NAME_NOT_RESOLVED);
   error.unreachableURL = GURL(kFailedHttpsUrl);
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME, error, false, &html);
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME, error, false, &html);
 
   blink::WebURLError probe_error =
       ProbeError(chrome_common_net::DNS_PROBE_POSSIBLE);
@@ -1112,17 +1123,17 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
   EXPECT_FALSE(last_error_page_params());
 
   // The blank page loads, no error page is loaded.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
   // Page is updated in response to DNS probes as normal.
   EXPECT_EQ(0, update_count());
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_FALSE(last_error_page_params());
   blink::WebURLError final_probe_error =
@@ -1136,12 +1147,12 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
@@ -1149,14 +1160,14 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
   EXPECT_FALSE(last_error_page_params());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
 
   // Corrections retrieval starts when the error page finishes loading.
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1169,14 +1180,14 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Any probe statuses should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, error_html_update_count());
@@ -1187,27 +1198,27 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
   // Probe statuses should be ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
   EXPECT_FALSE(last_error_page_params());
@@ -1222,10 +1233,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(0, update_count());
 }
@@ -1235,21 +1246,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadNoProbes) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_FAILED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Corrections request fails, final error page is shown.
   EXPECT_TRUE(is_url_being_fetched());
@@ -1261,15 +1272,15 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadNoProbes) {
   EXPECT_FALSE(last_error_page_params());
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // If probe statuses come in last from another page load, they should be
   // ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(1, error_html_update_count());
 }
@@ -1279,21 +1290,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadNoProbes) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Corrections request fails, probe pending page shown.
   EXPECT_TRUE(is_url_being_fetched());
@@ -1305,24 +1316,24 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
   EXPECT_EQ(0, update_count());
 
   // Probe page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
 
   // The commit results in sending a second probe status, which is ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(1, error_html_update_count());
 }
@@ -1331,25 +1342,25 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Results come in, but end up being ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // Corrections request fails, probe pending page shown.
@@ -1362,13 +1373,13 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
   EXPECT_EQ(0, update_count());
 
   // Probe page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
@@ -1380,33 +1391,33 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeCommit) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page starts loading.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
 
   // A new page load starts.
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // A new page load interrupts the original load.
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_EQ(0, update_count());
@@ -1418,29 +1429,29 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeCommit) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeLoad) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page starts loading and is committed.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
 
   // A new page load interrupts the original load.
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_EQ(0, update_count());
@@ -1452,43 +1463,43 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeLoad) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
 
   // Results come in, but end up being ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // A new load appears!
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(is_url_being_fetched());
 
   // It fails, and corrections are requested again once a blank page is loaded.
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   EXPECT_FALSE(is_url_being_fetched());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
 
   // Corrections request succeeds.
@@ -1500,8 +1511,8 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Probe statuses come in, and are ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 }
 
@@ -1511,46 +1522,46 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   EXPECT_TRUE(is_url_being_fetched());
-  core().OnStop();
+  core()->OnStop();
   EXPECT_FALSE(is_url_being_fetched());
 
   // Results come in, but end up being ignored.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
   // Cross process navigation must have been cancelled, and a new load appears!
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested again.
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads again.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
 
   // Corrections request fails, probe pending page shown.
@@ -1561,18 +1572,18 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Probe page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Probe statuses comes in, and page is updated.
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_STARTED),
             last_error_html());
   EXPECT_EQ(1, update_count());
 
-  core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  core()->OnNetErrorInfo(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN),
             last_error_html());
@@ -1584,23 +1595,23 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   // Corrections is disabled.
   DisableNavigationCorrections();
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1613,10 +1624,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
   ExpectDefaultNavigationCorrections();
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(0, update_count());
 }
@@ -1626,21 +1637,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
 TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1656,10 +1667,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
   ExpectDefaultNavigationCorrections();
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(0, update_count());
 }
@@ -1672,21 +1683,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
 
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1704,10 +1715,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
   EXPECT_EQ("", last_error_page_params()->search_terms);
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(0, update_count());
 }
@@ -1720,21 +1731,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
 
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1752,10 +1763,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
   EXPECT_EQ(kSuggestedSearchTerms, last_error_page_params()->search_terms);
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(0, update_count());
 }
@@ -1764,21 +1775,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
 TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsNonJsonResult) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_FAILED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Corrections request fails, final error page is shown.
   EXPECT_TRUE(is_url_being_fetched());
@@ -1790,10 +1801,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsNonJsonResult) {
   EXPECT_FALSE(last_error_page_params());
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 }
 
 // The correction service returns a JSON result that isn't a valid list of
@@ -1801,21 +1812,21 @@ TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsNonJsonResult) {
 TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsInvalidJsonResult) {
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails, and corrections are requested.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_FAILED),
                       false, &html);
   EXPECT_TRUE(html.empty());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // Corrections request fails, final error page is shown.
   EXPECT_TRUE(is_url_being_fetched());
@@ -1827,10 +1838,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsInvalidJsonResult) {
   EXPECT_FALSE(last_error_page_params());
 
   // Error page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 }
 
 TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
@@ -1838,12 +1849,12 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
 
   // Original page starts loading.
   EnableNavigationCorrections();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
 
   // It fails.
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_NAME_NOT_RESOLVED),
                       false, &html);
   EXPECT_TRUE(html.empty());
@@ -1851,14 +1862,14 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
   EXPECT_FALSE(last_error_page_params());
 
   // The blank page loads.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
 
   // Corrections retrieval starts when the error page finishes loading.
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_TRUE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
 
@@ -1871,16 +1882,16 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
   EXPECT_FALSE(is_url_being_fetched());
 
   // Corrections load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   EXPECT_EQ(0, tracking_request_count());
 
   // Invalid clicks should be ignored.
-  core().TrackClick(-1);
-  core().TrackClick(arraysize(kDefaultCorrections));
+  core()->TrackClick(-1);
+  core()->TrackClick(arraysize(kDefaultCorrections));
   EXPECT_EQ(0, tracking_request_count());
 
   for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
@@ -1889,7 +1900,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
       continue;
 
     int old_tracking_request_count = tracking_request_count();
-    core().TrackClick(i);
+    core()->TrackClick(i);
     EXPECT_EQ(old_tracking_request_count + 1, tracking_request_count());
     EXPECT_EQ(GURL(kNavigationCorrectionUrl), last_tracking_url());
 
@@ -1913,7 +1924,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
       continue;
 
     int old_tracking_request_count = tracking_request_count();
-    core().TrackClick(i);
+    core()->TrackClick(i);
     EXPECT_EQ(old_tracking_request_count, tracking_request_count());
   }
 
@@ -1928,8 +1939,15 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {
   EXPECT_EQ(0, reload_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadSucceeds) {
-  core().set_auto_reload_enabled(true);
+class NetErrorHelperCoreAutoReloadTest : public NetErrorHelperCoreTest {
+ public:
+  virtual void SetUp() {
+    NetErrorHelperCoreTest::SetUp();
+    SetUpCore(true, false, true);
+  }
+};
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, Succeeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
 
   EXPECT_TRUE(timer()->IsRunning());
@@ -1944,8 +1962,7 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadSucceeds) {
   EXPECT_FALSE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadRetries) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, Retries) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
 
   EXPECT_TRUE(timer()->IsRunning());
@@ -1962,108 +1979,98 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadRetries) {
   EXPECT_GT(timer()->GetCurrentDelay(), first_delay);
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadStopsTimerOnStop) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, StopsTimerOnStop) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_TRUE(timer()->IsRunning());
-  core().OnStop();
+  core()->OnStop();
   EXPECT_FALSE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadStopsLoadingOnStop) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, StopsLoadingOnStop) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
   timer()->Fire();
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(1, core()->auto_reload_count());
   EXPECT_EQ(1, reload_count());
-  core().OnStop();
+  core()->OnStop();
   EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadStopsOnOtherLoadStart) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, StopsOnOtherLoadStart) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_TRUE(timer()->IsRunning());
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadResetsCountOnSuccess) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, ResetsCountOnSuccess) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   base::TimeDelta delay = timer()->GetCurrentDelay();
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
   timer()->Fire();
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(1, core()->auto_reload_count());
   EXPECT_EQ(1, reload_count());
   DoSuccessLoad();
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
   EXPECT_EQ(timer()->GetCurrentDelay(), delay);
   timer()->Fire();
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(1, core()->auto_reload_count());
   EXPECT_EQ(2, reload_count());
   DoSuccessLoad();
-  EXPECT_EQ(0, core().auto_reload_count());
+  EXPECT_EQ(0, core()->auto_reload_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadRestartsOnOnline) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, RestartsOnOnline) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   base::TimeDelta delay = timer()->GetCurrentDelay();
   timer()->Fire();
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_TRUE(timer()->IsRunning());
   EXPECT_NE(delay, timer()->GetCurrentDelay());
-  core().NetworkStateChanged(false);
+  core()->NetworkStateChanged(false);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_TRUE(timer()->IsRunning());
   EXPECT_EQ(delay, timer()->GetCurrentDelay());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadDoesNotStartOnOnline) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotStartOnOnline) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
   DoSuccessLoad();
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_FALSE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadDoesNotStartOffline) {
-  core().set_auto_reload_enabled(true);
-  core().NetworkStateChanged(false);
+TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotStartOffline) {
+  core()->NetworkStateChanged(false);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_TRUE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadDoesNotRestartOnOnlineAfterStop) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotRestartOnOnlineAfterStop) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
-  core().OnStop();
-  core().NetworkStateChanged(true);
+  core()->OnStop();
+  core()->NetworkStateChanged(true);
   EXPECT_FALSE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadWithDnsProbes) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, WithDnsProbes) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   DoDnsProbe(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
   timer()->Fire();
   EXPECT_EQ(1, reload_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadExponentialBackoffLevelsOff) {
-  core().set_auto_reload_enabled(true);
+TEST_F(NetErrorHelperCoreAutoReloadTest, ExponentialBackoffLevelsOff) {
   base::TimeDelta previous = base::TimeDelta::FromMilliseconds(0);
   const int kMaxTries = 50;
   int tries = 0;
@@ -2079,92 +2086,148 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadExponentialBackoffLevelsOff) {
   EXPECT_LT(tries, kMaxTries);
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadSlowError) {
-  core().set_auto_reload_enabled(true);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+TEST_F(NetErrorHelperCoreAutoReloadTest, SlowError) {
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   EXPECT_FALSE(timer()->IsRunning());
   // Start a new non-error page load.
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(timer()->IsRunning());
   // Finish the error page load.
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_FALSE(timer()->IsRunning());
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_FALSE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadOnlineSlowError) {
-  core().set_auto_reload_enabled(true);
-  core().NetworkStateChanged(false);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+TEST_F(NetErrorHelperCoreAutoReloadTest, OnlineSlowError) {
+  core()->NetworkStateChanged(false);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(false);
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->NetworkStateChanged(false);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_TRUE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadOnlinePendingError) {
-  core().set_auto_reload_enabled(true);
-  core().NetworkStateChanged(false);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePendingError) {
+  core()->NetworkStateChanged(false);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(false);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->NetworkStateChanged(false);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_TRUE(timer()->IsRunning());
 }
 
-TEST_F(NetErrorHelperCoreTest, AutoReloadOnlinePartialErrorReplacement) {
-  core().set_auto_reload_enabled(true);
-  core().NetworkStateChanged(false);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePartialErrorReplacement) {
+  core()->NetworkStateChanged(false);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   std::string html;
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
+  core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME,
                       NetError(net::ERR_CONNECTION_RESET), false, &html);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   EXPECT_FALSE(timer()->IsRunning());
-  core().NetworkStateChanged(true);
+  core()->NetworkStateChanged(true);
   EXPECT_FALSE(timer()->IsRunning());
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressNonReloadableErrorPage) {
+  DoErrorLoad(net::ERR_ABORTED);
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                              GURL(kFailedUrl)));
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
+  // Set up the environment to test ShouldSuppressErrorPage: auto-reload is
+  // enabled, an error page is loaded, and the auto-reload callback is running.
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  timer()->Fire();
+
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
+                                              GURL(kFailedUrl)));
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                              GURL("http://some.other.url")));
+  EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                             GURL(kFailedUrl)));
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
+  SetUpCore(true, true, true);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_TRUE(timer()->IsRunning());
+  core()->OnWasHidden();
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->OnWasShown();
+  EXPECT_TRUE(timer()->IsRunning());
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenWhileOnline) {
+  SetUpCore(true, true, true);
+  core()->NetworkStateChanged(false);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->OnWasHidden();
+  core()->NetworkStateChanged(true);
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->NetworkStateChanged(false);
+  core()->OnWasShown();
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->NetworkStateChanged(true);
+  EXPECT_TRUE(timer()->IsRunning());
+  core()->NetworkStateChanged(false);
+  core()->OnWasHidden();
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->NetworkStateChanged(true);
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->OnWasShown();
+  EXPECT_TRUE(timer()->IsRunning());
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
+  SetUpCore(true, true, false);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_FALSE(timer()->IsRunning());
+  core()->OnWasShown();
+  EXPECT_TRUE(timer()->IsRunning());
 }
 
 // Return the count for the named histogram, or 0 if there is no histogram by
@@ -2187,12 +2250,12 @@ void ExpectHistogramDelta(const char *name, int old_count, int delta) {
   EXPECT_EQ(old_count + delta, new_count) << "For histogram " << name;
 }
 
-class NetErrorHelperCoreHistogramTest : public NetErrorHelperCoreTest {
+class NetErrorHelperCoreHistogramTest
+    : public NetErrorHelperCoreAutoReloadTest {
  public:
   virtual void SetUp() OVERRIDE {
-    NetErrorHelperCoreTest::SetUp();
+    NetErrorHelperCoreAutoReloadTest::SetUp();
     StoreOldCounts();
-    core().set_auto_reload_enabled(true);
   }
 
   void ExpectDelta(const char *name, int delta) {
@@ -2258,7 +2321,7 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtFirstAttempt) {
 TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtSecondAttempt) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
-  EXPECT_TRUE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+  EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
                                              default_url()));
 //  DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
@@ -2280,9 +2343,9 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtSecondAttempt) {
 TEST_F(NetErrorHelperCoreHistogramTest, UserStop) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnStop();
+  core()->OnStop();
 
   // CountAtStop and ErrorAtStop should reflect the failure.
   ExpectDelta(kCountAtSuccess, 0);
@@ -2299,9 +2362,9 @@ TEST_F(NetErrorHelperCoreHistogramTest, UserStop) {
 // page.
 TEST_F(NetErrorHelperCoreHistogramTest, OtherPageLoaded) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnStop();
+  core()->OnStop();
 
   ExpectDelta(kCountAtSuccess, 0);
   ExpectDelta(kErrorAtSuccess, 0);
@@ -2317,11 +2380,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, OtherPageLoadedAfterTimerFires) {
   const GURL kTestUrl("https://anotherurl");
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
                       kTestUrl);
-  core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   ExpectDelta(kCountAtSuccess, 0);
   ExpectDelta(kErrorAtSuccess, 0);
@@ -2348,7 +2411,7 @@ TEST_F(NetErrorHelperCoreHistogramTest, SamePageLoadedAfterLoadStarts) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
   // Autoreload attempt starts
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   // User does a manual reload
   DoSuccessLoad();
@@ -2365,9 +2428,9 @@ TEST_F(NetErrorHelperCoreHistogramTest, SamePageLoadedAfterLoadStarts) {
 TEST_F(NetErrorHelperCoreHistogramTest, ErrorPageLoadedAfterTimerFires) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_TRUE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+  EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
                                              default_url()));
   DoErrorLoad(net::ERR_CONNECTION_RESET);
 
@@ -2380,9 +2443,9 @@ TEST_F(NetErrorHelperCoreHistogramTest, ErrorPageLoadedAfterTimerFires) {
 
 TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
                       GURL(kFailedHttpsUrl));
 
   ExpectDelta(kCountAtSuccess, 0);
@@ -2392,39 +2455,18 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
   ExpectDelta(kErrorAtStop, 1);
 }
 
-TEST_F(NetErrorHelperCoreTest, ShouldSuppressNonReloadableErrorPage) {
-  core().set_auto_reload_enabled(true);
-  DoErrorLoad(net::ERR_ABORTED);
-  EXPECT_FALSE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL(kFailedUrl)));
-}
-
-TEST_F(NetErrorHelperCoreTest, ShouldSuppressErrorPage) {
-  // Set up the environment to test ShouldSuppressErrorPage: auto-reload is
-  // enabled, an error page is loaded, and the auto-reload callback is running.
-  core().set_auto_reload_enabled(true);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  timer()->Fire();
-
-  EXPECT_FALSE(core().ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
-                                              GURL(kFailedUrl)));
-  EXPECT_FALSE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL("http://some.other.url")));
-  EXPECT_TRUE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                             GURL(kFailedUrl)));
-}
 
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_EQ(0, reload_count());
-  core().ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
+  core()->ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
   EXPECT_EQ(1, reload_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, ExplicitLoadStaleSucceeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_EQ(0, load_stale_count());
-  core().ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
+  core()->ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
   EXPECT_EQ(1, load_stale_count());
   EXPECT_EQ(GURL(kFailedUrl), load_stale_url());
 }

@@ -82,15 +82,18 @@ bool LocaleIsRTL() {
 
 }  // namespace
 
-NetErrorHelper::NetErrorHelper(RenderFrame* render_view)
-    : RenderFrameObserver(render_view),
-      content::RenderFrameObserverTracker<NetErrorHelper>(render_view),
-      core_(this) {
+NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<NetErrorHelper>(render_frame) {
   RenderThread::Get()->AddObserver(this);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
       command_line->HasSwitch(switches::kEnableOfflineAutoReload);
-  core_.set_auto_reload_enabled(auto_reload_enabled);
+  core_.reset(new NetErrorHelperCore(this,
+                                     auto_reload_enabled,
+                                     // TODO(ellyjones): plumb policy down
+                                     false,
+                                     !render_frame->IsHidden()));
 }
 
 NetErrorHelper::~NetErrorHelper() {
@@ -98,34 +101,42 @@ NetErrorHelper::~NetErrorHelper() {
 }
 
 void NetErrorHelper::ReloadButtonPressed() {
-  core_.ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
+  core_->ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
 }
 
 void NetErrorHelper::LoadStaleButtonPressed() {
-  core_.ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
+  core_->ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
 }
 
 void NetErrorHelper::MoreButtonPressed() {
-  core_.ExecuteButtonPress(NetErrorHelperCore::MORE_BUTTON);
+  core_->ExecuteButtonPress(NetErrorHelperCore::MORE_BUTTON);
 }
 
 void NetErrorHelper::DidStartProvisionalLoad() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_.OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
+  core_->OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_.OnCommitLoad(GetFrameType(frame), frame->document().url());
+  core_->OnCommitLoad(GetFrameType(frame), frame->document().url());
 }
 
 void NetErrorHelper::DidFinishLoad() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_.OnFinishLoad(GetFrameType(frame));
+  core_->OnFinishLoad(GetFrameType(frame));
 }
 
 void NetErrorHelper::OnStop() {
-  core_.OnStop();
+  core_->OnStop();
+}
+
+void NetErrorHelper::WasShown() {
+  core_->OnWasShown();
+}
+
+void NetErrorHelper::WasHidden() {
+  core_->OnWasHidden();
 }
 
 bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
@@ -142,7 +153,7 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void NetErrorHelper::NetworkStateChanged(bool enabled) {
-  core_.NetworkStateChanged(enabled);
+  core_->NetworkStateChanged(enabled);
 }
 
 void NetErrorHelper::GetErrorHTML(
@@ -150,16 +161,16 @@ void NetErrorHelper::GetErrorHTML(
     const blink::WebURLError& error,
     bool is_failed_post,
     std::string* error_html) {
-  core_.GetErrorHTML(GetFrameType(frame), error, is_failed_post, error_html);
+  core_->GetErrorHTML(GetFrameType(frame), error, is_failed_post, error_html);
 }
 
 bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
                                              const GURL& url) {
-  return core_.ShouldSuppressErrorPage(GetFrameType(frame), url);
+  return core_->ShouldSuppressErrorPage(GetFrameType(frame), url);
 }
 
 void NetErrorHelper::TrackClick(int tracking_id) {
-  core_.TrackClick(tracking_id);
+  core_->TrackClick(tracking_id);
 }
 
 void NetErrorHelper::GenerateLocalizedErrorPage(
@@ -310,7 +321,7 @@ void NetErrorHelper::OnNetErrorInfo(int status_num) {
 
   DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
 
-  core_.OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
+  core_->OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
 }
 
 void NetErrorHelper::OnSetNavigationCorrectionInfo(
@@ -319,7 +330,7 @@ void NetErrorHelper::OnSetNavigationCorrectionInfo(
     const std::string& country_code,
     const std::string& api_key,
     const GURL& search_url) {
-  core_.OnSetNavigationCorrectionInfo(navigation_correction_url, language,
+  core_->OnSetNavigationCorrectionInfo(navigation_correction_url, language,
                                       country_code, api_key, search_url);
 }
 
@@ -331,11 +342,11 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
   scoped_ptr<content::ResourceFetcher> fetcher(
       correction_fetcher_.release());
   if (!response.isNull() && response.httpStatusCode() == 200) {
-    core_.OnNavigationCorrectionsFetched(
+    core_->OnNavigationCorrectionsFetched(
         data, render_frame()->GetRenderView()->GetAcceptLanguages(),
         LocaleIsRTL());
   } else {
-    core_.OnNavigationCorrectionsFetched(
+    core_->OnNavigationCorrectionsFetched(
         "", render_frame()->GetRenderView()->GetAcceptLanguages(),
         LocaleIsRTL());
   }
