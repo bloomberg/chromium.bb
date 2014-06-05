@@ -28,34 +28,6 @@ namespace nacl {
 
 namespace {
 
-// On ARM and x86_64, System V shared memory calls have each their own system
-// call, while on i386 they are multiplexed.
-#if defined(__x86_64__) || defined(__arm__)
-bool IsSystemVSharedMemory(int sysno) {
-  switch (sysno) {
-    case __NR_shmat:
-    case __NR_shmctl:
-    case __NR_shmdt:
-    case __NR_shmget:
-      return true;
-    default:
-      return false;
-  }
-}
-#endif
-
-#if defined(__i386__)
-// Big system V multiplexing system call.
-bool IsSystemVIpc(int sysno) {
-  switch (sysno) {
-    case __NR_ipc:
-      return true;
-    default:
-      return false;
-  }
-}
-#endif
-
 class NaClBPFSandboxPolicy : public SandboxBPFPolicy {
  public:
   NaClBPFSandboxPolicy()
@@ -126,17 +98,6 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     case __NR_ptrace:
       return ErrorCode(EPERM);
     default:
-      // TODO(jln): look into getting rid of System V shared memory:
-      // platform_qualify/linux/sysv_shm_and_mmap.c makes it a requirement, but
-      // it may not be needed in all cases. Chromium renderers don't need
-      // System V shared memory on Aura.
-#if defined(__x86_64__) || defined(__arm__)
-      if (IsSystemVSharedMemory(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
-#elif defined(__i386__)
-      if (IsSystemVIpc(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
       return baseline_policy_->EvaluateSyscall(sb, sysno);
   }
   NOTREACHED();
