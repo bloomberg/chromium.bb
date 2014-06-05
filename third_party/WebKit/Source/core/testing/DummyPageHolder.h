@@ -75,12 +75,6 @@ private:
     RefPtr<LocalFrame> m_frame;
 
     Page::PageClients m_pageClients;
-    EmptyChromeClient m_chromeClient;
-    EmptyContextMenuClient m_contextMenuClient;
-    EmptyEditorClient m_editorClient;
-    EmptyDragClient m_dragClient;
-    EmptyInspectorClient m_inspectorClient;
-    EmptyBackForwardClient m_backForwardClient;
     EmptyFrameLoaderClient m_frameLoaderClient;
 };
 

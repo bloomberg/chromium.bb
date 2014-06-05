@@ -46,13 +46,7 @@ PassOwnPtr<DummyPageHolder> DummyPageHolder::create(const IntSize& initialViewSi
 
 DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
 {
-    m_pageClients.chromeClient = &m_chromeClient;
-    m_pageClients.contextMenuClient = &m_contextMenuClient;
-    m_pageClients.editorClient = &m_editorClient;
-    m_pageClients.dragClient = &m_dragClient;
-    m_pageClients.inspectorClient = &m_inspectorClient;
-    m_pageClients.backForwardClient = &m_backForwardClient;
-
+    fillWithEmptyClients(m_pageClients);
     m_page = adoptPtrWillBeNoop(new Page(m_pageClients));
     Settings& settings = m_page->settings();
     // FIXME: http://crbug.com/363843. This needs to find a better way to
