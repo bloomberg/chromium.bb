@@ -188,9 +188,6 @@ deps = {
   "src/chrome/test/data/perf/frame_rate/content":
     "/trunk/deps/frame_rate/content@93671",
 
-  "src/chrome/test/data/perf/third_party/octane":
-    (Var("googlecode_url") % "octane-benchmark") + "/trunk@19",
-
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
@@ -394,7 +391,6 @@ deps_os = {
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
     "src/chrome/test/data/perf/canvas_bench": None,
     "src/chrome/test/data/perf/frame_rate/content": None,
-    "src/chrome/test/data/perf/third_party/octane": None,
     "src/media/cdm/ppapi/api": None,
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
