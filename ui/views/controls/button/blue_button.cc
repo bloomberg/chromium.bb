@@ -11,8 +11,7 @@
 
 namespace {
 
-// Default text and shadow colors for the blue button.
-const SkColor kBlueButtonTextColor = SK_ColorWHITE;
+// Default shadow color for the blue button.
 const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
 
 }  // namespace
@@ -34,8 +33,16 @@ BlueButton::~BlueButton() {}
 void BlueButton::ResetColorsFromNativeTheme() {
   LabelButton::ResetColorsFromNativeTheme();
   if (!gfx::IsInvertedColorScheme()) {
-    for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state)
-      SetTextColor(static_cast<ButtonState>(state), kBlueButtonTextColor);
+    SetTextColor(STATE_NORMAL, GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_BlueButtonEnabledColor));
+    SetTextColor(STATE_HOVERED, GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_BlueButtonHoverColor));
+    SetTextColor(STATE_PRESSED, GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_BlueButtonHighlightColor));
+    SetTextColor(STATE_DISABLED, GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_BlueButtonDisabledColor));
+
+    // TODO(estade): this is not great on system themes.
     label()->SetShadowColors(kBlueButtonShadowColor, kBlueButtonShadowColor);
     label()->SetShadowOffset(0, 1);
   }

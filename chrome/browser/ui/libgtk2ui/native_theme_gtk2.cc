@@ -236,6 +236,16 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetButtonStyle()->text[GTK_STATE_PRELIGHT];
     case kColorId_ButtonHoverBackgroundColor:
       return GetButtonStyle()->bg[GTK_STATE_PRELIGHT];
+    // TODO(estade): determine a more distinct color for the Blue
+    // buttons.
+    case kColorId_BlueButtonEnabledColor:
+      return GetButtonStyle()->text[GTK_STATE_NORMAL];
+    case kColorId_BlueButtonDisabledColor:
+      return GetButtonStyle()->text[GTK_STATE_INSENSITIVE];
+    case kColorId_BlueButtonHighlightColor:
+      return GetButtonStyle()->base[GTK_STATE_SELECTED];
+    case kColorId_BlueButtonHoverColor:
+      return GetButtonStyle()->text[GTK_STATE_PRELIGHT];
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

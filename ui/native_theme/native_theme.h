@@ -244,6 +244,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ButtonHighlightColor,
     kColorId_ButtonHoverColor,
     kColorId_ButtonHoverBackgroundColor,
+    kColorId_BlueButtonEnabledColor,
+    kColorId_BlueButtonDisabledColor,
+    kColorId_BlueButtonHighlightColor,
+    kColorId_BlueButtonHoverColor,
     // MenuItem
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
