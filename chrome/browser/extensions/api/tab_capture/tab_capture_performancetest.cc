@@ -222,8 +222,7 @@ class TabCapturePerformanceTest
 
 }  // namespace
 
-// crbug.com/377089
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, DISABLED_Performance) {
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
   RunTest("TabCapturePerformance");
 }
 
