@@ -7,14 +7,14 @@
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_request_handler.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_url_request_job.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
 using appcache::AppCacheBackendImpl;
 using appcache::AppCacheHost;
 using appcache::AppCacheRequestHandler;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::kNoCacheId;
 using appcache::kNoHostId;
 
@@ -37,7 +37,7 @@ AppCacheRequestHandler* AppCacheInterceptor::GetHandler(
 }
 
 void AppCacheInterceptor::SetExtraRequestInfo(
-    net::URLRequest* request, AppCacheService* service, int process_id,
+    net::URLRequest* request, AppCacheServiceImpl* service, int process_id,
     int host_id, ResourceType::Type resource_type) {
   if (!service || (host_id == kNoHostId))
     return;

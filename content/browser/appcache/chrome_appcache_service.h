@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 #include "webkit/browser/appcache/appcache_policy.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace base {
@@ -26,7 +26,7 @@ class ResourceContext;
 
 struct ChromeAppCacheServiceDeleter;
 
-// An AppCacheService subclass used by the chrome. There is an instance
+// An AppCacheServiceImpl subclass used by the chrome. There is an instance
 // associated with each BrowserContext. This derivation adds refcounting
 // semantics since a browser context has multiple URLRequestContexts which refer
 // to the same object, and those URLRequestContexts are refcounted independently
@@ -35,12 +35,12 @@ struct ChromeAppCacheServiceDeleter;
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).
 //
-// TODO(dpranke): Fix dependencies on AppCacheService so that we don't have
-// to worry about clients calling AppCacheService methods.
+// TODO(dpranke): Fix dependencies on AppCacheServiceImpl so that we don't have
+// to worry about clients calling AppCacheServiceImpl methods.
 class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
                                         ChromeAppCacheServiceDeleter>,
-      NON_EXPORTED_BASE(public appcache::AppCacheService),
+      NON_EXPORTED_BASE(public appcache::AppCacheServiceImpl),
       NON_EXPORTED_BASE(public appcache::AppCachePolicy) {
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);

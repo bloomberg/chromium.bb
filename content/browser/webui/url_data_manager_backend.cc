@@ -44,7 +44,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "url/url_util.h"
 
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 
 namespace content {
 
@@ -428,7 +428,7 @@ class ChromeProtocolHandler
   // |is_incognito| should be set for incognito profiles.
   ChromeProtocolHandler(ResourceContext* resource_context,
                         bool is_incognito,
-                        AppCacheService* appcache_service,
+                        AppCacheServiceImpl* appcache_service,
                         ChromeBlobStorageContext* blob_storage_context)
       : resource_context_(resource_context),
         is_incognito_(is_incognito),
@@ -489,7 +489,7 @@ class ChromeProtocolHandler
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
-  AppCacheService* appcache_service_;
+  AppCacheServiceImpl* appcache_service_;
   ChromeBlobStorageContext* blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
@@ -518,7 +518,7 @@ net::URLRequestJobFactory::ProtocolHandler*
 URLDataManagerBackend::CreateProtocolHandler(
     content::ResourceContext* resource_context,
     bool is_incognito,
-    AppCacheService* appcache_service,
+    AppCacheServiceImpl* appcache_service,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
   return new ChromeProtocolHandler(

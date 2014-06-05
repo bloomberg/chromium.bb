@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 namespace appcache {
 
@@ -23,7 +23,7 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
     service_->UnregisterBackend(this);
 }
 
-void AppCacheBackendImpl::Initialize(AppCacheService* service,
+void AppCacheBackendImpl::Initialize(AppCacheServiceImpl* service,
                                      AppCacheFrontend* frontend,
                                      int process_id) {
   DCHECK(!service_ && !frontend_ && frontend && service);

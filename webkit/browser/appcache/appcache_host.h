@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "url/gurl.h"
 #include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
@@ -56,7 +56,7 @@ typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
     : public AppCacheStorage::Delegate,
       public AppCacheGroup::UpdateObserver,
-      public AppCacheService::Observer {
+      public AppCacheServiceImpl::Observer {
  public:
 
   class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
@@ -71,7 +71,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   };
 
   AppCacheHost(int host_id, AppCacheFrontend* frontend,
-               AppCacheService* service);
+               AppCacheServiceImpl* service);
   virtual ~AppCacheHost();
 
   // Adds/removes an observer, the AppCacheHost does not take
@@ -161,7 +161,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   }
 
   int host_id() const { return host_id_; }
-  AppCacheService* service() const { return service_; }
+  AppCacheServiceImpl* service() const { return service_; }
   AppCacheStorage* storage() const { return storage_; }
   AppCacheFrontend* frontend() const { return frontend_; }
   AppCache* associated_cache() const { return associated_cache_.get(); }
@@ -194,7 +194,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE;
   virtual void OnGroupLoaded(AppCacheGroup* group,
                              const GURL& manifest_url) OVERRIDE;
-  // AppCacheService::Observer impl
+  // AppCacheServiceImpl::Observer impl
   virtual void OnServiceReinitialized(
       AppCacheStorageReference* old_storage_ref) OVERRIDE;
 
@@ -275,7 +275,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   AppCacheFrontend* frontend_;
 
   // Our central service object.
-  AppCacheService* service_;
+  AppCacheServiceImpl* service_;
 
   // And the equally central storage object, with a twist. In some error
   // conditions the storage object gets recreated and reinitialized. The

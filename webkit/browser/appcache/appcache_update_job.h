@@ -21,7 +21,7 @@
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
@@ -40,7 +40,7 @@ class HostNotifier;
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
     : public AppCacheStorage::Delegate,
       public AppCacheHost::Observer,
-      public AppCacheService::Observer {
+      public AppCacheServiceImpl::Observer {
  public:
   // Used for uma stats only for now, so new values are append only.
   enum ResultType {
@@ -49,7 +49,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
     NUM_UPDATE_JOB_RESULT_TYPES
   };
 
-  AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
+  AppCacheUpdateJob(AppCacheServiceImpl* service, AppCacheGroup* group);
   virtual ~AppCacheUpdateJob();
 
   // Triggers the update process or adds more info if this update is already
@@ -183,7 +183,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   virtual void OnCacheSelectionComplete(AppCacheHost* host) OVERRIDE {}  // N/A
   virtual void OnDestructionImminent(AppCacheHost* host) OVERRIDE;
 
-  // Methods for AppCacheService::Observer.
+  // Methods for AppCacheServiceImpl::Observer.
   virtual void OnServiceReinitialized(
       AppCacheStorageReference* old_storage) OVERRIDE;
 
@@ -269,7 +269,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST ||
                                 stored_state_ != UNSTORED; }
 
-  AppCacheService* service_;
+  AppCacheServiceImpl* service_;
   const GURL manifest_url_;  // here for easier access
 
   // Defined prior to refs to AppCaches and Groups because destruction

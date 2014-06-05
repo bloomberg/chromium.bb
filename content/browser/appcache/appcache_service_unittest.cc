@@ -14,7 +14,7 @@
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 using appcache::AppCache;
 using appcache::AppCacheEntry;
@@ -23,7 +23,7 @@ using appcache::AppCacheInfo;
 using appcache::AppCacheInfoCollection;
 using appcache::AppCacheInfoVector;
 using appcache::AppCacheResponseReader;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::HttpResponseInfoIOBuffer;
 
 namespace content {
@@ -90,15 +90,15 @@ class MockResponseReader : public AppCacheResponseReader {
 }  // namespace
 
 
-class AppCacheServiceTest : public testing::Test {
+class AppCacheServiceImplTest : public testing::Test {
  public:
-  AppCacheServiceTest()
+  AppCacheServiceImplTest()
       : kOrigin("http://hello/"),
         kManifestUrl(kOrigin.Resolve("manifest")),
-        service_(new AppCacheService(NULL)),
+        service_(new AppCacheServiceImpl(NULL)),
         delete_result_(net::OK), delete_completion_count_(0),
         deletion_callback_(
-            base::Bind(&AppCacheServiceTest::OnDeleteAppCachesComplete,
+            base::Bind(&AppCacheServiceImplTest::OnDeleteAppCachesComplete,
                        base::Unretained(this))) {
     // Setup to use mock storage.
     service_->storage_.reset(new MockAppCacheStorage(service_.get()));
@@ -180,7 +180,7 @@ class AppCacheServiceTest : public testing::Test {
   const GURL kOrigin;
   const GURL kManifestUrl;
 
-  scoped_ptr<AppCacheService> service_;
+  scoped_ptr<AppCacheServiceImpl> service_;
   int delete_result_;
   int delete_completion_count_;
   net::CompletionCallback deletion_callback_;
@@ -189,7 +189,7 @@ class AppCacheServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
+TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   // Without giving mock storage simiulated info, should fail.
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
@@ -255,7 +255,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   EXPECT_EQ(0, delete_completion_count_);
 }
 
-TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
+TEST_F(AppCacheServiceImplTest, CheckAppCacheResponse) {
   // Check a non-existing manifest.
   EXPECT_FALSE(IsGroupStored(kManifestUrl));
   service_->CheckAppCacheResponse(kManifestUrl, 1, 1);
@@ -327,14 +327,14 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
 }
 
 // Just tests the backoff scheduling function, not the actual reinit function.
-TEST_F(AppCacheServiceTest, ScheduleReinitialize) {
+TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   const base::TimeDelta kNoDelay;
   const base::TimeDelta kOneSecond(base::TimeDelta::FromSeconds(1));
   const base::TimeDelta k30Seconds(base::TimeDelta::FromSeconds(30));
   const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
 
   // Do things get initialized as expected?
-  scoped_ptr<AppCacheService> service(new AppCacheService(NULL));
+  scoped_ptr<AppCacheServiceImpl> service(new AppCacheServiceImpl(NULL));
   EXPECT_TRUE(service->last_reinit_time_.is_null());
   EXPECT_FALSE(service->reinit_timer_.IsRunning());
   EXPECT_EQ(kNoDelay, service->next_reinit_delay_);

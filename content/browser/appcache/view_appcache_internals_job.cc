@@ -28,14 +28,14 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_policy.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 
 using appcache::AppCacheGroup;
 using appcache::AppCacheInfo;
 using appcache::AppCacheInfoCollection;
 using appcache::AppCacheInfoVector;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::AppCacheStorage;
 using appcache::AppCacheStorageReference;
 using appcache::AppCacheResourceInfo;
@@ -116,7 +116,7 @@ void EmitCommandAnchor(const char* label,
 }
 
 void EmitAppCacheInfo(const GURL& base_url,
-                      AppCacheService* service,
+                      AppCacheServiceImpl* service,
                       const AppCacheInfo* info,
                       std::string* out) {
   std::string manifest_url_base64;
@@ -159,7 +159,7 @@ void EmitAppCacheInfo(const GURL& base_url,
 
 void EmitAppCacheInfoVector(
     const GURL& base_url,
-    AppCacheService* service,
+    AppCacheServiceImpl* service,
     const AppCacheInfoVector& appcaches,
     std::string* out) {
   for (std::vector<AppCacheInfo>::const_iterator info =
@@ -321,11 +321,11 @@ GURL ClearQuery(const GURL& url) {
 
 // Simple base class for the job subclasses defined here.
 class BaseInternalsJob : public net::URLRequestSimpleJob,
-                         public AppCacheService::Observer {
+                         public AppCacheServiceImpl::Observer {
  protected:
   BaseInternalsJob(net::URLRequest* request,
                    net::NetworkDelegate* network_delegate,
-                   AppCacheService* service)
+                   AppCacheServiceImpl* service)
       : URLRequestSimpleJob(request, network_delegate),
         appcache_service_(service),
         appcache_storage_(service->storage()) {
@@ -342,7 +342,7 @@ class BaseInternalsJob : public net::URLRequestSimpleJob,
       disabled_storage_reference_ = old_storage_ref;
   }
 
-  AppCacheService* appcache_service_;
+  AppCacheServiceImpl* appcache_service_;
   AppCacheStorage* appcache_storage_;
   scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
 };
@@ -352,7 +352,7 @@ class MainPageJob : public BaseInternalsJob {
  public:
   MainPageJob(net::URLRequest* request,
               net::NetworkDelegate* network_delegate,
-              AppCacheService* service)
+              AppCacheServiceImpl* service)
       : BaseInternalsJob(request, network_delegate, service),
         weak_factory_(this) {
   }
@@ -417,7 +417,7 @@ class RedirectToMainPageJob : public BaseInternalsJob {
  public:
   RedirectToMainPageJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
-                        AppCacheService* service)
+                        AppCacheServiceImpl* service)
       : BaseInternalsJob(request, network_delegate, service) {}
 
   virtual int GetData(std::string* mime_type,
@@ -444,7 +444,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
   RemoveAppCacheJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      AppCacheService* service,
+      AppCacheServiceImpl* service,
       const GURL& manifest_url)
       : RedirectToMainPageJob(request, network_delegate, service),
         manifest_url_(manifest_url),
@@ -478,7 +478,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
   ViewAppCacheJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      AppCacheService* service,
+      AppCacheServiceImpl* service,
       const GURL& manifest_url)
       : BaseInternalsJob(request, network_delegate, service),
         manifest_url_(manifest_url) {}
@@ -549,7 +549,7 @@ class ViewEntryJob : public BaseInternalsJob,
   ViewEntryJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      AppCacheService* service,
+      AppCacheServiceImpl* service,
       const GURL& manifest_url,
       const GURL& entry_url,
       int64 response_id, int64 group_id)
@@ -647,7 +647,7 @@ class ViewEntryJob : public BaseInternalsJob,
 net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    AppCacheService* service) {
+    AppCacheServiceImpl* service) {
   if (!request->url().has_query())
     return new MainPageJob(request, network_delegate, service);
 

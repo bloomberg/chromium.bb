@@ -43,7 +43,7 @@ void FillCacheInfo(const AppCache* cache,
 }  // Anonymous namespace
 
 AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
-                           AppCacheService* service)
+                           AppCacheServiceImpl* service)
     : host_id_(host_id),
       spawning_host_id_(kNoHostId), spawning_process_id_(0),
       parent_host_id_(kNoHostId), parent_process_id_(0),

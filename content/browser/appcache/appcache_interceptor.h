@@ -13,7 +13,7 @@
 
 namespace appcache {
 class AppCacheRequestHandler;
-class AppCacheService;
+class AppCacheServiceImpl;
 }
 
 namespace content {
@@ -31,7 +31,7 @@ class CONTENT_EXPORT AppCacheInterceptor
 
   // Must be called to make a request eligible for retrieval from an appcache.
   static void SetExtraRequestInfo(net::URLRequest* request,
-                                  appcache::AppCacheService* service,
+                                  appcache::AppCacheServiceImpl* service,
                                   int process_id,
                                   int host_id,
                                   ResourceType::Type resource_type);

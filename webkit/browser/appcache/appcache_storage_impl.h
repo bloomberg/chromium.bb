@@ -29,7 +29,7 @@ namespace appcache {
 
 class AppCacheStorageImpl : public AppCacheStorage {
  public:
-  explicit AppCacheStorageImpl(AppCacheService* service);
+  explicit AppCacheStorageImpl(AppCacheServiceImpl* service);
   virtual ~AppCacheStorageImpl();
 
   void Initialize(const base::FilePath& cache_directory,

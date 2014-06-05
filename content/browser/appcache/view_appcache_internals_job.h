@@ -14,7 +14,7 @@ class URLRequestJob;
 }
 
 namespace appcache {
-class AppCacheService;
+class AppCacheServiceImpl;
 }
 
 namespace content {
@@ -24,7 +24,7 @@ class ViewAppCacheInternalsJobFactory {
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      appcache::AppCacheService* service);
+      appcache::AppCacheServiceImpl* service);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ViewAppCacheInternalsJobFactory);

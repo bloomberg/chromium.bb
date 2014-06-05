@@ -13,7 +13,7 @@
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 // This is a quick and easy 'mock' implementation of the storage interface
 // that doesn't put anything to disk.
@@ -26,7 +26,7 @@
 // background thread.
 
 using appcache::AppCacheResponseWriter;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::FALLBACK_NAMESPACE;
 using appcache::INTERCEPT_NAMESPACE;
 using appcache::kNoCacheId;
@@ -34,7 +34,7 @@ using appcache::NamespaceType;
 
 namespace content {
 
-MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
+MockAppCacheStorage::MockAppCacheStorage(AppCacheServiceImpl* service)
     : AppCacheStorage(service),
       simulate_make_group_obsolete_failure_(false),
       simulate_store_group_and_newest_cache_failure_(false),

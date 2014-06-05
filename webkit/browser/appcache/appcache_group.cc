@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/appcache/appcache_update_job.h"
 

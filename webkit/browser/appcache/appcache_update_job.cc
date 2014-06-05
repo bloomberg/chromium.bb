@@ -340,7 +340,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
   return true;
 }
 
-AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
+AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
                                      AppCacheGroup* group)
     : service_(service),
       manifest_url_(group->manifest_url()),
@@ -1042,7 +1042,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
     // http://code.google.com/p/chromium/issues/detail?id=95101
     if (service_->storage() == storage_) {
       // Use a local variable because service_ is reset in HandleCacheFailure.
-      AppCacheService* service = service_;
+      AppCacheServiceImpl* service = service_;
       HandleCacheFailure(
           ErrorDetails("Manifest entry not found in existing cache",
                        UNKNOWN_ERROR,

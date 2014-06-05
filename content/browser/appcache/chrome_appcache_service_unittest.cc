@@ -71,7 +71,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {}
 
  protected:
-  scoped_refptr<ChromeAppCacheService> CreateAppCacheService(
+  scoped_refptr<ChromeAppCacheService> CreateAppCacheServiceImpl(
       const base::FilePath& appcache_path,
       bool init_storage);
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
@@ -91,7 +91,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
 };
 
 scoped_refptr<ChromeAppCacheService>
-ChromeAppCacheServiceTest::CreateAppCacheService(
+ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
     const base::FilePath& appcache_path,
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
@@ -150,7 +150,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =
-      CreateAppCacheService(appcache_path, true);
+      CreateAppCacheServiceImpl(appcache_path, true);
   ASSERT_TRUE(base::PathExists(appcache_path));
   ASSERT_TRUE(base::PathExists(appcache_path.AppendASCII("Index")));
   InsertDataIntoAppCache(appcache_service.get());
@@ -160,7 +160,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   message_loop_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
-  appcache_service = CreateAppCacheService(appcache_path, false);
+  appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
 
   // The directory is still there
   ASSERT_TRUE(base::PathExists(appcache_path));
@@ -187,7 +187,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =
-      CreateAppCacheService(appcache_path, true);
+      CreateAppCacheServiceImpl(appcache_path, true);
   ASSERT_TRUE(base::PathExists(appcache_path));
   ASSERT_TRUE(base::PathExists(appcache_path.AppendASCII("Index")));
   InsertDataIntoAppCache(appcache_service.get());
@@ -200,7 +200,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   message_loop_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
-  appcache_service = CreateAppCacheService(appcache_path, false);
+  appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
 
   // The directory is still there
   ASSERT_TRUE(base::PathExists(appcache_path));

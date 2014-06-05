@@ -17,7 +17,7 @@ namespace content {
 
 ChromeAppCacheService::ChromeAppCacheService(
     quota::QuotaManagerProxy* quota_manager_proxy)
-    : AppCacheService(quota_manager_proxy),
+    : AppCacheServiceImpl(quota_manager_proxy),
       resource_context_(NULL) {
 }
 

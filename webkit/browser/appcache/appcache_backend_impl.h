@@ -11,14 +11,14 @@
 
 namespace appcache {
 
-class AppCacheService;
+class AppCacheServiceImpl;
 
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheBackendImpl {
  public:
   AppCacheBackendImpl();
   ~AppCacheBackendImpl();
 
-  void Initialize(AppCacheService* service,
+  void Initialize(AppCacheServiceImpl* service,
                   AppCacheFrontend* frontend,
                   int process_id);
 
@@ -64,7 +64,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheBackendImpl {
   void TransferHostIn(int new_host_id, scoped_ptr<AppCacheHost> host);
 
  private:
-  AppCacheService* service_;
+  AppCacheServiceImpl* service_;
   AppCacheFrontend* frontend_;
   int process_id_;
   HostMap hosts_;

@@ -34,7 +34,7 @@ class AppCacheEntry;
 class AppCacheGroup;
 class AppCacheResponseReader;
 class AppCacheResponseWriter;
-class AppCacheService;
+class AppCacheServiceImpl;
 struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 
@@ -83,7 +83,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
     virtual ~Delegate() {}
   };
 
-  explicit AppCacheStorage(AppCacheService* service);
+  explicit AppCacheStorage(AppCacheServiceImpl* service);
   virtual ~AppCacheStorage();
 
   // Schedules a task to retrieve basic info about all groups and caches
@@ -199,7 +199,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
   const UsageMap* usage_map() { return &usage_map_; }
 
   // Simple ptr back to the service object that owns us.
-  AppCacheService* service() { return service_; }
+  AppCacheServiceImpl* service() { return service_; }
 
  protected:
   friend class content::AppCacheQuotaClientTest;
@@ -312,7 +312,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
 
   UsageMap usage_map_;  // maps origin to usage
   AppCacheWorkingSet working_set_;
-  AppCacheService* service_;
+  AppCacheServiceImpl* service_;
   DelegateReferenceMap delegate_references_;
   PendingResponseInfoLoads pending_info_loads_;
 

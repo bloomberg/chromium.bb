@@ -277,7 +277,7 @@ TEST_F(AppCacheQuotaClientTest, DeleteOriginData) {
   Call_NotifyAppCacheReady(client);
 
   // Perm deletions are short circuited in the Client and
-  // should not reach the AppCacheService.
+  // should not reach the AppCacheServiceImpl.
   EXPECT_EQ(quota::kQuotaStatusOk,
             DeleteOriginData(client, kPerm, kOriginA));
   EXPECT_EQ(0, mock_service_.delete_called_count());

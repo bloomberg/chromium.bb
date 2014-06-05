@@ -30,7 +30,7 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_request_handler.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/appcache/appcache_storage_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -43,7 +43,7 @@ using appcache::AppCacheFrontend;
 using appcache::AppCacheHost;
 using appcache::AppCacheInfo;
 using appcache::AppCacheGroup;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::AppCacheStorage;
 using appcache::AppCacheStorageImpl;
 using appcache::AppCacheStorageReference;
@@ -420,7 +420,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(base::MessageLoop::current() == io_thread->message_loop());
-    service_.reset(new AppCacheService(NULL));
+    service_.reset(new AppCacheServiceImpl(NULL));
     service_->Initialize(
         base::FilePath(), db_thread->message_loop_proxy().get(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
@@ -1601,7 +1601,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // and involves other appcache classes to get some code
   // coverage thruout when Reinitialize happens.
 
-  class MockServiceObserver : public AppCacheService::Observer {
+  class MockServiceObserver : public AppCacheServiceImpl::Observer {
    public:
     explicit MockServiceObserver(AppCacheStorageImplTest* test)
         : test_(test) {}
@@ -1715,7 +1715,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Recreate the service to point at the db and corruption on disk.
-    service_.reset(new AppCacheService(NULL));
+    service_.reset(new AppCacheServiceImpl(NULL));
     service_->set_request_context(io_thread->request_context());
     service_->Initialize(
         temp_directory_.path(),
@@ -1826,7 +1826,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Test case helpers --------------------------------------------------
 
-  AppCacheService* service() {
+  AppCacheServiceImpl* service() {
     return service_.get();
   }
 
@@ -1883,7 +1883,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<base::Closure> task_stack_;
-  scoped_ptr<AppCacheService> service_;
+  scoped_ptr<AppCacheServiceImpl> service_;
   scoped_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;
   scoped_refptr<AppCacheGroup> group_;

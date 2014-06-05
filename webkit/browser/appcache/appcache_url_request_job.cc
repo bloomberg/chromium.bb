@@ -25,7 +25,7 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_histograms.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 namespace appcache {
 

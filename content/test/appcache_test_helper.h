@@ -10,7 +10,7 @@
 #include "webkit/browser/appcache/appcache_storage.h"
 
 namespace appcache {
-class AppCacheService;
+class AppCacheServiceImpl;
 }
 
 namespace content {
@@ -21,10 +21,10 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
  public:
   AppCacheTestHelper();
   virtual ~AppCacheTestHelper();
-  void AddGroupAndCache(appcache::AppCacheService* appcache_service,
+  void AddGroupAndCache(appcache::AppCacheServiceImpl* appcache_service,
                         const GURL& manifest_url);
 
-  void GetOriginsWithCaches(appcache::AppCacheService* appcache_service,
+  void GetOriginsWithCaches(appcache::AppCacheServiceImpl* appcache_service,
                             std::set<GURL>* origins);
  private:
   virtual void OnGroupAndNewestCacheStored(

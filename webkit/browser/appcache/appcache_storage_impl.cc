@@ -27,7 +27,7 @@
 #include "webkit/browser/appcache/appcache_histograms.h"
 #include "webkit/browser/appcache/appcache_quota_client.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
@@ -1311,7 +1311,7 @@ void AppCacheStorageImpl::UpdateGroupLastAccessTimeTask::Run() {
 
 // AppCacheStorageImpl ---------------------------------------------------
 
-AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
+AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
     : AppCacheStorage(service),
       is_incognito_(false),
       is_response_deletion_scheduled_(false),

@@ -7,18 +7,18 @@
 
 #include "base/compiler_specific.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 
 namespace content {
 
 // For use by unit tests.
-class MockAppCacheService : public AppCacheService {
+class MockAppCacheService : public AppCacheServiceImpl {
  public:
   MockAppCacheService()
-    : AppCacheService(NULL),
+    : AppCacheServiceImpl(NULL),
       mock_delete_appcaches_for_origin_result_(net::OK),
       delete_called_count_(0) {
     storage_.reset(new MockAppCacheStorage(this));

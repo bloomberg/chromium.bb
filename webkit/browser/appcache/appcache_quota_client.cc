@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 using quota::QuotaClient;
 
@@ -33,7 +33,7 @@ void RunFront(appcache::AppCacheQuotaClient::RequestQueue* queue) {
 
 namespace appcache {
 
-AppCacheQuotaClient::AppCacheQuotaClient(AppCacheService* service)
+AppCacheQuotaClient::AppCacheQuotaClient(AppCacheServiceImpl* service)
     : service_(service),
       appcache_is_ready_(false),
       quota_manager_is_destroyed_(false) {

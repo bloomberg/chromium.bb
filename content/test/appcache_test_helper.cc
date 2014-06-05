@@ -11,7 +11,7 @@
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service_impl.h"
 
 namespace content {
 
@@ -32,7 +32,7 @@ void AppCacheTestHelper::OnGroupAndNewestCacheStored(
   base::MessageLoop::current()->Quit();
 }
 
-void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheService*
+void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheServiceImpl*
     appcache_service, const GURL& manifest_url) {
   appcache::AppCacheGroup* appcache_group =
       new appcache::AppCacheGroup(appcache_service->storage(),
@@ -52,7 +52,7 @@ void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheService*
   base::MessageLoop::current()->Run();
 }
 
-void AppCacheTestHelper::GetOriginsWithCaches(appcache::AppCacheService*
+void AppCacheTestHelper::GetOriginsWithCaches(appcache::AppCacheServiceImpl*
     appcache_service, std::set<GURL>* origins) {
   appcache_info_ = new appcache::AppCacheInfoCollection;
   origins_ = origins;

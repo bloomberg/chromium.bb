@@ -25,7 +25,7 @@ class AppCacheQuotaClientTest;
 
 namespace appcache {
 
-class AppCacheService;
+class AppCacheServiceImpl;
 class AppCacheStorageImpl;
 class AppCacheQuotaClientTest;
 
@@ -58,11 +58,11 @@ class AppCacheQuotaClient : public quota::QuotaClient {
 
  private:
   friend class content::AppCacheQuotaClientTest;
-  friend class AppCacheService;  // for NotifyAppCacheIsDestroyed
+  friend class AppCacheServiceImpl;  // for NotifyAppCacheIsDestroyed
   friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
 
   WEBKIT_STORAGE_BROWSER_EXPORT
-      explicit AppCacheQuotaClient(AppCacheService* service);
+      explicit AppCacheQuotaClient(AppCacheServiceImpl* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(quota::StorageType type,
@@ -87,7 +87,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   DeletionCallback current_delete_request_callback_;
   scoped_ptr<net::CancelableCompletionCallback> service_delete_callback_;
 
-  AppCacheService* service_;
+  AppCacheServiceImpl* service_;
   bool appcache_is_ready_;
   bool quota_manager_is_destroyed_;
 

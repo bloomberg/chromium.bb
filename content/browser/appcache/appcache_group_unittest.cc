@@ -17,7 +17,7 @@ using appcache::AppCache;
 using appcache::AppCacheFrontend;
 using appcache::AppCacheGroup;
 using appcache::AppCacheHost;
-using appcache::AppCacheService;
+using appcache::AppCacheServiceImpl;
 using appcache::AppCacheUpdateJob;
 
 namespace {
@@ -90,7 +90,7 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
 class TestAppCacheHost : public AppCacheHost {
  public:
   TestAppCacheHost(int host_id, AppCacheFrontend* frontend,
-                   AppCacheService* service)
+                   AppCacheServiceImpl* service)
       : AppCacheHost(host_id, frontend, service),
         update_completed_(false) {
   }
