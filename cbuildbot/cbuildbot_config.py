@@ -653,8 +653,8 @@ class HWTestConfig(object):
 
   @classmethod
   def DefaultList(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a canary build, with
-    overrides for optional args.
+    """Returns a default list of HWTestConfig's for a build, with overrides for
+    optional args.
     """
     # Set the number of machines for the au and qav suites. If we are
     # constrained in the number of duts in the lab, only give 1 dut to each.
@@ -679,6 +679,18 @@ class HWTestConfig(object):
             cls(constants.HWTEST_QAV_SUITE, **qav_kwargs)]
 
   @classmethod
+  def DefaultListCanary(cls, **kwargs):
+    """Returns a default list of HWTestConfig's for a canary build, with
+    overrides for optional args.
+    """
+    # Set minimum_duts default to 4, which means that lab will check the
+    # number of available duts to meet the minimum requirement before creating
+    # the suite job for canary builds.
+    kwargs.setdefault('minimum_duts', 4)
+    kwargs.setdefault('file_bugs', True)
+    return cls.DefaultList(**kwargs)
+
+  @classmethod
   def PGOList(cls, **kwargs):
     """Returns a default list of HWTestConfig's for a PGO build, with overrides
     for optional args.
@@ -696,7 +708,7 @@ class HWTestConfig(object):
     """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
-                        retry=True)
+                        retry=True, minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return [cls(cls.CQ_HW_TEST, **default_dict)]
@@ -707,7 +719,7 @@ class HWTestConfig(object):
     with overrides for optional args.
     """
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
-                        priority=constants.HWTEST_PFQ_PRIORITY)
+                        priority=constants.HWTEST_PFQ_PRIORITY, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -715,7 +727,8 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, file_bugs=False,
-               priority=constants.HWTEST_BUILD_PRIORITY, retry=False):
+               priority=constants.HWTEST_BUILD_PRIORITY, retry=False,
+               minimum_duts=0):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
@@ -727,11 +740,17 @@ class HWTestConfig(object):
     self.file_bugs = file_bugs
     self.priority = priority
     self.retry = retry
+    self.minimum_duts = minimum_duts
     assert not (self.warn_only and self.critical)
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""
     self.timeout = max(HWTestConfig.BRANCHED_HW_TEST_TIMEOUT, self.timeout)
+
+    # Set minimum_duts default to 0, which means that lab will not check the
+    # number of available duts to meet the minimum requirement before creating
+    # a suite job for branched build.
+    self.minimum_duts = 0
 
     # Only reduce priority if it's lower.
     new_priority = constants.HWTEST_DEFAULT_PRIORITY
@@ -1844,7 +1863,7 @@ _release = full.derive(official, internal,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
             constants.CROS_VM_TEST_TYPE],
   disk_vm_layout='usb',
-  hw_tests=HWTestConfig.DefaultList(file_bugs=True),
+  hw_tests=HWTestConfig.DefaultListCanary(),
   paygen=True,
   signer_tests=True,
   trybot_list=True,
