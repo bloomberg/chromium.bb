@@ -320,7 +320,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       def channel_notifier(channel):
         per_channel.put((channel, board, version, self._run.debug,
-                         self._run.config.paygen_skip_testing))
+                         self._run.config.paygen_skip_testing,
+                         self._run.config.paygen_skip_delta_payloads))
 
       if self.channels:
         logging.info("Using explicit channels: %s", self.channels)
@@ -333,7 +334,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                     channel_notifier)
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
-                          skip_test_payloads):
+                          skip_test_payloads, skip_delta_payloads):
     """Helper for PaygenStage that invokes payload generation.
 
     This method is intended to be safe to invoke inside a process.
@@ -344,6 +345,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       version: Version of payloads to generate.
       debug: Flag telling if this is a real run, or a test run.
       skip_test_payloads: Skip generating test payloads, and auto tests.
+      skip_delta_payloads: Skip generating delta payloads.
     """
     # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
     # These modules are imported here because they aren't always available at
@@ -374,6 +376,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                         dry_run=debug,
                                         run_parallel=True,
                                         run_on_builder=True,
+                                        skip_delta_payloads=skip_delta_payloads,
                                         skip_test_payloads=skip_test_payloads,
                                         skip_autotest=skip_test_payloads)
       except (paygen_build_lib.BuildFinished,

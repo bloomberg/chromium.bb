@@ -492,6 +492,11 @@ _settings = dict(
 #                           and schedule auto-tests for them.
   paygen_skip_testing=False,
 
+# paygen_skip_testing -- If the paygen stage runs, don't generate any delta
+#                        payloads. This is only done if deltas are broken
+#                        for a given board.
+  paygen_skip_delta_payloads=False,
+
 # cpe_export -- Run a stage that generates and uploads package CPE information.
   cpe_export=True,
 
