@@ -43,7 +43,7 @@ private:
 
         void pushInvalidationSet(const DescendantInvalidationSet&);
         bool matchesCurrentInvalidationSets(Element&);
-        bool hasInvalidationSets() const { return m_invalidationSets.size(); }
+        bool hasInvalidationSets() const { return !wholeSubtreeInvalid() && m_invalidationSets.size(); }
 
         bool wholeSubtreeInvalid() const { return m_wholeSubtreeInvalid; }
         void setWholeSubtreeInvalid() { m_wholeSubtreeInvalid = true; }
