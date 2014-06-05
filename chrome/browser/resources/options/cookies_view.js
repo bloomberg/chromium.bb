@@ -88,6 +88,10 @@ cr.define('options', function() {
      * @private
      */
     handleSearchQueryChange_: function(e) {
+      var stringId = document.querySelector('.cookies-search-box').value ?
+          'remove_all_shown_cookie' : 'remove_all_cookie';
+      document.querySelector('.remove-all-cookies-button').innerHTML =
+          loadTimeData.getString(stringId);
       if (this.queryDelayTimerId_)
         window.clearTimeout(this.queryDelayTimerId_);
 

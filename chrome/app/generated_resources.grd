@@ -10589,6 +10589,9 @@ Chrome ran out of memory.
       <message name="IDS_COOKIES_REMOVE_ALL_LABEL" desc="The label of the 'Remove All' button in the Cookies Window">
         Remove all
       </message>
+      <message name="IDS_COOKIES_REMOVE_ALL_SHOWN_LABEL" desc="The label of the 'Remove All Shown' button after a query search string is entered in the Cookies Window">
+        Remove all shown
+      </message>
       <message name="IDS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
         Name:
       </message>
