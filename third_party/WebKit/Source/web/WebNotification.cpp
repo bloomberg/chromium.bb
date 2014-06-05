@@ -114,20 +114,15 @@ void WebNotification::dispatchClickEvent()
     m_private->dispatchClickEvent();
 }
 
-WebNotification::WebNotification(const WTF::PassRefPtr<WebCore::Notification>& notification)
+WebNotification::WebNotification(const WTF::RawPtr<Notification>& notification)
     : m_private(notification)
 {
 }
 
-WebNotification& WebNotification::operator=(const WTF::PassRefPtr<Notification>& notification)
+WebNotification& WebNotification::operator=(const WTF::RawPtr<Notification>& notification)
 {
     m_private = notification;
     return *this;
-}
-
-WebNotification::operator WTF::PassRefPtr<Notification>() const
-{
-    return m_private.get();
 }
 
 } // namespace blink

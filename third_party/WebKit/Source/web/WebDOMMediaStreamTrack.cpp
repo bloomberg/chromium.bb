@@ -36,7 +36,7 @@
 
 namespace blink {
 
-WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtr<WebCore::MediaStreamTrack> track)
+WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<WebCore::MediaStreamTrack> track)
     : m_private(track)
 {
 }

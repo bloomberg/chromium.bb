@@ -68,7 +68,7 @@ public:
 
 private:
 #if BLINK_IMPLEMENTATION
-    WebDOMMediaStreamTrack(WTF::PassRefPtr<WebCore::MediaStreamTrack>);
+    WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<WebCore::MediaStreamTrack>);
 #endif
 
     WebPrivatePtr<WebCore::MediaStreamTrack> m_private;

@@ -79,20 +79,20 @@ bool NotificationPresenterImpl::isInitialized()
 
 bool NotificationPresenterImpl::show(Notification* notification)
 {
-    return m_presenter->show(PassRefPtr<Notification>(notification));
+    return m_presenter->show(RawPtr<Notification>(notification));
 }
 
 void NotificationPresenterImpl::close(Notification* notification)
 {
-    m_presenter->close(PassRefPtr<Notification>(notification));
+    m_presenter->close(RawPtr<Notification>(notification));
 
     // FIXME: Remove the duplicated call to cancel() when Chromium updated to override close() instead.
-    m_presenter->cancel(PassRefPtr<Notification>(notification));
+    m_presenter->cancel(RawPtr<Notification>(notification));
 }
 
 void NotificationPresenterImpl::notificationObjectDestroyed(Notification* notification)
 {
-    m_presenter->objectDestroyed(PassRefPtr<Notification>(notification));
+    m_presenter->objectDestroyed(RawPtr<Notification>(notification));
 }
 
 NotificationClient::Permission NotificationPresenterImpl::checkPermission(ExecutionContext* context)
