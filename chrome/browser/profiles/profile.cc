@@ -29,6 +29,10 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#endif
+
 Profile::Profile()
     : restored_last_session_(false),
       sent_destroyed_notification_(false),
@@ -79,10 +83,21 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSessionExitType,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  // During Finch trail, safe browsing should be turned off
+  // by default, and not sync'ed with desktop.
+  // If we want to enable safe browsing on Android, we will
+  // need to remove this Android-specific code.
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingEnabled,
+      SafeBrowsingService::IsEnabledByFieldTrial(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#else
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingDownloadFeedbackEnabled,
       false,

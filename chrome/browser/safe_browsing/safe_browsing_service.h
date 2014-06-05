@@ -70,6 +70,12 @@ class SafeBrowsingService
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();
 
+#if defined(OS_ANDROID)
+  // Return whether the user is in mobile safe browsing
+  // field trial enabled group.
+  static bool IsEnabledByFieldTrial();
+#endif
+
   // Called on the UI thread to initialize the service.
   void Initialize();
 

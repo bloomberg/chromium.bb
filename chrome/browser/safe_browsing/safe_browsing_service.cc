@@ -48,6 +48,11 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include <string>
+#include "base/metrics/field_trial.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -166,6 +171,15 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
     factory_ = g_safe_browsing_service_factory_impl.Pointer();
   return factory_->CreateSafeBrowsingService();
 }
+
+#if defined(OS_ANDROID)
+// static
+bool SafeBrowsingService::IsEnabledByFieldTrial() {
+  const std::string experiment_name =
+      base::FieldTrialList::FindFullName("SafeBrowsingAndroid");
+  return experiment_name == "Enabled";
+}
+#endif
 
 SafeBrowsingService::SafeBrowsingService()
     : protocol_manager_(NULL),
