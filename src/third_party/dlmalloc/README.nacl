@@ -7,4 +7,5 @@ Description:
 This is a highly portable, parameterized malloc implementation.
 
 Local Modifications:
-No modifications.
+ * Changed "()" to "(void)" in one place in order to compile with
+   "-Wstrict-prototypes" without warnings.
