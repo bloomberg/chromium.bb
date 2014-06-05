@@ -13,6 +13,7 @@
 
 namespace gfx {
 class PointF;
+class Point3F;
 class Size;
 class Transform;
 }
@@ -29,15 +30,16 @@ class LayerTreeHostCommonTestBase {
   virtual ~LayerTreeHostCommonTestBase();
 
   template <typename LayerType>
-  void SetLayerPropertiesForTestingInternal(LayerType* layer,
-                                            const gfx::Transform& transform,
-                                            const gfx::PointF& anchor,
-                                            const gfx::PointF& position,
-                                            const gfx::Size& bounds,
-                                            bool flatten_transform,
-                                            bool is_3d_sorted) {
+  void SetLayerPropertiesForTestingInternal(
+      LayerType* layer,
+      const gfx::Transform& transform,
+      const gfx::Point3F& transform_origin,
+      const gfx::PointF& position,
+      const gfx::Size& bounds,
+      bool flatten_transform,
+      bool is_3d_sorted) {
     layer->SetTransform(transform);
-    layer->SetAnchorPoint(anchor);
+    layer->SetTransformOrigin(transform_origin);
     layer->SetPosition(position);
     layer->SetBounds(bounds);
     layer->SetShouldFlattenTransform(flatten_transform);
@@ -46,7 +48,7 @@ class LayerTreeHostCommonTestBase {
 
   void SetLayerPropertiesForTesting(Layer* layer,
                                     const gfx::Transform& transform,
-                                    const gfx::PointF& anchor,
+                                    const gfx::Point3F& transform_origin,
                                     const gfx::PointF& position,
                                     const gfx::Size& bounds,
                                     bool flatten_transform,
@@ -54,7 +56,7 @@ class LayerTreeHostCommonTestBase {
 
   void SetLayerPropertiesForTesting(LayerImpl* layer,
                                     const gfx::Transform& transform,
-                                    const gfx::PointF& anchor,
+                                    const gfx::Point3F& transform_origin,
                                     const gfx::PointF& position,
                                     const gfx::Size& bounds,
                                     bool flatten_transform,

@@ -308,12 +308,10 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(10, 10));
-    root_->SetAnchorPoint(gfx::PointF());
     root_->SetIsDrawable(true);
 
     content_ = FakeContentLayer::Create(&client_);
     content_->SetBounds(gfx::Size(10, 10));
-    content_->SetAnchorPoint(gfx::PointF());
     content_->SetIsDrawable(true);
 
     root_->AddChild(content_);
@@ -729,25 +727,21 @@ class LayerTreeHostContextTestDontUseLostResources
 
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
-    root->SetAnchorPoint(gfx::PointF());
     root->SetIsDrawable(true);
 
     scoped_refptr<FakeDelegatedRendererLayer> delegated =
         FakeDelegatedRendererLayer::Create(delegated_frame_provider_.get());
     delegated->SetBounds(gfx::Size(10, 10));
-    delegated->SetAnchorPoint(gfx::PointF());
     delegated->SetIsDrawable(true);
     root->AddChild(delegated);
 
     scoped_refptr<ContentLayer> content = ContentLayer::Create(&client_);
     content->SetBounds(gfx::Size(10, 10));
-    content->SetAnchorPoint(gfx::PointF());
     content->SetIsDrawable(true);
     root->AddChild(content);
 
     scoped_refptr<TextureLayer> texture = TextureLayer::CreateForMailbox(NULL);
     texture->SetBounds(gfx::Size(10, 10));
-    texture->SetAnchorPoint(gfx::PointF());
     texture->SetIsDrawable(true);
     texture->SetTextureMailbox(
         TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
@@ -758,12 +752,10 @@ class LayerTreeHostContextTestDontUseLostResources
 
     scoped_refptr<ContentLayer> mask = ContentLayer::Create(&client_);
     mask->SetBounds(gfx::Size(10, 10));
-    mask->SetAnchorPoint(gfx::PointF());
 
     scoped_refptr<ContentLayer> content_with_mask =
         ContentLayer::Create(&client_);
     content_with_mask->SetBounds(gfx::Size(10, 10));
-    content_with_mask->SetAnchorPoint(gfx::PointF());
     content_with_mask->SetIsDrawable(true);
     content_with_mask->SetMaskLayer(mask.get());
     root->AddChild(content_with_mask);
@@ -771,21 +763,18 @@ class LayerTreeHostContextTestDontUseLostResources
     scoped_refptr<VideoLayer> video_color =
         VideoLayer::Create(&color_frame_provider_);
     video_color->SetBounds(gfx::Size(10, 10));
-    video_color->SetAnchorPoint(gfx::PointF());
     video_color->SetIsDrawable(true);
     root->AddChild(video_color);
 
     scoped_refptr<VideoLayer> video_hw =
         VideoLayer::Create(&hw_frame_provider_);
     video_hw->SetBounds(gfx::Size(10, 10));
-    video_hw->SetAnchorPoint(gfx::PointF());
     video_hw->SetIsDrawable(true);
     root->AddChild(video_hw);
 
     scoped_refptr<VideoLayer> video_scaled_hw =
         VideoLayer::Create(&scaled_hw_frame_provider_);
     video_scaled_hw->SetBounds(gfx::Size(10, 10));
-    video_scaled_hw->SetAnchorPoint(gfx::PointF());
     video_scaled_hw->SetIsDrawable(true);
     root->AddChild(video_scaled_hw);
 
@@ -818,7 +807,6 @@ class LayerTreeHostContextTestDontUseLostResources
       // TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
       scoped_refptr<IOSurfaceLayer> io_surface = IOSurfaceLayer::Create();
       io_surface->SetBounds(gfx::Size(10, 10));
-      io_surface->SetAnchorPoint(gfx::PointF());
       io_surface->SetIsDrawable(true);
       io_surface->SetIOSurfaceProperties(1, gfx::Size(10, 10));
       root->AddChild(io_surface);
@@ -833,7 +821,6 @@ class LayerTreeHostContextTestDontUseLostResources
         PaintedScrollbarLayer::Create(
             scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content->id());
     scrollbar->SetBounds(gfx::Size(10, 10));
-    scrollbar->SetAnchorPoint(gfx::PointF());
     scrollbar->SetIsDrawable(true);
     root->AddChild(scrollbar);
 
@@ -929,12 +916,10 @@ class LayerTreeHostContextTestImplSidePainting
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
-    root->SetAnchorPoint(gfx::PointF());
     root->SetIsDrawable(true);
 
     scoped_refptr<PictureLayer> picture = PictureLayer::Create(&client_);
     picture->SetBounds(gfx::Size(10, 10));
-    picture->SetAnchorPoint(gfx::PointF());
     picture->SetIsDrawable(true);
     root->AddChild(picture);
 

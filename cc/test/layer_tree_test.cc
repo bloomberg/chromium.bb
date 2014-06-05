@@ -537,7 +537,6 @@ void LayerTreeTest::DoBeginTest() {
 void LayerTreeTest::SetupTree() {
   if (!layer_tree_host_->root_layer()) {
     scoped_refptr<Layer> root_layer = Layer::Create();
-    root_layer->SetAnchorPoint(gfx::PointF());
     root_layer->SetBounds(gfx::Size(1, 1));
     root_layer->SetIsDrawable(true);
     layer_tree_host_->SetRootLayer(root_layer);

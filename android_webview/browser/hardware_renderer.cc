@@ -171,7 +171,6 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
       delegated_layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
       delegated_layer_->SetBounds(gfx::Size(view_width_, view_height_));
       delegated_layer_->SetIsDrawable(true);
-      delegated_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
       root_layer_->AddChild(delegated_layer_);
     } else {

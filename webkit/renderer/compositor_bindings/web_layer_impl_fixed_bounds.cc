@@ -30,10 +30,10 @@ void WebLayerImplFixedBounds::invalidateRect(const blink::WebFloatRect& rect) {
   invalidate();
 }
 
-void WebLayerImplFixedBounds::setAnchorPoint(
-    const blink::WebFloatPoint& anchor_point) {
-  if (anchor_point != this->anchorPoint()) {
-    layer_->SetAnchorPoint(anchor_point);
+void WebLayerImplFixedBounds::setTransformOrigin(
+    const blink::WebFloatPoint3D& transform_origin) {
+  if (transform_origin != this->transformOrigin()) {
+    layer_->SetTransformOrigin(transform_origin);
     UpdateLayerBoundsAndTransform();
   }
 }
@@ -77,9 +77,10 @@ void WebLayerImplFixedBounds::SetTransformInternal(
 void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
   if (fixed_bounds_.IsEmpty() || original_bounds_.IsEmpty() ||
       fixed_bounds_ == original_bounds_ ||
-      // For now fall back to non-fixed bounds for non-zero anchor point.
+      // For now fall back to non-fixed bounds for non-zero transform origin.
       // TODO(wangxianzhu): Support non-zero anchor point for fixed bounds.
-      anchorPoint().x || anchorPoint().y) {
+      transformOrigin().x ||
+      transformOrigin().y) {
     layer_->SetBounds(original_bounds_);
     layer_->SetTransform(original_transform_);
     return;

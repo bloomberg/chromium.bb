@@ -25,14 +25,12 @@ class LayerTreeHostVideoTestSetNeedsDisplay
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
-    root->SetAnchorPoint(gfx::PointF());
     root->SetIsDrawable(true);
 
     scoped_refptr<VideoLayer> video = VideoLayer::Create(
         &video_frame_provider_);
     video->SetPosition(gfx::PointF(3.f, 3.f));
     video->SetBounds(gfx::Size(4, 4));
-    video->SetAnchorPoint(gfx::PointF());
     video->SetIsDrawable(true);
     root->AddChild(video);
 

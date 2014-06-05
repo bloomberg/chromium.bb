@@ -511,6 +511,8 @@ class DelegatedRendererLayerImplTestTransform
     transform.Scale(2.0, 2.0);
     transform.Translate(8.0, 8.0);
     delegated_renderer_layer->SetTransform(transform);
+    delegated_renderer_layer->SetTransformOrigin(
+        gfx::Point3F(75 * 0.5f, 75 * 0.5f, 0.0f));
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
 
@@ -1386,7 +1388,6 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
 
   FakeDelegatedRendererLayerImpl* delegated_renderer_layer_impl =
       impl.AddChildToRoot<FakeDelegatedRendererLayerImpl>();
-  delegated_renderer_layer_impl->SetAnchorPoint(gfx::PointF());
   delegated_renderer_layer_impl->SetBounds(layer_size);
   delegated_renderer_layer_impl->SetContentBounds(layer_size);
   delegated_renderer_layer_impl->SetDrawsContent(true);

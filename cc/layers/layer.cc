@@ -61,11 +61,9 @@ Layer::Layer()
       force_render_surface_(false),
       is_3d_sorted_(false),
       transform_is_invertible_(true),
-      anchor_point_(0.5f, 0.5f),
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
-      anchor_point_z_(0.f),
       scroll_parent_(NULL),
       clip_parent_(NULL),
       replica_layer_(NULL),
@@ -371,22 +369,6 @@ void Layer::RequestCopyOfOutput(
   SetNeedsCommit();
 }
 
-void Layer::SetAnchorPoint(const gfx::PointF& anchor_point) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (anchor_point_ == anchor_point)
-    return;
-  anchor_point_ = anchor_point;
-  SetNeedsCommit();
-}
-
-void Layer::SetAnchorPointZ(float anchor_point_z) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (anchor_point_z_ == anchor_point_z)
-    return;
-  anchor_point_z_ = anchor_point_z;
-  SetNeedsCommit();
-}
-
 void Layer::SetBackgroundColor(SkColor background_color) {
   DCHECK(IsPropertyChangeAllowed());
   if (background_color_ == background_color)
@@ -595,6 +577,14 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     return;
   transform_ = transform;
   transform_is_invertible_ = transform.IsInvertible();
+  SetNeedsCommit();
+}
+
+void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (transform_origin_ == transform_origin)
+    return;
+  transform_origin_ = transform_origin;
   SetNeedsCommit();
 }
 
@@ -866,8 +856,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   bool use_paint_properties = paint_properties_.source_frame_number ==
                               layer_tree_host_->source_frame_number();
 
-  layer->SetAnchorPoint(anchor_point_);
-  layer->SetAnchorPointZ(anchor_point_z_);
+  layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);

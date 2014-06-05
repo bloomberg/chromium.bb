@@ -591,6 +591,14 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
   return res.PassAs<base::Value>();
 }
 
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Point3F& pt) {
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  res->AppendDouble(pt.x());
+  res->AppendDouble(pt.y());
+  res->AppendDouble(pt.z());
+  return res.PassAs<base::Value>();
+}
+
 scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Vector2d& v) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendInteger(v.x());

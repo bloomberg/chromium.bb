@@ -98,7 +98,6 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
 
   layer->SetIsDrawable(true);
-  layer->SetAnchorPoint(gfx::PointF());
   layer->SetBounds(layer_rect.size());
   layer->SetPosition(layer_rect.origin());
 

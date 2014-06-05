@@ -96,20 +96,6 @@ void WebLayerImpl::removeFromParent() { layer_->RemoveFromParent(); }
 
 void WebLayerImpl::removeAllChildren() { layer_->RemoveAllChildren(); }
 
-void WebLayerImpl::setAnchorPoint(const WebFloatPoint& anchor_point) {
-  layer_->SetAnchorPoint(anchor_point);
-}
-
-WebFloatPoint WebLayerImpl::anchorPoint() const {
-  return layer_->anchor_point();
-}
-
-void WebLayerImpl::setAnchorPointZ(float anchor_point_z) {
-  layer_->SetAnchorPointZ(anchor_point_z);
-}
-
-float WebLayerImpl::anchorPointZ() const { return layer_->anchor_point_z(); }
-
 void WebLayerImpl::setBounds(const WebSize& size) { layer_->SetBounds(size); }
 
 WebSize WebLayerImpl::bounds() const { return layer_->bounds(); }
@@ -165,6 +151,27 @@ void WebLayerImpl::setTransform(const SkMatrix44& matrix) {
   transform.matrix() = matrix;
   layer_->SetTransform(transform);
 }
+
+void WebLayerImpl::setTransformOrigin(const blink::WebFloatPoint3D& point) {
+  gfx::Point3F gfx_point = point;
+  layer_->SetTransformOrigin(gfx_point);
+}
+
+blink::WebFloatPoint3D WebLayerImpl::transformOrigin() const {
+  return layer_->transform_origin();
+}
+
+void WebLayerImpl::setAnchorPoint(const blink::WebFloatPoint&) {}
+
+blink::WebFloatPoint WebLayerImpl::anchorPoint() const {
+  return blink::WebFloatPoint();
+}
+
+void WebLayerImpl::setAnchorPointZ(float) {}
+
+float WebLayerImpl::anchorPointZ() const {
+  return 0.f;
+};
 
 SkMatrix44 WebLayerImpl::transform() const {
   return layer_->transform().matrix();

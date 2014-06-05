@@ -165,6 +165,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXNoPerspective) {
   child()->draw_properties().screen_space_transform_is_animating = true;
   child()->SetPosition(gfx::PointF(150.f, 50.f));
   child()->SetBounds(bounds);
+  child()->SetTransformOrigin(
+      gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child(), &box);
@@ -184,7 +186,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspective) {
 
   // Make the anchor point not the default 0.5 value and line up with the
   // child center to make the math easier.
-  parent()->SetAnchorPoint(gfx::PointF(0.375f, 0.375f));
+  parent()->SetTransformOrigin(
+      gfx::Point3F(0.375f * 400.f, 0.375f * 400.f, 0.f));
   parent()->SetBounds(gfx::Size(400, 400));
 
   gfx::Transform perspective;
@@ -196,6 +199,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspective) {
   child()->draw_properties().screen_space_transform_is_animating = true;
   child()->SetPosition(gfx::PointF(100.f, 100.f));
   child()->SetBounds(bounds);
+  child()->SetTransformOrigin(
+      gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child(), &box);
@@ -220,6 +225,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateZ) {
   child()->draw_properties().screen_space_transform_is_animating = true;
   child()->SetPosition(gfx::PointF(150.f, 50.f));
   child()->SetBounds(bounds);
+  child()->SetTransformOrigin(
+      gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child(), &box);

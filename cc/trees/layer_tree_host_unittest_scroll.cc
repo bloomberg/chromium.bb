@@ -453,7 +453,6 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
 
     root_scroll_layer_->SetPosition(gfx::Point());
-    root_scroll_layer_->SetAnchorPoint(gfx::PointF());
 
     root_scroll_layer_->SetIsDrawable(true);
     root_scroll_layer_->SetScrollClipLayerId(root_layer->id());
@@ -475,7 +474,6 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       // Adjust the child layer horizontally so that scrolls will never hit it.
       child_layer_->SetPosition(gfx::Point(60, 5));
     }
-    child_layer_->SetAnchorPoint(gfx::PointF());
 
     child_layer_->SetIsDrawable(true);
     child_layer_->SetScrollClipLayerId(root_layer->id());
@@ -1209,7 +1207,6 @@ class LayerTreeHostScrollTestLayerStructureChange
         ContentLayer::Create(&fake_content_layer_client_);
     scroll_layer->SetBounds(gfx::Size(110, 110));
     scroll_layer->SetPosition(gfx::Point(0, 0));
-    scroll_layer->SetAnchorPoint(gfx::PointF());
     scroll_layer->SetIsDrawable(true);
     scroll_layer->SetScrollClipLayerId(parent->id());
     scroll_layer->SetBounds(gfx::Size(parent->bounds().width() + 100,

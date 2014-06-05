@@ -25,7 +25,8 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
 
   // WebLayerImpl overrides.
   virtual void invalidateRect(const blink::WebFloatRect& rect);
-  virtual void setAnchorPoint(const blink::WebFloatPoint& anchor_point);
+  virtual void setTransformOrigin(
+      const blink::WebFloatPoint3D& transform_origin);
   virtual void setBounds(const blink::WebSize& bounds);
   virtual blink::WebSize bounds() const;
   virtual void setTransform(const SkMatrix44& transform);

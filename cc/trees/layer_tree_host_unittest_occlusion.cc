@@ -95,8 +95,6 @@ class LayerTreeHostOcclusionTest : public LayerTreeTest {
     layer->SetPosition(position);
     layer->SetBounds(bounds);
     layer->SetContentsOpaque(opaque);
-
-    layer->SetAnchorPoint(gfx::PointF());
   }
 
  protected:

@@ -107,7 +107,6 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
 
   // Clip to the top half of the green layer.
   scoped_refptr<Layer> clip = Layer::Create();
-  clip->SetAnchorPoint(gfx::PointF(0.f, 0.f));
   clip->SetPosition(gfx::Point(0, 0));
   clip->SetBounds(gfx::Size(200, 100));
   clip->SetMasksToBounds(true);
@@ -149,7 +148,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   replica_transform.Rotate(-90.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetAnchorPoint(gfx::PointF(0.5f, 0.5f));
+  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
   replica->SetPosition(gfx::Point(100, 100));
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
@@ -173,7 +172,6 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   // Clip to the bottom half of the green layer, and the left half of the
   // replica.
   scoped_refptr<Layer> clip = Layer::Create();
-  clip->SetAnchorPoint(gfx::PointF(0.f, 0.f));
   clip->SetPosition(gfx::Point(0, 50));
   clip->SetBounds(gfx::Size(150, 150));
   clip->SetMasksToBounds(true);
@@ -188,7 +186,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   replica_transform.Rotate(-90.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetAnchorPoint(gfx::PointF(0.5f, 0.5f));
+  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
   replica->SetPosition(gfx::Point(100, 100));
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
@@ -223,7 +221,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   replica_transform.Translate(100.0, 0.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetAnchorPoint(gfx::PointF(1.f, 1.f));
+  replica->SetTransformOrigin(gfx::Point3F(100.f, 100.f, 0.f));
   replica->SetPosition(gfx::Point());
   replica->SetTransform(replica_transform);
   replica->SetMaskLayer(mask.get());
@@ -247,7 +245,6 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
 
   // Clip to the bottom 3/4 of the green layer, and the top 3/4 of the replica.
   scoped_refptr<Layer> clip = Layer::Create();
-  clip->SetAnchorPoint(gfx::PointF(0.f, 0.f));
   clip->SetPosition(gfx::Point(0, 25));
   clip->SetBounds(gfx::Size(200, 150));
   clip->SetMasksToBounds(true);
@@ -266,7 +263,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
   replica_transform.Translate(100.0, 0.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetAnchorPoint(gfx::PointF(1.f, 1.f));
+  replica->SetTransformOrigin(gfx::Point3F(100.f, 100.f, 0.f));
   replica->SetPosition(gfx::Point());
   replica->SetTransform(replica_transform);
   replica->SetMaskLayer(mask.get());

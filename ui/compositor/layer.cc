@@ -497,7 +497,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     cc_layer_->AddChild(children_[i]->cc_layer_);
   }
   cc_layer_->SetLayerClient(this);
-  cc_layer_->SetAnchorPoint(gfx::PointF());
+  cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetForceRenderSurface(force_render_surface_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
@@ -929,7 +929,7 @@ void Layer::CreateWebLayer() {
       content_layer_ = cc::ContentLayer::Create(this);
     cc_layer_ = content_layer_.get();
   }
-  cc_layer_->SetAnchorPoint(gfx::PointF());
+  cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->AddLayerAnimationEventObserver(this);

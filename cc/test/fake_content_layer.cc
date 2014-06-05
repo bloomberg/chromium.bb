@@ -24,7 +24,6 @@ FakeContentLayer::FakeContentLayer(ContentLayerClient* client)
       push_properties_count_(0),
       output_surface_created_count_(0),
       always_update_resources_(false) {
-  SetAnchorPoint(gfx::PointF(0.f, 0.f));
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }

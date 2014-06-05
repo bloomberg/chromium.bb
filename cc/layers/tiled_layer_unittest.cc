@@ -1385,7 +1385,6 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   // This makes sure the painting works when the content space is scaled to
   // a different layer space.
   layer_tree_host_->SetViewportSize(gfx::Size(600, 600));
-  layer->SetAnchorPoint(gfx::PointF());
   layer->SetBounds(gfx::Size(300, 300));
   scale_layer->AddChild(layer);
   CalcDrawProps(&render_surface_layer_list);
@@ -1554,25 +1553,21 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
       new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
 
   root->SetBounds(root_rect.size());
-  root->SetAnchorPoint(gfx::PointF());
   root->draw_properties().drawable_content_rect = root_rect;
   root->draw_properties().visible_content_rect = root_rect;
   root->AddChild(surface);
 
   surface->SetForceRenderSurface(true);
-  surface->SetAnchorPoint(gfx::PointF());
   surface->SetOpacity(0.5);
   surface->AddChild(child);
   surface->AddChild(child2);
 
   child->SetBounds(child_rect.size());
-  child->SetAnchorPoint(gfx::PointF());
   child->SetPosition(child_rect.origin());
   child->draw_properties().visible_content_rect = child_rect;
   child->draw_properties().drawable_content_rect = root_rect;
 
   child2->SetBounds(child2_rect.size());
-  child2->SetAnchorPoint(gfx::PointF());
   child2->SetPosition(child2_rect.origin());
   child2->draw_properties().visible_content_rect = child2_rect;
   child2->draw_properties().drawable_content_rect = root_rect;

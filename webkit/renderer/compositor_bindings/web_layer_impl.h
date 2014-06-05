@@ -64,10 +64,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
                             blink::WebLayer* new_layer);
   virtual void removeFromParent();
   virtual void removeAllChildren();
-  virtual void setAnchorPoint(const blink::WebFloatPoint&);
-  virtual blink::WebFloatPoint anchorPoint() const;
-  virtual void setAnchorPointZ(float anchor_point_z);
-  virtual float anchorPointZ() const;
   virtual void setBounds(const blink::WebSize& bounds);
   virtual blink::WebSize bounds() const;
   virtual void setMasksToBounds(bool masks_to_bounds);
@@ -85,6 +81,15 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setPosition(const blink::WebFloatPoint& position);
   virtual blink::WebFloatPoint position() const;
   virtual void setTransform(const SkMatrix44& transform);
+  virtual void setTransformOrigin(const blink::WebFloatPoint3D& point);
+  virtual blink::WebFloatPoint3D transformOrigin() const;
+
+  // FIXME: get rid of these once Blink is no longer using them.
+  virtual void setAnchorPoint(const blink::WebFloatPoint&);
+  virtual blink::WebFloatPoint anchorPoint() const;
+  virtual void setAnchorPointZ(float);
+  virtual float anchorPointZ() const ;
+
   virtual SkMatrix44 transform() const;
   virtual void setDrawsContent(bool draws_content);
   virtual bool drawsContent() const;

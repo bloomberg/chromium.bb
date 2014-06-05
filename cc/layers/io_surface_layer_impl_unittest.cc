@@ -18,7 +18,6 @@ TEST(IOSurfaceLayerImplTest, Occlusion) {
 
   IOSurfaceLayerImpl* io_surface_layer_impl =
       impl.AddChildToRoot<IOSurfaceLayerImpl>();
-  io_surface_layer_impl->SetAnchorPoint(gfx::PointF());
   io_surface_layer_impl->SetBounds(layer_size);
   io_surface_layer_impl->SetContentBounds(layer_size);
   io_surface_layer_impl->SetDrawsContent(true);

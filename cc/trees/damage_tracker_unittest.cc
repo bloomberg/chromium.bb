@@ -23,15 +23,15 @@ namespace cc {
 namespace {
 
 void ExecuteCalculateDrawProperties(LayerImpl* root,
-                                    LayerImplList& render_surface_layer_list) {
+                                    LayerImplList* render_surface_layer_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
   //               persist across multiple calls to this function.
   ASSERT_TRUE(root->render_surface());
-  ASSERT_FALSE(render_surface_layer_list.size());
+  ASSERT_FALSE(render_surface_layer_list->size());
 
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_layer_list);
+      root, root->bounds(), render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
@@ -52,7 +52,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
   //      and surfaces.
 
   LayerImplList render_surface_layer_list;
-  ExecuteCalculateDrawProperties(root, render_surface_layer_list);
+  ExecuteCalculateDrawProperties(root, &render_surface_layer_list);
 
   // Iterate back-to-front, so that damage correctly propagates from descendant
   // surfaces to ancestors.
@@ -82,7 +82,6 @@ class DamageTrackerTest : public testing::Test {
             LayerImpl::Create(host_impl_.active_tree(), 2);
 
     root->SetPosition(gfx::PointF());
-    root->SetAnchorPoint(gfx::PointF());
     root->SetBounds(gfx::Size(500, 500));
     root->SetContentBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
@@ -90,7 +89,6 @@ class DamageTrackerTest : public testing::Test {
     root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
 
     child->SetPosition(gfx::PointF(100.f, 100.f));
-    child->SetAnchorPoint(gfx::PointF());
     child->SetBounds(gfx::Size(30, 30));
     child->SetContentBounds(gfx::Size(30, 30));
     child->SetDrawsContent(true);
@@ -116,7 +114,6 @@ class DamageTrackerTest : public testing::Test {
             LayerImpl::Create(host_impl_.active_tree(), 5);
 
     root->SetPosition(gfx::PointF());
-    root->SetAnchorPoint(gfx::PointF());
     root->SetBounds(gfx::Size(500, 500));
     root->SetContentBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
@@ -124,7 +121,6 @@ class DamageTrackerTest : public testing::Test {
     root->render_surface()->SetContentRect(gfx::Rect(0, 0, 500, 500));
 
     child1->SetPosition(gfx::PointF(100.f, 100.f));
-    child1->SetAnchorPoint(gfx::PointF());
     child1->SetBounds(gfx::Size(30, 30));
     child1->SetContentBounds(gfx::Size(30, 30));
     // With a child that draws_content, opacity will cause the layer to create
@@ -136,19 +132,16 @@ class DamageTrackerTest : public testing::Test {
     child1->SetForceRenderSurface(true);
 
     child2->SetPosition(gfx::PointF(11.f, 11.f));
-    child2->SetAnchorPoint(gfx::PointF());
     child2->SetBounds(gfx::Size(18, 18));
     child2->SetContentBounds(gfx::Size(18, 18));
     child2->SetDrawsContent(true);
 
     grand_child1->SetPosition(gfx::PointF(200.f, 200.f));
-    grand_child1->SetAnchorPoint(gfx::PointF());
     grand_child1->SetBounds(gfx::Size(6, 8));
     grand_child1->SetContentBounds(gfx::Size(6, 8));
     grand_child1->SetDrawsContent(true);
 
     grand_child2->SetPosition(gfx::PointF(190.f, 190.f));
-    grand_child2->SetAnchorPoint(gfx::PointF());
     grand_child2->SetBounds(gfx::Size(6, 8));
     grand_child2->SetContentBounds(gfx::Size(6, 8));
     grand_child2->SetDrawsContent(true);
@@ -419,7 +412,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   rotation.Rotate(45.0);
 
   ClearDamageForAllSurfaces(root.get());
-  child->SetAnchorPoint(gfx::PointF(0.5f, 0.5f));
+  child->SetTransformOrigin(gfx::Point3F(
+      child->bounds().width() * 0.5f, child->bounds().height() * 0.5f, 0.f));
   child->SetPosition(gfx::PointF(85.f, 85.f));
   EmulateDrawingOneFrame(root.get());
 
@@ -709,7 +703,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
     scoped_ptr<LayerImpl> child2 =
             LayerImpl::Create(host_impl_.active_tree(), 3);
     child2->SetPosition(gfx::PointF(400.f, 380.f));
-    child2->SetAnchorPoint(gfx::PointF());
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetContentBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
@@ -759,7 +752,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
     scoped_ptr<LayerImpl> child2 =
             LayerImpl::Create(host_impl_.active_tree(), 3);
     child2->SetPosition(gfx::PointF(400.f, 380.f));
-    child2->SetAnchorPoint(gfx::PointF());
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetContentBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
@@ -793,7 +785,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
     scoped_ptr<LayerImpl> child2 =
             LayerImpl::Create(host_impl_.active_tree(), 3);
     child2->SetPosition(gfx::PointF(400.f, 380.f));
-    child2->SetAnchorPoint(gfx::PointF());
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetContentBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
@@ -1045,7 +1036,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     scoped_ptr<LayerImpl> grand_child3 =
             LayerImpl::Create(host_impl_.active_tree(), 6);
     grand_child3->SetPosition(gfx::PointF(240.f, 240.f));
-    grand_child3->SetAnchorPoint(gfx::PointF());
     grand_child3->SetBounds(gfx::Size(10, 10));
     grand_child3->SetContentBounds(gfx::Size(10, 10));
     grand_child3->SetDrawsContent(true);
@@ -1061,7 +1051,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     scoped_ptr<LayerImpl> grand_child1_replica =
             LayerImpl::Create(host_impl_.active_tree(), 7);
     grand_child1_replica->SetPosition(gfx::PointF());
-    grand_child1_replica->SetAnchorPoint(gfx::PointF());
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
@@ -1147,7 +1136,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     scoped_ptr<LayerImpl> mask_layer =
             LayerImpl::Create(host_impl_.active_tree(), 3);
     mask_layer->SetPosition(child->position());
-    mask_layer->SetAnchorPoint(gfx::PointF());
     mask_layer->SetBounds(child->bounds());
     mask_layer->SetContentBounds(child->bounds());
     child->SetMaskLayer(mask_layer.Pass());
@@ -1161,7 +1149,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
     scoped_ptr<LayerImpl> grand_child =
             LayerImpl::Create(host_impl_.active_tree(), 4);
     grand_child->SetPosition(gfx::PointF(2.f, 2.f));
-    grand_child->SetAnchorPoint(gfx::PointF());
     grand_child->SetBounds(gfx::Size(2, 2));
     grand_child->SetContentBounds(gfx::Size(2, 2));
     grand_child->SetDrawsContent(true);
@@ -1241,7 +1228,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     scoped_ptr<LayerImpl> grand_child1_replica =
             LayerImpl::Create(host_impl_.active_tree(), 6);
     grand_child1_replica->SetPosition(gfx::PointF());
-    grand_child1_replica->SetAnchorPoint(gfx::PointF());
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
@@ -1254,7 +1240,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     scoped_ptr<LayerImpl> replica_mask_layer =
             LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
-    replica_mask_layer->SetAnchorPoint(gfx::PointF());
     replica_mask_layer->SetBounds(grand_child1->bounds());
     replica_mask_layer->SetContentBounds(grand_child1->bounds());
     grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());
@@ -1297,7 +1282,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
   EXPECT_EQ(gfx::Rect(194, 200, 6, 8).ToString(), child_damage_rect.ToString());
 }
 
-TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
+TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->children()[0];
   LayerImpl* grand_child1 = child1->children()[0];
@@ -1306,9 +1291,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
   // replica_mask.
   ClearDamageForAllSurfaces(root.get());
 
-  // This is not actually the anchor point being tested, but by convention its
+  // This is not actually the transform origin point being tested, but by
+  // convention its
   // expected to be the same as the replica's anchor point.
-  grand_child1->SetAnchorPoint(gfx::PointF(1.f, 0.f));
+  grand_child1->SetTransformOrigin(
+      gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f));
 
   {
     scoped_ptr<LayerImpl> grand_child1_replica =
@@ -1316,7 +1303,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
     grand_child1_replica->SetPosition(gfx::PointF());
 
     // This is the anchor being tested.
-    grand_child1_replica->SetAnchorPoint(gfx::PointF(1.f, 0.f));
+    grand_child1_replica->SetTransformOrigin(
+        gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f));
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);
@@ -1329,8 +1317,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithAnchor) {
     scoped_ptr<LayerImpl> replica_mask_layer =
             LayerImpl::Create(host_impl_.active_tree(), 7);
     replica_mask_layer->SetPosition(gfx::PointF());
-    // Note: this is not the anchor being tested.
-    replica_mask_layer->SetAnchorPoint(gfx::PointF());
+    // Note: this is not the transform origin being tested.
     replica_mask_layer->SetBounds(grand_child1->bounds());
     replica_mask_layer->SetContentBounds(grand_child1->bounds());
     grand_child1_replica->SetMaskLayer(replica_mask_layer.Pass());

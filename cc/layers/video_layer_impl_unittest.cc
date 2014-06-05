@@ -34,7 +34,6 @@ TEST(VideoLayerImplTest, Occlusion) {
 
   VideoLayerImpl* video_layer_impl =
       impl.AddChildToRoot<VideoLayerImpl>(&provider);
-  video_layer_impl->SetAnchorPoint(gfx::PointF());
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);

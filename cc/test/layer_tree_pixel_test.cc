@@ -105,7 +105,6 @@ void LayerTreePixelTest::AfterTest() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
     EXPECT_TRUE(WritePNGFile(*result_bitmap_, ref_file_path, true));
-
   EXPECT_TRUE(MatchesPNGFile(*result_bitmap_,
                              ref_file_path,
                              *pixel_comparator_));
@@ -115,7 +114,6 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
     const gfx::Rect& rect, SkColor color) {
   scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetIsDrawable(true);
-  layer->SetAnchorPoint(gfx::PointF());
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
   layer->SetBackgroundColor(color);
@@ -174,7 +172,6 @@ scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
     const gfx::Rect& rect, const SkBitmap& bitmap) {
   scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(NULL);
   layer->SetIsDrawable(true);
-  layer->SetAnchorPoint(gfx::PointF());
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
 

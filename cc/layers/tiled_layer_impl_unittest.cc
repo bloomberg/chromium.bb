@@ -317,7 +317,6 @@ TEST_F(TiledLayerImplTest, Occlusion) {
   LayerTestCommon::LayerImplTest impl;
 
   TiledLayerImpl* tiled_layer = impl.AddChildToRoot<TiledLayerImpl>();
-  tiled_layer->SetAnchorPoint(gfx::PointF());
   tiled_layer->SetBounds(layer_bounds);
   tiled_layer->SetContentBounds(layer_bounds);
   tiled_layer->SetDrawsContent(true);

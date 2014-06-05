@@ -34,7 +34,6 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
 
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       impl.AddChildToRoot<PaintedScrollbarLayerImpl>(orientation);
-  scrollbar_layer_impl->SetAnchorPoint(gfx::PointF());
   scrollbar_layer_impl->SetBounds(layer_size);
   scrollbar_layer_impl->SetContentBounds(layer_size);
   scrollbar_layer_impl->SetDrawsContent(true);

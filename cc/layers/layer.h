@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -103,12 +104,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return !copy_requests_.empty();
   }
 
-  void SetAnchorPoint(const gfx::PointF& anchor_point);
-  gfx::PointF anchor_point() const { return anchor_point_; }
-
-  void SetAnchorPointZ(float anchor_point_z);
-  float anchor_point_z() const { return anchor_point_z_; }
-
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
   // If contents_opaque(), return an opaque color else return a
@@ -181,6 +176,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool transform_is_invertible() const { return transform_is_invertible_; }
+
+  void SetTransformOrigin(const gfx::Point3F&);
+  gfx::Point3F transform_origin() { return transform_origin_; }
 
   void SetScrollParent(Layer* parent);
 
@@ -595,13 +593,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;
-  gfx::PointF anchor_point_;
   SkColor background_color_;
   float opacity_;
   SkXfermode::Mode blend_mode_;
   FilterOperations filters_;
   FilterOperations background_filters_;
-  float anchor_point_z_;
   LayerPositionConstraint position_constraint_;
   Layer* scroll_parent_;
   scoped_ptr<std::set<Layer*> > scroll_children_;
@@ -610,6 +606,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   scoped_ptr<std::set<Layer*> > clip_children_;
 
   gfx::Transform transform_;
+  gfx::Point3F transform_origin_;
 
   // Replica layer used for reflections.
   scoped_refptr<Layer> replica_layer_;

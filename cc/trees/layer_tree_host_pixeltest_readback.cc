@@ -954,18 +954,15 @@ class LayerTreeHostReadbackDeviceScalePixelTest
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackSubrect_Software) {
   scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
-  background->SetAnchorPoint(gfx::PointF());
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
-  green->SetAnchorPoint(gfx::PointF());
   green->SetBounds(gfx::Size(100, 100));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
-  blue->SetAnchorPoint(gfx::PointF());
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -985,18 +982,15 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackSubrect_GL) {
   scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
-  background->SetAnchorPoint(gfx::PointF());
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
-  green->SetAnchorPoint(gfx::PointF());
   green->SetBounds(gfx::Size(100, 100));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
-  blue->SetAnchorPoint(gfx::PointF());
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -1016,19 +1010,16 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackNonRootLayerSubrect_Software) {
   scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
-  background->SetAnchorPoint(gfx::PointF());
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
-  green->SetAnchorPoint(gfx::PointF());
   green->SetPosition(gfx::Point(10, 20));
   green->SetBounds(gfx::Size(90, 80));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
-  blue->SetAnchorPoint(gfx::PointF());
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -1049,19 +1040,16 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackNonRootLayerSubrect_GL) {
   scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
-  background->SetAnchorPoint(gfx::PointF());
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
-  green->SetAnchorPoint(gfx::PointF());
   green->SetPosition(gfx::Point(10, 20));
   green->SetBounds(gfx::Size(90, 80));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
-  blue->SetAnchorPoint(gfx::PointF());
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);

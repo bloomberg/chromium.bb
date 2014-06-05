@@ -1651,25 +1651,21 @@ static void CalculateDrawPropertiesInternal(
     animating_transform_to_screen |=
         layer->parent()->screen_space_transform_is_animating();
   }
-
-  gfx::Size bounds = layer->bounds();
-  gfx::PointF anchor_point = layer->anchor_point();
+  gfx::Point3F transform_origin = layer->transform_origin();
   gfx::Vector2dF scroll_offset = GetEffectiveTotalScrollOffset(layer);
   gfx::PointF position = layer->position() - scroll_offset;
-
   gfx::Transform combined_transform = data_from_ancestor.parent_matrix;
   if (!layer->transform().IsIdentity()) {
-    // LT = Tr[origin] * Tr[origin2anchor]
-    combined_transform.Translate3d(
-        position.x() + anchor_point.x() * bounds.width(),
-        position.y() + anchor_point.y() * bounds.height(),
-        layer->anchor_point_z());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
+    // LT = Tr[origin] * Tr[origin2transformOrigin]
+    combined_transform.Translate3d(position.x() + transform_origin.x(),
+                                   position.y() + transform_origin.y(),
+                                   transform_origin.z());
+    // LT = Tr[origin] * Tr[origin2origin] * M[layer]
     combined_transform.PreconcatTransform(layer->transform());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
-    combined_transform.Translate3d(-anchor_point.x() * bounds.width(),
-                                   -anchor_point.y() * bounds.height(),
-                                   -layer->anchor_point_z());
+    // LT = Tr[origin] * Tr[origin2origin] * M[layer] *
+    // Tr[transformOrigin2origin]
+    combined_transform.Translate3d(
+        -transform_origin.x(), -transform_origin.y(), -transform_origin.z());
   } else {
     combined_transform.Translate(position.x(), position.y());
   }
@@ -2250,14 +2246,14 @@ static void CalculateDrawPropertiesInternal(
           render_surface_sublayer_scale.x(), render_surface_sublayer_scale.y());
       surface_origin_to_replica_origin_transform.Translate(
           layer->replica_layer()->position().x() +
-          layer->replica_layer()->anchor_point().x() * bounds.width(),
+              layer->replica_layer()->transform_origin().x(),
           layer->replica_layer()->position().y() +
-          layer->replica_layer()->anchor_point().y() * bounds.height());
+              layer->replica_layer()->transform_origin().y());
       surface_origin_to_replica_origin_transform.PreconcatTransform(
           layer->replica_layer()->transform());
       surface_origin_to_replica_origin_transform.Translate(
-          -layer->replica_layer()->anchor_point().x() * bounds.width(),
-          -layer->replica_layer()->anchor_point().y() * bounds.height());
+          -layer->replica_layer()->transform_origin().x(),
+          -layer->replica_layer()->transform_origin().y());
       surface_origin_to_replica_origin_transform.Scale(
           1.0 / render_surface_sublayer_scale.x(),
           1.0 / render_surface_sublayer_scale.y());

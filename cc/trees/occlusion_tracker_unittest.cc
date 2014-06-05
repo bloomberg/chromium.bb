@@ -393,7 +393,6 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
                          const gfx::PointF& position,
                          const gfx::Size& bounds) {
     layer->SetTransform(transform);
-    layer->SetAnchorPoint(gfx::PointF());
     layer->SetPosition(position);
     layer->SetBounds(bounds);
   }

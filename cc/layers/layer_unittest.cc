@@ -541,9 +541,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   // Next, test properties that should call SetNeedsCommit (but not
   // SetNeedsDisplay). All properties need to be set to new values in order for
   // SetNeedsCommit to be called.
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetAnchorPoint(
-      gfx::PointF(1.23f, 4.56f)));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetAnchorPointZ(0.7f));
+  EXPECT_SET_NEEDS_COMMIT(
+      1, test_layer->SetTransformOrigin(gfx::Point3F(1.23f, 4.56f, 0.f)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBackgroundColor(SK_ColorLTGRAY));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetMasksToBounds(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));

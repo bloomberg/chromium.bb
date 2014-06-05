@@ -88,7 +88,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       layer_animator_collection_(this),
       schedule_draw_factory_(this) {
   root_web_layer_ = cc::Layer::Create();
-  root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 

@@ -20,14 +20,14 @@ LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
 void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     Layer* layer,
     const gfx::Transform& transform,
-    const gfx::PointF& anchor,
+    const gfx::Point3F& transform_origin,
     const gfx::PointF& position,
     const gfx::Size& bounds,
     bool flatten_transform,
     bool is_3d_sorted) {
   SetLayerPropertiesForTestingInternal<Layer>(layer,
                                               transform,
-                                              anchor,
+                                              transform_origin,
                                               position,
                                               bounds,
                                               flatten_transform,
@@ -37,14 +37,14 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
 void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     LayerImpl* layer,
     const gfx::Transform& transform,
-    const gfx::PointF& anchor,
+    const gfx::Point3F& transform_origin,
     const gfx::PointF& position,
     const gfx::Size& bounds,
     bool flatten_transform,
     bool is_3d_sorted) {
   SetLayerPropertiesForTestingInternal<LayerImpl>(layer,
                                                   transform,
-                                                  anchor,
+                                                  transform_origin,
                                                   position,
                                                   bounds,
                                                   flatten_transform,

@@ -75,8 +75,10 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
   gfx::Transform coalesced_transform;
 
   for (const LayerImpl* layer = &layer_in; layer; layer = layer->parent()) {
-    int anchor_x = layer->anchor_point().x() * layer->bounds().width();
-    int anchor_y = layer->anchor_point().y() * layer->bounds().height();
+    int transform_origin_x = layer->transform_origin().x();
+    int transform_origin_y = layer->transform_origin().y();
+    int transform_origin_z = layer->transform_origin().z();
+
     gfx::PointF position = layer->position();
     if (layer->parent() && !HasAnimationThatInflatesBounds(*layer)) {
       // |composite_layer_transform| contains 1 - 4 mentioned above. We compute
@@ -85,12 +87,12 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
       // to do it only once.
       gfx::Transform composite_layer_transform;
 
-      composite_layer_transform.Translate3d(anchor_x + position.x(),
-                                            anchor_y + position.y(),
-                                            layer->anchor_point_z());
+      composite_layer_transform.Translate3d(transform_origin_x + position.x(),
+                                            transform_origin_y + position.y(),
+                                            transform_origin_z);
       composite_layer_transform.PreconcatTransform(layer->transform());
       composite_layer_transform.Translate3d(
-          -anchor_x, -anchor_y, -layer->anchor_point_z());
+          -transform_origin_x, -transform_origin_y, -transform_origin_z);
 
       // Add this layer's contributions to the |coalesced_transform|.
       coalesced_transform.ConcatTransform(composite_layer_transform);
@@ -103,9 +105,9 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
 
     // We need to apply the inflation about the layer's anchor point. Rather
     // than doing this via transforms, we'll just shift the box directly.
-    box.set_origin(box.origin() + gfx::Vector3dF(-anchor_x,
-                                                 -anchor_y,
-                                                 -layer->anchor_point_z()));
+    box.set_origin(box.origin() + gfx::Vector3dF(-transform_origin_x,
+                                                 -transform_origin_y,
+                                                 -transform_origin_z));
 
     // Perform the inflation
     if (HasFilterAnimationThatInflatesBounds(*layer)) {
@@ -125,9 +127,10 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
     }
 
     // Apply step 3) mentioned above.
-    box.set_origin(box.origin() + gfx::Vector3dF(anchor_x + position.x(),
-                                                 anchor_y + position.y(),
-                                                 layer->anchor_point_z()));
+    box.set_origin(box.origin() +
+                   gfx::Vector3dF(transform_origin_x + position.x(),
+                                  transform_origin_y + position.y(),
+                                  transform_origin_z));
   }
 
   // If we've got an unapplied coalesced transform at this point, it must still

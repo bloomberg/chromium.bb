@@ -228,7 +228,6 @@ TEST(NinePatchLayerImplTest, Occlusion) {
 
   NinePatchLayerImpl* nine_patch_layer_impl =
       impl.AddChildToRoot<NinePatchLayerImpl>();
-  nine_patch_layer_impl->SetAnchorPoint(gfx::PointF());
   nine_patch_layer_impl->SetBounds(layer_size);
   nine_patch_layer_impl->SetContentBounds(layer_size);
   nine_patch_layer_impl->SetDrawsContent(true);

@@ -121,6 +121,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
+  gfx::Point3F arbitrary_point_3f = gfx::Point3F(0.125f, 0.25f, 0.f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
   gfx::Point arbitrary_point = gfx::Point(333, 444);
@@ -142,8 +143,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
 
   // Changing these properties affects the entire subtree of layers.
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPoint(arbitrary_point_f));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPointZ(arbitrary_number));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->SetTransformOrigin(arbitrary_point_3f));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
@@ -202,9 +203,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetAnchorPoint(arbitrary_point_f));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetAnchorPointZ(arbitrary_number));
+      root->SetTransformOrigin(arbitrary_point_3f));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetPosition(arbitrary_point_f));
@@ -296,7 +295,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->SetScrollOffset(arbitrary_vector2d));
 
   // Unrelated functions, always set to new values, always set needs update.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetAnchorPointZ(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
@@ -324,8 +322,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 
   // Unrelated functions, set to the same values, no needs update.
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetAnchorPointZ(arbitrary_number));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetIsRootForIsolatedGroup(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));

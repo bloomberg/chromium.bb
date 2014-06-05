@@ -254,7 +254,6 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
 
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
-    root_->SetAnchorPoint(gfx::PointF());
     root_->SetBounds(gfx::Size(15, 15));
 
     layer_tree_host()->SetRootLayer(root_);
@@ -291,7 +290,6 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
       DelegatedFrameProvider* frame_provider) {
     scoped_refptr<DelegatedRendererLayer> delegated =
         FakeDelegatedRendererLayer::Create(frame_provider);
-    delegated->SetAnchorPoint(gfx::PointF());
     delegated->SetBounds(gfx::Size(10, 10));
     delegated->SetIsDrawable(true);
 

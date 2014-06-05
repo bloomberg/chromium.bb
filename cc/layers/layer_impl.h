@@ -30,6 +30,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -202,11 +203,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool force_render_surface() const { return force_render_surface_; }
   void SetForceRenderSurface(bool force) { force_render_surface_ = force; }
 
-  void SetAnchorPoint(const gfx::PointF& anchor_point);
-  gfx::PointF anchor_point() const { return anchor_point_; }
-
-  void SetAnchorPointZ(float anchor_point_z);
-  float anchor_point_z() const { return anchor_point_z_; }
+  void SetTransformOrigin(const gfx::Point3F& transform_origin);
+  gfx::Point3F transform_origin() const { return transform_origin_; }
 
   void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
@@ -597,8 +595,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   LayerTreeImpl* layer_tree_impl_;
 
   // Properties synchronized from the associated Layer.
-  gfx::PointF anchor_point_;
-  float anchor_point_z_;
+  gfx::Point3F transform_origin_;
   gfx::Size bounds_;
   gfx::SizeF temporary_impl_bounds_;
   gfx::Vector2d scroll_offset_;

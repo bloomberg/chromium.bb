@@ -178,6 +178,7 @@ class CC_EXPORT MathUtil {
   static scoped_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(const gfx::PointF& q);
+  static scoped_ptr<base::Value> AsValue(const gfx::Point3F&);
   static scoped_ptr<base::Value> AsValue(const gfx::Vector2d& v);
   static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);
   static scoped_ptr<base::Value> AsValue(const gfx::RectF& rect);

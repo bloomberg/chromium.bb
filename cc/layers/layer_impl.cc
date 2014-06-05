@@ -40,8 +40,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       replica_layer_id_(-1),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
-      anchor_point_(0.5f, 0.5f),
-      anchor_point_z_(0.f),
       scroll_offset_delegate_(NULL),
       scroll_clip_layer_(NULL),
       should_scroll_on_main_thread_(false),
@@ -490,8 +488,7 @@ scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  layer->SetAnchorPoint(anchor_point_);
-  layer->SetAnchorPointZ(anchor_point_z_);
+  layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(bounds_);
   layer->SetContentBounds(content_bounds());
@@ -853,19 +850,10 @@ void LayerImpl::SetHideLayerAndSubtree(bool hide) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::SetAnchorPoint(const gfx::PointF& anchor_point) {
-  if (anchor_point_ == anchor_point)
+void LayerImpl::SetTransformOrigin(const gfx::Point3F& transform_origin) {
+  if (transform_origin_ == transform_origin)
     return;
-
-  anchor_point_ = anchor_point;
-  NoteLayerPropertyChangedForSubtree();
-}
-
-void LayerImpl::SetAnchorPointZ(float anchor_point_z) {
-  if (anchor_point_z_ == anchor_point_z)
-    return;
-
-  anchor_point_z_ = anchor_point_z;
+  transform_origin_ = transform_origin;
   NoteLayerPropertyChangedForSubtree();
 }
 
@@ -1427,6 +1415,8 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
   state->Set("scroll_offset", MathUtil::AsValue(scroll_offset_).release());
+  state->Set("transform_origin",
+             MathUtil::AsValue(transform_origin_).release());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(

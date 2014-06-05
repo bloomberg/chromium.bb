@@ -132,7 +132,6 @@ class PictureLayerImplTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
-    pending_layer->SetAnchorPoint(gfx::PointF());
     pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(

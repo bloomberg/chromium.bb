@@ -178,7 +178,6 @@ TEST(SolidColorLayerImplTest, Occlusion) {
   SolidColorLayerImpl* solid_color_layer_impl =
       impl.AddChildToRoot<SolidColorLayerImpl>();
   solid_color_layer_impl->SetBackgroundColor(SkColorSetARGB(255, 10, 20, 30));
-  solid_color_layer_impl->SetAnchorPoint(gfx::PointF());
   solid_color_layer_impl->SetBounds(layer_size);
   solid_color_layer_impl->SetContentBounds(layer_size);
   solid_color_layer_impl->SetDrawsContent(true);

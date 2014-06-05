@@ -86,7 +86,6 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   } else {  // Type "Layer" or "unknown"
     new_layer = Layer::Create();
   }
-  new_layer->SetAnchorPoint(gfx::Point());
   new_layer->SetPosition(gfx::PointF(position_x, position_y));
   new_layer->SetBounds(gfx::Size(width, height));
   new_layer->SetIsDrawable(draws_content);

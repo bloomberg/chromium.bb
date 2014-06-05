@@ -38,7 +38,6 @@ class TestLayer : public Layer {
   TestLayer() : Layer(), draws_content_(true) {
     SetBounds(gfx::Size(100, 100));
     SetPosition(gfx::Point());
-    SetAnchorPoint(gfx::Point());
   }
   virtual ~TestLayer() {}
 
