@@ -8,6 +8,8 @@ var seenFocusCount = 0;
 embedder.tests = {};
 embedder.guestURL =
     'data:text/html,<html><body>Guest<body></html>';
+var g_inputMethodTestHelper = null;
+var g_focusRestoredTestHelper = null;
 
 window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {
@@ -20,12 +22,17 @@ window.runTest = function(testName) {
   embedder.test.testList[testName]();
 };
 
-window.runCommand = function(command) {
+window.runCommand = function(command, opt_step) {
   window.console.log('window.runCommand: ' + command);
   switch (command) {
-    case 'POST_testFocusTracksEmbedder':
-      POST_testFocusTracksEmbedder();
+    case 'testFocusTracksEmbedderRunNextStep':
+      testFocusTracksEmbedderRunNextStep();
       break;
+    case 'testInputMethodRunNextStep':
+      testInputMethodRunNextStep(opt_step);
+      break;
+    case 'testFocusRestoredRunNextStep':
+      testFocusRestoredRunNextStep(opt_step);
     default:
       embedder.test.fail();
   }
@@ -77,9 +84,25 @@ embedder.setUpGuest_ = function() {
   return webview;
 };
 
-/** @private */
+/**
+ * @private
+ *
+ * A test helper for focus related tests.
+ * It does the following steps:
+ * 1. It navigates |webview|.
+ * 2. On 'loadstop', it injects the script |inject_js_guest_url|.
+ * 3. When the injection has completed, it sends a ['connect'] message to the
+ * guest to initiate a two-way communication channel.
+ * 4. When the two way channel has been established |channelCreationCallback| is
+ * called.
+ * 5. It ignores all messages from the guest until it gets an
+ * |expectedResponse|.
+ * If there is no |expectedResponse|, the method is done.
+ * 6. Once the expected result is received, call |responseCallback|.
+ */
 embedder.waitForResponseFromGuest_ =
     function(webview,
+             inject_js_guest_url,
              channelCreationCallback,
              expectedResponse,
              responseCallback) {
@@ -88,6 +111,11 @@ embedder.waitForResponseFromGuest_ =
     var response = data[0];
     if (response == 'connected') {
       channelCreationCallback(webview);
+
+      if (!expectedResponse) {
+        // We are done.
+        window.removeEventListener('message', onPostMessageReceived);
+      }
       return;
     }
     if (response != expectedResponse) {
@@ -105,7 +133,7 @@ embedder.waitForResponseFromGuest_ =
   var onWebViewLoadStop = function(e) {
     console.log('loadstop');
     webview.executeScript(
-      {file: 'inject_focus.js'},
+      {file: inject_js_guest_url},
       function(results) {
         console.log('Injected script into webview.');
         // Establish a communication channel with the webview1's guest.
@@ -116,6 +144,170 @@ embedder.waitForResponseFromGuest_ =
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
   webview.src = embedder.guestURL;
+};
+
+// Helper class for testFocusRestored.
+//
+// This test has multiple steps, WebViewTest instructs this test to advance to
+// each step and then performs some action and verification and runs the next
+// step.
+// See WebViewInteractiveTest.Focus_FocusRestored for details.
+function FocusRestoredTestHelper() {
+  // Total number of steps for this test that we run thru
+  // testFocusRestoredRunNextStep.
+  this.TOTAL_STEPS = 3;
+  // Currently running step index.
+  this.step_ = 0;
+  this.messageHandlerRegistered_ = false;
+  this.doneCallback_ = null;
+}
+
+FocusRestoredTestHelper.prototype.runStep = function(step, doneCallback) {
+  LOG('runStep: ' + step);
+  this.doneCallback_ = doneCallback;
+
+  if (step != this.step_ + 1 || step < 0 || step > this.TOTAL_STEPS) {
+    LOG('Incorrect step, expected:', this.step_ + 1, 'got', step);
+    this.passStep_(false);
+    return;
+  }
+  this.step_ = step;
+
+  if (!this.messageHandlerRegistered_) {
+    this.messageHandlerRegistered_ = true;
+    window.addEventListener('message', this.messageHandler_.bind(this));
+  }
+
+  var msgToSend = '';
+  if (step == 1) {
+    msgToSend = 'request-waitForFocus';
+  } else if (step == 2) {
+    msgToSend = 'request-waitForBlur';
+  } else if (step == 3) {
+    msgToSend = 'request-waitForFocusAgain';
+  }
+
+  if (!msgToSend) {
+    this.passStep_(false);
+    return;
+  }
+
+  g_webview.contentWindow.postMessage(JSON.stringify([msgToSend]), '*');
+};
+
+FocusRestoredTestHelper.prototype.messageHandler_ = function(e) {
+  var data = JSON.parse(e.data);
+  LOG('FocusRestoredTestHelper.message, data: ' + data);
+  switch (this.step_) {
+    case 1:
+      this.passStep_(data[0] == 'response-focus');
+      break;
+    case 2:
+      this.passStep_(data[0] == 'response-blur');
+      g_webview.focus();
+      break;
+    case 3:
+      this.passStep_(data[0] == 'response-focusAgain');
+      break;
+    default:
+      LOG('Unexpected message: ' + data);
+      this.passStep_(false);
+  }
+};
+
+FocusRestoredTestHelper.prototype.passStep_ = function(passed) {
+  if (!this.doneCallback_) {
+    LOG('Expected doneCallback_ in FocusRestoredTestHelper');
+    embedder.test.fail();
+    return;
+  }
+  this.doneCallback_(passed);
+};
+
+// Helper class for testInputMethod.
+// This test has multiple steps, WebViewTest instructs this test to advance to
+// each step and then performs some action and verification and runs the next
+// step.
+//
+// See WebViewInteractiveTest.Focus_InputMethod for details about these steps.
+function InputMethodTestHelper() {
+  // Total number of steps for this test that we run thru
+  // testInputMethodRunNextStep.
+  this.TOTAL_STEPS = 4;
+  // Currently running step index.
+  this.step_ = 0;
+  // True iff post message handler has been regsitered.
+  this.messageHandlerRegistered_ = false;
+  this.doneCallback_ = null;
+};
+
+InputMethodTestHelper.prototype.passStep_ = function(passed) {
+  if (!this.doneCallback_) {
+    LOG('Expected doneCallback_ in InputMethodTestHelper');
+    embedder.test.fail();
+    return;
+  }
+  this.doneCallback_(passed);
+};
+
+InputMethodTestHelper.prototype.runStep = function(step, doneCallback) {
+  LOG('runStep: ' + step);
+  this.doneCallback_ = doneCallback;
+
+  if (step != this.step_ + 1 || step < 0 || step > this.TOTAL_STEPS) {
+    LOG('Incorrect step, expected:', this.step_ + 1, 'got', step);
+    this.passStep_(false);
+    return;
+  }
+  this.step_ = step;
+
+  if (!this.messageHandlerRegistered_) {
+    this.messageHandlerRegistered_ = true;
+    window.addEventListener('message', this.messageHandler_.bind(this));
+  }
+
+  var msgToSend = '';
+  if (step == 1) {
+    msgToSend = 'request-waitForOnInput';
+  } else if (step == 2) {
+    msgToSend = 'request-waitForOnInput';
+  } else if (step == 3) {
+    msgToSend = 'request-moveFocus';
+  } else if (step == 4) {
+    msgToSend = 'request-valueAfterExtendSelection';
+  }
+  if (!msgToSend) {
+    this.passStep_(false);
+    return;
+  }
+
+  g_webview.contentWindow.postMessage(JSON.stringify([msgToSend]), '*');
+};
+
+InputMethodTestHelper.prototype.messageHandler_ = function(e) {
+  var data = JSON.parse(e.data);
+  LOG('InputMethodTestHelper.message, data: ' + data);
+  switch (this.step_) {
+    case 1:
+      this.passStep_(data[0] == 'response-waitForOnInput' &&
+                     data[1] == 'InputTest123');
+      break;
+    case 2:
+      this.passStep_(data[0] == 'response-waitForOnInput' &&
+                     data[1] == 'InputTest456');
+      break;
+    case 3:
+      this.passStep_(data[0] == 'response-movedFocus' &&
+                     data[1] == 'InputTest789');
+      break;
+    case 4:
+      this.passStep_(data[0] == 'response-valueAfterExtendSelection' &&
+                     data[1] == 'InputABC');
+      break;
+    default:
+      LOG('Unexpected message: ' + data);
+      this.passStep_(false);
+  }
 };
 
 // Tests begin.
@@ -129,6 +321,7 @@ embedder.testFocus_ = function(channelCreationCallback,
   var webview = embedder.setUpGuest_();
 
   embedder.waitForResponseFromGuest_(webview,
+                                     'inject_focus.js',
                                      channelCreationCallback,
                                      expectedResponse,
                                      responseCallback);
@@ -155,6 +348,7 @@ function testFocusBeforeNavigation() {
 
   embedder.waitForResponseFromGuest_(
     webview,
+    'inject_focus.js',
     onChannelEstablished,
     'response-hasFocus',
     function(data) {
@@ -193,6 +387,99 @@ function testBlurEvent() {
   });
 }
 
+// This test verifies IME related stuff for guest.
+//
+// Briefly:
+// 1) We load a guest, the guest gets initial focus and sends message
+// back to the embedder.
+// 2) In InputMethodTestHelper's step 1, we receive some text via cpp, the
+// text is InputTest123, we verify we've seen the change in the guest.
+// 3) In InputMethodTestHelper's step 2, we expect the text to be changed
+// to InputTest456, this is done from cpp via committing an IME composition.
+// 4) In InputMethodTestHelper's step 3, we have a composition (InputTest789)
+// on an input element but we move the focus to another input element, we
+// make sure the first element gets the composition commit.
+// 5) In InputMethodTestHelper's step 4, we verify extending and deleting
+// selection through caret works properly.
+function testInputMethod() {
+  var webview = document.createElement('webview');
+  g_webview = webview;
+  document.body.appendChild(webview);
+
+  webview.focus();
+
+  var onChannelEstablished = function(webview) {
+    var msg = ['request-waitForFocus'];
+    webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+  };
+  embedder.waitForResponseFromGuest_(
+      webview,
+      'inject_input_method.js',
+      onChannelEstablished,
+      'response-seenFocus',
+      function(data) { embedder.test.succeed(); });
+}
+
+// Runs additional test steps for testInputMethod.
+function testInputMethodRunNextStep(step) {
+  LOG('testInputMethodRunNextStep, step: ' + step);
+  if (!g_inputMethodTestHelper) {
+    g_inputMethodTestHelper = new InputMethodTestHelper();
+  }
+
+  g_inputMethodTestHelper.runStep(step, function(stepPassed) {
+    LOG('runStep callback, stepPassed: ' + stepPassed);
+    chrome.test.sendMessage(stepPassed ? 'TEST_STEP_PASSED'
+                                       : 'TEST_STEP_FAILED');
+  });
+}
+
+// This test ensures we get TextInputTypeChanged event if we bring
+// back focus to a guest's <input> after it was initially focused.
+//
+// Briefly:
+// 1) We load a guest.
+// 2) In FocusRestoredTestHelper's step 1, we click on the guest to
+// focus its <input> element.
+// 3) In FocusRestoredTestHelper's step 2, we click outside the guest
+// so that the <input> gets a blur event.
+// 4. In FocusRestoredTestHelper's step 3, we click on the guest again
+// to bring the focus back.
+// In the end we check the guest rvh's TextInputType in cpp to make
+// sure it initialises properly.
+function testFocusRestored() {
+  var webview = document.createElement('webview');
+  webview.style.width = '100px';
+  webview.style.height = '100px';
+  g_webview = webview;
+  document.body.appendChild(webview);
+
+  webview.focus();
+
+  var onChannelEstablished = function(webview) {
+    chrome.test.sendMessage('TEST_PASSED');
+  };
+
+  embedder.waitForResponseFromGuest_(webview,
+                                     'inject_focus_restored.js',
+                                     onChannelEstablished,
+                                     undefined,
+                                     undefined);
+}
+
+// Runs additional test steps for testFocusRestored.
+function testFocusRestoredRunNextStep(step) {
+  LOG('testFocusRestoredRunNextStep, step: ' + step);
+  if (!g_focusRestoredTestHelper) {
+    g_focusRestoredTestHelper = new FocusRestoredTestHelper();
+  }
+  g_focusRestoredTestHelper.runStep(step, function(stepPassed) {
+    LOG('runStep callback, stepPassed: ' + stepPassed);
+    chrome.test.sendMessage(stepPassed ? 'TEST_STEP_PASSED'
+                                       : 'TEST_STEP_FAILED');
+  });
+}
+
 // Tests that if we focus/blur the embedder, it also gets reflected in the
 // guest.
 //
@@ -200,7 +487,7 @@ function testBlurEvent() {
 // 1) testFocusTracksEmbedder(), in this step we create a <webview> and
 // focus it before navigating. After navigating it to a URL, we focus an input
 // element inside the <webview>, and wait for its 'focus' event to fire.
-// 2) POST_testFocusTracksEmbedder(), in this step, we have already called
+// 2) testFocusTracksEmbedderRunNextStep(), in this step, we have already called
 // Blur() on the embedder's RVH (see WebViewTest.Focus_FocusTracksEmbedder),
 // we make sure we see a 'blur' event on the <webview>'s input element.
 function testFocusTracksEmbedder() {
@@ -219,6 +506,7 @@ function testFocusTracksEmbedder() {
 
   embedder.waitForResponseFromGuest_(
       webview,
+      'inject_focus.js',
       onChannelEstablished,
       'response-seenFocus',
       function(data) { embedder.test.succeed(); });
@@ -226,7 +514,7 @@ function testFocusTracksEmbedder() {
 
 // Runs the second step for testFocusTracksEmbedder().
 // See WebViewTest.Focus_FocusTracksEmbedder() to see how this is invoked.
-function POST_testFocusTracksEmbedder() {
+function testFocusTracksEmbedderRunNextStep() {
   g_webview.contentWindow.postMessage(
       JSON.stringify(['request-waitForBlurAfterFocus']), '*');
 
@@ -234,9 +522,9 @@ function POST_testFocusTracksEmbedder() {
     var data = JSON.parse(e.data);
     LOG('send window.message, data: ' + data);
     if (data[0] == 'response-seenBlurAfterFocus') {
-      chrome.test.sendMessage('POST_TEST_PASSED');
+      chrome.test.sendMessage('TEST_STEP_PASSED');
     } else {
-      chrome.test.sendMessage('POST_TEST_FAILED');
+      chrome.test.sendMessage('TEST_STEP_FAILED');
     }
   });
 }
@@ -298,10 +586,12 @@ function testAdvanceFocus() {
 
 embedder.test.testList = {
   'testAdvanceFocus': testAdvanceFocus,
+  'testBlurEvent': testBlurEvent,
   'testFocusBeforeNavigation': testFocusBeforeNavigation,
   'testFocusEvent': testFocusEvent,
   'testFocusTracksEmbedder': testFocusTracksEmbedder,
-  'testBlurEvent': testBlurEvent
+  'testInputMethod': testInputMethod,
+  'testFocusRestored': testFocusRestored
 };
 
 onload = function() {

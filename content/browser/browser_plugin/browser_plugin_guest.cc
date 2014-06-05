@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
-#include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -39,9 +38,6 @@
 #endif
 
 namespace content {
-
-// static
-BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
 class BrowserPluginGuest::EmbedderWebContentsObserver
     : public WebContentsObserver {
@@ -262,14 +258,8 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     scoped_ptr<base::DictionaryValue> extra_params,
     BrowserPluginGuest* opener) {
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));
-  BrowserPluginGuest* guest = NULL;
-  if (factory_) {
-    guest = factory_->CreateBrowserPluginGuest(instance_id, web_contents);
-  } else {
-    guest = new BrowserPluginGuest(instance_id,
-                                   web_contents->opener() != NULL,
-                                   web_contents);
-  }
+  BrowserPluginGuest* guest = new BrowserPluginGuest(
+      instance_id, web_contents->opener() != NULL, web_contents);
   web_contents->SetBrowserPluginGuest(guest);
   WebContents* opener_web_contents = NULL;
   if (opener) {

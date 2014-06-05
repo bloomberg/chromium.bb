@@ -33,7 +33,6 @@ namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginGuestManager;
-class BrowserPluginHostFactory;
 class RenderWidgetHostImpl;
 class WebContentsImpl;
 struct NativeWebKeyboardEvent;
@@ -49,12 +48,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   // Called when embedder's |rwh| has sent screen rects to renderer.
   void DidSendScreenRects();
-
-  // Overrides factory for testing. Default (NULL) value indicates regular
-  // (non-test) environment.
-  static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
-    factory_ = factory;
-  }
 
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -75,8 +68,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void SystemDragEnded();
 
  private:
-  friend class TestBrowserPluginEmbedder;
-
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
@@ -104,9 +95,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,
                                   const gfx::Point& position);
-
-  // Static factory instance (always NULL for non-test).
-  static BrowserPluginHostFactory* factory_;
 
   // Used to correctly update the cursor when dragging over a guest, and to
   // handle a race condition when dropping onto the guest that started the drag

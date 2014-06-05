@@ -336,7 +336,6 @@
       'browser/browser_plugin/browser_plugin_embedder.h',
       'browser/browser_plugin/browser_plugin_guest.cc',
       'browser/browser_plugin/browser_plugin_guest.h',
-      'browser/browser_plugin/browser_plugin_host_factory.h',
       'browser/browser_plugin/browser_plugin_message_filter.cc',
       'browser/browser_plugin/browser_plugin_message_filter.h',
       'browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h',

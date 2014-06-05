@@ -764,6 +764,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, EmbedderVisibilityChanged) {
     loop_runner->Run();
 }
 
+// This test verifies that reloading the embedder reloads the guest (and doest
+// not crash).
+IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadEmbedder) {
+  // Just load a guest from other test, we do not want to add a separate
+  // platform_app for this test.
+  LoadAppWithGuest("web_view/visibility_changed");
+
+  ExtensionTestMessageListener launched_again_listener("WebViewTest.LAUNCHED",
+                                                       false);
+  GetEmbedderWebContents()->GetController().Reload(false);
+  ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, AcceptTouchEvents) {
   LoadAppWithGuest("web_view/accept_touch_events");
 

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -419,6 +422,38 @@ class WebViewInteractiveTest
   std::string last_drop_data_;
 };
 
+// Used to get notified when a guest is created.
+class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
+ public:
+  GuestContentBrowserClient() : web_contents_(NULL) {}
+
+  content::WebContents* WaitForGuestCreated() {
+    if (web_contents_)
+      return web_contents_;
+
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    return web_contents_;
+  }
+
+ private:
+  // ChromeContentBrowserClient implementation:
+  virtual void GuestWebContentsAttached(
+      content::WebContents* guest_web_contents,
+      content::WebContents* embedder_web_contents,
+      const base::DictionaryValue& extra_params) OVERRIDE {
+    ChromeContentBrowserClient::GuestWebContentsAttached(
+        guest_web_contents, embedder_web_contents, extra_params);
+    web_contents_ = guest_web_contents;
+
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  content::WebContents* web_contents_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
 // likely won't work on many other platforms as well, so for now this test
 // is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
@@ -522,16 +557,16 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusTracksEmbedder) {
                    &embedder_web_contents));
   done_listener->WaitUntilSatisfied();
 
-  ExtensionTestMessageListener post_test_listener("POST_TEST_PASSED", false);
-  post_test_listener.set_failure_message("POST_TEST_FAILED");
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
   EXPECT_TRUE(content::ExecuteScript(
                   embedder_web_contents,
-                  "window.runCommand('POST_testFocusTracksEmbedder');"));
+                  "window.runCommand('testFocusTracksEmbedderRunNextStep');"));
 
   // Blur the embedder.
   embedder_web_contents->GetRenderViewHost()->Blur();
   // Ensure that the guest is also blurred.
-  ASSERT_TRUE(post_test_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_AdvanceFocus) {
@@ -836,6 +871,166 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              "web_view/pointerlock",
              NO_TEST_SERVER);
 }
+
+// This test exercies the following scenario:
+// 1. An <input> in guest has focus.
+// 2. User takes focus to embedder by clicking e.g. an <input> in embedder.
+// 3. User brings back the focus directly to the <input> in #1.
+//
+// Now we need to make sure TextInputTypeChanged fires properly for the guest's
+// view upon step #3. We simply read the input type's state after #3 to
+// make sure it's not TEXT_INPUT_TYPE_NONE.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusRestored) {
+  GuestContentBrowserClient new_client;
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+
+  content::WebContents* embedder_web_contents = NULL;
+  scoped_ptr<ExtensionTestMessageListener> done_listener(
+      RunAppHelper("testFocusRestored", "web_view/focus", NO_TEST_SERVER,
+                   &embedder_web_contents));
+  ASSERT_TRUE(done_listener->WaitUntilSatisfied());
+  content::WebContents* guest_web_contents = new_client.WaitForGuestCreated();
+  // Reset the browser client so that we do not notice any unexpected behavior.
+  SetBrowserClientForTesting(old_client);
+  ASSERT_TRUE(guest_web_contents);
+
+  // 1) We click on the guest so that we get a focus event.
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+  {
+    content::SimulateMouseClickAt(guest_web_contents,
+                                  0,
+                                  blink::WebMouseEvent::ButtonLeft,
+                                  gfx::Point(10, 10));
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testFocusRestoredRunNextStep', 1);"));
+  }
+  // Wait for the next step to complete.
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  // 2) We click on the embedder so the guest's focus goes away and it observes
+  // a blur event.
+  next_step_listener.Reset();
+  {
+    content::SimulateMouseClickAt(embedder_web_contents,
+                                  0,
+                                  blink::WebMouseEvent::ButtonLeft,
+                                  gfx::Point(200, 20));
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testFocusRestoredRunNextStep', 2);"));
+  }
+  // Wait for the next step to complete.
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  // 3) We click on the guest again to bring back focus directly to the previous
+  // input element, then we ensure text_input_type is properly set.
+  next_step_listener.Reset();
+  {
+    content::SimulateMouseClickAt(guest_web_contents,
+                                  0,
+                                  blink::WebMouseEvent::ButtonLeft,
+                                  gfx::Point(10, 10));
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testFocusRestoredRunNextStep', 3)"));
+  }
+  // Wait for the next step to complete.
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  // |text_input_client| is not available for mac and android.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  ui::TextInputClient* text_input_client =
+      embedder_web_contents->GetRenderViewHost()->GetView()
+          ->GetTextInputClient();
+  ASSERT_TRUE(text_input_client);
+  ASSERT_TRUE(text_input_client->GetTextInputType() !=
+              ui::TEXT_INPUT_TYPE_NONE);
+#endif
+}
+
+// ui::TextInputClient is NULL for mac and android.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
+  content::WebContents* embedder_web_contents = NULL;
+  scoped_ptr<ExtensionTestMessageListener> done_listener(
+      RunAppHelper("testInputMethod", "web_view/focus", NO_TEST_SERVER,
+                   &embedder_web_contents));
+  ASSERT_TRUE(done_listener->WaitUntilSatisfied());
+
+  ui::TextInputClient* text_input_client =
+      embedder_web_contents->GetRenderViewHost()->GetView()
+          ->GetTextInputClient();
+  ASSERT_TRUE(text_input_client);
+
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+
+  // An input element inside the <webview> gets focus and is given some
+  // user input via IME.
+  {
+    ui::CompositionText composition;
+    composition.text = base::UTF8ToUTF16("InputTest123");
+    text_input_client->SetCompositionText(composition);
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testInputMethodRunNextStep', 1);"));
+
+    // Wait for the next step to complete.
+    ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  }
+
+  // A composition is committed via IME.
+  {
+    next_step_listener.Reset();
+
+    ui::CompositionText composition;
+    composition.text = base::UTF8ToUTF16("InputTest456");
+    text_input_client->SetCompositionText(composition);
+    text_input_client->ConfirmCompositionText();
+    EXPECT_TRUE(content::ExecuteScript(
+                  embedder_web_contents,
+                  "window.runCommand('testInputMethodRunNextStep', 2);"));
+
+    // Wait for the next step to complete.
+    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
+  }
+
+  // Moving focus causes IME cancel, and the composition will be committed
+  // in first <input> in the <webview>, not in the second <input>.
+  {
+    next_step_listener.Reset();
+    ui::CompositionText composition;
+    composition.text = base::UTF8ToUTF16("InputTest789");
+    text_input_client->SetCompositionText(composition);
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testInputMethodRunNextStep', 3);"));
+
+    // Wait for the next step to complete.
+    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
+  }
+
+  // Tests ExtendSelectionAndDelete message works in <webview>.
+  {
+    next_step_listener.Reset();
+
+    // At this point we have set focus on first <input> in the <webview>,
+    // and the value it contains is 'InputTestABC' with caret set after 'T'.
+    // Now we delete 'Test' in 'InputTestABC', as the caret is after 'T':
+    // delete before 1 character ('T') and after 3 characters ('est').
+    text_input_client->ExtendSelectionAndDelete(1, 3);
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    "window.runCommand('testInputMethodRunNextStep', 4);"));
+
+    // Wait for the next step to complete.
+    EXPECT_TRUE(next_step_listener.WaitUntilSatisfied());
+  }
+}
+#endif
 
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {

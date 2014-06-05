@@ -58,7 +58,6 @@ class Range;
 namespace content {
 
 class BrowserPluginGuestManager;
-class BrowserPluginHostFactory;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class SiteInstance;
@@ -166,9 +165,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Helper to send messages to embedder. This methods fills the message with
   // the correct routing id.
-  // Overridden in test implementation since we want to intercept certain
-  // messages for testing.
-  virtual void SendMessageToEmbedder(IPC::Message* msg);
+  void SendMessageToEmbedder(IPC::Message* msg);
 
   // Returns whether the guest is attached to an embedder.
   bool attached() const { return embedder_web_contents_ != NULL; }
@@ -203,17 +200,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
                                   bool should_allow,
                                   const std::string& user_input);
 
-  // Overrides factory for testing. Default (NULL) value indicates regular
-  // (non-test) environment.
-  static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
-    BrowserPluginGuest::factory_ = factory;
-  }
-
   void PointerLockPermissionResponse(bool allow);
 
  private:
   class EmbedderWebContentsObserver;
-  friend class TestBrowserPluginGuest;
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
@@ -252,8 +242,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
       int instance_id,
       const FrameHostMsg_ReclaimCompositorResources_Params& params);
 
-  // Overridden in tests.
-  virtual void OnHandleInputEvent(int instance_id,
+  void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const blink::WebInputEvent* event);
   void OnLockMouse(bool user_gesture,
@@ -312,8 +301,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
       const std::string& text,
       bool keep_selection);
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);
-  // Overridden in tests.
-  virtual void OnImeCancelComposition();
+  void OnImeCancelComposition();
 #if defined(OS_MACOSX) || defined(USE_AURA)
   void OnImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -342,9 +330,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
-
-  // Static factory instance (always NULL for non-test).
-  static BrowserPluginHostFactory* factory_;
 
   scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
   WebContentsImpl* embedder_web_contents_;
