@@ -249,8 +249,8 @@ void HistoryURLProviderTest::TearDown() {
 void HistoryURLProviderTest::FillData() {
   // Most visits are a long time ago (some tests require this since we do some
   // special logic for things visited very recently). Note that this time must
-  // be more recent than the "archived history" threshold for the data to go
-  // into the main database.
+  // be more recent than the "expire history" threshold for the data to be kept
+  // in the main database.
   //
   // TODO(brettw) It would be nice if we could test this behavior, in which
   // case the time would be specifed in the test_db structure.

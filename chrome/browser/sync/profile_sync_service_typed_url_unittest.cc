@@ -839,7 +839,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   EXPECT_TRUE(URLsEqual(original_entry2, new_sync_entries[0]));
 }
 
-TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveArchive) {
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   history::VisitVector original_visits1;
   history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
                                                     2, 15, false,
@@ -863,8 +863,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveArchive) {
 
   history::URLsDeletedDetails changes;
   changes.all_history = false;
-  // Setting archived=true should cause the sync code to ignore this deletion.
-  changes.archived = true;
+  // Setting expired=true should cause the sync code to ignore this deletion.
+  changes.expired = true;
   changes.rows.push_back(history::URLRow(GURL("http://mine.com")));
   scoped_refptr<ThreadNotifier> notifier(
       new ThreadNotifier(history_thread_.get()));

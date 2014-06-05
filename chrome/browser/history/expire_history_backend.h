@@ -21,7 +21,6 @@ class TestingProfile;
 
 namespace history {
 
-class ArchivedDatabase;
 class HistoryClient;
 class HistoryDatabase;
 struct HistoryDetails;
@@ -38,7 +37,7 @@ class BroadcastNotificationDelegate {
   // Tells typed url sync code to handle URL modifications or deletions.
   virtual void NotifySyncURLsModified(URLRows* rows) = 0;
   virtual void NotifySyncURLsDeleted(bool all_history,
-                                     bool archived,
+                                     bool expired,
                                      URLRows* rows) = 0;
 
  protected:
@@ -58,11 +57,10 @@ class ExpiringVisitsReader {
 typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
 
 // Helper component to HistoryBackend that manages expiration and deleting of
-// history, as well as moving data from the main database to the archived
-// database as it gets old.
+// history.
 //
-// It will automatically start periodically archiving old history once you call
-// StartArchivingOldStuff().
+// It will automatically start periodically expiring old history once you call
+// StartExpiringOldStuff().
 class ExpireHistoryBackend {
  public:
   // The delegate pointer must be non-NULL. We will NOT take ownership of it.
@@ -75,12 +73,11 @@ class ExpireHistoryBackend {
 
   // Completes initialization by setting the databases that this class will use.
   void SetDatabases(HistoryDatabase* main_db,
-                    ArchivedDatabase* archived_db,
                     ThumbnailDatabase* thumb_db);
 
   // Begins periodic expiration of history older than the given threshold. This
   // will continue until the object is deleted.
-  void StartArchivingOldStuff(base::TimeDelta expiration_threshold);
+  void StartExpiringOldStuff(base::TimeDelta expiration_threshold);
 
   // Deletes everything associated with a URL.
   void DeleteURL(const GURL& url);
@@ -102,24 +99,22 @@ class ExpireHistoryBackend {
   // ExpireHistoryBetween(), but affecting a specific set of visits).
   void ExpireVisits(const VisitVector& visits);
 
-  // Archives all visits before and including the given time, updating the URLs
-  // accordingly. This function is intended for migrating old databases
-  // (which encompased all time) to the tiered structure and testing, and
-  // probably isn't useful for anything else.
-  void ArchiveHistoryBefore(base::Time end_time);
+  // Expires all visits before and including the given time, updating the URLs
+  // accordingly. Currently only used for testing.
+  void ExpireHistoryBefore(base::Time end_time);
 
-  // Returns the current time that we are archiving stuff to. This will return
-  // the threshold in absolute time rather than a delta, so the caller should
-  // not save it.
-  base::Time GetCurrentArchiveTime() const {
+  // Returns the current cut-off time before which we will start expiring stuff.
+  // Note that this as an absolute time rather than a delta, so the caller
+  // should not save it.
+  base::Time GetCurrentExpirationTime() const {
     return base::Time::Now() - expiration_threshold_;
   }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteFaviconsIfPossible);
-  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistory);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpireSomeOldHistory);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpiringVisitsReader);
-  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpireSomeOldHistoryWithSource);
   friend class ::TestingProfile;
 
   struct DeleteEffects {
@@ -154,9 +149,6 @@ class ExpireHistoryBackend {
   void DeleteVisitRelatedInfo(const VisitVector& visits,
                               DeleteEffects* effects);
 
-  // Moves the given visits from the main database to the archived one.
-  void ArchiveVisits(const VisitVector& visits);
-
   // Finds or deletes dependency information for the given URL. Information that
   // is specific to this URL (URL row, thumbnails, etc.) is deleted.
   //
@@ -178,13 +170,6 @@ class ExpireHistoryBackend {
                     bool is_bookmarked,
                     DeleteEffects* effects);
 
-  // Adds or merges the given URL row with the archived database, returning the
-  // ID of the URL in the archived database, or 0 on failure. The main (source)
-  // database will not be affected (the URL will have to be deleted later).
-  //
-  // Assumes the archived database is not NULL.
-  URLID ArchiveOneURL(const URLRow& url_row);
-
   // Deletes all the URLs in the given vector and handles their dependencies.
   // This will delete starred URLs
   void DeleteURLs(const URLRows& urls, DeleteEffects* effects);
@@ -194,10 +179,8 @@ class ExpireHistoryBackend {
   // field of the dependencies and DeleteOneURL will handle deleting out from
   // there. This function does not handle favicons.
   //
-  // When a URL is not deleted and |archive| is not set, the last visit time and
-  // the visit and typed counts will be updated (we want to clear these when a
-  // user is deleting history manually, but not when we're normally expiring old
-  // things from history).
+  // When a URL is not deleted, the last visit time and the visit and typed
+  // counts will be updated.
   //
   // The visits in the given vector should have already been deleted from the
   // database, and the list of affected URLs already be filled into
@@ -208,42 +191,38 @@ class ExpireHistoryBackend {
   // any now-unused favicons.
   void ExpireURLsForVisits(const VisitVector& visits, DeleteEffects* effects);
 
-  // Creates entries in the archived database for the unique URLs referenced
-  // by the given visits. It will then add versions of the visits to that
-  // database. The source database WILL NOT BE MODIFIED. The source URLs and
-  // visits will have to be deleted in another pass.
-  void ArchiveURLsAndVisits(const VisitVector& visits);
-
-  // Deletes the favicons listed in effects->affected_favicons if unused.
-  // Fills effects->deleted_favicons with the set of favicon urls that were
-  // actually deleted.
+  // Deletes the favicons listed in |effects->affected_favicons| if they are
+  // unsued. Fails silently (we don't care about favicons so much, so don't want
+  // to stop everything if it fails). Fills |expired_favicons| with the set of
+  // favicon urls that no longer have associated visits and were therefore
+  // expired.
   void DeleteFaviconsIfPossible(DeleteEffects* effects);
 
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {
     // User initiated the deletion from the History UI.
     DELETION_USER_INITIATED,
-    // History data was automatically archived due to being more than 90 days
+    // History data was automatically expired due to being more than 90 days
     // old.
-    DELETION_ARCHIVED
+    DELETION_EXPIRED
   };
 
   // Broadcasts URL modified and deleted notifications.
   void BroadcastNotifications(DeleteEffects* effects, DeletionType type);
 
-  // Schedules a call to DoArchiveIteration.
-  void ScheduleArchive();
+  // Schedules a call to DoExpireIteration.
+  void ScheduleExpire();
 
-  // Calls ArchiveSomeOldHistory to expire some amount of old history, according
+  // Calls ExpireSomeOldHistory to expire some amount of old history, according
   // to the items in work queue, and schedules another call to happen in the
   // future.
-  void DoArchiveIteration();
+  void DoExpireIteration();
 
   // Tries to expire the oldest |max_visits| visits from history that are older
   // than |time_threshold|. The return value indicates if we think there might
   // be more history to expire with the current time threshold (it does not
   // indicate success or failure).
-  bool ArchiveSomeOldHistory(base::Time end_time,
+  bool ExpireSomeOldHistory(base::Time end_time,
                              const ExpiringVisitsReader* reader,
                              int max_visits);
 
@@ -272,22 +251,20 @@ class ExpireHistoryBackend {
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
   HistoryDatabase* main_db_;       // Main history database.
-  ArchivedDatabase* archived_db_;  // Old history.
   ThumbnailDatabase* thumb_db_;    // Thumbnails and favicons.
 
   // Used to generate runnable methods to do timers on this class. They will be
   // automatically canceled when this class is deleted.
   base::WeakPtrFactory<ExpireHistoryBackend> weak_factory_;
 
-  // The threshold for "old" history where we will automatically expire it to
-  // the archived database.
+  // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;
 
   // List of all distinct types of readers. This list is used to populate the
   // work queue.
   ExpiringVisitsReaders readers_;
 
-  // Work queue for periodic expiration tasks, used by DoArchiveIteration() to
+  // Work queue for periodic expiration tasks, used by DoExpireIteration() to
   // determine what to do at an iteration, as well as populate it for future
   // iterations.
   std::queue<const ExpiringVisitsReader*> work_queue_;

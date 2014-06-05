@@ -54,9 +54,9 @@ struct URLsDeletedDetails : public HistoryDetails {
   // Set when all history was deleted. False means just a subset was deleted.
   bool all_history;
 
-  // True if the data was archived. False if the data was deleted in response to
-  // an explicit user action through the History UI.
-  bool archived;
+  // True if the data was expired due to old age. False if the data was deleted
+  // in response to an explicit user action through the History UI.
+  bool expired;
 
   // The URLRows of URLs deleted. This is valid only when |all_history| is false
   // indicating that a subset of history has been deleted. The rows will have

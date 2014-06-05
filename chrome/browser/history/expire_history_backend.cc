@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/thumbnail_database.h"
@@ -97,32 +96,6 @@ class AutoSubframeVisitsReader : public ExpiringVisitsReader {
   }
 };
 
-// Returns true if this visit is worth archiving. Otherwise, this visit is not
-// worth saving (for example, subframe navigations and redirects) and we can
-// just delete it when it gets old.
-bool ShouldArchiveVisit(const VisitRow& visit) {
-  int no_qualifier = content::PageTransitionStripQualifier(visit.transition);
-
-  // These types of transitions are always "important" and the user will want
-  // to see them.
-  if (no_qualifier == content::PAGE_TRANSITION_TYPED ||
-      no_qualifier == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
-      no_qualifier == content::PAGE_TRANSITION_AUTO_TOPLEVEL)
-    return true;
-
-  // Only archive these "less important" transitions when they were the final
-  // navigation and not part of a redirect chain.
-  if ((no_qualifier == content::PAGE_TRANSITION_LINK ||
-       no_qualifier == content::PAGE_TRANSITION_FORM_SUBMIT ||
-       no_qualifier == content::PAGE_TRANSITION_KEYWORD ||
-       no_qualifier == content::PAGE_TRANSITION_GENERATED) &&
-      visit.transition & content::PAGE_TRANSITION_CHAIN_END)
-    return true;
-
-  // The transition types we ignore are AUTO_SUBFRAME and MANUAL_SUBFRAME.
-  return false;
-}
-
 // The number of visits we will expire very time we check for old items. This
 // Prevents us from doing too much work any given time.
 const int kNumExpirePerIteration = 32;
@@ -158,7 +131,6 @@ ExpireHistoryBackend::ExpireHistoryBackend(
     HistoryClient* history_client)
     : delegate_(delegate),
       main_db_(NULL),
-      archived_db_(NULL),
       thumb_db_(NULL),
       weak_factory_(this),
       history_client_(history_client) {
@@ -168,10 +140,8 @@ ExpireHistoryBackend::~ExpireHistoryBackend() {
 }
 
 void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
-                                        ArchivedDatabase* archived_db,
                                         ThumbnailDatabase* thumb_db) {
   main_db_ = main_db;
-  archived_db_ = archived_db;
   thumb_db_ = thumb_db;
 }
 
@@ -191,10 +161,9 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     if (!main_db_->GetRowForURL(*url, &url_row))
       continue;  // Nothing to delete.
 
-    // Collect all the visits and delete them. Note that we don't give
-    // up if there are no visits, since the URL could still have an
-    // entry that we should delete.  TODO(brettw): bug 1171148: We
-    // should also delete from the archived DB.
+    // Collect all the visits and delete them. Note that we don't give up if
+    // there are no visits, since the URL could still have an entry that we
+    // should delete.
     VisitVector visits;
     main_db_->GetVisitsForURL(url_row.id(), &visits);
 
@@ -222,7 +191,6 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
     return;
 
   // Find the affected visits and delete them.
-  // TODO(brettw): bug 1171164: We should query the archived database here, too.
   VisitVector visits;
   main_db_->GetAllVisitsInRange(begin_time, end_time, 0, &visits);
   if (!restrict_urls.empty()) {
@@ -255,7 +223,6 @@ void ExpireHistoryBackend::ExpireHistoryForTimes(
     return;
 
   // Find the affected visits and delete them.
-  // TODO(brettw): bug 1171164: We should query the archived database here, too.
   VisitVector visits;
   main_db_->GetVisitsForTimes(times, &visits);
   ExpireVisits(visits);
@@ -279,13 +246,13 @@ void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   ParanoidExpireHistory();
 }
 
-void ExpireHistoryBackend::ArchiveHistoryBefore(base::Time end_time) {
+void ExpireHistoryBackend::ExpireHistoryBefore(base::Time end_time) {
   if (!main_db_)
     return;
 
-  // Archive as much history as possible before the given date.
-  ArchiveSomeOldHistory(end_time, GetAllVisitsReader(),
-                        std::numeric_limits<int>::max());
+  // Expire as much history as possible before the given date.
+  ExpireSomeOldHistory(end_time, GetAllVisitsReader(),
+                       std::numeric_limits<int>::max());
   ParanoidExpireHistory();
 }
 
@@ -309,7 +276,7 @@ const ExpiringVisitsReader*
   return auto_subframe_visits_reader_.get();
 }
 
-void ExpireHistoryBackend::StartArchivingOldStuff(
+void ExpireHistoryBackend::StartExpiringOldStuff(
     base::TimeDelta expiration_threshold) {
   expiration_threshold_ = expiration_threshold;
 
@@ -324,7 +291,7 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
 
   // Initialize the queue with all tasks for the first set of iterations.
   InitWorkQueue();
-  ScheduleArchive();
+  ScheduleExpire();
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
@@ -360,10 +327,10 @@ void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
   if (!effects->deleted_urls.empty()) {
     scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
     details->all_history = false;
-    details->archived = (type == DELETION_ARCHIVED);
+    details->expired = (type == DELETION_EXPIRED);
     details->rows = effects->deleted_urls;
     details->favicon_urls = effects->deleted_favicons;
-    delegate_->NotifySyncURLsDeleted(details->all_history, details->archived,
+    delegate_->NotifySyncURLsDeleted(details->all_history, details->expired,
                                      &details->rows);
     delegate_->BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                                       details.PassAs<HistoryDetails>());
@@ -409,27 +376,6 @@ void ExpireHistoryBackend::DeleteOneURL(const URLRow& url_row,
     // Last, delete the URL entry.
     main_db_->DeleteURLRow(url_row.id());
   }
-}
-
-URLID ExpireHistoryBackend::ArchiveOneURL(const URLRow& url_row) {
-  if (!archived_db_)
-    return 0;
-
-  // See if this URL is present in the archived database already. Note that
-  // we must look up by ID since the URL ID will be different.
-  URLRow archived_row;
-  if (archived_db_->GetRowForURL(url_row.url(), &archived_row)) {
-    // TODO(sky): bug 1168470, need to archive past search terms.
-    // TODO(brettw): should be copy the visit counts over? This will mean that
-    // the main DB's visit counts are only for the last 3 months rather than
-    // accumulative.
-    archived_row.set_last_visit(url_row.last_visit());
-    archived_db_->UpdateURLRow(archived_row.id(), archived_row);
-    return archived_row.id();
-  }
-
-  // This row is not in the archived DB, add it.
-  return archived_db_->AddURL(url_row);
 }
 
 namespace {
@@ -503,54 +449,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
   }
 }
 
-void ExpireHistoryBackend::ArchiveURLsAndVisits(const VisitVector& visits) {
-  if (!archived_db_ || !main_db_)
-    return;
-
-  // Make sure all unique URL rows are added to the dependency list and the
-  // archived database. We will also keep the mapping between the main DB URLID
-  // and the archived one.
-  std::map<URLID, URLID> main_id_to_archived_id;
-  for (size_t i = 0; i < visits.size(); i++) {
-    if (!main_id_to_archived_id.count(visits[i].url_id)) {
-      // Unique URL encountered, archive it.
-      // Only add URL to the dependency list once we know we successfully
-      // archived it.
-      URLRow row;
-      if (main_db_->GetURLRow(visits[i].url_id, &row)) {
-        URLID archived_id = ArchiveOneURL(row);
-        if (archived_id)
-          main_id_to_archived_id[row.id()] = archived_id;
-      }
-    }
-  }
-
-  // Retrieve the sources for all the archived visits before archiving.
-  // The returned visit_sources vector should contain the source for each visit
-  // from visits at the same index.
-  VisitSourceMap visit_sources;
-  main_db_->GetVisitsSource(visits, &visit_sources);
-
-  // Now archive the visits since we know the URL ID to make them reference.
-  // The source visit list should still reference the visits in the main DB, but
-  // we will update it to reflect only the visits that were successfully
-  // archived.
-  for (size_t i = 0; i < visits.size(); i++) {
-    // Construct the visit that we will add to the archived database. We do
-    // not store referring visits since we delete many of the visits when
-    // archiving.
-    VisitRow cur_visit(visits[i]);
-    cur_visit.url_id = main_id_to_archived_id[cur_visit.url_id];
-    cur_visit.referring_visit = 0;
-    VisitSourceMap::iterator iter = visit_sources.find(visits[i].visit_id);
-    archived_db_->AddVisit(
-        &cur_visit,
-        iter == visit_sources.end() ? SOURCE_BROWSED : iter->second);
-    // Ignore failures, we will delete it from the main DB no matter what.
-  }
-}
-
-void ExpireHistoryBackend::ScheduleArchive() {
+void ExpireHistoryBackend::ScheduleExpire() {
   base::TimeDelta delay;
   if (work_queue_.empty()) {
     // If work queue is empty, reset the work queue to contain all tasks and
@@ -563,17 +462,17 @@ void ExpireHistoryBackend::ScheduleArchive() {
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExpireHistoryBackend::DoArchiveIteration,
+      base::Bind(&ExpireHistoryBackend::DoExpireIteration,
                  weak_factory_.GetWeakPtr()),
       delay);
 }
 
-void ExpireHistoryBackend::DoArchiveIteration() {
+void ExpireHistoryBackend::DoExpireIteration() {
   DCHECK(!work_queue_.empty()) << "queue has to be non-empty";
 
   const ExpiringVisitsReader* reader = work_queue_.front();
-  bool more_to_expire = ArchiveSomeOldHistory(GetCurrentArchiveTime(), reader,
-                                              kNumExpirePerIteration);
+  bool more_to_expire = ExpireSomeOldHistory(
+      GetCurrentExpirationTime(), reader, kNumExpirePerIteration);
 
   work_queue_.pop();
   // If there are more items to expire, add the reader back to the queue, thus
@@ -581,10 +480,10 @@ void ExpireHistoryBackend::DoArchiveIteration() {
   if (more_to_expire)
     work_queue_.push(reader);
 
-  ScheduleArchive();
+  ScheduleExpire();
 }
 
-bool ExpireHistoryBackend::ArchiveSomeOldHistory(
+bool ExpireHistoryBackend::ExpireSomeOldHistory(
     base::Time end_time,
     const ExpiringVisitsReader* reader,
     int max_visits) {
@@ -596,30 +495,16 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
   base::Time effective_end_time =
       base::Time::FromInternalValue(end_time.ToInternalValue() + 1);
 
-  VisitVector affected_visits;
+  VisitVector deleted_visits;
   bool more_to_expire = reader->Read(effective_end_time, main_db_,
-                                     &affected_visits, max_visits);
+                                     &deleted_visits, max_visits);
 
-  // Some visits we'll delete while others we'll archive.
-  VisitVector deleted_visits, archived_visits;
-  for (size_t i = 0; i < affected_visits.size(); i++) {
-    if (ShouldArchiveVisit(affected_visits[i]))
-      archived_visits.push_back(affected_visits[i]);
-    else
-      deleted_visits.push_back(affected_visits[i]);
-  }
-
-  // Do the actual archiving.
-  ArchiveURLsAndVisits(archived_visits);
-
-  // Delete all the visits.
-  deleted_visits.insert(deleted_visits.end(), archived_visits.begin(),
-                        archived_visits.end());
   DeleteEffects deleted_effects;
   DeleteVisitRelatedInfo(deleted_visits, &deleted_effects);
   ExpireURLsForVisits(deleted_visits, &deleted_effects);
   DeleteFaviconsIfPossible(&deleted_effects);
-  BroadcastNotifications(&deleted_effects, DELETION_ARCHIVED);
+
+  BroadcastNotifications(&deleted_effects, DELETION_EXPIRED);
 
   return more_to_expire;
 }

@@ -189,7 +189,7 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
   // a bad clock setting won't go on an archival rampage and delete all
   // history from every client). The server will gracefully age out the sync DB
   // entries when they've been idle for long enough.
-  if (details->archived)
+  if (details->expired)
     return;
 
   if (details->all_history) {

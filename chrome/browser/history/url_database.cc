@@ -217,9 +217,6 @@ bool URLDatabase::CommitTemporaryURLTable() {
   // See the comments in the header file as well as
   // HistoryBackend::DeleteAllHistory() for more information on how this works
   // and why it does what it does.
-  //
-  // Note that the main database overrides this to additionally create the
-  // supplimentary indices that the archived database doesn't need.
 
   // Swap the url table out and replace it with the temporary one.
   if (!GetDB().Execute("DROP TABLE urls")) {
@@ -231,10 +228,8 @@ bool URLDatabase::CommitTemporaryURLTable() {
     return false;
   }
 
-  // Create the index over URLs. This is needed for the main, in-memory, and
-  // archived databases, so we always do it. The supplimentary indices used by
-  // the main database are not created here. When deleting all history, they
-  // are created by HistoryDatabase::RecreateAllButStarAndURLTables().
+  // Re-create the index over the now permanent URLs table -- this was not there
+  // for the temporary table.
   CreateMainURLIndex();
 
   return true;
@@ -617,7 +612,6 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
 }
 
 bool URLDatabase::CreateMainURLIndex() {
-  // Index over URLs so we can quickly look up based on URL.
   return GetDB().Execute(
       "CREATE INDEX IF NOT EXISTS urls_url_index ON urls (url)");
 }

@@ -53,7 +53,7 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
-/* The HistoryBackend consists of a number of components:
+/* The HistoryBackend consists of two components:
 
     HistoryDatabase (stores past 3 months of history)
       URLDatabase (stores a list of URLs)
@@ -61,15 +61,7 @@ using base::TimeTicks;
       VisitDatabase (stores a list of visits for the URLs)
       VisitSegmentDatabase (stores groups of URLs for the most visited view).
 
-    ArchivedDatabase (stores history older than 3 months)
-      URLDatabase (stores a list of URLs)
-      DownloadDatabase (stores a list of downloads)
-      VisitDatabase (stores a list of visits for the URLs)
-
-      (this does not store visit segments as they expire after 3 mos.)
-
-    ExpireHistoryBackend (manages moving things from HistoryDatabase to
-                          the ArchivedDatabase and deleting)
+    ExpireHistoryBackend (manages deleting things older than 3 months)
 */
 
 namespace history {
@@ -91,8 +83,8 @@ const int kFaviconRefetchDays = 7;
 const int kMaxRedirectCount = 32;
 
 // The number of days old a history entry can be before it is considered "old"
-// and is archived.
-const int kArchiveDaysThreshold = 90;
+// and is deleted.
+const int kExpireDaysThreshold = 90;
 
 #if defined(OS_ANDROID)
 // The maximum number of top sites to track when recording top page visit stats.
@@ -617,18 +609,11 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     thumbnail_db_.reset();
   }
 
-  // Archived database.
-  if (db_->needs_version_17_migration()) {
-    // See needs_version_17_migration() decl for more. In this case, we want
-    // to delete the archived database and need to do so before we try to
-    // open the file. We can ignore any error (maybe the file doesn't exist).
-    sql::Connection::Delete(archived_name);
-  }
-  archived_db_.reset(new ArchivedDatabase());
-  if (!archived_db_->Init(archived_name)) {
-    LOG(WARNING) << "Could not initialize the archived database.";
-    archived_db_.reset();
-  }
+  // Nuke any files corresponding to the legacy Archived History Database, which
+  // previously retained expired (> 3 months old) history entries, but, in the
+  // end, was not used for much, and consequently has been removed as of M37.
+  // TODO(engedy): Remove this code after the end of 2014.
+  sql::Connection::Delete(archived_name);
 
   // Generate the history and thumbnail database metrics only after performing
   // any migration work.
@@ -639,27 +624,18 @@ void HistoryBackend::InitImpl(const std::string& languages) {
       thumbnail_db_->ComputeDatabaseMetrics();
   }
 
-  // Tell the expiration module about all the nice databases we made. This must
-  // happen before db_->Init() is called since the callback ForceArchiveHistory
-  // may need to expire stuff.
-  //
-  // *sigh*, this can all be cleaned up when that migration code is removed.
-  // The main DB initialization should intuitively be first (not that it
-  // actually matters) and the expirer should be set last.
-  expirer_.SetDatabases(db_.get(), archived_db_.get(), thumbnail_db_.get());
+  expirer_.SetDatabases(db_.get(), thumbnail_db_.get());
 
   // Open the long-running transaction.
   db_->BeginTransaction();
   if (thumbnail_db_)
     thumbnail_db_->BeginTransaction();
-  if (archived_db_)
-    archived_db_->BeginTransaction();
 
   // Get the first item in our database.
   db_->GetStartDate(&first_recorded_time_);
 
   // Start expiring old stuff.
-  expirer_.StartArchivingOldStuff(TimeDelta::FromDays(kArchiveDaysThreshold));
+  expirer_.StartExpiringOldStuff(TimeDelta::FromDays(kExpireDaysThreshold));
 
 #if defined(OS_ANDROID)
   if (thumbnail_db_) {
@@ -684,8 +660,6 @@ void HistoryBackend::OnMemoryPressure(
     db_->TrimMemory(trim_aggressively);
   if (thumbnail_db_)
     thumbnail_db_->TrimMemory(trim_aggressively);
-  if (archived_db_)
-    archived_db_->TrimMemory(trim_aggressively);
 }
 
 void HistoryBackend::CloseAllDatabases() {
@@ -699,10 +673,6 @@ void HistoryBackend::CloseAllDatabases() {
   if (thumbnail_db_) {
     thumbnail_db_->CommitTransaction();
     thumbnail_db_.reset();
-  }
-  if (archived_db_) {
-    archived_db_->CommitTransaction();
-    archived_db_.reset();
   }
 }
 
@@ -805,45 +775,26 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     return;
 
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
-  scoped_ptr<URLsModifiedDetails> modified_in_archive(new URLsModifiedDetails);
   for (URLRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     DCHECK(!i->last_visit().is_null());
 
-    // We will add to either the archived database or the main one depending on
-    // the date of the added visit.
-    URLDatabase* url_database = NULL;
-    VisitDatabase* visit_database = NULL;
-    if (IsExpiredVisitTime(i->last_visit())) {
-      if (!archived_db_)
-        return;  // No archived database to save it to, just forget this.
-      url_database = archived_db_.get();
-      visit_database = archived_db_.get();
-    } else {
-      url_database = db_.get();
-      visit_database = db_.get();
-    }
+    // As of M37, we no longer maintain an archived database, ignore old visits.
+    if (IsExpiredVisitTime(i->last_visit()))
+      continue;
 
     URLRow existing_url;
-    URLID url_id = url_database->GetRowForURL(i->url(), &existing_url);
+    URLID url_id = db_->GetRowForURL(i->url(), &existing_url);
     if (!url_id) {
       // Add the page if it doesn't exist.
-      url_id = url_database->AddURL(*i);
+      url_id = db_->AddURL(*i);
       if (!url_id) {
         NOTREACHED() << "Could not add row to DB";
         return;
       }
 
       if (i->typed_count() > 0) {
-        // Collect expired URLs that belong to |archived_db_| separately; we
-        // want to fire NOTIFICATION_HISTORY_URLS_MODIFIED only for changes that
-        // take place in the main |db_|.
-        if (url_database == db_.get()) {
-          modified->changed_urls.push_back(*i);
-          modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
-        } else {
-          modified_in_archive->changed_urls.push_back(*i);
-          modified_in_archive->changed_urls.back().set_id(url_id);
-        }
+        modified->changed_urls.push_back(*i);
+        modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
       }
     }
 
@@ -855,7 +806,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                               content::PAGE_TRANSITION_LINK |
                               content::PAGE_TRANSITION_CHAIN_START |
                               content::PAGE_TRANSITION_CHAIN_END), 0);
-      if (!visit_database->AddVisit(&visit_info, visit_source)) {
+      if (!db_->AddVisit(&visit_info, visit_source)) {
         NOTREACHED() << "Adding visit failed.";
         return;
       }
@@ -866,11 +817,8 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     }
   }
 
-  if (typed_url_syncable_service_.get()) {
-    typed_url_syncable_service_->OnUrlsModified(
-        &modified_in_archive->changed_urls);
+  if (typed_url_syncable_service_.get())
     typed_url_syncable_service_->OnUrlsModified(&modified->changed_urls);
-  }
 
   // Broadcast a notification for typed URLs that have been modified. This
   // will be picked up by the in-memory URL database on the main thread.
@@ -884,7 +832,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
 }
 
 bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
-  return time < expirer_.GetCurrentArchiveTime();
+  return time < expirer_.GetCurrentExpirationTime();
 }
 
 void HistoryBackend::SetPageTitle(const GURL& url,
@@ -1130,7 +1078,6 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(
     return;
 
   db_->DeleteAllSearchTermsForKeyword(keyword_id);
-  // TODO(sky): bug 1168470. Need to move from archive dbs too.
   ScheduleCommit();
 }
 
@@ -1255,24 +1202,10 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
   if (db_) {
     if (text_query.empty()) {
       // Basic history query for the main database.
-      QueryHistoryBasic(db_.get(), db_.get(), options, &request->value);
-
-      // Now query the archived database. This is a bit tricky because we don't
-      // want to query it if the queried time range isn't going to find anything
-      // in it.
-      // TODO(brettw) bug 1171036: do blimpie querying for the archived database
-      // as well.
-      // if (archived_db_.get() &&
-      //     expirer_.GetCurrentArchiveTime() - TimeDelta::FromDays(7)) {
+      QueryHistoryBasic(options, &request->value);
     } else {
       // Text history query.
-      QueryHistoryText(db_.get(), db_.get(), text_query, options,
-                       &request->value);
-      if (archived_db_.get() &&
-          expirer_.GetCurrentArchiveTime() >= options.begin_time) {
-        QueryHistoryText(archived_db_.get(), archived_db_.get(), text_query,
-                         options, &request->value);
-      }
+      QueryHistoryText(text_query, options, &request->value);
     }
   }
 
@@ -1283,13 +1216,11 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
 }
 
 // Basic time-based querying of history.
-void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
-                                       VisitDatabase* visit_db,
-                                       const QueryOptions& options,
+void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
                                        QueryResults* result) {
   // First get all visits.
   VisitVector visits;
-  bool has_more_results = visit_db->GetVisibleVisitsInRange(options, &visits);
+  bool has_more_results = db_->GetVisibleVisitsInRange(options, &visits);
   DCHECK(static_cast<int>(visits.size()) <= options.EffectiveMaxCount());
 
   // Now add them and the URL rows to the results.
@@ -1298,7 +1229,7 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
     const VisitRow visit = visits[i];
 
     // Add a result row for this visit, get the URL info from the DB.
-    if (!url_db->GetURLRow(visit.url_id, &url_result)) {
+    if (!db_->GetURLRow(visit.url_id, &url_result)) {
       VLOG(0) << "Failed to get id " << visit.url_id
               << " from history.urls.";
       continue;  // DB out of sync and URL doesn't exist, try to recover.
@@ -1309,16 +1240,6 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
               << visit.url_id << ":  "
               << url_result.url().possibly_invalid_spec();
       continue;  // Don't report invalid URLs in case of corruption.
-    }
-
-    // The archived database may be out of sync with respect to starring,
-    // titles, last visit date, etc. Therefore, we query the main DB if the
-    // current URL database is not the main one.
-    if (url_db == db_.get()) {
-      // Currently querying the archived DB, update with the main database to
-      // catch any interesting stuff. This will update it if it exists in the
-      // main DB, and do nothing otherwise.
-      db_->GetRowForURL(url_result.url(), &url_result);
     }
 
     url_result.set_visit_time(visit.visit_time);
@@ -1338,20 +1259,18 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
 }
 
 // Text-based querying of history.
-void HistoryBackend::QueryHistoryText(URLDatabase* url_db,
-                                      VisitDatabase* visit_db,
-                                      const base::string16& text_query,
+void HistoryBackend::QueryHistoryText(const base::string16& text_query,
                                       const QueryOptions& options,
                                       QueryResults* result) {
   URLRows text_matches;
-  url_db->GetTextMatches(text_query, &text_matches);
+  db_->GetTextMatches(text_query, &text_matches);
 
   std::vector<URLResult> matching_visits;
   VisitVector visits;    // Declare outside loop to prevent re-construction.
   for (size_t i = 0; i < text_matches.size(); i++) {
     const URLRow& text_match = text_matches[i];
     // Get all visits for given URL match.
-    visit_db->GetVisibleVisitsForURL(text_match.id(), options, &visits);
+    db_->GetVisibleVisitsForURL(text_match.id(), options, &visits);
     for (size_t j = 0; j < visits.size(); j++) {
       URLResult url_result(text_match);
       url_result.set_visit_time(visits[j].visit_time);
@@ -2481,11 +2400,6 @@ void HistoryBackend::Commit() {
         "Somebody left a transaction open";
     thumbnail_db_->BeginTransaction();
   }
-
-  if (archived_db_) {
-    archived_db_->CommitTransaction();
-    archived_db_->BeginTransaction();
-  }
 }
 
 void HistoryBackend::ScheduleCommit() {
@@ -2612,7 +2526,7 @@ void HistoryBackend::ExpireHistoryForTimes(
   options.end_time = end_time;
   options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
   QueryResults results;
-  QueryHistoryBasic(db_.get(), db_.get(), options, &results);
+  QueryHistoryBasic(options, &results);
 
   // 1st pass: find URLs that are visited at one of |times|.
   std::set<GURL> urls;
@@ -2717,7 +2631,7 @@ void HistoryBackend::KillHistoryDatabase() {
 
   // The expirer keeps tabs on the active databases. Tell it about the
   // databases which will be closed.
-  expirer_.SetDatabases(NULL, NULL, NULL);
+  expirer_.SetDatabases(NULL, NULL);
 
   // Reopen a new transaction for |db_| for the sake of CloseAllDatabases().
   db_->BeginTransaction();
@@ -2756,10 +2670,10 @@ void HistoryBackend::NotifySyncURLsModified(URLRows* rows) {
 }
 
 void HistoryBackend::NotifySyncURLsDeleted(bool all_history,
-                                           bool archived,
+                                           bool expired,
                                            URLRows* rows) {
   if (typed_url_syncable_service_.get())
-    typed_url_syncable_service_->OnUrlsDeleted(all_history, archived, rows);
+    typed_url_syncable_service_->OnUrlsDeleted(all_history, expired, rows);
 }
 
 // Deleting --------------------------------------------------------------------
@@ -2810,24 +2724,6 @@ void HistoryBackend::DeleteAllHistory() {
   if (!ClearAllMainHistory(kept_urls))
     LOG(ERROR) << "Main history could not be cleared";
   kept_urls.clear();
-
-  // Delete archived history.
-  if (archived_db_) {
-    // Close the database and delete the file.
-    archived_db_.reset();
-    base::FilePath archived_file_name = GetArchivedFileName();
-    sql::Connection::Delete(archived_file_name);
-
-    // Now re-initialize the database (which may fail).
-    archived_db_.reset(new ArchivedDatabase());
-    if (!archived_db_->Init(archived_file_name)) {
-      LOG(WARNING) << "Could not initialize the archived database.";
-      archived_db_.reset();
-    } else {
-      // Open our long-running transaction on this database.
-      archived_db_->BeginTransaction();
-    }
-  }
 
   db_->GetStartDate(&first_recorded_time_);
 

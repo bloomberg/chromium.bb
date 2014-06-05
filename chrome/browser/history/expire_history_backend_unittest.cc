@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -43,8 +42,6 @@ using content::BrowserThread;
 // Filename constants.
 static const base::FilePath::CharType kHistoryFile[] =
     FILE_PATH_LITERAL("History");
-static const base::FilePath::CharType kArchivedHistoryFile[] =
-    FILE_PATH_LITERAL("Archived History");
 static const base::FilePath::CharType kThumbnailFile[] =
     FILE_PATH_LITERAL("Thumbnails");
 
@@ -77,9 +74,9 @@ class ExpireHistoryTest : public testing::Test,
                                      favicon_base::IconType icon_type);
 
   // EXPECTs that each URL-specific history thing (basically, everything but
-  // favicons) is gone, the reason being either that it was |archived|, or
-  // manually deleted.
-  void EnsureURLInfoGone(const URLRow& row, bool archived);
+  // favicons) is gone, the reason being either that it was automatically
+  // |expired|, or manually deleted.
+  void EnsureURLInfoGone(const URLRow& row, bool expired);
 
   // Returns whether a NOTIFICATION_HISTORY_URLS_MODIFIED was sent for |url|.
   bool ModifiedNotificationSent(const GURL& url);
@@ -108,7 +105,6 @@ class ExpireHistoryTest : public testing::Test,
   ExpireHistoryBackend expirer_;
 
   scoped_ptr<HistoryDatabase> main_db_;
-  scoped_ptr<ArchivedDatabase> archived_db_;
   scoped_ptr<ThumbnailDatabase> thumb_db_;
   TestingProfile profile_;
   scoped_refptr<TopSites> top_sites_;
@@ -132,17 +128,12 @@ class ExpireHistoryTest : public testing::Test,
     if (main_db_->Init(history_name) != sql::INIT_OK)
       main_db_.reset();
 
-    base::FilePath archived_name = path().Append(kArchivedHistoryFile);
-    archived_db_.reset(new ArchivedDatabase);
-    if (!archived_db_->Init(archived_name))
-      archived_db_.reset();
-
     base::FilePath thumb_name = path().Append(kThumbnailFile);
     thumb_db_.reset(new ThumbnailDatabase);
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();
 
-    expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get());
+    expirer_.SetDatabases(main_db_.get(), thumb_db_.get());
     profile_.CreateTopSites();
     profile_.BlockUntilTopSitesLoaded();
     top_sites_ = profile_.GetTopSites();
@@ -153,10 +144,9 @@ class ExpireHistoryTest : public testing::Test,
 
     ClearLastNotifications();
 
-    expirer_.SetDatabases(NULL, NULL, NULL);
+    expirer_.SetDatabases(NULL, NULL);
 
     main_db_.reset();
-    archived_db_.reset();
     thumb_db_.reset();
   }
 
@@ -170,7 +160,7 @@ class ExpireHistoryTest : public testing::Test,
   }
   virtual void NotifySyncURLsModified(URLRows* rows) OVERRIDE {}
   virtual void NotifySyncURLsDeleted(bool all_history,
-                                     bool archived,
+                                     bool expired,
                                      URLRows* rows) OVERRIDE {}
 };
 
@@ -316,7 +306,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
   return top_sites_->GetPageThumbnail(url, false, &data);
 }
 
-void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
+void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
   // The passed in |row| must originate from |main_db_| so that its ID will be
   // set to what had been in effect in |main_db_| before the deletion.
   ASSERT_NE(0, row.id());
@@ -339,7 +329,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
     if (notifications_[i].first == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
       URLsDeletedDetails* details = reinterpret_cast<URLsDeletedDetails*>(
           notifications_[i].second);
-      EXPECT_EQ(archived, details->archived);
+      EXPECT_EQ(expired, details->expired);
       const history::URLRows& rows(details->rows);
       history::URLRows::const_iterator it_row = std::find_if(
           rows.begin(), rows.end(), history::URLRow::URLRowHasURL(row.url()));
@@ -763,7 +753,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   // EXPECT_TRUE(HasThumbnail(new_url_row2.id()));
 }
 
-TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
+TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
   URLID url_ids[3];
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
@@ -773,38 +763,33 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
-  // Archive the oldest two visits. This will actually result in deleting them
-  // since their transition types are empty.
-  expirer_.ArchiveHistoryBefore(visit_times[1]);
+  // Expire the oldest two visits.
+  expirer_.ExpireHistoryBefore(visit_times[1]);
 
-  // The first URL should be deleted, the second should not.
+  // The first URL should be deleted along with its sole visit. The second URL
+  // itself should not be affected, as there is still one more visit to it, but
+  // its first visit should be deleted.
   URLRow temp_row;
   EnsureURLInfoGone(url_row0, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  VisitVector visits;
+  main_db_->GetVisitsForURL(temp_row.id(), &visits);
+  EXPECT_EQ(1U, visits.size());
+  EXPECT_EQ(visit_times[2], visits[0].visit_time);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
 
-  // Make sure the archived database has nothing in it.
-  EXPECT_FALSE(archived_db_->GetRowForURL(url_row1.url(), NULL));
-  EXPECT_FALSE(archived_db_->GetRowForURL(url_row2.url(), NULL));
-
-  // Now archive one more visit so that the middle URL should be removed. This
-  // one will actually be archived instead of deleted.
+  // Now expire one more visit so that the second URL should be removed. The
+  // third URL and its visit should be intact.
   ClearLastNotifications();
-  expirer_.ArchiveHistoryBefore(visit_times[2]);
+  expirer_.ExpireHistoryBefore(visit_times[2]);
   EnsureURLInfoGone(url_row1, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
-
-  // Make sure the archived database has an entry for the second URL.
-  URLRow archived_row;
-  // Note that the ID is different in the archived DB, so look up by URL.
-  EXPECT_TRUE(archived_db_->GetRowForURL(url_row1.url(), &archived_row));
-  VisitVector archived_visits;
-  archived_db_->GetVisitsForURL(archived_row.id(), &archived_visits);
-  EXPECT_EQ(1U, archived_visits.size());
+  main_db_->GetVisitsForURL(temp_row.id(), &visits);
+  EXPECT_EQ(1U, visits.size());
 }
 
-TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
+TEST_F(ExpireHistoryTest, ExpireHistoryBeforeStarred) {
   URLID url_ids[3];
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
@@ -817,61 +802,50 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   StarURL(url_row0.url());
   StarURL(url_row1.url());
 
-  // Now archive the first three visits (first two URLs). The first two visits
-  // should be deleted, the third archived.
-  expirer_.ArchiveHistoryBefore(visit_times[2]);
+  // Now expire the first three visits (first two URLs). The first three visits
+  // should be deleted, but the URL records themselves should not, as they are
+  // starred.
+  expirer_.ExpireHistoryBefore(visit_times[2]);
 
-  // The first URL should have its visit deleted, but it should still be present
-  // in the main DB and not in the archived one since it is starred.
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &temp_row));
-  // Note that the ID is different in the archived DB, so look up by URL.
-  EXPECT_FALSE(archived_db_->GetRowForURL(temp_row.url(), NULL));
   EXPECT_TRUE(ModifiedNotificationSent(url_row0.url()));
   VisitVector visits;
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
 
-  // The second URL should have its first visit deleted and its second visit
-  // archived. It should be present in both the main DB (because it's starred)
-  // and the archived DB (for the archived visit).
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
 
-  // Note that the ID is different in the archived DB, so look up by URL.
-  ASSERT_TRUE(archived_db_->GetRowForURL(temp_row.url(), &temp_row));
-  archived_db_->GetVisitsForURL(temp_row.id(), &visits);
-  ASSERT_EQ(1U, visits.size());
-  EXPECT_TRUE(visit_times[2] == visits[0].visit_time);
-
   // The third URL should be unchanged.
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
-  EXPECT_FALSE(archived_db_->GetRowForURL(temp_row.url(), NULL));
   EXPECT_FALSE(ModifiedNotificationSent(temp_row.url()));
+  main_db_->GetVisitsForURL(temp_row.id(), &visits);
+  EXPECT_EQ(1U, visits.size());
 }
 
-// Tests the return values from ArchiveSomeOldHistory. The rest of the
-// functionality of this function is tested by the ArchiveHistoryBefore*
+// Tests the return values from ExpireSomeOldHistory. The rest of the
+// functionality of this function is tested by the ExpireHistoryBefore*
 // tests which use this function internally.
-TEST_F(ExpireHistoryTest, ArchiveSomeOldHistory) {
+TEST_F(ExpireHistoryTest, ExpireSomeOldHistory) {
   URLID url_ids[3];
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
   const ExpiringVisitsReader* reader = expirer_.GetAllVisitsReader();
 
   // Deleting a time range with no URLs should return false (nothing found).
-  EXPECT_FALSE(expirer_.ArchiveSomeOldHistory(
+  EXPECT_FALSE(expirer_.ExpireSomeOldHistory(
       visit_times[0] - TimeDelta::FromDays(100), reader, 1));
 
   // Deleting a time range with not up the the max results should also return
   // false (there will only be one visit deleted in this range).
-  EXPECT_FALSE(expirer_.ArchiveSomeOldHistory(visit_times[0], reader, 2));
+  EXPECT_FALSE(expirer_.ExpireSomeOldHistory(visit_times[0], reader, 2));
 
   // Deleting a time range with the max number of results should return true
   // (max deleted).
-  EXPECT_TRUE(expirer_.ArchiveSomeOldHistory(visit_times[2], reader, 1));
+  EXPECT_TRUE(expirer_.ExpireSomeOldHistory(visit_times[2], reader, 1));
 }
 
 TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
@@ -902,50 +876,6 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
   // Now, read all visits and verify that there's at least one.
   EXPECT_TRUE(all->Read(now, main_db_.get(), &visits, 1));
   EXPECT_EQ(1U, visits.size());
-}
-
-// Tests how ArchiveSomeOldHistory treats source information.
-TEST_F(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource) {
-  const GURL url("www.testsource.com");
-  URLID url_id;
-  AddExampleSourceData(url, &url_id);
-  const ExpiringVisitsReader* reader = expirer_.GetAllVisitsReader();
-
-  // Archiving all the visits we added.
-  ASSERT_FALSE(expirer_.ArchiveSomeOldHistory(Time::Now(), reader, 10));
-
-  URLRow archived_row;
-  ASSERT_TRUE(archived_db_->GetRowForURL(url, &archived_row));
-  VisitVector archived_visits;
-  archived_db_->GetVisitsForURL(archived_row.id(), &archived_visits);
-  ASSERT_EQ(4U, archived_visits.size());
-  VisitSourceMap sources;
-  archived_db_->GetVisitsSource(archived_visits, &sources);
-  ASSERT_EQ(3U, sources.size());
-  int result = 0;
-  VisitSourceMap::iterator iter;
-  for (int i = 0; i < 4; i++) {
-    iter = sources.find(archived_visits[i].visit_id);
-    if (iter == sources.end())
-      continue;
-    switch (iter->second) {
-      case history::SOURCE_EXTENSION:
-        result |= 0x1;
-        break;
-      case history::SOURCE_FIREFOX_IMPORTED:
-        result |= 0x2;
-        break;
-      case history::SOURCE_SYNCED:
-        result |= 0x4;
-      default:
-        break;
-    }
-  }
-  EXPECT_EQ(0x7, result);
-  main_db_->GetVisitsSource(archived_visits, &sources);
-  EXPECT_EQ(0U, sources.size());
-  main_db_->GetVisitsForURL(url_id, &archived_visits);
-  EXPECT_EQ(0U, archived_visits.size());
 }
 
 // TODO(brettw) add some visits with no URL to make sure everything is updated

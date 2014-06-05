@@ -33,8 +33,7 @@ const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
 }  // namespace
 
-HistoryDatabase::HistoryDatabase()
-    : needs_version_17_migration_(false) {
+HistoryDatabase::HistoryDatabase() {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -220,9 +219,6 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
   if (!InitSegmentTables())
     return false;
 
-  // We also add the supplementary URL indices at this point. This index is
-  // over parts of the URL table that weren't automatically created when the
-  // temporary URL table was
   CreateKeywordSearchTermsIndices();
   return true;
 }
@@ -298,12 +294,6 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
     LOG(WARNING) << "History database is too new.";
     return sql::INIT_TOO_NEW;
   }
-
-  // NOTICE: If you are changing structures for things shared with the archived
-  // history file like URLs, visits, or downloads, that will need migration as
-  // well. Instead of putting such migration code in this class, it should be
-  // in the corresponding file (url_database.cc, etc.) and called from here and
-  // from the archived_database.cc.
 
   int cur_version = meta_table_.GetVersionNumber();
 
@@ -455,11 +445,6 @@ void HistoryDatabase::MigrateTimeEpoch() {
       "UPDATE segment_usage "
       "SET time_slot = time_slot + 11644473600000000 "
       "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);"));
-
-  // Erase all the full text index files. These will take a while to update and
-  // are less important, so we just blow them away. Same with the archived
-  // database.
-  needs_version_17_migration_ = true;
 }
 #endif
 

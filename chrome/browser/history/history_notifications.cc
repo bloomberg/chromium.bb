@@ -17,7 +17,7 @@ URLsModifiedDetails::~URLsModifiedDetails() {}
 
 URLsDeletedDetails::URLsDeletedDetails()
     : all_history(false),
-      archived(false) {
+      expired(false) {
 }
 
 URLsDeletedDetails::~URLsDeletedDetails() {}

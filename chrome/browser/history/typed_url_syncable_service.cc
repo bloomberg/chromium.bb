@@ -174,7 +174,7 @@ void TypedUrlSyncableService::OnUrlVisited(content::PageTransition transition,
 }
 
 void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
-                                            bool archived,
+                                            bool expired,
                                             URLRows* rows) {
   DCHECK(expected_loop_ == base::MessageLoop::current());
 
@@ -183,12 +183,12 @@ void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
   if (!sync_processor_.get())
     return;  // Sync processor not yet initialized, don't sync.
 
-  // Ignore archivals (we don't want to sync them as deletions, to avoid
-  // extra traffic up to the server, and also to make sure that a client with
-  // a bad clock setting won't go on an archival rampage and delete all
-  // history from every client). The server will gracefully age out the sync DB
-  // entries when they've been idle for long enough.
-  if (archived)
+  // Ignore URLs expired due to old age (we don't want to sync them as deletions
+  // to avoid extra traffic up to the server, and also to make sure that a
+  // client with a bad clock setting won't go on an expiration rampage and
+  // delete all history from every client). The server will gracefully age out
+  // the sync DB entries when they've been idle for long enough.
+  if (expired)
     return;
 
   // Create SyncChangeList.

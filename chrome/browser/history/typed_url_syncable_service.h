@@ -58,7 +58,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   // Called directly by HistoryBackend when local url data changes.
   void OnUrlsModified(URLRows* changed_urls);
   void OnUrlVisited(content::PageTransition transition, URLRow* row);
-  void OnUrlsDeleted(bool all_history, bool archived, URLRows* rows);
+  void OnUrlsDeleted(bool all_history, bool expired, URLRows* rows);
 
  protected:
   void GetSyncedUrls(std::set<GURL>* urls) {

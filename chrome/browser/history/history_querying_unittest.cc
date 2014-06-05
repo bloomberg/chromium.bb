@@ -383,66 +383,6 @@ TEST_F(HistoryQueryTest, TextSearchCount) {
   EXPECT_TRUE(NthResultIs(results, 0, 3));
 }
 
-// Tests that text search queries can find URLs when they exist only in the
-// archived database. This also tests that imported URLs can be found, since
-// we use AddPageWithDetails just like the importer.
-TEST_F(HistoryQueryTest, TextSearchArchived) {
-  ASSERT_TRUE(history_.get());
-
-  URLRows urls_to_add;
-
-  URLRow row1(GURL("http://foo.bar/"));
-  row1.set_title(base::UTF8ToUTF16("archived title same"));
-  row1.set_last_visit(Time::Now() - TimeDelta::FromDays(365));
-  urls_to_add.push_back(row1);
-
-  URLRow row2(GURL("http://foo.bar/"));
-  row2.set_title(base::UTF8ToUTF16("nonarchived title same"));
-  row2.set_last_visit(Time::Now());
-  urls_to_add.push_back(row2);
-
-  history_->AddPagesWithDetails(urls_to_add, history::SOURCE_BROWSED);
-
-  QueryOptions options;
-  QueryResults results;
-
-  // Query all time. The title we get should be the one in the archived and
-  // not the most current title (since otherwise highlighting in
-  // the title might be wrong).
-  QueryHistory("archived", options, &results);
-  ASSERT_EQ(1U, results.size());
-  EXPECT_TRUE(row1.url() == results[0].url());
-  EXPECT_TRUE(row1.title() == results[0].title());
-
-  // Check query is ordered correctly when split between archived and
-  // non-archived database.
-  QueryHistory("same", options, &results);
-  ASSERT_EQ(2U, results.size());
-  EXPECT_TRUE(row2.url() == results[0].url());
-  EXPECT_TRUE(row2.title() == results[0].title());
-  EXPECT_TRUE(row1.url() == results[1].url());
-  EXPECT_TRUE(row1.title() == results[1].title());
-}
-
-/* TODO(brettw) re-enable this. It is commented out because the current history
-   code prohibits adding more than one indexed page with the same URL. When we
-   have tiered history, there could be a dupe in the archived history which
-   won't get picked up by the deletor and it can happen again. When this is the
-   case, we should fix this test to duplicate that situation.
-
-// Tests duplicate collapsing and not in text search situations.
-TEST_F(HistoryQueryTest, TextSearchDupes) {
-  ASSERT_TRUE(history_.get());
-
-  QueryOptions options;
-  QueryResults results;
-
-  QueryHistory("Other", options, &results);
-  EXPECT_EQ(1U, results.size());
-  EXPECT_TRUE(NthResultIs(results, 0, 4));
-}
-*/
-
 // Tests IDN text search by both ASCII and UTF.
 TEST_F(HistoryQueryTest, TextSearchIDN) {
   ASSERT_TRUE(history_.get());

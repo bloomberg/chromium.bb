@@ -24,7 +24,7 @@ class VisitDatabase;  // For friend statement.
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
 // full history data.  We split this class' functionality out from the larger
 // HistoryDatabase class to support maintaining separate databases of URLs with
-// different capabilities (for example, in-memory, or archived).
+// different capabilities (for example, the in-memory database).
 //
 // This is refcounted to support calling InvokeLater() with some of its methods
 // (necessary to maintain ordering of DB operations).
@@ -111,10 +111,7 @@ class URLDatabase {
 
   // Ends the mass-deleting by replacing the original URL table with the
   // temporary one created in CreateTemporaryURLTable. Returns true on success.
-  //
-  // This function does not create the supplimentary indices. It is virtual so
-  // that the main history database can provide this additional behavior.
-  virtual bool CommitTemporaryURLTable();
+  bool CommitTemporaryURLTable();
 
   // Enumeration ---------------------------------------------------------------
 
@@ -256,8 +253,8 @@ class URLDatabase {
   // sets this to true to generate the  temporary table, which will have a
   // different name but the same schema.
   bool CreateURLTable(bool is_temporary);
-  // We have two tiers of indices for the URL table. The main tier is used by
-  // all URL databases, and is an index over the URL itself.
+
+  // Creates the index over URLs so we can quickly look up based on URL.
   bool CreateMainURLIndex();
 
   // Ensures the keyword search terms table exists.

@@ -782,8 +782,6 @@
         'browser/history/android/urls_sql_handler.h',
         'browser/history/android/visit_sql_handler.cc',
         'browser/history/android/visit_sql_handler.h',
-        'browser/history/archived_database.cc',
-        'browser/history/archived_database.h',
         'browser/history/chrome_history_client.cc',
         'browser/history/chrome_history_client.h',
         'browser/history/chrome_history_client_factory.cc',

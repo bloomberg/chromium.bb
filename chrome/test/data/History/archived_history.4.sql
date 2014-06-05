@@ -1,0 +1,17 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY, value LONGVARCHAR);
+INSERT INTO "meta" VALUES('version','4');
+INSERT INTO "meta" VALUES('last_compatible_version','2');
+CREATE TABLE urls(id INTEGER PRIMARY KEY,url LONGVARCHAR,title LONGVARCHAR,visit_count INTEGER DEFAULT 0 NOT NULL,typed_count INTEGER DEFAULT 0 NOT NULL,last_visit_time INTEGER NOT NULL,hidden INTEGER DEFAULT 0 NOT NULL,favicon_id INTEGER DEFAULT 0 NOT NULL);
+CREATE TABLE visits(id INTEGER PRIMARY KEY,url INTEGER NOT NULL,visit_time INTEGER NOT NULL,from_visit INTEGER,transition INTEGER DEFAULT 0 NOT NULL,segment_id INTEGER,visit_duration INTEGER DEFAULT 0 NOT NULL);
+CREATE TABLE visit_source(id INTEGER PRIMARY KEY,source INTEGER NOT NULL);
+CREATE TABLE keyword_search_terms (keyword_id INTEGER NOT NULL,url_id INTEGER NOT NULL,lower_term LONGVARCHAR NOT NULL,term LONGVARCHAR NOT NULL);
+CREATE INDEX visits_url_index ON visits (url);
+CREATE INDEX visits_from_index ON visits (from_visit);
+CREATE INDEX visits_time_index ON visits (visit_time);
+CREATE INDEX urls_url_index ON urls (url);
+CREATE INDEX keyword_search_terms_index1 ON keyword_search_terms (keyword_id, lower_term);
+CREATE INDEX keyword_search_terms_index2 ON keyword_search_terms (url_id);
+CREATE INDEX keyword_search_terms_index3 ON keyword_search_terms (term);
+COMMIT;

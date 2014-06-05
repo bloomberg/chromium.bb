@@ -685,7 +685,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   const URLsDeletedDetails* details = static_cast<const URLsDeletedDetails*>(
       broadcasted_notifications()[0].second);
   EXPECT_TRUE(details->all_history);
-  EXPECT_FALSE(details->archived);
+  EXPECT_FALSE(details->expired);
 }
 
 // Checks that adding a visit, then calling DeleteAll, and then trying to add
@@ -913,7 +913,7 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
 TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   ASSERT_TRUE(backend_.get());
 
-  // Import one non-typed URL, two non-archived and one archived typed URLs.
+  // Import one non-typed URL, and two recent and one expired typed URLs.
   URLRow row1(GURL("https://news.google.com/"));
   row1.set_visit_count(1);
   row1.set_last_visit(Time::Now());
@@ -936,18 +936,13 @@ TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   rows.push_back(row4);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
 
-  // Verify that recent URLs have ended up in the main |db_|, while expired URLs
-  // have ended up in the |archived_db_|.
+  // Verify that recent URLs have ended up in the main |db_|, while the already
+  // expired URL has been ignored.
   URLRow stored_row1, stored_row2, stored_row3, stored_row4;
   EXPECT_NE(0, backend_->db_->GetRowForURL(row1.url(), &stored_row1));
   EXPECT_NE(0, backend_->db_->GetRowForURL(row2.url(), &stored_row2));
   EXPECT_NE(0, backend_->db_->GetRowForURL(row3.url(), &stored_row3));
   EXPECT_EQ(0, backend_->db_->GetRowForURL(row4.url(), &stored_row4));
-
-  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row1.url(), &stored_row1));
-  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row2.url(), &stored_row2));
-  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row3.url(), &stored_row3));
-  EXPECT_NE(0, backend_->archived_db_->GetRowForURL(row4.url(), &stored_row4));
 
   // Ensure that a notification was fired, and further verify that the IDs in
   // the notification are set to those that are in effect in the main database.
@@ -2866,11 +2861,10 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   backend_->Closing();
   backend_ = NULL;
 
-  base::FilePath old_history_path, old_history, old_archived;
+  base::FilePath old_history_path, old_history;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &old_history_path));
   old_history_path = old_history_path.AppendASCII("History");
   old_history = old_history_path.AppendASCII("HistoryNoDuration");
-  old_archived = old_history_path.AppendASCII("ArchivedNoDuration");
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
@@ -2879,10 +2873,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
       new_history_path.Append(chrome::kHistoryFilename);
-  base::FilePath new_archived_file =
-      new_history_path.Append(chrome::kArchivedHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
-  ASSERT_TRUE(base::CopyFile(old_archived, new_archived_file));
 
   backend_ = new HistoryBackend(
       new_history_path, new HistoryBackendTestDelegate(this), &history_client_);
@@ -2890,7 +2881,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   backend_->Closing();
   backend_ = NULL;
 
-  // Now both history and archived_history databases should already be migrated.
+  // Now the history database should already be migrated.
 
   // Check version in history database first.
   int cur_version = HistoryDatabase::GetCurrentVersion();
@@ -2907,23 +2898,6 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
       "SELECT visit_duration FROM visits LIMIT 1"));
   ASSERT_TRUE(s.Step());
   EXPECT_EQ(0, s.ColumnInt(0));
-
-  // Repeat version and visit_duration checks in archived history database
-  // also.
-  cur_version = ArchivedDatabase::GetCurrentVersion();
-  sql::Connection archived_db;
-  ASSERT_TRUE(archived_db.Open(new_archived_file));
-  sql::Statement s1(archived_db.GetUniqueStatement(
-      "SELECT value FROM meta WHERE key = 'version'"));
-  ASSERT_TRUE(s1.Step());
-  file_version = s1.ColumnInt(0);
-  EXPECT_EQ(cur_version, file_version);
-
-  // Check visit_duration column in visits table is created and set to 0.
-  s1.Assign(archived_db.GetUniqueStatement(
-      "SELECT visit_duration FROM visits LIMIT 1"));
-  ASSERT_TRUE(s1.Step());
-  EXPECT_EQ(0, s1.ColumnInt(0));
 }
 
 TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {

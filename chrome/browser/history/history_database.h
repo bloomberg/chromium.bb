@@ -138,17 +138,6 @@ class HistoryDatabase : public DownloadDatabase,
   // Razes the database. Returns true if successful.
   bool Raze();
 
-  // Returns true if the history backend should erase the full text search
-  // and archived history files as part of version 16 -> 17 migration. The
-  // time format changed in this revision, and these files would be much slower
-  // to migrate. Since the data is less important, they should be deleted.
-  //
-  // This flag will be valid after Init() is called. It will always be false
-  // when running on Windows.
-  bool needs_version_17_migration() const {
-    return needs_version_17_migration_;
-  }
-
   // Visit table functions ----------------------------------------------------
 
   // Update the segment id of a visit. Return true on success.
@@ -199,9 +188,6 @@ class HistoryDatabase : public DownloadDatabase,
   sql::MetaTable meta_table_;
 
   base::Time cached_early_expiration_threshold_;
-
-  // See the getters above.
-  bool needs_version_17_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDatabase);
 };

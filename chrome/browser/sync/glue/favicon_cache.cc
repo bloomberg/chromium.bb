@@ -577,7 +577,7 @@ void FaviconCache::Observe(int type,
   content::Details<history::URLsDeletedDetails> deleted_details(details);
 
   // We only care about actual user (or sync) deletions.
-  if (deleted_details->archived)
+  if (deleted_details->expired)
     return;
 
   if (!deleted_details->all_history) {
