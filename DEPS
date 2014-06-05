@@ -578,7 +578,6 @@ skip_child_includes = [
   "metro_driver",
   "native_client_sdk",
   "o3d",
-  "pdf",
   "sdch",
   "skia",
   "testing",
