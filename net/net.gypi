@@ -425,6 +425,8 @@
       'disk_cache/blockfile/stress_support.h',
       'disk_cache/blockfile/trace.cc',
       'disk_cache/blockfile/trace.h',
+      'disk_cache/blockfile/webfonts_histogram.cc',
+      'disk_cache/blockfile/webfonts_histogram.h',
       'disk_cache/cache_creator.cc',
       'disk_cache/cache_util.cc',
       'disk_cache/cache_util.h',

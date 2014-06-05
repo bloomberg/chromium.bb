@@ -31758,6 +31758,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The success or failure of web fonts CORS-enabled fetching.</summary>
 </histogram>
 
+<histogram name="WebFont.DiskCache.ReuseCount.Evict">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    When a cache entry for a font in Google Fonts is evicted, records the reuse
+    count of the cache entry.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DiskCache.ReuseCount.Hit">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Recorded upon a cache hit for a font in Google Fonts. Records the reuse
+    count of the cache entry.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DiskCacheHit.opensans" enum="WebFontDiskCacheHit">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Whether the font was in the cache or not. &quot;Previously in the
+    cache&quot; means there was an evicted entry for the font in the cache.
+    Recorded upon a disk cache query for a font in Google Fonts.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.DownloadTime.0.Under10KB" units="milliseconds">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
@@ -44725,6 +44753,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Served from data URL"/>
 </enum>
 
+<enum name="WebFontDiskCacheHit" type="int">
+  <int value="0" label="Not in the cache"/>
+  <int value="1" label="In the cache"/>
+  <int value="2" label="Previously in the cache"/>
+</enum>
+
 <enum name="WebFontUsageType" type="int">
   <int value="0" label="Styled, and used"/>
   <int value="1" label="Styled, but not used"/>
@@ -47893,6 +47927,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram_suffixes name="TrackedSplitPreferences" separator=".">
   <suffix name="extensions.settings" label="Extension IDs dictionary"/>
   <affected-histogram name="Settings.TrackedSplitPreferenceChanged"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebFontFamily">
+  <suffix name="roboto" label="Roboto font"/>
+  <suffix name="opensans" label="Open Sans font"/>
+  <suffix name="others" label="Fonts other than Roboto and Open Sans"/>
+  <affected-histogram name="WebFont.DiskCache.ReuseCount.Evict"/>
+  <affected-histogram name="WebFont.DiskCache.ReuseCount.Hit"/>
+  <affected-histogram name="WebFont.DiskCacheHit"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebStoreLinkExperiment">
