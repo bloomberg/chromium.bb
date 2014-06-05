@@ -103,8 +103,6 @@
     '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
     '../third_party/skia/src/utils/win/SkHRESULT.cpp',
 
-    '../third_party/skia/include/images/SkImageRef.h',
-    '../third_party/skia/include/images/SkImageRef_GlobalPool.h',
     '../third_party/skia/include/images/SkMovie.h',
     '../third_party/skia/include/images/SkPageFlipper.h',
 
