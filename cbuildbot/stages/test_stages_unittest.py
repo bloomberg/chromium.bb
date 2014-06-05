@@ -61,13 +61,13 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = constants.FULL_AU_TEST_TYPE
+    self._run.config['vm_tests'] = [constants.FULL_AU_TEST_TYPE]
     with mock.patch('chromite.lib.osutils.RmDir'):
       self.RunStage()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
+    self._run.config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE]
     with mock.patch('chromite.lib.osutils.RmDir'):
       self.RunStage()
 
