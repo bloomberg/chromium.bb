@@ -122,10 +122,11 @@ extern "C" {
 // Returns:
 //   |MOJO_RESULT_OK| on success.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |*options| is invalid or one of the pointer handles looks invalid).
+//       |*options| is invalid or one of the handle pointers looks invalid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached (e.g., if the requested capacity was too large, or if the
 //       maximum number of handles was exceeded).
+//   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
     const struct MojoCreateDataPipeOptions* options,  // Optional.
     MojoHandle* data_pipe_producer_handle,  // Out.

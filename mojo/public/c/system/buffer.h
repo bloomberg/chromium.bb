@@ -92,12 +92,28 @@ extern "C" {
 // Note: See the comment in functions.h about the meaning of the "optional"
 // label for pointer parameters.
 
-// TODO(vtl): General comments.
-
-// Creates a buffer that can be shared between applications (by duplicating the
-// handle -- see |MojoDuplicateBufferHandle()| -- and passing it over a message
-// pipe). To access the buffer, one must call |MojoMapBuffer()|.
-// TODO(vtl): More.
+// Creates a buffer of size |num_bytes| bytes that can be shared between
+// applications (by duplicating the handle -- see |MojoDuplicateBufferHandle()|
+// -- and passing it over a message pipe). To access the buffer, one must call
+// |MojoMapBuffer()|.
+//
+// |options| may be set to null for a shared buffer with the default options.
+//
+// On success, |*shared_buffer_handle| will be set to the handle for the shared
+// buffer. (On failure, it is not modified.)
+//
+// Note: While more than |num_bytes| bytes may apparently be
+// available/visible/readable/writable, trying to use those extra bytes is
+// undefined behavior.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |*options| is invalid or |shared_buffer_handle| looks invalid).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
+//       been reached (e.g., if the requested size was too large, or if the
+//       maximum number of handles was exceeded).
+//   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
     const struct MojoCreateSharedBufferOptions* options,  // Optional.
     uint64_t num_bytes,  // In.
@@ -108,31 +124,60 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
 // to another application over a message pipe, while retaining access to the
 // |buffer_handle| (and any mappings that it may have).
 //
-// Note: We may add buffer types for which this operation is not supported.
-// TODO(vtl): More.
+// |options| may be set to null to duplicate the buffer handle with the default
+// options.
+//
+// On success, |*shared_buffer_handle| will be set to the handle for the new
+// buffer handle. (On failure, it is not modified.)
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |buffer_handle| is not a valid buffer handle, |*options| is invalid, or
+//       |new_buffer_handle| looks invalid).
+//   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
     MojoHandle buffer_handle,
     const struct MojoDuplicateBufferHandleOptions* options,  // Optional.
     MojoHandle* new_buffer_handle);  // Out.
 
-// Map the part (at offset |offset| of length |num_bytes|) of the buffer given
-// by |buffer_handle| into memory. |offset + num_bytes| must be less than or
-// equal to the size of the buffer. On success, |*buffer| points to memory with
-// the requested part of the buffer.
+// Maps the part (at offset |offset| of length |num_bytes|) of the buffer given
+// by |buffer_handle| into memory, with options specified by |flags|. |offset +
+// num_bytes| must be less than or equal to the size of the buffer. On success,
+// |*buffer| points to memory with the requested part of the buffer. (On
+// failure, it is not modified.)
 //
 // A single buffer handle may have multiple active mappings (possibly depending
 // on the buffer type). The permissions (e.g., writable or executable) of the
 // returned memory may depend on the properties of the buffer and properties
 // attached to the buffer handle as well as |flags|.
-// TODO(vtl): More.
+//
+// Note: Though data outside the specified range may apparently be
+// available/visible/readable/writable, trying to use those extra bytes is
+// undefined behavior.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |buffer_handle| is not a valid buffer handle, the range specified by
+//       |offset| and |num_bytes| is not valid, or |buffer| looks invalid).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if the mapping operation itself failed
+//       (e.g., due to not having appropriate address space available).
 MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                                             uint64_t offset,
                                             uint64_t num_bytes,
                                             void** buffer,  // Out.
                                             MojoMapBufferFlags flags);
 
-// Unmap a buffer pointer that was mapped by |MojoMapBuffer()|.
-// TODO(vtl): More.
+// Unmaps a buffer pointer that was mapped by |MojoMapBuffer()|. |buffer| must
+// have been the result of |MojoMapBuffer()| (not some pointer strictly inside
+// the mapped memory), and the entire mapping will be removed (partial unmapping
+// is not supported). A mapping may only be unmapped exactly once.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |buffer| is invalid (e.g., if it is not
+//       the result of |MojoMapBuffer()| or it has already been unmapped).
 MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
 
 #ifdef __cplusplus
