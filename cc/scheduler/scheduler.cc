@@ -8,6 +8,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -15,59 +16,59 @@
 
 namespace cc {
 
-class SyntheticBeginFrameSource : public TimeSourceClient {
- public:
-  SyntheticBeginFrameSource(Scheduler* scheduler,
-                            base::SingleThreadTaskRunner* task_runner)
-      : scheduler_(scheduler) {
-    if (gfx::FrameTime::TimestampsAreHighRes()) {
-      time_source_ = DelayBasedTimeSourceHighRes::Create(
-          scheduler_->VSyncInterval(), task_runner);
-    } else {
-      time_source_ = DelayBasedTimeSource::Create(scheduler_->VSyncInterval(),
-                                                  task_runner);
-    }
-    time_source_->SetClient(this);
+Scheduler::SyntheticBeginFrameSource::SyntheticBeginFrameSource(
+    Scheduler* scheduler,
+    base::SingleThreadTaskRunner* task_runner)
+    : scheduler_(scheduler) {
+  if (gfx::FrameTime::TimestampsAreHighRes()) {
+    time_source_ = DelayBasedTimeSourceHighRes::Create(
+        scheduler_->VSyncInterval(), task_runner);
+  } else {
+    time_source_ = DelayBasedTimeSource::Create(scheduler_->VSyncInterval(),
+                                                task_runner);
   }
+  time_source_->SetClient(this);
+}
 
-  virtual ~SyntheticBeginFrameSource() {}
+Scheduler::SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {
+}
 
-  // Updates the phase and frequency of the timer.
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) {
-    time_source_->SetTimebaseAndInterval(timebase, interval);
+void Scheduler::SyntheticBeginFrameSource::CommitVSyncParameters(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  time_source_->SetTimebaseAndInterval(timebase, interval);
+}
+
+void Scheduler::SyntheticBeginFrameSource::SetNeedsBeginFrame(
+    bool needs_begin_frame,
+    std::deque<BeginFrameArgs>* begin_retro_frame_args) {
+  DCHECK(begin_retro_frame_args);
+  base::TimeTicks missed_tick_time =
+      time_source_->SetActive(needs_begin_frame);
+  if (!missed_tick_time.is_null()) {
+    begin_retro_frame_args->push_back(
+        CreateSyntheticBeginFrameArgs(missed_tick_time));
   }
+}
 
-  // Activates future BeginFrames and, if activating, pushes the most
-  // recently missed BeginFrame to the back of a retroactive queue.
-  void SetNeedsBeginFrame(bool needs_begin_frame,
-                          std::deque<BeginFrameArgs>* begin_retro_frame_args) {
-    base::TimeTicks missed_tick_time =
-        time_source_->SetActive(needs_begin_frame);
-    if (!missed_tick_time.is_null()) {
-      begin_retro_frame_args->push_back(
-          CreateSyntheticBeginFrameArgs(missed_tick_time));
-    }
-  }
+bool Scheduler::SyntheticBeginFrameSource::IsActive() const {
+  return time_source_->Active();
+}
 
-  // TimeSourceClient implementation of OnTimerTick triggers a BeginFrame.
-  virtual void OnTimerTick() OVERRIDE {
-    BeginFrameArgs begin_frame_args(
-        CreateSyntheticBeginFrameArgs(time_source_->LastTickTime()));
-    scheduler_->BeginFrame(begin_frame_args);
-  }
+void Scheduler::SyntheticBeginFrameSource::OnTimerTick() {
+  BeginFrameArgs begin_frame_args(
+      CreateSyntheticBeginFrameArgs(time_source_->LastTickTime()));
+  scheduler_->BeginFrame(begin_frame_args);
+}
 
- private:
-  BeginFrameArgs CreateSyntheticBeginFrameArgs(base::TimeTicks frame_time) {
-    base::TimeTicks deadline =
-        time_source_->NextTickTime() - scheduler_->EstimatedParentDrawTime();
-    return BeginFrameArgs::Create(
-        frame_time, deadline, scheduler_->VSyncInterval());
-  }
-
-  Scheduler* scheduler_;
-  scoped_refptr<TimeSource> time_source_;
-};
+BeginFrameArgs
+Scheduler::SyntheticBeginFrameSource::CreateSyntheticBeginFrameArgs(
+    base::TimeTicks frame_time) {
+  base::TimeTicks deadline =
+      time_source_->NextTickTime() - scheduler_->EstimatedParentDrawTime();
+  return BeginFrameArgs::Create(
+      frame_time, deadline, scheduler_->VSyncInterval());
+}
 
 Scheduler::Scheduler(
     SchedulerClient* client,
@@ -229,6 +230,10 @@ void Scheduler::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidLoseOutputSurface");
   state_machine_.DidLoseOutputSurface();
   last_set_needs_begin_frame_ = false;
+  if (!settings_.begin_frame_scheduling_enabled) {
+    synthetic_begin_frame_source_->SetNeedsBeginFrame(false,
+                                                      &begin_retro_frame_args_);
+  }
   begin_retro_frame_args_.clear();
   ProcessScheduledActions();
 }

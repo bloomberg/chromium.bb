@@ -55,6 +55,10 @@ class TestScheduler : public Scheduler {
     return begin_retro_frame_args_.empty();
   }
 
+  bool IsSyntheticBeginFrameSourceActive() const {
+    return synthetic_begin_frame_source_->IsActive();
+  }
+
  private:
   TestScheduler(
       SchedulerClient* client,
@@ -1863,6 +1867,48 @@ TEST(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   client.Reset();
   client.task_runner().RunPendingTasks();
   EXPECT_EQ(0, client.num_actions_());
+}
+
+TEST(SchedulerTest,
+     StopBeginFrameAfterDidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.begin_frame_scheduling_enabled = false;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  // SetNeedsCommit should begin the frame on the next BeginImplFrame.
+  client.Reset();
+  EXPECT_FALSE(scheduler->IsSyntheticBeginFrameSourceActive());
+  scheduler->SetNeedsCommit();
+  EXPECT_TRUE(scheduler->IsSyntheticBeginFrameSourceActive());
+
+  client.Reset();
+  client.task_runner().RunPendingTasks();  // Run posted Tick.
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  EXPECT_TRUE(scheduler->IsSyntheticBeginFrameSourceActive());
+
+  // NotifyReadyToCommit should trigger the commit.
+  client.Reset();
+  scheduler->NotifyBeginMainFrameStarted();
+  scheduler->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
+  EXPECT_TRUE(scheduler->IsSyntheticBeginFrameSourceActive());
+
+  client.Reset();
+  scheduler->DidLoseOutputSurface();
+  EXPECT_EQ(0, client.num_actions_());
+  EXPECT_FALSE(scheduler->IsSyntheticBeginFrameSourceActive());
+
+  client.Reset();
+  client.task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  EXPECT_FALSE(scheduler->IsSyntheticBeginFrameSourceActive());
 }
 
 }  // namespace

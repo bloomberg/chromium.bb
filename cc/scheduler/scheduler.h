@@ -18,12 +18,12 @@
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/scheduler/time_source.h"
-#include "cc/trees/layer_tree_host.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
-
-class Thread;
-class SyntheticBeginFrameSource;
 
 class SchedulerClient {
  public:
@@ -144,6 +144,33 @@ class CC_EXPORT Scheduler {
   }
 
  protected:
+  class CC_EXPORT SyntheticBeginFrameSource : public TimeSourceClient {
+   public:
+    SyntheticBeginFrameSource(Scheduler* scheduler,
+                              base::SingleThreadTaskRunner* task_runner);
+    virtual ~SyntheticBeginFrameSource();
+
+    // Updates the phase and frequency of the timer.
+    void CommitVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
+
+    // Activates future BeginFrames and, if activating, pushes the most
+    // recently missed BeginFrame to the back of a retroactive queue.
+    void SetNeedsBeginFrame(bool needs_begin_frame,
+                            std::deque<BeginFrameArgs>* begin_retro_frame_args);
+
+    bool IsActive() const;
+
+    // TimeSourceClient implementation of OnTimerTick triggers a BeginFrame.
+    virtual void OnTimerTick() OVERRIDE;
+
+   private:
+    BeginFrameArgs CreateSyntheticBeginFrameArgs(base::TimeTicks frame_time);
+
+    Scheduler* scheduler_;
+    scoped_refptr<TimeSource> time_source_;
+  };
+
   Scheduler(
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
