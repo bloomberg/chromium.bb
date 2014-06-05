@@ -130,6 +130,34 @@ VideoPlayer.prototype.prepare = function(videos) {
 
   this.videos_ = videos;
 
+  var preventDefault = function(event) { event.preventDefault(); };
+
+  var maximizeButton = document.querySelector('.maximize-button');
+  maximizeButton.addEventListener(
+    'click',
+    function() {
+      var appWindow = chrome.app.window.current();
+      if (appWindow.isMaximized())
+        appWindow.restore();
+      else
+        appWindow.maximize();
+    });
+  maximizeButton.addEventListener('mousedown', preventDefault);
+
+  var minimizeButton = document.querySelector('.minimize-button');
+  minimizeButton.addEventListener(
+    'click',
+    function() {
+      chrome.app.window.current().minimize()
+    });
+  minimizeButton.addEventListener('mousedown', preventDefault);
+
+  var closeButton = document.querySelector('.close-button');
+  closeButton.addEventListener(
+    'click',
+    function() { close(); });
+  closeButton.addEventListener('mousedown', preventDefault);
+
   this.controls_ = new FullWindowVideoControls(
       document.querySelector('#video-player'),
       document.querySelector('#video-container'),
@@ -171,7 +199,9 @@ VideoPlayer.prototype.loadVideo_ = function(url, title, opt_callback) {
 
   document.title = title;
 
-  // Re-enables ui and hide error message if already displayed.
+  document.querySelector('#title').innerText = title;
+
+  // Re-enables ui and hides error message if already displayed.
   document.querySelector('#video-player').removeAttribute('disabled');
   document.querySelector('#error').removeAttribute('visible');
   this.controls.inactivityWatcher.disabled = false;

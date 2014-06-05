@@ -10,12 +10,19 @@
   <link rel="stylesheet" type="text/css"
         href="../file_manager/foreground/css/media_controls.css">
   <link rel="stylesheet" type="text/css" href="css/video_player.css">
+  <link rel="stylesheet" type="text/css" href="css/header.css">
 
   <script src="js/video_player_scripts.js"></script>
 </head>
 <body>
   <div id="video-player" tools>
     <div id="video-container">
+    </div>
+    <div id="header-container" class="header tool">
+      <div id="title">&nbsp;</div>
+      <button class="minimize-button tool" tabindex="-1"></button>
+      <button class="maximize-button tool" tabindex="-1"></button>
+      <button class="close-button tool" tabindex="-1"></button>
     </div>
     <div id="controls-wrapper">
       <div id="controls" class="tool"></div>

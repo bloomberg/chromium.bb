@@ -17,6 +17,7 @@
     "fullscreen",
     "mediaPlayerPrivate",
     "storage",
+    "chrome://resources/",
     "chrome://theme/"
   ],
   "file_handlers": {
@@ -52,6 +53,6 @@
         "js/background.js"
       ]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://theme data:; media-src 'self'; object-src 'self'"
+    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://resources chrome://theme data:; media-src 'self'; object-src 'self'"
   }
 }

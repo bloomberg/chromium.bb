@@ -48,6 +48,7 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
 function open(videos) {
   chrome.app.window.create('video_player.html', {
     id: 'video',
+    frame: 'none',
     singleton: false,
     minWidth: 160,
     minHeight: 100
