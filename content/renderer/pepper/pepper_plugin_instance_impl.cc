@@ -519,6 +519,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       pp_instance_(0),
       container_(container),
       layer_bound_to_fullscreen_(false),
+      layer_is_hardware_(false),
       plugin_url_(plugin_url),
       full_frame_(false),
       sent_initial_did_change_view_(false),

@@ -2162,10 +2162,6 @@ name=bug_374410
 *!ui::NativeThemeWin::PaintDirect
 
 UNINITIALIZED READ
-name=bug_376814
-*!content::PepperPluginInstanceImpl::UpdateLayer
-
-UNINITIALIZED READ
 name=bug_377728
 ...
 *!Hunspell::suggest
