@@ -5,7 +5,6 @@
 #include "ui/app_list/views/start_page_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -16,7 +15,6 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -91,15 +89,10 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   instant_container_->SetLayoutManager(instant_layout_manager);
 
-  content::WebContents* start_page_web_contents =
-      view_delegate->GetStartPageContents();
-  views::WebView* web_view = new views::WebView(
-      start_page_web_contents ? start_page_web_contents->GetBrowserContext()
-                              : NULL);
-  web_view->SetPreferredSize(gfx::Size(kWebViewWidth, kWebViewHeight));
-  web_view->SetWebContents(start_page_web_contents);
-
-  instant_container_->AddChildView(web_view);
+  views::View* web_view = view_delegate->CreateStartPageWebView(
+      gfx::Size(kWebViewWidth, kWebViewHeight));
+  if (web_view)
+    instant_container_->AddChildView(web_view);
   instant_container_->AddChildView(new BarPlaceholderButton(this));
 
   // The view containing the start page tiles.

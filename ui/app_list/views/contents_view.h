@@ -11,10 +11,6 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/views/view.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace views {
 class BoundsAnimator;
 class ViewModel;

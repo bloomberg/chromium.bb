@@ -78,8 +78,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void ToggleSpeechRecognition() OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
-  virtual content::WebContents* GetStartPageContents() OVERRIDE;
-  virtual content::WebContents* GetSpeechRecognitionContents() OVERRIDE;
+#if defined(TOOLKIT_VIEWS)
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
+#endif
+  virtual bool IsSpeechRecognitionEnabled() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
   virtual bool ShouldCenterWindow() const OVERRIDE;
   virtual void AddObserver(

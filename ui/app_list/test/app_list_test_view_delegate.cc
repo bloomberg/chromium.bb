@@ -91,12 +91,15 @@ gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-content::WebContents* AppListTestViewDelegate::GetStartPageContents() {
+#if defined(TOOLKIT_VIEWS)
+views::View* AppListTestViewDelegate::CreateStartPageWebView(
+    const gfx::Size& size) {
   return NULL;
 }
+#endif
 
-content::WebContents* AppListTestViewDelegate::GetSpeechRecognitionContents() {
-  return NULL;
+bool AppListTestViewDelegate::IsSpeechRecognitionEnabled() {
+  return false;
 }
 
 const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {

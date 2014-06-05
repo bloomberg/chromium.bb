@@ -299,7 +299,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   app_list_main_view_->layer()->SetMasksToBounds(true);
 
   // Speech recognition is available only when the start page exists.
-  if (delegate_ && delegate_->GetSpeechRecognitionContents()) {
+  if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
     speech_view_ = new SpeechView(delegate_.get());
     speech_view_->SetVisible(false);
     speech_view_->SetPaintToLayer(true);

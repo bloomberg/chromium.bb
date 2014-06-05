@@ -11,10 +11,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace app_list {
 
 class AppListMainView;

@@ -30,14 +30,9 @@
 #include "ui/base/dragdrop/drag_source_win.h"
 #endif
 
-namespace content {
-class WebContents;
-}
-
 namespace views {
 class ButtonListener;
 class DragImageView;
-class WebView;
 }
 
 namespace app_list {

@@ -13,6 +13,7 @@
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views_content_client/views_content_client.h"
 
 #if defined(OS_WIN)
@@ -40,7 +41,7 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
   // Overridden from AppListViewDelegate:
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
-  virtual content::WebContents* GetStartPageContents() OVERRIDE;
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE;
 
  private:
   app_list::AppListView* view_;  // Weak. Owns this.
@@ -83,14 +84,19 @@ void DemoAppListViewDelegate::ViewClosing() {
   base::MessageLoopForUI::current()->Quit();
 }
 
-content::WebContents* DemoAppListViewDelegate::GetStartPageContents() {
+views::View* DemoAppListViewDelegate::CreateStartPageWebView(
+    const gfx::Size& size) {
   web_contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(browser_context_)));
   web_contents_->GetController().LoadURL(GURL("http://www.google.com/"),
                                          content::Referrer(),
                                          content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                          std::string());
-  return web_contents_.get();
+  views::WebView* web_view = new views::WebView(
+      web_contents_->GetBrowserContext());
+  web_view->SetPreferredSize(size);
+  web_view->SetWebContents(web_contents_.get());
+  return web_view;
 }
 
 void ShowAppList(content::BrowserContext* browser_context,

@@ -350,12 +350,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  virtual content::WebContents* GetStartPageContents() OVERRIDE {
+  virtual views::View* CreateStartPageWebView(const gfx::Size& size) OVERRIDE {
     return NULL;
   }
 
-  virtual content::WebContents* GetSpeechRecognitionContents() OVERRIDE {
-    return NULL;
+  virtual bool IsSpeechRecognitionEnabled() OVERRIDE {
+    return false;
   }
 
   scoped_ptr<app_list::AppListModel> model_;

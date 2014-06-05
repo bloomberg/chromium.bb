@@ -146,9 +146,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../../content/content.gyp:content_browser',
             '../events/events.gyp:events',
-            '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
           ],
         }, {  # toolkit_views==0
@@ -233,8 +231,6 @@
           'dependencies': [
             '../views/views.gyp:views',
             '../views/views.gyp:views_test_support',
-            '../../content/content.gyp:content',
-            '../../content/content.gyp:content_browser',
           ],
         }, {  # toolkit_views==0
           'sources/': [
@@ -285,17 +281,19 @@
           'type': 'executable',
           'sources': [
             '../../content/app/startup_helper_win.cc',
-            'views/app_list_demo.cc',
+            'demo/app_list_demo_views.cc',
           ],
           'dependencies': [
             '../../base/base.gyp:base',
             '../../content/content.gyp:content',
+            '../../content/content.gyp:content_browser',
             '../../skia/skia.gyp:skia',
             '../../url/url.gyp:url_lib',
             '../base/ui_base.gyp:ui_base',
             '../events/events.gyp:events',
             '../resources/ui_resources.gyp:ui_resources',
             '../resources/ui_resources.gyp:ui_test_pak',
+            '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
             '../views_content_client/views_content_client.gyp:views_content_client',
             'app_list',

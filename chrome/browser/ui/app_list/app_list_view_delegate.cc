@@ -40,6 +40,10 @@
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/controls/webview/webview.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/keyboard/keyboard_util.h"
 #endif
@@ -382,22 +386,30 @@ void AppListViewDelegate::OnProfileNameChanged(
   OnProfileChanged();
 }
 
-content::WebContents* AppListViewDelegate::GetStartPageContents() {
+#if defined(TOOLKIT_VIEWS)
+views::View* AppListViewDelegate::CreateStartPageWebView(
+    const gfx::Size& size) {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   if (!service)
     return NULL;
 
-  return service->GetStartPageContents();
+  content::WebContents* web_contents = service->GetStartPageContents();
+  if (!web_contents)
+    return NULL;
+
+  views::WebView* web_view = new views::WebView(
+      web_contents->GetBrowserContext());
+  web_view->SetPreferredSize(size);
+  web_view->SetWebContents(web_contents);
+  return web_view;
 }
+#endif
 
-content::WebContents* AppListViewDelegate::GetSpeechRecognitionContents() {
+bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
-  if (!service)
-    return NULL;
-
-  return service->GetSpeechRecognitionContents();
+  return service && service->GetSpeechRecognitionContents();
 }
 
 const app_list::AppListViewDelegate::Users&

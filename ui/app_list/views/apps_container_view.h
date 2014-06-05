@@ -11,10 +11,6 @@
 #include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/views/view.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace app_list {
 
 class AppsGridView;

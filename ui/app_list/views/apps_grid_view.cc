@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/guid.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
@@ -25,7 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
