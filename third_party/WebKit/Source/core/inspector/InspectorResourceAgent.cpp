@@ -245,7 +245,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         statusText = response.httpStatusText();
     }
     RefPtr<JSONObject> headers;
-    if (response.resourceLoadInfo())
+    if (response.resourceLoadInfo() && response.resourceLoadInfo()->responseHeaders.size())
         headers = buildObjectForHeaders(response.resourceLoadInfo()->responseHeaders);
     else
         headers = buildObjectForHeaders(response.httpHeaderFields());
@@ -269,8 +269,8 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
     if (response.resourceLoadInfo()) {
         if (!response.resourceLoadInfo()->responseHeadersText.isEmpty())
             responseObject->setHeadersText(response.resourceLoadInfo()->responseHeadersText);
-
-        responseObject->setRequestHeaders(buildObjectForHeaders(response.resourceLoadInfo()->requestHeaders));
+        if (response.resourceLoadInfo()->requestHeaders.size())
+            responseObject->setRequestHeaders(buildObjectForHeaders(response.resourceLoadInfo()->requestHeaders));
         if (!response.resourceLoadInfo()->requestHeadersText.isEmpty())
             responseObject->setRequestHeadersText(response.resourceLoadInfo()->requestHeadersText);
     }

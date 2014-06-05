@@ -61,42 +61,42 @@ function test()
     InspectorTest.runTestSuite([
         function testGetStaticAsync(next)
         {
-            testXHRReplay("GET", "resources/empty.html", true, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/empty.html", true, "user", "password", [["headerName", "headerValueA"]], false, undefined, undefined, next);
         },
 
         function testGetStaticSync(next)
         {
-            testXHRReplay("GET", "resources/empty.html", false, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/empty.html", false, "user", "password", [["headerName", "headerValueB"]], false, undefined, undefined, next);
         },
 
         function testGetCachedAsync(next)
         {
-            testXHRReplay("GET", "resources/random-cached.php", true, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/random-cached.php", true, "user", "password", [["headerName", "headerValueC"]], false, undefined, undefined, next);
         },
 
         function testGetCachedSync(next)
         {
-            testXHRReplay("GET", "resources/random-cached.php", false, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/random-cached.php", false, "user", "password", [["headerName", "headerValueD"]], false, undefined, undefined, next);
         },
 
         function testGetRandomAsync(next)
         {
-            testXHRReplay("GET", "resources/random.php", true, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/random.php", true, "user", "password", [["headerName", "headerValueE"]], false, undefined, undefined, next);
         },
 
         function testGetRandomSync(next)
         {
-            testXHRReplay("GET", "resources/random.php", false, "user", "password", [["headerName", "headerValue"]], false, undefined, undefined, next);
+            testXHRReplay("GET", "resources/random.php", false, "user", "password", [["headerName", "headerValueF"]], false, undefined, undefined, next);
         },
 
         function testPostAsync(next)
         {
-            testXHRReplay("POST", "resources/random.php", true, "user", "password", [["headerName", "headerValue"]], false, "payload", undefined, next);
+            testXHRReplay("POST", "resources/random.php", true, "user", "password", [["headerName", "headerValueG"]], false, "payload", undefined, next);
         },
 
         function testPostSync(next)
         {
-            testXHRReplay("POST", "resources/random.php", false, "user", "password", [["headerName", "headerValue"]], false, "payload", undefined, next);
+            testXHRReplay("POST", "resources/random.php", false, "user", "password", [["headerName", "headerValueH"]], false, "payload", undefined, next);
         }
     ]);
 }
