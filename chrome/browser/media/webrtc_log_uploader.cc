@@ -76,7 +76,7 @@ WebRtcLogUploader::WebRtcLogUploader()
     : log_count_(0),
       post_data_(NULL),
       shutting_down_(false) {
-  blocking_sequence_checker_.DetachFromSequence();
+  file_thread_checker_.DetachFromThread();
 }
 
 WebRtcLogUploader::~WebRtcLogUploader() {
@@ -102,7 +102,8 @@ void WebRtcLogUploader::OnURLFetchComplete(
       // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
       base::FilePath log_list_path =
           WebRtcLogList::GetWebRtcLogListFileForDirectory(it->second.log_path);
-      content::BrowserThread::PostBlockingPoolTask(
+      content::BrowserThread::PostTask(
+          content::BrowserThread::FILE,
           FROM_HERE,
           base::Bind(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
                      base::Unretained(this),
@@ -140,7 +141,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     uint32 length,
     const std::map<std::string, std::string>& meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
-  DCHECK(blocking_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(log_buffer.get());
   DCHECK(!upload_done_data.log_path.empty());
 
@@ -351,7 +352,7 @@ void WebRtcLogUploader::DecreaseLogCount() {
 void WebRtcLogUploader::WriteCompressedLogToFile(
     const std::vector<uint8>& compressed_log,
     const base::FilePath& log_file_path) {
-  DCHECK(blocking_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!compressed_log.empty());
   base::WriteFile(log_file_path,
                   reinterpret_cast<const char*>(&compressed_log[0]),
@@ -361,7 +362,7 @@ void WebRtcLogUploader::WriteCompressedLogToFile(
 void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
     const base::FilePath& upload_list_path,
     const std::string& local_log_id) {
-  DCHECK(blocking_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!upload_list_path.empty());
   DCHECK(!local_log_id.empty());
 
@@ -405,7 +406,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
     const base::FilePath& upload_list_path,
     const std::string& local_log_id,
     const std::string& report_id) {
-  DCHECK(blocking_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!upload_list_path.empty());
   DCHECK(!local_log_id.empty());
   DCHECK(!report_id.empty());

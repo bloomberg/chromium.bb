@@ -14,6 +14,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/base/net_util.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 class PartialCircularBuffer;
 class Profile;
 
@@ -132,9 +136,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   void StartLoggingIfAllowed();
   void DoStartLogging();
-  void LogInitialInfoOnBlockingPool();
-  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list,
-                                const std::string& linux_distro);
+  void LogInitialInfoOnFileThread();
+  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list);
   void NotifyLoggingStarted();
 
   // Writes a formatted log |message| to the |circular_buffer_|.
@@ -173,7 +176,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   scoped_ptr<PartialCircularBuffer> circular_buffer_;
 
   // The profile associated with our renderer process.
-  const Profile* const profile_;
+  Profile* profile_;
 
   // These are only accessed on the IO thread, except when in STARTING state. In
   // this state we are protected since entering any function that alters the
