@@ -1034,7 +1034,8 @@ def ParseArgs(args):
     cmd_funcs.parse_func(sub_parser)
 
   arguments = parser.parse_args(args)
-  pynacl.log_tools.SetupLogging(arguments.verbose, quiet=arguments.quiet)
+  pynacl.log_tools.SetupLogging(
+      verbose=arguments.verbose, quiet=arguments.quiet)
   if arguments.tar_dir is None:
     arguments.tar_dir = os.path.join(arguments.dest_dir, '.tars')
 

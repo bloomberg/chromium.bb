@@ -136,9 +136,10 @@ class PackageBuilder(object):
     with open(os.path.join(
       self._options.output, 'toolchain_build.log'), 'w') as log_file:
       pynacl.log_tools.SetupLogging(
-          self._options.verbose,
-          log_file,
-          self._options.quiet, self._options.no_annotator)
+          verbose=self._options.verbose,
+          file_handle=log_file,
+          quiet=self._options.quiet,
+          no_annotator=self._options.no_annotator)
       self.BuildAll()
       self.OutputPackagesInformation()
 
@@ -386,7 +387,7 @@ class PackageBuilder(object):
         help='Do not use pinned revisions.')
     parser.add_option(
         '--no-annotator', dest='no_annotator',
-        default=True, action='store_true',
+        default=False, action='store_true',
         help='Do not print annotator headings.')
     parser.add_option(
         '--trybot', dest='trybot',
@@ -427,6 +428,7 @@ class PackageBuilder(object):
     if options.trybot or options.buildbot:
       options.verbose = True
       options.quiet = False
+      options.no_annotator = False
       options.sync_sources = True
       options.clobber = True
       options.emit_signatures = '-'
