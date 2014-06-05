@@ -293,7 +293,7 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
     if (!isHTMLDivElement(*node))
         return false;
 
-    Node* parentNode = node->parentNode();
+    ContainerNode* parentNode = node->parentNode();
     if (parentNode && parentNode->firstChild() != parentNode->lastChild())
         return false;
 
@@ -885,7 +885,7 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
     deleteTextFromNode(toText(p.anchorNode()), p.offsetInContainerNode(), 1);
 }
 
-PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
+PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
 {
     RefPtrWillBeRawPtr<Element> paragraphElement = createDefaultParagraphElement(document());
     paragraphElement->appendChild(createBreakElement(document()));
@@ -895,7 +895,7 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::insertNewDefaultParagraphElem
 
 // If the paragraph is not entirely within it's own block, create one and move the paragraph into
 // it, and return that block.  Otherwise return 0.
-PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
+PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
 {
     if (pos.isNull())
         return nullptr;
@@ -946,7 +946,7 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlo
     if (visibleParagraphEnd.isNull())
         return nullptr;
 
-    RefPtrWillBeRawPtr<Node> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
+    RefPtrWillBeRawPtr<Element> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
 
     bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
 

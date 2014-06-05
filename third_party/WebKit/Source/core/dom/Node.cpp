@@ -1483,7 +1483,7 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
         isNullString = false;
-        for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
+        for (Node* child = toContainerNode(node)->firstChild(); child; child = child->nextSibling()) {
             Node::NodeType childNodeType = child->nodeType();
             if (childNodeType == Node::COMMENT_NODE || childNodeType == Node::PROCESSING_INSTRUCTION_NODE)
                 continue;

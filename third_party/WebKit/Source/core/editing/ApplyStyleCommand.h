@@ -109,11 +109,11 @@ private:
     bool isValidCaretPositionInTextNode(const Position& position);
     bool mergeStartWithPreviousIfIdentical(const Position& start, const Position& end);
     bool mergeEndWithNextIfIdentical(const Position& start, const Position& end);
-    void cleanupUnstyledAppleStyleSpans(Node* dummySpanAncestor);
+    void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor);
 
     void surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node> start, PassRefPtrWillBeRawPtr<Node> end, PassRefPtrWillBeRawPtr<Element>);
     float computedFontSize(Node*);
-    void joinChildTextNodes(Node*, const Position& start, const Position& end);
+    void joinChildTextNodes(ContainerNode*, const Position& start, const Position& end);
 
     HTMLElement* splitAncestorsWithUnicodeBidi(Node*, bool before, WritingDirection allowedDirection);
     void removeEmbeddingUpToEnclosingBlock(Node* node, Node* unsplitAncestor);

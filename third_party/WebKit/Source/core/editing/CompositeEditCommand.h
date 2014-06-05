@@ -146,9 +146,9 @@ protected:
     PassRefPtrWillBeRawPtr<Node> addBlockPlaceholderIfNeeded(Element*);
     void removePlaceholderAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<Node> insertNewDefaultParagraphElementAt(const Position&);
+    PassRefPtrWillBeRawPtr<Element> insertNewDefaultParagraphElementAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<Node> moveParagraphContentsToNewBlockIfNecessary(const Position&);
+    PassRefPtrWillBeRawPtr<Element> moveParagraphContentsToNewBlockIfNecessary(const Position&);
 
     void pushAnchorElementDown(Node*);
 

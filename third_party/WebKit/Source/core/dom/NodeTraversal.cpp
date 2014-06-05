@@ -110,8 +110,8 @@ Node* NodeTraversal::previous(const Node& current, const Node* stayWithin)
         return 0;
     if (current.previousSibling()) {
         Node* previous = current.previousSibling();
-        while (previous->lastChild())
-            previous = previous->lastChild();
+        while (Node* child = previous->lastChild())
+            previous = child;
         return previous;
     }
     return current.parentNode();
@@ -139,8 +139,8 @@ Node* NodeTraversal::nextPostOrder(const Node& current, const Node* stayWithin)
     if (!current.nextSibling())
         return current.parentNode();
     Node* next = current.nextSibling();
-    while (next->firstChild())
-        next = next->firstChild();
+    while (Node* child = next->firstChild())
+        next = child;
     return next;
 }
 
@@ -158,8 +158,8 @@ static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* s
 
 Node* NodeTraversal::previousPostOrder(const Node& current, const Node* stayWithin)
 {
-    if (current.lastChild())
-        return current.lastChild();
+    if (Node* lastChild = current.lastChild())
+        return lastChild;
     if (current == stayWithin)
         return 0;
     if (current.previousSibling())

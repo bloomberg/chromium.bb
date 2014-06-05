@@ -872,7 +872,7 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
     if (newNodeType == Node::DOCUMENT_FRAGMENT_NODE && !newNode->isShadowRoot()) {
         // check each child node, not the DocumentFragment itself
         numNewChildren = 0;
-        for (Node* c = newNode->firstChild(); c; c = c->nextSibling()) {
+        for (Node* c = toDocumentFragment(newNode)->firstChild(); c; c = c->nextSibling()) {
             if (!checkAgainst->childTypeAllowed(c->nodeType())) {
                 exceptionState.throwDOMException(HierarchyRequestError, "The node to be inserted contains a '" + c->nodeName() + "' node, which may not be inserted here.");
                 return;
@@ -925,11 +925,11 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
         if (collapsed)
             m_end.setToBeforeChild(*newText);
     } else {
-        RefPtrWillBeRawPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->lastChild() : newNode.get();
+        RefPtrWillBeRawPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->lastChild() : newNode.get();
         if (lastChild && lastChild == m_start.childBefore()) {
             // The insertion will do nothing, but we need to extend the range to include
             // the inserted nodes.
-            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->firstChild() : newNode.get();
+            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->firstChild() : newNode.get();
             ASSERT(firstChild);
             m_start.setToBeforeChild(*firstChild);
             return;

@@ -266,7 +266,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
         if (styleChange.cssStyle().length() || m_removeOnly) {
             RefPtrWillBeRawPtr<Node> block = enclosingBlock(paragraphStart.deepEquivalent().deprecatedNode());
             if (!m_removeOnly) {
-                RefPtrWillBeRawPtr<Node> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStart.deepEquivalent());
+                RefPtrWillBeRawPtr<Element> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStart.deepEquivalent());
                 if (newBlock)
                     block = newBlock;
             }
@@ -424,7 +424,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         removeNodePreservingChildren(unstyledSpans[i].get());
 }
 
-static Node* dummySpanAncestorForNode(const Node* node)
+static ContainerNode* dummySpanAncestorForNode(const Node* node)
 {
     while (node && (!node->isElementNode() || !isStyleSpanOrSpanWithOnlyStyleAttribute(toElement(node))))
         node = node->parentNode();
@@ -432,7 +432,7 @@ static Node* dummySpanAncestorForNode(const Node* node)
     return node ? node->parentNode() : 0;
 }
 
-void ApplyStyleCommand::cleanupUnstyledAppleStyleSpans(Node* dummySpanAncestor)
+void ApplyStyleCommand::cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor)
 {
     if (!dummySpanAncestor)
         return;
@@ -546,8 +546,8 @@ static Node* highestEmbeddingAncestor(Node* startNode, Node* enclosingNode)
 
 void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
 {
-    RefPtrWillBeRawPtr<Node> startDummySpanAncestor = nullptr;
-    RefPtrWillBeRawPtr<Node> endDummySpanAncestor = nullptr;
+    RefPtrWillBeRawPtr<ContainerNode> startDummySpanAncestor = nullptr;
+    RefPtrWillBeRawPtr<ContainerNode> endDummySpanAncestor = nullptr;
 
     // update document layout once before removing styles
     // so that we avoid the expense of updating before each and every call
@@ -1528,7 +1528,7 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     return value->getFloatValue(CSSPrimitiveValue::CSS_PX);
 }
 
-void ApplyStyleCommand::joinChildTextNodes(Node* node, const Position& start, const Position& end)
+void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& start, const Position& end)
 {
     if (!node)
         return;
