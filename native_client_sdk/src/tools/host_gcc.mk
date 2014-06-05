@@ -165,5 +165,5 @@ endef
 #
 ifdef STANDALONE
 run: all
-	$(OUTDIR)/$(TARGET)$(HOST_EXT) $(EXE_ARGS)
+	$(RUN_UNDER) $(OUTDIR)/$(TARGET)$(HOST_EXT) $(EXE_ARGS)
 endif
