@@ -673,8 +673,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetForceRenderSurface(true);
   l1->SetVisible(false);
 
-  EXPECT_EQ(gfx::PointF().ToString(),
-            l1->cc_layer()->transform_origin().ToString());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
   EXPECT_TRUE(l1->cc_layer()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
@@ -691,8 +690,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   EXPECT_NE(before_layer, l1->cc_layer());
 
-  EXPECT_EQ(gfx::PointF().ToString(),
-            l1->cc_layer()->transform_origin().ToString());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
   EXPECT_TRUE(l1->cc_layer()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
@@ -709,8 +707,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_FALSE(callback2_run);
 
   l1->SetShowPaintedContent();
-  EXPECT_EQ(gfx::PointF().ToString(),
-            l1->cc_layer()->transform_origin().ToString());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
   EXPECT_TRUE(l1->cc_layer()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
