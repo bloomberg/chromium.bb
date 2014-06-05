@@ -330,7 +330,7 @@ _compression_extension_names.append(common.X_WEBKIT_DEFLATE_FRAME_EXTENSION)
 def _parse_compression_method(data):
     """Parses the value of "method" extension parameter."""
 
-    return common.parse_extensions(data, allow_quoted_string=True)
+    return common.parse_extensions(data)
 
 
 def _create_accepted_method_desc(method_name, method_params):
@@ -419,32 +419,6 @@ class CompressionExtensionProcessorBase(ExtensionProcessorInterface):
 
     def get_compression_processor(self):
         return self._compression_processor
-
-
-class PerFrameCompressExtensionProcessor(CompressionExtensionProcessorBase):
-    """perframe-compress processor.
-
-    Specification:
-    http://tools.ietf.org/html/draft-ietf-hybi-websocket-perframe-compression
-    """
-
-    _DEFLATE_METHOD = 'deflate'
-
-    def __init__(self, request):
-        CompressionExtensionProcessorBase.__init__(self, request)
-
-    def name(self):
-        return common.PERFRAME_COMPRESSION_EXTENSION
-
-    def _lookup_compression_processor(self, method_desc):
-        if method_desc.name() == self._DEFLATE_METHOD:
-            return DeflateFrameExtensionProcessor(method_desc)
-        return None
-
-
-_available_processors[common.PERFRAME_COMPRESSION_EXTENSION] = (
-    PerFrameCompressExtensionProcessor)
-_compression_extension_names.append(common.PERFRAME_COMPRESSION_EXTENSION)
 
 
 class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
@@ -690,7 +664,7 @@ class _PerMessageDeflateFramer(object):
             original_payload_size)
 
         message = self._rfc1979_deflater.filter(
-            message, flush=end, bfinal=self._bfinal)
+            message, end=end, bfinal=self._bfinal)
 
         filtered_payload_size = len(message)
         self._outgoing_average_ratio_calculator.add_result_bytes(
@@ -844,16 +818,14 @@ class MuxExtensionProcessor(ExtensionProcessorInterface):
                 # Mux extension cannot be used after extensions
                 # that depend on frame boundary, extension data field, or any
                 # reserved bits which are attributed to each frame.
-                if (name == common.PERFRAME_COMPRESSION_EXTENSION or
-                    name == common.DEFLATE_FRAME_EXTENSION or
+                if (name == common.DEFLATE_FRAME_EXTENSION or
                     name == common.X_WEBKIT_DEFLATE_FRAME_EXTENSION):
                     self.set_active(False)
                     return
             else:
                 # Mux extension should not be applied before any history-based
                 # compression extension.
-                if (name == common.PERFRAME_COMPRESSION_EXTENSION or
-                    name == common.DEFLATE_FRAME_EXTENSION or
+                if (name == common.DEFLATE_FRAME_EXTENSION or
                     name == common.X_WEBKIT_DEFLATE_FRAME_EXTENSION or
                     name == common.PERMESSAGE_COMPRESSION_EXTENSION or
                     name == common.X_WEBKIT_PERMESSAGE_COMPRESSION_EXTENSION):

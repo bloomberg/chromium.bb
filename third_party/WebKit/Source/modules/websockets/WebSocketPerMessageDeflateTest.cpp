@@ -292,6 +292,31 @@ TEST(WebSocketPerMessageDeflateTest, TestInflate)
     EXPECT_TRUE(f3.final);
 }
 
+TEST(WebSocketPerMessageDeflateTest, TestInflateMultipleBlocksOverMultipleFrames)
+{
+    WebSocketPerMessageDeflate c;
+    c.enable(8, WebSocketDeflater::TakeOverContext);
+    WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
+    WebSocketFrame::OpCode continuation = WebSocketFrame::OpCodeContinuation;
+    std::string expected = "HelloHello";
+    std::string actual;
+    WebSocketFrame f1(opcode, "\xf2\x48\xcd\xc9\xc9\x07\x00\x00\x00\xff\xff", 11, WebSocketFrame::Compress);
+    WebSocketFrame f2(continuation, "\xf2\x00\x11\x00\x00", 5, WebSocketFrame::Final);
+
+    ASSERT_TRUE(c.inflate(f1));
+    EXPECT_FALSE(f1.compress);
+    EXPECT_FALSE(f1.final);
+    actual += std::string(f1.payload, f1.payloadLength);
+
+    c.resetInflateBuffer();
+    ASSERT_TRUE(c.inflate(f2));
+    EXPECT_FALSE(f2.compress);
+    EXPECT_TRUE(f2.final);
+    actual += std::string(f2.payload, f2.payloadLength);
+
+    EXPECT_EQ(expected, actual);
+}
+
 TEST(WebSocketPerMessageDeflateTest, TestInflateEmptyFrame)
 {
     WebSocketPerMessageDeflate c;
