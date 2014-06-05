@@ -48,7 +48,10 @@ readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
 # Extra non-IRT-using test to run for x86-32 and ARM on toolchain bots.
 # TODO(mseaborn): Run this on the main bots after the toolchain revision is
 # updated.
-readonly SCONS_NONSFI_TC="${SCONS_NONSFI} run_hello_world_test"
+readonly SCONS_NONSFI_TC="\
+    ${SCONS_NONSFI} \
+    run_hello_world_test \
+    run_printf_test"
 
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"

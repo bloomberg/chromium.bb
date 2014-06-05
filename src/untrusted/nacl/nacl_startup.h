@@ -21,8 +21,8 @@ extern "C" {
  *      [1]             envc, count of envp[] pointers
  *      [2]             argc, count of argv[] pointers
  *      [3]             argv[0..argc] pointers, argv[argc] being NULL
- *      [3+argc]        envp[0..envc] pointers, envp[envc] being NULL
- *      [3+argc+envc]   auxv[] pairs
+ *      [3+argc+1]      envp[0..envc] pointers, envp[envc] being NULL
+ *      [3+argc+envc+2] auxv[] pairs
  */
 
 enum NaClStartupInfoIndex {

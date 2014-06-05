@@ -91,7 +91,7 @@ dump_env_nexe = env.ComponentProgram('dump_env', 'dump_env.c',
 node = env.CommandSelLdrTestNacl(
     'dump_env.out',
     dump_env_nexe,
-    args=['arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'argv6', 'argv7'],
+    args=['arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'arg6', 'arg7'],
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
