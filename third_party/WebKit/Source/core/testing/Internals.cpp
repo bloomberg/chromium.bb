@@ -573,15 +573,6 @@ String Internals::elementRenderTreeAsText(Element* element, ExceptionState& exce
     return representation;
 }
 
-size_t Internals::numberOfScopedHTMLStyleChildren(const Node* scope, ExceptionState& exceptionState) const
-{
-    if (scope && (scope->isElementNode() || scope->isShadowRoot()))
-        return scope->numberOfScopedHTMLStyleChildren();
-
-    exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-    return 0;
-}
-
 PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node, ExceptionState& exceptionState) const
 {
     if (!node) {

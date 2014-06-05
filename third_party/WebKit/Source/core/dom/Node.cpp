@@ -2464,28 +2464,6 @@ PassRefPtrWillBeRawPtr<NodeList> Node::getDestinationInsertionPoints()
     return StaticNodeList::adopt(filteredInsertionPoints);
 }
 
-void Node::registerScopedHTMLStyleChild()
-{
-    setHasScopedHTMLStyleChild(true);
-}
-
-void Node::unregisterScopedHTMLStyleChild()
-{
-    ASSERT(hasScopedHTMLStyleChild());
-    setHasScopedHTMLStyleChild(numberOfScopedHTMLStyleChildren());
-}
-
-size_t Node::numberOfScopedHTMLStyleChildren() const
-{
-    size_t count = 0;
-    for (HTMLStyleElement* style = Traversal<HTMLStyleElement>::firstChild(*this); style; style = Traversal<HTMLStyleElement>::nextSibling(*style)) {
-        if (style->isRegisteredAsScoped())
-            ++count;
-    }
-
-    return count;
-}
-
 void Node::setFocus(bool flag)
 {
     document().userActionElements().setFocused(this, flag);
