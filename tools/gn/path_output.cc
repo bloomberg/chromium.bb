@@ -9,9 +9,7 @@
 #include "tools/gn/output_file.h"
 #include "tools/gn/string_utils.h"
 
-PathOutput::PathOutput(const SourceDir& current_dir,
-                       EscapingMode escaping,
-                       bool convert_slashes)
+PathOutput::PathOutput(const SourceDir& current_dir, EscapingMode escaping)
     : current_dir_(current_dir) {
   CHECK(current_dir.is_source_absolute())
       << "Currently this only supports writing to output directories inside "
@@ -20,11 +18,6 @@ PathOutput::PathOutput(const SourceDir& current_dir,
   inverse_current_dir_ = InvertDir(current_dir_);
 
   options_.mode = escaping;
-  options_.convert_slashes = convert_slashes;
-  options_.inhibit_quoting = false;
-
-  if (convert_slashes)
-    ConvertPathToSystem(&inverse_current_dir_);
 }
 
 PathOutput::~PathOutput() {
@@ -91,12 +84,9 @@ void PathOutput::WriteFile(std::ostream& out,
 void PathOutput::WriteSourceRelativeString(
     std::ostream& out,
     const base::StringPiece& str) const {
-  if (options_.mode == ESCAPE_SHELL) {
+  if (options_.mode == ESCAPE_NINJA_COMMAND) {
     // Shell escaping needs an intermediate string since it may end up
-    // quoting the whole thing. On Windows, the slashes may already be
-    // converted to backslashes in inverse_current_dir_, but we assume that on
-    // Windows the escaper won't try to then escape the preconverted
-    // backslashes and will just pass them, so this is fine.
+    // quoting the whole thing.
     std::string intermediate;
     intermediate.reserve(inverse_current_dir_.size() + str.size());
     intermediate.assign(inverse_current_dir_.c_str(),

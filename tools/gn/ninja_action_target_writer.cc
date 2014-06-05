@@ -16,7 +16,7 @@ NinjaActionTargetWriter::NinjaActionTargetWriter(const Target* target,
     : NinjaTargetWriter(target, toolchain, out),
       path_output_no_escaping_(
           target->settings()->build_settings()->build_dir(),
-          ESCAPE_NONE, false) {
+          ESCAPE_NONE) {
 }
 
 NinjaActionTargetWriter::~NinjaActionTargetWriter() {
@@ -144,8 +144,7 @@ void NinjaActionTargetWriter::WriteArgsSubstitutions(
   path_output_no_escaping_.WriteFile(source_file_stream, source);
 
   EscapeOptions template_escape_options;
-  template_escape_options.mode = ESCAPE_NINJA_SHELL;
-  template_escape_options.inhibit_quoting = true;
+  template_escape_options.mode = ESCAPE_NINJA_COMMAND;
 
   args_template.WriteNinjaVariablesForSubstitution(
       out_, source_file_stream.str(), template_escape_options);

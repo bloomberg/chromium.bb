@@ -39,7 +39,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   cmdline.AppendSwitch("-q");  // Don't write output.
 
   EscapeOptions escape_shell;
-  escape_shell.mode = ESCAPE_SHELL;
+  escape_shell.mode = ESCAPE_NINJA_COMMAND;
 #if defined(OS_WIN)
   // The command line code quoting varies by platform. We have one string,
   // possibly with spaces, that we want to quote. The Windows command line
@@ -82,7 +82,7 @@ NinjaBuildWriter::NinjaBuildWriter(
       default_toolchain_targets_(default_toolchain_targets),
       out_(out),
       dep_out_(dep_out),
-      path_output_(build_settings->build_dir(), ESCAPE_NINJA, false),
+      path_output_(build_settings->build_dir(), ESCAPE_NINJA),
       helper_(build_settings) {
 }
 

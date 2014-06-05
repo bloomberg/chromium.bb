@@ -23,9 +23,7 @@ NinjaToolchainWriter::NinjaToolchainWriter(
       toolchain_(toolchain),
       targets_(targets),
       out_(out),
-      path_output_(settings_->build_settings()->build_dir(),
-                   ESCAPE_NINJA,
-                   false),
+      path_output_(settings_->build_settings()->build_dir(), ESCAPE_NINJA),
       helper_(settings->build_settings()) {
 }
 

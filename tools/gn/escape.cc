@@ -5,10 +5,11 @@
 #include "tools/gn/escape.h"
 
 #include "base/containers/stack_container.h"
+#include "base/logging.h"
 
 namespace {
 
-// A "1" in this lookup table means that char is valid in the shell.
+// A "1" in this lookup table means that char is valid in the Posix shell.
 const char kShellValid[0x80] = {
 // 00-1f: all are invalid
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -26,70 +27,150 @@ const char kShellValid[0x80] = {
 //  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0 };
 
+// Append one character to the given string, escaping it for Ninja.
+//
+// Ninja's escaping rules are very simple. We always escape colons even
+// though they're OK in many places, in case the resulting string is used on
+// the left-hand-side of a rule.
+template<typename DestString>
+inline void NinjaEscapeChar(char ch, DestString* dest) {
+  if (ch == '$' || ch == ' ' || ch == ':')
+    dest->push_back('$');
+  dest->push_back(ch);
+}
+
+template<typename DestString>
+void EscapeStringToString_Ninja(const base::StringPiece& str,
+                                const EscapeOptions& options,
+                                DestString* dest,
+                                bool* needed_quoting) {
+  for (size_t i = 0; i < str.size(); i++)
+    NinjaEscapeChar(str[i], dest);
+  if (needed_quoting)
+    *needed_quoting = false;
+}
+
+// Escape for CommandLineToArgvW and additionally escape Ninja characters.
+//
+// The basic algorithm is if the string doesn't contain any parse-affecting
+// characters, don't do anything (other than the Ninja processing). If it does,
+// quote the string, and backslash-escape all quotes and backslashes.
+// See:
+//   http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+//   http://blogs.msdn.com/b/oldnewthing/archive/2010/09/17/10063629.aspx
+template<typename DestString>
+void EscapeStringToString_WindowsNinjaFork(const base::StringPiece& str,
+                                           const EscapeOptions& options,
+                                           DestString* dest,
+                                           bool* needed_quoting) {
+  // We assume we don't have any whitespace chars that aren't spaces.
+  DCHECK(str.find_first_of("\r\n\v\t") == std::string::npos);
+
+  if (str.find_first_of(" \"") == std::string::npos) {
+    // Simple case, don't quote.
+    EscapeStringToString_Ninja(str, options, dest, needed_quoting);
+  } else {
+    if (!options.inhibit_quoting)
+      dest->push_back('"');
+
+    for (size_t i = 0; i < str.size(); i++) {
+      // Count backslashes in case they're followed by a quote.
+      size_t backslash_count = 0;
+      while (i < str.size() && str[i] == '\\') {
+        i++;
+        backslash_count++;
+      }
+      if (i == str.size()) {
+        // Backslashes at end of string. Backslash-escape all of them since
+        // they'll be followed by a quote.
+        dest->append(backslash_count * 2, '\\');
+      } else if (str[i] == '"') {
+        // 0 or more backslashes followed by a quote. Backslash-escape the
+        // backslashes, then backslash-escape the quote.
+        dest->append(backslash_count * 2 + 1, '\\');
+        dest->push_back('"');
+      } else {
+        // Non-special Windows character, just escape for Ninja. Also, add any
+        // backslashes we read previously, these are literals.
+        dest->append(backslash_count, '\\');
+        NinjaEscapeChar(str[i], dest);
+      }
+    }
+
+    if (!options.inhibit_quoting)
+      dest->push_back('"');
+    if (needed_quoting)
+      *needed_quoting = true;
+  }
+}
+
+template<typename DestString>
+void EscapeStringToString_PosixNinjaFork(const base::StringPiece& str,
+                                         const EscapeOptions& options,
+                                         DestString* dest,
+                                         bool* needed_quoting) {
+  for (size_t i = 0; i < str.size(); i++) {
+    if (str[i] == '$' || str[i] == ' ') {
+      // Space and $ are special to both Ninja and the shell. '$' escape for
+      // Ninja, then backslash-escape for the shell.
+      dest->push_back('\\');
+      dest->push_back('$');
+      dest->push_back(str[i]);
+    } else if (str[i] == ':') {
+      // Colon is the only other Ninja special char, which is not special to
+      // the shell.
+      dest->push_back('$');
+      dest->push_back(':');
+    } else if (static_cast<unsigned>(str[i]) >= 0x80 ||
+               !kShellValid[static_cast<int>(str[i])]) {
+      // All other invalid shell chars get backslash-escaped.
+      dest->push_back('\\');
+      dest->push_back(str[i]);
+    } else {
+      // Everything else is a literal.
+      dest->push_back(str[i]);
+    }
+  }
+}
+
 template<typename DestString>
 void EscapeStringToString(const base::StringPiece& str,
                           const EscapeOptions& options,
                           DestString* dest,
                           bool* needed_quoting) {
-  bool used_quotes = false;
-
-  for (size_t i = 0; i < str.size(); i++) {
-    if (str[i] == '$' && (options.mode & ESCAPE_NINJA)) {
-      // Escape dollars signs since ninja treats these specially. If we're also
-      // escaping for the shell, we need to backslash-escape that again.
-      if (options.mode & ESCAPE_SHELL)
-        dest->push_back('\\');
-      dest->push_back('$');
-      dest->push_back('$');
-    } else if (str[i] == ' ') {
-      if (options.mode & ESCAPE_NINJA) {
-        // For Ninja just escape spaces with $.
-        dest->push_back('$');
-      }
-      if (options.mode & ESCAPE_SHELL) {
-        // For the shell, quote the whole string.
-        if (needed_quoting)
-          *needed_quoting = true;
-        if (!options.inhibit_quoting) {
-          if (!used_quotes) {
-            used_quotes = true;
-            dest->insert(dest->begin(), '"');
-          }
-        }
-      }
-      dest->push_back(' ');
-    } else if (str[i] == '\'' && (options.mode & ESCAPE_JSON)) {
-      dest->push_back('\\');
-      dest->push_back('\'');
+  switch (options.mode) {
+    case ESCAPE_NONE:
+      dest->append(str.data(), str.size());
+      break;
+    case ESCAPE_NINJA:
+      EscapeStringToString_Ninja(str, options, dest, needed_quoting);
+      break;
+    case ESCAPE_NINJA_COMMAND:
+      switch (options.platform) {
+        case ESCAPE_PLATFORM_CURRENT:
 #if defined(OS_WIN)
-    } else if (str[i] == '/' && options.convert_slashes) {
-      // Convert slashes on Windows if requested.
-      dest->push_back('\\');
+          EscapeStringToString_WindowsNinjaFork(str, options, dest,
+                                                needed_quoting);
 #else
-    } else if (str[i] == '\\' && (options.mode & ESCAPE_SHELL)) {
-      // For non-Windows shell, escape backslashes.
-      dest->push_back('\\');
-      dest->push_back('\\');
+          EscapeStringToString_PosixNinjaFork(str, options, dest,
+                                              needed_quoting);
 #endif
-    } else if (str[i] == '\\' && (options.mode & ESCAPE_JSON)) {
-      dest->push_back('\\');
-      dest->push_back('\\');
-    } else if (str[i] == ':' && (options.mode & ESCAPE_NINJA)) {
-      dest->push_back('$');
-      dest->push_back(':');
-    } else if ((options.mode & ESCAPE_SHELL) &&
-               (static_cast<unsigned>(str[i]) >= 0x80 ||
-                !kShellValid[static_cast<int>(str[i])])) {
-      // All other invalid shell chars get backslash-escaped.
-      dest->push_back('\\');
-      dest->push_back(str[i]);
-    } else {
-      dest->push_back(str[i]);
-    }
+          break;
+        case ESCAPE_PLATFORM_WIN:
+          EscapeStringToString_WindowsNinjaFork(str, options, dest,
+                                                needed_quoting);
+          break;
+        case ESCAPE_PLATFORM_POSIX:
+          EscapeStringToString_PosixNinjaFork(str, options, dest,
+                                              needed_quoting);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+    default:
+      NOTREACHED();
   }
-
-  if (used_quotes)
-    dest->push_back('"');
 }
 
 }  // namespace
@@ -106,10 +187,8 @@ std::string EscapeString(const base::StringPiece& str,
 void EscapeStringToStream(std::ostream& out,
                           const base::StringPiece& str,
                           const EscapeOptions& options) {
-  // Escape to a stack buffer and then write out to the stream.
-  base::StackVector<char, 256> result;
-  result->reserve(str.size() + 4);  // Guess we'll add a couple of extra chars.
-  EscapeStringToString(str, options, &result.container(), NULL);
-  if (!result->empty())
-    out.write(&result[0], result->size());
+  base::StackString<256> escaped;
+  EscapeStringToString(str, options, &escaped.container(), NULL);
+  if (!escaped->empty())
+    out.write(escaped->data(), escaped->size());
 }

@@ -90,6 +90,13 @@ class StackAllocator : public std::allocator<T> {
       : source_(NULL) {
   }
 
+  // This constructor must exist. It creates a default allocator that doesn't
+  // actually have a stack buffer. glibc's std::string() will compare the
+  // current allocator against the default-constructed allocator, so this
+  // should be fast.
+  StackAllocator() : source_(NULL) {
+  }
+
   explicit StackAllocator(Source* source) : source_(source) {
   }
 

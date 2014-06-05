@@ -166,7 +166,7 @@ void FileTemplate::ApplyString(const std::string& str,
 
 void FileTemplate::WriteWithNinjaExpansions(std::ostream& out) const {
   EscapeOptions escape_options;
-  escape_options.mode = ESCAPE_NINJA_SHELL;
+  escape_options.mode = ESCAPE_NINJA_COMMAND;
   escape_options.inhibit_quoting = true;
 
   for (size_t template_i = 0;
@@ -184,8 +184,10 @@ void FileTemplate::WriteWithNinjaExpansions(std::ostream& out) const {
     for (size_t subrange_i = 0; subrange_i < t.container().size();
          subrange_i++) {
       if (t[subrange_i].type == Subrange::LITERAL) {
+        bool cur_needs_quoting = false;
         item_str.append(EscapeString(t[subrange_i].literal, escape_options,
-                                     &needs_quoting));
+                                     &cur_needs_quoting));
+        needs_quoting |= cur_needs_quoting;
       } else {
         // Don't escape this since we need to preserve the $.
         item_str.append("${");

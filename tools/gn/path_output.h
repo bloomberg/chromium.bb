@@ -33,9 +33,7 @@ class PathOutput {
     DIR_NO_LAST_SLASH,
   };
 
-  PathOutput(const SourceDir& current_dir,
-             EscapingMode escaping,
-             bool convert_slashes);
+  PathOutput(const SourceDir& current_dir, EscapingMode escaping);
   ~PathOutput();
 
   // Read-only since inverse_current_dir_ is computed depending on this.
@@ -43,19 +41,10 @@ class PathOutput {
 
   const SourceDir& current_dir() const { return current_dir_; }
 
-  // When true, converts slashes to the system-type path separators (on
-  // Windows, this is a backslash, this is a NOP otherwise).
-  //
-  // Read-only since inverse_current_dir_ is computed depending on this.
-  bool convert_slashes_to_system() const { return options_.convert_slashes; }
-
-  // When the output escaping is ESCAPE_SHELL, the escaper will normally put
-  // quotes around suspect things. If this value is set to true, we'll disable
-  // the quoting feature. This means that in ESCAPE_SHELL mode, strings with
-  // spaces in them qon't be quoted. This mode is for when quoting is done at
-  // some higher-level. Defaults to false.
+  // Getter/setters for flags inside the escape options.
   bool inhibit_quoting() const { return options_.inhibit_quoting; }
   void set_inhibit_quoting(bool iq) { options_.inhibit_quoting = iq; }
+  void set_escape_platform(EscapingPlatform p) { options_.platform = p; }
 
   void WriteFile(std::ostream& out, const SourceFile& file) const;
   void WriteFile(std::ostream& out, const OutputFile& file) const;

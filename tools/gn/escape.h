@@ -14,35 +14,42 @@ enum EscapingMode {
   ESCAPE_NONE,
 
   // Ninja string escaping.
-  ESCAPE_NINJA = 1,
+  ESCAPE_NINJA,
 
-  // Shell string escaping.
-  ESCAPE_SHELL = 2,
+  // For writing commands to ninja files.
+  ESCAPE_NINJA_COMMAND,
+};
 
-  // For writing shell commands to ninja files.
-  ESCAPE_NINJA_SHELL = ESCAPE_NINJA | ESCAPE_SHELL,
+enum EscapingPlatform {
+  // Do escaping for the current platform.
+  ESCAPE_PLATFORM_CURRENT,
 
-  ESCAPE_JSON = 4,
+  // Force escaping for the given platform.
+  ESCAPE_PLATFORM_POSIX,
+  ESCAPE_PLATFORM_WIN,
 };
 
 struct EscapeOptions {
   EscapeOptions()
       : mode(ESCAPE_NONE),
-        convert_slashes(false),
+        platform(ESCAPE_PLATFORM_CURRENT),
         inhibit_quoting(false) {
   }
 
   EscapingMode mode;
 
-  // When set, converts forward-slashes to system-specific path separators.
-  bool convert_slashes;
+  // Controls how "fork" escaping is done. You will generally want to keep the
+  // default "current" platform.
+  EscapingPlatform platform;
 
   // When the escaping mode is ESCAPE_SHELL, the escaper will normally put
   // quotes around things with spaces. If this value is set to true, we'll
   // disable the quoting feature and just add the spaces.
   //
   // This mode is for when quoting is done at some higher-level. Defaults to
-  // false.
+  // false. Note that Windows has strange behavior where the meaning of the
+  // backslashes changes according to if it is followed by a quote. The
+  // escaping rules assume that a double-quote will be appended to the result.
   bool inhibit_quoting;
 };
 

@@ -17,7 +17,7 @@ namespace {
 // Returns the proper escape options for writing compiler and linker flags.
 EscapeOptions GetFlagOptions() {
   EscapeOptions opts;
-  opts.mode = ESCAPE_NINJA;
+  opts.mode = ESCAPE_NINJA_COMMAND;
 
   // Some flag strings are actually multiple flags that expect to be just
   // added to the command line. We assume that quoting is done by the
@@ -29,7 +29,7 @@ EscapeOptions GetFlagOptions() {
 
 struct DefineWriter {
   DefineWriter() {
-    options.mode = ESCAPE_SHELL;
+    options.mode = ESCAPE_NINJA_COMMAND;
   }
 
   void operator()(const std::string& s, std::ostream& out) const {
@@ -41,33 +41,20 @@ struct DefineWriter {
 };
 
 struct IncludeWriter {
-  IncludeWriter(PathOutput& path_output,
-                const NinjaHelper& h)
+  IncludeWriter(PathOutput& path_output, const NinjaHelper& h)
       : helper(h),
-        path_output_(path_output),
-        old_inhibit_quoting_(path_output.inhibit_quoting()) {
-    // Inhibit quoting since we'll put quotes around the whole thing ourselves.
-    // Since we're writing in NINJA escaping mode, this won't actually do
-    // anything, but I think we may need to change to shell-and-then-ninja
-    // escaping for this in the future.
-    path_output_.set_inhibit_quoting(true);
+        path_output_(path_output) {
   }
   ~IncludeWriter() {
-    path_output_.set_inhibit_quoting(old_inhibit_quoting_);
   }
 
   void operator()(const SourceDir& d, std::ostream& out) const {
-    out << " \"-I";
-    // It's important not to include the trailing slash on directories or on
-    // Windows it will be a backslash and the compiler might think we're
-    // escaping the quote!
+    out << " -I";
     path_output_.WriteDir(out, d, PathOutput::DIR_NO_LAST_SLASH);
-    out << "\"";
   }
 
   const NinjaHelper& helper;
   PathOutput& path_output_;
-  bool old_inhibit_quoting_;  // So we can put the PathOutput back.
 };
 
 Toolchain::ToolType GetToolTypeForTarget(const Target* target) {
@@ -268,8 +255,8 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags(
   if (!all_lib_dirs.empty()) {
     // Since we're passing these on the command line to the linker and not
     // to Ninja, we need to do shell escaping.
-    PathOutput lib_path_output(
-        path_output_.current_dir(), ESCAPE_NINJA_SHELL, false);
+    PathOutput lib_path_output(path_output_.current_dir(),
+                               ESCAPE_NINJA_COMMAND);
     for (size_t i = 0; i < all_lib_dirs.size(); i++) {
       out_ << " " << tool.lib_dir_prefix;
       lib_path_output.WriteDir(out_, all_lib_dirs[i],
@@ -291,7 +278,7 @@ void NinjaBinaryTargetWriter::WriteLibs(const Toolchain::Tool& tool) {
 
   // Libraries that have been recursively pushed through the dependency tree.
   EscapeOptions lib_escape_opts;
-  lib_escape_opts.mode = ESCAPE_NINJA_SHELL;
+  lib_escape_opts.mode = ESCAPE_NINJA_COMMAND;
   const OrderedSet<std::string> all_libs = target_->all_libs();
   const std::string framework_ending(".framework");
   for (size_t i = 0; i < all_libs.size(); i++) {

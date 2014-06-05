@@ -63,11 +63,19 @@ TEST(FileTemplate, NinjaExpansions) {
   std::ostringstream out;
   t.WriteWithNinjaExpansions(out);
 
+#if defined(OS_WIN)
   // The third argument should get quoted since it contains a space, and the
   // embedded quotes should get shell escaped.
   EXPECT_EQ(
       " -i ${source} \"--out=foo$ bar\\\"${source_name_part}\\\".o\" \"\"",
       out.str());
+#else
+  // On Posix we don't need to quote the whole thing and can escape all
+  // individual bad chars.
+  EXPECT_EQ(
+      " -i ${source} --out=foo\\$ bar\\\"${source_name_part}\\\".o \"\"",
+      out.str());
+#endif
 }
 
 TEST(FileTemplate, NinjaVariables) {
@@ -80,7 +88,7 @@ TEST(FileTemplate, NinjaVariables) {
 
   std::ostringstream out;
   EscapeOptions options;
-  options.mode = ESCAPE_NINJA_SHELL;
+  options.mode = ESCAPE_NINJA_COMMAND;
   t.WriteNinjaVariablesForSubstitution(out, "../../foo/bar.txt", options);
 
   // Just the variables used above should be written.
