@@ -8,8 +8,6 @@
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/timer/elapsed_timer.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -61,13 +59,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
   virtual void TearDown() OVERRIDE {
     // Kill any processes we may have brought up.
-    // TODO(phoglund): Temporarily disabling on win to debug
-    // test hang-on-shutdown.
     LOG(INFO) << "Entering TearDown";
-#if !defined(OS_WIN)
     if (dev_appserver_ != base::kNullProcessHandle)
       base::KillProcess(dev_appserver_, 0, false);
-#endif
     // TODO(phoglund): Find some way to shut down Firefox cleanly on Windows.
     if (firefox_ != base::kNullProcessHandle)
       base::KillProcess(firefox_, 0, false);
@@ -220,31 +214,20 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     return false;
   }
 
-  // TODO(phoglund): should be private again after win-only experiments.
-  base::ProcessHandle dev_appserver_;
-
  private:
+  base::ProcessHandle dev_appserver_;
   base::ProcessHandle firefox_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
-  // TODO(phoglund): temporary diagnostics to debug the crbug.com/377383
-  // heisenbug.
-  base::ElapsedTimer timer;
-
-  // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
-  // http://code.google.com/p/webrtc/issues/detail?id=2703
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+  // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
+  if (OnWinXp())
     return;
-#endif
+
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
     VLOG(1) << "Waiting for AppRTC to come up...";
-
-  LOG(INFO) << "AppRTC server up; " << timer.Elapsed().InSeconds()
-            << " seconds elapsed.";
 
   GURL room_url = GURL(base::StringPrintf("localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));
@@ -252,50 +235,22 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab = OpenPageAndAcceptUserMedia(room_url);
 
-  // TODO(phoglund): trying to tease out apprtc races.
-  test::SleepInJavascript(left_tab, 2000);
-
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab = OpenPageAndAcceptUserMedia(room_url);
-
-  LOG(INFO) << "Pages opened; " << timer.Elapsed().InSeconds()
-      << " seconds elapsed.";
 
   ASSERT_TRUE(WaitForCallToComeUp(left_tab));
   ASSERT_TRUE(WaitForCallToComeUp(right_tab));
 
-  LOG(INFO) << "Call up; " << timer.Elapsed().InSeconds()
-            << " seconds elapsed.";
-
   ASSERT_TRUE(DetectRemoteVideoPlaying(left_tab));
   ASSERT_TRUE(DetectRemoteVideoPlaying(right_tab));
-
-  LOG(INFO) << "Remote video playing; " << timer.Elapsed().InSeconds()
-            << " seconds elapsed.";
 
   ASSERT_TRUE(HangUpApprtcCall(left_tab));
 
   ASSERT_TRUE(WaitForCallToHangUp(left_tab));
   ASSERT_TRUE(WaitForCallToHangUp(right_tab));
 
-  LOG(INFO) << "Hung up; " << timer.Elapsed().InSeconds()
-            << " seconds elapsed.";
-
-  // TODO(phoglund): trying to tease out apprtc races.
-  test::SleepInJavascript(left_tab, 2000);
-
-  LOG(INFO) << "Slept a bit; " << timer.Elapsed().InSeconds()
-            << " seconds elapsed.";
-
-#if defined (OS_WIN)
-  // TODO(phoglund): experimenting with explicitly tearing down here.
   chrome::CloseWebContents(browser(), left_tab, false);
-  LOG(INFO) << "Closed left tab.";
   chrome::CloseWebContents(browser(), right_tab, false);
-  LOG(INFO) << "Closed right tab.";
-
-  base::KillProcess(dev_appserver_, 0, false);
-#endif
 }
 
 #if defined(OS_LINUX)
@@ -308,10 +263,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
                        MAYBE_MANUAL_FirefoxApprtcInteropTest) {
   // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+  if (OnWinXp())
     return;
-#endif
+
   if (!HasWebcamOnSystem()) {
     LOG(INFO)
         << "Didn't find a webcam on the system; skipping test since Firefox "
