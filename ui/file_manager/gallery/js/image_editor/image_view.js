@@ -47,7 +47,7 @@ function ImageView(container, viewport, metadataCache) {
   this.screenImage_ = null;
 
   this.localImageTransformFetcher_ = function(entry, callback) {
-    metadataCache.get(entry, 'fetchedMedia', function(fetchedMedia) {
+    metadataCache.getOne(entry, 'fetchedMedia', function(fetchedMedia) {
       callback(fetchedMedia.imageTransform);
     });
   };

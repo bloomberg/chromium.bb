@@ -124,7 +124,7 @@ FileSelection.prototype.computeBytes = function(callback) {
     if (entry.isFile) {
       this.showBytes |= !FileType.isHosted(entry);
       pendingMetadataCount++;
-      this.fileManager_.metadataCache_.get(entry, 'filesystem', onProps);
+      this.fileManager_.metadataCache_.getOne(entry, 'filesystem', onProps);
     } else if (entry.isDirectory) {
       // Don't compute the directory size as it's expensive.
       // crbug.com/179073.

@@ -234,7 +234,7 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
  * @private
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
-  this.metadataCache_.get(entry, 'thumbnail|media|streaming',
+  this.metadataCache_.getOne(entry, 'thumbnail|media|streaming',
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.
         if (this.playlistGeneration_ == generation)

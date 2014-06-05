@@ -403,7 +403,7 @@ FileTransferController.prototype = {
     var thumbnailContainer = this.document_.createElement('div');
     this.preloadedThumbnailImageNode_ = thumbnailContainer;
     this.preloadedThumbnailImageNode_.className = 'img-container';
-    this.metadataCache_.get(
+    this.metadataCache_.getOne(
         entry,
         metadataTypes,
         function(metadata) {

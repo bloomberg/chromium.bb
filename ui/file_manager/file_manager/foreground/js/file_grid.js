@@ -152,7 +152,7 @@ FileGrid.decorateThumbnailBox = function(
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
     if (locationInfo && locationInfo.isDriveBased) {
-      metadataCache.get(entry, 'drive', function(metadata) {
+      metadataCache.getOne(entry, 'drive', function(metadata) {
         if (metadata.shared)
           box.classList.add('shared');
       });
@@ -188,7 +188,7 @@ FileGrid.decorateThumbnailBox = function(
       break;
   }
 
-  metadataCache.get(entry, metadataTypes,
+  metadataCache.getOne(entry, metadataTypes,
       function(metadata) {
         new ThumbnailLoader(entry,
                             ThumbnailLoader.LoaderType.IMAGE,

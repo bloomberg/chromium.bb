@@ -339,7 +339,7 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
  */
 DirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
-  this.parentTree_.metadataCache.get(
+  this.parentTree_.metadataCache.getOne(
       this.dirEntry_,
       'drive',
       function(metadata) {

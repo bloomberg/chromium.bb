@@ -498,7 +498,7 @@ ImageUtil.ImageLoader.prototype.load = function(
   var startLoad = this.resetImage_.bind(this, function() {
     // Fetch metadata to detect last modification time for the caching purpose.
     if (this.metadataCache_)
-      this.metadataCache_.get(entry, 'filesystem', loadImage);
+      this.metadataCache_.getOne(entry, 'filesystem', loadImage);
     else
       loadImage();
   }.bind(this), onError);

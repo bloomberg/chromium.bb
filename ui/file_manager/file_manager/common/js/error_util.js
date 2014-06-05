@@ -40,3 +40,30 @@ console.assert = (function() {
     return orig.apply(this, arguments);
   };
 })();
+
+/**
+ * Wraps the function to use it as a callback.
+ * This does:
+ *  - Capture the stack trace in case of error.
+ *  - Bind this object
+ *
+ * @param {Object} thisObject Object to be used as this.
+ * @return {function} Wrapped function.
+ */
+Function.prototype.wrap = function(thisObject) {
+  var func = this;
+  var liveStack = (new Error('Stack trace before async call')).stack;
+  if (thisObject === undefined)
+    thisObject = null;
+
+  return function wrappedCallback() {
+    try {
+      return func.apply(thisObject, arguments);
+    } catch (e) {
+      console.error('Exception happens in callback.', liveStack);
+
+      window.JSErrorCount++;
+      throw e;
+    }
+  }
+};

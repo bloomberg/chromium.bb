@@ -290,7 +290,7 @@ SlideMode.prototype.enter = function(
     var selectedItem = this.getSelectedItem();
     // Show the selected item ASAP, then complete the initialization
     // (loading the ribbon thumbnails can take some time).
-    this.metadataCache_.get(selectedItem.getEntry(), Gallery.METADATA_TYPE,
+    this.metadataCache_.getOne(selectedItem.getEntry(), Gallery.METADATA_TYPE,
         function(metadata) {
           this.loadItem_(selectedItem.getEntry(), metadata,
               zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
@@ -518,7 +518,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
             this.scheduleNextSlide_();
         }.bind(this));
   }.bind(this);
-  this.metadataCache_.get(
+  this.metadataCache_.getOne(
       selectedItem.getEntry(), Gallery.METADATA_TYPE, onMetadata);
 };
 

@@ -38,7 +38,7 @@
  *
  *   // Getting fresh value.
  *   cache.clear(entry, 'thumbnail');
- *   cache.get(entry, 'thumbnail', function(thumbnail) {
+ *   cache.getOne(entry, 'thumbnail', function(thumbnail) {
  *     img.src = thumbnail.url;
  *   });
  *
@@ -187,17 +187,11 @@ MetadataCache.prototype.currentEvictionThreshold_ = function() {
 /**
  * Fetches the metadata, puts it in the cache, and passes to callback.
  * If required metadata is already in the cache, does not fetch it again.
- * @param {Entry|Array.<Entry>} entries The list of entries. May be just a
- *     single item.
+ * @param {Array.<Entry>} entries The list of entries.
  * @param {string} type The metadata type.
  * @param {function(Object)} callback The metadata is passed to callback.
  */
 MetadataCache.prototype.get = function(entries, type, callback) {
-  if (!(entries instanceof Array)) {
-    this.getOne(entries, type, callback);
-    return;
-  }
-
   if (entries.length === 0) {
     if (callback) callback([]);
     return;

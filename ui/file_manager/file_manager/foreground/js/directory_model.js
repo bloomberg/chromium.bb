@@ -612,9 +612,9 @@ DirectoryModel.prototype.createDirectory = function(name,
         // Refresh the cache.
         this.metadataCache_.clear([newEntry], '*');
         return new Promise(function(onFulfilled, onRejected) {
-          this.metadataCache_.get([newEntry],
-                                  'filesystem',
-                                  onFulfilled.bind(null, newEntry));
+          this.metadataCache_.getOne(newEntry,
+                                     'filesystem',
+                                     onFulfilled.bind(null, newEntry));
         }.bind(this));
       }.bind(this)).
 

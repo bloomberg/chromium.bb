@@ -717,11 +717,11 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
         // Convert to boolean.
         error = !!chrome.runtime.lastError;
         if (error && pin) {
-          fileManager.metadataCache_.get(
+          fileManager.metadataCache_.getOne(
               currentEntry, 'filesystem', steps.showError);
         }
         fileManager.metadataCache_.clear(currentEntry, 'drive');
-        fileManager.metadataCache_.get(
+        fileManager.metadataCache_.getOne(
             currentEntry, 'drive', steps.updateUI.bind(this));
       },
 

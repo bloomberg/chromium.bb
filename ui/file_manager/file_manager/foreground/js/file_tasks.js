@@ -345,7 +345,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     var text = strf(textMessageId, webStoreUrl, str('NO_ACTION_FOR_FILE_URL'));
     var title = titleMessageId ? str(titleMessageId) : filename;
     this.fileManager_.alert.showHtml(title, text, function() {});
-    callback(false, urls);
+    callback(false, entries);
   }.bind(this);
 
   var onViewFilesFailure = function() {

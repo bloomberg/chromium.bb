@@ -326,7 +326,7 @@ Mosaic.prototype.initTiles_ = function(tiles, opt_callback) {
  */
 Mosaic.prototype.initTile_ = function(tile, callback) {
   var onImageMeasured = callback;
-  this.metadataCache_.get(tile.getItem().getEntry(), Gallery.METADATA_TYPE,
+  this.metadataCache_.getOne(tile.getItem().getEntry(), Gallery.METADATA_TYPE,
       function(metadata) {
         tile.init(metadata, onImageMeasured);
       });

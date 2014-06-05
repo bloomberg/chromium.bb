@@ -1266,7 +1266,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var locationInfo = this.volumeManager_.getLocationInfo(entry);
       if (!locationInfo)
         return;
-      this.metadataCache_.get(entry, 'thumbnail|drive', function(metadata) {
+      this.metadataCache_.getOne(entry, 'thumbnail|drive', function(metadata) {
         var thumbnailLoader_ = new ThumbnailLoader(
             entry,
             ThumbnailLoader.LoaderType.CANVAS,
@@ -2079,8 +2079,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.metadataCache_.get([entry], 'drive', function(props) {
-      if (!props || !props[0] || !props[0].contentMimeType) {
+    this.metadataCache_.getOne(entry, 'drive', function(prop) {
+      if (!prop || !prop.contentMimeType) {
         onFailure();
         return;
       }
@@ -2089,7 +2089,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var splitted = util.splitExtension(basename);
       var filename = splitted[0];
       var extension = splitted[1];
-      var mime = props[0].contentMimeType;
+      var mime = prop.contentMimeType;
 
       // Returns with failure if the file has neither extension nor mime.
       if (!extension || !mime) {
