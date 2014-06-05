@@ -234,6 +234,7 @@ TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
     capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
     capture_params.allow_resolution_change = false;
     device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+    device->StopAndDeAllocate();
   }
 #endif
 }
