@@ -30,6 +30,7 @@ class AppListModel;
 class AppListViewDelegate;
 class AppsContainerView;
 class PaginationModel;
+class SearchResultListView;
 class StartPageView;
 
 // A view to manage sub views under the search box (apps grid view + page
@@ -92,8 +93,10 @@ class APP_LIST_EXPORT ContentsView : public views::View {
 
   ShowState show_state_;
 
-  AppsContainerView* apps_container_view_;  // Owned by the views hierarchy.
-  StartPageView* start_page_view_;          // Owned by the views hierarchy.
+  // Special sub views of the ContentsView. All owned by the views hierarchy.
+  AppsContainerView* apps_container_view_;
+  SearchResultListView* search_results_view_;
+  StartPageView* start_page_view_;
 
   AppListMainView* app_list_main_view_;     // Parent view, owns this.
 
