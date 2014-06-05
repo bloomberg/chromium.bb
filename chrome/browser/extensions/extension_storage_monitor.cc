@@ -10,9 +10,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_storage_monitor_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +23,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/generated_resources.h"
@@ -68,6 +71,12 @@ bool ShouldMonitorStorageFor(const Extension* extension) {
   // Do not monitor storage for component extensions.
   return extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
          extension->location() != Manifest::COMPONENT;
+}
+
+const Extension* GetExtensionById(content::BrowserContext* context,
+                                  const std::string& extension_id) {
+  return ExtensionRegistry::Get(context)->GetExtensionById(
+      extension_id, ExtensionRegistry::EVERYTHING);
 }
 
 }  // namespace
@@ -296,6 +305,25 @@ void ExtensionStorageMonitor::OnExtensionUninstalled(
   RemoveNotificationForExtension(extension->id());
 }
 
+void ExtensionStorageMonitor::ExtensionUninstallAccepted() {
+  DCHECK(!uninstall_extension_id_.empty());
+
+  const Extension* extension = GetExtensionById(context_,
+                                                uninstall_extension_id_);
+  uninstall_extension_id_.clear();
+  if (!extension)
+    return;
+
+  ExtensionService* service =
+      ExtensionSystem::Get(context_)->extension_service();
+  DCHECK(service);
+  service->UninstallExtension(extension->id(), false, NULL);
+}
+
+void ExtensionStorageMonitor::ExtensionUninstallCanceled() {
+  uninstall_extension_id_.clear();
+}
+
 std::string ExtensionStorageMonitor::GetNotificationId(
     const std::string& extension_id) {
   std::vector<std::string> placeholders;
@@ -311,8 +339,7 @@ void ExtensionStorageMonitor::OnStorageThresholdExceeded(
     int64 current_usage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const Extension* extension = ExtensionRegistry::Get(context_)->
-      GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+  const Extension* extension = GetExtensionById(context_, extension_id);
   if (!extension)
     return;
 
@@ -334,8 +361,7 @@ void ExtensionStorageMonitor::OnImageLoaded(
     const std::string& extension_id,
     int64 current_usage,
     const gfx::Image& image) {
-  const Extension* extension = ExtensionRegistry::Get(context_)->
-      GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+  const Extension* extension = GetExtensionById(context_, extension_id);
   if (!extension)
     return;
 
@@ -349,6 +375,10 @@ void ExtensionStorageMonitor::OnImageLoaded(
       l10n_util::GetStringUTF16(extension->is_app() ?
           IDS_EXTENSION_STORAGE_MONITOR_BUTTON_DISMISS_APP :
           IDS_EXTENSION_STORAGE_MONITOR_BUTTON_DISMISS_EXTENSION)));
+  notification_data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(extension->is_app() ?
+          IDS_EXTENSION_STORAGE_MONITOR_BUTTON_UNINSTALL_APP :
+          IDS_EXTENSION_STORAGE_MONITOR_BUTTON_UNINSTALL_EXTENSION)));
 
   gfx::Image notification_image(image);
   if (notification_image.IsEmpty()) {
@@ -386,6 +416,10 @@ void ExtensionStorageMonitor::OnNotificationButtonClick(
   switch (button_index) {
     case BUTTON_DISABLE_NOTIFICATION: {
       DisableStorageMonitoring(extension_id);
+      break;
+    }
+    case BUTTON_UNINSTALL: {
+      ShowUninstallPrompt(extension_id);
       break;
     }
     default:
@@ -499,6 +533,21 @@ void ExtensionStorageMonitor::RemoveAllNotifications() {
     center->RemoveNotification(GetNotificationId(*it), false);
   }
   notified_extension_ids_.clear();
+}
+
+void ExtensionStorageMonitor::ShowUninstallPrompt(
+    const std::string& extension_id) {
+  const Extension* extension = GetExtensionById(context_, extension_id);
+  if (!extension)
+    return;
+
+  if (!uninstall_dialog_.get()) {
+    uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
+        Profile::FromBrowserContext(context_), NULL, this));
+  }
+
+  uninstall_extension_id_ = extension->id();
+  uninstall_dialog_->ConfirmUninstall(extension);
 }
 
 int64 ExtensionStorageMonitor::GetNextStorageThreshold(

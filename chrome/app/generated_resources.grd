@@ -13986,6 +13986,12 @@ Do you accept?
     <message name="IDS_EXTENSION_STORAGE_MONITOR_BUTTON_DISMISS_EXTENSION" desc="Caption for the button to suppress high disk usage notifications for an extension.">
       Don't warn again for this extension
     </message>
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_BUTTON_UNINSTALL_APP" desc="Caption for the button to uninstall an app when high disk usage is detected.">
+      Remove app
+    </message>
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_BUTTON_UNINSTALL_EXTENSION" desc="Caption for the button to uninstall an extension when high disk usage is detected.">
+      Remove extension
+    </message>
 
     <!-- Desktop media picker UI for Desktop Capture API -->
     <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">

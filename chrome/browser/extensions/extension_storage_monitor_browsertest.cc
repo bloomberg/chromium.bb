@@ -149,6 +149,12 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     WriteBytes(extension, num_bytes, false);
   }
 
+  void SimulateUninstallDialogAccept() {
+    // Ensure the uninstall dialog was shown and fake an accept.
+    ASSERT_TRUE(monitor()->uninstall_dialog_.get());
+    monitor()->ExtensionUninstallAccepted();
+  }
+
  private:
   void InitStorageMonitor() {
     storage_monitor_ = ExtensionStorageMonitor::Get(profile());
@@ -239,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
 
   EXPECT_TRUE(IsStorageNotificationEnabled(extension->id()));
 
-  // Fake clicking the notification button.
+  // Fake clicking the notification button to disable notifications.
   message_center::MessageCenter::Get()->ClickOnNotificationButton(
       GetNotificationId(extension->id()),
       ExtensionStorageMonitor::BUTTON_DISABLE_NOTIFICATION);
@@ -312,4 +318,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
   ASSERT_TRUE(extension);
   WriteBytesNotExpectingNotification(extension, GetInitialExtensionThreshold());
 }
+
+// Verify that notifications are disabled when the user clicks the action button
+// in the notification.
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UninstallExtension) {
+  const Extension* extension = InitWriteDataApp();
+  ASSERT_TRUE(extension);
+  WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
+
+  // Fake clicking the notification button to uninstall.
+  message_center::MessageCenter::Get()->ClickOnNotificationButton(
+      GetNotificationId(extension->id()),
+      ExtensionStorageMonitor::BUTTON_UNINSTALL);
+
+  // Also fake accepting the uninstall.
+  content::WindowedNotificationObserver uninstalled_signal(
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+      content::Source<Profile>(profile()));
+  SimulateUninstallDialogAccept();
+  uninstalled_signal.Wait();
+}
+
 }  // namespace extensions

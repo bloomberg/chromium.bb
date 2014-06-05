@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,13 +36,15 @@ class StorageEventObserver;
 // usage is detected.
 class ExtensionStorageMonitor : public KeyedService,
                                 public content::NotificationObserver,
-                                public ExtensionRegistryObserver {
+                                public ExtensionRegistryObserver,
+                                public ExtensionUninstallDialog::Delegate {
  public:
   static ExtensionStorageMonitor* Get(content::BrowserContext* context);
 
   // Indices of buttons in the notification. Exposed for testing.
   enum ButtonIndex {
-    BUTTON_DISABLE_NOTIFICATION = 0
+    BUTTON_DISABLE_NOTIFICATION = 0,
+    BUTTON_UNINSTALL
   };
 
   explicit ExtensionStorageMonitor(content::BrowserContext* context);
@@ -69,6 +72,10 @@ class ExtensionStorageMonitor : public KeyedService,
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) OVERRIDE;
 
+  // Overridden from ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
+
   std::string GetNotificationId(const std::string& extension_id);
 
   void OnStorageThresholdExceeded(const std::string& extension_id,
@@ -87,6 +94,9 @@ class ExtensionStorageMonitor : public KeyedService,
 
   void RemoveNotificationForExtension(const std::string& extension_id);
   void RemoveAllNotifications();
+
+  // Displays the prompt for uninstalling the extension.
+  void ShowUninstallPrompt(const std::string& extension_id);
 
   // Returns/sets the next threshold for displaying a notification if an
   // extension or app consumes excessive disk space.
@@ -131,6 +141,13 @@ class ExtensionStorageMonitor : public KeyedService,
 
   // StorageEventObserver monitors storage for extensions on the IO thread.
   scoped_refptr<StorageEventObserver> storage_observer_;
+
+  // Modal dialog used to confirm removal of an extension.
+  scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+
+  // The ID of the extension that is the subject of the uninstall confirmation
+  // dialog.
+  std::string uninstall_extension_id_;
 
   base::WeakPtrFactory<ExtensionStorageMonitor> weak_ptr_factory_;
 
