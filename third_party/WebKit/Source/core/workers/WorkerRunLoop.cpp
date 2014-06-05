@@ -179,6 +179,7 @@ MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<blink::WebThread::Task>& 
     ASSERT(m_context->thread());
     ASSERT(m_context->thread()->isCurrentThread());
 
+    bool isDebuggerQueue = (&queue == &m_debuggerMessageQueue);
     bool nextTimeoutEventIsIdleWatchdog;
     MessageQueueWaitResult result;
     OwnPtr<blink::WebThread::Task> task;
@@ -186,7 +187,7 @@ MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<blink::WebThread::Task>& 
         double absoluteTime = 0.0;
         nextTimeoutEventIsIdleWatchdog = false;
         if (waitMode == WaitForMessage) {
-            absoluteTime = m_sharedTimer->isActive() ? m_sharedTimer->fireTime() : MessageQueue<blink::WebThread::Task>::infiniteTime();
+            absoluteTime = !isDebuggerQueue && m_sharedTimer->isActive() ? m_sharedTimer->fireTime() : MessageQueue<blink::WebThread::Task>::infiniteTime();
 
             // Do a script engine idle notification if the next event is distant enough.
             const double kMinIdleTimespan = 0.3; // seconds
@@ -225,6 +226,7 @@ MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<blink::WebThread::Task>& 
         break;
 
     case MessageQueueTimeout:
+        ASSERT(!isDebuggerQueue || waitMode != WaitForMessage);
         if (!m_context->isClosing())
             m_sharedTimer->fire();
         break;
