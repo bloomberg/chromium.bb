@@ -98,6 +98,9 @@ const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 // Stores how many times to try rollback before giving up.
 const char kSyncRemainingRollbackTries[] = "sync.remaining_rollback_tries";
 
+// Stores the timestamp of first sync.
+const char kSyncFirstSyncTime[] = "sync.first_sync_time";
+
 }  // namespace prefs
 
 }  // namespace sync_driver

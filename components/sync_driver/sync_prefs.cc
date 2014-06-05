@@ -48,6 +48,10 @@ void SyncPrefs::RegisterProfilePrefs(
       prefs::kSyncLastSyncedTime,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kSyncFirstSyncTime,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // All datatypes are on by default, but this gets set explicitly
   // when you configure sync (when turning it on), in
@@ -483,6 +487,19 @@ syncer::ModelTypeSet SyncPrefs::ResolvePrefGroups(
   }
   types_with_groups.RetainAll(registered_types);
   return types_with_groups;
+}
+
+base::Time SyncPrefs::GetFirstSyncTime() const {
+  return base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kSyncFirstSyncTime));
+}
+
+void SyncPrefs::SetFirstSyncTime(base::Time time) {
+  pref_service_->SetInt64(prefs::kSyncFirstSyncTime, time.ToInternalValue());
+}
+
+void SyncPrefs::ClearFirstSyncTime() {
+  pref_service_->ClearPref(prefs::kSyncFirstSyncTime);
 }
 
 }  // namespace browser_sync

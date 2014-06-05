@@ -27,6 +27,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,6 +47,7 @@ ACTION(ReturnNewDataTypeManager) {
                                                arg5);
 }
 
+using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
@@ -80,12 +82,48 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       syncer::NetworkResources* network_resources) OVERRIDE {}
 };
 
+class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
+ public:
+  SyncBackendHostMockCollectDeleteDirParam(std::vector<bool>* delete_dir_param)
+     : delete_dir_param_(delete_dir_param) {}
+
+  virtual void Initialize(
+      SyncFrontend* frontend,
+      scoped_ptr<base::Thread> sync_thread,
+      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const GURL& service_url,
+      const syncer::SyncCredentials& credentials,
+      bool delete_sync_data_folder,
+      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      syncer::ReportUnrecoverableErrorFunction
+          report_unrecoverable_error_function,
+      syncer::NetworkResources* network_resources) OVERRIDE {
+    delete_dir_param_->push_back(delete_sync_data_folder);
+    SyncBackendHostMock::Initialize(frontend, sync_thread.Pass(),
+                                    event_handler, service_url, credentials,
+                                    delete_sync_data_folder,
+                                    sync_manager_factory.Pass(),
+                                    unrecoverable_error_handler.Pass(),
+                                    report_unrecoverable_error_function,
+                                    network_resources);
+  }
+
+ private:
+  std::vector<bool>* delete_dir_param_;
+};
+
 ACTION(ReturnNewSyncBackendHostMock) {
   return new browser_sync::SyncBackendHostMock();
 }
 
 ACTION(ReturnNewSyncBackendHostNoReturn) {
   return new browser_sync::SyncBackendHostNoReturn();
+}
+
+ACTION_P(ReturnNewMockHostCollectDeleteDirParam, delete_dir_param) {
+  return new browser_sync::SyncBackendHostMockCollectDeleteDirParam(
+      delete_dir_param);
 }
 
 // A test harness that uses a real ProfileSyncService and in most cases a
@@ -152,6 +190,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
         new ManagedUserSigninManagerWrapper(profile_, signin),
         oauth2_token_service,
         behavior));
+    service_->SetClearingBrowseringDataForTesting(
+        base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
+                   base::Unretained(this)));
   }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -185,6 +226,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
         .WillRepeatedly(ReturnNewSyncBackendHostMock());
   }
 
+  void ExpectSyncBackendHostCreationCollectDeleteDir(
+      int times, std::vector<bool> *delete_dir_param) {
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+        .Times(times)
+        .WillRepeatedly(ReturnNewMockHostCollectDeleteDirParam(
+            delete_dir_param));
+  }
+
   void PrepareDelayedInitSyncBackendHost() {
     EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _)).
         WillOnce(ReturnNewSyncBackendHostNoReturn());
@@ -201,6 +250,16 @@ class ProfileSyncServiceTest : public ::testing::Test {
   ProfileSyncComponentsFactoryMock* components_factory() {
     return components_factory_;
   }
+
+  void ClearBrowsingDataCallback(Profile* profile, base::Time start,
+                                 base::Time end) {
+    EXPECT_EQ(profile_, profile);
+    clear_browsing_data_start_ = start;
+  }
+
+ protected:
+  // The requested start time when ClearBrowsingDataCallback is called.
+  base::Time clear_browsing_data_start_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -427,7 +486,8 @@ void QuitLoop() {
 TEST_F(ProfileSyncServiceTest, StartBackup) {
   CreateServiceWithoutSignIn();
   ExpectDataTypeManagerCreation(1);
-  ExpectSyncBackendHostCreation(1);
+  std::vector<bool> delete_dir_param;
+  ExpectSyncBackendHostCreationCollectDeleteDir(1, &delete_dir_param);
   Initialize();
   EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
   base::MessageLoop::current()->PostDelayedTask(
@@ -435,35 +495,59 @@ TEST_F(ProfileSyncServiceTest, StartBackup) {
       base::TimeDelta::FromMilliseconds(100));
   base::MessageLoop::current()->Run();
   EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
+
+  EXPECT_EQ(1u, delete_dir_param.size());
+  EXPECT_FALSE(delete_dir_param[0]);
 }
 
 TEST_F(ProfileSyncServiceTest, BackupAfterSyncDisabled) {
   CreateService(browser_sync::MANUAL_START);
   service()->SetSyncSetupCompleted();
   ExpectDataTypeManagerCreation(2);
-  ExpectSyncBackendHostCreation(2);
+  std::vector<bool> delete_dir_param;
+  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
   IssueTestTokens();
   Initialize();
   base::MessageLoop::current()->PostTask(FROM_HERE,  base::Bind(&QuitLoop));
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 
+  // First sync time should be recorded.
+  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  EXPECT_FALSE(sync_prefs.GetFirstSyncTime().is_null());
+
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
   service()->OnActionableError(client_cmd);
   EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
+
+  // Browsing data is not cleared because rollback is skipped.
+  EXPECT_TRUE(clear_browsing_data_start_.is_null());
+
+  // First sync time is erased once backup starts.
+  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
+
+  EXPECT_EQ(2u, delete_dir_param.size());
+  EXPECT_FALSE(delete_dir_param[0]);
+  EXPECT_TRUE(delete_dir_param[1]);
 }
 
 TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
   CreateService(browser_sync::MANUAL_START);
   service()->SetSyncSetupCompleted();
   ExpectDataTypeManagerCreation(3);
-  ExpectSyncBackendHostCreation(3);
+  std::vector<bool> delete_dir_param;
+  ExpectSyncBackendHostCreationCollectDeleteDir(3, &delete_dir_param);
   IssueTestTokens();
   Initialize();
   base::MessageLoop::current()->PostTask(FROM_HERE,  base::Bind(&QuitLoop));
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+
+  // First sync time should be recorded.
+  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  base::Time first_sync_time = sync_prefs.GetFirstSyncTime();
+  EXPECT_FALSE(first_sync_time.is_null());
 
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_AND_ROLLBACK;
@@ -471,10 +555,21 @@ TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::ROLLBACK, service()->backend_mode());
 
+  // Browser data should be cleared during rollback.
+  EXPECT_EQ(first_sync_time, clear_browsing_data_start_);
+
   client_cmd.action = syncer::ROLLBACK_DONE;
   service()->OnActionableError(client_cmd);
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
+
+  // First sync time is erased once backup starts.
+  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
+
+  EXPECT_EQ(3u, delete_dir_param.size());
+  EXPECT_FALSE(delete_dir_param[0]);
+  EXPECT_FALSE(delete_dir_param[1]);
+  EXPECT_TRUE(delete_dir_param[2]);
 }
 #endif
 
