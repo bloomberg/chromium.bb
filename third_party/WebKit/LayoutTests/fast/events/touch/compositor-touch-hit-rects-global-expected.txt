@@ -6,6 +6,6 @@ html: #document (0, 0, 785, 2000)
 
 body: #document (0, 0, 785, 2000)
 
-webPageOverlay: [unknown-node] (0, 0, 2147483648, 2147483648)
+webPageOverlay: no rects
 
 
