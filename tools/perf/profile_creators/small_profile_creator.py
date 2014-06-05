@@ -32,6 +32,4 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
       return browser.tabs.New()
 
   def MeasurePage(self, _, tab, results):
-    # Can't use WaitForDocumentReadyStateToBeComplete() here due to
-    # crbug.com/280750 .
-    tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
+    tab.WaitForDocumentReadyStateToBeComplete()
