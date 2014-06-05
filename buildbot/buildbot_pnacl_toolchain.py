@@ -102,7 +102,7 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
     if sys.platform == 'cygwin':
       print 'This script does not support running from inside cygwin!'
       sys.exit(1)
-      subprocess.check_call(os.path.join(SCRIPT_DIR, 'cygwin_env.bat'))
+    subprocess.check_call(os.path.join(SCRIPT_DIR, 'cygwin_env.bat'))
     saved_path = os.environ['PATH']
     print saved_path
     paths = saved_path.split(os.pathsep)
