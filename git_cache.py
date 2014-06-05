@@ -252,7 +252,7 @@ class Mirror(object):
       python_fallback = True
 
     gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
-    gsutil = Gsutil(self.gsutil_exe, bypass_prodaccess=True)
+    gsutil = Gsutil(self.gsutil_exe, boto_path=None, bypass_prodaccess=True)
     # Get the most recent version of the zipfile.
     _, ls_out, _ = gsutil.check_call('ls', gs_folder)
     ls_out_sorted = sorted(ls_out.splitlines())
