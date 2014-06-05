@@ -18,9 +18,9 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -125,8 +125,7 @@ bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
   }
   manifest_url->url_ = extension->GetResourceURL(devtools_str);
   extension->SetManifestData(keys::kDevToolsPage, manifest_url.release());
-  PermissionsData::GetInitialAPIPermissions(extension)->insert(
-      APIPermission::kDevtools);
+  PermissionsParser::AddAPIPermission(extension, APIPermission::kDevtools);
   return true;
 }
 

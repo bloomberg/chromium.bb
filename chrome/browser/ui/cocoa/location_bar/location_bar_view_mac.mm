@@ -93,11 +93,11 @@ class IsPageActionViewRightAligned {
       : extension_service_(extension_service) {}
 
   bool operator()(PageActionDecoration* page_action_decoration) {
-    return extensions::PermissionsData::HasAPIPermission(
-        extension_service_->GetExtensionById(
-            page_action_decoration->page_action()->extension_id(),
-            false),
-        extensions::APIPermission::kBookmarkManagerPrivate);
+    return extensions::PermissionsData::ForExtension(
+               extension_service_->GetExtensionById(
+                   page_action_decoration->page_action()->extension_id(),
+                   false))
+        ->HasAPIPermission(extensions::APIPermission::kBookmarkManagerPrivate);
   }
 
  private:

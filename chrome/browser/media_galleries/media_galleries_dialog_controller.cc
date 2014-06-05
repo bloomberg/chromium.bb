@@ -122,12 +122,12 @@ base::string16 MediaGalleriesDialogController::GetSubtext() const {
       extensions::MediaGalleriesPermission::kCopyToPermission);
   extensions::MediaGalleriesPermission::CheckParam delete_param(
       extensions::MediaGalleriesPermission::kDeletePermission);
-  bool has_copy_to_permission =
-      extensions::PermissionsData::CheckAPIPermissionWithParam(
-          extension_, APIPermission::kMediaGalleries, &copy_to_param);
-  bool has_delete_permission =
-      extensions::PermissionsData::CheckAPIPermissionWithParam(
-          extension_, APIPermission::kMediaGalleries, &delete_param);
+  const extensions::PermissionsData* permissions_data =
+      extensions::PermissionsData::ForExtension(extension_);
+  bool has_copy_to_permission = permissions_data->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &copy_to_param);
+  bool has_delete_permission = permissions_data->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &delete_param);
 
   int id;
   if (has_copy_to_permission)

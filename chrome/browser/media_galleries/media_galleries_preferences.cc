@@ -96,10 +96,12 @@ int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   const extensions::ExtensionSet* extensions = extension_service->extensions();
   for (extensions::ExtensionSet::const_iterator i = extensions->begin();
        i != extensions->end(); ++i) {
-    if (extensions::PermissionsData::HasAPIPermission(
-            *i, extensions::APIPermission::kMediaGalleries) ||
-        extensions::PermissionsData::HasAPIPermission(
-            *i, extensions::APIPermission::kMediaGalleriesPrivate)) {
+    const extensions::PermissionsData* permissions_data =
+        extensions::PermissionsData::ForExtension(*i);
+    if (permissions_data->HasAPIPermission(
+            extensions::APIPermission::kMediaGalleries) ||
+        permissions_data->HasAPIPermission(
+            extensions::APIPermission::kMediaGalleriesPrivate)) {
       count++;
     }
   }
@@ -277,8 +279,9 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
 bool HasAutoDetectedGalleryPermission(const extensions::Extension& extension) {
   extensions::MediaGalleriesPermission::CheckParam param(
       extensions::MediaGalleriesPermission::kAllAutoDetectedPermission);
-  return extensions::PermissionsData::CheckAPIPermissionWithParam(
-      &extension, extensions::APIPermission::kMediaGalleries, &param);
+  return extensions::PermissionsData::ForExtension(&extension)->
+      CheckAPIPermissionWithParam(extensions::APIPermission::kMediaGalleries,
+                                  &param);
 }
 
 // Retrieves the MediaGalleryPermission from the given dictionary; DCHECKs on

@@ -391,8 +391,8 @@ void ExtensionTabUtil::ScrubTabValueForExtension(
     base::DictionaryValue* tab_info) {
   bool has_permission =
       extension &&
-      PermissionsData::HasAPIPermissionForTab(
-          extension, GetTabId(contents), APIPermission::kTab);
+      PermissionsData::ForExtension(extension)
+          ->HasAPIPermissionForTab(GetTabId(contents), APIPermission::kTab);
 
   if (!has_permission) {
     tab_info->Remove(keys::kUrlKey, NULL);

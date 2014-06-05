@@ -708,18 +708,21 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   else
     prompt_.set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
 
-  if (permissions_.get() &&
-      (!extension_ ||
-       !extensions::PermissionsData::ShouldSkipPermissionWarnings(
-           extension_))) {
-    Manifest::Type extension_type = extension_ ?
-        extension_->GetType() : Manifest::TYPE_UNKNOWN;
-    prompt_.SetPermissions(
-        extensions::PermissionMessageProvider::Get()->
-            GetWarningMessages(permissions_, extension_type));
-    prompt_.SetPermissionsDetails(
-        extensions::PermissionMessageProvider::Get()->
-            GetWarningMessagesDetails(permissions_, extension_type));
+  if (permissions_.get()) {
+    if (extension_) {
+      const extensions::PermissionsData* permissions_data =
+          extensions::PermissionsData::ForExtension(extension_);
+      prompt_.SetPermissions(permissions_data->GetPermissionMessageStrings());
+      prompt_.SetPermissionsDetails(
+          permissions_data->GetPermissionMessageDetailsStrings());
+    } else {
+      const extensions::PermissionMessageProvider* message_provider =
+          extensions::PermissionMessageProvider::Get();
+      prompt_.SetPermissions(message_provider->GetWarningMessages(
+          permissions_, Manifest::TYPE_UNKNOWN));
+      prompt_.SetPermissionsDetails(message_provider->GetWarningMessagesDetails(
+          permissions_, Manifest::TYPE_UNKNOWN));
+    }
   }
 
   switch (prompt_.type()) {

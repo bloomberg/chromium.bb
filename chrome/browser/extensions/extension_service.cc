@@ -69,6 +69,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -978,8 +979,8 @@ void ExtensionService::RecordPermissionMessagesHistogram(
       PermissionMessage::kEnumBoundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
-  PermissionMessages permissions =
-      extensions::PermissionsData::GetPermissionMessages(extension);
+  PermissionMessages permissions = extensions::PermissionsData::ForExtension(
+                                       extension)->GetPermissionMessages();
   if (permissions.empty()) {
     counter->Add(PermissionMessage::kNone);
   } else {
@@ -1042,11 +1043,13 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // ExtensionRegistryObserver. See http://crbug.com/355029.
   UpdateActiveExtensionsInCrashReporter();
 
+  const extensions::PermissionsData* permissions_data =
+      extensions::PermissionsData::ForExtension(extension);
+
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the FaviconSource is registered with the
   // ChromeURLDataManager.
-  if (extensions::PermissionsData::HasHostPermission(
-          extension, GURL(chrome::kChromeUIFaviconURL))) {
+  if (permissions_data->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
     FaviconSource* favicon_source = new FaviconSource(profile_,
                                                       FaviconSource::FAVICON);
     content::URLDataSource::Add(profile_, favicon_source);
@@ -1054,15 +1057,14 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
 #if !defined(OS_ANDROID)
   // Same for chrome://theme/ resources.
-  if (extensions::PermissionsData::HasHostPermission(
-          extension, GURL(chrome::kChromeUIThemeURL))) {
+  if (permissions_data->HasHostPermission(GURL(chrome::kChromeUIThemeURL))) {
     ThemeSource* theme_source = new ThemeSource(profile_);
     content::URLDataSource::Add(profile_, theme_source);
   }
 
   // Same for chrome://thumb/ resources.
-  if (extensions::PermissionsData::HasHostPermission(
-          extension, GURL(chrome::kChromeUIThumbnailURL))) {
+  if (permissions_data->HasHostPermission(
+          GURL(chrome::kChromeUIThumbnailURL))) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_, false);
     content::URLDataSource::Add(profile_, thumbnail_source);
   }
@@ -1597,10 +1599,9 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
     // extension's manifest.
     //  a) active permissions must be a subset of optional + default permissions
     //  b) active permissions must contains all default permissions
-    scoped_refptr<PermissionSet> total_permissions =
-        PermissionSet::CreateUnion(
-            extensions::PermissionsData::GetRequiredPermissions(extension),
-            extensions::PermissionsData::GetOptionalPermissions(extension));
+    scoped_refptr<PermissionSet> total_permissions = PermissionSet::CreateUnion(
+        extensions::PermissionsParser::GetRequiredPermissions(extension),
+        extensions::PermissionsParser::GetOptionalPermissions(extension));
 
     // Make sure the active permissions contain no more than optional + default.
     scoped_refptr<PermissionSet> adjusted_active =
@@ -1609,7 +1610,7 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
 
     // Make sure the active permissions contain the default permissions.
     adjusted_active = PermissionSet::CreateUnion(
-        extensions::PermissionsData::GetRequiredPermissions(extension),
+        extensions::PermissionsParser::GetRequiredPermissions(extension),
         adjusted_active.get());
 
     extensions::PermissionsUpdater perms_updater(profile());

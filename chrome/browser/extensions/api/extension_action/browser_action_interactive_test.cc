@@ -195,10 +195,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   OpenExtensionPopupViaAPI();
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  ASSERT_FALSE(PermissionsData::HasAPIPermissionForTab(
-      service->GetExtensionById(last_loaded_extension_id(), false),
-      SessionID::IdForTab(browser()->tab_strip_model()->GetActiveWebContents()),
-      APIPermission::kTab));
+  ASSERT_FALSE(
+      PermissionsData::ForExtension(
+          service->GetExtensionById(last_loaded_extension_id(), false))
+          ->HasAPIPermissionForTab(
+              SessionID::IdForTab(
+                  browser()->tab_strip_model()->GetActiveWebContents()),
+              APIPermission::kTab));
 }
 
 // Test that the extension popup is closed when the browser window is clicked.

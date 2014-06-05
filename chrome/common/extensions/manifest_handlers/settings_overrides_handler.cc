@@ -13,9 +13,9 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
 #include "grit/generated_resources.h"
@@ -290,26 +290,33 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   info->manifest_permission.reset(new ManifestPermissionImpl(
       SettingsOverrides::RemovesBookmarkButton(*info)));
 
-  APIPermissionSet* permission_set =
-      PermissionsData::GetInitialAPIPermissions(extension);
-  DCHECK(permission_set);
   if (info->search_engine) {
-    permission_set->insert(new SettingsOverrideAPIPermission(
-        PermissionsInfo::GetInstance()->GetByID(APIPermission::kSearchProvider),
-        RemoveWwwPrefix(CreateManifestURL(info->search_engine->search_url)->
-            GetOrigin().host())));
+    PermissionsParser::AddAPIPermission(
+        extension,
+        new SettingsOverrideAPIPermission(
+            PermissionsInfo::GetInstance()->GetByID(
+                APIPermission::kSearchProvider),
+            RemoveWwwPrefix(CreateManifestURL(info->search_engine->search_url)
+                                ->GetOrigin()
+                                .host())));
   }
   if (!info->startup_pages.empty()) {
-    permission_set->insert(new SettingsOverrideAPIPermission(
-        PermissionsInfo::GetInstance()->GetByID(APIPermission::kStartupPages),
-        // We only support one startup page even though the type of the manifest
-        // property is a list, only the first one is used.
-        RemoveWwwPrefix(info->startup_pages[0].GetContent())));
+    PermissionsParser::AddAPIPermission(
+        extension,
+        new SettingsOverrideAPIPermission(
+            PermissionsInfo::GetInstance()->GetByID(
+                APIPermission::kStartupPages),
+            // We only support one startup page even though the type of the
+            // manifest
+            // property is a list, only the first one is used.
+            RemoveWwwPrefix(info->startup_pages[0].GetContent())));
   }
   if (info->homepage) {
-    permission_set->insert(new SettingsOverrideAPIPermission(
-        PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
-        RemoveWwwPrefix(info->homepage.get()->GetContent())));
+    PermissionsParser::AddAPIPermission(
+        extension,
+        new SettingsOverrideAPIPermission(
+            PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
+            RemoveWwwPrefix(info->homepage.get()->GetContent())));
   }
   extension->SetManifestData(manifest_keys::kSettingsOverride,
                              info.release());

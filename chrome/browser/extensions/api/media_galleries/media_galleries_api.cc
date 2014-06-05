@@ -143,16 +143,18 @@ base::ListValue* ConstructFileSystemList(
 
   MediaGalleriesPermission::CheckParam read_param(
       MediaGalleriesPermission::kReadPermission);
-  bool has_read_permission = PermissionsData::CheckAPIPermissionWithParam(
-      extension, APIPermission::kMediaGalleries, &read_param);
+  const PermissionsData* permissions_data =
+      PermissionsData::ForExtension(extension);
+  bool has_read_permission = permissions_data->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &read_param);
   MediaGalleriesPermission::CheckParam copy_to_param(
       MediaGalleriesPermission::kCopyToPermission);
-  bool has_copy_to_permission = PermissionsData::CheckAPIPermissionWithParam(
-      extension, APIPermission::kMediaGalleries, &copy_to_param);
+  bool has_copy_to_permission = permissions_data->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &copy_to_param);
   MediaGalleriesPermission::CheckParam delete_param(
       MediaGalleriesPermission::kDeletePermission);
-  bool has_delete_permission = PermissionsData::CheckAPIPermissionWithParam(
-      extension, APIPermission::kMediaGalleries, &delete_param);
+  bool has_delete_permission = permissions_data->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &delete_param);
 
   const int child_id = rvh->GetProcess()->GetID();
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -208,8 +210,9 @@ bool CheckScanPermission(const extensions::Extension* extension,
   DCHECK(error);
   MediaGalleriesPermission::CheckParam scan_param(
       MediaGalleriesPermission::kScanPermission);
-  bool has_scan_permission = PermissionsData::CheckAPIPermissionWithParam(
-      extension, APIPermission::kMediaGalleries, &scan_param);
+  bool has_scan_permission =
+      PermissionsData::ForExtension(extension)->CheckAPIPermissionWithParam(
+          APIPermission::kMediaGalleries, &scan_param);
   if (!has_scan_permission)
     *error = kNoScanPermission;
   return has_scan_permission;

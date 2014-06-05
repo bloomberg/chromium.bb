@@ -43,16 +43,18 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   APIPermissionSet new_apis;
   URLPatternSet new_hosts;
 
+  const PermissionsData* permissions_data =
+      PermissionsData::ForExtension(extension);
+
   // If the extension requires action for script execution, we grant it
   // active tab-style permissions, even if it doesn't have the activeTab
   // permission in the manifest.
   // We don't take tab id into account, because we want to know if the extension
   // should require active tab in general (not for the current tab).
   bool requires_action_for_script_execution =
-      PermissionsData::RequiresActionForScriptExecution(
-          extension,
-          -1,  // No tab id.
-          GURL::EmptyGURL());
+      permissions_data->RequiresActionForScriptExecution(extension,
+                                                         -1,  // No tab id.
+                                                         GURL());
 
   if (extension->HasAPIPermission(APIPermission::kActiveTab) ||
       requires_action_for_script_execution) {
@@ -73,9 +75,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     scoped_refptr<const PermissionSet> new_permissions =
         new PermissionSet(new_apis, ManifestPermissionSet(),
                           new_hosts, URLPatternSet());
-    PermissionsData::UpdateTabSpecificPermissions(extension,
-                                                  tab_id_,
-                                                  new_permissions);
+    permissions_data->UpdateTabSpecificPermissions(tab_id_, new_permissions);
     const content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
     if (navigation_entry) {
@@ -125,7 +125,8 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   for (ExtensionSet::const_iterator it = granted_extensions_.begin();
        it != granted_extensions_.end(); ++it) {
-    PermissionsData::ClearTabSpecificPermissions(it->get(), tab_id_);
+    PermissionsData::ForExtension(it->get())
+        ->ClearTabSpecificPermissions(tab_id_);
     extension_ids.push_back((*it)->id());
   }
 

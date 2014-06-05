@@ -11,8 +11,8 @@
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -70,8 +70,8 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
   if (!info)
     return false;
   if (!info->matches.is_empty()) {
-    PermissionsData::GetInitialAPIPermissions(extension)
-        ->insert(APIPermission::kWebConnectable);
+    PermissionsParser::AddAPIPermission(extension,
+                                        APIPermission::kWebConnectable);
   }
   extension->AddInstallWarnings(install_warnings);
   extension->SetManifestData(keys::kExternallyConnectable, info.release());

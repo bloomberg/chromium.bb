@@ -171,8 +171,8 @@ bool CommandService::RemovesBookmarkShortcut(const Extension* extension) {
            SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides)) ||
           (ui_overrides &&
            UIOverrides::RemovesBookmarkShortcut(*ui_overrides))) &&
-         (PermissionsData::HasAPIPermission(
-              extension, APIPermission::kBookmarkManagerPrivate) ||
+         (PermissionsData::ForExtension(extension)
+              ->HasAPIPermission(APIPermission::kBookmarkManagerPrivate) ||
           FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
 }
 
@@ -188,8 +188,8 @@ bool CommandService::RemovesBookmarkOpenPagesShortcut(
                *settings_overrides)) ||
           (ui_overrides &&
            UIOverrides::RemovesBookmarkOpenPagesShortcut(*ui_overrides))) &&
-         (PermissionsData::HasAPIPermission(
-              extension, APIPermission::kBookmarkManagerPrivate) ||
+         (PermissionsData::ForExtension(extension)
+              ->HasAPIPermission(APIPermission::kBookmarkManagerPrivate) ||
           FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
 }
 

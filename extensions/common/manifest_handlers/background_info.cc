@@ -15,8 +15,8 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -197,8 +197,8 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
   if (extension->is_hosted_app()) {
     background_url_ = GURL(background_str);
 
-    if (!PermissionsData::GetInitialAPIPermissions(extension)->count(
-            APIPermission::kBackground)) {
+    if (!PermissionsParser::HasAPIPermission(extension,
+                                             APIPermission::kBackground)) {
       *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
       return false;
     }
@@ -297,8 +297,8 @@ bool BackgroundManifestHandler::Parse(Extension* extension,
   }
   // Lazy background pages are incompatible with the webRequest API.
   if (info->has_lazy_background_page() &&
-      PermissionsData::GetInitialAPIPermissions(extension)->count(
-          APIPermission::kWebRequest)) {
+      PermissionsParser::HasAPIPermission(extension,
+                                          APIPermission::kWebRequest)) {
     *error = ASCIIToUTF16(errors::kWebRequestConflictsWithLazyBackground);
     return false;
   }

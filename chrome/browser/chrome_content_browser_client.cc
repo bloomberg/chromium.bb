@@ -2507,19 +2507,18 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
         extension_set) {
       const Extension* extension = extension_set->GetByID(url.host());
       if (extension) {
+        const extensions::PermissionsData* permissions_data =
+            extensions::PermissionsData::ForExtension(extension);
         if (params) {
           extensions::SocketPermission::CheckParam check_params(
               params->type, params->host, params->port);
-          if (extensions::PermissionsData::CheckAPIPermissionWithParam(
-                  extension, extensions::APIPermission::kSocket,
-                  &check_params)) {
+          if (permissions_data->CheckAPIPermissionWithParam(
+                  extensions::APIPermission::kSocket, &check_params)) {
             return true;
           }
-        } else {
-          if (extensions::PermissionsData::HasAPIPermission(
-                  extension, extensions::APIPermission::kSocket)) {
-            return true;
-          }
+        } else if (permissions_data->HasAPIPermission(
+                       extensions::APIPermission::kSocket)) {
+          return true;
         }
       }
     }

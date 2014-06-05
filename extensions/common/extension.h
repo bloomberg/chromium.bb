@@ -43,10 +43,11 @@ class ImageSkia;
 }
 
 namespace extensions {
-class PermissionsData;
 class APIPermissionSet;
 class ManifestPermissionSet;
 class PermissionSet;
+class PermissionsData;
+class PermissionsParser;
 
 // Uniquely identifies an Extension, using 32 characters from the alphabet
 // 'a'-'p'.  An empty string represents "no extension".
@@ -309,7 +310,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool converted_from_user_script() const {
     return converted_from_user_script_;
   }
-  PermissionsData* permissions_data() { return permissions_data_.get(); }
+  PermissionsParser* permissions_parser() { return permissions_parser_.get(); }
+  const PermissionsParser* permissions_parser() const {
+    return permissions_parser_.get();
+  }
+
   const PermissionsData* permissions_data() const {
     return permissions_data_.get();
   }
@@ -428,6 +433,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;
 
+  // The parser for the manifest's permissions. This is NULL anytime not during
+  // initialization.
+  // TODO(rdevlin.cronin): This doesn't really belong here.
+  scoped_ptr<PermissionsParser> permissions_parser_;
+
+  // The active permissions for the extension.
   scoped_ptr<PermissionsData> permissions_data_;
 
   // Any warnings that occurred when trying to create/parse the extension.

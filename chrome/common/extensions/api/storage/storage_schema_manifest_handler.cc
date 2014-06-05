@@ -17,9 +17,9 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -73,9 +73,7 @@ bool StorageSchemaManifestHandler::Parse(Extension* extension,
 
   // If an extension declares the "storage.managed_schema" key then it gets
   // the "storage" permission implicitly.
-  APIPermissionSet* permission_set =
-      PermissionsData::GetInitialAPIPermissions(extension);
-  permission_set->insert(APIPermission::kStorage);
+  PermissionsParser::AddAPIPermission(extension, APIPermission::kStorage);
 
   return true;
 }

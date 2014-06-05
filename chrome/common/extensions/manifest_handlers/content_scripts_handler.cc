@@ -16,6 +16,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -432,9 +433,8 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
   }
   extension->SetManifestData(keys::kContentScripts,
                              content_scripts_info.release());
-  PermissionsData::SetInitialScriptableHosts(
-      extension,
-      ContentScriptsInfo::GetScriptableHosts(extension));
+  PermissionsParser::SetScriptableHosts(
+      extension, ContentScriptsInfo::GetScriptableHosts(extension));
   return true;
 }
 

@@ -750,7 +750,7 @@ void Dispatcher::OnUpdatePermissions(
       break;
   }
 
-  PermissionsData::SetActivePermissions(extension, new_active);
+  PermissionsData::ForExtension(extension)->SetActivePermissions(new_active);
   UpdateOriginPermissions(reason, extension, explicit_hosts);
   UpdateBindings(extension->id());
 }
@@ -803,7 +803,7 @@ void Dispatcher::InitOriginPermissions(const Extension* extension,
   UpdateOriginPermissions(
       UpdatedExtensionPermissionsInfo::ADDED,
       extension,
-      PermissionsData::GetEffectiveHostPermissions(extension));
+      PermissionsData::ForExtension(extension)->GetEffectiveHostPermissions());
 }
 
 void Dispatcher::UpdateOriginPermissions(

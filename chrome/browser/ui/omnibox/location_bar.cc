@@ -32,13 +32,11 @@ bool LocationBar::IsBookmarkStarHiddenByExtension() const {
         SettingsOverrides::Get(i->get());
     if (((settings_overrides &&
           SettingsOverrides::RemovesBookmarkButton(*settings_overrides)) ||
-         (ui_overrides &&
-          UIOverrides::RemovesBookmarkButton(*ui_overrides))) &&
-        (extensions::PermissionsData::HasAPIPermission(
-            *i,
-            extensions::APIPermission::kBookmarkManagerPrivate) ||
-         extensions::FeatureSwitch::enable_override_bookmarks_ui()->
-             IsEnabled()))
+         (ui_overrides && UIOverrides::RemovesBookmarkButton(*ui_overrides))) &&
+        (extensions::PermissionsData::ForExtension(*i)->HasAPIPermission(
+             extensions::APIPermission::kBookmarkManagerPrivate) ||
+         extensions::FeatureSwitch::enable_override_bookmarks_ui()
+             ->IsEnabled()))
       return true;
   }
 

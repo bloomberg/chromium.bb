@@ -133,8 +133,10 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   extension = LoadManifest("effective_host_permissions", "empty.json");
   permissions = extension->GetActivePermissions();
   EXPECT_EQ(0u,
-            PermissionsData::GetEffectiveHostPermissions(extension.get())
-                .patterns().size());
+            PermissionsData::ForExtension(extension)
+                ->GetEffectiveHostPermissions()
+                .patterns()
+                .size());
   EXPECT_FALSE(
       permissions->HasEffectiveAccessToURL(GURL("http://www.google.com")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
@@ -912,7 +914,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
 
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ(
       "Read and modify your data on encrypted.google.com and "
@@ -926,7 +928,7 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
 
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
 // We don't parse the plugins key on Chrome OS, so it should not ask for any
   // permissions.
 #if defined(OS_CHROMEOS)
@@ -1014,7 +1016,7 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSerial));
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   EXPECT_TRUE(
       Contains(warnings, "Use serial devices attached to your computer"));
   ASSERT_EQ(1u, warnings.size());
@@ -1028,7 +1030,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   EXPECT_EQ(1u, warnings.size());
   EXPECT_TRUE(Contains(warnings, "Exchange data with any computer "
                                  "on the local network or internet"));
@@ -1042,7 +1044,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
 
   // Verify the warnings, including support for unicode characters, the fact
   // that domain host warnings come before specific host warnings, and the fact
@@ -1068,7 +1070,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
 
   // Verify the warnings, including the fact that domain host warnings come
   // before specific host warnings and the fact that domains and hostnames are
@@ -1090,12 +1092,13 @@ TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
   extension = LoadManifest("permissions", "platform_app_hosts.json");
   EXPECT_TRUE(extension->is_platform_app());
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   ASSERT_EQ(0u, warnings.size());
 
   extension = LoadManifest("permissions", "platform_app_all_urls.json");
   EXPECT_TRUE(extension->is_platform_app());
-  warnings = PermissionsData::GetPermissionMessageStrings(extension.get());
+  warnings =
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   ASSERT_EQ(0u, warnings.size());
 }
 
@@ -1110,7 +1113,7 @@ bool ShowsAllHostsWarning(const std::string& pattern) {
           .Build();
 
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
 
   if (warnings.empty())
     return false;
@@ -1543,7 +1546,7 @@ TEST(PermissionsTest, SyncFileSystemPermission) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSyncFileSystem));
   std::vector<base::string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension.get());
+      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
   EXPECT_TRUE(Contains(warnings, "Store data in your Google Drive account"));
   ASSERT_EQ(1u, warnings.size());
 }

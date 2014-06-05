@@ -59,7 +59,7 @@ bool CanRequestAutomation(const Extension* extension,
   content::RenderProcessHost* process = contents->GetRenderProcessHost();
   int process_id = process ? process->GetID() : -1;
   std::string unused_error;
-  return PermissionsData::CanExecuteScriptOnPage(
+  return PermissionsData::ForExtension(extension)->CanExecuteScriptOnPage(
       extension, url, url, tab_id, NULL, process_id, &unused_error);
 }
 

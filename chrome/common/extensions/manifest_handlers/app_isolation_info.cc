@@ -11,8 +11,8 @@
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -48,8 +48,8 @@ bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
   // Other apps only get it if it is requested _and_ experimental APIs are
   // enabled.
   if (!extension->is_app() ||
-      !PermissionsData::GetInitialAPIPermissions(extension)->count(
-          APIPermission::kExperimental)) {
+      !PermissionsParser::HasAPIPermission(extension,
+                                           APIPermission::kExperimental)) {
     return true;
   }
 

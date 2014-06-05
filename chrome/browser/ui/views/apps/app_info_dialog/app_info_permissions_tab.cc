@@ -11,9 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -444,7 +444,7 @@ void AppInfoPermissionsTab::RevokeFilePermissions() {
 
 const extensions::PermissionSet* AppInfoPermissionsTab::GetRequiredPermissions()
     const {
-  return extensions::PermissionsData::GetRequiredPermissions(app_);
+  return extensions::PermissionsParser::GetRequiredPermissions(app_);
 }
 
 const std::vector<base::string16>
@@ -455,7 +455,7 @@ AppInfoPermissionsTab::GetRequiredPermissionMessages() const {
 
 const extensions::PermissionSet* AppInfoPermissionsTab::GetOptionalPermissions()
     const {
-  return extensions::PermissionsData::GetOptionalPermissions(app_);
+  return extensions::PermissionsParser::GetOptionalPermissions(app_);
 }
 
 const std::vector<base::string16>

@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -46,8 +46,7 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
     DCHECK(extension->is_platform_app());
 
     const bool has_webview_permission =
-        !!PermissionsData::GetInitialAPIPermissions(extension)
-              ->count(APIPermission::kWebView);
+        PermissionsParser::HasAPIPermission(extension, APIPermission::kWebView);
     extension->SetManifestData(keys::kOfflineEnabled,
                                new OfflineEnabledInfo(!has_webview_permission));
     return true;

@@ -107,10 +107,12 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  const GURL& url,
                  PermittedFeature feature,
                  int tab_id) {
-    bool script = PermissionsData::CanExecuteScriptOnPage(
-               extension.get(), url, url, tab_id, NULL, -1, NULL);
+    const PermissionsData* permissions_data =
+        PermissionsData::ForExtension(extension);
+    bool script = permissions_data->CanExecuteScriptOnPage(
+        extension, url, url, tab_id, NULL, -1, NULL);
     bool capture = HasTabsPermission(extension, tab_id) &&
-        PermissionsData::CanCaptureVisiblePage(extension.get(), tab_id, NULL);
+                   permissions_data->CanCaptureVisiblePage(tab_id, NULL);
     switch (feature) {
       case PERMITTED_SCRIPT_ONLY:
         return script && !capture;
@@ -142,16 +144,14 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
 
   bool HasTabsPermission(const scoped_refptr<const Extension>& extension,
                          int tab_id) {
-    return PermissionsData::HasAPIPermissionForTab(
-        extension.get(), tab_id, APIPermission::kTab);
+    return PermissionsData::ForExtension(extension)
+        ->HasAPIPermissionForTab(tab_id, APIPermission::kTab);
   }
 
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
-    return PermissionsData::HasAPIPermissionForTab(
-        extension,
-        SessionID::IdForTab(web_contents),
-        APIPermission::kTab);
+    return PermissionsData::ForExtension(extension)->HasAPIPermissionForTab(
+        SessionID::IdForTab(web_contents), APIPermission::kTab);
   }
 
   // TODO(justinlin): Remove when tabCapture is moved to stable.
@@ -369,16 +369,14 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
   // Do not grant tabs/hosts permissions for tab.
   EXPECT_TRUE(IsAllowed(extension_with_tab_capture, internal,
                         PERMITTED_CAPTURE_ONLY));
-  EXPECT_TRUE(PermissionsData::HasAPIPermissionForTab(
-      extension_with_tab_capture.get(),
-      tab_id(),
-      APIPermission::kTabCaptureForTab));
+  const PermissionsData* permissions_data =
+      PermissionsData::ForExtension(extension_with_tab_capture);
+  EXPECT_TRUE(permissions_data->HasAPIPermissionForTab(
+      tab_id(), APIPermission::kTabCaptureForTab));
 
   EXPECT_TRUE(IsBlocked(extension_with_tab_capture, internal, tab_id() + 1));
-  EXPECT_FALSE(PermissionsData::HasAPIPermissionForTab(
-      extension_with_tab_capture.get(),
-      tab_id() + 1,
-      APIPermission::kTabCaptureForTab));
+  EXPECT_FALSE(permissions_data->HasAPIPermissionForTab(
+      tab_id() + 1, APIPermission::kTabCaptureForTab));
 }
 
 }  // namespace

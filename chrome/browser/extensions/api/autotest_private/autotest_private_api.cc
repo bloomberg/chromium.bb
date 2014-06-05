@@ -34,8 +34,8 @@ namespace {
 base::ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   extensions::URLPatternSet pattern_set;
   if (effective_perm) {
-    pattern_set =
-        extensions::PermissionsData::GetEffectiveHostPermissions(ext);
+    pattern_set = extensions::PermissionsData::ForExtension(ext)
+                      ->GetEffectiveHostPermissions();
   } else {
     pattern_set = ext->GetActivePermissions()->explicit_hosts();
   }

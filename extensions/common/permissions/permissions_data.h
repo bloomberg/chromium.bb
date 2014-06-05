@@ -6,34 +6,35 @@
 #define EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_DATA_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_set.h"
 
 class GURL;
 
 namespace extensions {
 
 class PermissionSet;
-class APIPermissionSet;
 class Extension;
-class ManifestPermissionSet;
 class URLPatternSet;
 class UserScript;
 
-// A container for the permissions data of the extension; also responsible for
-// parsing the "permissions" and "optional_permissions" manifest keys. This
-// class also contains the active (runtime) permissions for the extension.
+// A container for the active permissions of an extension.
+// TODO(rdevlin.cronin): For the love of everything good, rename this class to
+// ActivePermissions. We do *not* need PermissionsParser, PermissionSet,
+// PermissionInfo, and PermissionsData. No one will be able to keep them
+// straight.
 class PermissionsData {
  public:
-  PermissionsData();
-  ~PermissionsData();
-
   // Delegate class to allow different contexts (e.g. browser vs renderer) to
   // have control over policy decisions.
   class PolicyDelegate {
@@ -53,65 +54,11 @@ class PermissionsData {
 
   static void SetPolicyDelegate(PolicyDelegate* delegate);
 
-  // Return the optional or required permission set for the given |extension|.
-  static const PermissionSet* GetOptionalPermissions(
-      const Extension* extension);
-  static const PermissionSet* GetRequiredPermissions(
-      const Extension* extension);
+  PermissionsData(const Extension* extension);
+  virtual ~PermissionsData();
 
-  // Return the temporary API permission set which is used during extension
-  // initialization. Once initialization completes, this is NULL.
-  static const APIPermissionSet* GetInitialAPIPermissions(
-      const Extension* extension);
-  static APIPermissionSet* GetInitialAPIPermissions(Extension* extension);
-
-  // Set the scriptable hosts for the given |extension| during initialization.
-  static void SetInitialScriptableHosts(Extension* extension,
-                                        const URLPatternSet& scriptable_hosts);
-
-  // Return the active (runtime) permissions for the given |extension|.
-  static scoped_refptr<const PermissionSet> GetActivePermissions(
-      const Extension* extension);
-  // Sets the runtime permissions of the given |extension| to |permissions|.
-  static void SetActivePermissions(const Extension* extension,
-                                   const PermissionSet* active);
-
-  // Gets the tab-specific host permissions of |tab_id|, or NULL if there
-  // aren't any.
-  static scoped_refptr<const PermissionSet> GetTabSpecificPermissions(
-      const Extension* extension,
-      int tab_id);
-  // Updates the tab-specific permissions of |tab_id| to include those from
-  // |permissions|.
-  static void UpdateTabSpecificPermissions(
-      const Extension* extension,
-      int tab_id,
-      scoped_refptr<const PermissionSet> permissions);
-  // Clears the tab-specific permissions of |tab_id|.
-  static void ClearTabSpecificPermissions(const Extension* extension,
-                                          int tab_id);
-
-  // Returns true if the |extension| has the given |permission|. Prefer
-  // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
-  // api that requires a permission they didn't know about, e.g. open web apis.
-  // Note this does not include APIs with no corresponding permission, like
-  // "runtime" or "browserAction".
-  // TODO(mpcomplete): drop the "API" from these names, it's confusing.
-  static bool HasAPIPermission(const Extension* extension,
-                               APIPermission::ID permission);
-  static bool HasAPIPermission(const Extension* extension,
-                               const std::string& permission_name);
-  static bool HasAPIPermissionForTab(const Extension* extension,
-                                     int tab_id,
-                                     APIPermission::ID permission);
-
-  static bool CheckAPIPermissionWithParam(
-      const Extension* extension,
-      APIPermission::ID permission,
-      const APIPermission::CheckParam* param);
-
-  static const URLPatternSet& GetEffectiveHostPermissions(
-      const Extension* extension);
+  // Return the PermissionsData associated with the given |extension|.
+  static const PermissionsData* ForExtension(const Extension* extension);
 
   // Returns true if the |extension| can silently increase its permission level.
   // Users must approve permissions for unpacked and packed extensions in the
@@ -121,34 +68,65 @@ class PermissionsData {
   //  - when either type of extension requests optional permissions
   static bool CanSilentlyIncreasePermissions(const Extension* extension);
 
-  // Returns true if the extension does not require permission warnings
-  // to be displayed at install time.
-  static bool ShouldSkipPermissionWarnings(const Extension* extension);
+  // Returns true if the extension is a COMPONENT extension or is on the
+  // whitelist of extensions that can script all pages.
+  static bool CanExecuteScriptEverywhere(const Extension* extension);
 
-  // Whether the |extension| has access to the given |url|.
-  static bool HasHostPermission(const Extension* extension, const GURL& url);
+  // Sets the runtime permissions of the given |extension| to |permissions|.
+  void SetActivePermissions(const PermissionSet* active) const;
 
-  // Whether the |extension| has effective access to all hosts. This is true if
+  // Updates the tab-specific permissions of |tab_id| to include those from
+  // |permissions|.
+  void UpdateTabSpecificPermissions(
+      int tab_id,
+      scoped_refptr<const PermissionSet> permissions) const;
+
+  // Clears the tab-specific permissions of |tab_id|.
+  void ClearTabSpecificPermissions(int tab_id) const;
+
+  // Returns true if the |extension| has the given |permission|. Prefer
+  // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
+  // api that requires a permission they didn't know about, e.g. open web apis.
+  // Note this does not include APIs with no corresponding permission, like
+  // "runtime" or "browserAction".
+  // TODO(mpcomplete): drop the "API" from these names, it's confusing.
+  bool HasAPIPermission(APIPermission::ID permission) const;
+  bool HasAPIPermission(const std::string& permission_name) const;
+  bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
+  bool CheckAPIPermissionWithParam(
+      APIPermission::ID permission,
+      const APIPermission::CheckParam* param) const;
+
+  // TODO(rdevlin.cronin): GetEffectiveHostPermissions(), HasHostPermission(),
+  // and HasEffectiveAccessToAllHosts() are just forwards for the active
+  // permissions. We should either get rid of these, and have callers use
+  // active_permissions(), or should get rid of active_permissions(), and make
+  // callers use PermissionsData for everything. We should not do both.
+
+  // Returns the effective hosts associated with the active permissions.
+  const URLPatternSet& GetEffectiveHostPermissions() const;
+
+  // Whether the extension has access to the given |url|.
+  bool HasHostPermission(const GURL& url) const;
+
+  // Whether the extension has effective access to all hosts. This is true if
   // there is a content script that matches all hosts, if there is a host
   // permission grants access to all hosts (like <all_urls>) or an api
   // permission that effectively grants access to all hosts (e.g. proxy,
   // network, etc.)
-  static bool HasEffectiveAccessToAllHosts(const Extension* extension);
+  bool HasEffectiveAccessToAllHosts() const;
 
-  // Returns the full list of permission messages that the given |extension|
-  // should display at install time.
-  static PermissionMessages GetPermissionMessages(const Extension* extension);
-  // Returns the full list of permission messages that the given |extension|
-  // should display at install time. The messages are returned as strings
-  // for convenience.
-  static std::vector<base::string16> GetPermissionMessageStrings(
-      const Extension* extension);
+  // Returns the full list of permission messages that should display at
+  // install time.
+  PermissionMessages GetPermissionMessages() const;
 
-  // Returns the full list of permission details for messages that the given
-  // |extension| should display at install time. The messages are returned as
-  // strings for convenience.
-  static std::vector<base::string16> GetPermissionMessageDetailsStrings(
-      const Extension* extension);
+  // Returns the full list of permission messages that should display at install
+  // time as strings.
+  std::vector<base::string16> GetPermissionMessageStrings() const;
+
+  // Returns the full list of permission details for messages that should
+  // display at install time as strings.
+  std::vector<base::string16> GetPermissionMessageDetailsStrings() const;
 
   // Returns true if the given |extension| can execute script on a page. If a
   // UserScript object is passed, permission to run that specific script is
@@ -157,68 +135,69 @@ class PermissionsData {
   //
   // This method is also aware of certain special pages that extensions are
   // usually not allowed to run script on.
-  static bool CanExecuteScriptOnPage(const Extension* extension,
-                                     const GURL& document_url,
-                                     const GURL& top_document_url,
-                                     int tab_id,
-                                     const UserScript* script,
-                                     int process_id,
-                                     std::string* error);
+  bool CanExecuteScriptOnPage(const Extension* extension,
+                              const GURL& document_url,
+                              const GURL& top_document_url,
+                              int tab_id,
+                              const UserScript* script,
+                              int process_id,
+                              std::string* error) const;
 
-  // Returns true if the given |extension| is a COMPONENT extension, or if it is
-  // on the whitelist of extensions that can script all pages.
-  static bool CanExecuteScriptEverywhere(const Extension* extension);
-
-  // Returns true if the |extension| is allowed to obtain the contents of a
-  // page as an image.  Since a page may contain sensitive information, this
-  // is restricted to the extension's host permissions as well as the
-  // extension page itself.
-  static bool CanCaptureVisiblePage(const Extension* extension,
-                                    int tab_id,
-                                    std::string* error);
+  // Returns true if extension is allowed to obtain the contents of a page as
+  // an image. Since a page may contain sensitive information, this is
+  // restricted to the extension's host permissions as well as the extension
+  // page itself.
+  bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
 
   // Returns true if the user should be alerted that the |extension| is running
   // a script. If |tab_id| and |url| are included, this also considers tab-
   // specific permissions.
-  static bool RequiresActionForScriptExecution(const Extension* extension);
-  static bool RequiresActionForScriptExecution(const Extension* extension,
-                                               int tab_id,
-                                               const GURL& url);
+  bool RequiresActionForScriptExecution(const Extension* extension) const;
+  bool RequiresActionForScriptExecution(const Extension* extension,
+                                        int tab_id,
+                                        const GURL& url) const;
 
-  // Parse the permissions of a given extension in the initialization process.
-  bool ParsePermissions(Extension* extension, base::string16* error);
+  scoped_refptr<const PermissionSet> active_permissions() const {
+    base::AutoLock auto_lock(runtime_lock_);
+    return active_permissions_unsafe_;
+  }
 
-  // Ensure manifest handlers provide their custom manifest permissions.
-  void InitializeManifestPermissions(Extension* extension);
-
-  // Finalize permissions after the initialization process completes.
-  void FinalizePermissions(Extension* extension);
+#if defined(UNIT_TEST)
+  scoped_refptr<const PermissionSet> GetTabSpecificPermissionsForTesting(
+      int tab_id) const {
+    return GetTabSpecificPermissions(tab_id);
+  }
+#endif
 
  private:
-  // Whether the extension has access to so many hosts that we should treat it
-  // as "all_hosts" for warning purposes.
-  // For example, '*://*.com/*'.
-  static bool ShouldWarnAllHosts(const Extension* extension);
-
-  struct InitialPermissions;
   typedef std::map<int, scoped_refptr<const PermissionSet> > TabPermissionsMap;
 
-  // Temporary permissions during the initialization process; NULL after
-  // initialization completes.
-  scoped_ptr<InitialPermissions> initial_required_permissions_;
-  scoped_ptr<InitialPermissions> initial_optional_permissions_;
+  // Gets the tab-specific host permissions of |tab_id|, or NULL if there
+  // aren't any.
+  scoped_refptr<const PermissionSet> GetTabSpecificPermissions(
+      int tab_id) const;
 
-  // The set of permissions the extension can request at runtime.
-  scoped_refptr<const PermissionSet> optional_permission_set_;
+  // Returns true if the |extension| has tab-specific permission to operate on
+  // the tab specified by |tab_id| with the given |url|.
+  // Note that if this returns false, it doesn't mean the extension can't run on
+  // the given tab, only that it does not have tab-specific permission to do so.
+  bool HasTabSpecificPermissionToExecuteScript(int tab_id,
+                                               const GURL& url) const;
 
-  // The extension's required / default set of permissions.
-  scoped_refptr<const PermissionSet> required_permission_set_;
+  // The associated extension's id.
+  std::string extension_id_;
+
+  // The associated extension's manifest type.
+  Manifest::Type manifest_type_;
 
   mutable base::Lock runtime_lock_;
 
   // The permission's which are currently active on the extension during
   // runtime.
-  mutable scoped_refptr<const PermissionSet> active_permissions_;
+  // Unsafe indicates that we must lock anytime this is directly accessed.
+  // Unless you need to change |active_permissions_unsafe_|, use the (safe)
+  // active_permissions() accessor.
+  mutable scoped_refptr<const PermissionSet> active_permissions_unsafe_;
 
   mutable TabPermissionsMap tab_specific_permissions_;
 

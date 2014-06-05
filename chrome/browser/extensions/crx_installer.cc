@@ -296,8 +296,10 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
         WebstoreInstaller::MANIFEST_CHECK_LEVEL_NONE) {
         // To skip manifest checking, the extension must be a shared module
         // and not request any permissions.
-        if (SharedModuleInfo::IsSharedModule(extension) &&
-            PermissionsData::GetActivePermissions(extension)->IsEmpty()) {
+      if (SharedModuleInfo::IsSharedModule(extension) &&
+          PermissionsData::ForExtension(extension)
+              ->active_permissions()
+              ->IsEmpty()) {
           valid = true;
         }
     } else {
@@ -313,11 +315,12 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
                               &error);
         if (error.empty()) {
           scoped_refptr<const PermissionSet> expected_permissions =
-              PermissionsData::GetActivePermissions(dummy_extension.get());
+              PermissionsData::ForExtension(dummy_extension)
+                  ->active_permissions();
           valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-                        expected_permissions,
-                        PermissionsData::GetActivePermissions(extension),
-                        extension->GetType()));
+              expected_permissions,
+              PermissionsData::ForExtension(extension)->active_permissions(),
+              extension->GetType()));
         }
       }
     }

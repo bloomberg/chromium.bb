@@ -74,20 +74,24 @@ TEST_F(BrowserPermissionsPolicyDelegateTest, CanExecuteScriptOnPage) {
 
   // The same call should succeed with a normal process, but fail with a signin
   // process.
-  EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(extension.get(),
-                                                      kSigninUrl,
-                                                      kSigninUrl,
-                                                      -1,
-                                                      NULL,
-                                                      normal_process.GetID(),
-                                                      &error)) << error;
-  EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(extension.get(),
+  const PermissionsData* permissions_data =
+      PermissionsData::ForExtension(extension);
+  EXPECT_TRUE(permissions_data->CanExecuteScriptOnPage(extension,
                                                        kSigninUrl,
                                                        kSigninUrl,
                                                        -1,
                                                        NULL,
-                                                       signin_process.GetID(),
-                                                       &error)) << error;
+                                                       normal_process.GetID(),
+                                                       &error))
+      << error;
+  EXPECT_FALSE(permissions_data->CanExecuteScriptOnPage(extension,
+                                                        kSigninUrl,
+                                                        kSigninUrl,
+                                                        -1,
+                                                        NULL,
+                                                        signin_process.GetID(),
+                                                        &error))
+      << error;
 }
 #endif
 

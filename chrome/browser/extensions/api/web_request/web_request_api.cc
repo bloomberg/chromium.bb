@@ -2230,8 +2230,9 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   // For this reason we do only a coarse check here to warn the extension
   // developer if he does something obviously wrong.
   if (!is_web_view_guest &&
-      extensions::PermissionsData::GetEffectiveHostPermissions(
-          extension).is_empty()) {
+      extensions::PermissionsData::ForExtension(extension)
+          ->GetEffectiveHostPermissions()
+          .is_empty()) {
     error_ = keys::kHostPermissionsRequired;
     return false;
   }

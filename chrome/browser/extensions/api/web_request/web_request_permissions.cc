@@ -133,13 +133,15 @@ bool WebRequestPermissions::CanExtensionAccessURL(
       // about: URLs are not covered in host permissions, but are allowed
       // anyway.
       if (!((url.SchemeIs(content::kAboutScheme) ||
-             extensions::PermissionsData::HasHostPermission(extension, url) ||
+             extensions::PermissionsData::ForExtension(extension)
+                 ->HasHostPermission(url) ||
              url.GetOrigin() == extension->url()))) {
         return false;
       }
       break;
     case REQUIRE_ALL_URLS:
-      if (!extensions::PermissionsData::HasEffectiveAccessToAllHosts(extension))
+      if (!extensions::PermissionsData::ForExtension(extension)
+               ->HasEffectiveAccessToAllHosts())
         return false;
       break;
   }
