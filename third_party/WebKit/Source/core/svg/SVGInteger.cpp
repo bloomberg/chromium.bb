@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/svg/SVGInteger.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 #include "core/svg/SVGAnimationElement.h"
 
@@ -66,7 +67,7 @@ void SVGInteger::setValueAsString(const String& string, ExceptionState& exceptio
     }
 
     bool valid = true;
-    m_value = string.toIntStrict(&valid);
+    m_value = stripLeadingAndTrailingHTMLSpaces(string).toIntStrict(&valid);
 
     if (!valid) {
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");

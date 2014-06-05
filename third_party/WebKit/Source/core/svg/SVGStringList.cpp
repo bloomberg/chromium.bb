@@ -92,7 +92,7 @@ void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end)
 
     while (ptr < end) {
         const CharType* start = ptr;
-        while (ptr < end && *ptr != delimiter && !isSVGSpace(*ptr))
+        while (ptr < end && *ptr != delimiter && !isHTMLSpace<CharType>(*ptr))
             ptr++;
         if (ptr == start)
             break;

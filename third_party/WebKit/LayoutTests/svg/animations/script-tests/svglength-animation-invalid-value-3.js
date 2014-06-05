@@ -15,8 +15,8 @@ animate.setAttribute("id", "animation");
 animate.setAttribute("attributeName", "width");
 animate.setAttribute("begin", "click");
 animate.setAttribute("dur", "4s");
-animate.setAttribute("from", "100px   ");
-animate.setAttribute("to", "200px   ");
+animate.setAttribute("from", "100px   ERROR");
+animate.setAttribute("to", "200px   ERROR");
 rect.appendChild(animate);
 rootSVGElement.appendChild(rect);
 

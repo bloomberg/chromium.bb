@@ -74,7 +74,7 @@ void SVGRect::parse(const CharType*& ptr, const CharType* end, ExceptionState& e
     float y = 0.0f;
     float width = 0.0f;
     float height = 0.0f;
-    bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y) && parseNumber(ptr, end, width) && parseNumber(ptr, end, height, false);
+    bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y) && parseNumber(ptr, end, width) && parseNumber(ptr, end, height, DisallowWhitespace);
 
     if (!valid) {
         exceptionState.throwDOMException(SyntaxError, "Problem parsing rect \"" + String(start, end - start) + "\"");

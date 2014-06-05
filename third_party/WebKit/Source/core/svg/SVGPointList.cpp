@@ -89,7 +89,7 @@ bool SVGPointList::parse(const CharType*& ptr, const CharType* end)
     for (;;) {
         float x = 0.0f;
         float y = 0.0f;
-        bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, false);
+        bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, DisallowWhitespace);
         if (!valid) {
             return false;
         }
