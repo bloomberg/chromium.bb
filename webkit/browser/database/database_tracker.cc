@@ -741,42 +741,42 @@ int DatabaseTracker::DeleteDataForOrigin(
   return net::OK;
 }
 
-void DatabaseTracker::GetIncognitoFileHandle(
-    const base::string16& vfs_file_name,
-    base::PlatformFile* file_handle) const {
+const base::File* DatabaseTracker::GetIncognitoFile(
+    const base::string16& vfs_file_name) const {
   DCHECK(is_incognito_);
   FileHandlesMap::const_iterator it =
       incognito_file_handles_.find(vfs_file_name);
   if (it != incognito_file_handles_.end())
-    *file_handle = it->second;
-  else
-    *file_handle = base::kInvalidPlatformFileValue;
+    return it->second;
+
+  return NULL;
 }
 
-void DatabaseTracker::SaveIncognitoFileHandle(
+const base::File* DatabaseTracker::SaveIncognitoFile(
     const base::string16& vfs_file_name,
-    const base::PlatformFile& file_handle) {
+    base::File file) {
   DCHECK(is_incognito_);
-  DCHECK(incognito_file_handles_.find(vfs_file_name) ==
-         incognito_file_handles_.end());
-  if (file_handle != base::kInvalidPlatformFileValue)
-    incognito_file_handles_[vfs_file_name] = file_handle;
+  if (!file.IsValid())
+    return NULL;
+
+  base::File* to_insert = new base::File(file.Pass());
+  std::pair<FileHandlesMap::iterator, bool> rv =
+      incognito_file_handles_.insert(std::make_pair(vfs_file_name, to_insert));
+  DCHECK(rv.second);
+  return rv.first->second;
 }
 
-bool DatabaseTracker::CloseIncognitoFileHandle(
+void DatabaseTracker::CloseIncognitoFileHandle(
     const base::string16& vfs_file_name) {
   DCHECK(is_incognito_);
   DCHECK(incognito_file_handles_.find(vfs_file_name) !=
          incognito_file_handles_.end());
 
-  bool handle_closed = false;
   FileHandlesMap::iterator it = incognito_file_handles_.find(vfs_file_name);
   if (it != incognito_file_handles_.end()) {
-    handle_closed = base::ClosePlatformFile(it->second);
-    if (handle_closed)
-      incognito_file_handles_.erase(it);
+    delete it->second;
+    incognito_file_handles_.erase(it);
   }
-  return handle_closed;
 }
 
 bool DatabaseTracker::HasSavedIncognitoFileHandle(
@@ -789,8 +789,9 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
   is_initialized_ = false;
 
   for (FileHandlesMap::iterator it = incognito_file_handles_.begin();
-       it != incognito_file_handles_.end(); it++)
-    base::ClosePlatformFile(it->second);
+       it != incognito_file_handles_.end(); it++) {
+    delete it->second;
+  }
 
   base::FilePath incognito_db_dir =
       profile_path_.Append(kIncognitoDatabaseDirectoryName);

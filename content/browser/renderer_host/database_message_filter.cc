@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -118,7 +117,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
     IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File file;
-  base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
+  const base::File* tracked_file = NULL;
   std::string origin_identifier;
   base::string16 database_name;
 
@@ -138,14 +137,14 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
         db_tracker_.get(), vfs_file_name);
     if (!db_file.empty()) {
       if (db_tracker_->IsIncognitoProfile()) {
-        db_tracker_->GetIncognitoFileHandle(vfs_file_name, &file_handle);
-        if (file_handle == base::kInvalidPlatformFileValue) {
+        tracked_file = db_tracker_->GetIncognitoFile(vfs_file_name);
+        if (!tracked_file) {
           file =
               VfsBackend::OpenFile(db_file,
-                                    desired_flags | SQLITE_OPEN_DELETEONCLOSE);
+                                   desired_flags | SQLITE_OPEN_DELETEONCLOSE);
           if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE)) {
-            file_handle = file.TakePlatformFile();
-            db_tracker_->SaveIncognitoFileHandle(vfs_file_name, file_handle);
+            tracked_file = db_tracker_->SaveIncognitoFile(vfs_file_name,
+                                                          file.Pass());
           }
         }
       } else {
@@ -157,12 +156,15 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
   // Then we duplicate the file handle to make it useable in the renderer
   // process. The original handle is closed, unless we saved it in the
   // database tracker.
-  IPC::PlatformFileForTransit target_handle;
+  IPC::PlatformFileForTransit target_handle =
+      IPC::InvalidPlatformFileForTransit();
   if (file.IsValid()) {
     target_handle = IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle());
-  } else {
-    target_handle = IPC::GetFileHandleForProcess(file_handle, PeerHandle(),
-                                                 false);
+  } else if (tracked_file) {
+    DCHECK(tracked_file->IsValid());
+    target_handle =
+        IPC::GetFileHandleForProcess(tracked_file->GetPlatformFile(),
+                                     PeerHandle(), false);
   }
 
   DatabaseHostMsg_OpenFile::WriteReplyParams(reply_msg, target_handle);
@@ -201,7 +203,8 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
                                          NULL, NULL, &sqlite_suffix) &&
           sqlite_suffix == wal_suffix) {
         error_code = SQLITE_OK;
-      } else if (db_tracker_->CloseIncognitoFileHandle(vfs_file_name)) {
+      } else {
+        db_tracker_->CloseIncognitoFileHandle(vfs_file_name);
         error_code = SQLITE_OK;
       }
     } else {
