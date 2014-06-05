@@ -66,19 +66,22 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   // Creates and initializes a sync channel. If create_pipe_now is specified,
   // the channel will be initialized synchronously.
-  SyncChannel(const IPC::ChannelHandle& channel_handle,
-              Channel::Mode mode,
-              Listener* listener,
-              base::SingleThreadTaskRunner* ipc_task_runner,
-              bool create_pipe_now,
-              base::WaitableEvent* shutdown_event);
+  // The naming pattern follows IPC::Channel.
+  static scoped_ptr<SyncChannel> Create(
+      const IPC::ChannelHandle& channel_handle,
+      IPC::Channel::Mode mode,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner,
+      bool create_pipe_now,
+      base::WaitableEvent* shutdown_event);
 
   // Creates an uninitialized sync channel. Call ChannelProxy::Init to
   // initialize the channel. This two-step setup allows message filters to be
   // added before any messages are sent or received.
-  SyncChannel(Listener* listener,
-              base::SingleThreadTaskRunner* ipc_task_runner,
-              base::WaitableEvent* shutdown_event);
+  static scoped_ptr<SyncChannel> Create(
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner,
+      base::WaitableEvent* shutdown_event);
 
   virtual ~SyncChannel();
 
@@ -188,6 +191,10 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   };
 
  private:
+  SyncChannel(Listener* listener,
+              base::SingleThreadTaskRunner* ipc_task_runner,
+              base::WaitableEvent* shutdown_event);
+
   void OnWaitableEventSignaled(base::WaitableEvent* arg);
 
   SyncContext* sync_context() {

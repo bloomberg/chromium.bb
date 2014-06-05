@@ -77,10 +77,10 @@ void IPCTestBase::CreateChannelProxy(
     base::SingleThreadTaskRunner* ipc_task_runner) {
   CHECK(!channel_.get());
   CHECK(!channel_proxy_.get());
-  channel_proxy_.reset(new IPC::ChannelProxy(GetChannelName(test_client_name_),
+  channel_proxy_ = IPC::ChannelProxy::Create(GetChannelName(test_client_name_),
                                              IPC::Channel::MODE_SERVER,
                                              listener,
-                                             ipc_task_runner));
+                                             ipc_task_runner);
 }
 
 void IPCTestBase::DestroyChannelProxy() {

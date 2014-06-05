@@ -55,11 +55,10 @@ void ReplayProcess::OpenChannel() {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
 
-  channel_.reset(
-      new IPC::ChannelProxy(channel_name,
-                            IPC::Channel::MODE_CLIENT,
-                            this,
-                            io_thread_.message_loop_proxy()));
+  channel_ = IPC::ChannelProxy::Create(channel_name,
+                                       IPC::Channel::MODE_CLIENT,
+                                       this,
+                                       io_thread_.message_loop_proxy());
 }
 
 bool ReplayProcess::OpenTestcase() {

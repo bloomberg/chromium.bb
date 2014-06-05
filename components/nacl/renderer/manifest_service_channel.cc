@@ -22,10 +22,13 @@ ManifestServiceChannel::ManifestServiceChannel(
     base::WaitableEvent* waitable_event)
     : connected_callback_(connected_callback),
       delegate_(delegate.Pass()),
-      channel_(new IPC::SyncChannel(
-          handle, IPC::Channel::MODE_CLIENT, this,
+      channel_(IPC::SyncChannel::Create(
+          handle,
+          IPC::Channel::MODE_CLIENT,
+          this,
           content::RenderThread::Get()->GetIOMessageLoopProxy(),
-          true, waitable_event)),
+          true,
+          waitable_event)),
       weak_ptr_factory_(this) {
 }
 

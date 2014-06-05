@@ -64,10 +64,11 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // on the background thread.  Any message not handled by the filter will be
   // dispatched to the listener.  The given task runner correspond to a thread
   // on which IPC::Channel is created and used (e.g. IO thread).
-  ChannelProxy(const IPC::ChannelHandle& channel_handle,
-               Channel::Mode mode,
-               Listener* listener,
-               base::SingleThreadTaskRunner* ipc_task_runner);
+  static scoped_ptr<ChannelProxy> Create(
+      const IPC::ChannelHandle& channel_handle,
+      Channel::Mode mode,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
 
   virtual ~ChannelProxy();
 
@@ -123,6 +124,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // A subclass uses this constructor if it needs to add more information
   // to the internal state.
   ChannelProxy(Context* context);
+
+  ChannelProxy(Listener* listener,
+               base::SingleThreadTaskRunner* ipc_task_runner);
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,

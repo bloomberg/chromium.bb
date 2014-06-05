@@ -31,11 +31,12 @@ bool ProxyChannel::InitWithChannel(Delegate* delegate,
                                    bool is_client) {
   delegate_ = delegate;
   peer_pid_ = peer_pid;
-  IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
-                                      : IPC::Channel::MODE_SERVER;
-  channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
+  IPC::Channel::Mode mode = is_client
+      ? IPC::Channel::MODE_CLIENT
+      : IPC::Channel::MODE_SERVER;
+  channel_ = IPC::SyncChannel::Create(channel_handle, mode, this,
                                       delegate->GetIPCMessageLoop(), true,
-                                      delegate->GetShutdownEvent()));
+                                      delegate->GetShutdownEvent());
   return true;
 }
 

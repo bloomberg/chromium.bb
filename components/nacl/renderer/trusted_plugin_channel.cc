@@ -17,9 +17,12 @@ TrustedPluginChannel::TrustedPluginChannel(
     const base::Callback<void(int32_t)>& connected_callback,
     base::WaitableEvent* waitable_event)
     : connected_callback_(connected_callback),
-      channel_(new IPC::SyncChannel(
-          handle, IPC::Channel::MODE_CLIENT, this,
-          content::RenderThread::Get()->GetIOMessageLoopProxy(), true,
+      channel_(IPC::SyncChannel::Create(
+          handle,
+          IPC::Channel::MODE_CLIENT,
+          this,
+          content::RenderThread::Get()->GetIOMessageLoopProxy(),
+          true,
           waitable_event)) {
 }
 

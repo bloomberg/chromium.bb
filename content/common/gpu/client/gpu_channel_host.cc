@@ -73,12 +73,12 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
   scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
-  channel_.reset(new IPC::SyncChannel(channel_handle,
+  channel_ = IPC::SyncChannel::Create(channel_handle,
                                       IPC::Channel::MODE_CLIENT,
                                       NULL,
                                       io_loop.get(),
                                       true,
-                                      shutdown_event));
+                                      shutdown_event);
 
   sync_filter_ = new IPC::SyncMessageFilter(shutdown_event);
 

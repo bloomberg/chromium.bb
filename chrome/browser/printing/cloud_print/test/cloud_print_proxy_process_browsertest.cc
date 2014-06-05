@@ -266,11 +266,11 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
   scoped_ptr<IPC::ChannelProxy> startup_channel;
-  startup_channel.reset(
-      new IPC::ChannelProxy(startup_channel_name,
-                            IPC::Channel::MODE_CLIENT,
-                            &listener,
-                            service_process.IOMessageLoopProxy()));
+  startup_channel =
+      IPC::ChannelProxy::Create(startup_channel_name,
+                                IPC::Channel::MODE_CLIENT,
+                                &listener,
+                                service_process.IOMessageLoopProxy());
 
   main_message_loop.Run();
   if (!Mock::VerifyAndClearExpectations(&server))
@@ -442,9 +442,10 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
       base::StringPrintf("%d.%p.%d",
                          base::GetCurrentProcId(), this,
                          base::RandInt(0, std::numeric_limits<int>::max()));
-  startup_channel_.reset(new IPC::ChannelProxy(
-      startup_channel_id_, IPC::Channel::MODE_SERVER,
-      this, IOMessageLoopProxy()));
+  startup_channel_ = IPC::ChannelProxy::Create(startup_channel_id_,
+                                               IPC::Channel::MODE_SERVER,
+                                               this,
+                                               IOMessageLoopProxy());
 
 #if defined(OS_POSIX)
   base::FileHandleMappingVector ipc_file_list;
@@ -466,10 +467,10 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   EXPECT_TRUE(CheckServiceProcessReady());
   EXPECT_TRUE(base::MessageLoopProxy::current().get());
   ServiceProcessControl::GetInstance()->SetChannel(
-      new IPC::ChannelProxy(GetServiceProcessChannel(),
-                            IPC::Channel::MODE_NAMED_CLIENT,
-                            ServiceProcessControl::GetInstance(),
-                            IOMessageLoopProxy()));
+      IPC::ChannelProxy::Create(GetServiceProcessChannel(),
+                                IPC::Channel::MODE_NAMED_CLIENT,
+                                ServiceProcessControl::GetInstance(),
+                                IOMessageLoopProxy()));
 }
 
 bool CloudPrintProxyPolicyStartupTest::Send(IPC::Message* message) {
