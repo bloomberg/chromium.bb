@@ -72,7 +72,7 @@ std::string GetRandomId();
 // something that should be anonymous, you should probably pass NULL.
 std::string GetDeviceIdentifier(const char* salt);
 
-// Returns a hashed version of |in_string| using |salt| (which must not
+// Returns a hashed version of |in_string| using |salt| (which must not be
 // zero-length). Different salt values should result in differently hashed
 // strings.
 std::string GetSaltedString(const std::string& in_string,
