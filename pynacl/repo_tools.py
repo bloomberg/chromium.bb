@@ -77,6 +77,14 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
     else:
       logging.debug('Clobbering invalid git repo %s' % directory)
       file_tools.RemoveDirectoryIfPresent(directory)
+  elif os.path.exists(directory) and len(os.listdir(directory)) != 0:
+    if not clobber_mismatch:
+      raise InvalidRepoException(url,
+                                 'Invalid non-empty repository destination %s',
+                                 directory)
+    else:
+      logging.debug('Clobbering intended repository destination: %s', directory)
+      file_tools.RemoveDirectoryIfPresent(directory)
 
 
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
