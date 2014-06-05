@@ -633,6 +633,7 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
 
   compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
       initWithIOSurface:compositing_iosurface_
+        withScaleFactor:compositing_iosurface_->scale_factor()
              withClient:this]);
   DCHECK(compositing_iosurface_layer_);
 

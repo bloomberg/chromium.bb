@@ -55,6 +55,7 @@ class CompositingIOSurfaceLayerClient {
 
 - (id)initWithIOSurface:(scoped_refptr<content::CompositingIOSurfaceMac>)
                             iosurface
+        withScaleFactor:(float)scale_factor
              withClient:(content::CompositingIOSurfaceLayerClient*)client;
 
 // Mark that the client is no longer valid and cannot be called back into.

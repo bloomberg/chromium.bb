@@ -52,6 +52,7 @@ class CompositingIOSurfaceLayerHelper {
 
 - (id)initWithIOSurface:(scoped_refptr<content::CompositingIOSurfaceMac>)
                             iosurface
+        withScaleFactor:(float)scale_factor
              withClient:(content::CompositingIOSurfaceLayerClient*)client {
   if (self = [super init]) {
     iosurface_ = iosurface;
@@ -76,7 +77,7 @@ class CompositingIOSurfaceLayerHelper {
     // scaled during dyanmic resizes (especially with devtools open).
     [self setContentsGravity:kCAGravityTopLeft];
     if ([self respondsToSelector:(@selector(setContentsScale:))]) {
-      [self setContentsScale:iosurface_->scale_factor()];
+      [self setContentsScale:scale_factor];
     }
   }
   return self;

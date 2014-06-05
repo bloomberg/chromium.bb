@@ -106,6 +106,16 @@
                      withScaleFactor:(float)scale_factor {
   ScopedCAActionDisabler disabler;
 
+  // If there is already an accelerated layer, but it has the wrong scale
+  // factor or it was poisoned, remove the old layer and replace it.
+  base::scoped_nsobject<CompositingIOSurfaceLayer> old_accelerated_layer;
+  if (accelerated_layer_ && (
+          [accelerated_layer_ context]->HasBeenPoisoned() ||
+          [accelerated_layer_ iosurface]->scale_factor() != scale_factor)) {
+    old_accelerated_layer = accelerated_layer_;
+    accelerated_layer_.reset();
+  }
+
   // If there is not a layer for accelerated frames, create one.
   if (!accelerated_layer_) {
     // Disable the fade-in animation as the layer is added.
@@ -114,6 +124,7 @@
         content::CompositingIOSurfaceMac::Create();
     accelerated_layer_.reset([[CompositingIOSurfaceLayer alloc]
         initWithIOSurface:iosurface
+          withScaleFactor:scale_factor
                withClient:NULL]);
     [[self layer] addSublayer:accelerated_layer_];
   }
@@ -124,19 +135,21 @@
         [accelerated_layer_ context]->cgl_context());
     result = [accelerated_layer_ iosurface]->SetIOSurfaceWithContextCurrent(
         [accelerated_layer_ context], surface_handle, pixel_size, scale_factor);
-    // TODO(ccameron): On failure, poison the GL context, tear down the layers,
-    // and request a new frame.
-    ignore_result(result);
+    if (!result)
+      LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
   }
   [accelerated_layer_ gotNewFrame];
   [self layoutLayers];
 
-  // If there was a software layer, remove it.
-  if (software_layer_) {
-    // Disable the fade-out animation as the layer is removed.
+  // If there was a software layer or an old accelerated layer, remove it.
+  // Disable the fade-out animation as the layer is removed.
+  {
     ScopedCAActionDisabler disabler;
     [software_layer_ removeFromSuperlayer];
     software_layer_.reset();
+    [old_accelerated_layer resetClient];
+    [old_accelerated_layer removeFromSuperlayer];
+    old_accelerated_layer.reset();
   }
 }
 
@@ -164,9 +177,10 @@
   [self layoutLayers];
 
   // If there was an accelerated layer, remove it.
-  if (accelerated_layer_) {
-    // Disable the fade-out animation as the layer is removed.
+  // Disable the fade-out animation as the layer is removed.
+  {
     ScopedCAActionDisabler disabler;
+    [accelerated_layer_ resetClient];
     [accelerated_layer_ removeFromSuperlayer];
     accelerated_layer_.reset();
   }
