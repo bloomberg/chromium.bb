@@ -61,5 +61,7 @@
     static void onMinimized();
     static void onMaximized();
     static void onRestored();
+    // Only sent in tests.
+    static void onWindowShownForTests();
   };
 };

@@ -69,6 +69,9 @@ class AppWindowContents {
   // Called when the native window closes.
   virtual void NativeWindowClosed() = 0;
 
+  // Called in tests when the window is shown
+  virtual void DispatchWindowShownForTests() const = 0;
+
   virtual content::WebContents* GetWebContents() const = 0;
 
  private:
@@ -355,6 +358,10 @@ class AppWindow : public content::NotificationObserver,
   // the renderer.
   void GetSerializedState(base::DictionaryValue* properties) const;
 
+  // Called by the window API when events can be sent to the window for this
+  // app.
+  void WindowEventsReady();
+
  protected:
   virtual ~AppWindow();
 
@@ -455,6 +462,10 @@ class AppWindow : public content::NotificationObserver,
   // Update the always-on-top bit in the native app window.
   void UpdateNativeAlwaysOnTop();
 
+  // Sends the onWindowShown event to the app if the window has been shown. Only
+  // has an effect in tests.
+  void SendOnWindowShownIfShown();
+
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
   virtual web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       OVERRIDE;
@@ -522,6 +533,12 @@ class AppWindow : public content::NotificationObserver,
 
   // The first visually non-empty paint has completed.
   bool first_paint_complete_;
+
+  // Whether the window has been shown or not.
+  bool has_been_shown_;
+
+  // Whether events can be sent to the window.
+  bool can_send_events_;
 
   // Whether the window is hidden or not. Hidden in this context means actively
   // by the chrome.app.window API, not in an operating system context. For

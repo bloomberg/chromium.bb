@@ -46,6 +46,7 @@ class AshPanelContents
   virtual void NativeWindowChanged(apps::NativeAppWindow* native_app_window)
       OVERRIDE;
   virtual void NativeWindowClosed() OVERRIDE;
+  virtual void DispatchWindowShownForTests() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
   // LauncherFaviconLoader::Delegate overrides:

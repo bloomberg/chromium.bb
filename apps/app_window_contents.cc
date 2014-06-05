@@ -95,6 +95,17 @@ void AppWindowContentsImpl::NativeWindowClosed() {
   rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
 }
 
+void AppWindowContentsImpl::DispatchWindowShownForTests() const {
+  base::ListValue args;
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
+                                           host_->extension_id(),
+                                           "app.window",
+                                           "appWindowShownForTests",
+                                           args,
+                                           false));
+}
+
 content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
 }

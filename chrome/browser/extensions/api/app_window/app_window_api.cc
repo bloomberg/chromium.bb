@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_registrar.h"
@@ -299,6 +300,8 @@ bool AppWindowCreateFunction::RunAsync() {
   }
 
   SendResponse(true);
+  app_window->WindowEventsReady();
+
   return true;
 }
 
