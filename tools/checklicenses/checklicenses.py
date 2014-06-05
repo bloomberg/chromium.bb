@@ -6,6 +6,7 @@
 """Makes sure that all files contain proper licensing information."""
 
 
+import json
 import optparse
 import os.path
 import subprocess
@@ -422,8 +423,8 @@ def check_licenses(options, args):
     return 1
 
   used_suppressions = set()
+  errors = []
 
-  success = True
   for line in stdout.splitlines():
     filename, license = line.split(':', 1)
     filename = os.path.relpath(filename.strip(), options.base_directory)
@@ -452,21 +453,16 @@ def check_licenses(options, args):
         used_suppressions.update(set(matched_prefixes))
         continue
 
-    print "'%s' has non-whitelisted license '%s'" % (filename, license)
-    success = False
+    errors.append({'filename': filename, 'license': license})
 
-  if success:
-    print "\nSUCCESS\n"
+  if options.json:
+    with open(options.json, 'w') as f:
+      json.dump(errors, f)
 
-    if not len(args):
-      unused_suppressions = set(
-        PATH_SPECIFIC_WHITELISTED_LICENSES.keys()).difference(used_suppressions)
-      if unused_suppressions:
-        print "\nNOTE: unused suppressions detected:\n"
-        print '\n'.join(unused_suppressions)
-
-    return 0
-  else:
+  if errors:
+    for error in errors:
+      print "'%s' has non-whitelisted license '%s'" % (
+          error['filename'], error['license'])
     print "\nFAILED\n"
     print "Please read",
     print "http://www.chromium.org/developers/adding-3rd-party-libraries"
@@ -480,6 +476,18 @@ def check_licenses(options, args):
     # would be distracting and make the important points easier to miss.
 
     return 1
+
+  print "\nSUCCESS\n"
+
+  if not len(args):
+    unused_suppressions = set(
+        PATH_SPECIFIC_WHITELISTED_LICENSES.iterkeys()).difference(
+            used_suppressions)
+    if unused_suppressions:
+      print "\nNOTE: unused suppressions detected:\n"
+      print '\n'.join(unused_suppressions)
+
+  return 0
 
 
 def main():
@@ -497,6 +505,7 @@ def main():
                            action='store_true',
                            default=False,
                            help='Ignore path-specific license whitelist.')
+  option_parser.add_option('--json', help='Path to JSON output file')
   options, args = option_parser.parse_args()
   return check_licenses(options, args)
 
