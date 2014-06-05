@@ -37,6 +37,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/timer_slack.h"
 
 #if defined(__OBJC__)
 #if defined(OS_IOS)
@@ -93,6 +94,7 @@ class MessagePumpCFRunLoopBase : public MessagePump {
 
   virtual void ScheduleWork() OVERRIDE;
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void SetTimerSlack(TimerSlack timer_slack) OVERRIDE;
 
  protected:
   // Accessors for private data members to be used by subclasses.
@@ -194,6 +196,8 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   // to be able to reset the timer properly after waking from system sleep.
   // See PowerStateNotification.
   CFAbsoluteTime delayed_work_fire_time_;
+
+  base::TimerSlack timer_slack_;
 
   // The recursion depth of the currently-executing CFRunLoopRun loop on the
   // run loop's thread.  0 if no run loops are running inside of whatever scope

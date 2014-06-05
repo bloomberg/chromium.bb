@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/message_loop/timer_slack.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {
@@ -134,6 +135,9 @@ class BASE_EXPORT MessagePump : public NonThreadSafe {
   // cancelling any pending DoDelayedWork callback.  This method may only be
   // used on the thread that called Run.
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) = 0;
+
+  // Sets the timer slack to the specified value.
+  virtual void SetTimerSlack(TimerSlack timer_slack);
 };
 
 }  // namespace base

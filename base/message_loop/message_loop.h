@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/message_loop/message_loop_proxy_impl.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/timer_slack.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -273,6 +274,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Construct a Closure that will call QuitWhenIdle(). Useful to schedule an
   // arbitrary MessageLoop to QuitWhenIdle.
   static Closure QuitWhenIdleClosure();
+
+  // Set the timer slack for this message loop.
+  void SetTimerSlack(TimerSlack timer_slack) {
+    pump_->SetTimerSlack(timer_slack);
+  }
 
   // Returns true if this loop is |type|. This allows subclasses (especially
   // those in tests) to specialize how they are identified.

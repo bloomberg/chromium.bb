@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/timer_slack.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
@@ -442,10 +443,8 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
                         OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
-#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
-#endif
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
@@ -554,10 +553,18 @@ void ChildThread::EnsureConnected() {
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
 
-#if defined(OS_WIN)
 void ChildThread::OnProcessBackgrounded(bool background) {
+  // Set timer slack to maximum on main thread when in background.
+  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
+  if (background)
+    timer_slack = base::TIMER_SLACK_MAXIMUM;
+  base::MessageLoop::current()->SetTimerSlack(timer_slack);
+
+#ifdef OS_WIN
+  // Windows Vista+ has a fancy process backgrounding mode that can only be set
+  // from within the process.
   base::Process::Current().SetProcessBackgrounded(background);
+#endif  // OS_WIN
 }
-#endif
 
 }  // namespace content

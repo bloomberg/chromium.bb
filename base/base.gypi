@@ -357,6 +357,7 @@
           'message_loop/message_pump_default.h',
           'message_loop/message_pump_win.cc',
           'message_loop/message_pump_win.h',
+          'message_loop/timer_slack.h',
           'metrics/sample_map.cc',
           'metrics/sample_map.h',
           'metrics/sample_vector.cc',

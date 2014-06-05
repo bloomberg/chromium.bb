@@ -12,4 +12,7 @@ MessagePump::MessagePump() {
 MessagePump::~MessagePump() {
 }
 
+void MessagePump::SetTimerSlack(TimerSlack) {
+}
+
 }  // namespace base
