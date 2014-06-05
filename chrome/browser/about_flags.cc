@@ -1145,7 +1145,7 @@ const Experiment kExperiments[] = {
     "enable-touch-editing",
     IDS_FLAGS_ENABLE_TOUCH_EDITING_NAME,
     IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION,
-    kOsCrOS | kOsWin | kOsLinux,
+    kOsCrOS,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchEditing,
                               switches::kDisableTouchEditing)
   },

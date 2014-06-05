@@ -25,7 +25,7 @@ bool IsTouchDragDropEnabled() {
 }
 
 bool IsTouchEditingEnabled() {
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTouchEditing);
 #else
