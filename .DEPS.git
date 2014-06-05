@@ -645,6 +645,23 @@ hooks = [
     {
     'action':
          [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=win32',
+    '--no_auth',
+    '--bucket',
+    'chromium-drmemory',
+    '-s',
+    'src/third_party/drmemory/drmemory-windows-sfx.exe.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'drmemory'
+},
+    {
+    'action':
+         [
     'python',
     'src/build/gyp_chromium'
 ],
