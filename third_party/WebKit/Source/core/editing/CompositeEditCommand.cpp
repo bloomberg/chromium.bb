@@ -950,6 +950,11 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlo
 
     bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
 
+    // Inserting default paragraph element can change visible position. We
+    // should update visible positions before use them.
+    visiblePos = VisiblePosition(pos, VP_DEFAULT_AFFINITY);
+    visibleParagraphStart = VisiblePosition(startOfParagraph(visiblePos));
+    visibleParagraphEnd = VisiblePosition(endOfParagraph(visiblePos));
     moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition(firstPositionInNode(newBlock.get())));
 
     if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr)
