@@ -38,6 +38,12 @@ def read_file_to_list(filename):
         return [line.rstrip('\n') for line in f]
 
 
+def read_pickle_files(pickle_filenames):
+    for pickle_filename in pickle_filenames:
+        with open(pickle_filename) as pickle_file:
+            yield pickle.load(pickle_file)
+
+
 def write_file(new_text, destination_filename, only_if_changed):
     if only_if_changed and os.path.isfile(destination_filename):
         with open(destination_filename) as destination_file:

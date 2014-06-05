@@ -137,8 +137,7 @@
     'target_name': 'modules_global_constructors_idls',
     'type': 'none',
     'dependencies': [
-        # FIXME: should be modules_global_objects http://crbug.com/358074
-        '../generated.gyp:global_objects',
+      '../core/generated.gyp:modules_global_objects',
     ],
     'actions': [{
       'action_name': 'generate_modules_global_constructors_idls',
@@ -149,7 +148,7 @@
         # which should not appear on global objects).
         '<(modules_idl_files_list)',
         '<@(modules_idl_files)',
-        '<(bindings_output_dir)/GlobalObjects.pickle',
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
       ],
       'outputs': [
         '<@(modules_global_constructors_generated_idl_files)',
@@ -161,7 +160,7 @@
         '--idl-files-list',
         '<(modules_idl_files_list)',
         '--global-objects-file',
-        '<(bindings_output_dir)/GlobalObjects.pickle',
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--',

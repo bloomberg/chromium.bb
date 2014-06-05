@@ -11,6 +11,6 @@
   ],
 
   'variables': {
-    'bindings_core_output_dir': '<(bindings_output_dir)/core',
+    'bindings_core_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/core',
   },
 }

@@ -81,7 +81,7 @@ import cPickle as pickle
 import optparse
 import sys
 
-from utilities import write_pickle_file
+from utilities import read_pickle_files, write_pickle_file
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
@@ -136,13 +136,6 @@ def dict_of_dicts_of_lists_update_or_append(existing, other):
 ################################################################################
 # Computations
 ################################################################################
-
-def read_interfaces_info(interfaces_info_individual_filenames):
-    # Read in individual info from files
-    for interfaces_info_individual_filename in interfaces_info_individual_filenames:
-        with open(interfaces_info_individual_filename) as interfaces_info_individual_file:
-            yield pickle.load(interfaces_info_individual_file)
-
 
 def compute_inheritance_info(interface_name):
     """Compute inheritance information, namely ancestors and inherited extended attributes."""
@@ -259,7 +252,7 @@ def main():
     options, args = parse_options()
     # args = Input1, Input2, ..., Output
     interfaces_info_filename = args.pop()
-    info_individuals = read_interfaces_info(args)
+    info_individuals = read_pickle_files(args)
 
     compute_interfaces_info_overall(info_individuals)
     write_pickle_file(interfaces_info_filename,

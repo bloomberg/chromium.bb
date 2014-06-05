@@ -8,7 +8,6 @@
     ],
     'variables': {
         'bindings_dir': '.',
-        'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
         'bindings_unittest_files': [
             '<@(bindings_v8_unittest_files)',
         ],

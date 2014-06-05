@@ -14,9 +14,10 @@ Design document: http://www.chromium.org/developers/design-documents/idl-build
 
 import optparse
 import os
+import cPickle as pickle
 import sys
 
-from utilities import get_file_contents, idl_filename_to_interface_name, get_interface_extended_attributes_from_idl, read_file_to_list, write_pickle_file
+from utilities import get_file_contents, idl_filename_to_interface_name, get_interface_extended_attributes_from_idl, read_file_to_list, read_pickle_files, write_pickle_file
 
 GLOBAL_EXTENDED_ATTRIBUTES = frozenset([
     'Global',
@@ -25,7 +26,8 @@ GLOBAL_EXTENDED_ATTRIBUTES = frozenset([
 
 
 def parse_options():
-    parser = optparse.OptionParser()
+    usage = 'Usage: %prog [options] [GlobalObjectsComponent.pickle]... [GlobalObjects.pickle]'
+    parser = optparse.OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
@@ -36,10 +38,15 @@ def parse_options():
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether output files are only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
-    if len(args) != 1:
-        parser.error('Must specify a single output pickle filename as argument.')
+    if not args:
+        parser.error('Must specify an output pickle filename as argument, '
+                     'optionally preceeded by input pickle filenames.')
 
-    return options, args[0]
+    return options, args
+
+
+def dict_union(dicts):
+    return dict((k, v) for d in dicts for k, v in d.iteritems())
 
 
 def idl_file_to_global_names(idl_filename):
@@ -72,7 +79,7 @@ def idl_file_to_global_names(idl_filename):
     return [interface_name]
 
 
-def interface_name_global_names(idl_files):
+def idl_files_to_interface_name_global_names(idl_files):
     """Yields pairs (interface_name, global_names) found in IDL files."""
     for idl_filename in idl_files:
         interface_name = idl_filename_to_interface_name(idl_filename)
@@ -84,14 +91,21 @@ def interface_name_global_names(idl_files):
 ################################################################################
 
 def main():
-    options, global_objects_filename = parse_options()
+    options, args = parse_options()
+    # args = Input1, Input2, ..., Output
+    output_global_objects_filename = args.pop()
+    interface_name_global_names = dict_union(
+        existing_interface_name_global_names
+        for existing_interface_name_global_names in read_pickle_files(args))
 
     # Input IDL files are passed in a file, due to OS command line length
     # limits. This is generated at GYP time, which is ok b/c files are static.
     idl_files = read_file_to_list(options.idl_files_list)
+    interface_name_global_names.update(
+            idl_files_to_interface_name_global_names(idl_files))
 
-    write_pickle_file(global_objects_filename,
-                      dict(interface_name_global_names(idl_files)),
+    write_pickle_file(output_global_objects_filename,
+                      interface_name_global_names,
                       options.write_file_only_if_changed)
 
 

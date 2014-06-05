@@ -9,6 +9,6 @@
   ],
 
   'variables': {
-    'bindings_modules_output_dir': '<(bindings_output_dir)/modules',
+    'bindings_modules_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/modules',
   },
 }
