@@ -2,6 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
 <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
 <script>
+window.testIsAsync = true;
 function draw(x, y) {
     var maskrect = document.getElementById("maskRect");
     maskrect.setAttribute("transform", "translate(" + x + "," + y + ")");
@@ -22,14 +23,10 @@ function draw(x, y) {
 }
 
 function repaintTest() {
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
     draw(150, 50);
     requestAnimationFrame(function() {
         draw(50, 50);
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     });
 }
 

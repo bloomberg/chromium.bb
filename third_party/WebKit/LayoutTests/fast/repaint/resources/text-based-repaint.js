@@ -48,6 +48,9 @@ function forceStyleRecalc()
 
 function finishRepaintTest()
 {
+    if (!window.testRunner || !window.internals)
+        return;
+
     // Force a style recalc.
     forceStyleRecalc();
 

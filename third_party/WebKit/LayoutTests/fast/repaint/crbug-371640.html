@@ -1,19 +1,9 @@
 <!DOCTYPE html>
 <script src="resources/text-based-repaint.js"></script>
-<script src="../../resources/run-after-display.js"></script>
 <script>
-  if (window.testRunner)
-    window.jsTestIsAsync = true;
-
   function repaintTest()
   {
     document.getElementById('node').remove();
-
-    if (window.testRunner) {
-      runAfterDisplay(function() {
-        testRunner.notifyDone();
-      });
-    }
   }
   onload = runRepaintTest;
 </script>

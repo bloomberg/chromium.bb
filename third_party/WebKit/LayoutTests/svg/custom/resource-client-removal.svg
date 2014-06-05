@@ -2,11 +2,10 @@
 <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
 <script>
 <![CDATA[
+window.testIsAsync = true;
 function repaintTest() {
     container = document.getElementById("inneruse");
     stop = document.getElementById("offset");
-    if (window.testRunner)
-        testRunner.waitUntilDone();
     setTimeout(offset, 0);
 }
 var turns = 5;
@@ -16,8 +15,8 @@ function offset(){
     turns--;
     if (turns > 0)
         window.setTimeout("offset()", 0)
-    else if (window.testRunner)
-        testRunner.notifyDone();
+    else
+        finishRepaintTest();
 }
 ]]>
 </script>

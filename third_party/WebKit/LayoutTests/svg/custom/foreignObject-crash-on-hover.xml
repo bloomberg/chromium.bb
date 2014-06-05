@@ -19,13 +19,13 @@
           style="fill:red; stroke:blue;"/>
   </g>
   <script>
+  window.testIsAsync = true;
   function repaintTest() {
     if (window.eventSender) {
-        testRunner.waitUntilDone();
         eventSender.mouseMoveTo(100, 100);
         eventSender.mouseUp();
         eventSender.mouseDown();
-        setTimeout("testRunner.notifyDone()", 0);
+        setTimeout(finishRepaintTest, 0);
     }
   }
   </script>

@@ -4,20 +4,9 @@
 <head>
 <script src="resources/text-based-repaint.js"></script>
 <script type="text/javascript">
-function finish()
-{
-    document.getElementById('allcontent').style.overflow = '';
-
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
-
 function repaintTest()
 {
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
-    window.setTimeout(finish, 1);
+    document.getElementById('allcontent').style.overflow = '';
 }
 </script>
 </head>
