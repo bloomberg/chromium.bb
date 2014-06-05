@@ -78,6 +78,7 @@ const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 const char kPrefWipeoutAcknowledged[] = "ack_wiped";
 const char kPrefSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 const char kPrefNtpBubbleAcknowledged[] = "ack_ntp_bubble";
+const char kPrefProxyBubbleAcknowledged[] = "ack_proxy_bubble";
 
 // Indicates whether the external extension was installed during the first
 // run of this profile.
@@ -752,6 +753,19 @@ void ExtensionPrefs::SetNtpOverriddenBubbleBeenAcknowledged(
     bool value) {
   UpdateExtensionPref(extension_id,
                       kPrefNtpBubbleAcknowledged,
+                      value ? base::Value::CreateBooleanValue(value) : NULL);
+}
+
+bool ExtensionPrefs::HasProxyOverriddenBubbleBeenAcknowledged(
+    const std::string& extension_id) {
+  return ReadPrefAsBooleanAndReturn(extension_id, kPrefProxyBubbleAcknowledged);
+}
+
+void ExtensionPrefs::SetProxyOverriddenBubbleBeenAcknowledged(
+    const std::string& extension_id,
+    bool value) {
+  UpdateExtensionPref(extension_id,
+                      kPrefProxyBubbleAcknowledged,
                       value ? base::Value::CreateBooleanValue(value) : NULL);
 }
 

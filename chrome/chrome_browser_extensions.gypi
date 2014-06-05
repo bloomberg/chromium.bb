@@ -868,6 +868,8 @@
         'browser/extensions/permissions_updater.h',
         'browser/extensions/plugin_manager.cc',
         'browser/extensions/plugin_manager.h',
+        'browser/extensions/proxy_overridden_bubble_controller.cc',
+        'browser/extensions/proxy_overridden_bubble_controller.h',
         'browser/extensions/requirements_checker.cc',
         'browser/extensions/requirements_checker.h',
         'browser/extensions/sandboxed_unpacker.cc',
