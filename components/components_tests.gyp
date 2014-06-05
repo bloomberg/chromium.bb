@@ -486,6 +486,15 @@
                 '../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol',
               ],
             }],
+            ['OS=="linux" and use_udev==0', {
+              'dependencies!': [
+                '../third_party/libusb/libusb.gyp:libusb',
+              ],
+              'sources!': [
+                'storage_monitor/storage_monitor_linux_unittest.cc',
+                'usb_service/usb_context_unittest.cc',
+              ],
+            }],
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',

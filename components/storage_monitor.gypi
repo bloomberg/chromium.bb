@@ -69,6 +69,13 @@
           'dependencies': [
             '../device/udev_linux/udev.gyp:udev_linux',
           ],
+        }, {  # use_udev==0
+          'sources!': [
+            'storage_monitor/storage_monitor_linux.cc',
+            'storage_monitor/storage_monitor_linux.h',
+            'storage_monitor/udev_util_linux.cc',
+            'storage_monitor/udev_util_linux.h',
+          ],
         }],
         ['chromeos==1', {
           'sources!': [
