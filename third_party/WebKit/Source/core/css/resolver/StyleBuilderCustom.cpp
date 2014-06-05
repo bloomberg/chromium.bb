@@ -1091,6 +1091,7 @@ void StyleBuilderFunctions::applyInitialCSSPropertyWillChange(StyleResolverState
     state.style()->setWillChangeContents(false);
     state.style()->setWillChangeScrollPosition(false);
     state.style()->setWillChangeProperties(Vector<CSSPropertyID>());
+    state.style()->setSubtreeWillChangeContents(state.parentStyle()->subtreeWillChangeContents());
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyWillChange(StyleResolverState& state)
@@ -1098,6 +1099,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyWillChange(StyleResolverState
     state.style()->setWillChangeContents(state.parentStyle()->willChangeContents());
     state.style()->setWillChangeScrollPosition(state.parentStyle()->willChangeScrollPosition());
     state.style()->setWillChangeProperties(state.parentStyle()->willChangeProperties());
+    state.style()->setSubtreeWillChangeContents(state.parentStyle()->subtreeWillChangeContents());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& state, CSSValue* value)
@@ -1121,6 +1123,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
     state.style()->setWillChangeContents(willChangeContents);
     state.style()->setWillChangeScrollPosition(willChangeScrollPosition);
     state.style()->setWillChangeProperties(willChangeProperties);
+    state.style()->setSubtreeWillChangeContents(willChangeContents || state.parentStyle()->subtreeWillChangeContents());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyContent(StyleResolverState& state)

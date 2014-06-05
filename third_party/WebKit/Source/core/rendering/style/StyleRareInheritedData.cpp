@@ -90,6 +90,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
     , m_rubyPosition(RenderStyle::initialRubyPosition())
     , m_touchActionDelay(RenderStyle::initialTouchActionDelay())
+    , m_subtreeWillChangeContents(false)
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
@@ -145,6 +146,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
     , m_rubyPosition(o.m_rubyPosition)
     , m_touchActionDelay(o.m_touchActionDelay)
+    , m_subtreeWillChangeContents(o.m_subtreeWillChangeContents)
     , hyphenationString(o.hyphenationString)
     , hyphenationLimitBefore(o.hyphenationLimitBefore)
     , hyphenationLimitAfter(o.hyphenationLimitAfter)
@@ -208,6 +210,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_textIndentLine == o.m_textIndentLine
         && m_textIndentType == o.m_textIndentType
         && m_lineBoxContain == o.m_lineBoxContain
+        && m_subtreeWillChangeContents == o.m_subtreeWillChangeContents
         && hyphenationString == o.hyphenationString
         && locale == o.locale
         && textEmphasisCustomMark == o.textEmphasisCustomMark

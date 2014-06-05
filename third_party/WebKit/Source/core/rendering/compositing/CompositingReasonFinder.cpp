@@ -110,10 +110,10 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
     if (style->backfaceVisibility() == BackfaceVisibilityHidden)
         directReasons |= CompositingReasonBackfaceVisibilityHidden;
 
-    if (style->shouldCompositeForCurrentAnimations())
+    if (requiresCompositingForAnimation(renderer))
         directReasons |= CompositingReasonActiveAnimation;
 
-    if (style->hasWillChangeCompositingHint())
+    if (style->hasWillChangeCompositingHint() && !style->subtreeWillChangeContents())
         directReasons |= CompositingReasonWillChangeCompositingHint;
 
     ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedReasons));
@@ -164,6 +164,14 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
 
     ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
+}
+
+bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
+{
+    if (renderer->style()->subtreeWillChangeContents())
+        return renderer->style()->isRunningAnimationOnCompositor();
+
+    return renderer->style()->shouldCompositeForCurrentAnimations();
 }
 
 bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const

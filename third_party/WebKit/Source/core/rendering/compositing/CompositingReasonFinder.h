@@ -37,6 +37,7 @@ private:
 
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
+    bool requiresCompositingForAnimation(RenderObject*) const;
     bool requiresCompositingForPositionSticky(RenderObject*, const RenderLayer*) const;
     bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*) const;
 
