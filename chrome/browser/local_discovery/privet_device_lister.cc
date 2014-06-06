@@ -6,10 +6,10 @@
 
 namespace local_discovery {
 
-DeviceDescription::DeviceDescription() : connection_state(UNKNOWN) {
+PrivetDeviceLister::PrivetDeviceLister() {
 }
 
-DeviceDescription::~DeviceDescription() {
+PrivetDeviceLister::~PrivetDeviceLister() {
 }
 
-}
+}  // namespace local_discovery

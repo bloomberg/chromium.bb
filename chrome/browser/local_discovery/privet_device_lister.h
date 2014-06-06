@@ -17,6 +17,9 @@ namespace local_discovery {
 
 class PrivetDeviceLister {
  public:
+  PrivetDeviceLister();
+  virtual ~PrivetDeviceLister();
+
   class Delegate {
    public:
     virtual void DeviceChanged(bool added,
@@ -25,8 +28,6 @@ class PrivetDeviceLister {
     virtual void DeviceRemoved(const std::string& name) = 0;
     virtual void DeviceCacheFlushed() = 0;
   };
-
-  virtual ~PrivetDeviceLister() {}
 
   // Start the PrivetServiceLister.
   virtual void Start() = 0;

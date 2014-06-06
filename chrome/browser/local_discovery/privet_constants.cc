@@ -45,6 +45,7 @@ const char kPrivetTypePrinter[] = "printer";
 const char kPrivetTxtKeyName[] = "ty";
 const char kPrivetTxtKeyDescription[] = "note";
 const char kPrivetTxtKeyURL[] = "url";
+const char kPrivetTxtKeyVersion[] = "txtvers";
 const char kPrivetTxtKeyType[] = "type";
 const char kPrivetTxtKeyID[] = "id";
 const char kPrivetTxtKeyConnectionState[] = "cs";

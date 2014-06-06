@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
@@ -31,6 +32,14 @@ ConnectionStateFromString(const std::string& str) {
 
 }  // namespace
 
+DeviceDescription::DeviceDescription()
+    : version(0),
+      connection_state(UNKNOWN) {
+}
+
+DeviceDescription::~DeviceDescription() {
+}
+
 void DeviceDescription::FillFromServiceDescription(
     const ServiceDescription& service_description) {
   address = service_description.address;
@@ -48,7 +57,10 @@ void DeviceDescription::FillFromServiceDescription(
     std::string key = i->substr(0, equals_pos);
     std::string value = i->substr(equals_pos + 1);
 
-    if (LowerCaseEqualsASCII(key, kPrivetTxtKeyName)) {
+    if (LowerCaseEqualsASCII(key, kPrivetTxtKeyVersion)) {
+      if (!base::StringToInt(value, &version))
+        continue;  // Unknown version.
+    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyName)) {
       name = value;
     } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyDescription)) {
       description = value;

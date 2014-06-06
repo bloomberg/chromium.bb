@@ -38,6 +38,7 @@ struct DeviceDescription {
   std::string url;
   std::string id;
   std::string type;
+  int version;
   ConnectionState connection_state;
 
   // Attributes related to local HTTP
