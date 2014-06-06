@@ -388,9 +388,9 @@ void PDFiumPage::CalculateLinks() {
   for (int i = 0; i < count; ++i) {
     base::string16 url;
     int url_length = FPDFLink_GetURL(links, i, NULL, 0);
-    if (url_length > 0) {
+    if (url_length > 1) {  // WriteInto needs at least 2 characters.
       unsigned short* data =
-          reinterpret_cast<unsigned short*>(WriteInto(&url, url_length + 1));
+          reinterpret_cast<unsigned short*>(WriteInto(&url, url_length));
       FPDFLink_GetURL(links, i, data, url_length);
     }
     Link link;
