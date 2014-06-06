@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -76,23 +77,20 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowUsers() const OVERRIDE;
+  virtual bool IsShowNewUser() const OVERRIDE;
   virtual bool IsSigninInProgress() const OVERRIDE;
   virtual bool IsUserSigninCompleted() const OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void Signout() OVERRIDE;
   virtual void LoginAsKioskApp(const std::string& app_id,
                                bool diagnostic_mode) OVERRIDE;
-  virtual void HandleGetUsers() OVERRIDE;
-  virtual void SetAuthType(
-      const std::string& username,
-      ScreenlockBridge::LockHandler::AuthType auth_type) OVERRIDE;
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const OVERRIDE;
 
   // wm::UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
  private:
+  void StartPasswordClearTimer();
+  void OnPasswordClearTimerExpired();
 
   // Whether to show guest login.
   bool show_guest_;
@@ -103,6 +101,9 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // Whether to show add new user.
   bool show_new_user_;
+
+  // Timer for measuring idle state duration before password clear.
+  base::OneShotTimer<WebUILoginDisplay> password_clear_timer_;
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_;

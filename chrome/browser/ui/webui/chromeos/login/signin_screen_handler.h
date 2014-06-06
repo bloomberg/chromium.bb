@@ -88,10 +88,6 @@ class LoginDisplayWebUIHandler {
   // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
-  virtual void LoadUsers(const base::ListValue& users_list,
-                         bool animated,
-                         bool show_guest) = 0;
-
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -170,6 +166,9 @@ class SigninScreenHandlerDelegate {
   // Public sessions are always shown.
   virtual bool IsShowUsers() const = 0;
 
+  // Whether new user pod is available.
+  virtual bool IsShowNewUser() const = 0;
+
   // Returns true if sign in is in progress.
   virtual bool IsSigninInProgress() const = 0;
 
@@ -186,18 +185,6 @@ class SigninScreenHandlerDelegate {
   // Login to kiosk mode for app with |app_id|.
   virtual void LoginAsKioskApp(const std::string& app_id,
                                bool diagnostic_mode) = 0;
-
-  // Request to (re)load user list.
-  virtual void HandleGetUsers() = 0;
-
-  // Set authentication type (for easier unlocking).
-  virtual void SetAuthType(
-      const std::string& username,
-      ScreenlockBridge::LockHandler::AuthType auth_type) = 0;
-
-  // Get authentication type (for easier unlocking).
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const = 0;
 
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
@@ -295,9 +282,6 @@ class SigninScreenHandler
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
-  virtual void LoadUsers(const base::ListValue& users_list,
-                         bool animated,
-                         bool show_guest) OVERRIDE;
 
   // ui::EventHandler implementation:
   virtual void OnKeyEvent(ui::KeyEvent* key) OVERRIDE;
@@ -385,6 +369,17 @@ class SigninScreenHandler
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
+
+  // Fills |user_dict| with information about |user|.
+  static void FillUserDictionary(
+      User* user,
+      bool is_owner,
+      bool is_signin_to_add,
+      ScreenlockBridge::LockHandler::AuthType auth_type,
+      base::DictionaryValue* user_dict);
+
+  // Sends user list to account picker.
+  void SendUserList(bool animated);
 
   // Kick off cookie / local storage cleanup.
   void StartClearingCookies(const base::Closure& on_clear_callback);
@@ -533,6 +528,11 @@ class SigninScreenHandler
   bool caps_lock_enabled_;
 
   base::Closure kiosk_enable_flow_aborted_callback_for_test_;
+
+  // Map of usernames to their current authentication type. If a user is not
+  // contained in the map, it is using the default authentication type.
+  std::map<std::string, ScreenlockBridge::LockHandler::AuthType>
+      user_auth_type_map_;
 
   // Non-owning ptr.
   // TODO (ygorshenin@): remove this dependency.

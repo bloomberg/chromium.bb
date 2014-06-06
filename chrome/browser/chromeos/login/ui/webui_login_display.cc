@@ -23,6 +23,12 @@
 
 namespace chromeos {
 
+namespace {
+
+const int kPasswordClearTimeoutSec = 60;
+
+}
+
 // WebUILoginDisplay, public: --------------------------------------------------
 
 WebUILoginDisplay::~WebUILoginDisplay() {
@@ -57,7 +63,7 @@ void WebUILoginDisplay::Init(const UserList& users,
   // Testing that the delegate has been set.
   DCHECK(delegate_);
 
-  user_selection_screen_->Init(users, show_guest);
+  user_selection_screen_->Init(users);
   show_guest_ = show_guest;
   show_users_ = show_users;
   show_new_user_ = show_new_user;
@@ -84,25 +90,10 @@ void WebUILoginDisplay::OnUserImageChanged(const User& user) {
   user_selection_screen_->OnUserImageChanged(user);
 }
 
-void WebUILoginDisplay::HandleGetUsers() {
-  user_selection_screen_->HandleGetUsers();
-}
+// User selection screen, screen lock API
 
 const UserList& WebUILoginDisplay::GetUsers() const {
   return user_selection_screen_->GetUsers();
-}
-
-// User selection screen, screen lock API
-
-void WebUILoginDisplay::SetAuthType(
-    const std::string& username,
-    ScreenlockBridge::LockHandler::AuthType auth_type) {
-  user_selection_screen_->SetAuthType(username, auth_type);
-}
-
-ScreenlockBridge::LockHandler::AuthType WebUILoginDisplay::GetAuthType(
-    const std::string& username) const {
-  return user_selection_screen_->GetAuthType(username);
 }
 
 // ---- Gaia screen methods
@@ -342,6 +333,10 @@ bool WebUILoginDisplay::IsShowUsers() const {
   return show_users_;
 }
 
+bool WebUILoginDisplay::IsShowNewUser() const {
+  return show_new_user_;
+}
+
 bool WebUILoginDisplay::IsSigninInProgress() const {
   return delegate_->IsSigninInProgress();
 }
@@ -365,9 +360,23 @@ void WebUILoginDisplay::LoginAsKioskApp(const std::string& app_id,
 }
 
 void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
+  if (!password_clear_timer_.IsRunning())
+    StartPasswordClearTimer();
+  password_clear_timer_.Reset();
   if (delegate_)
     delegate_->ResetPublicSessionAutoLoginTimer();
 }
 
+void WebUILoginDisplay::StartPasswordClearTimer() {
+  DCHECK(!password_clear_timer_.IsRunning());
+  password_clear_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromSeconds(kPasswordClearTimeoutSec), this,
+      &WebUILoginDisplay::OnPasswordClearTimerExpired);
+}
+
+void WebUILoginDisplay::OnPasswordClearTimerExpired() {
+  if (webui_handler_)
+    webui_handler_->ClearUserPodPassword();
+}
 
 }  // namespace chromeos

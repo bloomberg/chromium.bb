@@ -1019,9 +1019,6 @@ void UserManagerImpl::OnExternalDataFetched(const std::string& policy,
 }
 
 void UserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
-  const User* user = FindUserInList(user_id);
-  if (!user || user->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT)
-    return;
   UpdatePublicAccountDisplayName(user_id);
   NotifyUserListChanged();
 }
