@@ -22,7 +22,6 @@ specific_include_rules = {
   ],
   "athena_shell\.cc": [
     "+athena/test",
-    "+third_party/skia/include/core",
   ],
 # TODO(oshima): Remove this.
   "placeholder\.*": [

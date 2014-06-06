@@ -21,19 +21,13 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   // apps::ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     athena::StartAthena(
-        apps::ShellDesktopController::instance()->host()->window());
-    athena::ActivityFactory::RegisterActivityFactory(
+        apps::ShellDesktopController::instance()->host()->window(),
         new athena::ContentActivityFactory());
     CreateTestWindows();
     CreateTestPages(context);
   }
 
-  virtual void Shutdown() OVERRIDE {
-    // TODO(mukai):cleanup the start/shutdown processes and the dependency to
-    // ContentActivityFactory.
-    athena::ActivityFactory::Shutdown();
-    athena::ShutdownAthena();
-  }
+  virtual void Shutdown() OVERRIDE { athena::ShutdownAthena(); }
 
   virtual apps::ShellDesktopController* CreateDesktopController() OVERRIDE {
     // TODO(mukai): create Athena's own ShellDesktopController subclass so that

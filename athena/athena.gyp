@@ -76,6 +76,7 @@
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/views/views.gyp:views',
         '../ui/wm/wm.gyp:wm',
+        '../url/url.gyp:url_lib',
         'athena_lib',
       ],
       'sources': [
@@ -87,6 +88,10 @@
         'test/athena_test_base.h',
         'test/athena_test_helper.cc',
         'test/athena_test_helper.h',
+        'test/sample_activity.cc',
+        'test/sample_activity.h',
+        'test/sample_activity_factory.cc',
+        'test/sample_activity_factory.h',
       ],
     },
     {

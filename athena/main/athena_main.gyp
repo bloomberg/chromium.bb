@@ -47,8 +47,6 @@
       ],
       'sources': [
         'athena_shell.cc',
-        'sample_activity.cc',
-        'sample_activity.h',
       ],
     }
   ],  # targets

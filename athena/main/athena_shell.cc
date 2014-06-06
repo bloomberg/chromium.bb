@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
-#include "athena/main/sample_activity.h"
 #include "athena/test/athena_test_helper.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -32,9 +31,9 @@ class UIShell {
   }
 
   void InitSampleActivities() {
-    athena::Activity* task = new SampleActivity(
-        SK_ColorRED, SK_ColorGREEN, std::string("Activity 1"));
-    athena::ActivityManager::Get()->AddActivity(task);
+    athena::ActivityManager::Get()->AddActivity(
+        athena::ActivityFactory::Get()->CreateWebActivity(
+            NULL, GURL("http://www.google.com/")));
   }
 
  private:

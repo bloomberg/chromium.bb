@@ -5,6 +5,7 @@
 #include "athena/test/athena_test_helper.h"
 
 #include "athena/main/athena_launcher.h"
+#include "athena/test/sample_activity_factory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
@@ -77,7 +78,7 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // Ensure width != height so tests won't confuse them.
   host()->SetBounds(gfx::Rect(800, 600));
 
-  athena::StartAthena(root_window());
+  athena::StartAthena(root_window(), new SampleActivityFactory());
 }
 
 void AthenaTestHelper::TearDown() {

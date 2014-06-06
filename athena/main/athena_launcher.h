@@ -10,9 +10,11 @@ class Window;
 }
 
 namespace athena {
+class ActivityFactory;
 
 // Starts/shuts down the athena shell environment.
-void StartAthena(aura::Window* root_window);
+void StartAthena(aura::Window* root_window,
+                 ActivityFactory* activity_factory);
 void ShutdownAthena();
 
 }  // namespace athena

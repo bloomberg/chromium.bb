@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/main/sample_activity.h"
+#include "athena/test/sample_activity.h"
 
 #include "ui/aura/window.h"
+
+namespace athena {
+namespace test {
 
 SampleActivity::SampleActivity(SkColor color,
                                SkColor content_color,
@@ -35,3 +38,6 @@ aura::Window* SampleActivity::GetNativeWindow() {
   }
   return window_.get();
 }
+
+}  // namespace test
+}  // namespace athena
