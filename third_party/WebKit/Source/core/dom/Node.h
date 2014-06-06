@@ -674,6 +674,8 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    unsigned lengthOfContents() const;
+
 private:
     enum NodeFlags {
         HasRareDataFlag = 1,

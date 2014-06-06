@@ -2558,6 +2558,28 @@ void Node::trace(Visitor* visitor)
     EventTarget::trace(visitor);
 }
 
+unsigned Node::lengthOfContents() const
+{
+    // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.
+    switch (nodeType()) {
+    case Node::TEXT_NODE:
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+        return toCharacterData(this)->length();
+    case Node::PROCESSING_INSTRUCTION_NODE:
+        return toProcessingInstruction(this)->data().length();
+    case Node::ELEMENT_NODE:
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+        return toContainerNode(this)->countChildren();
+    case Node::DOCUMENT_TYPE_NODE:
+        return 0;
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 } // namespace WebCore
 
 #ifndef NDEBUG

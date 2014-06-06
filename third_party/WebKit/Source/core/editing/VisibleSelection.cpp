@@ -771,6 +771,28 @@ void VisibleSelection::trace(Visitor* visitor)
     visitor->trace(m_changeObserver);
 }
 
+static bool isValidPosition(const Position& position)
+{
+    if (!position.inDocument())
+        return false;
+
+    if (position.anchorType() != Position::PositionIsOffsetInAnchor)
+        return true;
+
+    if (position.offsetInContainerNode() < 0)
+        return false;
+
+    const unsigned offset = static_cast<unsigned>(position.offsetInContainerNode());
+    const unsigned nodeLength = position.anchorNode()->lengthOfContents();
+    return offset <= nodeLength;
+}
+
+void VisibleSelection::validatePositionsIfNeeded()
+{
+    if (!isValidPosition(m_base) || !isValidPosition(m_extent) || !isValidPosition(m_start) || !isValidPosition(m_end))
+        validate();
+}
+
 #ifndef NDEBUG
 
 void VisibleSelection::debugPosition() const

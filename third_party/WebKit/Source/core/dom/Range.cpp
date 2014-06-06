@@ -548,28 +548,6 @@ static inline Node* childOfCommonRootBeforeOffset(Node* container, unsigned offs
     return container;
 }
 
-static inline unsigned lengthOfContentsInNode(Node* node)
-{
-    // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.
-    switch (node->nodeType()) {
-    case Node::TEXT_NODE:
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-        return toCharacterData(node)->length();
-    case Node::PROCESSING_INSTRUCTION_NODE:
-        return toProcessingInstruction(node)->data().length();
-    case Node::ELEMENT_NODE:
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-        return toContainerNode(node)->countChildren();
-    case Node::DOCUMENT_TYPE_NODE:
-        return 0;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionState& exceptionState)
 {
     typedef WillBeHeapVector<RefPtrWillBeMember<Node> > NodeVector;
@@ -619,7 +597,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> Range::processContents(ActionType actio
 
     RefPtrWillBeRawPtr<Node> leftContents = nullptr;
     if (originalStart.container() != commonRoot && commonRoot->contains(originalStart.container())) {
-        leftContents = processContentsBetweenOffsets(action, nullptr, originalStart.container(), originalStart.offset(), lengthOfContentsInNode(originalStart.container()), exceptionState);
+        leftContents = processContentsBetweenOffsets(action, nullptr, originalStart.container(), originalStart.offset(), originalStart.container()->lengthOfContents(), exceptionState);
         leftContents = processAncestorsAndTheirSiblings(action, originalStart.container(), ProcessContentsForward, leftContents, commonRoot.get(), exceptionState);
     }
 
@@ -687,7 +665,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
     ASSERT(container);
     ASSERT(startOffset <= endOffset);
 
-    // This switch statement must be consistent with that of lengthOfContentsInNode.
+    // This switch statement must be consistent with that of Node::lengthOfContents.
     RefPtrWillBeRawPtr<Node> result = nullptr;
     switch (container->nodeType()) {
     case Node::TEXT_NODE:

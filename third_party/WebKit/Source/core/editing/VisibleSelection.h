@@ -132,6 +132,8 @@ public:
 
     void trace(Visitor*);
 
+    void validatePositionsIfNeeded();
+
 #ifndef NDEBUG
     void debugPosition() const;
     void formatForDebugger(char* buffer, unsigned length) const;
