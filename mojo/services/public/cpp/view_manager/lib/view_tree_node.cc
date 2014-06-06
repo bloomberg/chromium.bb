@@ -272,6 +272,10 @@ void ViewTreeNode::SetActiveView(View* view) {
   }
 }
 
+void ViewTreeNode::Embed(const String& url) {
+  ViewManagerPrivate(manager_).synchronizer()->Embed(url, id_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, protected:
 

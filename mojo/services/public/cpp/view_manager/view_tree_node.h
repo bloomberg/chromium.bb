@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -58,6 +59,9 @@ class ViewTreeNode {
   // View.
   void SetActiveView(View* view);
   View* active_view() { return active_view_; }
+
+  // Embedding.
+  void Embed(const String& url);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

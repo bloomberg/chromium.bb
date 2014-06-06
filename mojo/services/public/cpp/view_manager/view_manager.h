@@ -34,16 +34,16 @@ class ViewManager {
   // and ready to use.
   static void Create(
       Application* application,
-      const base::Callback<void(ViewManager*)> ready_callback);
+      const base::Callback<void(ViewManager*)>& root_added_callback);
   // Blocks until ViewManager is ready to use.
-  static ViewManager* CreateBlocking(Application* application);
+  static ViewManager* CreateBlocking(
+      Application* application,
+      const base::Callback<void(ViewManager*)>& root_added_callback);
 
-  ViewTreeNode* tree() { return tree_; }
+  const std::vector<ViewTreeNode*>& roots() { return roots_; }
 
   ViewTreeNode* GetNodeById(TransportNodeId id);
   View* GetViewById(TransportViewId id);
-
-  void Embed(const String& url, ViewTreeNode* node);
 
  private:
   friend class ViewManagerPrivate;
@@ -51,12 +51,13 @@ class ViewManager {
   typedef std::map<TransportViewId, View*> IdToViewMap;
 
   ViewManager(Application* application,
-              const base::Callback<void(ViewManager*)> ready_callback);
+              const base::Callback<void(ViewManager*)>& root_added_callback);
 
-  base::Callback<void(ViewManager*)> ready_callback_;
+  base::Callback<void(ViewManager*)> root_added_callback_;
 
   ViewManagerSynchronizer* synchronizer_;
-  ViewTreeNode* tree_;
+
+  std::vector<ViewTreeNode*> roots_;
 
   IdToNodeMap nodes_;
   IdToViewMap views_;

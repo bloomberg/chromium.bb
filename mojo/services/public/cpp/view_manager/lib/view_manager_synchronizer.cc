@@ -561,13 +561,14 @@ void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
   connection_id_ = connection_id;
   next_server_change_id_ = next_server_change_id;
 
+  DCHECK(pending_transactions_.empty());
   ViewManagerPrivate private_manager(view_manager());
-  private_manager.set_root(BuildNodeTree(view_manager(), nodes));
-  Sync();
-  private_manager.NotifyReady();
+  private_manager.AddRoot(BuildNodeTree(view_manager(), nodes));
 }
 
 void ViewManagerSynchronizer::OnRootsAdded(Array<INodePtr> nodes) {
+  ViewManagerPrivate private_manager(view_manager());
+  private_manager.AddRoot(BuildNodeTree(view_manager(), nodes));
 }
 
 void ViewManagerSynchronizer::OnServerChangeIdAdvanced(
@@ -608,11 +609,8 @@ void ViewManagerSynchronizer::OnNodeDeleted(uint32_t node_id,
   next_server_change_id_ = server_change_id + 1;
 
   ViewTreeNode* node = view_manager()->GetNodeById(node_id);
-  if (node) {
-    if (view_manager()->tree() == node)
-      ViewManagerPrivate(view_manager()).set_root(NULL);
+  if (node)
     ViewTreeNodePrivate(node).LocalDestroy();
-  }
 }
 
 void ViewManagerSynchronizer::OnNodeViewReplaced(uint32_t node_id,

@@ -19,10 +19,6 @@ class ViewManagerPrivate {
   explicit ViewManagerPrivate(ViewManager* manager);
   ~ViewManagerPrivate();
 
-  void NotifyReady() {
-    manager_->ready_callback_.Run(manager_);
-  }
-
   ViewManagerSynchronizer* synchronizer() {
     return manager_->synchronizer_;
   }
@@ -30,7 +26,8 @@ class ViewManagerPrivate {
     manager_->synchronizer_ = synchronizer;
   }
 
-  void set_root(ViewTreeNode* root) { manager_->tree_ = root; }
+  void AddRoot(ViewTreeNode* root);
+  void RemoveRoot(ViewTreeNode* root);
 
   void AddNode(TransportNodeId node_id, ViewTreeNode* node);
   void RemoveNode(TransportNodeId node_id);

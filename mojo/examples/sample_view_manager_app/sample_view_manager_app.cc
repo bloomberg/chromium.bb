@@ -65,7 +65,7 @@ class SampleApp : public Application, public mojo::view_manager::ViewObserver {
     view_manager::View* view11 =
         view_manager::View::Create(view_manager_.get());
     node11->SetActiveView(view11);
-    view_manager_->tree()->AddChild(node1);
+    view_manager_->roots().front()->AddChild(node1);
     node1->AddChild(node11);
 
     view11->SetColor(SK_ColorRED);

@@ -43,7 +43,9 @@ ViewManager::~ViewManager() {
 }
 
 // static
-ViewManager* ViewManager::CreateBlocking(Application* application) {
+ViewManager* ViewManager::CreateBlocking(
+    Application* application,
+    const base::Callback<void(ViewManager*)>& root_added_callback) {
   base::RunLoop init_loop;
   ViewManager* manager = new ViewManager(
       application,
@@ -55,8 +57,8 @@ ViewManager* ViewManager::CreateBlocking(Application* application) {
 // static
 void ViewManager::Create(
     Application* application,
-    const base::Callback<void(ViewManager*)> ready_callback) {
-  new ViewManager(application, ready_callback);
+    const base::Callback<void(ViewManager*)>& root_added_callback) {
+  new ViewManager(application, root_added_callback);
 }
 
 ViewTreeNode* ViewManager::GetNodeById(TransportNodeId id) {
@@ -69,19 +71,14 @@ View* ViewManager::GetViewById(TransportViewId id) {
   return it != views_.end() ? it->second : NULL;
 }
 
-void ViewManager::Embed(const String& url, ViewTreeNode* node) {
-  synchronizer_->Embed(url, node->id());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManager, private:
 
 ViewManager::ViewManager(
     Application* application,
-    const base::Callback<void(ViewManager*)> ready_callback)
-    : ready_callback_(ready_callback),
-      synchronizer_(NULL),
-      tree_(NULL) {
+    const base::Callback<void(ViewManager*)>& root_added_callback)
+    : root_added_callback_(root_added_callback),
+      synchronizer_(NULL) {
   application->AddService<ViewManagerSynchronizer>(this);
 }
 
