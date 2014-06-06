@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptDebugServer.h"
 
-#include "DebuggerScriptSource.h"
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptController.h"
@@ -39,6 +38,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/DebuggerScriptSource.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "platform/JSONValues.h"
