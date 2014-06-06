@@ -181,9 +181,13 @@ class ExtensionActionIconFactoryBridge
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
-  [[self cell] setHighlighted:YES];
-  dragCouldStart_ = YES;
-  dragStartPoint_ = [theEvent locationInWindow];
+  NSPoint location = [self convertPoint:[theEvent locationInWindow]
+                               fromView:nil];
+  if (NSPointInRect(location, [self bounds])) {
+    [[self cell] setHighlighted:YES];
+    dragCouldStart_ = YES;
+    dragStartPoint_ = [theEvent locationInWindow];
+  }
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
