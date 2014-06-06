@@ -72,12 +72,17 @@ namespace {
 const int k_NET_WM_STATE_ADD = 1;
 const int k_NET_WM_STATE_REMOVE = 0;
 
+// Special value of the _NET_WM_DESKTOP property which indicates that the window
+// should appear on all desktops.
+const int kAllDesktops = 0xFFFFFFFF;
+
 const char* kAtomsToCache[] = {
   "UTF8_STRING",
   "WM_DELETE_WINDOW",
   "WM_PROTOCOLS",
   "_NET_FRAME_EXTENTS",
   "_NET_WM_CM_S0",
+  "_NET_WM_DESKTOP",
   "_NET_WM_ICON",
   "_NET_WM_NAME",
   "_NET_WM_PID",
@@ -559,6 +564,29 @@ void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
   SetWMSpecState(always_visible,
                  atom_cache_.GetAtom("_NET_WM_STATE_STICKY"),
                  None);
+
+  int new_desktop = 0;
+  if (always_visible) {
+    new_desktop = kAllDesktops;
+  } else {
+    if (!ui::GetCurrentDesktop(&new_desktop))
+      return;
+  }
+
+  XEvent xevent;
+  memset (&xevent, 0, sizeof (xevent));
+  xevent.type = ClientMessage;
+  xevent.xclient.window = xwindow_;
+  xevent.xclient.message_type = atom_cache_.GetAtom("_NET_WM_DESKTOP");
+  xevent.xclient.format = 32;
+  xevent.xclient.data.l[0] = new_desktop;
+  xevent.xclient.data.l[1] = 0;
+  xevent.xclient.data.l[2] = 0;
+  xevent.xclient.data.l[3] = 0;
+  xevent.xclient.data.l[4] = 0;
+  XSendEvent(xdisplay_, x_root_window_, False,
+             SubstructureRedirectMask | SubstructureNotifyMask,
+             &xevent);
 }
 
 bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
@@ -1078,8 +1106,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (is_always_on_top_)
     state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"));
 
-  if (params.visible_on_all_workspaces)
+  if (params.visible_on_all_workspaces) {
     state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_STICKY"));
+    ui::SetIntProperty(xwindow_, "_NET_WM_DESKTOP", "CARDINAL", kAllDesktops);
+  }
 
   // Setting _NET_WM_STATE by sending a message to the root_window (with
   // SetWMSpecState) has no effect here since the window has not yet been

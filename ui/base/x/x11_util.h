@@ -102,7 +102,7 @@ UI_BASE_EXPORT bool IsShapeExtensionAvailable();
 UI_BASE_EXPORT XID GetX11RootWindow();
 
 // Returns the user's current desktop.
-bool GetCurrentDesktop(int* desktop);
+UI_BASE_EXPORT bool GetCurrentDesktop(int* desktop);
 
 enum HideTitlebarWhenMaximized {
   SHOW_TITLEBAR_WHEN_MAXIMIZED = 0,
