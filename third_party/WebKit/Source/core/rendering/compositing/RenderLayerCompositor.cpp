@@ -166,9 +166,9 @@ bool RenderLayerCompositor::compositingLayersNeedRebuild()
 
 bool RenderLayerCompositor::rootShouldAlwaysComposite() const
 {
-    if (m_hasAcceleratedCompositing && !m_renderView.frame()->isMainFrame())
-        return m_compositingReasonFinder.requiresCompositingForScrollableFrame();
-    return m_hasAcceleratedCompositing;
+    if (!m_hasAcceleratedCompositing)
+        return false;
+    return m_renderView.frame()->isMainFrame() || m_compositingReasonFinder.requiresCompositingForScrollableFrame();
 }
 
 void RenderLayerCompositor::updateAcceleratedCompositingSettings()
