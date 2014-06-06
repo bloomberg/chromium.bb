@@ -74,8 +74,12 @@ namespace google_breakpad {
 
 static union {
 #if USE_PROTECTED_ALLOCATIONS
+#if defined PAGE_MAX_SIZE
+  char protected_buffer[PAGE_MAX_SIZE] __attribute__((aligned(PAGE_MAX_SIZE)));
+#else
   char protected_buffer[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-#endif
+#endif  // defined PAGE_MAX_SIZE
+#endif  // USE_PROTECTED_ALLOCATIONS
   google_breakpad::ExceptionHandler *handler;
 } gProtectedData;
 
