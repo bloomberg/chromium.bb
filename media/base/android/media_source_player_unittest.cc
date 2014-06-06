@@ -285,10 +285,11 @@ class MediaSourcePlayerTest : public testing::Test {
     return configs;
   }
 
-  DemuxerConfigs CreateVideoDemuxerConfigs(VideoCodec video_codec) {
+  DemuxerConfigs CreateVideoDemuxerConfigs(bool use_larger_size) {
     DemuxerConfigs configs;
-    configs.video_codec = video_codec;
-    configs.video_size = gfx::Size(320, 240);
+    configs.video_codec = kCodecVP8;
+    configs.video_size =
+        use_larger_size ? gfx::Size(640, 480) : gfx::Size(320, 240);
     configs.is_video_encrypted = false;
     configs.duration = kDefaultDuration;
     return configs;
@@ -309,7 +310,7 @@ class MediaSourcePlayerTest : public testing::Test {
       return CreateAudioDemuxerConfigs(kCodecVorbis, false);
 
     if (have_video && !have_audio)
-      return CreateVideoDemuxerConfigs(kCodecVP8);
+      return CreateVideoDemuxerConfigs(false);
 
     return CreateAudioVideoDemuxerConfigs();
   }
@@ -321,7 +322,7 @@ class MediaSourcePlayerTest : public testing::Test {
 
   // Starts a video decoder job.
   void StartVideoDecoderJob() {
-    Start(CreateVideoDemuxerConfigs(kCodecVP8));
+    Start(CreateVideoDemuxerConfigs(false));
   }
 
   // Starts decoding the data.
@@ -644,7 +645,7 @@ class MediaSourcePlayerTest : public testing::Test {
 
     DemuxerConfigs configs = is_audio ?
         CreateAudioDemuxerConfigs(kCodecAAC, false) :
-        CreateVideoDemuxerConfigs(kCodecVP9);
+        CreateVideoDemuxerConfigs(true);
     // Feed and decode access units with data for any units prior to
     // |config_unit_index|, and a |kConfigChanged| unit at that index.
     // Player should prepare to reconfigure the decoder job, and should request
@@ -916,7 +917,8 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for demuxer to indicate seek is done.
-  player_.OnDemuxerConfigsAvailable(CreateVideoDemuxerConfigs(kCodecVP8));
+  player_.OnDemuxerConfigsAvailable(
+      CreateVideoDemuxerConfigs(false));
 
   // Initiate a seek. Skip requesting element seek of renderer.
   // Instead behave as if the renderer has asked us to seek.
@@ -1073,7 +1075,7 @@ TEST_F(MediaSourcePlayerTest, VideoOnlyStartAfterSeekFinish) {
 
   // Test video decoder job will not start until pending seek event is handled.
   CreateNextTextureAndSetVideoSurface();
-  DemuxerConfigs configs = CreateVideoDemuxerConfigs(kCodecVP8);
+  DemuxerConfigs configs = CreateVideoDemuxerConfigs(false);
   player_.OnDemuxerConfigsAvailable(configs);
 
   // Initiate a seek. Skip requesting element seek of renderer.
@@ -1242,7 +1244,7 @@ TEST_F(MediaSourcePlayerTest, AV_PlaybackCompletionAcrossConfigChange) {
   Start(CreateAudioVideoDemuxerConfigs());
 
   player_.OnDemuxerDataAvailable(CreateEOSAck(true));  // Audio EOS
-  DemuxerConfigs configs = CreateVideoDemuxerConfigs(kCodecVP9);
+  DemuxerConfigs configs = CreateVideoDemuxerConfigs(true);
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckWithConfigChanged(
       false, 0, configs));  // Video |kConfigChanged| as first unit.
 
@@ -1667,7 +1669,7 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   // Simulate video |kConfigChanged| prefetched as standalone access unit.
   player_.OnDemuxerDataAvailable(
       CreateReadFromDemuxerAckWithConfigChanged(
-          false, 0, CreateVideoDemuxerConfigs(kCodecVP9)));
+          false, 0, CreateVideoDemuxerConfigs(true)));
   EXPECT_EQ(6, demuxer_->num_data_requests());
   EXPECT_TRUE(IsDrainingDecoder(true));
   EXPECT_TRUE(IsDrainingDecoder(false));
@@ -2091,7 +2093,7 @@ TEST_F(MediaSourcePlayerTest, SurfaceChangeClearedEvenIfMediaCryptoAbsent) {
   // Test that |SURFACE_CHANGE_EVENT_PENDING| is not pending after
   // SetVideoSurface() for a player configured for encrypted video, when the
   // player has not yet received media crypto.
-  DemuxerConfigs configs = CreateVideoDemuxerConfigs(kCodecVP8);
+  DemuxerConfigs configs = CreateVideoDemuxerConfigs(false);
   configs.is_video_encrypted = true;
 
   player_.OnDemuxerConfigsAvailable(configs);
