@@ -8,35 +8,27 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
 class CookieSettings;
-struct ExtensionHostMsg_APIActionOrEvent_Params;
-struct ExtensionHostMsg_DOMAction_Params;
-struct ExtensionMsg_ExternalConnectionInfo;
 class GURL;
+class Profile;
+
+namespace chrome_browser_net {
+class Predictor;
+}
 
 namespace extensions {
 class InfoMap;
-}
-
-namespace net {
-class HostResolver;
-class URLRequestContextGetter;
 }
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
 // process on the IPC thread.
 class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
  public:
-  ChromeRenderMessageFilter(int render_process_id,
-                            Profile* profile,
-                            net::URLRequestContextGetter* request_context);
+  ChromeRenderMessageFilter(int render_process_id, Profile* profile);
 
   class V8HeapStatsDetails {
    public:
@@ -57,10 +49,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
 
-  int render_process_id() { return render_process_id_; }
-  bool off_the_record() { return off_the_record_; }
-  net::HostResolver* GetHostResolver();
-
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ChromeRenderMessageFilter>;
@@ -74,59 +62,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
 
-#if defined(ENABLE_EXTENSIONS)
-  // TODO(jamescook): Move these functions into the extensions module. Ideally
-  // this would be in extensions::ExtensionMessageFilter but that will require
-  // resolving the MessageService and ActivityLog dependencies on src/chrome.
-  // http://crbug.com/339637
-  void OnOpenChannelToExtension(int routing_id,
-                                const ExtensionMsg_ExternalConnectionInfo& info,
-                                const std::string& channel_name,
-                                bool include_tls_channel_id,
-                                int* port_id);
-  void OpenChannelToExtensionOnUIThread(
-      int source_process_id,
-      int source_routing_id,
-      int receiver_port_id,
-      const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& channel_name,
-      bool include_tls_channel_id);
-  void OnOpenChannelToNativeApp(int routing_id,
-                                const std::string& source_extension_id,
-                                const std::string& native_app_name,
-                                int* port_id);
-  void OpenChannelToNativeAppOnUIThread(int source_routing_id,
-                                        int receiver_port_id,
-                                        const std::string& source_extension_id,
-                                        const std::string& native_app_name);
-  void OnOpenChannelToTab(int routing_id, int tab_id,
-                          const std::string& extension_id,
-                          const std::string& channel_name, int* port_id);
-  void OpenChannelToTabOnUIThread(int source_process_id, int source_routing_id,
-                                  int receiver_port_id,
-                                  int tab_id, const std::string& extension_id,
-                                  const std::string& channel_name);
-  void OnGetExtensionMessageBundle(const std::string& extension_id,
-                                   IPC::Message* reply_msg);
-  void OnGetExtensionMessageBundleOnFileThread(
-      const base::FilePath& extension_path,
-      const std::string& extension_id,
-      const std::string& default_locale,
-      IPC::Message* reply_msg);
-  void OnExtensionCloseChannel(int port_id, const std::string& error_message);
-  void OnAddAPIActionToExtensionActivityLog(
-      const std::string& extension_id,
-      const ExtensionHostMsg_APIActionOrEvent_Params& params);
-  void OnAddBlockedCallToExtensionActivityLog(
-      const std::string& extension_id,
-      const std::string& function_name);
-  void OnAddDOMActionToExtensionActivityLog(
-      const std::string& extension_id,
-      const ExtensionHostMsg_DOMAction_Params& params);
-  void OnAddEventToExtensionActivityLog(
-      const std::string& extension_id,
-      const ExtensionHostMsg_APIActionOrEvent_Params& params);
-#endif  // defined(ENABLE_EXTENSIONS)
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,
@@ -151,10 +86,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         const GURL& top_origin_url,
                         const base::string16& name,
                         bool* allowed);
-#if defined(ENABLE_EXTENSIONS)
-  void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
-  void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
-#endif
 #if defined(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);
 #endif
@@ -164,16 +95,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
-  // Copied from the profile so that it can be read on the IO thread.
-  const bool off_the_record_;
   // The Predictor for the associated Profile. It is stored so that it can be
   // used on the IO thread.
   chrome_browser_net::Predictor* predictor_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-#if defined(ENABLE_EXTENSIONS)
-  scoped_refptr<extensions::InfoMap> extension_info_map_;
-#endif
 
   // Used to look up permissions at database creation time.
   scoped_refptr<CookieSettings> cookie_settings_;

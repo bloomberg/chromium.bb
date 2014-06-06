@@ -192,13 +192,11 @@
 #include "components/breakpad/browser/crash_handler_host_linux.h"
 #endif
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/android/device_display_info.h"
+#else
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -206,14 +204,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#endif
-
-#if defined(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -236,12 +226,24 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 #endif
 
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
+#endif
+
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
+#endif
+
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
 using blink::WebWindowFeatures;
@@ -899,8 +901,11 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   net::URLRequestContextGetter* context =
       profile->GetRequestContextForRenderProcess(id);
 
-  host->AddFilter(new ChromeRenderMessageFilter(id, profile, context));
+  host->AddFilter(new ChromeRenderMessageFilter(id, profile));
+#if defined(ENABLE_EXTENSIONS)
+  host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
   host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
+#endif
 #if defined(ENABLE_PLUGINS)
   host->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif

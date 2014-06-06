@@ -1841,6 +1841,8 @@
         'browser/renderer_context_menu/spelling_bubble_model.h',
         'browser/renderer_context_menu/spelling_menu_observer.cc',
         'browser/renderer_context_menu/spelling_menu_observer.h',
+        'browser/renderer_host/chrome_extension_message_filter.cc',
+        'browser/renderer_host/chrome_extension_message_filter.h',
         'browser/renderer_host/chrome_render_message_filter.cc',
         'browser/renderer_host/chrome_render_message_filter.h',
         'browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h',
@@ -2759,6 +2761,8 @@
             'browser/content_settings/content_settings_custom_extension_provider.h',
             'browser/content_settings/content_settings_internal_extension_provider.cc',
             'browser/content_settings/content_settings_internal_extension_provider.h',
+            'browser/renderer_host/chrome_extension_message_filter.cc',
+            'browser/renderer_host/chrome_extension_message_filter.h',
           ],
         }],
         ['enable_background==0', {
