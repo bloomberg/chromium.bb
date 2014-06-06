@@ -1,47 +1,43 @@
 description("Tests that accessing Attr after its Element has been destroyed works without crashing.");
 
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    // Trigger garbage collection indirectly.
-    for (var i = 0; i < 100000; i++)
-        new String(i);
-}
+jsTestIsAsync = true;
 
 var element = document.createElement("p");
 element.setAttribute("a", "b");
 var attributes = element.attributes;
 element = null;
+var attr = null;
 
-gc();
+asyncGC(function() {
+    shouldBe("attributes.length", "1");
+    shouldBe("attributes[0]", "attributes.item(0)");
+    shouldBe("attributes.getNamedItem('a')", "attributes.item(0)");
 
-shouldBe("attributes.length", "1");
-shouldBe("attributes[0]", "attributes.item(0)");
-shouldBe("attributes.getNamedItem('a')", "attributes.item(0)");
+    shouldBe("attributes.item(0).name", "'a'");
+    shouldBe("attributes.item(0).value", "'b'");
 
-shouldBe("attributes.item(0).name", "'a'");
-shouldBe("attributes.item(0).value", "'b'");
+    attributes.item(0).value = 'c';
 
-attributes.item(0).value = 'c';
+    shouldBe("attributes.item(0).value", "'c'");
 
-shouldBe("attributes.item(0).value", "'c'");
+    attributes.removeNamedItem('a');
 
-attributes.removeNamedItem('a');
+    shouldBe("attributes.length", "0");
 
-shouldBe("attributes.length", "0");
+    element = document.createElement("p");
+    element.setAttribute("a", "b");
+    attr = element.attributes.item(0);
+    element = null;
 
-element = document.createElement("p");
-element.setAttribute("a", "b");
-var attr = element.attributes.item(0);
-element = null;
+    asyncGC(function() {
 
-gc();
+        shouldBe("attr.name", "'a'");
+        shouldBe("attr.value", "'b'");
 
-shouldBe("attr.name", "'a'");
-shouldBe("attr.value", "'b'");
+        attr.value = 'c';
 
-attr.value = 'c';
+        shouldBe("attr.value", "'c'");
 
-shouldBe("attr.value", "'c'");
+        finishJSTest();
+    });
+});
