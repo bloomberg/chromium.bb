@@ -952,6 +952,8 @@ crbug.com/362992 storage/quota/storagequota-request-persistent-quota.html [ Skip
 crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
 crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
 
+crbug.com/381827 [ Linux Debug ] virtual/serviceworker/http/tests/serviceworker/fetch-event.html [ Pass Timeout ]
+
 crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
