@@ -510,22 +510,6 @@ void LocalFrame::deviceOrPageScaleFactorChanged()
         child->deviceOrPageScaleFactorChanged();
 }
 
-void LocalFrame::notifyChromeClientWheelEventHandlerCountChanged() const
-{
-    // FIXME: No-one is using this information, so remove this code.
-    // Ensure that this method is being called on the main frame of the page.
-    ASSERT(isMainFrame());
-
-    EventHandlerRegistry& registry = m_host->eventHandlerRegistry();
-    unsigned count = 0;
-    if (const EventTargetSet* targets = registry.eventHandlerTargets(EventHandlerRegistry::WheelEvent)) {
-        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter)
-            count += iter->value;
-    }
-
-    m_host->chrome().client().numWheelEventHandlersChanged(count);
-}
-
 bool LocalFrame::isURLAllowed(const KURL& url) const
 {
     // We allow one level of self-reference because some sites depend on that,

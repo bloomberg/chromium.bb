@@ -143,9 +143,6 @@ namespace WebCore {
         Document* documentAtPoint(const IntPoint& windowPoint);
         PassRefPtrWillBeRawPtr<Range> rangeForPoint(const IntPoint& framePoint);
 
-        // Should only be called on the main frame of a page.
-        void notifyChromeClientWheelEventHandlerCountChanged() const;
-
         bool isURLAllowed(const KURL&) const;
 
     // ========

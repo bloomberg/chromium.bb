@@ -776,11 +776,6 @@ bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType&
     return false;
 }
 
-void ChromeClientImpl::numWheelEventHandlersChanged(unsigned numberOfWheelHandlers)
-{
-    m_webView->numberOfWheelEventHandlersChanged(numberOfWheelHandlers);
-}
-
 void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
 {
     m_webView->hasTouchEventHandlers(needsTouchEvents);

@@ -200,8 +200,6 @@ public:
     // Called when a new node gets focused.
     virtual void focusedNodeChanged(const WebNode&) { }
 
-    virtual void numberOfWheelEventHandlersChanged(unsigned) { }
-
     // Indicates two things:
     //   1) This view may have a new layout now.
     //   2) Calling layout() is a no-op.

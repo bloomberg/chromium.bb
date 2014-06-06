@@ -156,8 +156,6 @@ public:
     virtual void needTouchEvents(bool) OVERRIDE { }
     virtual void setTouchAction(TouchAction touchAction) OVERRIDE { };
 
-    virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
-
     virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >&) OVERRIDE { }
 
     virtual void annotatedRegionsChanged() OVERRIDE { }

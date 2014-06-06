@@ -167,8 +167,6 @@ public:
 
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::Document::PageDismissalType) const OVERRIDE;
 
-    virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE;
-
     virtual bool requestPointerLock() OVERRIDE;
     virtual void requestPointerUnlock() OVERRIDE;
 

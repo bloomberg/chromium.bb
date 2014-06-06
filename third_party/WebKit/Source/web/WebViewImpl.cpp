@@ -1314,12 +1314,6 @@ bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
     return true;
 }
 
-void WebViewImpl::numberOfWheelEventHandlersChanged(unsigned numberOfWheelHandlers)
-{
-    if (m_client)
-        m_client->numberOfWheelEventHandlersChanged(numberOfWheelHandlers);
-}
-
 void WebViewImpl::hasTouchEventHandlers(bool hasTouchHandlers)
 {
     if (m_client)

@@ -320,7 +320,6 @@ public:
     bool detectContentOnTouch(const WebPoint&);
     bool startPageScaleAnimation(const WebCore::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
 
-    void numberOfWheelEventHandlersChanged(unsigned);
     void hasTouchEventHandlers(bool);
 
     // WebGestureCurveTarget implementation for fling.

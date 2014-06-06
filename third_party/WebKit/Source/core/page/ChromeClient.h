@@ -215,8 +215,6 @@ public:
     };
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String&, Document::PageDismissalType) const { return true; }
 
-    virtual void numWheelEventHandlersChanged(unsigned) = 0;
-
     virtual bool isSVGImageChromeClient() const { return false; }
 
     virtual bool requestPointerLock() { return false; }
