@@ -21,8 +21,8 @@
 #define APPLICATION_EXPORT __attribute__((visibility("default")))
 #endif
 
-// DSOs can either implement MojoMain directly or utilize the
-// mojo_main_{standalone|chromium} gyp targets and implement
+// DSOs can either implement MojoMain directly or include
+// mojo_main_{standalone|chromium}.cc in their project and implement
 // Application::Create();
 // TODO(davemoore): Establish this as part of our SDK for third party mojo
 // application writers.
