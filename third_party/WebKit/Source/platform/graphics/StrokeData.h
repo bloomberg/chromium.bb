@@ -84,9 +84,9 @@ public:
     void setLineDash(const DashArray&, float);
 
     // Sets everything on the paint except the pattern, gradient and color.
-    // GraphicsContext::setupShader does that. If a non-zero length is provided, the
-    // number of dashes/dots on a dashed/dotted line will be adjusted to
-    // start and end that length with a dash/dot.
+    // If a non-zero length is provided, the number of dashes/dots on a
+    // dashed/dotted line will be adjusted to start and end that length with a
+    // dash/dot.
     void setupPaint(SkPaint*, int length = 0) const;
 
     // Setup any DashPathEffect on the paint. If a non-zero length is provided,

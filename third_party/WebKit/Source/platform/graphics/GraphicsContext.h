@@ -239,11 +239,11 @@ public:
     // Get the contents of the image buffer
     bool readPixels(const SkImageInfo&, void* pixels, size_t rowBytes, int x, int y);
 
-    // Sets up the paint for the current fill style.
-    void setupPaintForFilling(SkPaint*) const;
+    // Get the current fill style.
+    const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
 
-    // Sets up the paint for the current stroke style.
-    void setupPaintForStroking(SkPaint*) const;
+    // Get the current stroke style.
+    const SkPaint& strokePaint() const { return immutableState()->strokePaint(); }
 
     // These draw methods will do both stroking and filling.
     // FIXME: ...except drawRect(), which fills properly but always strokes
@@ -453,9 +453,6 @@ private:
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
     void concat(const SkMatrix&);
-
-    // common code between setupPaintFor[Filling,Stroking]
-    void setupShader(SkPaint*, Gradient*, Pattern*, SkColor) const;
 
     // Apply deferred paint state saves
     void realizePaintSave()

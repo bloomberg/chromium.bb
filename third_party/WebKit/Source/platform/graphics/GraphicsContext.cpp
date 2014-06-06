@@ -549,22 +549,6 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
         m_canvas->translate(-bounds.x(), -bounds.y());
 }
 
-void GraphicsContext::setupPaintForFilling(SkPaint* paint) const
-{
-    if (contextDisabled())
-        return;
-
-    *paint = immutableState()->fillPaint();
-}
-
-void GraphicsContext::setupPaintForStroking(SkPaint* paint) const
-{
-    if (contextDisabled())
-        return;
-
-    *paint = immutableState()->strokePaint();
-}
-
 void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* points, bool shouldAntialias)
 {
     if (contextDisabled())

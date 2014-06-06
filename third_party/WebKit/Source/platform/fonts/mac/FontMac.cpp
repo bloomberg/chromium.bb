@@ -142,8 +142,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
     // We draw text up to two times (once for fill, once for stroke).
     if (textMode & TextModeFill) {
-        SkPaint paint;
-        gc->setupPaintForFilling(&paint);
+        SkPaint paint = gc->fillPaint();
         setupPaint(&paint, font, this, shouldAntialias, shouldSmoothFonts);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -155,8 +154,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         && gc->strokeStyle() != NoStroke
         && gc->strokeThickness() > 0) {
 
-        SkPaint paint;
-        gc->setupPaintForStroking(&paint);
+        SkPaint paint = gc->strokePaint();
         setupPaint(&paint, font, this, shouldAntialias, shouldSmoothFonts);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
