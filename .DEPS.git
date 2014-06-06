@@ -48,7 +48,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/brotli/src':
-        Var('git_url') + '/external/font-compression-reference.git@c75ed764ef2a74bf3ab645ca7a73c0c692477755',
+        Var('git_url') + '/external/font-compression-reference.git@6cef49677dc4c650ef6e3f56041e0a41803afa8c',
     'src/third_party/cacheinvalidation/src':
         Var('git_url') + '/external/google-cache-invalidation-api/src.git@bf41949f62d571cae38acf525fbc552537c6e74b',
     'src/third_party/clang_format/script':
