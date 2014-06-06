@@ -33,7 +33,8 @@
       "sync_unit_tests",
       "unit_tests",
       "sql_unittests",
-      "nacl_loader_unittests"
+      "nacl_loader_unittests",
+      "athena_unittests"
     ]
   },
   "Linux ChromiumOS Tests (2)": {
@@ -90,6 +91,7 @@
   },
   "Linux ChromiumOS Tests (dbg)(3)": {
     "gtest_tests": [
+      "athena_unittests",
       "gcm_unit_tests",
       "interactive_ui_tests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
