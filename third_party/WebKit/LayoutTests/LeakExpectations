@@ -14,6 +14,8 @@ crbug.com/364398 fast/frames/viewsource/viewsource-5.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
+crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
+crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
 
 # FIXME: The below tests fails when the leak detector is disabled.
 crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
@@ -127,6 +129,12 @@ crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/serviceworkerglo
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/serviceworkerobject-scope.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/state.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/unregister.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/controller-on-reload.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/fetch-event.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/ready-controlled-document.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/request-end-to-end.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/controller-on-load.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/request.html [ Leak ]
 
 crbug.com/364408 inspector/extensions/extensions-audits-content-script.html [ Leak ]
 crbug.com/364408 inspector/extensions/extensions-eval-content-script.html [ Leak ]
@@ -144,6 +152,9 @@ crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak 
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak ]
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
+crbug.com/364417 fast/dom/shadow/drop-event-for-input-in-shadow.html [ Leak ]
+crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
+crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 
 crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
 
@@ -233,3 +244,7 @@ crbug.com/376188 inspector/sources/debugger/skip-stack-frames-steps.html [ Leak 
 crbug.com/376188 inspector/sources/debugger/step-through-event-listeners.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/watch-expressions-panel-switch.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/xhr-breakpoints.html [ Leak ]
+crbug.com/376188 inspector/sources/debugger/frameworks-steppings.html [ Leak ]
+crbug.com/376188 inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Leak ]
+crbug.com/376188 inspector/sources/debugger/frameworks-with-async-callstack.html [ Leak ]
+crbug.com/376188 inspector/sources/debugger/frameworks-skip-step-in.html [ Leak ]
