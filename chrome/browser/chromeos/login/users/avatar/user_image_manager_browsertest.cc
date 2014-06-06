@@ -695,8 +695,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, SetAndClear) {
   EXPECT_EQ(policy_image_->width(), saved_image->width());
   EXPECT_EQ(policy_image_->height(), saved_image->height());
 
-  // Clear policy. Verify that the policy-provided user image remains set as no
-  // different user image has been chosen yet.
+  // Clear policy. Verify that the user image switches to a random default
+  // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
   fake_session_manager_client_->set_user_policy(kTestUser1,
@@ -708,33 +708,28 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, SetAndClear) {
   store->RemoveObserver(this);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(user->HasDefaultImage());
-  EXPECT_EQ(User::kExternalImageIndex, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1,
-                         User::kExternalImageIndex,
-                         GetUserImagePath(kTestUser1, "jpg"));
-
-  saved_image = test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
-
-  // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image_->width(), saved_image->width());
-  EXPECT_EQ(policy_image_->height(), saved_image->height());
+  const int default_image_index = user->image_index();
+  EXPECT_TRUE(user->HasDefaultImage());
+  ASSERT_LE(kFirstDefaultImageIndex, default_image_index);
+  ASSERT_GT(kFirstDefaultImageIndex + kDefaultImagesCount, default_image_index);
+  const gfx::ImageSkia& default_image = GetDefaultImage(default_image_index);
+  EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
+  ExpectNewUserImageInfo(kTestUser1, default_image_index, base::FilePath());
 
   // Choose a different user image. Verify that the chosen user image is set and
   // persisted.
-  const gfx::ImageSkia& default_image =
-      GetDefaultImage(kFirstDefaultImageIndex);
+  const int user_image_index = kFirstDefaultImageIndex +
+      (default_image_index - kFirstDefaultImageIndex + 1) % kDefaultImagesCount;
+  const gfx::ImageSkia& user_image = GetDefaultImage(user_image_index);
 
   UserImageManager* user_image_manager =
       UserManager::Get()->GetUserImageManager(kTestUser1);
-  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
+  user_image_manager->SaveUserDefaultImageIndex(user_image_index);
 
   EXPECT_TRUE(user->HasDefaultImage());
-  EXPECT_EQ(kFirstDefaultImageIndex, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
+  EXPECT_EQ(user_image_index, user->image_index());
+  EXPECT_TRUE(test::AreImagesEqual(user_image, user->GetImage()));
+  ExpectNewUserImageInfo(kTestUser1, user_image_index, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
