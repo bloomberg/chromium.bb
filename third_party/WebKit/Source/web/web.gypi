@@ -112,6 +112,7 @@
       'WebCachedURLRequest.cpp',
       'WebColorName.cpp',
       'WebColorSuggestion.cpp',
+      'WebCryptoNormalize.cpp',
       'WebCustomElement.cpp',
       'WebDOMActivityLogger.cpp',
       'WebDOMCustomEvent.cpp',

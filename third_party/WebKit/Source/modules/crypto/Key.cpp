@@ -95,28 +95,28 @@ blink::WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
     return 0;
 }
 
-blink::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
+blink::WebCryptoKeyUsageMask toKeyUsage(blink::WebCryptoOperation operation)
 {
     switch (operation) {
-    case Encrypt:
+    case blink::WebCryptoOperationEncrypt:
         return blink::WebCryptoKeyUsageEncrypt;
-    case Decrypt:
+    case blink::WebCryptoOperationDecrypt:
         return blink::WebCryptoKeyUsageDecrypt;
-    case Sign:
+    case blink::WebCryptoOperationSign:
         return blink::WebCryptoKeyUsageSign;
-    case Verify:
+    case blink::WebCryptoOperationVerify:
         return blink::WebCryptoKeyUsageVerify;
-    case DeriveKey:
+    case blink::WebCryptoOperationDeriveKey:
         return blink::WebCryptoKeyUsageDeriveKey;
-    case DeriveBits:
+    case blink::WebCryptoOperationDeriveBits:
         return blink::WebCryptoKeyUsageDeriveBits;
-    case WrapKey:
+    case blink::WebCryptoOperationWrapKey:
         return blink::WebCryptoKeyUsageWrapKey;
-    case UnwrapKey:
+    case blink::WebCryptoOperationUnwrapKey:
         return blink::WebCryptoKeyUsageUnwrapKey;
-    case Digest:
-    case GenerateKey:
-    case ImportKey:
+    case blink::WebCryptoOperationDigest:
+    case blink::WebCryptoOperationGenerateKey:
+    case blink::WebCryptoOperationImportKey:
         break;
     }
 
@@ -168,7 +168,7 @@ Vector<String> Key::usages() const
     return result;
 }
 
-bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, CryptoResult* result) const
+bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, blink::WebCryptoOperation op, CryptoResult* result) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
         result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");

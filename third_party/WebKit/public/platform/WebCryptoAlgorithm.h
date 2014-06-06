@@ -40,6 +40,21 @@
 
 namespace blink {
 
+enum WebCryptoOperation {
+    WebCryptoOperationEncrypt,
+    WebCryptoOperationDecrypt,
+    WebCryptoOperationSign,
+    WebCryptoOperationVerify,
+    WebCryptoOperationDigest,
+    WebCryptoOperationGenerateKey,
+    WebCryptoOperationImportKey,
+    WebCryptoOperationDeriveKey,
+    WebCryptoOperationDeriveBits,
+    WebCryptoOperationWrapKey,
+    WebCryptoOperationUnwrapKey,
+    WebCryptoOperationLast = WebCryptoOperationUnwrapKey,
+};
+
 enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCbc,
     WebCryptoAlgorithmIdHmac,

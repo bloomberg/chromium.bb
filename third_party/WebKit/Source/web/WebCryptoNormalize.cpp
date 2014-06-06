@@ -28,43 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NormalizeAlgorithm_h
-#define NormalizeAlgorithm_h
+#include "config.h"
+#include "public/web/WebCryptoNormalize.h"
 
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoAlgorithm.h"
+#include "bindings/v8/Dictionary.h"
+#include "modules/crypto/CryptoResultImpl.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/CryptoResult.h"
 #include "public/platform/WebString.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
+#include <v8.h>
 
-namespace blink { class WebCryptoAlgorithm; }
+using namespace WebCore;
 
-namespace WebCore {
+namespace blink {
 
-class Dictionary;
 
-struct AlgorithmError {
-    blink::WebCryptoErrorType errorType;
-    blink::WebString errorDetails;
-};
+WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
+{
+    WebCore::Dictionary algorithmDictionary(algorithmObject, isolate);
+    if (!algorithmDictionary.isUndefinedOrNull() && !algorithmDictionary.isObject())
+        return WebCryptoAlgorithm();
+    WebCryptoAlgorithm algorithm;
+    WebCore::AlgorithmError error;
+    if (!normalizeAlgorithm(algorithmDictionary, operation, algorithm, &error)) {
+        *exceptionCode = WebCore::webCryptoErrorToExceptionCode(error.errorType);
+        *errorDetails = error.errorDetails;
+        return WebCryptoAlgorithm();
+    }
 
-// Converts a javascript Dictionary to a WebCryptoAlgorithm object.
-//
-// This corresponds with "normalizing" [1] the algorithm, and then validating
-// the expected parameters for the algorithm/operation combination.
-//
-// On success returns true and sets the WebCryptoAlgorithm.
-//
-// On failure normalizeAlgorithm returns false and sets the AlgorithmError with
-// a error type and a (non-localized) debug string.
-//
-// [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
+    return algorithm;
+}
 
-// Returns a null-terminated C-string literal. Caller can assume the pointer
-// will be valid for the program's entire runtime.
-const char* algorithmIdToName(blink::WebCryptoAlgorithmId);
-
-} // namespace WebCore
-
-#endif
+} // namespace blink

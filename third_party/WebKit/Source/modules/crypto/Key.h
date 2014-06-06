@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -62,7 +63,7 @@ public:
 
     // If the key cannot be used with the indicated algorithm, returns false
     // and completes the CryptoResult with an error.
-    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, AlgorithmOperation, CryptoResult*) const;
+    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, blink::WebCryptoOperation, CryptoResult*) const;
 
     // On failure, these return false and complete the CryptoResult with an error.
     static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, CryptoResult*);

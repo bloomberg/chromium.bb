@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,43 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NormalizeAlgorithm_h
-#define NormalizeAlgorithm_h
+#ifndef WebCryptoNormalize_h
+#define WebCryptoNormalize_h
 
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoAlgorithm.h"
-#include "public/platform/WebString.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
+#include "../platform/WebCommon.h"
 
-namespace blink { class WebCryptoAlgorithm; }
+#include "../platform/WebCryptoAlgorithm.h"
 
-namespace WebCore {
+namespace v8 {
+class Isolate;
+class Object;
+template <class T> class Handle;
+}
 
-class Dictionary;
+namespace blink {
 
-struct AlgorithmError {
-    blink::WebCryptoErrorType errorType;
-    blink::WebString errorDetails;
-};
+class WebString;
 
 // Converts a javascript Dictionary to a WebCryptoAlgorithm object.
 //
 // This corresponds with "normalizing" [1] the algorithm, and then validating
 // the expected parameters for the algorithm/operation combination.
 //
-// On success returns true and sets the WebCryptoAlgorithm.
-//
-// On failure normalizeAlgorithm returns false and sets the AlgorithmError with
-// a error type and a (non-localized) debug string.
+// On failure returns an null WebCryptoAlgorithm, sets the int to the
+// ExceptionCode and the WebString to a (non-localized) debug string.
 //
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
+BLINK_EXPORT WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object>, WebCryptoOperation, int* exceptionCode, WebString* errorDetails, v8::Isolate*);
 
-// Returns a null-terminated C-string literal. Caller can assume the pointer
-// will be valid for the program's entire runtime.
-const char* algorithmIdToName(blink::WebCryptoAlgorithmId);
-
-} // namespace WebCore
+} // namespace blink
 
 #endif

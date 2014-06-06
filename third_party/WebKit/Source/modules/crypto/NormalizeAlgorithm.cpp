@@ -32,7 +32,6 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "platform/CryptoResult.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"
@@ -85,7 +84,7 @@ struct AlgorithmInfo {
 
     // A map from the operation to the expected parameter type of the algorithm.
     // If an operation is not applicable for the algorithm, set to Undefined.
-    const ParamsTypeOrUndefined operationToParamsType[LastAlgorithmOperation + 1];
+    const ParamsTypeOrUndefined operationToParamsType[blink::WebCryptoOperationLast + 1];
 };
 
 // A mapping from the algorithm ID to information about the algorithm.
@@ -262,7 +261,7 @@ COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaOaep == 8, RsaOaep_idDoesntMatch);
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCtr == 9, AesCtr_idDoesntMatch);
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesKw == 10, AesKw_idDoesntMatch);
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdLast == 10, Last_idDoesntMatch);
-COMPILE_ASSERT(10 == LastAlgorithmOperation, UpdateParamsMapping);
+COMPILE_ASSERT(10 == blink::WebCryptoOperationLast, UpdateParamsMapping);
 
 #if ASSERT_ENABLED
 
@@ -380,19 +379,22 @@ const AlgorithmInfo* lookupAlgorithmInfo(blink::WebCryptoAlgorithmId id)
     return &algorithmIdToInfo[id];
 }
 
-void completeWithSyntaxError(const String& message, CryptoResult* result)
+void setSyntaxError(const String& message, AlgorithmError* error)
 {
-    result->completeWithError(blink::WebCryptoErrorTypeSyntax, message);
+    error->errorType = blink::WebCryptoErrorTypeSyntax;
+    error->errorDetails = message;
 }
 
-void completeWithNotSupportedError(const String& message, CryptoResult* result)
+void setNotSupportedError(const String& message, AlgorithmError* error)
 {
-    result->completeWithError(blink::WebCryptoErrorTypeNotSupported, message);
+    error->errorType = blink::WebCryptoErrorTypeNotSupported;
+    error->errorDetails = message;
 }
 
-void completeWithDataError(const String& message, CryptoResult* result)
+void setDataError(const String& message, AlgorithmError* error)
 {
-    result->completeWithError(blink::WebCryptoErrorTypeData, message);
+    error->errorType = blink::WebCryptoErrorTypeData;
+    error->errorDetails = message;
 }
 
 // ErrorContext holds a stack of string literals which describe what was
@@ -460,7 +462,7 @@ private:
 //     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
 //
 // FIXME: Currently only supports ArrayBufferView.
-bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyName, bool& hasProperty, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, CryptoResult* result)
+bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyName, bool& hasProperty, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
 {
     if (!raw.get(propertyName, buffer)) {
         hasProperty = false;
@@ -470,7 +472,7 @@ bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyN
     hasProperty = true;
 
     if (!buffer) {
-        completeWithSyntaxError(context.toString(propertyName, "Not an ArrayBufferView"), result);
+        setSyntaxError(context.toString(propertyName, "Not an ArrayBufferView"), error);
         return false;
     }
 
@@ -482,21 +484,21 @@ bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyN
 //     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
 //
 // FIXME: Currently only supports ArrayBufferView.
-bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, CryptoResult* result)
+bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasProperty;
-    bool ok = getOptionalCryptoOperationData(raw, propertyName, hasProperty, buffer, context, result);
+    bool ok = getOptionalCryptoOperationData(raw, propertyName, hasProperty, buffer, context, error);
     if (!hasProperty) {
-        completeWithSyntaxError(context.toString(propertyName, "Missing required property"), result);
+        setSyntaxError(context.toString(propertyName, "Missing required property"), error);
         return false;
     }
     return ok;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, CryptoResult* result)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!raw.get(propertyName, array) || !array) {
-        completeWithSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), result);
+        setSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
         return false;
     }
     return true;
@@ -505,25 +507,25 @@ bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8
 // Defined by the WebCrypto spec as:
 //
 //     typedef Uint8Array BigInteger;
-bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, CryptoResult* result)
+bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, AlgorithmError* error)
 {
-    if (!getUint8Array(raw, propertyName, array, context, result))
+    if (!getUint8Array(raw, propertyName, array, context, error))
         return false;
 
     if (!array->byteLength()) {
-        completeWithSyntaxError(context.toString(propertyName, "BigInteger should not be empty"), result);
+        setSyntaxError(context.toString(propertyName, "BigInteger should not be empty"), error);
         return false;
     }
 
     if (!raw.get(propertyName, array) || !array) {
-        completeWithSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), result);
+        setSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
         return false;
     }
     return true;
 }
 
 // Gets an integer according to WebIDL's [EnforceRange].
-bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ErrorContext& context, CryptoResult* result)
+bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ErrorContext& context, AlgorithmError* error)
 {
     double number;
     bool ok = raw.get(propertyName, number, hasProperty);
@@ -532,14 +534,14 @@ bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& h
         return true;
 
     if (!ok || std::isnan(number)) {
-        completeWithSyntaxError(context.toString(propertyName, "Is not a number"), result);
+        setSyntaxError(context.toString(propertyName, "Is not a number"), error);
         return false;
     }
 
     number = trunc(number);
 
     if (std::isinf(number) || number < minValue || number > maxValue) {
-        completeWithSyntaxError(context.toString(propertyName, "Outside of numeric range"), result);
+        setSyntaxError(context.toString(propertyName, "Outside of numeric range"), error);
         return false;
     }
 
@@ -547,51 +549,51 @@ bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& h
     return true;
 }
 
-bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ErrorContext& context, CryptoResult* result)
+bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasProperty;
-    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, result))
+    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, error))
         return false;
 
     if (!hasProperty) {
-        completeWithSyntaxError(context.toString(propertyName, "Missing required property"), result);
+        setSyntaxError(context.toString(propertyName, "Missing required property"), error);
         return false;
     }
 
     return true;
 }
 
-bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ErrorContext& context, CryptoResult* result)
+bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ErrorContext& context, AlgorithmError* error)
 {
     double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, result))
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, error))
         return false;
     value = number;
     return true;
 }
 
-bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ErrorContext& context, CryptoResult* result)
+bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ErrorContext& context, AlgorithmError* error)
 {
     double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, result))
+    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, error))
         return false;
     value = number;
     return true;
 }
 
-bool getUint8(const Dictionary& raw, const char* propertyName, uint8_t& value, const ErrorContext& context, CryptoResult* result)
+bool getUint8(const Dictionary& raw, const char* propertyName, uint8_t& value, const ErrorContext& context, AlgorithmError* error)
 {
     double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFF, context, result))
+    if (!getInteger(raw, propertyName, number, 0, 0xFF, context, error))
         return false;
     value = number;
     return true;
 }
 
-bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ErrorContext& context, CryptoResult* result)
+bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ErrorContext& context, AlgorithmError* error)
 {
     double number;
-    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, result))
+    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, error))
         return false;
     if (hasValue)
         value = number;
@@ -603,14 +605,14 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
 //    dictionary AesCbcParams : Algorithm {
 //      CryptoOperationData iv;
 //    };
-bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> iv;
-    if (!getCryptoOperationData(raw, "iv", iv, context, result))
+    if (!getCryptoOperationData(raw, "iv", iv, context, error))
         return false;
 
     if (iv->byteLength() != 16) {
-        completeWithDataError(context.toString("iv", "Must be 16 bytes"), result);
+        setDataError(context.toString("iv", "Must be 16 bytes"), error);
         return false;
     }
 
@@ -623,28 +625,28 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //    dictionary AesKeyGenParams : Algorithm {
 //      [EnforceRange] unsigned short length;
 //    };
-bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     uint16_t length;
-    if (!getUint16(raw, "length", length, context, result))
+    if (!getUint16(raw, "length", length, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoAesKeyGenParams(length));
     return true;
 }
 
-bool parseAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, ErrorContext, CryptoResult*);
+bool parseAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
 
-bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorContext context, CryptoResult* result)
+bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorContext context, AlgorithmError* error)
 {
     Dictionary rawHash;
     if (!raw.get("hash", rawHash)) {
-        completeWithSyntaxError(context.toString("hash", "Missing or not a dictionary"), result);
+        setSyntaxError(context.toString("hash", "Missing or not a dictionary"), error);
         return false;
     }
 
     context.add("hash");
-    return parseAlgorithm(rawHash, Digest, hash, context, result);
+    return parseAlgorithm(rawHash, blink::WebCryptoOperationDigest, hash, context, error);
 }
 
 // Defined by the WebCrypto spec as:
@@ -652,10 +654,10 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
 //    dictionary HmacImportParams : Algorithm {
 //      AlgorithmIdentifier hash;
 //    };
-bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, result))
+    if (!parseHash(raw, hash, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoHmacImportParams(hash));
@@ -671,15 +673,15 @@ bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
 //      // size.
 //      unsigned long length;
 //    };
-bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, result))
+    if (!parseHash(raw, hash, context, error))
         return false;
 
     bool hasLength;
     uint32_t length = 0;
-    if (!getOptionalUint32(raw, "length", hasLength, length, context, result))
+    if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoHmacKeyGenParams(hash, hasLength, length));
@@ -691,10 +693,10 @@ bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
 //    dictionary RsaHashedImportParams {
 //      AlgorithmIdentifier hash;
 //    };
-bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, result))
+    if (!parseHash(raw, hash, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoRsaHashedImportParams(hash));
@@ -711,18 +713,18 @@ bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
 //      unsigned long modulusLength;
 //      BigInteger publicExponent;
 //    };
-bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     uint32_t modulusLength;
-    if (!getUint32(raw, "modulusLength", modulusLength, context, result))
+    if (!getUint32(raw, "modulusLength", modulusLength, context, error))
         return false;
 
     RefPtr<Uint8Array> publicExponent;
-    if (!getBigInteger(raw, "publicExponent", publicExponent, context, result))
+    if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
         return false;
 
     blink::WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, result))
+    if (!parseHash(raw, hash, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoRsaHashedKeyGenParams(hash, modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
@@ -735,14 +737,14 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
 //      CryptoOperationData counter;
 //      [EnforceRange] octet length;
 //    };
-bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> counter;
-    if (!getCryptoOperationData(raw, "counter", counter, context, result))
+    if (!getCryptoOperationData(raw, "counter", counter, context, error))
         return false;
 
     uint8_t length;
-    if (!getUint8(raw, "length", length, context, result))
+    if (!getUint8(raw, "length", length, context, error))
         return false;
 
     params = adoptPtr(new blink::WebCryptoAesCtrParams(length, static_cast<const unsigned char*>(counter->baseAddress()), counter->byteLength()));
@@ -756,20 +758,20 @@ bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //       CryptoOperationData? additionalData;
 //       [EnforceRange] octet? tagLength;  // May be 0-128
 //     }
-bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> iv;
-    if (!getCryptoOperationData(raw, "iv", iv, context, result))
+    if (!getCryptoOperationData(raw, "iv", iv, context, error))
         return false;
 
     bool hasAdditionalData;
     RefPtr<ArrayBufferView> additionalData;
-    if (!getOptionalCryptoOperationData(raw, "additionalData", hasAdditionalData, additionalData, context, result))
+    if (!getOptionalCryptoOperationData(raw, "additionalData", hasAdditionalData, additionalData, context, error))
         return false;
 
     double tagLength;
     bool hasTagLength;
-    if (!getOptionalInteger(raw, "tagLength", hasTagLength, tagLength, 0, 128, context, result))
+    if (!getOptionalInteger(raw, "tagLength", hasTagLength, tagLength, 0, 128, context, error))
         return false;
 
     const unsigned char* ivStart = static_cast<const unsigned char*>(iv->baseAddress());
@@ -787,11 +789,11 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //     dictionary RsaOaepParams : Algorithm {
 //       CryptoOperationData? label;
 //     };
-bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasLabel;
     RefPtr<ArrayBufferView> label;
-    if (!getOptionalCryptoOperationData(raw, "label", hasLabel, label, context, result))
+    if (!getOptionalCryptoOperationData(raw, "label", hasLabel, label, context, error))
         return false;
 
     const unsigned char* labelStart = hasLabel ? static_cast<const unsigned char*>(label->baseAddress()) : 0;
@@ -801,85 +803,85 @@ bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmP
     return true;
 }
 
-bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ErrorContext& context, CryptoResult* result)
+bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
     case blink::WebCryptoAlgorithmParamsTypeNone:
         return true;
     case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
         context.add("AesCbcParams");
-        return parseAesCbcParams(raw, params, context, result);
+        return parseAesCbcParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         context.add("AesKeyGenParams");
-        return parseAesKeyGenParams(raw, params, context, result);
+        return parseAesKeyGenParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
         context.add("HmacImportParams");
-        return parseHmacImportParams(raw, params, context, result);
+        return parseHmacImportParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
         context.add("HmacKeyGenParams");
-        return parseHmacKeyGenParams(raw, params, context, result);
+        return parseHmacKeyGenParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
         context.add("RsaHashedKeyGenParams");
-        return parseRsaHashedKeyGenParams(raw, params, context, result);
+        return parseRsaHashedKeyGenParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
         context.add("RsaHashedImportParams");
-        return parseRsaHashedImportParams(raw, params, context, result);
+        return parseRsaHashedImportParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
         context.add("AesCtrParams");
-        return parseAesCtrParams(raw, params, context, result);
+        return parseAesCtrParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
         context.add("AesGcmParams");
-        return parseAesGcmParams(raw, params, context, result);
+        return parseAesGcmParams(raw, params, context, error);
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         context.add("RsaOaepParams");
-        return parseRsaOaepParams(raw, params, context, result);
+        return parseRsaOaepParams(raw, params, context, error);
         break;
     }
     ASSERT_NOT_REACHED();
     return false;
 }
 
-const char* operationToString(AlgorithmOperation op)
+const char* operationToString(blink::WebCryptoOperation op)
 {
     switch (op) {
-    case Encrypt:
+    case blink::WebCryptoOperationEncrypt:
         return "encrypt";
-    case Decrypt:
+    case blink::WebCryptoOperationDecrypt:
         return "decrypt";
-    case Sign:
+    case blink::WebCryptoOperationSign:
         return "sign";
-    case Verify:
+    case blink::WebCryptoOperationVerify:
         return "verify";
-    case Digest:
+    case blink::WebCryptoOperationDigest:
         return "digest";
-    case GenerateKey:
+    case blink::WebCryptoOperationGenerateKey:
         return "generateKey";
-    case ImportKey:
+    case blink::WebCryptoOperationImportKey:
         return "importKey";
-    case DeriveKey:
+    case blink::WebCryptoOperationDeriveKey:
         return "deriveKey";
-    case DeriveBits:
+    case blink::WebCryptoOperationDeriveBits:
         return "deriveBits";
-    case WrapKey:
+    case blink::WebCryptoOperationWrapKey:
         return "wrapKey";
-    case UnwrapKey:
+    case blink::WebCryptoOperationUnwrapKey:
         return "unwrapKey";
     }
     return 0;
 }
 
-bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ErrorContext context, CryptoResult* result)
+bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
 {
     context.add("Algorithm");
 
     if (!raw.isObject()) {
-        completeWithSyntaxError(context.toString("Not an object"), result);
+        setSyntaxError(context.toString("Not an object"), error);
         return false;
     }
 
     String algorithmName;
     if (!raw.get("name", algorithmName)) {
-        completeWithSyntaxError(context.toString("name", "Missing or not a string"), result);
+        setSyntaxError(context.toString("name", "Missing or not a string"), error);
         return false;
     }
 
@@ -887,7 +889,7 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
     if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
         // FIXME: The spec says to return a SyntaxError if the input contains
         //        any non-ASCII characters.
-        completeWithNotSupportedError(context.toString("Unrecognized name"), result);
+        setNotSupportedError(context.toString("Unrecognized name"), error);
         return false;
     }
 
@@ -898,14 +900,14 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
 
     if (algorithmInfo->operationToParamsType[op] == Undefined) {
         context.add(algorithmIdToName(algorithmId));
-        completeWithNotSupportedError(context.toString("Unsupported operation", operationToString(op)), result);
+        setNotSupportedError(context.toString("Unsupported operation", operationToString(op)), error);
         return false;
     }
 
     blink::WebCryptoAlgorithmParamsType paramsType = static_cast<blink::WebCryptoAlgorithmParamsType>(algorithmInfo->operationToParamsType[op]);
 
     OwnPtr<blink::WebCryptoAlgorithmParams> params;
-    if (!parseAlgorithmParams(raw, paramsType, params, context, result))
+    if (!parseAlgorithmParams(raw, paramsType, params, context, error))
         return false;
 
     algorithm = blink::WebCryptoAlgorithm(algorithmId, params.release());
@@ -914,9 +916,9 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
 
 } // namespace
 
-bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, CryptoResult* result)
+bool normalizeAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, AlgorithmError* error)
 {
-    return parseAlgorithm(raw, op, algorithm, ErrorContext(), result);
+    return parseAlgorithm(raw, op, algorithm, ErrorContext(), error);
 }
 
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)

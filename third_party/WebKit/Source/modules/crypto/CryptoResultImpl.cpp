@@ -47,9 +47,7 @@
 
 namespace WebCore {
 
-namespace {
-
-ExceptionCode toExceptionCode(blink::WebCryptoErrorType errorType)
+ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType errorType)
 {
     switch (errorType) {
     case blink::WebCryptoErrorTypeNotSupported:
@@ -76,8 +74,6 @@ ExceptionCode toExceptionCode(blink::WebCryptoErrorType errorType)
     ASSERT_NOT_REACHED();
     return 0;
 }
-
-} // namespace
 
 // The PromiseState class contains all the state which is tied to an
 // ExecutionContext. Whereas CryptoResultImpl can be deleted from any thread,
@@ -109,7 +105,7 @@ public:
 
     void completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
     {
-        m_promiseResolver->reject(DOMException::create(toExceptionCode(errorType), errorDetails));
+        m_promiseResolver->reject(DOMException::create(webCryptoErrorToExceptionCode(errorType), errorDetails));
         delete this;
     }
 

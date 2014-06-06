@@ -32,12 +32,15 @@
 #define CryptoResultImpl_h
 
 #include "bindings/v8/ScriptPromise.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Forward.h"
 #include "wtf/WeakPtr.h"
 
 namespace WebCore {
+
+ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType);
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 //
