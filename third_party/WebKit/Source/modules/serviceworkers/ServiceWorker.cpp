@@ -153,10 +153,8 @@ PassRefPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext
 PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolverWithContext* resolver, WebType* worker)
 {
     RefPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
-
     ScriptState::Scope scope(resolver->scriptState());
     serviceWorker->waitOnPromise(resolver->promise());
-
     return serviceWorker;
 }
 

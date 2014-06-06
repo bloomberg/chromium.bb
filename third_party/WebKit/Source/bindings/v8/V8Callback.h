@@ -44,6 +44,7 @@ class ExecutionContext;
 bool invokeCallback(ScriptState*, v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[]);
 bool invokeCallback(ScriptState*, v8::Local<v8::Function> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[]);
 
+// FIXME: This file is used only by V8GeolocationCustom.cpp. Remove the custom binding and this file.
 enum CallbackAllowedValueFlag {
     CallbackAllowUndefined = 1,
     CallbackAllowNull = 1 << 1

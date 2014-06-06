@@ -108,7 +108,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     v8::Isolate* isolate = toIsolate(frame->frame());
     V8TestingScope scope(isolate);
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
-    RefPtr<EventListener> listener = TestListener::create(ScriptState::current(isolate));
+    RefPtr<EventListener> listener = TestListener::create(scope.scriptState());
     frame->frame()->document()->addEventListener("blah", listener, false);
     frame->frame()->document()->dispatchEvent(event);
 
