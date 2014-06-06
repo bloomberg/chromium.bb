@@ -36,6 +36,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
   virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateCompositor(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;

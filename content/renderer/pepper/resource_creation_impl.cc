@@ -62,6 +62,10 @@ PP_Resource ResourceCreationImpl::CreateAudioInput(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateCompositor(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
   return (new PPB_Broker_Impl(instance))->GetReference();
 }

@@ -22,6 +22,8 @@
         'ppb_audio_buffer.h',
         'ppb_audio_config.h',
         'ppb_audio.h',
+        'ppb_compositor.h',
+        'ppb_compositor_layer.h',
         'ppb_console.h',
         'ppb_core.h',
         'ppb_file_io.h',

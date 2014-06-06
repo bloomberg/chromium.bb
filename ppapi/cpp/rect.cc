@@ -8,8 +8,9 @@
 
 namespace {
 
-void AdjustAlongAxis(int32_t dst_origin, int32_t dst_size,
-                     int32_t* origin, int32_t* size) {
+template<typename T>
+void AdjustAlongAxis(T dst_origin, T dst_size,
+                     T* origin, T* size) {
   if (*origin < dst_origin) {
     *origin = dst_origin;
     *size = std::min(dst_size, *size);
@@ -127,4 +128,108 @@ bool Rect::SharesEdgeWith(const Rect& rect) const {
              (y() == rect.bottom() || bottom() == rect.y()));
 }
 
+void FloatRect::Inset(float left, float top, float right, float bottom) {
+  Offset(left, top);
+  set_width(std::max<float>(width() - left - right, 0.0f));
+  set_height(std::max<float>(height() - top - bottom, 0.0f));
+}
+
+void FloatRect::Offset(float horizontal, float vertical) {
+  rect_.point.x += horizontal;
+  rect_.point.y += vertical;
+}
+
+bool FloatRect::Contains(float point_x, float point_y) const {
+  return (point_x >= x()) && (point_x < right()) &&
+         (point_y >= y()) && (point_y < bottom());
+}
+
+bool FloatRect::Contains(const FloatRect& rect) const {
+  return (rect.x() >= x() && rect.right() <= right() &&
+          rect.y() >= y() && rect.bottom() <= bottom());
+}
+
+bool FloatRect::Intersects(const FloatRect& rect) const {
+  return !(rect.x() >= right() || rect.right() <= x() ||
+           rect.y() >= bottom() || rect.bottom() <= y());
+}
+
+FloatRect FloatRect::Intersect(const FloatRect& rect) const {
+  float rx = std::max(x(), rect.x());
+  float ry = std::max(y(), rect.y());
+  float rr = std::min(right(), rect.right());
+  float rb = std::min(bottom(), rect.bottom());
+
+  if (rx >= rr || ry >= rb)
+    rx = ry = rr = rb = 0;  // non-intersecting
+
+  return FloatRect(rx, ry, rr - rx, rb - ry);
+}
+
+FloatRect FloatRect::Union(const FloatRect& rect) const {
+  // special case empty rects...
+  if (IsEmpty())
+    return rect;
+  if (rect.IsEmpty())
+    return *this;
+
+  float rx = std::min(x(), rect.x());
+  float ry = std::min(y(), rect.y());
+  float rr = std::max(right(), rect.right());
+  float rb = std::max(bottom(), rect.bottom());
+
+  return FloatRect(rx, ry, rr - rx, rb - ry);
+}
+
+FloatRect FloatRect::Subtract(const FloatRect& rect) const {
+  // boundary cases:
+  if (!Intersects(rect))
+    return *this;
+  if (rect.Contains(*this))
+    return FloatRect();
+
+  float rx = x();
+  float ry = y();
+  float rr = right();
+  float rb = bottom();
+
+  if (rect.y() <= y() && rect.bottom() >= bottom()) {
+    // complete intersection in the y-direction
+    if (rect.x() <= x()) {
+      rx = rect.right();
+    } else {
+      rr = rect.x();
+    }
+  } else if (rect.x() <= x() && rect.right() >= right()) {
+    // complete intersection in the x-direction
+    if (rect.y() <= y()) {
+      ry = rect.bottom();
+    } else {
+      rb = rect.y();
+    }
+  }
+  return FloatRect(rx, ry, rr - rx, rb - ry);
+}
+
+FloatRect FloatRect::AdjustToFit(const FloatRect& rect) const {
+  float new_x = x();
+  float new_y = y();
+  float new_width = width();
+  float new_height = height();
+  AdjustAlongAxis(rect.x(), rect.width(), &new_x, &new_width);
+  AdjustAlongAxis(rect.y(), rect.height(), &new_y, &new_height);
+  return FloatRect(new_x, new_y, new_width, new_height);
+}
+
+FloatPoint FloatRect::CenterPoint() const {
+  return FloatPoint(x() + (width() + 1.0f) / 2.0f,
+                    y() + (height() + 1.0f) / 2.0f);
+}
+
+bool FloatRect::SharesEdgeWith(const FloatRect& rect) const {
+  return (y() == rect.y() && height() == rect.height() &&
+             (x() == rect.right() || right() == rect.x())) ||
+         (x() == rect.x() && width() == rect.width() &&
+             (y() == rect.bottom() || bottom() == rect.y()));
+}
 }  // namespace pp

@@ -41130,6 +41130,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="286711" label="PPB_FlashFullscreen;0.1"/>
   <int value="2804066" label="PPB_AudioConfig;1.1"/>
   <int value="8760108" label="PPB_Testing_Private;1.0"/>
+  <int value="12033600" label="PPB_Compositor;0.1"/>
   <int value="13662160" label="PPB_CharSet(Dev);0.4"/>
   <int value="22816901" label="PPB_FileChooser(Dev);0.5"/>
   <int value="28187368" label="PPB_IMEInputEvent(Dev);0.2"/>
@@ -41143,6 +41144,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="156766028" label="PPB_UMA_Private;0.3"/>
   <int value="162107265" label="PPB_NetworkMonitor;1.0"/>
   <int value="180906214" label="PPB_Instance_Private;0.1"/>
+  <int value="206043276" label="PPB_CompositorLayer;0.1"/>
   <int value="221802429" label="PPB_URLUtil(Dev);0.7"/>
   <int value="225125520" label="PPB_Find(Private);0.3"/>
   <int value="226206264" label="PPB_FileRef;1.1"/>
