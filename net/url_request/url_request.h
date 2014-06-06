@@ -31,10 +31,6 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
-class ChildProcessSecurityPolicyTest;
-
 namespace base {
 class Value;
 
@@ -47,13 +43,6 @@ class StackTrace;
 // interface.
 namespace content {
 class AppCacheInterceptor;
-class AppCacheURLRequestJobTest;
-class AppCacheRequestHandlerTest;
-class BlobURLRequestJobTest;
-class FileSystemDirURLRequestJobTest;
-class FileSystemURLRequestJobTest;
-class FileWriterDelegateTest;
-class ResourceDispatcherHostTest;
 }
 
 namespace net {
@@ -160,17 +149,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   class NET_EXPORT Deprecated {
    private:
     // TODO(willchan): Kill off these friend declarations.
-    friend class ::ChildProcessSecurityPolicyTest;
     friend class TestInterceptor;
     friend class URLRequestFilter;
     friend class content::AppCacheInterceptor;
-    friend class content::AppCacheRequestHandlerTest;
-    friend class content::AppCacheURLRequestJobTest;
-    friend class content::BlobURLRequestJobTest;
-    friend class content::FileSystemDirURLRequestJobTest;
-    friend class content::FileSystemURLRequestJobTest;
-    friend class content::FileWriterDelegateTest;
-    friend class content::ResourceDispatcherHostTest;
 
     // Use URLRequestJobFactory::ProtocolHandler instead.
     static ProtocolFactory* RegisterProtocolFactory(const std::string& scheme,

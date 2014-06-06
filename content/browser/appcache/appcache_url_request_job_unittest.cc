@@ -20,6 +20,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_url_request_job.h"
@@ -37,12 +38,62 @@ using net::WrappedIOBuffer;
 
 namespace content {
 
-static const char kHttpBasicHeaders[] =
-    "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
-static const char kHttpBasicBody[] = "Hello";
+namespace {
 
-static const int kNumBlocks = 4;
-static const int kBlockSize = 1024;
+const char kHttpBasicHeaders[] = "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
+const char kHttpBasicBody[] = "Hello";
+
+const int kNumBlocks = 4;
+const int kBlockSize = 1024;
+
+class MockURLRequestJobFactory : public net::URLRequestJobFactory {
+ public:
+  MockURLRequestJobFactory() : job_(NULL) {
+  }
+
+  virtual ~MockURLRequestJobFactory() {
+    DCHECK(!job_);
+  }
+
+  void SetJob(net::URLRequestJob* job) {
+    job_ = job;
+  }
+
+  bool has_job() const {
+    return job_ != NULL;
+  }
+
+  // net::URLRequestJobFactory implementation.
+  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+      const std::string& scheme,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    if (job_) {
+      net::URLRequestJob* temp = job_;
+      job_ = NULL;
+      return temp;
+    } else {
+      return new net::URLRequestErrorJob(request,
+                                         network_delegate,
+                                         net::ERR_INTERNET_DISCONNECTED);
+    }
+  }
+
+  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+    return scheme == "http";
+  };
+
+  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+    return url.SchemeIs("http");
+  }
+
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return false;
+  }
+
+  private:
+   mutable net::URLRequestJob* job_;
+};
 
 class AppCacheURLRequestJobTest : public testing::Test {
  public:
@@ -138,21 +189,6 @@ class AppCacheURLRequestJobTest : public testing::Test {
     bool kill_with_io_pending_;
   };
 
-  static net::URLRequestJob* MockHttpJobFactory(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const std::string& scheme) {
-    if (mock_factory_job_) {
-      net::URLRequestJob* temp = mock_factory_job_;
-      mock_factory_job_ = NULL;
-      return temp;
-    } else {
-      return new net::URLRequestErrorJob(request,
-                                         network_delegate,
-                                         net::ERR_INTERNET_DISCONNECTED);
-    }
-  }
-
   // Helper callback to run a test on our io_thread. The io_thread is spun up
   // once and reused for all tests.
   template <class Method>
@@ -185,9 +221,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void SetUpTest() {
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
     DCHECK(task_stack_.empty());
-    orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
-        "http", MockHttpJobFactory);
-    url_request_delegate_.reset(new MockURLRequestDelegate(this));
+
     storage_delegate_.reset(new MockStorageDelegate(this));
     service_.reset(new MockAppCacheService());
     expected_read_result_ = 0;
@@ -195,16 +229,16 @@ class AppCacheURLRequestJobTest : public testing::Test {
     written_response_id_ = 0;
     reader_deletion_count_down_ = 0;
     writer_deletion_count_down_ = 0;
+
+    url_request_delegate_.reset(new MockURLRequestDelegate(this));
+    job_factory_.reset(new MockURLRequestJobFactory());
+    empty_context_.reset(new net::URLRequestContext());
+    empty_context_->set_job_factory(job_factory_.get());
   }
 
   void TearDownTest() {
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
-    net::URLRequest::Deprecated::RegisterProtocolFactory("http",
-                                                         orig_http_factory_);
-    orig_http_factory_ = NULL;
     request_.reset();
-    url_request_delegate_.reset();
-    DCHECK(!mock_factory_job_);
 
     while (!task_stack_.empty())
       task_stack_.pop();
@@ -217,6 +251,11 @@ class AppCacheURLRequestJobTest : public testing::Test {
     write_info_buffer_ = NULL;
     storage_delegate_.reset();
     service_.reset();
+
+    DCHECK(!job_factory_->has_job());
+    empty_context_.reset();
+    job_factory_.reset();
+    url_request_delegate_.reset();
   }
 
   void TestFinished() {
@@ -385,8 +424,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // Basic -------------------------------------------------------------------
   void Basic() {
     AppCacheStorage* storage = service_->storage();
-    net::URLRequest request(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL, &empty_context_);
+    net::URLRequest request(GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL,
+                            empty_context_.get());
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance and see that it looks as expected.
@@ -409,8 +448,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // DeliveryOrders -----------------------------------------------------
   void DeliveryOrders() {
     AppCacheStorage* storage = service_->storage();
-    net::URLRequest request(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL, &empty_context_);
+    net::URLRequest request(GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL,
+                            empty_context_.get());
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance, give it a delivery order and see that
@@ -454,24 +493,25 @@ class AppCacheURLRequestJobTest : public testing::Test {
                    base::Unretained(this)));
 
     AppCacheStorage* storage = service_->storage();
-    request_ = empty_context_.CreateRequest(GURL("http://blah/"),
-                                            net::DEFAULT_PRIORITY,
-                                            url_request_delegate_.get(),
-                                            NULL);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY,
+                                             url_request_delegate_.get(),
+                                             NULL);
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
-    mock_factory_job_ = new AppCacheURLRequestJob(
+    AppCacheURLRequestJob* mock_job = new AppCacheURLRequestJob(
         request_.get(), NULL, storage, NULL, false);
-    mock_factory_job_->DeliverNetworkResponse();
-    EXPECT_TRUE(mock_factory_job_->is_delivering_network_response());
-    EXPECT_FALSE(mock_factory_job_->has_been_started());
+    job_factory_->SetJob(mock_job);
+    mock_job->DeliverNetworkResponse();
+    EXPECT_TRUE(mock_job->is_delivering_network_response());
+    EXPECT_FALSE(mock_job->has_been_started());
 
     // Start the request.
     request_->Start();
 
     // The job should have been picked up.
-    EXPECT_FALSE(mock_factory_job_);
+    EXPECT_FALSE(job_factory_->has_job());
     // Completion is async.
   }
 
@@ -490,24 +530,25 @@ class AppCacheURLRequestJobTest : public testing::Test {
                    base::Unretained(this)));
 
     AppCacheStorage* storage = service_->storage();
-    request_ = empty_context_.CreateRequest(GURL("http://blah/"),
-                                            net::DEFAULT_PRIORITY,
-                                            url_request_delegate_.get(),
-                                            NULL);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY,
+                                             url_request_delegate_.get(),
+                                             NULL);
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
-    mock_factory_job_ = new AppCacheURLRequestJob(
+    AppCacheURLRequestJob* mock_job = new AppCacheURLRequestJob(
         request_.get(), NULL, storage, NULL, false);
-    mock_factory_job_->DeliverErrorResponse();
-    EXPECT_TRUE(mock_factory_job_->is_delivering_error_response());
-    EXPECT_FALSE(mock_factory_job_->has_been_started());
+    job_factory_->SetJob(mock_job);
+    mock_job->DeliverErrorResponse();
+    EXPECT_TRUE(mock_job->is_delivering_error_response());
+    EXPECT_FALSE(mock_job->has_been_started());
 
     // Start the request.
     request_->Start();
 
     // The job should have been picked up.
-    EXPECT_FALSE(mock_factory_job_);
+    EXPECT_FALSE(job_factory_->has_job());
     // Completion is async.
   }
 
@@ -541,10 +582,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void RequestAppCachedResource(bool start_after_delivery_orders) {
     AppCacheStorage* storage = service_->storage();
-    request_ = empty_context_.CreateRequest(GURL("http://blah/"),
-                                            net::DEFAULT_PRIORITY,
-                                            url_request_delegate_.get(),
-                                            NULL);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY,
+                                             url_request_delegate_.get(),
+                                             NULL);
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -561,9 +602,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Start the request.
     EXPECT_FALSE(job->has_been_started());
-    mock_factory_job_ = job.get();
+    job_factory_->SetJob(job.get());
     request_->Start();
-    EXPECT_FALSE(mock_factory_job_);
+    EXPECT_FALSE(job_factory_->has_job());
     EXPECT_TRUE(job->has_been_started());
 
     if (!start_after_delivery_orders) {
@@ -656,10 +697,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void MakeRangeRequest() {
     AppCacheStorage* storage = service_->storage();
-    request_ = empty_context_.CreateRequest(GURL("http://blah/"),
-                                            net::DEFAULT_PRIORITY,
-                                            url_request_delegate_.get(),
-                                            NULL);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY,
+                                             url_request_delegate_.get(),
+                                             NULL);
 
     // Request a range, the 3 middle chars out of 'Hello'
     net::HttpRequestHeaders extra_headers;
@@ -677,9 +718,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Start the request.
     EXPECT_FALSE(job->has_been_started());
-    mock_factory_job_ = job.get();
+    job_factory_->SetJob(job.get());
     request_->Start();
-    EXPECT_FALSE(mock_factory_job_);
+    EXPECT_FALSE(job_factory_->has_job());
     EXPECT_TRUE(job->has_been_started());
     // Completion is async.
   }
@@ -776,18 +817,16 @@ class AppCacheURLRequestJobTest : public testing::Test {
   int expected_write_result_;
   int writer_deletion_count_down_;
 
-  net::URLRequest::ProtocolFactory* orig_http_factory_;
-  net::URLRequestContext empty_context_;
+  scoped_ptr<MockURLRequestJobFactory> job_factory_;
+  scoped_ptr<net::URLRequestContext> empty_context_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
 
   static scoped_ptr<base::Thread> io_thread_;
-  static AppCacheURLRequestJob* mock_factory_job_;
 };
 
 // static
 scoped_ptr<base::Thread> AppCacheURLRequestJobTest::io_thread_;
-AppCacheURLRequestJob* AppCacheURLRequestJobTest::mock_factory_job_ = NULL;
 
 TEST_F(AppCacheURLRequestJobTest, Basic) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::Basic);
@@ -824,5 +863,7 @@ TEST_F(AppCacheURLRequestJobTest, CancelRequest) {
 TEST_F(AppCacheURLRequestJobTest, CancelRequestWithIOPending) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::CancelRequestWithIOPending);
 }
+
+}  // namespace
 
 }  // namespace content
