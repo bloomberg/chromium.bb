@@ -49,7 +49,6 @@ include_rules = [
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
   "!components/bookmarks/browser/bookmark_model.h",
-  "!components/bookmarks/browser/bookmark_service.h",
   "!components/bookmarks/browser/bookmark_utils.h",
 ]
 

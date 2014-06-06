@@ -138,7 +138,7 @@ TEST_F(BookmarkModelSQLHandlerTest, UpdateHistoryToBookmark) {
   ASSERT_TRUE(handler.Update(row, id_rows));
   RunMessageLoopForUI();
   // Get all bookmarks and verify there is only one.
-  std::vector<BookmarkService::URLAndTitle> bookmarks;
+  std::vector<BookmarkModel::URLAndTitle> bookmarks;
   bookmark_model_->GetBookmarks(&bookmarks);
   ASSERT_EQ(1u, bookmarks.size());
   EXPECT_EQ(url_row.url(), bookmarks[0].url);

@@ -9,7 +9,6 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_service.h"
 #include "sync/test/fake_server/bookmark_entity_builder.h"
 #include "sync/test/fake_server/entity_builder_factory.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
@@ -48,7 +47,7 @@ class SingleClientBookmarksSyncTest : public SyncTest {
 void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
     int index) {
   fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
-  std::vector<BookmarkService::URLAndTitle> local_bookmarks;
+  std::vector<BookmarkModel::URLAndTitle> local_bookmarks;
   GetBookmarkModel(index)->GetBookmarks(&local_bookmarks);
 
   // Verify that the number of local bookmarks matches the number in the
@@ -58,7 +57,7 @@ void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
       syncer::BOOKMARKS));
 
   // Verify that all local bookmark titles exist once on the server.
-  std::vector<BookmarkService::URLAndTitle>::const_iterator it;
+  std::vector<BookmarkModel::URLAndTitle>::const_iterator it;
   for (it = local_bookmarks.begin(); it != local_bookmarks.end(); ++it) {
     ASSERT_TRUE(fake_server_verifier.VerifyEntityCountByTypeAndName(
         1,

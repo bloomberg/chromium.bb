@@ -525,7 +525,7 @@ bool BookmarkModel::IsBookmarked(const GURL& url) {
 }
 
 void BookmarkModel::GetBookmarks(
-    std::vector<BookmarkService::URLAndTitle>* bookmarks) {
+    std::vector<BookmarkModel::URLAndTitle>* bookmarks) {
   base::AutoLock url_lock(url_lock_);
   const GURL* last_url = NULL;
   for (NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.begin();
@@ -533,7 +533,7 @@ void BookmarkModel::GetBookmarks(
     const GURL* url = &((*i)->url());
     // Only add unique URLs.
     if (!last_url || *url != *last_url) {
-      BookmarkService::URLAndTitle bookmark;
+      BookmarkModel::URLAndTitle bookmark;
       bookmark.url = *url;
       bookmark.title = (*i)->GetTitle();
       bookmarks->push_back(bookmark);

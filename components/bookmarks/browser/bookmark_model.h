@@ -19,7 +19,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/bookmarks/browser/bookmark_service.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -59,12 +58,17 @@ class TestBookmarkClient;
 //
 // You should NOT directly create a BookmarkModel, instead go through the
 // BookmarkModelFactory.
-class BookmarkModel : public BookmarkService {
+class BookmarkModel {
  public:
+  struct URLAndTitle {
+    GURL url;
+    base::string16 title;
+  };
+
   // |index_urls| says whether URLs should be stored in the BookmarkIndex
   // in addition to bookmark titles.
   BookmarkModel(BookmarkClient* client, bool index_urls);
-  virtual ~BookmarkModel();
+  ~BookmarkModel();
 
   // Invoked prior to destruction to release any necessary resources.
   void Shutdown();
@@ -170,20 +174,22 @@ class BookmarkModel : public BookmarkService {
   // This method is thread safe.
   bool HasBookmarks();
 
-  // Returns true if there is a bookmark with the |url|.
-  // This method is thread safe.
-  // See BookmarkService for more details on this.
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
+  // Returns true if the specified URL is bookmarked.
+  //
+  // If not on the main thread you *must* invoke BlockTillLoaded first.
+  bool IsBookmarked(const GURL& url);
 
-  // Returns all the bookmarked urls and their titles.
-  // This method is thread safe.
-  // See BookmarkService for more details on this.
-  virtual void GetBookmarks(
-      std::vector<BookmarkService::URLAndTitle>* urls) OVERRIDE;
+  // Returns, by reference in |bookmarks|, the set of bookmarked urls and their
+  // titles. This returns the unique set of URLs. For example, if two bookmarks
+  // reference the same URL only one entry is added not matter the titles are
+  // same or not.
+  //
+  // If not on the main thread you *must* invoke BlockTillLoaded first.
+  void GetBookmarks(std::vector<BookmarkModel::URLAndTitle>* urls);
 
-  // Blocks until loaded; this is NOT invoked on the main thread.
-  // See BookmarkService for more details on this.
-  virtual void BlockTillLoaded() OVERRIDE;
+  // Blocks until loaded. This is intended for usage on a thread other than
+  // the main thread.
+  void BlockTillLoaded();
 
   // Adds a new folder node at the specified position.
   const BookmarkNode* AddFolder(const BookmarkNode* parent,

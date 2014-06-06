@@ -49,7 +49,6 @@
         'bookmarks/browser/bookmark_node_data_views.cc',
         'bookmarks/browser/bookmark_pasteboard_helper_mac.h',
         'bookmarks/browser/bookmark_pasteboard_helper_mac.mm',
-        'bookmarks/browser/bookmark_service.h',
         'bookmarks/browser/bookmark_storage.cc',
         'bookmarks/browser/bookmark_storage.h',
         'bookmarks/browser/bookmark_utils.cc',
