@@ -176,8 +176,7 @@ PP_Resource MediaStreamAudioTrackResource::GetAudioBuffer() {
 }
 
 void MediaStreamAudioTrackResource::ReleaseBuffers() {
-  BufferMap::iterator it = buffers_.begin();
-  while (it != buffers_.end()) {
+  for (BufferMap::iterator it = buffers_.begin(); it != buffers_.end(); ++it) {
     // Just invalidate and release VideoBufferResorce, but keep PP_Resource.
     // So plugin can still use |RecycleBuffer()|.
     it->second->Invalidate();

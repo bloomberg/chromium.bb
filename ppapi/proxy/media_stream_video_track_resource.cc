@@ -198,8 +198,7 @@ PP_Resource MediaStreamVideoTrackResource::GetVideoFrame() {
 }
 
 void MediaStreamVideoTrackResource::ReleaseFrames() {
-  FrameMap::iterator it = frames_.begin();
-  while (it != frames_.end()) {
+  for (FrameMap::iterator it = frames_.begin(); it != frames_.end(); ++it) {
     // Just invalidate and release VideoFrameResorce, but keep PP_Resource.
     // So plugin can still use |RecycleFrame()|.
     it->second->Invalidate();
