@@ -1045,7 +1045,7 @@
   fun:scoped_refptr::operator=
   fun:base::MessageLoop::~MessageLoop
   fun:base::MessageLoop::~MessageLoop
-  fun:base::DefaultDeleter::operator()
+  fun:base::DefaultDeleter::operator*
   fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
   fun:scoped_ptr::~scoped_ptr
   fun:base::Thread::ThreadMain
