@@ -105,15 +105,15 @@ ui::EventTarget* BlockKeyboardAndTouchpadTargeter::FindTargetForEvent(
     // when we begin using XI2 events for keyboard events
     // (http://crbug.com/368750) and can tell which device the event is
     // coming from, http://crbug.com/362881.
-    // TODO(bruthig): Fix this to block rewritten volume keys
-    // (i.e. F9 and F10)  from the device's keyboard. https://crbug.com/368669
     ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(event);
-    if (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
-        key_event->key_code() != ui::VKEY_VOLUME_UP
+    if ((key_event->flags() & ui::EF_FUNCTION_KEY) ||
+        (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
+         key_event->key_code() != ui::VKEY_VOLUME_UP
 #if defined(OS_CHROMEOS)
-      && key_event->key_code() != ui::VKEY_POWER
+         && key_event->key_code() != ui::VKEY_POWER
 #endif
-        ) {
+        )
+       ) {
       return NULL;
     }
   }

@@ -174,6 +174,8 @@ int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
 
   return GetEventFlagsFromXState(xevent->xkey.state) |
       (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0) |
+      (IsFunctionKey(XLookupKeysym(&xevent->xkey, 0)) ?
+          ui::EF_FUNCTION_KEY : 0) |
       ime_fabricated_flag;
 }
 

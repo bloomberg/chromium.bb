@@ -21,6 +21,10 @@
 #include "ui/gfx/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
+#if defined(USE_X11)
+#include "ui/events/test/events_test_utils_x11.h"
+#endif
+
 namespace ash {
 
 namespace {
@@ -418,7 +422,9 @@ TEST_F(MaximizeModeControllerTest, Screenshot) {
 }
 #endif  // OS_CHROMEOS
 
-// Tests that maximize mode does not block Volume Up & Down events.
+#if defined(USE_X11)
+// Tests that maximize mode allows volume up/down events originating
+// from dedicated buttons versus remapped keyboard buttons.
 TEST_F(MaximizeModeControllerTest, AllowsVolumeControl) {
   aura::Window* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator event_generator(root, root);
@@ -433,18 +439,39 @@ TEST_F(MaximizeModeControllerTest, AllowsVolumeControl) {
                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
+  ui::ScopedXI2Event xevent;
+
+  // Verify F9 button event is blocked
+  ASSERT_EQ(0, volume_delegate->handle_volume_down_count());
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  ui::KeyEvent press_f9(xevent, false /* is_char */);
+  press_f9.set_flags(ui::EF_FUNCTION_KEY);
+  event_generator.Dispatch(&press_f9);
+  EXPECT_EQ(0, volume_delegate->handle_volume_down_count());
+
+  // Verify F10 button event is blocked
+  ASSERT_EQ(0, volume_delegate->handle_volume_up_count());
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  ui::KeyEvent press_f10(xevent, false /* is_char */);
+  press_f10.set_flags(ui::EF_FUNCTION_KEY);
+  event_generator.Dispatch(&press_f10);
+  EXPECT_EQ(0, volume_delegate->handle_volume_up_count());
+
   // Verify volume down button event is not blocked
   ASSERT_EQ(0, volume_delegate->handle_volume_down_count());
-  event_generator.PressKey(ui::VKEY_VOLUME_DOWN, 0);
-  event_generator.ReleaseKey(ui::VKEY_VOLUME_DOWN, 0);
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  ui::KeyEvent press_vol_down(xevent, false /* is_char */);
+  event_generator.Dispatch(&press_vol_down);
   EXPECT_EQ(1, volume_delegate->handle_volume_down_count());
 
   // Verify volume up event is not blocked
   ASSERT_EQ(0, volume_delegate->handle_volume_up_count());
-  event_generator.PressKey(ui::VKEY_VOLUME_UP, 0);
-  event_generator.ReleaseKey(ui::VKEY_VOLUME_UP, 0);
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
+  ui::KeyEvent press_vol_up(xevent, false /* is_char */);
+  event_generator.Dispatch(&press_vol_up);
   EXPECT_EQ(1, volume_delegate->handle_volume_up_count());
 }
+#endif  // defined(USE_X11)
 
 TEST_F(MaximizeModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no

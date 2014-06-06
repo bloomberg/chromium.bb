@@ -59,6 +59,20 @@ void InitKeyEvent(Display* display,
   key_event->state = state;
 }
 
+// Returns true if the keysym maps to a KeyEvent with the EF_FUNCTION_KEY
+// flag set, or the keysym maps to a zero key code.
+bool HasFunctionKeyFlagSetIfSupported(Display* display, int x_keysym) {
+  XEvent event;
+  int x_keycode = XKeysymToKeycode(display, x_keysym);
+  // Exclude keysyms for which the server has no corresponding keycode.
+  if (x_keycode) {
+    InitKeyEvent(display, &event, true, x_keycode, 0);
+    ui::KeyEvent ui_key_event(&event, false);
+    return (ui_key_event.flags() & ui::EF_FUNCTION_KEY);
+  }
+  return true;
+}
+
 }  // namespace
 
 TEST(EventsXTest, ButtonEvents) {
@@ -368,6 +382,51 @@ TEST(EventsXTest, NumpadKeyEvents) {
                 ui_key_event.flags() & ui::EF_NUMPAD_KEY);
     }
   }
+}
+
+TEST(EventsXTest, FunctionKeyEvents) {
+  Display* display = gfx::GetXDisplay();
+
+  // Min  function key code minus 1.
+  EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F1 - 1));
+  // All function keys.
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F1));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F2));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F3));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F4));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F5));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F6));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F7));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F8));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F9));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F10));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F11));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F12));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F13));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F14));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F15));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F16));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F17));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F18));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F19));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F20));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F21));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F22));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F23));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F24));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F25));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F26));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F27));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F28));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F29));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F30));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F31));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F32));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F33));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F34));
+  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F35));
+  // Max function key code plus 1.
+  EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
 
 }  // namespace ui
