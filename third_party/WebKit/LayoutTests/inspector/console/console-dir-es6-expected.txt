@@ -1,4 +1,5 @@
 CONSOLE MESSAGE: line 15: [object Object]
+CONSOLE MESSAGE: line 18: 
 Tests that console logging dumps proper messages.
 
 Object
@@ -8,4 +9,5 @@ Object
     Symbol(a): Symbol(Symbol.iterator)
     a: 1
     __proto__: Object console-dir-es6.html:15
+Symbol() console-dir-es6.html:18
 

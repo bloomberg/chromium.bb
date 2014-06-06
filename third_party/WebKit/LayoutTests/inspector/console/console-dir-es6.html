@@ -14,6 +14,9 @@ function onload()
     obj[Symbol.iterator] = Symbol("foo");
     console.dir(obj);
 
+    // This used to crash in debug build.
+    console.dir(Symbol());
+
     runTest();
 }
 

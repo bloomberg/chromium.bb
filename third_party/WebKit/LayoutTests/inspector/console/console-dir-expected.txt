@@ -2,6 +2,7 @@ CONSOLE MESSAGE: line 9: test1,test2
 CONSOLE MESSAGE: line 10: [object NodeList]
 CONSOLE MESSAGE: line 11: [object XPathResult]
 CONSOLE MESSAGE: line 21: [object Object]
+CONSOLE MESSAGE: line 24: function () {}
 Tests that console logging dumps proper messages.
 
 Array[2]
@@ -31,4 +32,12 @@ Object
     c d: "c d"
     negZero: -0
     __proto__: Object console-dir.html:21
+function () {}
+    arguments: null
+    caller: null
+    length: 0
+    name: ""
+    prototype: Object
+    __proto__: function Empty() {}
+    <function scope> console-dir.html:24
 

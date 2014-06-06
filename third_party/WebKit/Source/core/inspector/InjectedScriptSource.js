@@ -174,13 +174,24 @@ function max(a, b)
 }
 
 /**
+ * FIXME: Remove once ES6 is supported natively by JS compiler.
+ * @param {*} obj
+ * @return {boolean}
+ */
+function isSymbol(obj)
+{
+    var type = typeof obj;
+    return (type === "symbol");
+}
+
+/**
  * @constructor
  */
 var InjectedScript = function()
 {
     /** @type {number} */
     this._lastBoundObjectId = 1;
-    /** @type {!Object.<number, !Object>} */
+    /** @type {!Object.<number, (!Object|symbol)>} */
     this._idToWrappedObject = { __proto__: null };
     /** @type {!Object.<number, string>} */
     this._idToObjectGroupName = { __proto__: null };
@@ -313,7 +324,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {!Object} object
+     * @param {!Object|symbol} object
      * @param {string=} objectGroupName
      * @return {string}
      */
@@ -384,8 +395,9 @@ InjectedScript.prototype = {
         var object = this._objectForId(parsedObjectId);
         var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
 
-        if (!this._isDefined(object))
+        if (!this._isDefined(object) || isSymbol(object))
             return false;
+        object = /** @type {!Object} */ (object);
         var descriptors = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly);
 
         // Go over properties, wrap object values.
@@ -416,8 +428,9 @@ InjectedScript.prototype = {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
         var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
-        if (!this._isDefined(object))
+        if (!this._isDefined(object) || isSymbol(object))
             return false;
+        object = /** @type {!Object} */ (object);
         var descriptors = [];
         var internalProperties = InjectedScriptHost.getInternalProperties(object);
         if (internalProperties) {
@@ -498,8 +511,7 @@ InjectedScript.prototype = {
                     continue;
 
                 var name = property;
-                var type = typeof property;
-                if (type === "symbol")
+                if (isSymbol(property))
                     name = injectedScript._describe(property);
 
                 try {
@@ -533,7 +545,7 @@ InjectedScript.prototype = {
                 descriptor.name = name;
                 if (o === object)
                     descriptor.isOwn = true;
-                if (type === "symbol")
+                if (isSymbol(property))
                     descriptor.symbol = property;
                 push(descriptors, descriptor);
             }
@@ -877,7 +889,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {!Object} objectId
-     * @return {!Object}
+     * @return {!Object|symbol}
      */
     _objectForId: function(objectId)
     {
@@ -886,7 +898,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {string} objectId
-     * @return {!Object}
+     * @return {!Object|symbol}
      */
     findObjectById: function(objectId)
     {
@@ -987,7 +999,6 @@ InjectedScript.prototype = {
         if (this.isPrimitiveValue(obj))
             return null;
 
-        var type = typeof obj;
         var subtype = this._subtype(obj);
 
         if (subtype === "regexp")
@@ -1019,10 +1030,10 @@ InjectedScript.prototype = {
         }
 
         // NodeList in JSC is a function, check for array prior to this.
-        if (type === "function")
+        if (typeof obj === "function")
             return toString(obj);
 
-        if (type === "symbol") {
+        if (isSymbol(obj)) {
             try {
                 return Symbol.prototype.toString.call(obj) || "Symbol";
             } catch (e) {

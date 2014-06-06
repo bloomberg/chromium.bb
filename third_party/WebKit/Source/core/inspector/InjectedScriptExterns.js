@@ -182,7 +182,7 @@ CallSite.prototype.getColumnNumber = function() { }
 
 // FIXME: Remove once ES6 is supported natively by JS compiler.
 
-/** @typedef {?} */
+/** @typedef {string} */
 var symbol;
 
 /**
