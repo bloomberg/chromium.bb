@@ -3076,7 +3076,20 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       glClearDepth(1.0f);
       state_.SetDeviceDepthMask(GL_TRUE);
       state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+      bool reset_draw_buffer = false;
+      if ((backbuffer_needs_clear_bits_ | GL_COLOR_BUFFER_BIT) != 0 &&
+          group_->draw_buffer() == GL_NONE) {
+        reset_draw_buffer = true;
+        GLenum buf = GL_BACK;
+        if (GetBackbufferServiceId() != 0)  // emulated backbuffer
+          buf = GL_COLOR_ATTACHMENT0;
+        glDrawBuffersARB(1, &buf);
+      }
       glClear(backbuffer_needs_clear_bits_);
+      if (reset_draw_buffer) {
+        GLenum buf = GL_NONE;
+        glDrawBuffersARB(1, &buf);
+      }
       backbuffer_needs_clear_bits_ = 0;
       RestoreClearState();
     }
@@ -5022,7 +5035,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, framebuffer->service_id());
   }
   GLbitfield clear_bits = 0;
-  if (framebuffer->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0)) {
+  if (framebuffer->HasUnclearedColorAttachments()) {
     glClearColor(
         0.0f, 0.0f, 0.0f,
         (GLES2Util::GetChannelsForFormat(
@@ -5030,6 +5043,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
                                                                        1.0f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
+    framebuffer->PrepareDrawBuffersForClear();
   }
 
   if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
@@ -5049,6 +5063,9 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
 
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
   glClear(clear_bits);
+
+  if ((clear_bits | GL_COLOR_BUFFER_BIT) != 0)
+    framebuffer->RestoreDrawBuffersAfterClear();
 
   framebuffer_manager()->MarkAttachmentsAsCleared(
       framebuffer, renderbuffer_manager(), texture_manager());

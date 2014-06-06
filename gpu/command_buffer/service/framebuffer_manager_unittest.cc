@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
+using ::testing::_;
 using ::testing::Return;
 
 namespace gpu {
@@ -21,6 +22,8 @@ const GLint kMaxTextureSize = 64;
 const GLint kMaxCubemapSize = 64;
 const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
+const uint32 kMaxDrawBuffers = 16;
+const uint32 kMaxColorAttachments = 16;
 const bool kDepth24Supported = false;
 const bool kUseDefaultTextures = false;
 
@@ -113,7 +116,7 @@ class FramebufferInfoTest : public testing::Test {
   static const GLuint kService1Id = 11;
 
   FramebufferInfoTest()
-      : manager_(1, 1),
+      : manager_(kMaxDrawBuffers,  kMaxColorAttachments),
         feature_info_(new FeatureInfo()),
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
                               kDepth24Supported) {
@@ -588,6 +591,99 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
+}
+
+TEST_F(FramebufferInfoTest, DrawBuffers) {
+  const GLuint kTextureClientId[] = { 33, 34 };
+  const GLuint kTextureServiceId[] = { 333, 334 };
+
+  for (GLenum i = GL_COLOR_ATTACHMENT0;
+       i < GL_COLOR_ATTACHMENT0 + kMaxColorAttachments; ++i) {
+    EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(i));
+  }
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+
+  EXPECT_EQ(static_cast<GLenum>(GL_COLOR_ATTACHMENT0),
+            framebuffer_->GetDrawBuffer(GL_DRAW_BUFFER0_ARB));
+  for (GLenum i = GL_DRAW_BUFFER1_ARB;
+       i < GL_DRAW_BUFFER0_ARB + kMaxDrawBuffers; ++i) {
+    EXPECT_EQ(static_cast<GLenum>(GL_NONE),
+              framebuffer_->GetDrawBuffer(i));
+  }
+
+  for (size_t ii = 0; ii < arraysize(kTextureClientId); ++ii) {
+    texture_manager_->CreateTexture(
+        kTextureClientId[ii], kTextureServiceId[ii]);
+    scoped_refptr<TextureRef> texture(
+        texture_manager_->GetTexture(kTextureClientId[ii]));
+    ASSERT_TRUE(texture.get() != NULL);
+
+    framebuffer_->AttachTexture(
+        GL_COLOR_ATTACHMENT0 + ii, texture.get(), GL_TEXTURE_2D, 0, 0);
+    EXPECT_FALSE(
+        framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0 + ii));
+
+    const Framebuffer::Attachment* attachment =
+        framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0 + ii);
+    ASSERT_TRUE(attachment != NULL);
+    EXPECT_TRUE(attachment->cleared());
+  }
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+
+  // Set a texture as uncleared.
+  scoped_refptr<TextureRef> texture1(
+      texture_manager_->GetTexture(kTextureClientId[1]));
+  texture_manager_->SetTarget(texture1.get(), GL_TEXTURE_2D);
+  texture_manager_->SetLevelInfo(
+      texture1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4,
+      1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
+
+  const Framebuffer::Attachment* attachment1 =
+      framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT1);
+  ASSERT_TRUE(attachment1 != NULL);
+  EXPECT_FALSE(attachment1->cleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT1));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+
+  GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+  framebuffer_->SetDrawBuffers(2, buffers);
+  EXPECT_EQ(static_cast<GLenum>(GL_COLOR_ATTACHMENT0),
+            framebuffer_->GetDrawBuffer(GL_DRAW_BUFFER0_ARB));
+  EXPECT_EQ(static_cast<GLenum>(GL_COLOR_ATTACHMENT1),
+            framebuffer_->GetDrawBuffer(GL_DRAW_BUFFER1_ARB));
+  for (GLenum i = GL_DRAW_BUFFER2_ARB;
+       i < GL_DRAW_BUFFER0_ARB + kMaxDrawBuffers; ++i) {
+    EXPECT_EQ(static_cast<GLenum>(GL_NONE),
+              framebuffer_->GetDrawBuffer(i));
+  }
+
+  // Nothing happens.
+  framebuffer_->PrepareDrawBuffersForClear();
+  framebuffer_->RestoreDrawBuffersAfterClear();
+
+  // Now we disable a draw buffer 1.
+  buffers[1] = GL_NONE;
+  framebuffer_->SetDrawBuffers(2, buffers);
+  // We will enable the disabled draw buffer for clear(), and disable it
+  // after the clear.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  framebuffer_->PrepareDrawBuffersForClear();
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  framebuffer_->RestoreDrawBuffersAfterClear();
+
+  // Now remove draw buffer 1's attachment.
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT1, NULL, 0, 0, 0);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT1) == NULL);
+
+  // Nothing happens.
+  framebuffer_->PrepareDrawBuffersForClear();
+  framebuffer_->RestoreDrawBuffersAfterClear();
 }
 
 class FramebufferInfoFloatTest : public FramebufferInfoTest {
