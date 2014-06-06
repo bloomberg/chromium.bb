@@ -401,6 +401,7 @@ QuicStreamFactory::QuicStreamFactory(
     QuicRandom* random_generator,
     QuicClock* clock,
     size_t max_packet_length,
+    const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
     bool enable_port_selection,
     bool enable_pacing,
@@ -429,6 +430,7 @@ QuicStreamFactory::QuicStreamFactory(
       QuicTime::Delta::FromSeconds(30));
 
   crypto_config_.SetDefaults();
+  crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(new ProofVerifierChromium(cert_verifier));

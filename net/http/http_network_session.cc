@@ -123,6 +123,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                            params.quic_clock ? params. quic_clock :
                                new QuicClock(),
                            params.quic_max_packet_length,
+                           params.quic_user_agent_id,
                            params.quic_supported_versions,
                            params.enable_quic_port_selection,
                            params.enable_quic_pacing,

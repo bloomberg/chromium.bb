@@ -93,6 +93,8 @@ const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
 const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
 const QuicTag kIFCW = TAG('I', 'F', 'C', 'W');  // Initial flow control receive
                                                 // window.
+const QuicTag kUAID = TAG('U', 'A', 'I', 'D');  // Client's User Agent ID.
+
 
 // Server hello tags
 const QuicTag kCADR = TAG('C', 'A', 'D', 'R');  // Client IP address and port

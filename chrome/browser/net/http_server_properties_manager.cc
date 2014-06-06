@@ -269,12 +269,14 @@ HttpServerPropertiesManager::spdy_settings_map() const {
 void HttpServerPropertiesManager::SetServerNetworkStats(
     const net::HostPortPair& host_port_pair,
     NetworkStats stats) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   http_server_properties_impl_->SetServerNetworkStats(host_port_pair, stats);
 }
 
 const HttpServerPropertiesManager::NetworkStats*
 HttpServerPropertiesManager::GetServerNetworkStats(
     const net::HostPortPair& host_port_pair) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
 }
 

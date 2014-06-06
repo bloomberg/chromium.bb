@@ -39,6 +39,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
@@ -976,6 +977,7 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
+  globals_->quic_user_agent_id.CopyToIfSet(&params->quic_user_agent_id);
   globals_->quic_supported_versions.CopyToIfSet(
       &params->quic_supported_versions);
   globals_->origin_to_force_quic_on.CopyToIfSet(
@@ -1081,6 +1083,13 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   if (max_packet_length != 0) {
     globals_->quic_max_packet_length.set(max_packet_length);
   }
+
+  std::string quic_user_agent_id =
+      chrome::VersionInfo::GetVersionStringModifier();
+  quic_user_agent_id.append(1, ' ');
+  chrome::VersionInfo version_info;
+  quic_user_agent_id.append(version_info.ProductNameAndVersionForUserAgent());
+  globals_->quic_user_agent_id.set(quic_user_agent_id);
 
   net::QuicVersion version = GetQuicVersion(command_line);
   if (version != net::QUIC_VERSION_UNSUPPORTED) {

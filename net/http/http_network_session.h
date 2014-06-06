@@ -116,6 +116,7 @@ class NET_EXPORT HttpNetworkSession
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;
     size_t quic_max_packet_length;
+    std::string quic_user_agent_id;
     bool enable_user_alternate_protocol_ports;
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
     QuicVersionVector quic_supported_versions;

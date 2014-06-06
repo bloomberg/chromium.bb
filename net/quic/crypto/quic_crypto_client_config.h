@@ -245,6 +245,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // TODO(rch): remove this method when we drop support for Windows XP.
   void DisableEcdsa();
 
+  // Saves the |user_agent_id| that will be passed in QUIC's CHLO message.
+  void set_user_agent_id(const std::string& user_agent_id) {
+    user_agent_id_ = user_agent_id;
+  }
+
  private:
   typedef std::map<QuicServerId, CachedState*> CachedStateMap;
 
@@ -273,6 +278,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // True if ECDSA should be disabled.
   bool disable_ecdsa_;
+
+  // The |user_agent_id_| passed in QUIC's CHLO message.
+  std::string user_agent_id_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };

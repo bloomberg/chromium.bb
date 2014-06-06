@@ -95,6 +95,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       QuicRandom* random_generator,
       QuicClock* clock,
       size_t max_packet_length,
+      const std::string& user_agent_id,
       const QuicVersionVector& supported_versions,
       bool enable_port_selection,
       bool enable_pacing,

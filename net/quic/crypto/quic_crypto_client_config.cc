@@ -305,6 +305,10 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
   out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));
 
+  if (!user_agent_id_.empty()) {
+    out->SetStringPiece(kUAID, user_agent_id_);
+  }
+
   if (!cached->source_address_token().empty()) {
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }

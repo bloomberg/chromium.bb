@@ -176,6 +176,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic_persist_server_info;
     Optional<bool> enable_quic_port_selection;
     Optional<size_t> quic_max_packet_length;
+    Optional<std::string> quic_user_agent_id;
     Optional<net::QuicVersionVector> quic_supported_versions;
     Optional<net::HostPortPair> origin_to_force_quic_on;
     bool enable_user_alternate_protocol_ports;
