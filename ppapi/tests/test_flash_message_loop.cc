@@ -16,7 +16,7 @@ REGISTER_TEST_CASE(FlashMessageLoop);
 TestFlashMessageLoop::TestFlashMessageLoop(TestingInstance* instance)
     : TestCase(instance),
       message_loop_(NULL),
-      PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      callback_factory_(this) {
 }
 
 TestFlashMessageLoop::~TestFlashMessageLoop() {

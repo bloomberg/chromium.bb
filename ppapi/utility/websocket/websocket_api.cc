@@ -24,7 +24,7 @@ class WebSocketAPI::Implement : public WebSocket {
   Implement(Instance* instance, WebSocketAPI* api)
       : WebSocket(instance),
         api_(api),
-        callback_factory_(PP_ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        callback_factory_(this) {
   }
 
   virtual ~Implement() {}
@@ -104,7 +104,7 @@ class WebSocketAPI::Implement : public WebSocket {
 };
 
 WebSocketAPI::WebSocketAPI(Instance* instance)
-    : impl_(new Implement(instance, PP_ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
+    : impl_(new Implement(instance, this)) {
 }
 
 WebSocketAPI::~WebSocketAPI() {

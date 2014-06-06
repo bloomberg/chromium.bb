@@ -17,7 +17,7 @@ REGISTER_TEST_CASE(MessageLoop);
 TestMessageLoop::TestMessageLoop(TestingInstance* instance)
     : TestCase(instance),
       param_(kInvalid),
-      PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+      callback_factory_(this),
       main_loop_task_ran_(instance->pp_instance()) {
 }
 

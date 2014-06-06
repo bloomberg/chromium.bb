@@ -19,7 +19,7 @@ using pp::Var;
 
 TestFlash::TestFlash(TestingInstance* instance)
     : TestCase(instance),
-      PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      callback_factory_(this) {
 }
 
 void TestFlash::RunTests(const std::string& filter) {

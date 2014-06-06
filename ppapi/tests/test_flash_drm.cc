@@ -32,7 +32,7 @@ namespace {
 
 TestFlashDRM::TestFlashDRM(TestingInstance* instance)
     : TestCase(instance),
-      PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      callback_factory_(this) {
 }
 
 void TestFlashDRM::RunTests(const std::string& filter) {
