@@ -166,7 +166,7 @@ class BranchUtility(object):
 
     numbers = {}
     for entry in version_json:
-      if entry['os'] not in ['win', 'linux', 'mac', 'cros']:
+      if entry['os'] not in ('win', 'linux', 'mac', 'cros'):
         continue
       for version in entry['versions']:
         if version['channel'] != channel_name:
@@ -198,9 +198,8 @@ class BranchUtility(object):
       return branch
 
     version_json = json.loads(self._history_result.Get().content)
-    for entry in version_json['events']:
-      # Here, entry['title'] looks like: '<title> - <version>.##.<branch>.##'
-      version_title = entry['title'].split(' - ')[1].split('.')
+    for entry in version_json:
+      version_title = entry['version'].split('.')
       if version_title[0] == str(version):
         self._branch_object_store.Set(str(version), version_title[2])
         return version_title[2]
@@ -227,8 +226,8 @@ class BranchUtility(object):
 
     version_json = json.loads(self._history_result.Get().content)
     latest_version = 0
-    for entry in version_json['events']:
-      version_title = entry['title'].split(' - ')[1].split('.')
+    for entry in version_json:
+      version_title = entry['version'].split('.')
       version = int(version_title[0])
       if version > latest_version:
         latest_version = version

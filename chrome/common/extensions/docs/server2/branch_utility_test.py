@@ -121,7 +121,7 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals(stable_info, self._branch_util.GetChannelInfo('stable'))
 
   def testGetLatestVersionNumber(self):
-    self.assertEquals(28, self._branch_util.GetLatestVersionNumber())
+    self.assertEquals(37, self._branch_util.GetLatestVersionNumber())
 
   def testGetBranchForVersion(self):
     self.assertEquals('1500',
