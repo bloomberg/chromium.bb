@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/policy/core/browser/managed_bookmarks_tracker.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "grit/components_strings.h"
@@ -15,10 +16,6 @@
 #include "url/gurl.h"
 
 namespace policy {
-
-const char ManagedBookmarksPolicyHandler::kName[] = "name";
-const char ManagedBookmarksPolicyHandler::kUrl[] = "url";
-const char ManagedBookmarksPolicyHandler::kChildren[] = "children";
 
 ManagedBookmarksPolicyHandler::ManagedBookmarksPolicyHandler(
     Schema chrome_schema)
@@ -59,26 +56,26 @@ void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {
     base::ListValue* children = NULL;
     // Every bookmark must have a name, and then either a URL of a list of
     // child bookmarks.
-    if (!dict->GetString(kName, &name) ||
-        (!dict->GetList(kChildren, &children) &&
-         !dict->GetString(kUrl, &url))) {
+    if (!dict->GetString(ManagedBookmarksTracker::kName, &name) ||
+        (!dict->GetList(ManagedBookmarksTracker::kChildren, &children) &&
+         !dict->GetString(ManagedBookmarksTracker::kUrl, &url))) {
       it = list->Erase(it, NULL);
       continue;
     }
 
     if (children) {
       // Ignore the URL if this bookmark has child nodes.
-      dict->Remove(kUrl, NULL);
+      dict->Remove(ManagedBookmarksTracker::kUrl, NULL);
       FilterBookmarks(children);
     } else {
       // Make sure the URL is valid before passing a bookmark to the pref.
-      dict->Remove(kChildren, NULL);
+      dict->Remove(ManagedBookmarksTracker::kChildren, NULL);
       GURL gurl = URLFixerUpper::FixupURL(url, "");
       if (!gurl.is_valid()) {
         it = list->Erase(it, NULL);
         continue;
       }
-      dict->SetString(kUrl, gurl.spec());
+      dict->SetString(ManagedBookmarksTracker::kUrl, gurl.spec());
     }
 
     ++it;

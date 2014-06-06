@@ -7,6 +7,10 @@ include_rules = [
   "+chrome/browser/bookmarks",
   "+chrome/browser/favicon",
   "+chrome/browser/chrome_notification_types.h",
+  "+chrome/browser/policy/profile_policy_connector.h",
+  "+chrome/browser/policy/profile_policy_connector_factory.h",
+  "+chrome/browser/profiles/startup_task_runner_service.h",
+  "+chrome/browser/profiles/startup_task_runner_service_factory.h",
   "+chrome/browser/undo/bookmark_undo_service.h",
   "+chrome/browser/undo/bookmark_undo_service_factory.h",
 
@@ -19,8 +23,6 @@ include_rules = [
   "!chrome/browser/omnibox/omnibox_field_trial.h",
   "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/profiles/startup_task_runner_service.h",
-  "!chrome/browser/profiles/startup_task_runner_service_factory.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
@@ -28,7 +30,7 @@ include_rules = [
 specific_include_rules = {
   # For unit tests, it's fine to include utility process code.
   '.*test\.cc': [
-    "!chrome/test/base/testing_profile.h",
+    "+chrome/test/base/testing_profile.h",
     "+chrome/utility/importer/bookmark_html_reader.h",
   ],
 }

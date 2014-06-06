@@ -81,6 +81,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../testing/gmock.gyp:gmock',
         '../ui/events/platform/events_platform.gyp:events_platform',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
@@ -88,6 +89,8 @@
       'sources': [
         'bookmarks/test/bookmark_test_helpers.cc',
         'bookmarks/test/bookmark_test_helpers.h',
+        'bookmarks/test/mock_bookmark_model_observer.cc',
+        'bookmarks/test/mock_bookmark_model_observer.h',
         'bookmarks/test/test_bookmark_client.cc',
         'bookmarks/test/test_bookmark_client.h',
       ],

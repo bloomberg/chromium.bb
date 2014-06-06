@@ -495,10 +495,10 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
   EditorNode* root_node = new EditorNode(base::string16(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
-  DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 3);
+  DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 4);
   DCHECK_EQ(BookmarkNode::BOOKMARK_BAR, bb_root_node->GetChild(0)->type());
   DCHECK_EQ(BookmarkNode::OTHER_NODE, bb_root_node->GetChild(1)->type());
-  if (root_node->child_count() == 3)
+  if (root_node->child_count() >= 3)
     DCHECK_EQ(BookmarkNode::MOBILE, bb_root_node->GetChild(2)->type());
   return root_node;
 }

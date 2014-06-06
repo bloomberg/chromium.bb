@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/bookmarks/test/mock_bookmark_model_observer.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,45 +29,6 @@ using testing::_;
 
 namespace policy {
 
-namespace {
-
-class MockBookmarkModelObserver : public BookmarkModelObserver {
- public:
-  MockBookmarkModelObserver() {}
-  virtual ~MockBookmarkModelObserver() {}
-
-  MOCK_METHOD2(BookmarkModelLoaded, void(BookmarkModel*, bool));
-
-  MOCK_METHOD5(BookmarkNodeMoved, void(BookmarkModel*,
-                                       const BookmarkNode*,
-                                       int,
-                                       const BookmarkNode*,
-                                       int));
-
-  MOCK_METHOD3(BookmarkNodeAdded, void(BookmarkModel*,
-                                       const BookmarkNode*,
-                                       int));
-
-  MOCK_METHOD5(BookmarkNodeRemoved, void(BookmarkModel*,
-                                         const BookmarkNode*,
-                                         int,
-                                         const BookmarkNode*,
-                                         const std::set<GURL>&));
-
-  MOCK_METHOD2(BookmarkNodeChanged, void(BookmarkModel*, const BookmarkNode*));
-
-  MOCK_METHOD2(BookmarkNodeFaviconChanged, void(BookmarkModel*,
-                                                const BookmarkNode*));
-
-  MOCK_METHOD2(BookmarkNodeChildrenReordered, void(BookmarkModel*,
-                                                   const BookmarkNode*));
-
-  MOCK_METHOD2(BookmarkAllNodesRemoved, void(BookmarkModel*,
-                                             const std::set<GURL>&));
-};
-
-}  // namespace
-
 class ManagedBookmarksTrackerTest : public testing::Test {
  public:
   ManagedBookmarksTrackerTest() : managed_node_(NULL) {}
@@ -77,7 +39,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     if (model_)
       model_->RemoveObserver(&observer_);
   }

@@ -16,10 +16,6 @@ namespace policy {
 // Handles the ManagedBookmarks policy.
 class ManagedBookmarksPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
-  static const char kName[];
-  static const char kUrl[];
-  static const char kChildren[];
-
   explicit ManagedBookmarksPolicyHandler(Schema chrome_schema);
   virtual ~ManagedBookmarksPolicyHandler();
 
