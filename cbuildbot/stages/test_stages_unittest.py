@@ -18,10 +18,10 @@ from chromite.cbuildbot import lab_status
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import BuilderRunMock
@@ -43,7 +43,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
       self.PatchObject(commands, cmd, autospec=True)
     self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
                      autospec=True, return_value=True)
-    self.PatchObject(osutils, 'RmDir', autospec=True)
+    self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
