@@ -11,6 +11,12 @@ import sys
 
 
 def main():
+  print DoMain([])
+  return 0
+
+def DoMain(_):
+  """Hook to be called from gyp without starting a separate python
+  interpreter."""
   host_arch = platform.machine()
 
   # Convert machine type to format recognized by gyp.
@@ -28,8 +34,7 @@ def main():
   if host_arch == 'x64' and platform.architecture()[0] == '32bit':
     host_arch = 'ia32'
 
-  print host_arch
-  return 0
+  return host_arch
 
 if __name__ == '__main__':
   sys.exit(main())

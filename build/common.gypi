@@ -41,7 +41,7 @@
               ['OS=="win" or OS=="mac" or OS=="ios"', {
                 'host_arch%': 'ia32',
               }, {
-                'host_arch%': '<!(python <(DEPTH)/build/linux/detect_host_arch.py)',
+                'host_arch%': '<!pymod_do_main(detect_host_arch)',
               }],
             ],
           },
