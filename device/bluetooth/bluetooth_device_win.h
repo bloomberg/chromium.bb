@@ -16,7 +16,7 @@
 namespace device {
 
 class BluetoothAdapterWin;
-class BluetoothServiceRecord;
+class BluetoothServiceRecordWin;
 class BluetoothSocketThread;
 
 class BluetoothDeviceWin : public BluetoothDevice {
@@ -78,7 +78,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
 
   // Used by BluetoothProfileWin to retrieve the service record for the given
   // |uuid|.
-  const BluetoothServiceRecord* GetServiceRecord(
+  const BluetoothServiceRecordWin* GetServiceRecord(
       const device::BluetoothUUID& uuid) const;
 
  protected:
@@ -123,7 +123,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   UUIDList uuids_;
 
   // The service records retrieved from SDP.
-  typedef ScopedVector<BluetoothServiceRecord> ServiceRecordList;
+  typedef ScopedVector<BluetoothServiceRecordWin> ServiceRecordList;
   ServiceRecordList service_record_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWin);

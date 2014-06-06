@@ -11,7 +11,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_profile_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
@@ -52,7 +51,7 @@ BluetoothDeviceWin::BluetoothDeviceWin(
     std::copy((*iter)->sdp_bytes.begin(),
               (*iter)->sdp_bytes.end(),
               sdp_bytes_buffer);
-    BluetoothServiceRecord* service_record = new BluetoothServiceRecordWin(
+    BluetoothServiceRecordWin* service_record = new BluetoothServiceRecordWin(
         (*iter)->name,
         (*iter)->address,
         (*iter)->sdp_bytes.size(),
@@ -203,21 +202,17 @@ void BluetoothDeviceWin::ConnectToProfile(
     const base::Closure& callback,
     const ConnectToProfileErrorCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  static_cast<BluetoothProfileWin*>(profile)->Connect(this,
-                                                      ui_task_runner_,
-                                                      socket_thread_,
-                                                      net_log_,
-                                                      net_log_source_,
-                                                      callback,
-                                                      error_callback);
+  error_callback.Run("Removed. Use chrome.bluetoothSocket.connect() instead.");
 }
 
 void BluetoothDeviceWin::ConnectToService(
     const BluetoothUUID& uuid,
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement
-  NOTIMPLEMENTED();
+  scoped_refptr<BluetoothSocketWin> socket(
+      BluetoothSocketWin::CreateBluetoothSocket(
+          ui_task_runner_, socket_thread_, NULL, net::NetLog::Source()));
+  socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothDeviceWin::StartConnectionMonitor(
@@ -226,7 +221,7 @@ void BluetoothDeviceWin::StartConnectionMonitor(
   NOTIMPLEMENTED();
 }
 
-const BluetoothServiceRecord* BluetoothDeviceWin::GetServiceRecord(
+const BluetoothServiceRecordWin* BluetoothDeviceWin::GetServiceRecord(
     const device::BluetoothUUID& uuid) const {
   for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
        iter != service_record_list_.end();
