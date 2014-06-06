@@ -22,6 +22,11 @@
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+#include "chrome/browser/local_discovery/wifi/bootstrapping_device_lister.h"
+#include "chrome/browser/local_discovery/wifi/wifi_manager.h"
+#endif
+
 // TODO(noamsml): Factor out full registration flow into single class
 namespace local_discovery {
 
@@ -153,6 +158,13 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void RefreshCloudPrintStatusFromService();
 #endif
 
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  void StartWifiBootstrapping();
+  void OnBootstrappingDeviceChanged(
+      bool available,
+      const wifi::BootstrappingDeviceDescription& description);
+#endif
+
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;
 
@@ -191,6 +203,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   StringPrefMember cloud_print_connector_email_;
   BooleanPrefMember cloud_print_connector_enabled_;
   bool cloud_print_connector_ui_enabled_;
+#endif
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  scoped_ptr<wifi::WifiManager> wifi_manager_;
+  scoped_ptr<wifi::BootstrappingDeviceLister> bootstrapping_device_lister_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUIHandler);

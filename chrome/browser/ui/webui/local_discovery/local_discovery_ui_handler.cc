@@ -51,16 +51,29 @@ namespace local_discovery {
 
 namespace {
 
+const char kDictionaryKeyServiceName[] = "service_name";
+const char kDictionaryKeyDisplayName[] = "display_name";
+const char kDictionaryKeyDescription[] = "description";
+const char kDictionaryKeyType[] = "type";
+const char kDictionaryKeyIsWifi[] = "is_wifi";
+const char kDictionaryKeyID[] = "id";
+
+const char kKeyPrefixMDns[] = "MDns:";
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+const char kKeyPrefixWifi[] = "WiFi:";
+#endif  // ENABLE_WIFI_BOOTSTRAPPING
+
 int g_num_visible = 0;
 
 scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
     const CloudDeviceListDelegate::Device& description) {
   scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
 
-  return_value->SetString("id", description.id);
-  return_value->SetString("display_name", description.display_name);
-  return_value->SetString("description", description.description);
-  return_value->SetString("type", description.type);
+  return_value->SetString(kDictionaryKeyID, description.id);
+  return_value->SetString(kDictionaryKeyDisplayName, description.display_name);
+  return_value->SetString(kDictionaryKeyDescription, description.description);
+  return_value->SetString(kDictionaryKeyType, description.type);
 
   return return_value.Pass();
 }
@@ -182,6 +195,13 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StartCloudPrintConnector();
+#endif
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCloudDevices)) {
+    StartWifiBootstrapping();
+  }
 #endif
 
   CheckUserLoggedIn();
@@ -368,29 +388,29 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 
   base::DictionaryValue info;
 
-  base::StringValue service_name(name);
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  base::StringValue service_key(kKeyPrefixMDns + name);
 
   if (description.id.empty()) {
-    info.SetString("service_name", name);
-    info.SetString("human_readable_name", description.name);
-    info.SetString("description", description.description);
-    info.SetString("type", description.type);
+    info.SetString(kDictionaryKeyServiceName, name);
+    info.SetString(kDictionaryKeyDisplayName, description.name);
+    info.SetString(kDictionaryKeyDescription, description.description);
+    info.SetString(kDictionaryKeyType, description.type);
+    info.SetBoolean(kDictionaryKeyIsWifi, false);
 
     web_ui()->CallJavascriptFunction(
-        "local_discovery.onUnregisteredDeviceUpdate",
-        service_name, info);
+        "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
   } else {
+    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+
     web_ui()->CallJavascriptFunction(
-        "local_discovery.onUnregisteredDeviceUpdate",
-        service_name, *null_value);
+        "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
   }
 }
 
 void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   device_descriptions_.erase(name);
   scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-  base::StringValue name_value(name);
+  base::StringValue name_value(kKeyPrefixMDns + name);
 
   web_ui()->CallJavascriptFunction("local_discovery.onUnregisteredDeviceUpdate",
                                    name_value, *null_value);
@@ -431,10 +451,10 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
     const std::string& service_name, const DeviceDescription& device) {
   base::DictionaryValue printer_value;
 
-  printer_value.SetString("id", device.id);
-  printer_value.SetString("display_name", device.name);
-  printer_value.SetString("description", device.description);
-  printer_value.SetString("service_name", service_name);
+  printer_value.SetString(kDictionaryKeyID, device.id);
+  printer_value.SetString(kDictionaryKeyDisplayName, device.name);
+  printer_value.SetString(kDictionaryKeyDescription, device.description);
+  printer_value.SetString(kDictionaryKeyServiceName, service_name);
 
   web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess",
                                    printer_value);
@@ -636,5 +656,50 @@ void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
 }
 
 #endif // cloud print connector option stuff
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+
+void LocalDiscoveryUIHandler::StartWifiBootstrapping() {
+  // Since LocalDiscoveryUIHandler isn't destroyed every time the page is
+  // refreshed, reset bootstrapping_device_lister_ so it's destoryed before
+  // wifi_manager_ is.
+  bootstrapping_device_lister_.reset();
+
+  wifi_manager_ = wifi::WifiManager::Create();
+  bootstrapping_device_lister_.reset(new wifi::BootstrappingDeviceLister(
+      wifi_manager_.get(),
+      base::Bind(&LocalDiscoveryUIHandler::OnBootstrappingDeviceChanged,
+                 base::Unretained(this))));
+
+  wifi_manager_->Start();
+  bootstrapping_device_lister_->Start();
+  wifi_manager_->RequestScan();
+}
+
+void LocalDiscoveryUIHandler::OnBootstrappingDeviceChanged(
+    bool available,
+    const wifi::BootstrappingDeviceDescription& description) {
+  base::DictionaryValue info;
+
+  base::StringValue service_key(kKeyPrefixWifi + description.device_ssid);
+
+  if (available) {
+    info.SetString(kDictionaryKeyServiceName, description.device_ssid);
+    info.SetString(kDictionaryKeyDisplayName, description.device_name);
+    info.SetString(kDictionaryKeyDescription, std::string());
+    info.SetString(kDictionaryKeyType, description.device_kind);
+    info.SetBoolean(kDictionaryKeyIsWifi, true);
+
+    web_ui()->CallJavascriptFunction(
+        "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
+  } else {
+    scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+
+    web_ui()->CallJavascriptFunction(
+        "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
+  }
+}
+
+#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace local_discovery

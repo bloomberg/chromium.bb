@@ -135,10 +135,8 @@ void WifiManagerNonChromeos::WifiServiceWrapper::Start() {
 
   wifi_service_->SetEventObservers(
       base::MessageLoopProxy::current(),
-      base::Bind(&WifiServiceWrapper::OnNetworksChangedEvent,
-                 base::Unretained(this)),
-      base::Bind(&WifiServiceWrapper::OnNetworkListChangedEvent,
-                 base::Unretained(this)));
+      base::Bind(&WifiServiceWrapper::OnNetworksChangedEvent, AsWeakPtr()),
+      base::Bind(&WifiServiceWrapper::OnNetworkListChangedEvent, AsWeakPtr()));
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
