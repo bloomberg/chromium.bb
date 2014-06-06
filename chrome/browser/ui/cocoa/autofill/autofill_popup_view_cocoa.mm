@@ -37,7 +37,8 @@ using autofill::AutofillPopupView;
                          index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
-                    imageFirst:(BOOL)imageFirst;
+                    imageFirst:(BOOL)imageFirst
+                   textYOffset:(CGFloat)textYOffset;
 
 // This comment block applies to all three draw* methods that follow.
 // If |rightAlign| == YES.
@@ -50,7 +51,8 @@ using autofill::AutofillPopupView;
                 atX:(CGFloat)x
               index:(size_t)index
          rightAlign:(BOOL)rightAlign
-             bounds:(NSRect)bounds;
+             bounds:(NSRect)bounds
+        textYOffset:(CGFloat)textYOffset;
 - (CGFloat)drawIconAtIndex:(size_t)index
                        atX:(CGFloat)x
                 rightAlign:(BOOL)rightAlign
@@ -58,7 +60,8 @@ using autofill::AutofillPopupView;
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
             rightAlign:(BOOL)rightAlign
-                bounds:(NSRect)bounds;
+                bounds:(NSRect)bounds
+           textYOffset:(CGFloat)textYOffset;
 
 // Returns the icon for the row with the given |index|, or |nil| if there is
 // none.
@@ -107,8 +110,17 @@ using autofill::AutofillPopupView;
       continue;
     }
 
-    BOOL imageFirst = (controller_->identifiers()[i] ==
-                       autofill::POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
+    // Additional offset applied to the text in the vertical direction.
+    CGFloat textYOffset = 0;
+    BOOL imageFirst = NO;
+    if (controller_->identifiers()[i] ==
+        autofill::POPUP_ITEM_ID_MAC_ACCESS_CONTACTS) {
+      // Due to the weighting of the asset used for this autofill entry, the
+      // text needs to be bumped up by 1 pt to make it look vertically aligned.
+      textYOffset = -1;
+      imageFirst = YES;
+    }
+
     NSString* name = SysUTF16ToNSString(controller_->names()[i]);
     NSString* subtext = SysUTF16ToNSString(controller_->subtexts()[i]);
     BOOL isSelected = static_cast<int>(i) == controller_->selected_line();
@@ -117,7 +129,8 @@ using autofill::AutofillPopupView;
                            index:i
                           bounds:rowBounds
                         selected:isSelected
-                      imageFirst:imageFirst];
+                      imageFirst:imageFirst
+                     textYOffset:textYOffset];
   }
 }
 
@@ -145,7 +158,8 @@ using autofill::AutofillPopupView;
                          index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
-                    imageFirst:(BOOL)imageFirst {
+                    imageFirst:(BOOL)imageFirst
+                   textYOffset:(CGFloat)textYOffset {
   // If this row is selected, highlight it.
   if (isSelected) {
     [[self highlightColor] set];
@@ -162,20 +176,30 @@ using autofill::AutofillPopupView;
   CGFloat x = isRTL ? rightX : leftX;
   if (imageFirst)
     x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
-  [self drawName:name atX:x index:index rightAlign:isRTL bounds:bounds];
+  [self drawName:name
+              atX:x
+            index:index
+       rightAlign:isRTL
+           bounds:bounds
+      textYOffset:textYOffset];
 
   // Draw right side if isRTL == NO, left side if isRTL == YES.
   x = isRTL ? leftX : rightX;
   if (!imageFirst)
     x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
-  [self drawSubtext:subtext atX:x rightAlign:!isRTL bounds:bounds];
+  [self drawSubtext:subtext
+                atX:x
+         rightAlign:!isRTL
+             bounds:bounds
+        textYOffset:textYOffset];
 }
 
 - (CGFloat)drawName:(NSString*)name
                 atX:(CGFloat)x
               index:(size_t)index
          rightAlign:(BOOL)rightAlign
-             bounds:(NSRect)bounds {
+             bounds:(NSRect)bounds
+        textYOffset:(CGFloat)textYOffset {
   NSColor* nameColor =
       controller_->IsWarning(index) ? [self warningColor] : [self nameColor];
   NSDictionary* nameAttributes =
@@ -187,6 +211,7 @@ using autofill::AutofillPopupView;
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   x -= rightAlign ? nameSize.width : 0;
   CGFloat y = bounds.origin.y + (bounds.size.height - nameSize.height) / 2;
+  y += textYOffset;
 
   [name drawAtPoint:NSMakePoint(x, y) withAttributes:nameAttributes];
 
@@ -219,7 +244,8 @@ using autofill::AutofillPopupView;
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
             rightAlign:(BOOL)rightAlign
-                bounds:(NSRect)bounds {
+                bounds:(NSRect)bounds
+           textYOffset:(CGFloat)textYOffset {
   NSDictionary* subtextAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
            controller_->subtext_font_list().GetPrimaryFont().GetNativeFont(),
@@ -230,6 +256,7 @@ using autofill::AutofillPopupView;
   NSSize subtextSize = [subtext sizeWithAttributes:subtextAttributes];
   x -= rightAlign ? subtextSize.width : 0;
   CGFloat y = bounds.origin.y + (bounds.size.height - subtextSize.height) / 2;
+  y += textYOffset;
 
   [subtext drawAtPoint:NSMakePoint(x, y) withAttributes:subtextAttributes];
   x += rightAlign ? 0 : subtextSize.width;

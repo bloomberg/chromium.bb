@@ -117,7 +117,7 @@ class AutofillExternalDelegate
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Pings the renderer.
   void PingRenderer();
-#endif
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   AutofillManager* manager_;  // weak.
 

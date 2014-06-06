@@ -73,6 +73,10 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Registers our Enable/Disable Autofill pref.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  static void MigrateUserPrefs(PrefService* prefs);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   AutofillManager(AutofillDriver* driver,
                   autofill::AutofillManagerDelegate* delegate,
                   const std::string& app_locale,

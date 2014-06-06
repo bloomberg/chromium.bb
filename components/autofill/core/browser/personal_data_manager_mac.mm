@@ -36,7 +36,13 @@ const char kAddressBookOrigin[] = "OS X Address Book";
 // Whether Chrome has prompted the user for permission to access the user's
 // address book.
 bool HasPromptedForAccessToAddressBook(PrefService* pref_service) {
-  return pref_service->GetBoolean(prefs::kAutofillAuxiliaryProfilesQueried);
+  return pref_service->GetBoolean(prefs::kAutofillMacAddressBookQueried);
+}
+
+// Whether the user wants Chrome to use the AddressBook to populate Autofill
+// entries.
+bool ShouldUseAddressBook(PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAutofillUseMacAddressBook);
 }
 
 ABAddressBook* GetAddressBook(PrefService* pref_service) {
@@ -56,7 +62,7 @@ ABAddressBook* GetAddressBook(PrefService* pref_service) {
                           addressBook != nil);
   }
 
-  pref_service->SetBoolean(prefs::kAutofillAuxiliaryProfilesQueried, true);
+  pref_service->SetBoolean(prefs::kAutofillMacAddressBookQueried, true);
   return addressBook;
 }
 
@@ -110,10 +116,9 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
                                                  PrefService* pref_service) {
   profiles_.clear();
 
-  // Chrome has not yet requested address book permissions. Attempting to do so
-  // presents a blocking modal dialog, which is undesirable. Instead, just show
-  // no results.
-  if (!HasPromptedForAccessToAddressBook(pref_service))
+  // The user does not want Chrome to use the AddressBook to populate Autofill
+  // entries.
+  if (!ShouldUseAddressBook(pref_service))
     return;
 
   ABAddressBook* addressBook = GetAddressBook(pref_service);
@@ -304,11 +309,10 @@ void PersonalDataManager::LoadAuxiliaryProfiles() const {
 }
 
 bool PersonalDataManager::AccessAddressBook() {
-  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
-    return false;
-
-  if (HasPromptedForAccessToAddressBook(pref_service_))
-    return false;
+  // The user is attempting to give Chrome access to the user's Address Book.
+  // This implicitly acknowledges that the user wants to use auxiliary
+  // profiles.
+  pref_service_->SetBoolean(prefs::kAutofillUseMacAddressBook, true);
 
   // Request permissions.
   GetAddressBook(pref_service_);
@@ -317,9 +321,6 @@ bool PersonalDataManager::AccessAddressBook() {
 
 bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
     AutofillType type) {
-  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
-    return false;
-
   if (HasPromptedForAccessToAddressBook(pref_service_))
     return false;
 

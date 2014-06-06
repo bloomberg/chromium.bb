@@ -7,25 +7,30 @@
 namespace autofill {
 namespace prefs {
 
-// Boolean that is true when auxiliary Autofill profiles are enabled.
-// Currently applies to Address Book "me" card on Mac.  False on Win and Linux.
+// Boolean that is true when auxiliary Autofill profiles are enabled. This pref
+// is only relevant to Android.
 const char kAutofillAuxiliaryProfilesEnabled[] =
     "autofill.auxiliary_profiles_enabled";
 
-// Boolean that is true when at least one read request for auxiliary Autofill
-// profiles has been issued.  Currently applies only to auxiliary profiles on
-// Mac.
-const char kAutofillAuxiliaryProfilesQueried[] =
-    "autofill.auxiliary_profiles_queried";
-
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillEnabled[] = "autofill.enabled";
+
+// Boolean that is true when Chrome has attempted to access the user's Address
+// Book on Mac. This preference is important since the first time Chrome
+// attempts to access the user's Address Book, Cocoa presents a blocking dialog
+// to the user.
+const char kAutofillMacAddressBookQueried[] =
+    "autofill.auxiliary_profiles_queried";
 
 // Double that indicates negative (for not matched forms) upload rate.
 const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 
 // Double that indicates positive (for matched forms) upload rate.
 const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
+
+// Whether Autofill should try to use the Mac Address Book. If this value is
+// true, then kAutofillMacAddressBookQueried is expected to also be true.
+const char kAutofillUseMacAddressBook[] = "autofill.use_mac_address_book";
 
 }  // namespace prefs
 }  // namespace autofill

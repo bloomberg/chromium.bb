@@ -390,14 +390,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ChangeBooleanPref(0, autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  // kAutofillAuxiliaryProfilesEnabled is only synced on Mac.
-#if defined(OS_MACOSX)
+  // kAutofillAuxiliaryProfilesEnabled is only synced on Mac and Android.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   ASSERT_TRUE(
       BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
 #else
   ASSERT_FALSE(
       BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#endif  // OS_MACOSX
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
 }
 
 // TCM ID - 3717298.

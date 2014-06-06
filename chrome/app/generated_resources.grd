@@ -9764,8 +9764,8 @@ Chrome ran out of memory.
           Autofill settings
         </message>
         <if expr="is_macosx">
-          <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
-            Include addresses from your Address Book card
+          <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable access to the user's Address Book on Mac. On Mac 10.8+ the application that manages the Address Book is called Contacts.">
+            Include addresses from your Contacts card
           </message>
         </if>
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">

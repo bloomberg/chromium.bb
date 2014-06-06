@@ -1552,8 +1552,14 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 // Test that we correctly fill an address form from an auxiliary profile.
 TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   personal_data_.ClearAutofillProfiles();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  autofill_delegate_.GetPrefs()->SetBoolean(
+      ::autofill::prefs::kAutofillUseMacAddressBook, true);
+#else
   autofill_delegate_.GetPrefs()->SetBoolean(
       ::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   personal_data_.CreateTestAuxiliaryProfiles();
 
   // Set up our form data.
@@ -2479,12 +2485,12 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   PrefService* prefs = autofill_delegate_.GetPrefs();
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Auxiliary profiles is implemented on Mac and Android only.
-  // OSX: enables Mac Address Book integration.
+  // OSX: This preference exists for legacy reasons. It is no longer used.
   // Android: enables integration with user's contact profile.
   ASSERT_TRUE(
       prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-  prefs->SetBoolean(
-      ::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, false);
+  prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled,
+                    false);
   prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
   ASSERT_TRUE(
       prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
@@ -2495,7 +2501,7 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
   ASSERT_FALSE(
       prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#endif
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
 }
 
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {

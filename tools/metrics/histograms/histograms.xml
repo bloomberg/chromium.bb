@@ -1610,6 +1610,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Tracks whether Autofill is enabled when Chrome launches.</summary>
 </histogram>
 
+<histogram name="Autofill.MacAddressBook" enum="AutofillMacAddressBook">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    When Chrome tries to access the user's Address Book, OSX presents a blocking
+    dialog which disrupts the user experience. A new Chrome feature has been
+    introduced wherein Chrome only shows this blocking dialog if the user
+    explicitly asked Chrome to access the user's Address Book. If a form's field
+    looks like it might support Autofill suggestions from the user's Address
+    Book and there are no other suggestions, Chrome shows an Autofill entry that
+    prompts the user to give Chrome access to the user's Address Book. This
+    histogram tracks the frequency that this Autofill entry is presented, and
+    the frequency that this Autofill entry is selected.
+  </summary>
+</histogram>
+
 <histogram name="AutoFill.ProfileCount">
   <obsolete>
     Deprecated as of 3/2011, replaced by Autofill.StoredProfileCount.
@@ -32942,6 +32957,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="15" label="fp05cco03"/>
   <int value="16" label="fp05cco03cstd"/>
   <int value="17" label="fp05cc03e1"/>
+</enum>
+
+<enum name="AutofillMacAddressBook" type="int">
+  <int value="0" label="Showed popup entry"/>
+  <int value="1" label="Selected popup entry"/>
 </enum>
 
 <enum name="AutofillQuality" type="int">

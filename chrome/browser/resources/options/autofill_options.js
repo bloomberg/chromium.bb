@@ -55,6 +55,19 @@ cr.define('options', function() {
       $('autofill-options-confirm').onclick = function(event) {
         OptionsPage.closeOverlay();
       };
+<if expr="is_macosx">
+      $('autofill-use-mac-address-book-checkbox').onchange = function(event) {
+        if (this.checked) {
+          setTimeout(function() {
+            // Prompt the user to give Chrome access to the user's Address
+            // Book, if the user was not previously prompted. The dialog that
+            // appears blocks the Chrome process, so wait for a small period of
+            // time to allow the checkbox to appear filled in.
+            chrome.send('accessAddressBook');
+          }, 10);
+        }
+      };
+</if>
 
       // TODO(jhawkins): What happens when Autofill is disabled whilst on the
       // Autofill options page?
