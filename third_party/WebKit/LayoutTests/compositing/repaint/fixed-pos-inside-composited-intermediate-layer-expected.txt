@@ -20,7 +20,7 @@
               (bounds 100.00 30000.00)
               (drawsContent 1)
               (repaint rects
-                (rect 45.00 45.00 50.00 150.00)
+                (rect 25.00 25.00 50.00 150.00)
               )
             )
           )

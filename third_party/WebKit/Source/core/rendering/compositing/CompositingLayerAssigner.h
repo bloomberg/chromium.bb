@@ -40,7 +40,7 @@ public:
     explicit CompositingLayerAssigner(RenderLayerCompositor*);
     ~CompositingLayerAssigner();
 
-    void assign(RenderLayer* updateRoot, bool& layersChanged);
+    void assign(RenderLayer* updateRoot, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
 
     // FIXME: This function should be private. We should remove the one caller
     // once we've fixed the compositing chicken/egg issues.
@@ -77,11 +77,11 @@ private:
         uint64_t totalAreaOfSquashedRects;
     };
 
-    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
-    void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged);
+    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
+    void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
     bool canSquashIntoCurrentSquashingOwner(const RenderLayer*, const SquashingState&);
     bool squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const SquashingState&);
-    bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType);
+    bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType, Vector<RenderLayer*>& layersNeedingRepaint);
     bool needsOwnBacking(const RenderLayer*) const;
 
     RenderLayerCompositor* m_compositor;

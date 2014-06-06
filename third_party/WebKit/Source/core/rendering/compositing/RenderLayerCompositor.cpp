@@ -379,9 +379,10 @@ void RenderLayerCompositor::updateIfNeeded()
 
     RenderLayer* updateRoot = rootRenderLayer();
 
+    Vector<RenderLayer*> layersNeedingRepaint;
+
     if (updateType >= CompositingUpdateAfterCompositingInputChange) {
         bool layersChanged = false;
-
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
             CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, compositingPropertyUpdateType);
@@ -394,7 +395,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
         {
             TRACE_EVENT0("blink_rendering", "CompositingLayerAssigner::assign");
-            CompositingLayerAssigner(this).assign(updateRoot, layersChanged);
+            CompositingLayerAssigner(this).assign(updateRoot, layersChanged, layersNeedingRepaint);
         }
 
         {
@@ -452,6 +453,13 @@ void RenderLayerCompositor::updateIfNeeded()
     if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && inCompositingMode())
         scrollingCoordinator()->updateAfterCompositingChange();
 
+    for (unsigned i = 0; i < layersNeedingRepaint.size(); i++) {
+        RenderLayer* layer = layersNeedingRepaint[i];
+        layer->repainter().computeRepaintRectsIncludingDescendants();
+
+        repaintOnCompositingChange(layer);
+    }
+
     // Inform the inspector that the layer tree has changed.
     if (m_renderView.frame()->isMainFrame())
         InspectorInstrumentation::layerTreeDidChange(m_renderView.frame());
@@ -488,13 +496,6 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->frameViewRootLayerDidChange(m_renderView.frameView());
         }
-
-        // FIXME: it seems premature to compute this before all compositing state has been updated?
-        // This layer and all of its descendants have cached repaints rects that are relative to
-        // the repaint container, so change when compositing changes; we need to update them here.
-        if (layer->parent())
-            layer->repainter().computeRepaintRectsIncludingDescendants();
-
         break;
     case RemoveOwnCompositedLayerMapping:
     // PutInSquashingLayer means you might have to remove the composited layer mapping first.
@@ -513,13 +514,6 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
             layer->clearCompositedLayerMapping();
             compositedLayerMappingChanged = true;
-
-            // This layer and all of its descendants have cached repaints rects that are relative to
-            // the repaint container, so change when compositing changes; we need to update them here.
-            layer->repainter().computeRepaintRectsIncludingDescendants();
-
-            // If we need to repaint, do so now that we've removed the compositedLayerMapping
-            repaintOnCompositingChange(layer);
         }
 
         break;
