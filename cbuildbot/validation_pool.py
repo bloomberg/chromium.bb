@@ -1116,20 +1116,21 @@ class CalculateSuspects(object):
     return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
 
   @classmethod
-  def _MatchesFailureType(cls, messages, fail_type):
+  def _MatchesFailureType(cls, messages, fail_type, strict=True):
     """Returns True if all failures are instances of |fail_type|.
 
     Args:
       messages: A list of BuildFailureMessage or NoneType objects
         from the failed slaves.
       fail_type: The exception class to look for.
+      strict: If False, treat NoneType message as a match.
 
     Returns:
       True if all objects in |messages| are non-None and all failures are
       instances of |fail_type|.
     """
-    return (all(messages) and
-            all([x.MatchesFailureType(fail_type) for x in messages]))
+    return ((not strict or all(messages)) and
+            all(x.MatchesFailureType(fail_type) for x in messages if x))
 
   @classmethod
   def OnlyLabFailures(cls, messages, no_stat):
@@ -1161,9 +1162,11 @@ class CalculateSuspects(object):
     Returns:
       True if the build failed purely due to infrastructure failures.
     """
+    # "Failed to report status" and "NoneType" messages are considered
+    # infra failures.
     return ((not messages and no_stat) or
             cls._MatchesFailureType(
-                messages, failures_lib.InfrastructureFailure))
+                messages, failures_lib.InfrastructureFailure, strict=False))
 
   @classmethod
   def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False):

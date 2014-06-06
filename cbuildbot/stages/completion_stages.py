@@ -447,10 +447,19 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     """
     msgs = self._GetFailedMessages(failing)
     # Filter out None messages because we cannot analyze them.
-    # TODO: We should treat NoneType messages as infra failures
-    # (crbug.com/381297).
     return [x for x in msgs if x and
             x.HasFailureType(failures_lib.InfrastructureFailure)]
+
+  def _GetBuildersWithNoneMessages(self, failing):
+    """Returns a list of failed builders with NoneType failure message.
+
+    Args:
+      failing: Names of the builders that failed.
+
+    Returns:
+      A list of builder names.
+    """
+    return [x for x in failing if self._slave_statuses[x].message is None]
 
   def SendInfraAlertIfNeeded(self, failing, inflight, no_stat):
     """Send infra alerts if needed.
@@ -461,6 +470,9 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       no_stat: The names of the builders that had status None.
     """
     msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
+    # Failed to report a non-None messages is an infra failure.
+    slaves = self._GetBuildersWithNoneMessages(failing)
+    msgs += ['%s failed with unknown reason.' % x for x in slaves]
     msgs += ['%s timed out' % x for x in inflight]
     msgs += ['%s did not start' % x for x in no_stat]
     if msgs:

@@ -240,12 +240,12 @@ class CommitQueueCompletionStageTest(
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
   BOT_ID = 'master-paladin'
 
+  # pylint: disable=E1120
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.config['master'] = True
 
   def setUp(self):
-    # pylint: disable=E1120
     self.build_type = constants.PFQ_TYPE
     self._Prepare()
 
@@ -279,73 +279,92 @@ class CommitQueueCompletionStageTest(
     return completion_stages.CommitQueueCompletionStage(
         self._run, sync_stage, success=True)
 
-  def testNoInflightBuildersNoInfraFail(self):
-    """Test case where there are no inflight builders and no infra failures."""
-    # pylint: disable=E1120
-    failing = ['foo']
-    inflight = []
+  def VerifyStage(self, failing, inflight, handle_failure=True,
+                  handle_timeout=False, submit_partial=False, alert=False):
+    """Runs and Verifies CQMasterHandleFailure.
 
+    Args:
+      failing: The names of the builders that failed.
+      inflight: The names of the buiders that timed out.
+      handle_failure: If True, calls HandleValidationFailure.
+      handle_timeout: If True, calls HandleValidationTimeout.
+      submit_partial: If True, submit parital pool.
+      alert: If True, sends out an alert email for infra failures.
+    """
     stage = self.ConstructStage()
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
-                     '_GetInfraFailMessages', return_value=[])
-    completion_stages.CommitQueueCompletionStage.SubmitPartialPool(
-        mox.IgnoreArg()).AndReturn(self.other_changes)
+
+    if submit_partial:
+      completion_stages.CommitQueueCompletionStage.SubmitPartialPool(
+          mox.IgnoreArg()).AndReturn(self.other_changes)
+
+    if alert:
+      alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                              mox.IgnoreArg())
+
     completion_stages.CommitQueueCompletionStage._ToTSanity(
         mox.IgnoreArg(), mox.IgnoreArg())
-    stage.sync_stage.pool.HandleValidationFailure(
+
+    if handle_failure:
+      stage.sync_stage.pool.HandleValidationFailure(
         mox.IgnoreArg(), no_stat=[], sanity=mox.IgnoreArg(),
         changes=self.other_changes)
+
+    if handle_timeout:
+      stage.sync_stage.pool.HandleValidationTimeout(
+          sanity=mox.IgnoreArg(), changes=self.changes)
 
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, inflight, [])
     self.mox.VerifyAll()
+
+  def testNoInflightBuildersNoInfraFail(self):
+    """Test case where there are no inflight builders and no infra failures."""
+    failing = ['foo']
+    inflight = []
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetInfraFailMessages', return_value=[])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=[])
+    self.VerifyStage(failing, inflight, submit_partial=True)
 
   def testNoInflightBuildersWithInfraFail(self):
     """Test case where there are no inflight builders but are infra failures."""
-    # pylint: disable=E1120
     failing = ['foo']
     inflight = []
 
-    stage = self.ConstructStage()
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetInfraFailMessages', return_value=['msg'])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=[])
     # An alert is sent, since there are infra failures.
-    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
-                            mox.IgnoreArg())
-    completion_stages.CommitQueueCompletionStage._GetFailedMessages(failing)
-    completion_stages.CommitQueueCompletionStage.SubmitPartialPool(
-        mox.IgnoreArg()).AndReturn(self.other_changes)
-    completion_stages.CommitQueueCompletionStage._ToTSanity(
-        mox.IgnoreArg(), mox.IgnoreArg())
-    stage.sync_stage.pool.HandleValidationFailure(
-        mox.IgnoreArg(), no_stat=[], sanity=mox.IgnoreArg(),
-        changes=self.other_changes)
+    self.VerifyStage(failing, inflight, submit_partial=True, alert=True)
 
-    self.mox.ReplayAll()
-    stage.CQMasterHandleFailure(failing, inflight, [])
-    self.mox.VerifyAll()
+  def testNoInflightBuildersWithNoneFailureMessages(self):
+    """Test case where failed builders reported NoneType messages."""
+    failing = ['foo']
+    inflight = []
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetInfraFailMessages', return_value=[])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=['foo'])
+    # An alert is sent, since NonType messages are considered infra failures.
+    self.VerifyStage(failing, inflight, submit_partial=True, alert=True)
 
   def testWithInflightBuildersNoInfraFail(self):
     """Tests that we don't submit partial pool on non-empty inflight."""
-    # pylint: disable=E1120
     failing = ['foo', 'bar']
     inflight = ['inflight']
 
-    stage = self.ConstructStage()
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetInfraFailMessages', return_value=[])
-    # An alert is sent, since we have an inflight build still.
-    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
-                            mox.IgnoreArg())
-    completion_stages.CommitQueueCompletionStage._GetFailedMessages(failing)
-    completion_stages.CommitQueueCompletionStage._ToTSanity(
-        mox.IgnoreArg(), mox.IgnoreArg())
-    stage.sync_stage.pool.HandleValidationTimeout(
-        sanity=mox.IgnoreArg(), changes=self.changes)
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=[])
 
-    self.mox.ReplayAll()
-    stage.CQMasterHandleFailure(failing, inflight, [])
-    self.mox.VerifyAll()
+    # An alert is sent, since we have an inflight build still.
+    self.VerifyStage(failing, inflight, handle_failure=False,
+                     handle_timeout=True, alert=True)
 
 
 class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):
