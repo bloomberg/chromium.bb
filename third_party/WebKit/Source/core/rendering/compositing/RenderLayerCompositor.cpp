@@ -27,35 +27,21 @@
 
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/FullscreenElementStack.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderApplet.h"
-#include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
-#include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
@@ -63,20 +49,10 @@
 #include "core/rendering/compositing/CompositingRequirementsUpdater.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/OverscrollTheme.h"
-#include "platform/TraceEvent.h"
-#include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
-#include "wtf/TemporaryChange.h"
-
-#ifndef NDEBUG
-#include "core/rendering/RenderTreeAsText.h"
-#endif
 
 namespace WebCore {
-
-using namespace HTMLNames;
 
 class DeprecatedDirtyCompositingDuringCompositingUpdate {
     WTF_MAKE_NONCOPYABLE(DeprecatedDirtyCompositingDuringCompositingUpdate);

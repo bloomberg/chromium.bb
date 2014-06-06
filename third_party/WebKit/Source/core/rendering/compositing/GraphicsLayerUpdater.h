@@ -28,13 +28,10 @@
 #define GraphicsLayerUpdater_h
 
 #include "platform/graphics/GraphicsLayer.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class RenderLayer;
-class RenderPart;
-class RenderView;
 
 class GraphicsLayerUpdater {
     class UpdateContext {

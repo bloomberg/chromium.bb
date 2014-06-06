@@ -11,7 +11,6 @@
 
 namespace WebCore {
 
-class RenderLayer;
 class RenderObject;
 class RenderView;
 

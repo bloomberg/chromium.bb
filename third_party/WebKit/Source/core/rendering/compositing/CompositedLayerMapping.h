@@ -32,11 +32,9 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 
-class KeyframeList;
 class RenderLayerCompositor;
 
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of RenderLayers into a GraphicsLayer.
