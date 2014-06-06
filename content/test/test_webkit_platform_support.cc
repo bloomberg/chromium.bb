@@ -273,12 +273,6 @@ TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   return view.release();
 }
 
-blink::WebLayerTreeView*
-TestWebKitPlatformSupport::createLayerTreeViewForTesting(TestViewType type) {
-  DCHECK_EQ(TestViewTypeUnitTest, type);
-  return createLayerTreeViewForTesting();
-}
-
 blink::WebData TestWebKitPlatformSupport::readFromFile(
     const blink::WebString& path) {
   base::FilePath file_path = base::FilePath::FromUTF16Unsafe(path);

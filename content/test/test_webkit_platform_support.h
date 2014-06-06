@@ -82,8 +82,6 @@ class TestWebKitPlatformSupport
   virtual void serveAsynchronousMockedRequests();
   virtual blink::WebString webKitRootDir();
   virtual blink::WebLayerTreeView* createLayerTreeViewForTesting();
-  virtual blink::WebLayerTreeView* createLayerTreeViewForTesting(
-      TestViewType type);
   virtual blink::WebData readFromFile(const blink::WebString& path);
 
  private:
