@@ -64,6 +64,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     main_axis_alignment_ = main_axis_alignment;
   }
 
+  void set_inside_border_insets(const gfx::Insets& insets) {
+    inside_border_insets_ = insets;
+  }
+
   // Overridden from views::LayoutManager:
   virtual void Layout(View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(const View* host) const OVERRIDE;

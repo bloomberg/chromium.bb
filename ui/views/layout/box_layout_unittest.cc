@@ -55,6 +55,27 @@ TEST_F(BoxLayoutTest, AlignmentVertical) {
   EXPECT_EQ(gfx::Rect(0, 10, 20, 10), v2->bounds());
 }
 
+TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 20, 0));
+  View* v1 = new StaticSizedView(gfx::Size(10, 20));
+  host_->AddChildView(v1);
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  host_->AddChildView(v2);
+  EXPECT_EQ(gfx::Size(40, 60), layout_->GetPreferredSize(host_.get()));
+  host_->SetBounds(0, 0, 40, 60);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 20, 10, 20), v1->bounds());
+  EXPECT_EQ(gfx::Rect(20, 20, 10, 20), v2->bounds());
+
+  layout_->set_inside_border_insets(
+      gfx::Insets(5, 10, 15, 20));
+  EXPECT_EQ(gfx::Size(50, 40), layout_->GetPreferredSize(host_.get()));
+  host_->SetBounds(0, 0, 50, 40);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 5, 10, 20), v1->bounds());
+  EXPECT_EQ(gfx::Rect(20, 5, 10, 20), v2->bounds());
+}
+
 TEST_F(BoxLayoutTest, Spacing) {
   layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 7, 7, 8));
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
