@@ -32,7 +32,10 @@ _kind_to_javascript_default_value = {
 
 def JavaScriptDefaultValue(field):
   if field.default:
-    raise Exception("Default values should've been handled in jinja.")
+    if isinstance(field.kind, mojom.Struct):
+      assert field.default == "default"
+      return "new %s()" % JavascriptType(field.kind)
+    return ExpressionToText(field.default)
   if field.kind in mojom.PRIMITIVES:
     return _kind_to_javascript_default_value[field.kind]
   if isinstance(field.kind, mojom.Struct):
@@ -154,12 +157,8 @@ class Generator(generator.Generator):
     "decode_snippet": JavaScriptDecodeSnippet,
     "encode_snippet": JavaScriptEncodeSnippet,
     "expression_to_text": ExpressionToText,
-    "is_object_kind": generator.IsObjectKind,
-    "is_string_kind": generator.IsStringKind,
-    "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
     "js_type": JavascriptType,
     "stylize_method": generator.StudlyCapsToCamel,
-    "verify_token_type": generator.VerifyTokenType,
   }
 
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)

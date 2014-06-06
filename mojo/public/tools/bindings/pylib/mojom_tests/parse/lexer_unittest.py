@@ -77,6 +77,14 @@ class LexerTest(unittest.TestCase):
                       _MakeLexTokenForKeyword("interface"))
     self.assertEquals(self._SingleTokenForInput("enum"),
                       _MakeLexTokenForKeyword("enum"))
+    self.assertEquals(self._SingleTokenForInput("const"),
+                      _MakeLexTokenForKeyword("const"))
+    self.assertEquals(self._SingleTokenForInput("true"),
+                      _MakeLexTokenForKeyword("true"))
+    self.assertEquals(self._SingleTokenForInput("false"),
+                      _MakeLexTokenForKeyword("false"))
+    self.assertEquals(self._SingleTokenForInput("default"),
+                      _MakeLexTokenForKeyword("default"))
 
   def testValidIdentifiers(self):
     """Tests identifiers."""

@@ -226,7 +226,7 @@ module my_module {
 
 struct MyStruct {
   const int8 kNumber = -1;
-  int8 number = kNumber @0;
+  int8 number@0 = kNumber;
 };
 
 }  // my_module
@@ -463,37 +463,29 @@ struct MyStruct {
   [('STRUCT',
     'MyStruct',
     None,
-    [('FIELD', 'int16', 'a0', ast.Ordinal(None), ('EXPRESSION', ['0'])),
-     ('FIELD', 'uint16', 'a1', ast.Ordinal(None), ('EXPRESSION', ['0x0'])),
-     ('FIELD', 'uint16', 'a2', ast.Ordinal(None), ('EXPRESSION', ['0x00'])),
-     ('FIELD', 'uint16', 'a3', ast.Ordinal(None), ('EXPRESSION', ['0x01'])),
-     ('FIELD', 'uint16', 'a4', ast.Ordinal(None), ('EXPRESSION', ['0xcd'])),
-     ('FIELD', 'int32', 'a5', ast.Ordinal(None), ('EXPRESSION', ['12345'])),
-     ('FIELD', 'int64', 'a6', ast.Ordinal(None),
-      ('EXPRESSION', ['-', ('EXPRESSION', ['12345'])])),
-     ('FIELD', 'int64', 'a7', ast.Ordinal(None),
-      ('EXPRESSION', ['+', ('EXPRESSION', ['12345'])])),
-     ('FIELD', 'uint32', 'a8', ast.Ordinal(None), ('EXPRESSION', ['0x12cd3'])),
-     ('FIELD', 'uint32', 'a9', ast.Ordinal(None),
-      ('EXPRESSION', ['-', ('EXPRESSION', ['0x12cD3'])])),
-     ('FIELD', 'uint32', 'a10', ast.Ordinal(None),
-      ('EXPRESSION', ['+', ('EXPRESSION', ['0x12CD3'])])),
-     ('FIELD', 'bool', 'a11', ast.Ordinal(None), ('EXPRESSION', ['true'])),
-     ('FIELD', 'bool', 'a12', ast.Ordinal(None), ('EXPRESSION', ['false'])),
-     ('FIELD', 'float', 'a13', ast.Ordinal(None), ('EXPRESSION', ['1.2345'])),
-     ('FIELD', 'float', 'a14', ast.Ordinal(None),
-      ('EXPRESSION', ['-', ('EXPRESSION', ['1.2345'])])),
-     ('FIELD', 'float', 'a15', ast.Ordinal(None),
-      ('EXPRESSION', ['+', ('EXPRESSION', ['1.2345'])])),
-     ('FIELD', 'float', 'a16', ast.Ordinal(None), ('EXPRESSION', ['123.'])),
-     ('FIELD', 'float', 'a17', ast.Ordinal(None), ('EXPRESSION', ['.123'])),
-     ('FIELD', 'double', 'a18', ast.Ordinal(None), ('EXPRESSION', ['1.23E10'])),
-     ('FIELD', 'double', 'a19', ast.Ordinal(None), ('EXPRESSION', ['1.E-10'])),
-     ('FIELD', 'double', 'a20', ast.Ordinal(None), ('EXPRESSION', ['.5E+10'])),
-     ('FIELD', 'double', 'a21', ast.Ordinal(None),
-      ('EXPRESSION', ['-', ('EXPRESSION', ['1.23E10'])])),
-     ('FIELD', 'double', 'a22', ast.Ordinal(None),
-      ('EXPRESSION', ['+', ('EXPRESSION', ['.123E10'])]))])])]
+    [('FIELD', 'int16', 'a0', ast.Ordinal(None), '0'),
+     ('FIELD', 'uint16', 'a1', ast.Ordinal(None), '0x0'),
+     ('FIELD', 'uint16', 'a2', ast.Ordinal(None), '0x00'),
+     ('FIELD', 'uint16', 'a3', ast.Ordinal(None), '0x01'),
+     ('FIELD', 'uint16', 'a4', ast.Ordinal(None), '0xcd'),
+     ('FIELD', 'int32', 'a5' , ast.Ordinal(None), '12345'),
+     ('FIELD', 'int64', 'a6', ast.Ordinal(None), '-12345'),
+     ('FIELD', 'int64', 'a7', ast.Ordinal(None), '+12345'),
+     ('FIELD', 'uint32', 'a8', ast.Ordinal(None), '0x12cd3'),
+     ('FIELD', 'uint32', 'a9', ast.Ordinal(None), '-0x12cD3'),
+     ('FIELD', 'uint32', 'a10', ast.Ordinal(None), '+0x12CD3'),
+     ('FIELD', 'bool', 'a11', ast.Ordinal(None), 'true'),
+     ('FIELD', 'bool', 'a12', ast.Ordinal(None), 'false'),
+     ('FIELD', 'float', 'a13', ast.Ordinal(None), '1.2345'),
+     ('FIELD', 'float', 'a14', ast.Ordinal(None), '-1.2345'),
+     ('FIELD', 'float', 'a15', ast.Ordinal(None), '+1.2345'),
+     ('FIELD', 'float', 'a16', ast.Ordinal(None), '123.'),
+     ('FIELD', 'float', 'a17', ast.Ordinal(None), '.123'),
+     ('FIELD', 'double', 'a18', ast.Ordinal(None), '1.23E10'),
+     ('FIELD', 'double', 'a19', ast.Ordinal(None), '1.E-10'),
+     ('FIELD', 'double', 'a20', ast.Ordinal(None), '.5E+10'),
+     ('FIELD', 'double', 'a21', ast.Ordinal(None), '-1.23E10'),
+     ('FIELD', 'double', 'a22', ast.Ordinal(None), '+.123E10')])])]
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
 

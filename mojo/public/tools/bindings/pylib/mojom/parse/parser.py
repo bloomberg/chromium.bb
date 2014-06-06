@@ -283,6 +283,7 @@ class Parser(object):
                | CHAR_CONST
                | TRUE
                | FALSE
+               | DEFAULT
                | STRING_LITERAL"""
     p[0] = p[1]
 

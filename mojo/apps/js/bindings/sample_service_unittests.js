@@ -123,7 +123,9 @@ define([
     expect(defaults.a17).toBe(1.23E-20);
     expect(defaults.a20).toBe(sample.Bar.Type.TYPE_BOTH);
     expect(defaults.a21).toBeNull();
-    expect(defaults.a22).toBeNull();
+    expect(defaults.a22).toBeTruthy();
+    expect(defaults.a22.shape).toBe(imported.Shape.SHAPE_RECTANGLE);
+    expect(defaults.a22.color).toBe(imported2.Color.COLOR_BLACK);
     // TODO(vtl): crbug.com/375845
     // expect(defaults.a21).toBeNull();
     // expect(defaults.a22).toBeNull();

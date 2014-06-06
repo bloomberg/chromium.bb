@@ -66,6 +66,7 @@ class Lexer(object):
     'CONST',
     'TRUE',
     'FALSE',
+    'DEFAULT',
   )
 
   keyword_map = {}

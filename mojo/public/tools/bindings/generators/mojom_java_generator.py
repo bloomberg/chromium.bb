@@ -141,7 +141,6 @@ class Generator(generator.Generator):
     "expression_to_text": ExpressionToText,
     "java_type": GetJavaType,
     "name": GetNameForElement,
-    "verify_token_type": generator.VerifyTokenType,
   }
 
   def GetJinjaExports(self):

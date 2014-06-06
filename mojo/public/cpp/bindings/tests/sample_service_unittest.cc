@@ -359,9 +359,11 @@ TEST(BindingsSampleTest, DefaultValues) {
   EXPECT_DOUBLE_EQ(1.23E-20, defaults->a17);
   EXPECT_TRUE(defaults->a18.is_null());
   EXPECT_TRUE(defaults->a19.is_null());
-  // TODO(mpcomplete): Test defaults.Point and defaults.Thing once we can
-  // initialize them to "default".
   EXPECT_EQ(Bar::TYPE_BOTH, defaults->a20);
+  EXPECT_TRUE(defaults->a21.is_null());
+  ASSERT_FALSE(defaults->a22.is_null());
+  EXPECT_EQ(imported::SHAPE_RECTANGLE, defaults->a22->shape);
+  EXPECT_EQ(imported::COLOR_BLACK, defaults->a22->color);
 }
 
 }  // namespace
