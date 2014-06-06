@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <utility>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/win/scoped_handle.h"
@@ -104,6 +105,9 @@ class BrokerServicesBase FINAL : public BrokerServices,
   // Provides a fast lookup to identify sandboxed processes that belong to a
   // job. Consult |jobless_process_handles_| for handles of pocess without job.
   std::set<DWORD> child_process_ids_;
+
+  typedef std::map<uint32_t, std::pair<HANDLE, HANDLE>> TokenCacheMap;
+  TokenCacheMap token_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };

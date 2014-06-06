@@ -87,6 +87,12 @@ class TargetPolicy {
   // as possible.
   virtual ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) = 0;
 
+  // Returns the initial token level.
+  virtual TokenLevel GetInitialTokenLevel() const = 0;
+
+  // Returns the lockdown token level.
+  virtual TokenLevel GetLockdownTokenLevel() const = 0;
+
   // Sets the security level of the Job Object to which the target process will
   // belong. This setting is permanent and cannot be changed once the target
   // process is spawned. The job controls the global security settings which
@@ -144,6 +150,9 @@ class TargetPolicy {
   // to start.
   virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
 
+  // Returns the initial integrity level used.
+  virtual IntegrityLevel GetIntegrityLevel() const = 0;
+
   // Sets the integrity level of the process in the sandbox. The integrity level
   // will not take effect before you call LowerToken. User Interface Privilege
   // Isolation is not affected by this setting and will remain off for the
@@ -179,7 +188,7 @@ class TargetPolicy {
   virtual ResultCode SetDelayedProcessMitigations(MitigationFlags flags) = 0;
 
   // Returns the currently set delayed mitigation flags.
-  virtual MitigationFlags GetDelayedProcessMitigations() = 0;
+  virtual MitigationFlags GetDelayedProcessMitigations() const = 0;
 
   // Sets the interceptions to operate in strict mode. By default, interceptions
   // are performed in "relaxed" mode, where if something inside NTDLL.DLL is

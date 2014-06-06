@@ -161,6 +161,14 @@ ResultCode PolicyBase::SetTokenLevel(TokenLevel initial, TokenLevel lockdown) {
   return SBOX_ALL_OK;
 }
 
+TokenLevel PolicyBase::GetInitialTokenLevel() const {
+  return initial_level_;
+}
+
+TokenLevel PolicyBase::GetLockdownTokenLevel() const{
+  return lockdown_level_;
+}
+
 ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32 ui_exceptions) {
   job_level_ = job_level;
   ui_exceptions_ = ui_exceptions;
@@ -265,6 +273,10 @@ ResultCode PolicyBase::SetIntegrityLevel(IntegrityLevel integrity_level) {
   return SBOX_ALL_OK;
 }
 
+IntegrityLevel PolicyBase::GetIntegrityLevel() const {
+  return integrity_level_;
+}
+
 ResultCode PolicyBase::SetDelayedIntegrityLevel(
     IntegrityLevel integrity_level) {
   delayed_integrity_level_ = integrity_level;
@@ -316,7 +328,7 @@ ResultCode PolicyBase::SetDelayedProcessMitigations(
   return SBOX_ALL_OK;
 }
 
-MitigationFlags PolicyBase::GetDelayedProcessMitigations() {
+MitigationFlags PolicyBase::GetDelayedProcessMitigations() const {
   return delayed_mitigations_;
 }
 

@@ -41,6 +41,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual void Release() OVERRIDE;
   virtual ResultCode SetTokenLevel(TokenLevel initial,
                                    TokenLevel lockdown) OVERRIDE;
+  virtual TokenLevel GetInitialTokenLevel() const OVERRIDE;
+  virtual TokenLevel GetLockdownTokenLevel() const OVERRIDE;
   virtual ResultCode SetJobLevel(JobLevel job_level,
                                  uint32 ui_exceptions) OVERRIDE;
   virtual ResultCode SetAlternateDesktop(bool alternate_winstation) OVERRIDE;
@@ -48,6 +50,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) OVERRIDE;
   virtual void DestroyAlternateDesktop() OVERRIDE;
   virtual ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) OVERRIDE;
+  virtual IntegrityLevel GetIntegrityLevel() const OVERRIDE;
   virtual ResultCode SetDelayedIntegrityLevel(
       IntegrityLevel integrity_level) OVERRIDE;
   virtual ResultCode SetAppContainer(const wchar_t* sid) OVERRIDE;
@@ -56,7 +59,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual MitigationFlags GetProcessMitigations() OVERRIDE;
   virtual ResultCode SetDelayedProcessMitigations(
       MitigationFlags flags) OVERRIDE;
-  virtual MitigationFlags GetDelayedProcessMitigations() OVERRIDE;
+  virtual MitigationFlags GetDelayedProcessMitigations() const OVERRIDE;
   virtual void SetStrictInterceptions() OVERRIDE;
   virtual ResultCode SetStdoutHandle(HANDLE handle) OVERRIDE;
   virtual ResultCode SetStderrHandle(HANDLE handle) OVERRIDE;
