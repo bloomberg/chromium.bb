@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/users/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -38,6 +39,26 @@ class LoginDisplay : public RemoveUserDelegate {
     // Cancels current password changed flow.
     virtual void CancelPasswordChangedFlow() = 0;
 
+    // Ignore password change, remove existing cryptohome and
+    // force full sync of user data.
+    virtual void ResyncUserData() = 0;
+
+    // Decrypt cryptohome using user provided |old_password|
+    // and migrate to new password.
+    virtual void MigrateUserData(const std::string& old_password) = 0;
+
+    // Sign in using |username| and |password| specified.
+    // Used for known users only.
+    virtual void Login(const UserContext& user_context,
+                       const SigninSpecifics& specifics) = 0;
+
+    // Returns true if sign in is in progress.
+    virtual bool IsSigninInProgress() const = 0;
+
+    // Sign out the currently signed in user.
+    // Used when the lock screen is being displayed.
+    virtual void Signout() = 0;
+
     // Create new Google account.
     virtual void CreateAccount() = 0;
 
@@ -45,38 +66,8 @@ class LoginDisplay : public RemoveUserDelegate {
     // Used for new users authenticated through an extension.
     virtual void CompleteLogin(const UserContext& user_context) = 0;
 
-    // Returns name of the currently connected network.
-    virtual base::string16 GetConnectedNetworkName() = 0;
-
-    // Returns true if sign in is in progress.
-    virtual bool IsSigninInProgress() const = 0;
-
-    // Sign in using |username| and |password| specified.
-    // Used for known users only.
-    virtual void Login(const UserContext& user_context) = 0;
-
-    // Sign in as a retail mode user.
-    virtual void LoginAsRetailModeUser() = 0;
-
-    // Sign in into guest session.
-    virtual void LoginAsGuest() = 0;
-
-    // Decrypt cryptohome using user provided |old_password|
-    // and migrate to new password.
-    virtual void MigrateUserData(const std::string& old_password) = 0;
-
-    // Sign in into the public account identified by |username|.
-    virtual void LoginAsPublicAccount(const std::string& username) = 0;
-
-    // Login to kiosk mode for app with |app_id|.
-    virtual void LoginAsKioskApp(const std::string& app_id,
-                                 bool diagnostic_mode) = 0;
-
     // Notify the delegate when the sign-in UI is finished loading.
     virtual void OnSigninScreenReady() = 0;
-
-    // Called when existing user pod is selected in the UI.
-    virtual void OnUserSelected(const std::string& username) = 0;
 
     // Called when the user requests enterprise enrollment.
     virtual void OnStartEnterpriseEnrollment() = 0;
@@ -90,20 +81,15 @@ class LoginDisplay : public RemoveUserDelegate {
     // Shows wrong HWID screen.
     virtual void ShowWrongHWIDScreen() = 0;
 
-    // Restarts the public-session auto-login timer if it is running.
-    virtual void ResetPublicSessionAutoLoginTimer() = 0;
-
-    // Ignore password change, remove existing cryptohome and
-    // force full sync of user data.
-    virtual void ResyncUserData() = 0;
-
     // Sets the displayed email for the next login attempt with |CompleteLogin|.
     // If it succeeds, user's displayed email value will be updated to |email|.
     virtual void SetDisplayEmail(const std::string& email) = 0;
 
-    // Sign out the currently signed in user.
-    // Used when the lock screen is being displayed.
-    virtual void Signout() = 0;
+    // Returns name of the currently connected network, for error message,
+    virtual base::string16 GetConnectedNetworkName() = 0;
+
+    // Restarts the public-session auto-login timer if it is running.
+    virtual void ResetPublicSessionAutoLoginTimer() = 0;
 
    protected:
     virtual ~Delegate();

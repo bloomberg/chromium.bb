@@ -381,7 +381,27 @@ bool ExistingUserController::IsSigninInProgress() const {
   return is_login_in_progress_;
 }
 
-void ExistingUserController::Login(const UserContext& user_context) {
+void ExistingUserController::Login(const UserContext& user_context,
+                                   const SigninSpecifics& specifics) {
+  if (user_context.GetUserType() == User::USER_TYPE_GUEST) {
+    if (!specifics.guest_mode_url.empty()) {
+      guest_mode_url_ = GURL(specifics.guest_mode_url);
+      if (specifics.guest_mode_url_append_locale)
+        guest_mode_url_ = google_util::AppendGoogleLocaleParam(guest_mode_url_);
+    }
+    LoginAsGuest();
+    return;
+  } else if (user_context.GetUserType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
+    LoginAsPublicAccount(user_context.GetUserID());
+    return;
+  } else if (user_context.GetUserType() == User::USER_TYPE_RETAIL_MODE) {
+    LoginAsRetailModeUser();
+    return;
+  } else if (user_context.GetUserType() == User::USER_TYPE_KIOSK_APP) {
+    LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
+    return;
+  }
+
   if (!user_context.HasCredentials())
     return;
 
@@ -570,11 +590,6 @@ void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
 void ExistingUserController::OnSigninScreenReady() {
   signin_screen_ready_ = true;
   StartPublicSessionAutoLoginTimer();
-}
-
-void ExistingUserController::OnUserSelected(const std::string& username) {
-  login_performer_.reset(NULL);
-  num_login_attempts_ = 0;
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -232,7 +233,7 @@ class OAuth2Test : public OobeBaseTest {
 
     UserContext user_context(username);
     user_context.SetKey(Key(password));
-    controller->Login(user_context);
+    controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources()).Wait();

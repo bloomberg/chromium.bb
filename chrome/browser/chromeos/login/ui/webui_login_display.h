@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
@@ -52,19 +53,21 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // SigninScreenHandlerDelegate implementation:
   virtual void CancelPasswordChangedFlow() OVERRIDE;
-  virtual void CancelUserAdding() OVERRIDE;
+  virtual void ResyncUserData() OVERRIDE;
+  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
+
+  virtual void Login(const UserContext& user_context,
+                     const SigninSpecifics& specifics) OVERRIDE;
+  virtual bool IsSigninInProgress() const OVERRIDE;
+  virtual void Signout() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
   virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
-  virtual void Login(const UserContext& user_context) OVERRIDE;
-  virtual void LoginAsRetailModeUser() OVERRIDE;
-  virtual void LoginAsGuest() OVERRIDE;
-  virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
-  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+
+  virtual void OnSigninScreenReady() OVERRIDE;
+  virtual void CancelUserAdding() OVERRIDE;
   virtual void LoadWallpaper(const std::string& username) OVERRIDE;
   virtual void LoadSigninWallpaper() OVERRIDE;
-  virtual void OnSigninScreenReady() OVERRIDE;
   virtual void RemoveUser(const std::string& username) OVERRIDE;
-  virtual void ResyncUserData() OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
   virtual void ShowKioskEnableScreen() OVERRIDE;
   virtual void ShowKioskAutolaunchScreen() OVERRIDE;
@@ -76,12 +79,8 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowUsers() const OVERRIDE;
-  virtual bool IsSigninInProgress() const OVERRIDE;
   virtual bool IsUserSigninCompleted() const OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
-  virtual void Signout() OVERRIDE;
-  virtual void LoginAsKioskApp(const std::string& app_id,
-                               bool diagnostic_mode) OVERRIDE;
   virtual void HandleGetUsers() OVERRIDE;
   virtual void SetAuthType(
       const std::string& username,
