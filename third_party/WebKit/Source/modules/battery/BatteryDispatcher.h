@@ -5,7 +5,7 @@
 #ifndef BatteryDispatcher_h
 #define BatteryDispatcher_h
 
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/DeviceSensorEventDispatcher.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/BatteryStatus.h"
 #include "public/platform/WebBatteryStatusListener.h"
@@ -16,20 +16,22 @@ class WebBatteryStatus;
 
 namespace WebCore {
 
-class BatteryDispatcher FINAL : public DeviceEventDispatcherBase, public blink::WebBatteryStatusListener {
+class BatteryDispatcher FINAL : public DeviceSensorEventDispatcher, public blink::WebBatteryStatusListener {
 public:
     static BatteryDispatcher& instance();
     virtual ~BatteryDispatcher();
 
-    BatteryStatus* latestData();
+    void addClient(BatteryManager*);
+    void removeClient(BatteryManager*);
 
-    // Inherited from blink::WebBatteryStatusListener.
+    const BatteryStatus* getLatestData();
     virtual void updateBatteryStatus(const blink::WebBatteryStatus&) OVERRIDE;
 
 private:
     BatteryDispatcher();
 
-    // Inherited from DeviceEventDispatcherBase.
+    void didChangeBatteryStatus(const AtomicString& eventType);
+
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 

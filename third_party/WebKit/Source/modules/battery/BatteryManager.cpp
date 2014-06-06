@@ -8,6 +8,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "modules/battery/BatteryStatus.h"
+#include <limits>
 
 namespace WebCore {
 
@@ -24,8 +25,7 @@ BatteryManager::~BatteryManager()
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , DeviceEventControllerBase(toDocument(context)->page())
-    , m_batteryStatus(BatteryStatus::create())
+    , DeviceSensorEventController(toDocument(context)->page())
 {
     m_hasEventListener = true;
     startUpdating();
@@ -33,63 +33,72 @@ BatteryManager::BatteryManager(ExecutionContext* context)
 
 bool BatteryManager::charging()
 {
-    return m_batteryStatus->charging();
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->charging();
+
+    return true;
 }
 
 double BatteryManager::chargingTime()
 {
-    return m_batteryStatus->chargingTime();
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->chargingTime();
+
+    return 0;
 }
 
 double BatteryManager::dischargingTime()
 {
-    return m_batteryStatus->dischargingTime();
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->dischargingTime();
+
+    return std::numeric_limits<double>::infinity();
 }
 
 double BatteryManager::level()
 {
-    return m_batteryStatus->level();
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->level();
+
+    return 1;
 }
 
-void BatteryManager::didUpdateData()
+void BatteryManager::didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
 
-    RefPtr<BatteryStatus> oldStatus = m_batteryStatus;
-    m_batteryStatus = BatteryDispatcher::instance().latestData();
-
-    // BatteryDispatcher also holds a reference to m_batteryStatus.
-    ASSERT(m_batteryStatus->refCount() == 2);
-
-    Document* document = toDocument(executionContext());
-    if (document->activeDOMObjectsAreSuspended() || document->activeDOMObjectsAreStopped())
-        return;
-
-    ASSERT(oldStatus);
-
-    if (m_batteryStatus->charging() != oldStatus->charging())
-        dispatchEvent(Event::create(EventTypeNames::chargingchange));
-    if (m_batteryStatus->chargingTime() != oldStatus->chargingTime())
-        dispatchEvent(Event::create(EventTypeNames::chargingtimechange));
-    if (m_batteryStatus->dischargingTime() != oldStatus->dischargingTime())
-        dispatchEvent(Event::create(EventTypeNames::dischargingtimechange));
-    if (m_batteryStatus->level() != oldStatus->level())
-        dispatchEvent(Event::create(EventTypeNames::levelchange));
+    dispatchEvent(event);
 }
 
 void BatteryManager::registerWithDispatcher()
 {
-    BatteryDispatcher::instance().addController(this);
+    BatteryDispatcher::instance().addClient(this);
 }
 
 void BatteryManager::unregisterWithDispatcher()
 {
-    BatteryDispatcher::instance().removeController(this);
+    BatteryDispatcher::instance().removeClient(this);
 }
 
 bool BatteryManager::hasLastData()
 {
-    return BatteryDispatcher::instance().latestData();
+    return false;
+}
+
+PassRefPtrWillBeRawPtr<Event> BatteryManager::getLastEvent()
+{
+    // Events are dispached via BatteryManager::didChangeBatteryStatus()
+    return nullptr;
+}
+
+bool BatteryManager::isNullEvent(Event*)
+{
+    return false;
+}
+
+Document* BatteryManager::document()
+{
+    return toDocument(executionContext());
 }
 
 void BatteryManager::suspend()
