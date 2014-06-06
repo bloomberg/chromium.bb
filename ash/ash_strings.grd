@@ -192,10 +192,6 @@ This file contains the strings for ash.
         Shelf
       </message>
 
-      <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
-        Set wallpaper...
-      </message>
-
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
         Keyboard Overlay
       </message>
@@ -214,9 +210,6 @@ Braille display connected.
       <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_BUBBLE" desc="The message shown on a bubble when spoken feedback is enabled">
 ChromeVox (spoken feedback) is enabled.
 Press Ctrl+Alt+Z to disable.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
-        Settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system.">
         Sign out
@@ -244,15 +237,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
-        SMS
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS_MESSAGES" desc="The label used in the default status tray view for SMS with the number of messages.">
-        SMS messages: <ph name="MESSAGE_COUNT">$1<ex>3</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS_NUMBER" desc="Sender for SMS messagees in the system tray.">
-        SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT" desc="The string for the button which lets the user add another account to the current session.">
         Sign in another account...
@@ -288,83 +272,17 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
-        Performance tracing enabled
-      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
-        Brightness
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
-        Audio Settings
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
-        Output
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT" desc="The label used in audio detailed page for audio input section of ash tray pop up.">
-        Input
-      </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
-        Mirroring to <ph name="DISPLAY_NAME">$1</ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
-        Extending screen to <ph name="DISPLAY_NAME">$1</ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL" desc="The label used in the tray to show that the current status is mirroring and the device doesn't have the internal display.">
-        Mirroring
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL" desc="The label used in the tray to show that the current status is extended and the device doesn't have the internal display.">
-        Extending screen
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED" desc="The title of the notification indicating that the system is in docked mode.">
-        Docked mode
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION" desc="The body of the notification indicating that the system is in docked mode.">
-        You can keep using your Chromebook while it's connected to an external display, even with the lid closed.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
-        <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED" desc="The label used in the tray to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
-        <ph name="DISPLAY_NAME">$1</ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
-        <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show a single display's configuration">
-        <ph name="DISPLAY_NAME">$1</ph>: <ph name="ANNOTATION">$2</ph>
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
         Unknown Display
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME" desc="Label used to show a display name with annotation (like screen resolution or overscan info).">
-	<ph name="DISPLAY_NAME">$1</ph> (<ph name="ANNOTATION">$2</ph>)
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION" desc="Label used to annotate the display's status like resolution or overscan flag.">
-        <ph name="RESOLUTION">$1</ph>, <ph name="OVERSCAN">$2</ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN" desc="Label used to describe that the system notice that this display device may have overscan area.">
-        overscan
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
-        0&#x00B0;
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90" desc="The value of display orientation option item: 90-degree rotated">
-        90&#x00B0;
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180" desc="The value of display orientation option item: 180-degree rotated">
-        180&#x00B0;
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
-        270&#x00B0;
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
         Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
@@ -380,40 +298,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_SETTINGS" desc="The label used for IME settings entry.">
         Customize languages and input...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
-        CAPS LOCK is on
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
-        CAPS LOCK is off
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
-        Search
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
-        Search or Shift
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
-        Alt+Search
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
-        Alt+Search or Shift
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
-CAPS LOCK is on.
-Press Alt+Search or Shift to cancel.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
-CAPS LOCK is on.
-Press Search or Shift to cancel.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when an IME is enabled">
-        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>.
-Press Shift + Alt to switch.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when a third party IME is enabled">
-        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>*(<ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>3rd party<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>).
-Press Shift + Alt to switch.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE" desc="The message used for locale change notifications in the system tray.">
@@ -455,54 +339,6 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label of the item 'Settings...' used in the accessibility menu of the system tray to open an accessibility setting page.">
         Settings...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
-        Battery full
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
-        <ph name="percentage">$1<ex>56</ex></ph>% remaining
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY" desc="The label in the tray bubble setting row to show the remaining battery power as a percent.">
-        <ph name="percentage">$1<ex>56</ex></ph>%
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL" desc="The label in the tray dialog to show a time estimate until the battery is fully charged.">
-        <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m until full
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING" desc="The label in the tray dialog indicating that the time to charge or discharge the battery is being calculated.">
-        Calculating...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is empty.">
-        <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> left
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is fully charged.">
-        <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> until full
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE" desc="The label in the tray dialog to indicate that battery charging is unreliable.">
-        Low-power charger
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is fully charged.">
-        Battery is full.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE" desc="The message used by accessibility to show battery is discharging.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
-        Calculating battery time.
-      </message>
-      <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE" desc="The message used by accessibility to read remaining battery time until empty.">
-        Time left until battery is empty, <ph name="time_left">$1<ex>1 hour and 15 minutes</ex></ph>
-      </message>
-      <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE" desc="The message used by accessibility to read the estimated time until full.">
-        Time remaining until battery is fully charged, <ph name="time_remaining">$1<ex>1 hour and 15 minutes</ex></ph>
-      </message>
-      <message name = "IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE" desc="The message used by accessibility to read battery time, which includes both non-zero hours and minutes.">
-        <ph name="hour">$1<ex> 1 hour</ex></ph> and <ph name="minute">$2<ex>15 minutes</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE_ACCESSIBLE" desc="The message used by accessibility to indicate that battery charging is unreliable.">
-        Plugged in to a low-power charger. Battery charging may not be reliable.
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
       </message>
@@ -511,12 +347,6 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shut down
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" desc="Tray bubble item shown to inform the user that the session length is limited.">
-        Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" desc="Notification shown to inform the user that the session length is limited.">
-        Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>. You will be signed out.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL" desc="Label shown instead of email for supervised users">
@@ -527,65 +357,11 @@ Press Shift + Alt to switch.
         Previous menu
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto.">
-        Rotation on (Tap here to change)
-      </message>
-
-      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED" desc="The text shown in the tray menu when rotation is set to locked.">
-        Rotation locked (Tap here to change)
-      </message>
-
-      <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
-        Show on-screen keyboard
-      </message>
-
       <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
         9+
       </message>
-      <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
-        Could not mirror displays since no supported resolutions found. Entered extended desktop instead.
-      </message>
-      <message name="IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING" desc="An error message to show that the system failed to enter the extended desktop mode or unknown status. Please translate the parentized text.">
-        Dear Monitor, it's not working out between us. (That monitor is not supported)
-      </message>
-      <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_ACCEPT" desc="A button label shown in the notification for the resolution change to accept the change">
-        Accept
-      </message>
-      <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_REVERT" desc="A button label shown in the notification for the resolution change to revert the change">
-        Revert
-      </message>
-      <message name="IDS_ASH_DISPLAY_RESOLUTION_TIMEOUT" desc="A message for to notify the user about the timeout of display resolution change.">
-        Reverting to old resolution in <ph name="TIMEOUT_SECONDS">$1</ph>
-      </message>
       <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name of the internal display which is shown in the display settings.">
         Internal Display
-      </message>
-      <message name="IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT" desc="The text of the notification when a peripheral device is in low battery condition.">
-        Battery low (<ph name="percentage">$1<ex>56</ex></ph>%)
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
-        Screenshot taken
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_DISABLED" desc="The title of the notification when taking a screenshot failed because screenshots are disabled.">
-        Screenshots disabled
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL" desc="The title of the notification when taking a screenshot failed.">
-        An error occurred
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS" desc="The text of the notification when a screenshot was taken.">
-        Click to view
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_DISABLED" desc="The text of the notification when taking a screenshot failed because screenshots are disabled by administrator policy.">
-        The ability to take screenshots has been disabled by your administrator.
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL" desc="The text of the notification when taking a screenshot failed.">
-        Failed to save screenshot
-      </message>
-      <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut in chrome-os.">
-        Press Ctrl+Shift+Q twice to sign out.
-      </message>
-      <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT_ACCESSIBLE" desc="The message used by accessibility to indicate the content of the popup when the user preses the exit shortcut in chrome-os.">
-        Press Control Shift Q twice to sign out.
       </message>
       <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
         Press Ctrl+Shift+Q twice to quit.
@@ -598,18 +374,6 @@ Press Shift + Alt to switch.
         Information
       </message>
 
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_TITLE" desc="Dialog title for the logout confirmation dialog.">
-        Exiting Session
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING" desc="The text for the logout confirmation dialog.">
-        You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT">$1<ex>5 seconds</ex></ph>.
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW" desc="The text for the logout confirmation dialog with no time left.">
-        You will be signed out now.
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
-        Sign out now
-      </message>
       <message name="IDS_ASH_CONTROL_KEY" desc="Name of [Ctrl] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         ctrl
       </message>
@@ -624,9 +388,6 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_MOD3_KEY" desc="Name of ISOLevel5 (mod3) key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         mod3
-      </message>
-      <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
-        search
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCOUNTS_TITLE" desc="The footer label of the menu which is used to manage the profile accounts.">
         Manage accounts
