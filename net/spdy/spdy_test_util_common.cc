@@ -921,7 +921,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(
 SpdyFrame* SpdyTestUtil::ConstructSpdyRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
-  SpdyRstStreamIR rst_ir(stream_id, status, "RST");
+  SpdyRstStreamIR rst_ir(stream_id, status, "");
   return CreateFramer(false)->SerializeRstStream(rst_ir);
 }
 
