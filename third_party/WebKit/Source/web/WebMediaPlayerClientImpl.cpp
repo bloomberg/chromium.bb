@@ -205,6 +205,18 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_webMediaPlayer->load(loadType, kurl, corsMode);
 }
 
+double WebMediaPlayerClientImpl::rate() const
+{
+    return m_rate;
+}
+
+void WebMediaPlayerClientImpl::setRate(double rate)
+{
+    m_rate = rate;
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setRate(rate);
+}
+
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
 {
     if (m_webMediaPlayer)
@@ -217,6 +229,25 @@ MediaPlayer::ReadyState WebMediaPlayerClientImpl::readyState() const
     if (m_webMediaPlayer)
         return static_cast<MediaPlayer::ReadyState>(m_webMediaPlayer->readyState());
     return MediaPlayer::HaveNothing;
+}
+
+double WebMediaPlayerClientImpl::maxTimeSeekable() const
+{
+    if (m_webMediaPlayer)
+        return m_webMediaPlayer->maxTimeSeekable();
+    return 0.0;
+}
+
+PassRefPtr<TimeRanges> WebMediaPlayerClientImpl::buffered() const
+{
+    if (m_webMediaPlayer)
+        return TimeRanges::create(m_webMediaPlayer->buffered());
+    return TimeRanges::create();
+}
+
+bool WebMediaPlayerClientImpl::didLoadingProgress() const
+{
+    return m_webMediaPlayer && m_webMediaPlayer->didLoadingProgress();
 }
 
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
@@ -308,6 +339,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
     , m_preload(MediaPlayer::Auto)
+    , m_rate(1.0)
 #if OS(ANDROID)
     , m_usePaintOnAndroid(false)
 #endif
