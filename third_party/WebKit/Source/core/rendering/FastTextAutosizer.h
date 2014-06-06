@@ -245,7 +245,7 @@ private:
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
     void inflateAutoTable(RenderTable*);
-    void inflate(RenderBlock*);
+    float inflate(RenderObject*, float multiplier = 0);
     bool shouldHandleLayout() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();

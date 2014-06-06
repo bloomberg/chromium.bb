@@ -372,7 +372,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 
     // Cells in auto-layout tables are handled separately by inflateAutoTable.
     bool isAutoTableCell = block->isTableCell() && !toRenderTableCell(block)->table()->style()->isFixedTableLayout();
-    if (block->childrenInline() && block->firstChild() && !isAutoTableCell)
+    if (!isAutoTableCell && !m_clusterStack.isEmpty())
         inflate(block);
 }
 
@@ -441,30 +441,42 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
     }
 }
 
-void FastTextAutosizer::inflate(RenderBlock* block)
+float FastTextAutosizer::inflate(RenderObject* parent, float multiplier)
 {
     Cluster* cluster = currentCluster();
-    float multiplier = 0;
-    RenderObject* descendant = block->firstChild();
-    while (descendant) {
-        // Skip block descendants because they will be inflate()'d on their own.
-        if (descendant->isRenderBlock()) {
-            descendant = descendant->nextInPreOrderAfterChildren(block);
-            continue;
-        }
-        if (descendant->isText()) {
+    bool hasTextChild = false;
+
+    RenderObject* child = 0;
+    if (parent->isRenderBlock() && parent->childrenInline())
+        child = toRenderBlock(parent)->firstChild();
+    else if (parent->isRenderInline())
+        child = toRenderInline(parent)->firstChild();
+
+    while (child) {
+        if (child->isText()) {
+            hasTextChild = true;
             // We only calculate this multiplier on-demand to ensure the parent block of this text
             // has entered layout.
             if (!multiplier)
                 multiplier = cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
-            applyMultiplier(descendant, multiplier);
-            applyMultiplier(descendant->parent(), multiplier); // Parent handles line spacing.
+            applyMultiplier(child, multiplier);
             // FIXME: Investigate why MarkOnlyThis is sufficient.
-            if (descendant->parent()->isRenderInline())
-                descendant->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+            if (parent->isRenderInline())
+                child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        } else if (child->isRenderInline()) {
+            multiplier = inflate(child, multiplier);
         }
-        descendant = descendant->nextInPreOrder(block);
+        child = child->nextSibling();
     }
+
+    if (hasTextChild) {
+        applyMultiplier(parent, multiplier); // Parent handles line spacing.
+    } else if (!parent->isListItem()) {
+        // For consistency, a block with no immediate text child should always have a
+        // multiplier of 1 (except for list items which are handled in inflateListItem).
+        applyMultiplier(parent, 1);
+    }
+    return multiplier;
 }
 
 bool FastTextAutosizer::shouldHandleLayout() const
