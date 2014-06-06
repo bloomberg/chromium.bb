@@ -19,6 +19,7 @@ class TimelineController(object):
     self._model = None
     self._renderer_process = None
     self._smooth_records = []
+    self._interaction = None
 
   def Start(self, page, tab):
     """Starts gathering timeline data.
@@ -37,12 +38,12 @@ class TimelineController(object):
     tab.browser.StartTracing(','.join(categories))
     # Start the smooth marker for all actions.
     runner = action_runner.ActionRunner(tab)
-    runner.BeginInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
+    self._interaction = runner.BeginInteraction(
+        RUN_SMOOTH_ACTIONS, is_smooth=True)
 
   def Stop(self, tab):
     # End the smooth marker for all actions.
-    runner = action_runner.ActionRunner(tab)
-    runner.EndInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
+    self._interaction.End()
     # Stop tracing.
     timeline_data = tab.browser.StopTracing()
     self._model = TimelineModel(timeline_data)

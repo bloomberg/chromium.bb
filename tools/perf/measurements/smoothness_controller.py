@@ -23,6 +23,7 @@ class SmoothnessController(object):
   def __init__(self):
     self._timeline_model = None
     self._tracing_timeline_data = None
+    self._interaction = None
 
   def Start(self, page, tab):
     custom_categories = ['webkit.console', 'benchmark']
@@ -32,12 +33,12 @@ class SmoothnessController(object):
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     # Start the smooth marker for all smooth actions.
     runner = action_runner.ActionRunner(tab)
-    runner.BeginInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
+    self._interaction = runner.BeginInteraction(
+        RUN_SMOOTH_ACTIONS, is_smooth=True)
 
   def Stop(self, tab):
     # End the smooth marker for all smooth actions.
-    runner = action_runner.ActionRunner(tab)
-    runner.EndInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
+    self._interaction.End()
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StopRawDisplayFrameRateMeasurement()

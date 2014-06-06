@@ -29,18 +29,16 @@ class GmailComposeDiscardPage(page_module.Page):
       }))
 
   def ComposeClick(self, action_runner):
-    action_runner.RunAction(JavascriptAction({
-      'expression': '''
+    action_runner.ExecuteJavaScript('''
       var button=document.evaluate('//div[text()="COMPOSE"]',
-        document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null)
+          document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null)
           .singleNodeValue;
       var mousedownevent=new MouseEvent('mousedown',true,true,window,0,0,0,0,0,
         false,false,false,false,0,null);
       var mouseupevent=new MouseEvent('mouseup',true,true,window,0,0,0,0,0,
         false,false,false,false,0,null);
       button.dispatchEvent(mousedownevent);
-      button.dispatchEvent(mouseupevent);'''
-    }))
+      button.dispatchEvent(mouseupevent);''')
 
   def RunEndure(self, action_runner):
     action_runner.RunAction(WaitAction(

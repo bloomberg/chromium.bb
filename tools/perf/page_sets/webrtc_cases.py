@@ -28,10 +28,7 @@ class Page1(WebrtcCasesPage):
       {
         'seconds': 10
       }))
-    action_runner.RunAction(JavascriptAction(
-      {
-        'expression': 'checkForErrors();'
-      }))
+    action_runner.ExecuteJavaScript('checkForErrors();')
 
 
 class Page2(WebrtcCasesPage):

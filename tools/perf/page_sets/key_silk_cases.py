@@ -5,7 +5,6 @@
 from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
-from telemetry.web_perf import timeline_interaction_record as tir_module
 
 
 class KeySilkCasesPage(page_module.Page):
@@ -299,11 +298,11 @@ class Page16(KeySilkCasesPage):
           }''',
         'speed': 5000
       }))
-    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.RunAction(WaitAction({
       'javascript': 'document.getElementsByClassName("message").length < 18'
     }))
-    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction.End()
 
   def RunSmoothness(self, action_runner):
     self.SwipeToDismiss(action_runner)
@@ -391,11 +390,11 @@ class Page19(KeySilkCasesPage):
       {
         'selector': '#menu-button'
       }))
-    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.RunAction(WaitAction({
       'javascript': 'document.getElementById("nav-drawer").active'
     }))
-    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction.End()
 
 
   def RunNavigateSteps(self, action_runner):
@@ -535,9 +534,9 @@ class Page23(KeySilkCasesPage):
         'scroll_distance_function':
           'function() { return window.innerHeight / 2; }'
       }))
-    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.RunAction(WaitAction({'seconds' : 1}))
-    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction.End()
 
 
 class Page24(KeySilkCasesPage):
@@ -600,9 +599,9 @@ class Page25(KeySilkCasesPage):
             callback(document.getElementById(':f'));
           }'''
       }))
-    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.RunAction(WaitAction({'seconds' : 1}))
-    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+    interaction.End()
 
 
 class Page26(KeySilkCasesPage):

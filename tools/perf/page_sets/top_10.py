@@ -49,12 +49,12 @@ class GoogleCalendar(SimpleScrollPage):
 
   def RunNavigateSteps(self, action_runner):
     super(GoogleCalendar, self).RunNavigateSteps(action_runner)
-    action_runner.RunAction(JavascriptAction(
-      { 'expression' :
-       '(function() { var elem = document.createElement("meta");'
-      'elem.name="viewport";'
-      'elem.content="initial-scale=1";'
-      'document.body.appendChild(elem); })();'}))
+    action_runner.ExecuteJavaScript('''
+        (function() { var elem = document.createElement("meta");
+          elem.name="viewport";
+          elem.content="initial-scale=1";
+          document.body.appendChild(elem);
+        })();''')
     action_runner.RunAction(WaitAction({'seconds' : 2}))
     action_runner.RunAction(WaitAction({
       'condition' : 'element', 'selector' : 'div[class~="navForward"]'}))
