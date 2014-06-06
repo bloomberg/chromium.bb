@@ -16,7 +16,8 @@
   'DEST': 'examples/api',
   'NAME': 'media_stream_video',
   'TITLE': 'MediaStream Video',
-  'GROUP': 'API'
+  'GROUP': 'API',
+  'MIN_CHROME_VERSION': '35.0.0.0'
 }
 
 

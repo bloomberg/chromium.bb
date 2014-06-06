@@ -160,7 +160,8 @@ def GenerateManifest(srcroot, dstroot, desc):
       'channel': None,
       'permissions': pretty_permissions,
       'multi_platform': desc.get('MULTI_PLATFORM', False),
-      'version': build_version.ChromeVersionNoTrunk()
+      'version': build_version.ChromeVersionNoTrunk(),
+      'min_chrome_version': desc.get('MIN_CHROME_VERSION')
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)
 

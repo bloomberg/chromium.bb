@@ -1,7 +1,9 @@
 {
   "name": "{{name}}",
   "version": "{{version}}",
-  "minimum_chrome_version": "{{version}}",
+[[if min_chrome_version:]]
+  "minimum_chrome_version": "{{min_chrome_version}}",
+[[]]
   "manifest_version": 2,
   "description": "{{description}}",
   "offline_enabled": true,
