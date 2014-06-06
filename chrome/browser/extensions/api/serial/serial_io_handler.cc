@@ -7,10 +7,18 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 
+namespace {
+#if defined(OS_WIN)
+const base::PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
+#elif defined(OS_POSIX)
+const base::PlatformFile kInvalidPlatformFileValue = -1;
+#endif
+}  // namespace
+
 namespace extensions {
 
 SerialIoHandler::SerialIoHandler()
-    : file_(base::kInvalidPlatformFileValue),
+    : file_(kInvalidPlatformFileValue),
       pending_read_buffer_len_(0),
       pending_write_buffer_len_(0) {
 }
@@ -23,7 +31,7 @@ void SerialIoHandler::Initialize(base::PlatformFile file,
                                  const ReadCompleteCallback& read_callback,
                                  const WriteCompleteCallback& write_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(file_, base::kInvalidPlatformFileValue);
+  DCHECK_EQ(file_, kInvalidPlatformFileValue);
 
   file_ = file;
   read_complete_ = read_callback;

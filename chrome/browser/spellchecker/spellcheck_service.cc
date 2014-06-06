@@ -165,10 +165,10 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
 
-  if (hunspell_dictionary_->GetDictionaryFile() !=
-      base::kInvalidPlatformFileValue) {
+  if (hunspell_dictionary_->GetDictionaryFile().IsValid()) {
     file = IPC::GetFileHandleForProcess(
-        hunspell_dictionary_->GetDictionaryFile(), process->GetHandle(), false);
+        hunspell_dictionary_->GetDictionaryFile().GetPlatformFile(),
+        process->GetHandle(), false);
   }
 
   process->Send(new SpellCheckMsg_Init(

@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/move.h"
 #include "base/observer_list.h"
-#include "base/platform_file.h"
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -61,8 +60,7 @@ class SpellcheckHunspellDictionary
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const;
 
-  // TODO(rlp): Return by value.
-  base::PlatformFile GetDictionaryFile() const;
+  const base::File& GetDictionaryFile() const;
   const std::string& GetLanguage() const;
   bool IsUsingPlatformChecker() const;
 

@@ -138,12 +138,11 @@ void SpellcheckHunspellDictionary::RetryDownloadDictionary(
 }
 
 bool SpellcheckHunspellDictionary::IsReady() const {
-  return GetDictionaryFile() !=
-      base::kInvalidPlatformFileValue || IsUsingPlatformChecker();
+  return GetDictionaryFile().IsValid() || IsUsingPlatformChecker();
 }
 
-base::PlatformFile SpellcheckHunspellDictionary::GetDictionaryFile() const {
-  return dictionary_file_.file.GetPlatformFile();
+const base::File& SpellcheckHunspellDictionary::GetDictionaryFile() const {
+  return dictionary_file_.file;
 }
 
 const std::string& SpellcheckHunspellDictionary::GetLanguage() const {

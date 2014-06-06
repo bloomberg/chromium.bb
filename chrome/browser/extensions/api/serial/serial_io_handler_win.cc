@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
 #include "chrome/browser/extensions/api/serial/serial_io_handler_win.h"
 
 #include "base/win/windows_version.h"
 
-#include <windows.h>
+namespace {
+const base::PlatformFile kInvalidPlatformFileValue = INVALID_HANDLE_VALUE;
+}  // namespace
 
 namespace extensions {
 
@@ -38,7 +42,7 @@ void SerialIoHandlerWin::InitializeImpl() {
 void SerialIoHandlerWin::ReadImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(pending_read_buffer());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
 
   DWORD errors;
   COMSTAT status;
@@ -60,7 +64,7 @@ void SerialIoHandlerWin::ReadImpl() {
 void SerialIoHandlerWin::WriteImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(pending_write_buffer());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
 
   BOOL ok = ::WriteFile(file(),
                         pending_write_buffer()->data(),
@@ -73,13 +77,13 @@ void SerialIoHandlerWin::WriteImpl() {
 
 void SerialIoHandlerWin::CancelReadImpl() {
   DCHECK(CalledOnValidThread());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
   ::CancelIo(file());
 }
 
 void SerialIoHandlerWin::CancelWriteImpl() {
   DCHECK(CalledOnValidThread());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
   ::CancelIo(file());
 }
 

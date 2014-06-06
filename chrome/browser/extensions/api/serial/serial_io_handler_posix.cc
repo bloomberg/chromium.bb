@@ -6,6 +6,10 @@
 
 #include "base/posix/eintr_wrapper.h"
 
+namespace {
+const base::PlatformFile kInvalidPlatformFileValue = -1;
+}  // namespace
+
 namespace extensions {
 
 // static
@@ -16,7 +20,7 @@ scoped_refptr<SerialIoHandler> SerialIoHandler::Create() {
 void SerialIoHandlerPosix::ReadImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(pending_read_buffer());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
 
   EnsureWatchingReads();
 }
@@ -24,7 +28,7 @@ void SerialIoHandlerPosix::ReadImpl() {
 void SerialIoHandlerPosix::WriteImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(pending_write_buffer());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
 
   EnsureWatchingWrites();
 }
@@ -98,7 +102,7 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
 
 void SerialIoHandlerPosix::EnsureWatchingReads() {
   DCHECK(CalledOnValidThread());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
   if (!is_watching_reads_) {
     is_watching_reads_ = base::MessageLoopForIO::current()->WatchFileDescriptor(
         file(), true, base::MessageLoopForIO::WATCH_READ,
@@ -108,7 +112,7 @@ void SerialIoHandlerPosix::EnsureWatchingReads() {
 
 void SerialIoHandlerPosix::EnsureWatchingWrites() {
   DCHECK(CalledOnValidThread());
-  DCHECK_NE(file(), base::kInvalidPlatformFileValue);
+  DCHECK_NE(file(), kInvalidPlatformFileValue);
   if (!is_watching_writes_) {
     is_watching_writes_ =
         base::MessageLoopForIO::current()->WatchFileDescriptor(

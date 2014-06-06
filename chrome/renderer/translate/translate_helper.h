@@ -7,18 +7,16 @@
 
 #include <string>
 
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/files/memory_mapped_file.h"
-#endif
 #include "base/gtest_prod_util.h"
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/lazy_instance.h"
-#endif
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_view_observer.h"
+
 #if defined(CLD2_DYNAMIC_MODE)
+#include "base/files/file.h"
+#include "base/files/memory_mapped_file.h"
+#include "base/lazy_instance.h"
 #include "ipc/ipc_platform_file.h"
 #include "url/gurl.h"
 #endif
@@ -195,7 +193,7 @@ class TranslateHelper : public content::RenderViewObserver {
                           const uint64 data_length);
 
   // After receiving data in OnCLDDataAvailable, loads the data into CLD2.
-  void LoadCLDDData(const IPC::PlatformFileForTransit ipc_file_handle,
+  void LoadCLDDData(base::File file,
                     const uint64 data_offset,
                     const uint64 data_length);
 
