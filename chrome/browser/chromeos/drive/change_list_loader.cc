@@ -19,7 +19,6 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -57,16 +56,15 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     start_time_ = base::TimeTicks::Now();
 
     // This is full resource list fetch.
-    scheduler_->GetAllResourceList(
+    scheduler_->GetAllFileList(
         base::Bind(&FullFeedFetcher::OnFileListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
-  void OnFileListFetched(
-      const FeedFetcherCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> resource_list) {
+  void OnFileListFetched(const FeedFetcherCallback& callback,
+                         google_apis::GDataErrorCode status,
+                         scoped_ptr<google_apis::FileList> file_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
@@ -76,14 +74,13 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
-    DCHECK(resource_list);
-    change_lists_.push_back(new ChangeList(*resource_list));
+    DCHECK(file_list);
+    change_lists_.push_back(new ChangeList(*file_list));
 
-    GURL next_url;
-    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+    if (!file_list->next_link().is_empty()) {
       // There is the remaining result so fetch it.
       scheduler_->GetRemainingFileList(
-          next_url,
+          file_list->next_link(),
           base::Bind(&FullFeedFetcher::OnFileListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
@@ -128,10 +125,9 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
  private:
-  void OnChangeListFetched(
-      const FeedFetcherCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> resource_list) {
+  void OnChangeListFetched(const FeedFetcherCallback& callback,
+                           google_apis::GDataErrorCode status,
+                           scoped_ptr<google_apis::ChangeList> change_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
@@ -141,14 +137,13 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
-    DCHECK(resource_list);
-    change_lists_.push_back(new ChangeList(*resource_list));
+    DCHECK(change_list);
+    change_lists_.push_back(new ChangeList(*change_list));
 
-    GURL next_url;
-    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+    if (!change_list->next_link().is_empty()) {
       // There is the remaining result so fetch it.
       scheduler_->GetRemainingChangeList(
-          next_url,
+          change_list->next_link(),
           base::Bind(&DeltaFeedFetcher::OnChangeListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;

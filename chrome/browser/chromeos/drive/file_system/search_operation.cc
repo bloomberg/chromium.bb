@@ -16,7 +16,9 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
@@ -26,24 +28,23 @@ namespace drive {
 namespace file_system {
 namespace {
 
-// Computes the path of each item in |resource_list| returned from the server
+// Computes the path of each item in |file_list| returned from the server
 // and stores to |result|, by using |resource_metadata|. If the metadata is not
 // up-to-date and did not contain an item, adds the item to "drive/other" for
 // temporally assigning a path.
 FileError ResolveSearchResultOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,
-    scoped_ptr<google_apis::ResourceList> resource_list,
+    scoped_ptr<google_apis::FileList> file_list,
     std::vector<SearchResultInfo>* result) {
   DCHECK(resource_metadata);
   DCHECK(result);
 
-  const ScopedVector<google_apis::ResourceEntry>& entries =
-      resource_list->entries();
+  const ScopedVector<google_apis::FileResource>& entries = file_list->items();
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     std::string local_id;
     FileError error = resource_metadata->GetIdByResourceId(
-        entries[i]->resource_id(), &local_id);
+        entries[i]->file_id(), &local_id);
 
     ResourceEntry entry;
     if (error == FILE_ERROR_OK)
@@ -51,7 +52,9 @@ FileError ResolveSearchResultOnBlockingPool(
 
     if (error == FILE_ERROR_NOT_FOUND) {
       std::string original_parent_id;
-      if (!ConvertToResourceEntry(*entries[i], &entry, &original_parent_id))
+      if (!ConvertToResourceEntry(
+              *util::ConvertFileResourceToResourceEntry(*entries[i]),
+              &entry, &original_parent_id))
         continue;  // Skip non-file entries.
 
       // The result is absent in local resource metadata. This can happen if
@@ -104,21 +107,21 @@ void SearchOperation::Search(const std::string& search_query,
     // This is first request for the |search_query|.
     scheduler_->Search(
         search_query,
-        base::Bind(&SearchOperation::SearchAfterGetResourceList,
+        base::Bind(&SearchOperation::SearchAfterGetFileList,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   } else {
     // There is the remaining result so fetch it.
     scheduler_->GetRemainingFileList(
         next_link,
-        base::Bind(&SearchOperation::SearchAfterGetResourceList,
+        base::Bind(&SearchOperation::SearchAfterGetFileList,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 }
 
-void SearchOperation::SearchAfterGetResourceList(
+void SearchOperation::SearchAfterGetFileList(
     const SearchCallback& callback,
     google_apis::GDataErrorCode gdata_error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
+    scoped_ptr<google_apis::FileList> file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -128,14 +131,13 @@ void SearchOperation::SearchAfterGetResourceList(
     return;
   }
 
-  DCHECK(resource_list);
+  DCHECK(file_list);
 
-  GURL next_url;
-  resource_list->GetNextFeedURL(&next_url);
+  GURL next_url = file_list->next_link();
 
   scoped_ptr<std::vector<SearchResultInfo> > result(
       new std::vector<SearchResultInfo>);
-  if (resource_list->entries().empty()) {
+  if (file_list->items().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
     // the resource metadata.
     callback.Run(FILE_ERROR_OK, next_url, result.Pass());
@@ -153,7 +155,7 @@ void SearchOperation::SearchAfterGetResourceList(
       FROM_HERE,
       base::Bind(&ResolveSearchResultOnBlockingPool,
                  metadata_,
-                 base::Passed(&resource_list),
+                 base::Passed(&file_list),
                  result_ptr),
       base::Bind(&SearchOperation::SearchAfterResolveSearchResult,
                  weak_ptr_factory_.GetWeakPtr(),

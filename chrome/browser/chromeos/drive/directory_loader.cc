@@ -18,7 +18,6 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -114,17 +113,16 @@ class DirectoryLoader::FeedFetcher {
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
 
-    loader_->scheduler_->GetResourceListInDirectory(
+    loader_->scheduler_->GetFileListInDirectory(
         directory_fetch_info_.resource_id(),
-        base::Bind(&FeedFetcher::OnResourceListFetched,
+        base::Bind(&FeedFetcher::OnFileListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
-  void OnResourceListFetched(
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceList> resource_list) {
+  void OnFileListFetched(const FileOperationCallback& callback,
+                         google_apis::GDataErrorCode status,
+                         scoped_ptr<google_apis::FileList> file_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
@@ -134,11 +132,9 @@ class DirectoryLoader::FeedFetcher {
       return;
     }
 
-    DCHECK(resource_list);
-    scoped_ptr<ChangeList> change_list(new ChangeList(*resource_list));
-
-    GURL next_url;
-    resource_list->GetNextFeedURL(&next_url);
+    DCHECK(file_list);
+    scoped_ptr<ChangeList> change_list(new ChangeList(*file_list));
+    GURL next_url = file_list->next_link();
 
     ResourceEntryVector* entries = new ResourceEntryVector;
     loader_->loader_controller_->ScheduleRun(base::Bind(
@@ -177,7 +173,7 @@ class DirectoryLoader::FeedFetcher {
       // There is the remaining result so fetch it.
       loader_->scheduler_->GetRemainingFileList(
           next_url,
-          base::Bind(&FeedFetcher::OnResourceListFetched,
+          base::Bind(&FeedFetcher::OnFileListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
     }

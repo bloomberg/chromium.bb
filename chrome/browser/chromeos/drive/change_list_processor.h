@@ -17,7 +17,8 @@
 
 namespace google_apis {
 class AboutResource;
-class ResourceList;
+class ChangeList;
+class FileList;
 }  // google_apis
 
 namespace drive {
@@ -67,7 +68,8 @@ class DirectoryFetchInfo {
 class ChangeList {
  public:
   ChangeList();  // For tests.
-  explicit ChangeList(const google_apis::ResourceList& resource_list);
+  explicit ChangeList(const google_apis::ChangeList& change_list);
+  explicit ChangeList(const google_apis::FileList& file_list);
   ~ChangeList();
 
   const std::vector<ResourceEntry>& entries() const { return entries_; }

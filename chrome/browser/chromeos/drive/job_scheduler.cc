@@ -269,8 +269,8 @@ void JobScheduler::GetAppList(const google_apis::AppListCallback& callback) {
   StartJob(new_job);
 }
 
-void JobScheduler::GetAllResourceList(
-    const google_apis::GetResourceListCallback& callback) {
+void JobScheduler::GetAllFileList(
+    const google_apis::FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -286,9 +286,9 @@ void JobScheduler::GetAllResourceList(
   StartJob(new_job);
 }
 
-void JobScheduler::GetResourceListInDirectory(
+void JobScheduler::GetFileListInDirectory(
     const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -306,9 +306,8 @@ void JobScheduler::GetResourceListInDirectory(
   StartJob(new_job);
 }
 
-void JobScheduler::Search(
-    const std::string& search_query,
-    const google_apis::GetResourceListCallback& callback) {
+void JobScheduler::Search(const std::string& search_query,
+                          const google_apis::FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -327,7 +326,7 @@ void JobScheduler::Search(
 
 void JobScheduler::GetChangeList(
     int64 start_changestamp,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -346,7 +345,7 @@ void JobScheduler::GetChangeList(
 
 void JobScheduler::GetRemainingChangeList(
     const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::ChangeListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -365,7 +364,7 @@ void JobScheduler::GetRemainingChangeList(
 
 void JobScheduler::GetRemainingFileList(
     const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
+    const google_apis::FileListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -902,33 +901,26 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
 
 void JobScheduler::OnGetFileListJobDone(
     JobID job_id,
-    const google_apis::GetResourceListCallback& callback,
+    const google_apis::FileListCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::FileList> file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, error)) {
-    callback.Run(error, file_list ?
-                 util::ConvertFileListToResourceList(*file_list) :
-                 scoped_ptr<google_apis::ResourceList>());
-  }
+  if (OnJobDone(job_id, error))
+    callback.Run(error, file_list.Pass());
 }
 
 void JobScheduler::OnGetChangeListJobDone(
     JobID job_id,
-    const google_apis::GetResourceListCallback& callback,
+    const google_apis::ChangeListCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ChangeList> change_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (OnJobDone(job_id, error)) {
-    callback.Run(error, change_list ?
-                 util::ConvertChangeListToResourceList(*change_list) :
-                 scoped_ptr<google_apis::ResourceList>());
-
-  }
+  if (OnJobDone(job_id, error))
+    callback.Run(error, change_list.Pass());
 }
 
 void JobScheduler::OnGetFileResourceJobDone(

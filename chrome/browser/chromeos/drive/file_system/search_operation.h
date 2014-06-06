@@ -18,8 +18,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace google_apis {
-class ResourceEntry;
-class ResourceList;
+class FileList;
 }  // namespace google_apis
 
 namespace drive {
@@ -54,11 +53,11 @@ class SearchOperation {
               const SearchCallback& callback);
 
  private:
-  // Part of Search(), called after the ResourceList is fetched from the server.
-  void SearchAfterGetResourceList(
+  // Part of Search(), called after the FileList is fetched from the server.
+  void SearchAfterGetFileList(
       const SearchCallback& callback,
       google_apis::GDataErrorCode gdata_error,
-      scoped_ptr<google_apis::ResourceList> resource_list);
+      scoped_ptr<google_apis::FileList> file_list);
 
   // Part of Search(), called after |result| is filled on the blocking pool.
   void SearchAfterResolveSearchResult(
