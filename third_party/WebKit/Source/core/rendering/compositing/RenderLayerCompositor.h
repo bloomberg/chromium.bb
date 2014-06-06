@@ -49,7 +49,6 @@ enum CompositingUpdateType {
     CompositingUpdateNone,
     CompositingUpdateOnCompositedScroll,
     CompositingUpdateAfterCompositingInputChange,
-    CompositingUpdateAfterStyleChange,
     CompositingUpdateAfterLayout,
     CompositingUpdateOnScroll,
 };

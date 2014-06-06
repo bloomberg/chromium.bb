@@ -640,14 +640,6 @@ void FrameView::recalcOverflowAfterStyleChange()
     // tests flake in debug build.
 }
 
-void FrameView::updateCompositingLayersAfterStyleChange()
-{
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return;
-    renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
-}
-
 bool FrameView::usesCompositedScrolling() const
 {
     RenderView* renderView = this->renderView();

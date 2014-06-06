@@ -170,6 +170,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGStyleElement.h"
@@ -1919,7 +1920,7 @@ void Document::updateStyle(StyleRecalcChange change)
     ensureStyleResolver().printStats();
 
     view()->recalcOverflowAfterStyleChange();
-    view()->updateCompositingLayersAfterStyleChange();
+    renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
     clearChildNeedsStyleRecalc();
 
@@ -2172,7 +2173,7 @@ void Document::attach(const AttachContext& context)
 
     m_renderView->setIsInWindow(true);
     m_renderView->setStyle(StyleResolver::styleForDocument(*this));
-    view()->updateCompositingLayersAfterStyleChange();
+    m_renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
     ContainerNode::attach(context);
 

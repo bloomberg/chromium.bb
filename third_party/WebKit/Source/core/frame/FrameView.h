@@ -116,7 +116,6 @@ public:
     void updateAcceleratedCompositingSettings();
 
     void recalcOverflowAfterStyleChange();
-    void updateCompositingLayersAfterStyleChange();
 
     bool hasCompositedContent() const;
     bool isEnclosedInCompositingLayer() const;
