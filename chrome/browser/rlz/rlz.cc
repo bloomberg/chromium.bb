@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -65,7 +66,7 @@ const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromSeconds(200);
 const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(20);
 
 bool IsBrandOrganic(const std::string& brand) {
-  return brand.empty() || google_util::IsOrganic(brand);
+  return brand.empty() || google_brand::IsOrganic(brand);
 }
 
 void RecordProductEvents(bool first_run,
@@ -291,7 +292,7 @@ bool RLZTracker::Init(bool first_run,
 
   delay = std::min(kMaxInitDelay, std::max(min_init_delay_, delay));
 
-  if (google_util::GetBrand(&brand_) && !IsBrandOrganic(brand_)) {
+  if (google_brand::GetBrand(&brand_) && !IsBrandOrganic(brand_)) {
     // Register for notifications from the omnibox so that we can record when
     // the user performs a first search.
     registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
@@ -304,7 +305,7 @@ bool RLZTracker::Init(bool first_run,
                    content::NotificationService::AllSources());
 #endif  // !defined(OS_IOS)
   }
-  google_util::GetReactivationBrand(&reactivation_brand_);
+  google_brand::GetReactivationBrand(&reactivation_brand_);
 
   net::URLRequestContextGetter* context_getter =
       g_browser_process->system_request_context();

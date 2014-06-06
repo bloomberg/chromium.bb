@@ -56,7 +56,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/google/google_util_chromeos.h"
+#include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
@@ -673,7 +673,7 @@ void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
 #if defined(ENABLE_RLZ)
   if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
-    google_util::chromeos::InitBrand(
+    google_brand::chromeos::InitBrand(
         base::Bind(&LoginUtilsImpl::InitRlzDelayed, AsWeakPtr(), user_profile));
     return;
   }
@@ -690,7 +690,7 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
   PrefService* local_state = g_browser_process->local_state();
   if (disabled) {
     // Empty brand code means an organic install (no RLZ pings are sent).
-    google_util::chromeos::ClearBrandForCurrentSession();
+    google_brand::chromeos::ClearBrandForCurrentSession();
   }
   if (disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
     // When switching to RLZ enabled/disabled state, clear all recorded events.

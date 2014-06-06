@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_RLZ)
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -657,8 +657,8 @@ TEST_F(TemplateURLTest, RLZ) {
   base::string16 rlz_string;
 #if defined(ENABLE_RLZ)
   std::string brand;
-  if (google_util::GetBrand(&brand) && !brand.empty() &&
-      !google_util::IsOrganic(brand)) {
+  if (google_brand::GetBrand(&brand) && !brand.empty() &&
+      !google_brand::IsOrganic(brand)) {
     RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz_string);
   }
 #elif defined(OS_ANDROID)
@@ -687,8 +687,8 @@ TEST_F(TemplateURLTest, RLZFromAppList) {
   base::string16 rlz_string;
 #if defined(ENABLE_RLZ)
   std::string brand;
-  if (google_util::GetBrand(&brand) && !brand.empty() &&
-      !google_util::IsOrganic(brand)) {
+  if (google_brand::GetBrand(&brand) && !brand.empty() &&
+      !google_brand::IsOrganic(brand)) {
     RLZTracker::GetAccessPointRlz(RLZTracker::ChromeAppList(), &rlz_string);
   }
 #endif

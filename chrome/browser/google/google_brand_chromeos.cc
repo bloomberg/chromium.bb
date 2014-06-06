@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace google_util {
+namespace google_brand {
 namespace chromeos {
 
 namespace {
@@ -82,4 +82,4 @@ void InitBrand(const base::Closure& callback) {
 }
 
 }  // namespace chromeos
-}  // namespace google_util
+}  // namespace google_brand

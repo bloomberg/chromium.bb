@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/google/google_util_chromeos.h"
+#include "chrome/browser/google/google_brand_chromeos.h"
 #endif
 
 // Trivial subclass of TemplateURLService that records the last invocation of
@@ -214,7 +214,7 @@ void TemplateURLServiceTestUtil::SetUp() {
   TemplateURLServiceTestUtilBase::CreateTemplateUrlService();
 
 #if defined(OS_CHROMEOS)
-  google_util::chromeos::ClearBrandForCurrentSession();
+  google_brand::chromeos::ClearBrandForCurrentSession();
 #endif
 }
 

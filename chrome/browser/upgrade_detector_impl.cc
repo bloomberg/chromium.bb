@@ -22,7 +22,7 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -360,7 +360,7 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   static bool simulate_outdated = SimulatingOutdated();
   if (!simulate_outdated) {
     std::string brand;
-    if (google_util::GetBrand(&brand) && !google_util::IsOrganic(brand))
+    if (google_brand::GetBrand(&brand) && !google_brand::IsOrganic(brand))
       return false;
 
 #if defined(OS_WIN)

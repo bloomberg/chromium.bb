@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "net/base/escape.h"
@@ -91,8 +91,8 @@ bool ManifestFetchData::AddExtension(const std::string& id,
   if (base_url_.DomainIs("google.com")) {
 #if defined(GOOGLE_CHROME_BUILD)
     std::string brand;
-    google_util::GetBrand(&brand);
-    if (!brand.empty() && !google_util::IsOrganic(brand))
+    google_brand::GetBrand(&brand);
+    if (!brand.empty() && !google_brand::IsOrganic(brand))
       parts.push_back("brand=" + brand);
 #endif
 

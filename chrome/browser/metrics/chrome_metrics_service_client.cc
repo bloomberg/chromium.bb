@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -159,7 +159,7 @@ std::string ChromeMetricsServiceClient::GetApplicationLocale() {
 }
 
 bool ChromeMetricsServiceClient::GetBrand(std::string* brand_code) {
-  return google_util::GetBrand(brand_code);
+  return google_brand::GetBrand(brand_code);
 }
 
 metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {

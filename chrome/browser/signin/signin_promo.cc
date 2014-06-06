@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -62,12 +63,12 @@ bool g_force_web_based_signin_flow = false;
 // Checks we want to show the sign in promo for the given brand.
 bool AllowPromoAtStartupForCurrentBrand() {
   std::string brand;
-  google_util::GetBrand(&brand);
+  google_brand::GetBrand(&brand);
 
   if (brand.empty())
     return true;
 
-  if (google_util::IsInternetCafeBrandCode(brand))
+  if (google_brand::IsInternetCafeBrandCode(brand))
     return false;
 
   // Enable for both organic and distribution.

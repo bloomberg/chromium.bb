@@ -10,7 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
@@ -29,7 +29,7 @@ namespace options {
 
 ResetProfileSettingsHandler::ResetProfileSettingsHandler()
     : automatic_profile_resetter_(NULL), has_shown_confirmation_dialog_(false) {
-  google_util::GetBrand(&brandcode_);
+  google_brand::GetBrand(&brandcode_);
 }
 
 ResetProfileSettingsHandler::~ResetProfileSettingsHandler() {}

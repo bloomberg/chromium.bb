@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/profile_reset_global_error.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
@@ -193,7 +193,7 @@ void AutomaticProfileResetterDelegateImpl::
     return;
 
   std::string brandcode;
-  google_util::GetBrand(&brandcode);
+  google_brand::GetBrand(&brandcode);
   if (brandcode.empty()) {
     brandcoded_defaults_.reset(new BrandcodedDefaultSettings);
     brandcoded_defaults_fetched_event_.Signal();

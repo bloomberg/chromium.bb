@@ -35,7 +35,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/updater/request_queue_impl.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
@@ -1376,7 +1376,7 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   void TestGalleryRequestsWithBrand(bool use_organic_brand_code) {
-    google_util::BrandForTesting brand_for_testing(
+    google_brand::BrandForTesting brand_for_testing(
         use_organic_brand_code ? "GGLS" : "TEST");
 
     // We want to test a variety of combinations of expected ping conditions for

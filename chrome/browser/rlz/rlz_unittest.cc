@@ -10,7 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -182,7 +182,7 @@ class RlzLibTest : public RlzLibTestNoMachineState {
 
   TestRLZTracker tracker_;
 #if defined(OS_POSIX)
-  scoped_ptr<google_util::BrandForTesting> brand_override_;
+  scoped_ptr<google_brand::BrandForTesting> brand_override_;
 #endif
 };
 
@@ -199,10 +199,10 @@ void RlzLibTest::SetMainBrand(const char* brand) {
 #if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZBrandField, brand);
 #elif defined(OS_POSIX)
-  brand_override_.reset(new google_util::BrandForTesting(brand));
+  brand_override_.reset(new google_brand::BrandForTesting(brand));
 #endif
   std::string check_brand;
-  google_util::GetBrand(&check_brand);
+  google_brand::GetBrand(&check_brand);
   EXPECT_EQ(brand, check_brand);
 }
 
@@ -211,7 +211,7 @@ void RlzLibTest::SetReactivationBrand(const char* brand) {
 #if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZReactivationBrandField, brand);
   std::string check_brand;
-  google_util::GetReactivationBrand(&check_brand);
+  google_brand::GetReactivationBrand(&check_brand);
   EXPECT_EQ(brand, check_brand);
 #endif
 }
@@ -278,13 +278,13 @@ void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
 
 void RlzLibTest::ExpectRlzPingSent(bool expected) {
   std::string brand;
-  google_util::GetBrand(&brand);
+  google_brand::GetBrand(&brand);
   EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
 }
 
 void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
   std::string brand;
-  google_util::GetReactivationBrand(&brand);
+  google_brand::GetReactivationBrand(&brand);
   EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
 }
 

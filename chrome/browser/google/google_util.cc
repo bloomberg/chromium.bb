@@ -14,19 +14,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/common/net/url_fixer_upper.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/google/core/browser/google_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/mac/keystone_glue.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/google/google_util_chromeos.h"
-#endif
 
 // Only use Link Doctor on official builds.  It uses an API key, too, but
 // seems best to just disable it, for more responsive error pages and to reduce
@@ -42,7 +34,6 @@
 
 namespace {
 
-const char* brand_for_testing = NULL;
 bool gUseMockLinkDoctorBaseURLForTesting = false;
 
 bool IsPathHomePageBase(const std::string& path) {
@@ -127,54 +118,6 @@ GURL GetGoogleSearchURL(GURL google_homepage_url) {
   return google_homepage_url.ReplaceComponents(replacements);
 }
 
-#if defined(OS_WIN)
-
-bool GetBrand(std::string* brand) {
-  if (brand_for_testing) {
-    brand->assign(brand_for_testing);
-    return true;
-  }
-
-  base::string16 brand16;
-  bool ret = GoogleUpdateSettings::GetBrand(&brand16);
-  if (ret)
-    brand->assign(base::UTF16ToASCII(brand16));
-  return ret;
-}
-
-bool GetReactivationBrand(std::string* brand) {
-  base::string16 brand16;
-  bool ret = GoogleUpdateSettings::GetReactivationBrand(&brand16);
-  if (ret)
-    brand->assign(base::UTF16ToASCII(brand16));
-  return ret;
-}
-
-#else
-
-bool GetBrand(std::string* brand) {
-  if (brand_for_testing) {
-    brand->assign(brand_for_testing);
-    return true;
-  }
-
-#if defined(OS_MACOSX)
-  brand->assign(keystone_glue::BrandCode());
-#elif defined(OS_CHROMEOS)
-  brand->assign(google_util::chromeos::GetBrand());
-#else
-  brand->clear();
-#endif
-  return true;
-}
-
-bool GetReactivationBrand(std::string* brand) {
-  brand->clear();
-  return true;
-}
-
-#endif
-
 GURL CommandLineGoogleBaseURL() {
   // Unit tests may add command-line flags after the first call to this
   // function, so we don't simply initialize a static |base_url| directly and
@@ -253,70 +196,5 @@ bool IsGoogleSearchUrl(const GURL& url) {
   return HasGoogleSearchQueryParam(url.ref()) ||
       (!is_home_page_base && HasGoogleSearchQueryParam(url.query()));
 }
-
-bool IsOrganic(const std::string& brand) {
-#if defined(OS_MACOSX)
-  if (brand.empty()) {
-    // An empty brand string on Mac is used for channels other than stable,
-    // which are always organic.
-    return true;
-  }
-#endif
-
-  const char* const kBrands[] = {
-      "CHCA", "CHCB", "CHCG", "CHCH", "CHCI", "CHCJ", "CHCK", "CHCL",
-      "CHFO", "CHFT", "CHHS", "CHHM", "CHMA", "CHMB", "CHME", "CHMF",
-      "CHMG", "CHMH", "CHMI", "CHMQ", "CHMV", "CHNB", "CHNC", "CHNG",
-      "CHNH", "CHNI", "CHOA", "CHOB", "CHOC", "CHON", "CHOO", "CHOP",
-      "CHOQ", "CHOR", "CHOS", "CHOT", "CHOU", "CHOX", "CHOY", "CHOZ",
-      "CHPD", "CHPE", "CHPF", "CHPG", "ECBA", "ECBB", "ECDA", "ECDB",
-      "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB", "ECWC", "ECWD",
-      "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"
-  };
-  const char* const* end = &kBrands[arraysize(kBrands)];
-  const char* const* found = std::find(&kBrands[0], end, brand);
-  if (found != end)
-    return true;
-
-  return StartsWithASCII(brand, "EUB", true) ||
-         StartsWithASCII(brand, "EUC", true) ||
-         StartsWithASCII(brand, "GGR", true);
-}
-
-bool IsOrganicFirstRun(const std::string& brand) {
-#if defined(OS_MACOSX)
-  if (brand.empty()) {
-    // An empty brand string on Mac is used for channels other than stable,
-    // which are always organic.
-    return true;
-  }
-#endif
-
-  return StartsWithASCII(brand, "GG", true) ||
-         StartsWithASCII(brand, "EU", true);
-}
-
-bool IsInternetCafeBrandCode(const std::string& brand) {
-  const char* const kBrands[] = {
-    "CHIQ", "CHSG", "HLJY", "NTMO", "OOBA", "OOBB", "OOBC", "OOBD", "OOBE",
-    "OOBF", "OOBG", "OOBH", "OOBI", "OOBJ", "IDCM",
-  };
-  const char* const* end = &kBrands[arraysize(kBrands)];
-  const char* const* found = std::find(&kBrands[0], end, brand);
-  return found != end;
-}
-
-
-// BrandForTesting ------------------------------------------------------------
-
-BrandForTesting::BrandForTesting(const std::string& brand) : brand_(brand) {
-  DCHECK(brand_for_testing == NULL);
-  brand_for_testing = brand_.c_str();
-}
-
-BrandForTesting::~BrandForTesting() {
-  brand_for_testing = NULL;
-}
-
 
 }  // namespace google_util

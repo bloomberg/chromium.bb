@@ -12,7 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/auto_launch_trial.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -38,7 +38,7 @@ namespace {
 
 void AutoLaunchChromeFieldTrial() {
   std::string brand;
-  google_util::GetBrand(&brand);
+  google_brand::GetBrand(&brand);
 
   // Create a 100% field trial based on the brand code.
   if (auto_launch_trial::IsInExperimentGroup(brand)) {

@@ -127,7 +127,7 @@ class GoogleUpdateSettings {
   // assigned to a partner. Returns false if the information is not available.
   //
   // NOTE: This function is Windows only.  If the code you are writing is not
-  // specifically for Windows, prefer calling google_util::GetBrand().
+  // specifically for Windows, prefer calling google_brand::GetBrand().
   static bool GetBrand(std::wstring* brand);
 
   // Returns in |brand| the RLZ reactivation brand code or distribution tag
@@ -136,7 +136,7 @@ class GoogleUpdateSettings {
   //
   // NOTE: This function is Windows only.  If the code you are writing is not
   // specifically for Windows, prefer calling
-  // google_util::GetReactivationBrand().
+  // google_brand::GetReactivationBrand().
   static bool GetReactivationBrand(std::wstring* brand);
 
   // Returns in |client| the google_update client field, which is currently

@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,14 +51,14 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
 TEST_F(GoogleUpdateTest, IsOrganicFirstRunBrandCodes) {
   // Test some brand codes to ensure that future changes to this method won't
   // go unnoticed.
-  EXPECT_FALSE(google_util::IsOrganicFirstRun("CHFO"));
-  EXPECT_FALSE(google_util::IsOrganicFirstRun("CHMA"));
-  EXPECT_TRUE(google_util::IsOrganicFirstRun("EUBA"));
-  EXPECT_TRUE(google_util::IsOrganicFirstRun("GGRA"));
+  EXPECT_FALSE(google_brand::IsOrganicFirstRun("CHFO"));
+  EXPECT_FALSE(google_brand::IsOrganicFirstRun("CHMA"));
+  EXPECT_TRUE(google_brand::IsOrganicFirstRun("EUBA"));
+  EXPECT_TRUE(google_brand::IsOrganicFirstRun("GGRA"));
 
 #if defined(OS_MACOSX)
   // An empty brand string on Mac is used for channels other than stable,
   // which are always organic.
-  EXPECT_TRUE(google_util::IsOrganicFirstRun(""));
+  EXPECT_TRUE(google_brand::IsOrganicFirstRun(""));
 #endif
 }
