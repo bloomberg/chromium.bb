@@ -384,12 +384,14 @@ void DataFetcherSharedMemory::SetBufferAvailableState(
         orientation_buffer_->data.allAvailableSensorsAreActive = enabled;
         orientation_buffer_->seqlock.WriteEnd();
       }
+      break;
     case CONSUMER_TYPE_MOTION:
       if (motion_buffer_) {
         motion_buffer_->seqlock.WriteBegin();
         motion_buffer_->data.allAvailableSensorsAreActive = enabled;
         motion_buffer_->seqlock.WriteEnd();
       }
+      break;
     default:
       NOTREACHED();
   }
