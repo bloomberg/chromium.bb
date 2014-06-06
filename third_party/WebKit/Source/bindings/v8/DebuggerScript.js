@@ -502,5 +502,8 @@ DebuggerScript._buildScopeObject = function(scopeType, scopeObject)
     return result;
 }
 
+// We never resolve Mirror by its handle so to avoid memory leaks caused by Mirrors in the cache we disable it.
+ToggleMirrorCache(false);
+
 return DebuggerScript;
 })();
