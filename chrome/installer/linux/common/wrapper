@@ -73,6 +73,12 @@ if [[ -n "$CHROME_USER_DATA_DIR" ]]; then
   PROFILE_DIRECTORY_FLAG="--user-data-dir=$CHROME_USER_DATA_DIR"
 fi
 
+# Sanitize std{in,out,err} because they'll be shared with untrusted child
+# processes (http://crbug.com/376567).
+exec < /dev/null
+exec > >(exec cat)
+exec 2> >(exec cat >&2)
+
 # Note: exec -a below is a bashism.
 exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$PROFILE_DIRECTORY_FLAG" \
   "$@"
