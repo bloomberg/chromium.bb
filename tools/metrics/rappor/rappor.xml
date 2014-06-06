@@ -1,0 +1,39 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!--
+This file is used to generate a comprehensive list of Chrome rappor metrics
+along with a detailed description for each histogram. See the design doc at
+http://www.chromium.org/developers/design-documents/rappor
+for a description of rappor metrics.
+
+TODO(holte): Add validation and pretty printing scripts.
+-->
+
+<rappor-configuration>
+
+<!-- Rappor metric definitions -->
+
+<rappor-metrics>
+
+<rappor-metric name="Settings.HomePage2" type="ETLD_PLUS_ONE">
+  <owner>holte@chromium.org</owner>
+  <summary>
+    The eTLD+1 of the prefs::kHomePage setting.  Only recorded if the URL is
+    valid and prefs::kHomePageIsNewTabPage is false.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that might be doing ad injection.
+  </summary>
+</rappor-metric>
+
+</rappor-metrics>
+
+</rappor-configuration>
