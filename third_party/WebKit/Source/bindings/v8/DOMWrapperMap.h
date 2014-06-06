@@ -70,7 +70,7 @@ public:
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
-        ASSERT(!containsKey(key));
+        RELEASE_ASSERT(!containsKey(key)); // See crbug.com/368095
         v8::UniquePersistent<v8::Object> unique(m_isolate, wrapper);
         configuration.configureWrapper(&unique);
         m_map.Set(key, unique.Pass());
