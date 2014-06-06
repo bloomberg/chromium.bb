@@ -2524,6 +2524,9 @@ void RenderWidgetHostViewMac::BrowserCompositorDidDrawFrame() {
 // CompositingIOSurfaceLayerClient, public:
 
 void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
+  if (!render_widget_host_)
+    return;
+
   SendPendingLatencyInfoToHost();
   SendPendingSwapAck();
   if (!succeeded)
