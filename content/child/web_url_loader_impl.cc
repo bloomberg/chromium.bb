@@ -73,10 +73,7 @@ const char kThrottledErrorDescription[] =
 
 class HeaderFlattener : public WebHTTPHeaderVisitor {
  public:
-  explicit HeaderFlattener(int load_flags)
-      : load_flags_(load_flags),
-        has_accept_header_(false) {
-  }
+  explicit HeaderFlattener() : has_accept_header_(false) {}
 
   virtual void visitHeader(const WebString& name, const WebString& value) {
     // Headers are latin1.
@@ -86,16 +83,6 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
     // Skip over referrer headers found in the header map because we already
     // pulled it out as a separate parameter.
     if (LowerCaseEqualsASCII(name_latin1, "referer"))
-      return;
-
-    // Skip over "Cache-Control: max-age=0" header if the corresponding
-    // load flag is already specified. FrameLoader sets both the flag and
-    // the extra header -- the extra header is redundant since our network
-    // implementation will add the necessary headers based on load flags.
-    // See http://code.google.com/p/chromium/issues/detail?id=3434.
-    if ((load_flags_ & net::LOAD_VALIDATE_CACHE) &&
-        LowerCaseEqualsASCII(name_latin1, "cache-control") &&
-        LowerCaseEqualsASCII(value_latin1, "max-age=0"))
       return;
 
     if (LowerCaseEqualsASCII(name_latin1, "accept"))
@@ -119,7 +106,6 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   }
 
  private:
-  int load_flags_;
   std::string buffer_;
   bool has_accept_header_;
 };
@@ -377,7 +363,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
   }
 
-  HeaderFlattener flattener(load_flags);
+  HeaderFlattener flattener;
   request.visitHTTPHeaderFields(&flattener);
 
   // TODO(brettw) this should take parameter encoding into account when
