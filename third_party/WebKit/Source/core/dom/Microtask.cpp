@@ -51,22 +51,16 @@ void Microtask::performCheckpoint()
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
 
-static void microtaskFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void microtaskFunctionCallback(void* data)
 {
-    OwnPtr<blink::WebThread::Task> task = adoptPtr(static_cast<blink::WebThread::Task*>(info.Data().As<v8::External>()->Value()));
+    OwnPtr<blink::WebThread::Task> task = adoptPtr(static_cast<blink::WebThread::Task*>(data));
     task->run();
 }
 
 void Microtask::enqueueMicrotask(PassOwnPtr<blink::WebThread::Task> callback)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope scope(context);
-    v8::Local<v8::External> handler = v8::External::New(isolate, callback.leakPtr());
-    isolate->EnqueueMicrotask(v8::Function::New(isolate, &microtaskFunctionCallback, handler));
+    isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
 }
 
 void Microtask::enqueueMicrotask(const Closure& callback)
