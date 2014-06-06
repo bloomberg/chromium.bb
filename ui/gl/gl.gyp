@@ -136,7 +136,7 @@
           'variables': {
             'generator_path': 'generate_bindings.py',
             # Prefer khronos EGL/GLES headers by listing that path first.
-            'header_paths': '../../third_party/khronos:../../third_party/mesa/src/include',
+            'header_paths': '../../third_party/khronos:../../third_party/mesa/src/include:.:../../gpu',
           },
           'inputs': [
             '<(generator_path)',

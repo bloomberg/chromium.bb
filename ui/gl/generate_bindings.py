@@ -1963,17 +1963,10 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
 def ResolveHeader(header, header_paths):
   paths = header_paths.split(':')
 
-  # Always use a path for Chromium-specific extensions. They are extracted
-  # to separate files.
-  paths.append('.')
-  paths.append('../../gpu')
-
-  root = os.path.abspath(os.path.dirname(__file__))
-
   for path in paths:
     result = os.path.join(path, header)
     if not os.path.isabs(path):
-      result = os.path.relpath(os.path.join(root, result), os.getcwd())
+      result = os.path.relpath(os.path.join(os.getcwd(), result), os.getcwd())
     if os.path.exists(result):
       # Always use forward slashes as path separators. Otherwise backslashes
       # may be incorrectly interpreted as escape characters.
