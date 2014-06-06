@@ -82,7 +82,7 @@ private:
     virtual SQLErrorData* transactionError() OVERRIDE;
     virtual AbstractSQLStatement* currentStatement() OVERRIDE;
     virtual void setShouldRetryCurrentStatement(bool) OVERRIDE;
-    virtual void executeSQL(PassOwnPtr<AbstractSQLStatement>, const String& statement,
+    virtual void executeSQL(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>, const String& statement,
         const Vector<SQLValue>& arguments, int permissions) OVERRIDE;
 
     void doCleanup();

@@ -73,6 +73,9 @@ void SQLTransaction::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
     visitor->trace(m_backend);
+    visitor->trace(m_callbackWrapper);
+    visitor->trace(m_successCallbackWrapper);
+    visitor->trace(m_errorCallbackWrapper);
     AbstractSQLTransaction::trace(visitor);
 }
 
@@ -278,7 +281,7 @@ void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValu
     else if (m_readOnly)
         permissions |= DatabaseAuthorizer::ReadOnlyMask;
 
-    OwnPtr<SQLStatement> statement = SQLStatement::create(m_database.get(), callback, callbackError);
+    OwnPtrWillBeRawPtr<SQLStatement> statement = SQLStatement::create(m_database.get(), callback, callbackError);
     m_backend->executeSQL(statement.release(), sqlStatement, arguments, permissions);
 }
 

@@ -42,10 +42,10 @@
 
 namespace WebCore {
 
-PassOwnPtr<SQLStatement> SQLStatement::create(Database* database,
+PassOwnPtrWillBeRawPtr<SQLStatement> SQLStatement::create(Database* database,
     PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> errorCallback)
 {
-    return adoptPtr(new SQLStatement(database, callback, errorCallback));
+    return adoptPtrWillBeNoop(new SQLStatement(database, callback, errorCallback));
 }
 
 SQLStatement::SQLStatement(Database* database, PassOwnPtr<SQLStatementCallback> callback,
@@ -53,6 +53,14 @@ SQLStatement::SQLStatement(Database* database, PassOwnPtr<SQLStatementCallback> 
     : m_statementCallbackWrapper(callback, database->executionContext())
     , m_statementErrorCallbackWrapper(errorCallback, database->executionContext())
 {
+}
+
+void SQLStatement::trace(Visitor* visitor)
+{
+    visitor->trace(m_backend);
+    visitor->trace(m_statementCallbackWrapper);
+    visitor->trace(m_statementErrorCallbackWrapper);
+    AbstractSQLStatement::trace(visitor);
 }
 
 void SQLStatement::setBackend(AbstractSQLStatementBackend* backend)

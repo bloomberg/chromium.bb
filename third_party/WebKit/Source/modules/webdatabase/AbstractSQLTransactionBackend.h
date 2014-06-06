@@ -49,7 +49,7 @@ public:
     virtual AbstractSQLStatement* currentStatement() = 0;
     virtual void setShouldRetryCurrentStatement(bool) = 0;
 
-    virtual void executeSQL(PassOwnPtr<AbstractSQLStatement>, const String& statement,
+    virtual void executeSQL(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>, const String& statement,
         const Vector<SQLValue>& arguments, int permissions) = 0;
 
 };

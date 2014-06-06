@@ -526,7 +526,7 @@ void SQLTransactionBackend::performNextStep()
     runStateMachine();
 }
 
-void SQLTransactionBackend::executeSQL(PassOwnPtr<AbstractSQLStatement> statement,
+void SQLTransactionBackend::executeSQL(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> statement,
     const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions)
 {
     enqueueStatementBackend(SQLStatementBackend::create(statement, sqlStatement, arguments, permissions));

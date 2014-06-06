@@ -26,15 +26,16 @@
 #ifndef AbstractSQLStatement_h
 #define AbstractSQLStatement_h
 
-#include "wtf/ThreadSafeRefCounted.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
 class AbstractSQLStatementBackend;
 
-class AbstractSQLStatement {
+class AbstractSQLStatement : public NoBaseWillBeGarbageCollectedFinalized<AbstractSQLStatement> {
 public:
     virtual ~AbstractSQLStatement() { }
+    virtual void trace(Visitor*) { }
 
     virtual void setBackend(AbstractSQLStatementBackend*) = 0;
 

@@ -47,8 +47,9 @@ class SQLTransaction;
 
 class SQLStatement FINAL : public AbstractSQLStatement {
 public:
-    static PassOwnPtr<SQLStatement> create(Database*,
+    static PassOwnPtrWillBeRawPtr<SQLStatement> create(Database*,
         PassOwnPtr<SQLStatementCallback>, PassOwnPtr<SQLStatementErrorCallback>);
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool performCallback(SQLTransaction*);
 
@@ -63,7 +64,7 @@ private:
     // The AbstractSQLStatementBackend owns the SQLStatement. Hence, the backend is
     // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
     // to the backend using a raw pointer here.
-    AbstractSQLStatementBackend* m_backend;
+    RawPtrWillBeMember<AbstractSQLStatementBackend> m_backend;
 
     SQLCallbackWrapper<SQLStatementCallback> m_statementCallbackWrapper;
     SQLCallbackWrapper<SQLStatementErrorCallback> m_statementErrorCallbackWrapper;

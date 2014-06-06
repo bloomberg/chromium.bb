@@ -71,13 +71,13 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtr<AbstractSQLStatement> frontend,
+PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
 {
     return adoptRefWillBeNoop(new SQLStatementBackend(frontend, statement, arguments, permissions));
 }
 
-SQLStatementBackend::SQLStatementBackend(PassOwnPtr<AbstractSQLStatement> frontend,
+SQLStatementBackend::SQLStatementBackend(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
     : m_frontend(frontend)
     , m_statement(statement.isolatedCopy())
@@ -92,6 +92,7 @@ SQLStatementBackend::SQLStatementBackend(PassOwnPtr<AbstractSQLStatement> fronte
 
 void SQLStatementBackend::trace(Visitor* visitor)
 {
+    visitor->trace(m_frontend);
     visitor->trace(m_resultSet);
     AbstractSQLStatementBackend::trace(visitor);
 }

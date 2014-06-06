@@ -44,7 +44,7 @@ class SQLTransactionBackend;
 
 class SQLStatementBackend FINAL : public AbstractSQLStatementBackend {
 public:
-    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtr<AbstractSQLStatement>,
+    static PassRefPtrWillBeRawPtr<SQLStatementBackend> create(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -61,13 +61,13 @@ public:
     virtual SQLResultSet* sqlResultSet() const OVERRIDE;
 
 private:
-    SQLStatementBackend(PassOwnPtr<AbstractSQLStatement>, const String& statement,
+    SQLStatementBackend(PassOwnPtrWillBeRawPtr<AbstractSQLStatement>, const String& statement,
         const Vector<SQLValue>& arguments, int permissions);
 
     void setFailureDueToQuota(DatabaseBackend*);
     void clearFailureDueToQuota();
 
-    OwnPtr<AbstractSQLStatement> m_frontend;
+    OwnPtrWillBeMember<AbstractSQLStatement> m_frontend;
     String m_statement;
     Vector<SQLValue> m_arguments;
     bool m_hasCallback;

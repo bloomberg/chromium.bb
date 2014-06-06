@@ -40,7 +40,9 @@ namespace WebCore {
 // - by destructing the enclosing wrapper - on any thread
 // - by calling clear() - on any thread
 // - by unwrapping and then dereferencing normally - on context thread only
+// Oilpan: ~T must be thread-independent.
 template<typename T> class SQLCallbackWrapper {
+    DISALLOW_ALLOCATION();
 public:
     SQLCallbackWrapper(PassOwnPtr<T> callback, ExecutionContext* executionContext)
         : m_callback(callback)
@@ -54,8 +56,19 @@ public:
         clear();
     }
 
+    // FIXME: Oilpan: Trace m_executionContext.
+    void trace(Visitor* visitor) { }
+
     void clear()
     {
+#if ENABLE(OILPAN)
+        // It's safe to call ~T in non-context-thread.
+        // Implementation classes of ExecutionContext are on-heap. Their
+        // destructors are called in their owner threads.
+        MutexLocker locker(m_mutex);
+        m_callback.clear();
+        m_executionContext.clear();
+#else
         ExecutionContext* context;
         OwnPtr<T> callback;
         {
@@ -73,6 +86,7 @@ public:
             callback = m_callback.release();
         }
         context->postTask(SafeReleaseTask::create(callback.release()));
+#endif
     }
 
     PassOwnPtr<T> unwrap()
@@ -87,6 +101,7 @@ public:
     bool hasCallback() const { return m_callback; }
 
 private:
+#if !ENABLE(OILPAN)
     class SafeReleaseTask : public ExecutionContextTask {
     public:
         static PassOwnPtr<SafeReleaseTask> create(PassOwnPtr<T> callbackToRelease)
@@ -111,6 +126,7 @@ private:
 
         OwnPtr<T> m_callbackToRelease;
     };
+#endif
 
     Mutex m_mutex;
     OwnPtr<T> m_callback;
