@@ -3682,57 +3682,6 @@ static bool hasOrHadFilters(const RenderStyle* oldStyle, const RenderStyle* newS
     return (oldStyle && oldStyle->hasFilter()) || newStyle->hasFilter();
 }
 
-inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
-{
-    ASSERT(newStyle);
-    return oldStyle && (oldStyle->clip() != newStyle->clip() || oldStyle->hasClip() != newStyle->hasClip());
-}
-
-inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
-{
-    ASSERT(newStyle);
-    if (hasCompositedLayerMapping())
-        return false;
-    if (!oldStyle)
-        return false;
-    if (oldStyle->overflowX() == newStyle->overflowX())
-        return false;
-    RenderLayerStackingNode* stackingNode = m_stackingNode->ancestorStackingContextNode();
-    return stackingNode && stackingNode->layer()->hasCompositingDescendant();
-}
-
-inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
-{
-    if (!hasOrHadFilters(oldStyle, newStyle))
-        return false;
-
-    if (newStyle->isRunningFilterAnimationOnCompositor()) {
-        // When the compositor is performing the filter animation, we shouldn't touch the compositing layers.
-        // All of the layers above us should have been promoted to compositing layers already.
-        return false;
-    }
-
-    FilterOutsets newOutsets = newStyle->filterOutsets();
-    if (oldStyle && (oldStyle->filterOutsets() != newOutsets)) {
-        // When filter outsets change, we need to:
-        // (1) Recompute the overlap map to promote the correct layers to composited layers.
-        // (2) Update the composited layer bounds (and child GraphicsLayer positions) on platforms
-        //     whose compositors can't compute their own filter outsets.
-        return true;
-    }
-
-    return false;
-}
-
-inline bool RenderLayer::needsCompositingLayersRebuiltForBlending(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
-{
-    ASSERT(newStyle);
-    if (!hasCompositedLayerMapping())
-        return false;
-    return (shouldIsolateCompositedDescendants() && !stackingNode()->isStackingContext())
-        || (oldStyle && (oldStyle->hasBlendMode() != newStyle->hasBlendMode()));
-}
-
 void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     if (!hasOrHadFilters(oldStyle, newStyle))
@@ -3785,18 +3734,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
-    const RenderStyle* newStyle = renderer()->style();
-
     compositor()->updateLayerCompositingState(this, RenderLayerCompositor::UseChickenEggHacks);
-    // FIXME: this compositing logic should be pushed into the compositing code, not here.
-    // Moving the filter code will require caching the presence of a filter on oldStyle and
-    // the outsets for that filter, so that we can detect a change in outsets.
-    if (needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
-        || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
-        || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle)
-        || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle)) {
-        compositor()->setCompositingLayersNeedRebuild();
-    }
 }
 
 bool RenderLayer::scrollsOverflow() const
