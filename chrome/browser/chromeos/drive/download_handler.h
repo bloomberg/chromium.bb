@@ -37,6 +37,12 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
   void Initialize(content::DownloadManager* download_manager,
                   const base::FilePath& drive_tmp_download_path);
 
+  // In addition to the DownloadManager passed to Initialize(), observe another
+  // download manager. This should be called only for the DownloadManager of the
+  // incognito version of the profile where |file_system_| resides.
+  void ObserveIncognitoDownloadManager(
+      content::DownloadManager* download_manager);
+
   // Callback used to return results from SubstituteDriveDownloadPath.
   // TODO(hashimoto): Report error with a FileError. crbug.com/171345
   typedef base::Callback<void(const base::FilePath&)>
@@ -75,7 +81,7 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
                                  content::DownloadItem* download) OVERRIDE;
 
   // Removes the download.
-  void RemoveDownload(int id);
+  void RemoveDownload(void* manager_id, int id);
 
   // Callback for FileSystem::CreateDirectory().
   // Used to implement SubstituteDriveDownloadPath().
@@ -83,16 +89,24 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
                          FileError error);
 
   // Starts the upload of a downloaded/downloading file.
-  void UploadDownloadItem(content::DownloadItem* download);
+  void UploadDownloadItem(content::DownloadManager* manager,
+                          content::DownloadItem* download);
 
   // Sets |cache_file_path| as user data of the download item specified by |id|.
-  void SetCacheFilePath(int id,
+  void SetCacheFilePath(void* manager_id,
+                        int id,
                         const base::FilePath* cache_file_path,
                         FileError error);
+
+  // Gets a download manager, given a |manager_id| casted from the pointer to
+  // the manager. This is used to validate the manager that may be deleted while
+  // asynchronous task posting. Returns NULL if the manager is already gone.
+  content::DownloadManager* GetDownloadManager(void* manager_id);
 
   FileSystemInterface* file_system_;  // Owned by DriveIntegrationService.
   // Observe the DownloadManager for new downloads.
   scoped_ptr<AllDownloadItemNotifier> notifier_;
+  scoped_ptr<AllDownloadItemNotifier> notifier_incognito_;
 
   // Temporary download location directory.
   base::FilePath drive_tmp_download_path_;

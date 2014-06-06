@@ -16,6 +16,8 @@
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class FilePath;
@@ -63,7 +65,8 @@ class DriveIntegrationServiceObserver {
 // that are used to integrate Drive to Chrome. The object of this class is
 // created per-profile.
 class DriveIntegrationService : public KeyedService,
-                                public DriveNotificationObserver {
+                                public DriveNotificationObserver,
+                                public content::NotificationObserver {
  public:
   class PreferenceWatcher;
 
@@ -149,6 +152,11 @@ class DriveIntegrationService : public KeyedService,
   // destination is set under Drive. This must be called when disabling Drive.
   void AvoidDriveAsDownloadDirecotryPreference();
 
+  // content::NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;
@@ -174,6 +182,7 @@ class DriveIntegrationService : public KeyedService,
 
   ObserverList<DriveIntegrationServiceObserver> observers_;
   scoped_ptr<PreferenceWatcher> preference_watcher_;
+  scoped_ptr<content::NotificationRegistrar> profile_notification_registrar_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -223,7 +232,9 @@ class DriveIntegrationServiceFactory
   DriveIntegrationServiceFactory();
   virtual ~DriveIntegrationServiceFactory();
 
-  // BrowserContextKeyedServiceFactory:
+  // BrowserContextKeyedServiceFactory overrides.
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
