@@ -38,14 +38,13 @@ class WebFormElement;
 class WebInputElement;
 class WebKeyboardEvent;
 class WebNode;
-struct WebAutocompleteParams;
 
 template <typename T> class WebVector;
 
 class WebAutofillClient {
 public:
     // Informs the browser an interactive autocomplete has been requested.
-    virtual void didRequestAutocomplete(const WebFormElement&, const WebAutocompleteParams&) { }
+    virtual void didRequestAutocomplete(const WebFormElement&) { }
 
     // These methods are called when the users edits a text-field.
     virtual void textFieldDidEndEditing(const WebInputElement&) { }

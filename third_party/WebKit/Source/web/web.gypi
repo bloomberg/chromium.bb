@@ -106,7 +106,6 @@
       'WebAXObject.cpp',
       'WebArrayBufferConverter.cpp',
       'WebArrayBufferView.cpp',
-      'WebAutocompleteParams.cpp',
       'WebBindings.cpp',
       'WebBlob.cpp',
       'WebCache.cpp',

@@ -27,7 +27,6 @@
 
 #include <limits>
 #include "HTMLNames.h"
-#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
@@ -438,7 +437,7 @@ void HTMLFormElement::reset()
     m_isInResetFunction = false;
 }
 
-void HTMLFormElement::requestAutocomplete(const Dictionary& details)
+void HTMLFormElement::requestAutocomplete()
 {
     String errorMessage;
 
@@ -453,7 +452,7 @@ void HTMLFormElement::requestAutocomplete(const Dictionary& details)
         document().addConsoleMessage(RenderingMessageSource, LogMessageLevel, errorMessage);
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
     } else {
-        document().frame()->loader().client()->didRequestAutocomplete(this, details);
+        document().frame()->loader().client()->didRequestAutocomplete(this);
     }
 }
 
