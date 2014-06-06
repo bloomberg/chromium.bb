@@ -143,21 +143,30 @@ def GroupByProcessAndThreadId(input_trace):
   result each thread has its own contiguous segment of code (ordered by
   timestamp) and processes also have their code isolated (i.e. not interleaved).
   """
-  def MakeTimestamp(usec, sec):
-    return usec * 1000000 + sec
+  def MakeTimestamp(sec, usec):
+    return sec * 1000000 + usec
 
   def PidAndTidFromString(pid_and_tid):
     strings = pid_and_tid.split(':')
     return (int(strings[0]), int(strings[1]))
 
+  tid_to_pid_map = {}
   pid_first_seen = {}
   tid_first_seen = {}
+
   for (sec, usec, pid_and_tid, _) in input_trace:
     (pid, tid) = PidAndTidFromString(pid_and_tid)
+
+    # Make sure that thread IDs are unique since this is a property we rely on.
+    if tid_to_pid_map.setdefault(tid, pid) != pid:
+      raise Exception(
+          'Seen PIDs %d and %d for TID=%d. Thread-IDs must be unique' % (
+              tid_to_pid_map[tid], pid, tid))
+
     if not pid in pid_first_seen:
-      pid_first_seen[pid] = MakeTimestamp(usec, sec)
+      pid_first_seen[pid] = MakeTimestamp(sec, usec)
     if not tid in tid_first_seen:
-      tid_first_seen[tid] = MakeTimestamp(usec, sec)
+      tid_first_seen[tid] = MakeTimestamp(sec, usec)
 
   def CompareEvents(event1, event2):
     (sec1, usec1, pid_and_tid, _) = event1
@@ -171,7 +180,7 @@ def GroupByProcessAndThreadId(input_trace):
     tid_cmp = cmp(tid_first_seen[tid1], tid_first_seen[tid2])
     if tid_cmp != 0:
       return tid_cmp
-    return cmp(MakeTimestamp(usec1, sec1), MakeTimestamp(usec2, sec2))
+    return cmp(MakeTimestamp(sec1, usec1), MakeTimestamp(sec2, usec2))
 
   return sorted(input_trace, cmp=CompareEvents)
 
