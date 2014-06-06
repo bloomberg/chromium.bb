@@ -512,37 +512,17 @@ class BlogspotPage(Top25Page):
       }))
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'accessibility',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'accessibility'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'advanced',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'advanced'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'beginner',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'beginner'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Home',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'Home'}))
+    action_runner.WaitForNavigate()
 
 
 class WordpressPage(Top25Page):
@@ -569,30 +549,17 @@ class WordpressPage(Top25Page):
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
-      {
-        'wait_until': {
-          'condition': 'navigate'
-        },
-        'selector':
+      {'selector':
           # pylint: disable=C0301
           'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]'
       }))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Features',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'Features'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'News',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'News'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
 
 
@@ -616,48 +583,33 @@ class FacebookPage(Top25Page):
       }))
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'About',
-        'wait_until': {
-          'condition': 'navigate'
-        }
-      }))
+    action_runner.RunAction(ClickElementAction({'text' : 'About'}))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'The Audacity of Hope',
-        'wait_until': {
-          'condition': 'navigate'
-        }
       }))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Back to Barack Obama\'s Timeline',
-        'wait_until': {
-          'condition': 'navigate'
-        }
       }))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'About',
-        'wait_until': {
-          'condition': 'navigate'
-        }
       }))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Elected to U.S. Senate',
-        'wait_until': {
-          'condition': 'navigate'
-        }
       }))
+    action_runner.WaitForNavigate()
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Home',
-        'wait_until': {
-          'condition': 'navigate'
-        }
       }))
+    action_runner.WaitForNavigate()
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
