@@ -163,9 +163,9 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   content::NotificationRegistrar registrar_;
 
   // Max number of ips we save for each browse
-  static const int kMaxIPsPerBrowse;
+  static const size_t kMaxIPsPerBrowse;
   // Max number of urls we report for each malware IP.
-  static const int kMaxUrlsPerIP;
+  static const size_t kMaxUrlsPerIP;
 
   bool should_extract_malware_features_;
   bool should_classify_for_malware_;

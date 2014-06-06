@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/prefix_set.h"
 
 #include <algorithm>
-#include <math.h>
 
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"

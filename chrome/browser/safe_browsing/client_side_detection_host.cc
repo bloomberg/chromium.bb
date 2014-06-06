@@ -44,8 +44,8 @@ using content::WebContents;
 
 namespace safe_browsing {
 
-const int ClientSideDetectionHost::kMaxUrlsPerIP = 20;
-const int ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
+const size_t ClientSideDetectionHost::kMaxUrlsPerIP = 20;
+const size_t ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
 
 const char kSafeBrowsingMatchKey[] = "safe_browsing_match";
 
@@ -688,12 +688,12 @@ void ClientSideDetectionHost::UpdateIPUrlMap(
 
   IPUrlMap::iterator it = browse_info_->ips.find(ip);
   if (it == browse_info_->ips.end()) {
-    if (int(browse_info_->ips.size()) < kMaxIPsPerBrowse) {
+    if (browse_info_->ips.size() < kMaxIPsPerBrowse) {
       std::vector<IPUrlInfo> url_infos;
       url_infos.push_back(IPUrlInfo(url, method, referrer, resource_type));
       browse_info_->ips.insert(make_pair(ip, url_infos));
     }
-  } else if (int(it->second.size()) < kMaxUrlsPerIP) {
+  } else if (it->second.size() < kMaxUrlsPerIP) {
     it->second.push_back(IPUrlInfo(url, method, referrer, resource_type));
   }
 }

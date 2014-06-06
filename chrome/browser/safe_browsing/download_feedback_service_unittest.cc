@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -163,6 +165,7 @@ class DownloadFeedbackServiceTest : public testing::Test {
   size_t num_feedbacks() const {
     return download_feedback_factory_.num_feedbacks();
   }
+
  protected:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -170,7 +173,6 @@ class DownloadFeedbackServiceTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   FakeDownloadFeedbackFactory download_feedback_factory_;
-
 };
 
 TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {

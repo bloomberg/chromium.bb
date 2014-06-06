@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
+#include <string>
 
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"

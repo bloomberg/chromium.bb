@@ -101,10 +101,10 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
 class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
  public:
   MockBinaryFeatureExtractor() {}
-  MOCK_METHOD2(CheckSignature, void (const base::FilePath&,
-                                     ClientDownloadRequest_SignatureInfo*));
-  MOCK_METHOD2(ExtractImageHeaders, void (const base::FilePath&,
-                                          ClientDownloadRequest_ImageHeaders*));
+  MOCK_METHOD2(CheckSignature, void(const base::FilePath&,
+                                    ClientDownloadRequest_SignatureInfo*));
+  MOCK_METHOD2(ExtractImageHeaders, void(const base::FilePath&,
+                                         ClientDownloadRequest_ImageHeaders*));
 
  protected:
   virtual ~MockBinaryFeatureExtractor() {}

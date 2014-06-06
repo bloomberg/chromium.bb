@@ -111,7 +111,7 @@ void EmptyUrlCheckCallback(bool processed) {
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
-  virtual ~MockClientSideDetectionService() {};
+  virtual ~MockClientSideDetectionService() {}
 
   MOCK_METHOD2(SendClientReportPhishingRequest,
                void(ClientPhishingRequest*,
@@ -989,7 +989,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMimeType) {
   GURL url("http://host2.com/image.jpg");
   rvh_tester()->SetContentsMimeType("image/jpeg");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
-                                &kFalse, &kFalse,&kFalse, &kFalse);
+                                &kFalse, &kFalse, &kFalse, &kFalse);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
 

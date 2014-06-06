@@ -69,7 +69,7 @@ class MockClientSideDetectionHost : public ClientSideDetectionHost {
     set_safe_browsing_managers(NULL, database_manager);
   }
 
-  virtual ~MockClientSideDetectionHost() {};
+  virtual ~MockClientSideDetectionHost() {}
 
   MOCK_METHOD1(IsBadIpAddress, bool(const std::string&));
 };

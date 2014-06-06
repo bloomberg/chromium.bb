@@ -49,6 +49,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -103,7 +104,7 @@ class PrefixSet {
   static const size_t kMaxRun = 100;
 
   // Helpers to make |index_| easier to deal with.
-  typedef std::pair<SBPrefix,uint32> IndexPair;
+  typedef std::pair<SBPrefix, uint32> IndexPair;
   typedef std::vector<IndexPair> IndexVector;
   static bool PrefixLess(const IndexPair& a, const IndexPair& b);
 
