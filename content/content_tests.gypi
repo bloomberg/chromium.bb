@@ -1104,7 +1104,6 @@
             'browser/media/media_browsertest.h',
             'browser/media/media_canplaytype_browsertest.cc',
             'browser/media/media_source_browsertest.cc',
-            'browser/media/webrtc_internals_browsertest.cc',
             'browser/plugin_data_remover_impl_browsertest.cc',
             'browser/plugin_browsertest.cc',
             'browser/plugin_service_impl_browsertest.cc',
@@ -1268,6 +1267,7 @@
               'sources': [
                 'browser/media/webrtc_browsertest.cc',
                 'browser/media/webrtc_getusermedia_browsertest.cc',
+                'browser/media/webrtc_internals_browsertest.cc',
                 'test/webrtc_content_browsertest_base.cc',
                 'test/webrtc_content_browsertest_base.h',
               ],
