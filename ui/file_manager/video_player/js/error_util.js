@@ -22,19 +22,26 @@ window.onerror = function() { window.JSErrorCount++; };
  *  - Bind this object
  *
  * @param {Object} thisObject Object to be used as this.
+ * @param {...} var_args Arguments to be bound with the wrapped function.
  * @return {function} Wrapped function.
  */
-Function.prototype.wrap = function(thisObject) {
+Function.prototype.wrap = function(thisObject, var_args) {
   var func = this;
   var liveStack = (new Error('Stack trace before async call')).stack;
   if (thisObject === undefined)
     thisObject = null;
+  var boundArguments = Array.prototype.slice.call(arguments, 1);
 
-  return function wrappedCallback() {
+  return function wrappedCallback(var_args) {
     try {
-      return func.apply(thisObject, arguments);
+      var args = boundArguments.concat(Array.prototype.slice.call(arguments));
+      return func.apply(thisObject, args);
     } catch (e) {
-      console.error('Exception happens in callback.', liveStack);
+      // Some async funcrtion doesn't handle exception correctly. So outputing
+      // the exception message and stack trace just in case.
+      // The message will show twice if the caller handles exception correctly.
+      console.error(e.stack);
+      console.info('Exception above happened in callback.', liveStack);
 
       window.JSErrorCount++;
       throw e;

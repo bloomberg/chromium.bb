@@ -51,7 +51,7 @@ function FullWindowVideoControls(
   this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
   this.__defineGetter__('inactivityWatcher', function() {
     return this.inactivityWatcher_;
-  });
+  }.wrap(this));
 
   this.inactivityWatcher_.check();
 }
@@ -126,11 +126,11 @@ VideoPlayer.prototype = {
  * @param {Array.<Object.<string, Object>>} videos List of videos.
  */
 VideoPlayer.prototype.prepare = function(videos) {
-  document.ondragstart = function(e) { e.preventDefault() };
-
   this.videos_ = videos;
 
-  var preventDefault = function(event) { event.preventDefault(); };
+  var preventDefault = function(event) { event.preventDefault(); }.wrap(null);
+
+  document.ondragstart = preventDefault;
 
   var maximizeButton = document.querySelector('.maximize-button');
   maximizeButton.addEventListener(
@@ -141,7 +141,7 @@ VideoPlayer.prototype.prepare = function(videos) {
         appWindow.restore();
       else
         appWindow.maximize();
-    });
+    }.wrap(null));
   maximizeButton.addEventListener('mousedown', preventDefault);
 
   var minimizeButton = document.querySelector('.minimize-button');
@@ -149,13 +149,13 @@ VideoPlayer.prototype.prepare = function(videos) {
     'click',
     function() {
       chrome.app.window.current().minimize()
-    });
+    }.wrap(null));
   minimizeButton.addEventListener('mousedown', preventDefault);
 
   var closeButton = document.querySelector('.close-button');
   closeButton.addEventListener(
     'click',
-    function() { close(); });
+    function() { close(); }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
   this.controls_ = new FullWindowVideoControls(
@@ -302,7 +302,7 @@ function initVideos(callback) {
         var videos = window.videos;
         window.videos = null;
         callback(videos);
-      });
+      }.wrap(null));
 }
 
 var player = new VideoPlayer();
@@ -315,7 +315,7 @@ function initStrings(callback) {
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
     callback();
-  });
+  }.wrap(null));
 }
 
 var initPromise = Promise.all(
@@ -327,4 +327,4 @@ initPromise.then(function(results) {
   var videos = results[0];
   player.prepare(videos);
   return new Promise(player.playVideo.wrap(player));
-});
+}.wrap(null));
