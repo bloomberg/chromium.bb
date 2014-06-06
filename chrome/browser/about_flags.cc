@@ -427,6 +427,16 @@ const Experiment::Choice kMalwareInterstitialVersions[] = {
     switches::kMalwareInterstitialVersionV3, "" },
 };
 
+#if defined(OS_CHROMEOS)
+const Experiment::Choice kEnableFileManagerMTPChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    chromeos::switches::kEnableFileManagerMTP, "true" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    chromeos::switches::kEnableFileManagerMTP, "false" }
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1784,7 +1794,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_NAME,
     IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableFileManagerMTP)
+    MULTI_VALUE_TYPE(kEnableFileManagerMTPChoices)
   },
 #endif
   // TODO(tyoshino): Remove this temporary flag and command line switch. See
