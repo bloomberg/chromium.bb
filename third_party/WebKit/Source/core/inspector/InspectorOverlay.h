@@ -167,8 +167,8 @@ private:
     InspectorClient* m_client;
     String m_pausedInDebuggerMessage;
     bool m_inspectModeEnabled;
-    RefPtr<Node> m_highlightNode;
-    RefPtr<Node> m_eventTargetNode;
+    RefPtrWillBePersistent<Node> m_highlightNode;
+    RefPtrWillBePersistent<Node> m_eventTargetNode;
     HighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtrWillBePersistent<Page> m_overlayPage;

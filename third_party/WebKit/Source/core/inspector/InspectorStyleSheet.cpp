@@ -1547,12 +1547,12 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
     return true;
 }
 
-PassRefPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(const String& id, PassRefPtr<Element> element, Listener* listener)
+PassRefPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(const String& id, PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
 {
     return adoptRef(new InspectorStyleSheetForInlineStyle(id, element, listener));
 }
 
-InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(const String& id, PassRefPtr<Element> element, Listener* listener)
+InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(const String& id, PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
     : InspectorStyleSheetBase(id, listener)
     , m_element(element)
     , m_ruleSourceData(nullptr)

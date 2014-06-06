@@ -261,7 +261,7 @@ private:
 
 class InspectorStyleSheetForInlineStyle FINAL : public InspectorStyleSheetBase {
 public:
-    static PassRefPtr<InspectorStyleSheetForInlineStyle> create(const String& id, PassRefPtr<Element>, Listener*);
+    static PassRefPtr<InspectorStyleSheetForInlineStyle> create(const String& id, PassRefPtrWillBeRawPtr<Element>, Listener*);
 
     void didModifyElementAttribute();
     virtual Document* ownerDocument() const OVERRIDE;
@@ -281,12 +281,12 @@ protected:
     virtual PassRefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataAt(unsigned ruleIndex) const OVERRIDE { ASSERT_UNUSED(ruleIndex, !ruleIndex); return m_ruleSourceData; }
 
 private:
-    InspectorStyleSheetForInlineStyle(const String& id, PassRefPtr<Element>, Listener*);
+    InspectorStyleSheetForInlineStyle(const String& id, PassRefPtrWillBeRawPtr<Element>, Listener*);
     CSSStyleDeclaration* inlineStyle() const;
     const String& elementStyleText() const;
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> getStyleAttributeData() const;
 
-    RefPtr<Element> m_element;
+    RefPtrWillBePersistent<Element> m_element;
     RefPtrWillBePersistent<CSSRuleSourceData> m_ruleSourceData;
     RefPtr<InspectorStyle> m_inspectorStyle;
 

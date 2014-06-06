@@ -31,6 +31,7 @@
 #ifndef DOMEditor_h
 #define DOMEditor_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -49,16 +50,16 @@ public:
     explicit DOMEditor(InspectorHistory*);
     ~DOMEditor();
 
-    bool insertBefore(Node* parentNode, PassRefPtr<Node>, Node* anchorNode, ExceptionState&);
+    bool insertBefore(Node* parentNode, PassRefPtrWillBeRawPtr<Node>, Node* anchorNode, ExceptionState&);
     bool removeChild(Node* parentNode, Node*, ExceptionState&);
     bool setAttribute(Element*, const String& name, const String& value, ExceptionState&);
     bool removeAttribute(Element*, const String& name, ExceptionState&);
     bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionState&);
     bool replaceWholeText(Text*, const String& text, ExceptionState&);
-    bool replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState&);
+    bool replaceChild(Node* parentNode, PassRefPtrWillBeRawPtr<Node> newNode, Node* oldNode, ExceptionState&);
     bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
 
-    bool insertBefore(Node* parentNode, PassRefPtr<Node>, Node* anchorNode, ErrorString*);
+    bool insertBefore(Node* parentNode, PassRefPtrWillBeRawPtr<Node>, Node* anchorNode, ErrorString*);
     bool removeChild(Node* parentNode, Node*, ErrorString*);
     bool setAttribute(Element*, const String& name, const String& value, ErrorString*);
     bool removeAttribute(Element*, const String& name, ErrorString*);

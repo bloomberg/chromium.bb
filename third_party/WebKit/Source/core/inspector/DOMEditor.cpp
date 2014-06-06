@@ -75,15 +75,15 @@ public:
     }
 
 private:
-    RefPtr<Node> m_parentNode;
-    RefPtr<Node> m_node;
-    RefPtr<Node> m_anchorNode;
+    RefPtrWillBePersistent<Node> m_parentNode;
+    RefPtrWillBePersistent<Node> m_node;
+    RefPtrWillBePersistent<Node> m_anchorNode;
 };
 
 class DOMEditor::InsertBeforeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(InsertBeforeAction);
 public:
-    InsertBeforeAction(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode)
+    InsertBeforeAction(Node* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode)
         : InspectorHistory::Action("InsertBefore")
         , m_parentNode(parentNode)
         , m_node(node)
@@ -121,9 +121,9 @@ public:
     }
 
 private:
-    RefPtr<Node> m_parentNode;
-    RefPtr<Node> m_node;
-    RefPtr<Node> m_anchorNode;
+    RefPtrWillBePersistent<Node> m_parentNode;
+    RefPtrWillBePersistent<Node> m_node;
+    RefPtrWillBePersistent<Node> m_anchorNode;
     RefPtr<RemoveChildAction> m_removeChildAction;
 };
 
@@ -156,7 +156,7 @@ public:
     }
 
 private:
-    RefPtr<Element> m_element;
+    RefPtrWillBePersistent<Element> m_element;
     AtomicString m_name;
     AtomicString m_value;
 };
@@ -198,7 +198,7 @@ public:
     }
 
 private:
-    RefPtr<Element> m_element;
+    RefPtrWillBePersistent<Element> m_element;
     AtomicString m_name;
     AtomicString m_value;
     bool m_hadAttribute;
@@ -244,8 +244,8 @@ public:
     }
 
 private:
-    RefPtr<Node> m_node;
-    RefPtr<Node> m_nextSibling;
+    RefPtrWillBePersistent<Node> m_node;
+    RefPtrWillBePersistent<Node> m_nextSibling;
     String m_html;
     String m_oldHTML;
     Node* m_newNode;
@@ -290,7 +290,7 @@ private:
 class DOMEditor::ReplaceChildNodeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(ReplaceChildNodeAction);
 public:
-    ReplaceChildNodeAction(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode)
+    ReplaceChildNodeAction(Node* parentNode, PassRefPtrWillBeRawPtr<Node> newNode, Node* oldNode)
         : InspectorHistory::Action("ReplaceChildNode")
         , m_parentNode(parentNode)
         , m_newNode(newNode)
@@ -320,9 +320,9 @@ public:
     }
 
 private:
-    RefPtr<Node> m_parentNode;
-    RefPtr<Node> m_newNode;
-    RefPtr<Node> m_oldNode;
+    RefPtrWillBePersistent<Node> m_parentNode;
+    RefPtrWillBePersistent<Node> m_newNode;
+    RefPtrWillBePersistent<Node> m_oldNode;
 };
 
 class DOMEditor::SetNodeValueAction FINAL : public InspectorHistory::Action {
@@ -354,7 +354,7 @@ public:
     }
 
 private:
-    RefPtr<Node> m_node;
+    RefPtrWillBePersistent<Node> m_node;
     String m_value;
     String m_oldValue;
 };
@@ -363,7 +363,7 @@ DOMEditor::DOMEditor(InspectorHistory* history) : m_history(history) { }
 
 DOMEditor::~DOMEditor() { }
 
-bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
+bool DOMEditor::insertBefore(Node* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
 {
     return m_history->perform(adoptRef(new InsertBeforeAction(parentNode, node, anchorNode)), exceptionState);
 }
@@ -397,7 +397,7 @@ bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionSt
     return m_history->perform(adoptRef(new ReplaceWholeTextAction(textNode, text)), exceptionState);
 }
 
-bool DOMEditor::replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
+bool DOMEditor::replaceChild(Node* parentNode, PassRefPtrWillBeRawPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
 {
     return m_history->perform(adoptRef(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), exceptionState);
 }
@@ -413,7 +413,7 @@ static void populateErrorString(ExceptionState& exceptionState, ErrorString* err
         *errorString = DOMException::getErrorName(exceptionState.code());
 }
 
-bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ErrorString* errorString)
+bool DOMEditor::insertBefore(Node* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode, ErrorString* errorString)
 {
     TrackExceptionState exceptionState;
     bool result = insertBefore(parentNode, node, anchorNode, exceptionState);

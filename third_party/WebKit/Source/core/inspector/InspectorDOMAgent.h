@@ -176,7 +176,7 @@ public:
     void willModifyDOMAttr(Element*, const AtomicString& oldValue, const AtomicString& newValue);
     void didModifyDOMAttr(Element*, const AtomicString& name, const AtomicString& value);
     void didRemoveDOMAttr(Element*, const AtomicString& name);
-    void styleAttributeInvalidated(const Vector<Element*>& elements);
+    void styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements);
     void characterDataModified(CharacterData*);
     void didInvalidateStyleAttr(Node*);
     void didPushShadowRoot(Element* host, ShadowRoot*);
@@ -221,7 +221,7 @@ private:
     PassOwnPtr<HighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
 
     // Node-related methods.
-    typedef HashMap<RefPtr<Node>, int> NodeToIdMap;
+    typedef WillBeHeapHashMap<RefPtrWillBeMember<Node>, int> NodeToIdMap;
     int bind(Node*, NodeToIdMap*);
     void unbind(Node*, NodeToIdMap*);
 
@@ -258,16 +258,16 @@ private:
     InspectorOverlay* m_overlay;
     InspectorFrontend::DOM* m_frontend;
     DOMListener* m_domListener;
-    NodeToIdMap m_documentNodeToIdMap;
+    OwnPtrWillBePersistent<NodeToIdMap> m_documentNodeToIdMap;
     // Owns node mappings for dangling nodes.
-    Vector<OwnPtr<NodeToIdMap> > m_danglingNodeToIdMaps;
-    HashMap<int, Node*> m_idToNode;
-    HashMap<int, NodeToIdMap*> m_idToNodesMap;
+    WillBePersistentHeapVector<OwnPtrWillBeMember<NodeToIdMap> > m_danglingNodeToIdMaps;
+    WillBePersistentHeapHashMap<int, RawPtrWillBeMember<Node> > m_idToNode;
+    WillBePersistentHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap> > m_idToNodesMap;
     HashSet<int> m_childrenRequested;
     HashMap<int, int> m_cachedChildCount;
     int m_lastNodeId;
-    RefPtr<Document> m_document;
-    typedef HashMap<String, Vector<RefPtr<Node> > > SearchResults;
+    RefPtrWillBePersistent<Document> m_document;
+    typedef WillBePersistentHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
     SearchResults m_searchResults;
     OwnPtr<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
     SearchMode m_searchingForNode;

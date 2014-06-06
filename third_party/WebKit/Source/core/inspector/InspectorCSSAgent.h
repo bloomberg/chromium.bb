@@ -207,7 +207,7 @@ private:
     HashSet<Document*> m_invalidatedDocuments;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
-    HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
+    WillBePersistentHeapHashMap<RefPtrWillBeMember<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
     RefPtrWillBePersistent<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
