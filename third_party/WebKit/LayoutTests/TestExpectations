@@ -1017,7 +1017,7 @@ crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
 
-crbug.com/381364 [ Win ] fast/loader/resources/unload-hyperlink-targeted-subframe.html [ Failure ]
+crbug.com/381364 [ Win ] fast/loader/unload-hyperlink-targeted.html [ Failure ]
 
 crbug.com/381373 [ Win ]  virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Failure ]
 
