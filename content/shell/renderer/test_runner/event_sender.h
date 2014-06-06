@@ -103,7 +103,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
-  void UpdateTouchPoint(unsigned index, int x, int y);
+  void UpdateTouchPoint(unsigned index, float x, float y);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void SetTouchCancelable(bool cancelable);

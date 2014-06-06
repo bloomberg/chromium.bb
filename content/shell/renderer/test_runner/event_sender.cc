@@ -633,7 +633,7 @@ void EventSenderBindings::ReleaseTouchPoint(unsigned index) {
 
 void EventSenderBindings::UpdateTouchPoint(unsigned index, double x, double y) {
   if (sender_)
-    sender_->UpdateTouchPoint(index, static_cast<int>(x), static_cast<int>(y));
+    sender_->UpdateTouchPoint(index, static_cast<float>(x), static_cast<float>(y));
 }
 
 void EventSenderBindings::CancelTouchPoint(unsigned index) {
@@ -1457,7 +1457,7 @@ void EventSender::ReleaseTouchPoint(unsigned index) {
   touch_point->state = WebTouchPoint::StateReleased;
 }
 
-void EventSender::UpdateTouchPoint(unsigned index, int x, int y) {
+void EventSender::UpdateTouchPoint(unsigned index, float x, float y) {
   if (index >= touch_points_.size()) {
     ThrowTouchPointError();
     return;
@@ -1615,8 +1615,8 @@ void EventSender::AddTouchPoint(gin::Arguments* args) {
 
   WebTouchPoint touch_point;
   touch_point.state = WebTouchPoint::StatePressed;
-  touch_point.position = WebFloatPoint(static_cast<int>(x),
-                                       static_cast<int>(y));
+  touch_point.position = WebFloatPoint(static_cast<float>(x),
+                                       static_cast<float>(y));
   touch_point.screenPosition = touch_point.position;
 
   if (!args->PeekNext().IsEmpty()) {
@@ -1634,8 +1634,8 @@ void EventSender::AddTouchPoint(gin::Arguments* args) {
       }
     }
 
-    touch_point.radiusX = static_cast<int>(radius_x);
-    touch_point.radiusY = static_cast<int>(radius_y);
+    touch_point.radiusX = static_cast<float>(radius_x);
+    touch_point.radiusY = static_cast<float>(radius_y);
   }
 
   int lowest_id = 0;
