@@ -41,7 +41,7 @@ struct CreateDetails;
 // the extension system.
 class BookmarkEventRouter : public BookmarkModelObserver {
  public:
-  BookmarkEventRouter(content::BrowserContext* context, BookmarkModel* model);
+  explicit BookmarkEventRouter(Profile* profile);
   virtual ~BookmarkEventRouter();
 
   // BookmarkModelObserver:
@@ -80,6 +80,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 
   content::BrowserContext* browser_context_;
   BookmarkModel* model_;
+  ChromeBookmarkClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
 };

@@ -42,6 +42,11 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
   }
   {
     HasEnumeration enumeration;
+    EXPECT_EQ(ENUMERATION_NONE, enumeration.enumeration);
+    EXPECT_EQ(ENUMERATION_NONE, enumeration.optional_enumeration);
+  }
+  {
+    HasEnumeration enumeration;
     base::DictionaryValue value;
     ASSERT_FALSE(HasEnumeration::Populate(value, &enumeration));
 

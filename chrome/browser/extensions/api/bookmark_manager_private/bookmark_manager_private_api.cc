@@ -621,10 +621,11 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
   }
 
   std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> > nodes;
+  ChromeBookmarkClient* client = GetChromeBookmarkClient();
   if (params->folders_only)
-    bookmark_api_helpers::AddNodeFoldersOnly(node, &nodes, true);
+    bookmark_api_helpers::AddNodeFoldersOnly(client, node, &nodes, true);
   else
-    bookmark_api_helpers::AddNode(node, &nodes, true);
+    bookmark_api_helpers::AddNode(client, node, &nodes, true);
   results_ = GetSubtree::Results::Create(nodes);
   return true;
 }
@@ -653,7 +654,8 @@ bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunOnReady() {
     return false;
 
   scoped_ptr<api::bookmarks::BookmarkTreeNode> result_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(
+          GetChromeBookmarkClient(), node, false, false));
   results_ = CreateWithMetaInfo::Results::Create(*result_node);
 
   return true;

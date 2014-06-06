@@ -146,11 +146,16 @@ class _Generator(object):
   def _GenerateInitializersAndBody(self, type_):
     items = []
     for prop in type_.properties.values():
-      if prop.optional:
-        continue
-
       t = prop.type_
-      if t.property_type == PropertyType.INTEGER:
+
+      real_t = self._type_helper.FollowRef(t)
+      if real_t.property_type == PropertyType.ENUM:
+        items.append('%s(%s)' % (
+            prop.unix_name,
+            self._type_helper.GetEnumNoneValue(t)))
+      elif prop.optional:
+        continue
+      elif t.property_type == PropertyType.INTEGER:
         items.append('%s(0)' % prop.unix_name)
       elif t.property_type == PropertyType.DOUBLE:
         items.append('%s(0.0)' % prop.unix_name)
@@ -160,12 +165,11 @@ class _Generator(object):
             t.property_type == PropertyType.ARRAY or
             t.property_type == PropertyType.BINARY or  # mapped to std::string
             t.property_type == PropertyType.CHOICES or
-            t.property_type == PropertyType.ENUM or
             t.property_type == PropertyType.OBJECT or
             t.property_type == PropertyType.FUNCTION or
             t.property_type == PropertyType.REF or
             t.property_type == PropertyType.STRING):
-        # TODO(miket): It would be nice to initialize CHOICES and ENUM, but we
+        # TODO(miket): It would be nice to initialize CHOICES, but we
         # don't presently have the semantics to indicate which one of a set
         # should be the default.
         continue

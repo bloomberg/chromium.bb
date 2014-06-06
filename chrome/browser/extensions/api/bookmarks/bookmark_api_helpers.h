@@ -21,16 +21,19 @@ namespace bookmark_api_helpers {
 
 // The returned value is owned by the caller.
 api::bookmarks::BookmarkTreeNode* GetBookmarkTreeNode(
+    ChromeBookmarkClient* client,
     const BookmarkNode* node,
     bool recurse,
     bool only_folders);
 
 // Add a JSON representation of |node| to the JSON |nodes|.
-void AddNode(const BookmarkNode* node,
+void AddNode(ChromeBookmarkClient* client,
+             const BookmarkNode* node,
              std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> >* nodes,
              bool recurse);
 
-void AddNodeFoldersOnly(const BookmarkNode* node,
+void AddNodeFoldersOnly(ChromeBookmarkClient* client,
+                        const BookmarkNode* node,
                         std::vector<linked_ptr<
                             api::bookmarks::BookmarkTreeNode> >* nodes,
                         bool recurse);

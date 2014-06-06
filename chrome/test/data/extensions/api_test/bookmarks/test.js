@@ -13,10 +13,12 @@ var expected = [
   {"children": [
       {children:[], id:"1", parentId:"0", index:0, title:"Bookmarks bar"},
       {children:[], id:"2", parentId:"0", index:1, title:"Other bookmarks"},
-      {id:"4", parentId:"0", index:3, title:"Managed bookmarks", children:[
+      {id:"4", parentId:"0", index:3, title:"Managed bookmarks",
+       unmodifiable:"managed", children:[
           {id:"5", parentId:"4", index:0, title:"Managed Bookmark",
-           url: "http://www.chromium.org/"},
-          {id:"6", parentId:"4", index:1, title:"Managed Folder", children:[]}
+           url:"http://www.chromium.org/", unmodifiable:"managed"},
+          {id:"6", parentId:"4", index:1, title:"Managed Folder",
+           children:[], unmodifiable:"managed"}
         ]
       }
     ],
@@ -61,6 +63,10 @@ function compareNode(left, right) {
     return "url mismatch: " + left.url + " != " + right.url;
   if (left.index != right.index)
     return "index mismatch: " + left.index + " != " + right.index;
+  if (left.unmodifiable != right.unmodifiable) {
+    return "unmodifiable mismatch: " + left.unmodifiable +
+           " != " + right.unmodifiable;
+  }
   return true;
 }
 

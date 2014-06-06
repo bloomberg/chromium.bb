@@ -26,7 +26,8 @@ namespace bookmark_api_helpers {
 
 class ExtensionBookmarksTest : public testing::Test {
  public:
-  ExtensionBookmarksTest() : client_(NULL), model_(NULL), folder_(NULL) {}
+  ExtensionBookmarksTest()
+      : client_(NULL), model_(NULL), node_(NULL), folder_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     profile_.CreateBookmarkModel(false);
@@ -35,8 +36,8 @@ class ExtensionBookmarksTest : public testing::Test {
     model_ = client_->model();
     test::WaitForBookmarkModelToLoad(model_);
 
-    model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
-                   GURL("http://www.reddit.com"));
+    node_ = model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
+                           GURL("http://www.reddit.com"));
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("News"),
                    GURL("http://www.foxnews.com"));
     folder_ = model_->AddFolder(
@@ -53,12 +54,14 @@ class ExtensionBookmarksTest : public testing::Test {
   TestingProfile profile_;
   ChromeBookmarkClient* client_;
   BookmarkModel* model_;
+  const BookmarkNode* node_;
   const BookmarkNode* folder_;
 };
 
 TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(model_->other_node(),
+      GetBookmarkTreeNode(client_,
+                          model_->other_node(),
                           true,    // Recurse.
                           false));  // Not only folders.
   ASSERT_EQ(3U, tree->children->size());
@@ -66,7 +69,8 @@ TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
 
 TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(model_->other_node(),
+      GetBookmarkTreeNode(client_,
+                          model_->other_node(),
                           true,   // Recurse.
                           true));  // Only folders.
   ASSERT_EQ(1U, tree->children->size());
@@ -74,7 +78,8 @@ TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
 
 TEST_F(ExtensionBookmarksTest, GetSubtree) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(folder_,
+      GetBookmarkTreeNode(client_,
+                          folder_,
                           true,    // Recurse.
                           false));  // Not only folders.
   ASSERT_EQ(4U, tree->children->size());
@@ -85,13 +90,42 @@ TEST_F(ExtensionBookmarksTest, GetSubtree) {
 
 TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(folder_,
+      GetBookmarkTreeNode(client_,
+                          folder_,
                           true,   // Recurse.
                           true));  // Only folders.
   ASSERT_EQ(2U, tree->children->size());
   linked_ptr<BookmarkTreeNode> inner_folder = tree->children->at(1);
   ASSERT_TRUE(inner_folder.get());
   ASSERT_EQ("inner folder 1", inner_folder->title);
+}
+
+TEST_F(ExtensionBookmarksTest, GetModifiableNode) {
+  scoped_ptr<BookmarkTreeNode> tree(
+      GetBookmarkTreeNode(client_,
+                          node_,
+                          false,    // Recurse.
+                          false));  // Only folders.
+  EXPECT_EQ("Digg", tree->title);
+  ASSERT_TRUE(tree->url);
+  EXPECT_EQ("http://www.reddit.com/", *tree->url);
+  EXPECT_EQ(BookmarkTreeNode::UNMODIFIABLE_NONE, tree->unmodifiable);
+}
+
+TEST_F(ExtensionBookmarksTest, GetManagedNode) {
+  const BookmarkNode* managed_bookmark =
+      model_->AddURL(client_->managed_node(),
+                     0,
+                     base::ASCIIToUTF16("Chromium"),
+                     GURL("http://www.chromium.org/"));
+  scoped_ptr<BookmarkTreeNode> tree(
+      GetBookmarkTreeNode(client_,
+                          managed_bookmark,
+                          false,    // Recurse.
+                          false));  // Only folders.
+  EXPECT_EQ("Chromium", tree->title);
+  EXPECT_EQ("http://www.chromium.org/", *tree->url);
+  EXPECT_EQ(BookmarkTreeNode::UNMODIFIABLE_MANAGED, tree->unmodifiable);
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeInvalidId) {
