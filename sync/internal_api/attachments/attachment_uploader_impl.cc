@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -26,23 +25,18 @@ namespace syncer {
 
 // Encapsulates all the state associated with a single upload.
 class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
-                                            public OAuth2TokenService::Consumer,
                                             public base::NonThreadSafe {
  public:
   // Construct an UploadState.
   //
   // |owner| is a pointer to the object that will own (and must outlive!) this
   // |UploadState.
-  UploadState(
-      const GURL& upload_url,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter,
-      const Attachment& attachment,
-      const UploadCallback& user_callback,
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
-      AttachmentUploaderImpl* owner);
+  UploadState(const GURL& upload_url,
+              const scoped_refptr<net::URLRequestContextGetter>&
+                  url_request_context_getter,
+              const Attachment& attachment,
+              const UploadCallback& user_callback,
+              AttachmentUploaderImpl* owner);
 
   virtual ~UploadState();
 
@@ -56,20 +50,8 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   // URLFetcher implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // OAuth2TokenService::Consumer.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
-
  private:
   typedef std::vector<UploadCallback> UploadCallbackList;
-
-  void GetToken();
-
-  void ReportResult(const UploadResult& result,
-                    const AttachmentId& attachment_id);
 
   GURL upload_url_;
   const scoped_refptr<net::URLRequestContextGetter>&
@@ -77,13 +59,8 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   Attachment attachment_;
   UploadCallbackList user_callbacks_;
   scoped_ptr<net::URLFetcher> fetcher_;
-  std::string account_id_;
-  OAuth2TokenService::ScopeSet scopes_;
-  std::string access_token_;
-  OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider_;
   // Pointer to the AttachmentUploaderImpl that owns this object.
   AttachmentUploaderImpl* owner_;
-  scoped_ptr<OAuth2TokenServiceRequest> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadState);
 };
@@ -94,26 +71,33 @@ AttachmentUploaderImpl::UploadState::UploadState(
         url_request_context_getter,
     const Attachment& attachment,
     const UploadCallback& user_callback,
-    const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
     AttachmentUploaderImpl* owner)
-    : OAuth2TokenService::Consumer("attachment-uploader-impl"),
-      upload_url_(upload_url),
+    : upload_url_(upload_url),
       url_request_context_getter_(url_request_context_getter),
       attachment_(attachment),
       user_callbacks_(1, user_callback),
-      account_id_(account_id),
-      scopes_(scopes),
-      token_service_provider_(token_service_provider),
       owner_(owner) {
-  DCHECK(upload_url_.is_valid());
   DCHECK(url_request_context_getter_);
-  DCHECK(!account_id_.empty());
-  DCHECK(!scopes_.empty());
-  DCHECK(token_service_provider_);
+  DCHECK(upload_url_.is_valid());
   DCHECK(owner_);
-  GetToken();
+  fetcher_.reset(
+      net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
+  fetcher_->SetRequestContext(url_request_context_getter_.get());
+  // TODO(maniscalco): Is there a better way?  Copying the attachment data into
+  // a string feels wrong given how large attachments may be (several MBs).  If
+  // we may end up switching from URLFetcher to URLRequest, this copy won't be
+  // necessary.
+  scoped_refptr<base::RefCountedMemory> memory = attachment.GetData();
+  const std::string upload_content(memory->front_as<char>(), memory->size());
+  fetcher_->SetUploadData(kContentType, upload_content);
+  // TODO(maniscalco): Add authentication support (bug 371516).
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES |
+                         net::LOAD_DISABLE_CACHE);
+  // TODO(maniscalco): Set an appropriate headers (User-Agent, Content-type, and
+  // Content-length) on the request and include the content's MD5,
+  // AttachmentId's unique_id and the "sync birthday" (bug 371521).
+  fetcher_->Start();
 }
 
 AttachmentUploaderImpl::UploadState::~UploadState() {
@@ -133,75 +117,20 @@ const Attachment& AttachmentUploaderImpl::UploadState::GetAttachment() {
 void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
+  // TODO(maniscalco): Once the protocol is better defined, deal with the
+  // various HTTP response code we may encounter.
   UploadResult result = UPLOAD_UNSPECIFIED_ERROR;
-  AttachmentId attachment_id = attachment_.GetId();
   if (source->GetResponseCode() == net::HTTP_OK) {
     result = UPLOAD_SUCCESS;
-    // TODO(maniscalco): Update the attachment id with server address
-    // information before passing it to the callback (bug 371522).
-  } else if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
-    // TODO(maniscalco): One possibility is that we received a 401 because our
-    // access token has expired.  We should probably fetch a new access token
-    // and retry this upload before giving up and reporting failure to our
-    // caller (bug 380437).
-    OAuth2TokenServiceRequest::InvalidateToken(
-        token_service_provider_, account_id_, scopes_, access_token_);
-  } else {
-    // TODO(maniscalco): Once the protocol is better defined, deal with the
-    // various HTTP response codes we may encounter.
   }
-  ReportResult(result, attachment_id);
-}
-
-void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(access_token_request_.get(), request);
-  access_token_request_.reset();
-  access_token_ = access_token;
-  fetcher_.reset(
-      net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
-  fetcher_->SetRequestContext(url_request_context_getter_.get());
-  // TODO(maniscalco): Is there a better way?  Copying the attachment data into
-  // a string feels wrong given how large attachments may be (several MBs).  If
-  // we may end up switching from URLFetcher to URLRequest, this copy won't be
-  // necessary.
-  scoped_refptr<base::RefCountedMemory> memory = attachment_.GetData();
-  const std::string upload_content(memory->front_as<char>(), memory->size());
-  fetcher_->SetUploadData(kContentType, upload_content);
-  const std::string auth_header("Authorization: Bearer " + access_token_);
-  fetcher_->AddExtraRequestHeader(auth_header);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DISABLE_CACHE);
-  // TODO(maniscalco): Set an appropriate headers (User-Agent, Content-type, and
-  // Content-length) on the request and include the content's MD5,
-  // AttachmentId's unique_id and the "sync birthday" (bug 371521).
-  fetcher_->Start();
-}
-
-void AttachmentUploaderImpl::UploadState::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(access_token_request_.get(), request);
-  access_token_request_.reset();
-  ReportResult(UPLOAD_UNSPECIFIED_ERROR, attachment_.GetId());
-}
-
-void AttachmentUploaderImpl::UploadState::GetToken() {
-  access_token_request_ = OAuth2TokenServiceRequest::CreateAndStart(
-      token_service_provider_, account_id_, scopes_, this);
-}
-
-void AttachmentUploaderImpl::UploadState::ReportResult(
-    const UploadResult& result,
-    const AttachmentId& attachment_id) {
+  // TODO(maniscalco): Update the attachment id with server address information
+  // before passing it to the callback (bug 371522).
+  AttachmentId updated_id = attachment_.GetId();
   UploadCallbackList::const_iterator iter = user_callbacks_.begin();
   UploadCallbackList::const_iterator end = user_callbacks_.end();
   for (; iter != end; ++iter) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(*iter, result, attachment_id));
+        FROM_HERE, base::Bind(*iter, result, updated_id));
   }
   // Destroy this object and return immediately.
   owner_->DeleteUploadStateFor(attachment_.GetId().GetProto().unique_id());
@@ -211,18 +140,10 @@ void AttachmentUploaderImpl::UploadState::ReportResult(
 AttachmentUploaderImpl::AttachmentUploaderImpl(
     const std::string& url_prefix,
     const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
-    const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
-        token_service_provider)
+        url_request_context_getter)
     : url_prefix_(url_prefix),
-      url_request_context_getter_(url_request_context_getter),
-      account_id_(account_id),
-      scopes_(scopes),
-      token_service_provider_(token_service_provider.Pass()) {
+      url_request_context_getter_(url_request_context_getter) {
   DCHECK(CalledOnValidThread());
-  DCHECK(token_service_provider_);
 }
 
 AttachmentUploaderImpl::~AttachmentUploaderImpl() {
@@ -238,15 +159,8 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
   StateMap::iterator iter = state_map_.find(unique_id);
   if (iter == state_map_.end()) {
     const GURL url = GetUploadURLForAttachmentId(attachment_id);
-    scoped_ptr<UploadState> upload_state(
-        new UploadState(url,
-                        url_request_context_getter_,
-                        attachment,
-                        callback,
-                        account_id_,
-                        scopes_,
-                        token_service_provider_.get(),
-                        this));
+    scoped_ptr<UploadState> upload_state(new UploadState(
+        url, url_request_context_getter_, attachment, callback, this));
     state_map_.add(unique_id, upload_state.Pass());
   } else {
     DCHECK(

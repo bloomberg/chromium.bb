@@ -389,7 +389,6 @@
       'suppress_wildcard': 1,
       'dependencies': [
         '../base/base.gyp:base',
-        '../google_apis/google_apis.gyp:google_apis_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
