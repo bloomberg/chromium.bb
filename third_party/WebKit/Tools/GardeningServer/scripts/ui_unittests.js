@@ -223,21 +223,27 @@ asyncTest("TreeStatus", 2, function() {
     });
 });
 
-var currentRoll = {
-    "results": [
-        {"messages":[], "base_url":"svn://svn.chromium.org/chrome/trunk/src", "subject":"Blink roll 540:550", "closed":false, "issue":1000}
-    ]
-};
+function generateRoll(fromRevision, toRevision)
+{
+    return {
+        "results": [
+            {"messages":[], "base_url":"svn://svn.chromium.org/chrome/trunk/src", "subject":"Blink roll " + fromRevision + ":" + toRevision, "closed":false, "issue":1000}
+        ]
+    };
+}
 
-asyncTest("RevisionDetails", 2, function() {
+asyncTest("RevisionDetailsSmallRoll", 2, function() {
+    var rollFromRevision = 540;
+    var rollToRevision = 550;
     var simulator = new NetworkSimulator();
     simulator.json = function(url)
     {
-        return Promise.resolve(currentRoll);
+        return Promise.resolve(generateRoll(rollFromRevision, rollToRevision));
     }
+
     simulator.get = function (url)
     {
-        return Promise.resolve("540");
+        return Promise.resolve(rollFromRevision);
     }
 
     model.state.resultsByBuilder = {
@@ -279,6 +285,120 @@ asyncTest("RevisionDetails", 2, function() {
                 ', trunk is at <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=555">555</a>' +
                 '<br>' +
                 'Last roll is to <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=540">540</a>, current autoroll <a href="https://codereview.chromium.org/1000">540:550</a>');
+        start();
+    });
+});
+
+asyncTest("RevisionDetailsMediumRoll", 2, function() {
+    var rollFromRevision = 500;
+    var rollToRevision = 550;
+    var simulator = new NetworkSimulator();
+    simulator.json = function(url)
+    {
+        return Promise.resolve(generateRoll(rollFromRevision, rollToRevision));
+    }
+
+    simulator.get = function (url)
+    {
+        return Promise.resolve(rollFromRevision);
+    }
+
+    model.state.resultsByBuilder = {
+        "Linux": {
+            "blink_revision": "554",
+        }
+    };
+    model.state.recentCommits = [
+    {
+        "revision": "555",
+    }];
+
+    var revisionDetails;
+    simulator.runTest(function() {
+        revisionDetails = ui.revisionDetails();
+    }).then(function() {
+        equal(revisionDetails.innerHTML,
+            'Latest revision processed by every bot: ' +
+                '<details>' +
+                    '<summary>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=554">554' +
+                            '<span id="revisionPopUp">' +
+                                '<table>' +
+                                    '<tr>' +
+                                        '<td><a href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Linux">Linux</a></td>' +
+                                        '<td>554</td>' +
+                                    '</tr>' +
+                                '</table>' +
+                            '</span>' +
+                        '</a>' +
+                    '</summary>' +
+                    '<table>' +
+                        '<tr>' +
+                            '<td><a href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Linux">Linux</a></td>' +
+                            '<td>554</td>' +
+                        '</tr>' +
+                    '</table>' +
+                '</details>' +
+                ', trunk is at <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=555">555</a>' +
+                '<br>' +
+                'Last roll is to <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=500">500</a><span class="warning">(55 revisions behind)</span>, current autoroll <a href="https://codereview.chromium.org/1000">500:550</a>');
+        start();
+    });
+});
+
+asyncTest("RevisionDetailsBigRoll", 2, function() {
+    var rollFromRevision = 440;
+    var rollToRevision = 550;
+    var simulator = new NetworkSimulator();
+    simulator.json = function(url)
+    {
+        return Promise.resolve(generateRoll(rollFromRevision, rollToRevision));
+    }
+
+    simulator.get = function (url)
+    {
+        return Promise.resolve(rollFromRevision);
+    }
+
+    model.state.resultsByBuilder = {
+        "Linux": {
+            "blink_revision": "554",
+        }
+    };
+    model.state.recentCommits = [
+    {
+        "revision": "555",
+    }];
+
+    var revisionDetails;
+    simulator.runTest(function() {
+        revisionDetails = ui.revisionDetails();
+    }).then(function() {
+        equal(revisionDetails.innerHTML,
+            'Latest revision processed by every bot: ' +
+                '<details>' +
+                    '<summary>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=554">554' +
+                            '<span id="revisionPopUp">' +
+                                '<table>' +
+                                    '<tr>' +
+                                        '<td><a href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Linux">Linux</a></td>' +
+                                        '<td>554</td>' +
+                                    '</tr>' +
+                                '</table>' +
+                            '</span>' +
+                        '</a>' +
+                    '</summary>' +
+                    '<table>' +
+                        '<tr>' +
+                            '<td><a href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=Linux">Linux</a></td>' +
+                            '<td>554</td>' +
+                        '</tr>' +
+                    '</table>' +
+                '</details>' +
+                ', trunk is at <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=555">555</a>' +
+                '<br>' +
+                'Last roll is to <a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=440">440</a><span class="critical">(115 revisions behind)</span>, current autoroll <a href="https://codereview.chromium.org/1000">440:550</a>');
         start();
     });
 });

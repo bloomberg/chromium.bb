@@ -351,10 +351,26 @@ ui.StatusArea = base.extends('div',  {
 });
 
 ui.revisionDetails = base.extends('span', {
-    updateUI: function() {
+    // We only support 2 levels of visual escalation levels: warning and critical.
+    warnRollRevisionSpanThreshold: 45,
+    criticalRollRevisionSpanThreshold: 80,
+    classNameForUrgencyLevel: function(rollRevisionSpan) {
+        if (rollRevisionSpan < this.criticalRollRevisionSpanThreshold)
+            return "warning";
+        return "critical";
+    },
+    updateUI: function(totRevision) {
         this.appendChild(document.createElement("br"));
         this.appendChild(document.createTextNode('Last roll is to '));
         this.appendChild(ui.createLinkNode(trac.changesetURL(this.lastRolledRevision), this.lastRolledRevision));
+        var rollRevisionSpan = totRevision - this.lastRolledRevision;
+        // Don't clutter the UI if we haven't run behind.
+        if (rollRevisionSpan > this.warnRollRevisionSpanThreshold) {
+            var wrapper = document.createElement("span");
+            wrapper.className = this.classNameForUrgencyLevel(rollRevisionSpan);
+            wrapper.appendChild(document.createTextNode("(" + rollRevisionSpan + " revisions behind)"));
+            this.appendChild(wrapper);
+        }
         this.appendChild(document.createTextNode(', current autoroll '));
         if (this.roll) {
             var linkText = "" + this.roll.fromRevision + ":" + this.roll.toRevision;
@@ -424,7 +440,7 @@ ui.revisionDetails = base.extends('span', {
         Promise.all([checkout.lastBlinkRollRevision(), rollbot.fetchCurrentRoll()]).then(function(results) {
             theSpan.lastRolledRevision = results[0];
             theSpan.roll = results[1];
-            theSpan.updateUI();
+            theSpan.updateUI(totRevision);
         });
     }
 });

@@ -103,3 +103,19 @@ button.default:hover {
 .clear {
     clear: both;
 }
+
+/***  Visual escalation ***/
+
+.warning {
+    color: white;
+    background-color: #ffc343;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.critical {
+    color: white;
+    background-color: #e98080;
+    font-weight: bold;
+    font-size: 3em;
+}
