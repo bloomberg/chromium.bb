@@ -202,6 +202,8 @@ NetworkChangeNotifierChromeos::ConnectionTypeFromShill(
     return CONNECTION_WIFI;
   else if (type == shill::kTypeWimax)
     return CONNECTION_4G;
+  else if (type == shill::kTypeBluetooth)
+    return CONNECTION_BLUETOOTH;
 
   if (type != shill::kTypeCellular)
     return CONNECTION_UNKNOWN;
