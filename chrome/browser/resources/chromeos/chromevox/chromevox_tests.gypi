@@ -82,6 +82,11 @@
         '<(DEPTH)/chrome/test/base/web_ui_browser_test.h',
 
         'common/aria_util_test.js',
+        'common/cursor_selection_test.js',
+        'common/editable_text_area_shadow_test.js',
+        'common/key_sequence_test.js',
+        'common/math_semantic_tree_test.js',
+        'common/selection_util_test.js',
       ],
     },  # target chromevox_tests
     {
