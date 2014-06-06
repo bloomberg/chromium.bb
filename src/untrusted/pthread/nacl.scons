@@ -15,6 +15,16 @@ if env.Bit('bitcode'):
   #                from src/untrusted/nacl/tls_params.h
   env.Append(CCFLAGS=['-allow-asm'])
 
+if env.Bit('nonsfi_nacl'):
+  # Specifying the target arch is necessary for using inline assembly
+  # in non-SFI code.
+  if env.Bit('target_x86_32'):
+    env.Append(CCFLAGS=['--target=i686-nacl'])
+  elif env.Bit('target_arm'):
+    env.Append(CCFLAGS=['--target=arm-nacl', '-mfloat-abi=hard'])
+  else:
+    raise Exception('Unsupported architecture')
+
 valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
@@ -33,13 +43,19 @@ nc_objs = [env.ComponentObject(module, module + '.c')
 libpthread = env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
 env.AddLibraryToSdk(libpthread)
 
-# The private library rolls in those IRT components.
-nc_private_objs = nc_objs + ['nc_init_private.c'] + [
-    env.ComponentObject(
-        interface,
-        '${MAIN_DIR}/src/untrusted/irt/%s.c' % interface)
-    for interface in ['irt_futex', 'irt_blockhook']
-    ]
+if env.Bit('nonsfi_nacl'):
+  nc_private_objs = nc_objs + [
+      '${MAIN_DIR}/src/nonsfi/linux/linux_futex.c',
+      '${MAIN_DIR}/src/nonsfi/linux/linux_pthread_private.c',
+      ]
+else:
+  # The private library rolls in those IRT components.
+  nc_private_objs = nc_objs + ['nc_init_private.c'] + [
+      env.ComponentObject(
+          interface,
+          '${MAIN_DIR}/src/untrusted/irt/%s.c' % interface)
+      for interface in ['irt_futex', 'irt_blockhook']
+      ]
 
 env.ComponentLibrary('libpthread_private', nc_private_objs)
 

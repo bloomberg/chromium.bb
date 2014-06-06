@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#if defined(__i386__)
+
 /*
  * x86 segment descriptor accepted by Linux's set_thread_area(),
  * modify_ldt() and clone() syscalls on x86-32.  See:
@@ -32,5 +34,29 @@ struct linux_user_desc {
 };
 
 #define MODIFY_LDT_CONTENTS_DATA 0
+
+static inline struct linux_user_desc create_linux_user_desc(
+    int allocate_new_entry, void *thread_ptr) {
+  int entry_number = -1;   /* Allocate new entry */
+  if (!allocate_new_entry) {
+    uint32_t gs;
+    __asm__ __volatile__("mov %%gs, %0" : "=r"(gs));
+    entry_number = (gs & 0xffff) >> 3;
+  }
+  struct linux_user_desc desc = {
+    .entry_number = entry_number,
+    .base_addr = (uintptr_t) thread_ptr,
+    .limit = -1,
+    .seg_32bit = 1,
+    .contents = MODIFY_LDT_CONTENTS_DATA,
+    .read_exec_only = 0,
+    .limit_in_pages = 1,
+    .seg_not_present = 0,
+    .useable = 1,
+  };
+  return desc;
+}
+
+#endif
 
 #endif

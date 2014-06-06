@@ -44,11 +44,28 @@
  *   %ebp - argument 6, preserved
  */
 
+static inline uint32_t linux_syscall0(int syscall_number) {
+  uint32_t result;
+  __asm__ __volatile__("int $0x80\n"
+                       : "=a"(result)
+                       : "a"(syscall_number));
+  return result;
+}
+
 static inline uint32_t linux_syscall1(int syscall_number, uint32_t arg1) {
   uint32_t result;
   __asm__ __volatile__("int $0x80\n"
                        : "=a"(result)
                        : "a"(syscall_number), "b"(arg1));
+  return result;
+}
+
+static inline uint32_t linux_syscall2(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2) {
+  uint32_t result;
+  __asm__ __volatile__("int $0x80\n"
+                       : "=a"(result)
+                       : "a"(syscall_number), "b"(arg1), "c"(arg2));
   return result;
 }
 
@@ -101,6 +118,16 @@ static inline uint32_t linux_syscall6(int syscall_number,
  *   r5 - argument 6, preserved
  */
 
+static inline uint32_t linux_syscall0(int syscall_number) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno)
+                       : "memory");
+  return result;
+}
+
 static inline uint32_t linux_syscall1(int syscall_number, uint32_t arg1) {
   register uint32_t sysno __asm__("r7") = syscall_number;
   register uint32_t a1 __asm__("r0") = arg1;
@@ -108,6 +135,19 @@ static inline uint32_t linux_syscall1(int syscall_number, uint32_t arg1) {
   __asm__ __volatile__("svc #0\n"
                        : "=r"(result)
                        : "r"(sysno), "r"(a1)
+                       : "memory");
+  return result;
+}
+
+static inline uint32_t linux_syscall2(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t a1 __asm__("r0") = arg1;
+  register uint32_t a2 __asm__("r1") = arg2;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno), "r"(a1), "r"(a2)
                        : "memory");
   return result;
 }
@@ -150,5 +190,13 @@ static inline uint32_t linux_syscall6(int syscall_number,
 #else
 # error Unsupported architecture
 #endif
+
+static inline int linux_is_error_result(uint32_t result) {
+  /*
+   * -0x1000 is the highest address that mmap() can return as a result.
+   * Linux errno values are less than 0x1000.
+   */
+  return result > (uint32_t) -0x1000;
+}
 
 #endif

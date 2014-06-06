@@ -11,9 +11,13 @@
  */
 
 #include <errno.h>
+#include <sched.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "native_client/src/include/elf32.h"
+#include "native_client/src/nonsfi/linux/abi_conversion.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/nonsfi/linux/linux_syscalls.h"
@@ -26,16 +30,8 @@
  */
 static const int kPageSize = 0x1000;
 
-static int is_error_result(uint32_t result) {
-  /*
-   * -0x1000 is the highest address that mmap() can return as a result.
-   * Linux errno values are less than 0x1000.
-   */
-  return result > (uint32_t) -0x1000;
-}
-
-static uint32_t errno_value_call(uint32_t result) {
-  if (is_error_result(result)) {
+static uintptr_t errno_value_call(uintptr_t result) {
+  if (linux_is_error_result(result)) {
     errno = -result;
     return -1;
   }
@@ -45,6 +41,28 @@ static uint32_t errno_value_call(uint32_t result) {
 void _exit(int status) {
   linux_syscall1(__NR_exit_group, status);
   __builtin_trap();
+}
+
+int gettimeofday(struct timeval *tv, void *tz) {
+  struct linux_abi_timeval linux_tv;
+  int result = errno_value_call(
+      linux_syscall2(__NR_gettimeofday, (uintptr_t) &linux_tv, 0));
+  if (result == 0)
+    linux_timeval_to_nacl_timeval(&linux_tv, tv);
+  return result;
+}
+
+int clock_gettime(clockid_t clk_id, struct timespec *ts) {
+  struct linux_abi_timespec linux_ts;
+  int result = errno_value_call(
+      linux_syscall2(__NR_clock_gettime, clk_id, (uintptr_t) &linux_ts));
+  if (result == 0)
+    linux_timespec_to_nacl_timespec(&linux_ts, ts);
+  return result;
+}
+
+int sched_yield(void) {
+  return errno_value_call(linux_syscall0(__NR_sched_yield));
 }
 
 long int sysconf(int name) {
@@ -66,13 +84,13 @@ void *mmap(void *start, size_t length, int prot, int flags,
     __builtin_trap();
 
   return (void *) errno_value_call(
-      linux_syscall6(__NR_mmap2, (uint32_t) start, length,
+      linux_syscall6(__NR_mmap2, (uintptr_t) start, length,
                      prot, flags, fd, offset));
 }
 
 int write(int fd, const void *buf, size_t count) {
   return errno_value_call(linux_syscall3(__NR_write, fd,
-                                         (uint32_t) buf, count));
+                                         (uintptr_t) buf, count));
 }
 
 /*
@@ -84,17 +102,8 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
 
 int nacl_tls_init(void *thread_ptr) {
 #if defined(__i386__)
-  struct linux_user_desc desc = {
-    .entry_number = -1, /* Allocate new entry */
-    .base_addr = (uintptr_t) thread_ptr,
-    .limit = -1,
-    .seg_32bit = 1,
-    .contents = MODIFY_LDT_CONTENTS_DATA,
-    .read_exec_only = 0,
-    .limit_in_pages = 1,
-    .seg_not_present = 0,
-    .useable = 1,
-  };
+  struct linux_user_desc desc = create_linux_user_desc(
+      1 /* allocate_new_entry */, thread_ptr);
   uint32_t result = linux_syscall1(__NR_set_thread_area, (uint32_t) &desc);
   if (result != 0)
     __builtin_trap();
