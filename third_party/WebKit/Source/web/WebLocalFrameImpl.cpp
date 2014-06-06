@@ -100,6 +100,7 @@
 #include "core/editing/markup.h"
 #include "core/frame/Console.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCollection.h"
@@ -1306,8 +1307,12 @@ void WebLocalFrameImpl::setCaretVisible(bool visible)
 
 VisiblePosition WebLocalFrameImpl::visiblePositionForWindowPoint(const WebPoint& point)
 {
+    // FIXME(bokan): crbug.com/371902 - These scale/pinch transforms shouldn't
+    // be ad hoc and explicit.
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     FloatPoint unscaledPoint(point);
     unscaledPoint.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
+    unscaledPoint.moveBy(pinchViewport.visibleRect().location());
 
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
     HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));

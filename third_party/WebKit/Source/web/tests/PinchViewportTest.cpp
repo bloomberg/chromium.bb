@@ -598,6 +598,41 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(20, 30), pinchViewport.visibleRect().location());
 }
 
+// Test that the coordinates sent into moveRangeSelection are offset by the
+// pinch viewport's location.
+TEST_F(PinchViewportTest, TestWebFrameRangeAccountsForPinchViewportScroll)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->settings()->setDefaultFontSize(12);
+    webViewImpl()->resize(WebSize(640, 480));
+    registerMockedHttpURLLoad("move_range.html");
+    navigateTo(m_baseURL + "move_range.html");
+
+    WebRect baseRect;
+    WebRect extentRect;
+
+    webViewImpl()->setPageScaleFactor(2);
+    WebFrame* mainFrame = webViewImpl()->mainFrame();
+
+    // Select some text and get the base and extent rects (that's the start of
+    // the range and its end). Do a sanity check that the expected text is
+    // selected
+    mainFrame->executeScript(WebScriptSource("selectRange();"));
+    EXPECT_EQ("ir", mainFrame->selectionAsText().utf8());
+
+    webViewImpl()->selectionBounds(baseRect, extentRect);
+    WebPoint initialPoint(baseRect.x, baseRect.y);
+    WebPoint endPoint(extentRect.x, extentRect.y);
+
+    // Move the pinch viewport over and make the selection in the same
+    // screen-space location. The selection should change to two characters to
+    // the right and down one line.
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.move(FloatPoint(60, 25));
+    mainFrame->moveRangeSelection(initialPoint, endPoint);
+    EXPECT_EQ("t ", mainFrame->selectionAsText().utf8());
+}
+
 // Test that the scrollFocusedNodeIntoRect method works with the pinch viewport.
 TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
 {
