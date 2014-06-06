@@ -320,6 +320,7 @@ Valid options:
   --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
                         run by this script. This can be useful to use
                         the 'su' program on rooted production devices.
+                        e.g. --su-prefix="su -c"
 
   --pull-libs           Force system libraries extraction.
   --no-pull-libs        Do not extract any system library.
@@ -852,7 +853,7 @@ if [ "$SU_PREFIX" ]; then
     cat $SU_PREFIX_TEST_LOG
     exit 1
   fi
-  COMMAND_PREFIX=$SU_PREFIX
+  COMMAND_PREFIX="$SU_PREFIX"
 else
   SHELL_UID=$(adb shell cat /proc/self/status | \
               awk '$1 == "Uid:" { print $2; }')
