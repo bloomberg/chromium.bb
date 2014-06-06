@@ -30,6 +30,15 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // Returns the singleton handler.
   static X11DesktopHandler* get();
 
+  // Gets/sets the X11 server time of the most recent mouse click, touch or
+  // key press on a Chrome window.
+  int wm_user_time_ms() const {
+    return wm_user_time_ms_;
+  }
+  void set_wm_user_time_ms(unsigned long time_ms) {
+    wm_user_time_ms_ = time_ms;
+  }
+
   // Sends a request to the window manager to activate |window|.
   // This method should only be called if the window is already mapped.
   void ActivateWindow(::Window window);
@@ -62,6 +71,10 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
 
   // The native root window.
   ::Window x_root_window_;
+
+  // The X11 server time of the most recent mouse click, touch, or key press
+  // on a Chrome window.
+  unsigned long wm_user_time_ms_;
 
   // The activated window.
   ::Window current_window_;
