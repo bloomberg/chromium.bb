@@ -67,8 +67,6 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // NaCl uses custom signal stacks.
     case __NR_sigaltstack:
     // Below is fairly similar to the policy for a Chromium renderer.
-    // TODO(jln): restrict ioctl() and prctl().
-    case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_getrlimit:
 #endif
@@ -95,6 +93,7 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     case __NR_times:
     case __NR_uname:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+    case __NR_ioctl:
     case __NR_ptrace:
       return ErrorCode(EPERM);
     default:
