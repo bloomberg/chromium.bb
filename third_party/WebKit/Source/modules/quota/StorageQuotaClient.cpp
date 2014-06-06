@@ -43,6 +43,8 @@ const char* StorageQuotaClient::supplementName()
 
 StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context)
 {
+    if (!context->isDocument())
+        return 0;
     return static_cast<StorageQuotaClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
