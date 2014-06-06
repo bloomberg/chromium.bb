@@ -751,14 +751,15 @@ void DelegatedFrameHost::OnCompositingDidCommit(
 void DelegatedFrameHost::OnCompositingStarted(
     ui::Compositor* compositor, base::TimeTicks start_time) {
   last_draw_ended_ = start_time;
+  client_->DelegatedCompositorDidSwapBuffers();
 }
 
 void DelegatedFrameHost::OnCompositingEnded(
     ui::Compositor* compositor) {
 }
 
-void DelegatedFrameHost::OnCompositingAborted(
-    ui::Compositor* compositor) {
+void DelegatedFrameHost::OnCompositingAborted(ui::Compositor* compositor) {
+  client_->DelegatedCompositorAbortedSwapBuffers();
 }
 
 void DelegatedFrameHost::OnCompositingLockStateChanged(

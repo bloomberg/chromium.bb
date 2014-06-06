@@ -21,7 +21,7 @@ class CompositingIOSurfaceLayerClient {
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) = 0;
 };
 
-}
+}  // namespace content
 
 // The CoreAnimation layer for drawing accelerated content.
 @interface CompositingIOSurfaceLayer : CAOpenGLLayer {

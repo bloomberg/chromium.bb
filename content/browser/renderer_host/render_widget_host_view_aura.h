@@ -424,6 +424,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual RenderWidgetHostImpl* GetHost() OVERRIDE;
   virtual void SchedulePaintInRect(
       const gfx::Rect& damage_rect_in_dip) OVERRIDE;
+  virtual void DelegatedCompositorDidSwapBuffers() OVERRIDE {}
+  virtual void DelegatedCompositorAbortedSwapBuffers() OVERRIDE {}
   virtual bool IsVisible() OVERRIDE;
   virtual scoped_ptr<ResizeLock> CreateResizeLock(
       bool defer_compositor_lock) OVERRIDE;

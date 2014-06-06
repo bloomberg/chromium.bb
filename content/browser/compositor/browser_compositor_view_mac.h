@@ -15,7 +15,15 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/size.h"
 
-@class BrowserCompositorViewMac;
+namespace content {
+class BrowserCompositorViewMacHelper;
+
+class BrowserCompositorViewMacClient {
+ public:
+  virtual void BrowserCompositorDidDrawFrame() = 0;
+};
+
+}  // namespace content
 
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
@@ -26,7 +34,7 @@
 - (void)gotSoftwareFrame:(cc::SoftwareFrameData*)frame_data
          withScaleFactor:(float)scale_factor
               withCanvas:(SkCanvas*)canvas;
-@end
+@end  // NSView (BrowserCompositorView)
 
 // NSView drawn by a ui::Compositor. The superview of this view is responsible
 // for changing the ui::Compositor SizeAndScale and calling layoutLayers when
@@ -34,20 +42,28 @@
 // the needs of RenderWidgetHostViewCocoa, and could change.
 @interface BrowserCompositorViewMac : NSView {
   scoped_ptr<ui::Compositor> compositor_;
+
   base::scoped_nsobject<CALayer> background_layer_;
   base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
   base::scoped_nsobject<SoftwareLayer> software_layer_;
+
+  content::BrowserCompositorViewMacClient* client_;
+  scoped_ptr<content::BrowserCompositorViewMacHelper> helper_;
 }
 
 // Initialize to render the content of a specific superview.
-- (id)initWithSuperview:(NSView*)view;
+- (id)initWithSuperview:(NSView*)view
+             withClient:(content::BrowserCompositorViewMacClient*)client;
 
 // Re-position the layers to the correct place when this view's superview
 // changes size, or when the accelerated or software content changes.
 - (void)layoutLayers;
 
+// Disallow further access to the client.
+- (void)resetClient;
+
 // Access the underlying ui::Compositor for this view.
 - (ui::Compositor*)compositor;
-@end
+@end  // BrowserCompositorViewMac
 
 #endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_MAC_H_

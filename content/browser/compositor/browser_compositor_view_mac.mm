@@ -13,6 +13,36 @@
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gl/scoped_cgl.h"
 
+@interface BrowserCompositorViewMac (Private)
+- (void)layerDidDrawFrame;
+- (void)gotAcceleratedLayerError;
+@end  // BrowserCompositorViewMac (Private)
+
+namespace content {
+
+// The CompositingIOSurfaceLayerClient interface needs to be implemented as a
+// C++ class to operate on, rather than Objective C class. This helper class
+// provides a bridge between the two.
+class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
+ public:
+  BrowserCompositorViewMacHelper(BrowserCompositorViewMac* view)
+      : view_(view) {}
+  virtual ~BrowserCompositorViewMacHelper() {}
+
+ private:
+  // CompositingIOSurfaceLayerClient implementation:
+  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE {
+    [view_ layerDidDrawFrame];
+    if (!succeeded)
+      [view_ gotAcceleratedLayerError];
+  }
+
+  BrowserCompositorViewMac* view_;
+};
+
+}  // namespace content
+
+
 // The default implementation of additions to the NSView interface for browser
 // compositing should never be called. Log an error if they are.
 @implementation NSView (BrowserCompositorView)
@@ -34,8 +64,12 @@
 
 @implementation BrowserCompositorViewMac : NSView
 
-- (id)initWithSuperview:(NSView*)view {
+- (id)initWithSuperview:(NSView*)view
+             withClient:(content::BrowserCompositorViewMacClient*)client {
   if (self = [super init]) {
+    client_ = client;
+    helper_.reset(new content::BrowserCompositorViewMacHelper(self));
+
     // Disable the fade-in animation as the layer and view are added.
     ScopedCAActionDisabler disabler;
 
@@ -49,6 +83,14 @@
     [view addSubview:self];
   }
   return self;
+}
+
+- (void)gotAcceleratedLayerError {
+  if (!accelerated_layer_)
+    return;
+
+  [accelerated_layer_ context]->PoisonContextAndSharegroup();
+  compositor_->ScheduleFullRedraw();
 }
 
 // This function closely mirrors RenderWidgetHostViewMac::LayoutLayers. When
@@ -97,6 +139,11 @@
   [software_layer_ setBounds:new_background_frame];
 }
 
+- (void)resetClient {
+  [accelerated_layer_ resetClient];
+  client_ = NULL;
+}
+
 - (ui::Compositor*)compositor {
   return compositor_.get();
 }
@@ -125,7 +172,7 @@
     accelerated_layer_.reset([[CompositingIOSurfaceLayer alloc]
         initWithIOSurface:iosurface
           withScaleFactor:scale_factor
-               withClient:NULL]);
+               withClient:helper_.get()]);
     [[self layer] addSublayer:accelerated_layer_];
   }
 
@@ -184,6 +231,18 @@
     [accelerated_layer_ removeFromSuperlayer];
     accelerated_layer_.reset();
   }
+
+  // This call can be nested insider ui::Compositor commit calls, and can also
+  // make additional ui::Compositor commit calls. Avoid the potential recursion
+  // by acknowledging the frame asynchronously.
+  [self performSelector:@selector(layerDidDrawFrame)
+             withObject:nil
+             afterDelay:0];
+}
+
+- (void)layerDidDrawFrame {
+  if (client_)
+    client_->BrowserCompositorDidDrawFrame();
 }
 
 @end  // BrowserCompositorViewMac

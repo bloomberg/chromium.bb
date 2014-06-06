@@ -27,7 +27,6 @@
 #include "base/sys_info.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
-#include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -426,7 +425,30 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  [browser_compositor_view_ compositor]->Draw();
+  if (browser_compositor_lock_)
+    browser_compositor_damaged_during_lock_ = true;
+  else
+    [browser_compositor_view_ compositor]->ScheduleFullRedraw();
+}
+
+void RenderWidgetHostViewMac::DelegatedCompositorDidSwapBuffers() {
+  // If this view is not visible then do not lock the compositor, because the
+  // wait for the surface to be drawn will time out.
+  NSWindow* window = [cocoa_view_ window];
+  if (!window)
+    return;
+  if (window && [window respondsToSelector:@selector(occlusionState)]) {
+    bool window_is_occluded =
+        !([window occlusionState] & NSWindowOcclusionStateVisible);
+    if (window_is_occluded)
+      return;
+  }
+  browser_compositor_lock_ =
+      [browser_compositor_view_ compositor]->GetCompositorLock();
+}
+
+void RenderWidgetHostViewMac::DelegatedCompositorAbortedSwapBuffers() {
+  PostReleaseBrowserCompositorLock();
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -510,10 +532,6 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
   cocoa_view_ = nil;
-
-  // Delete the delegated frame state.
-  delegated_frame_host_.reset();
-  root_layer_.reset();
 
   UnlockMouse();
 
@@ -826,6 +844,23 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   }
 }
 
+void RenderWidgetHostViewMac::PostReleaseBrowserCompositorLock() {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&RenderWidgetHostViewMac::ReleaseBrowserCompositorLock,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void RenderWidgetHostViewMac::ReleaseBrowserCompositorLock() {
+  if (!browser_compositor_view_)
+    return;
+
+  browser_compositor_lock_ = NULL;
+  if (browser_compositor_damaged_during_lock_) {
+    browser_compositor_damaged_during_lock_ = false;
+    [browser_compositor_view_ compositor]->ScheduleFullRedraw();
+  }
+}
+
 void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
   if (!render_widget_host_ || !display_link_)
     return;
@@ -882,6 +917,7 @@ void RenderWidgetHostViewMac::WasHidden() {
   // Any pending frames will not be displayed until this is shown again. Ack
   // them now.
   SendPendingSwapAck();
+  PostReleaseBrowserCompositorLock();
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -1105,6 +1141,13 @@ void RenderWidgetHostViewMac::Destroy() {
   // chain, for instance |-performKeyEquivalent:|.  In that case the
   // object needs to survive until the stack unwinds.
   pepper_fullscreen_window_.autorelease();
+
+  // Delete the delegated frame state, which will reach back into
+  // render_widget_host_.
+  browser_compositor_lock_ = NULL;
+  [browser_compositor_view_ resetClient];
+  delegated_frame_host_.reset();
+  root_layer_.reset();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -1894,8 +1937,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
   if (frame->delegated_frame_data) {
     if (!browser_compositor_view_) {
-      browser_compositor_view_.reset(
-          [[BrowserCompositorViewMac alloc] initWithSuperview:cocoa_view_]);
+      browser_compositor_view_.reset([[BrowserCompositorViewMac alloc]
+          initWithSuperview:cocoa_view_ withClient:this]);
       root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
       delegated_frame_host_.reset(new DelegatedFrameHost(this));
       [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
@@ -2468,6 +2511,13 @@ void RenderWidgetHostViewMac::LayoutLayers() {
 
 SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   return SkBitmap::kARGB_8888_Config;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserCompositorViewMacClient, public:
+
+void RenderWidgetHostViewMac::BrowserCompositorDidDrawFrame() {
+  PostReleaseBrowserCompositorLock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
