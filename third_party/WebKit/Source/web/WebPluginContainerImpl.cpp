@@ -291,7 +291,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     // If anyone of the layers is null we need to switch between hardware
     // and software compositing.
     if (!m_webLayer || !layer)
-        m_element->setNeedsCompositingUpdate();
+        m_element->scheduleSVGFilterLayerUpdateHack();
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
     if (layer)
