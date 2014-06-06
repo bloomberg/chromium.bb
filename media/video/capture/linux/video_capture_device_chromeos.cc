@@ -84,7 +84,8 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
   void SendDisplayRotationOnCaptureThread(const gfx::Display& display) {
     DCHECK(capture_task_runner_->BelongsToCurrentThread());
-    capture_device_->SetDisplayRotation(display);
+    if (capture_device_)
+      capture_device_->SetDisplayRotation(display);
   }
 
   VideoCaptureDeviceChromeOS* capture_device_;
