@@ -204,9 +204,6 @@
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
 
     'SK_USE_DISCARDABLE_SCALEDIMAGECACHE',
-
-    # transitional, pending Blink suppressions/rebaselines
-    'SK_IGNORE_CORRECT_HIGH_QUALITY_IMAGE_SCALE',
   ],
 
   'direct_dependent_settings': {
