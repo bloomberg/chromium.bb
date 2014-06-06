@@ -154,7 +154,7 @@ Node* lowestEditableAncestor(Node* node)
 
 bool isEditablePosition(const Position& p, EditableType editableType, EUpdateStyle updateStyle)
 {
-    Node* node = p.deprecatedNode();
+    Node* node = p.parentAnchoredEquivalent().anchorNode();
     if (!node)
         return false;
     if (updateStyle == UpdateStyle)
