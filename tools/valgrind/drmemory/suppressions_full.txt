@@ -2168,3 +2168,15 @@ name=bug_377728
 *!HunspellEngine::FillSuggestionList
 *!SpellcheckLanguage::SpellCheckWord
 *!SpellCheck::SpellCheckWord
+
+UNINITIALIZED READ
+name=bug_380680
+...
+*!SkUnPreMultiply::PMColorToColor
+*!SkBitmap::getColor
+*!content::*::CompositingRenderWidgetHostViewBrowserTestTabCapture::CopyFromCompositingSurfaceCallback
+*!content::*::CompositingRenderWidgetHostViewBrowserTestTabCapture::CopyFromCompositingSurfaceCallbackForVideo
+*!base::internal::InvokeHelper<>::MakeItSo
+*!base::internal::Invoker<>::Run
+*!content::DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo
+*!base::internal::RunnableAdapter<>::Run
