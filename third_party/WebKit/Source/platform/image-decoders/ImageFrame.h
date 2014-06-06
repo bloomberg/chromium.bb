@@ -162,11 +162,19 @@ public:
         setRGBA(getAddr(x, y), r, g, b, a);
     }
 
-    static const unsigned div255 = static_cast<unsigned>(1.0 / 255 * (1 << 24)) + 1;
-
     inline void setRGBA(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
     {
-        if (m_premultiplyAlpha && a < 255) {
+        if (m_premultiplyAlpha)
+            setRGBAPremultiply(dest, r, g, b, a);
+        else
+            *dest = SkPackARGB32NoCheck(a, r, g, b);
+    }
+
+    static const unsigned div255 = static_cast<unsigned>(1.0 / 255 * (1 << 24)) + 1;
+
+    static inline void setRGBAPremultiply(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
+    {
+        if (a < 255) {
             if (!a) {
                 *dest = 0;
                 return;
@@ -183,7 +191,7 @@ public:
         *dest = SkPackARGB32NoCheck(a, r, g, b);
     }
 
-    inline void setRGBARaw(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
+    static inline void setRGBARaw(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
     {
         *dest = SkPackARGB32NoCheck(a, r, g, b);
     }

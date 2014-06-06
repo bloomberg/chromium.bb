@@ -489,20 +489,33 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     }
 #endif
 
-    // Write the decoded row pixels to the frame buffer.
+    // Write the decoded row pixels to the frame buffer. The repetitive
+    // form of the row write loops is for speed.
     ImageFrame::PixelData* address = buffer.getAddr(0, y);
-    bool nonTrivialAlpha = false;
+    unsigned alphaMask = 255;
     int width = size().width();
 
     png_bytep pixel = row;
-    for (int x = 0; x < width; ++x, pixel += colorChannels) {
-        unsigned alpha = hasAlpha ? pixel[3] : 255;
-        buffer.setRGBA(address++, pixel[0], pixel[1], pixel[2], alpha);
-        nonTrivialAlpha |= alpha < 255;
+    if (hasAlpha) {
+        if (buffer.premultiplyAlpha()) {
+            for (int x = 0; x < width; ++x, pixel += 4) {
+                buffer.setRGBAPremultiply(address++, pixel[0], pixel[1], pixel[2], pixel[3]);
+                alphaMask &= pixel[3];
+            }
+        } else {
+            for (int x = 0; x < width; ++x, pixel += 4) {
+                buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], pixel[3]);
+                alphaMask &= pixel[3];
+            }
+        }
+    } else {
+        for (int x = 0; x < width; ++x, pixel += 3) {
+            buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], 255);
+        }
     }
 
-    if (nonTrivialAlpha && !buffer.hasAlpha())
-        buffer.setHasAlpha(nonTrivialAlpha);
+    if (alphaMask != 255 && !buffer.hasAlpha())
+        buffer.setHasAlpha(true);
 
     buffer.setPixelsChanged(true);
 }
