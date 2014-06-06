@@ -275,7 +275,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
-    failed_msg = failures_lib.ValidationFailedMessage(
+    failed_msg = failures_lib.BuildFailureMessage(
         'you failed', ['traceback'], True, 'taco')
     failed_input_status = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_FAILED, failed_msg)

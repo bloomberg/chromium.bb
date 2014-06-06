@@ -1075,7 +1075,7 @@ class CalculateSuspects(object):
     Args:
         changes: A list of cros_patch.GerritPatch instances to consider.
         messages: A list of build failure messages, of type
-                  ValidationFailedMessage.
+                  BuildFailureMessage.
     """
     suspects = set()
     for message in messages:
@@ -1088,7 +1088,7 @@ class CalculateSuspects(object):
 
     Args:
         messages: A list of build failure messages, of type
-                  ValidationFailedMessage or of type NoneType.
+                  BuildFailureMessage or of type NoneType.
     """
     # We consider a failed commit queue run to be flaky if only one builder
     # failed, and that failure is flaky.
@@ -1120,7 +1120,7 @@ class CalculateSuspects(object):
     """Returns True if all failures are instances of |fail_type|.
 
     Args:
-      messages: A list of ValidationFailedMessage or NoneType objects
+      messages: A list of BuildFailureMessage or NoneType objects
         from the failed slaves.
       fail_type: The exception class to look for.
 
@@ -1136,7 +1136,7 @@ class CalculateSuspects(object):
     """Determine if the cause of build failure was lab failure.
 
     Args:
-      messages: A list of ValidationFailedMessage or NoneType objects
+      messages: A list of BuildFailureMessage or NoneType objects
         from the failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
@@ -1153,7 +1153,7 @@ class CalculateSuspects(object):
     """Determine if the cause of build failure was infrastructure failure.
 
     Args:
-      messages: A list of ValidationFailedMessage or NoneType objects
+      messages: A list of BuildFailureMessage or NoneType objects
         from the failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
@@ -1177,7 +1177,7 @@ class CalculateSuspects(object):
     Args:
         changes: A list of cros_patch.GerritPatch instances to consider.
         messages: A list of build failure messages, of type
-          ValidationFailedMessage or of type NoneType.
+          BuildFailureMessage or of type NoneType.
         infra_fail: The build failed purely due to infrastructure failures.
         lab_fail: The build failed purely due to test lab infrastructure
           failures.
@@ -2421,7 +2421,7 @@ class ValidationPool(object):
     Args:
       change: The change to mark as failed.
       messages: A list of build failure messages from supporting builders.
-          These must be ValidationFailedMessage objects.
+          These must be BuildFailureMessage objects.
       suspects: The list of changes that are suspected of breaking the build.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
@@ -2454,7 +2454,7 @@ class ValidationPool(object):
 
     Args:
       messages: A list of build failure messages from supporting builders.
-          These must be ValidationFailedMessage objects or NoneType objects.
+          These must be BuildFailureMessage objects or NoneType objects.
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
       sanity: A boolean indicating whether the build was considered sane. If

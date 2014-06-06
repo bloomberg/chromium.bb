@@ -260,12 +260,11 @@ class CrashCollectionFailure(InfrastructureFailure):
   """Raised if a stage fails due to crash collection services."""
 
 
-# TODO(yjhong): Rename this to BuildFailureMessage.
-class ValidationFailedMessage(object):
+class BuildFailureMessage(object):
   """Message indicating that changes failed to be validated."""
 
   def __init__(self, message, tracebacks, internal, reason):
-    """Create a ValidationFailedMessage object.
+    """Create a BuildFailureMessage object.
 
     Args:
       message: The message to print.

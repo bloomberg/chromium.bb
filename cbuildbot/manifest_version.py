@@ -320,7 +320,7 @@ class BuilderStatus(object):
     Args:
       status: Status string (should be one of STATUS_FAILED, STATUS_PASSED,
               STATUS_INFLIGHT, or STATUS_MISSING).
-      message: A failures_lib.ValidationFailedMessage object with details
+      message: A failures_lib.BuildFailureMessage object with details
                of builder failure. Or, None.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
@@ -714,7 +714,7 @@ class BuildSpecsManager(object):
     Args:
       version: Version number to use. Must be a string.
       status: Status string.
-      message: A failures_lib.ValidationFailedMessage object with details
+      message: A failures_lib.BuildFailureMessage object with details
                of builder failure, or None (default).
       fail_if_exists: If set, fail if the status already exists.
       dashboard_url: Optional url linking to builder dashboard for this build.
@@ -737,7 +737,7 @@ class BuildSpecsManager(object):
 
     Args:
       success: True for success, False for failure
-      message: A failures_lib.ValidationFailedMessage object with details
+      message: A failures_lib.BuildFailureMessage object with details
                of builder failure, or None (default).
       dashboard_url: Optional url linking to builder dashboard for this build.
     """

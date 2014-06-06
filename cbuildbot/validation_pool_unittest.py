@@ -1164,13 +1164,13 @@ class TestFindSuspects(MoxBase):
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
   def _GetFailedMessage(self, exceptions, stage='Build', internal=False):
-    """Returns a ValidationFailedMessage object."""
+    """Returns a BuildFailureMessage object."""
     tracebacks = []
     for ex in exceptions:
       tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
                                                       str(ex)))
     reason = 'failure reason string'
-    return failures_lib.ValidationFailedMessage(
+    return failures_lib.BuildFailureMessage(
         'Stage %s failed' % stage, tracebacks, internal, reason)
 
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
@@ -1253,7 +1253,7 @@ class TestFindSuspects(MoxBase):
     self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
 
   def _GetMessages(self, lab_fail=0, infra_fail=0, other_fail=0):
-    """Returns a list of ValidationFailedMessage objects."""
+    """Returns a list of BuildFailureMessage objects."""
     messages = []
     messages.extend(
         [self._GetFailedMessage([failures_lib.TestLabFailure()])

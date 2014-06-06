@@ -214,7 +214,7 @@ class MasterSlaveSyncCompletionStageTest(
 
     failing = {'a'}
     inflight = {}
-    failed_msg = failures_lib.ValidationFailedMessage(
+    failed_msg = failures_lib.BuildFailureMessage(
         'message', [], True, 'reason')
     status = manifest_version.BuilderStatus('failed', failed_msg, 'url')
 

@@ -31,7 +31,7 @@ def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
     dashboard_url: The URL of the build.
 
   Returns:
-    A failures_lib.ValidationFailedMessage object.
+    A failures_lib.BuildFailureMessage object.
   """
   internal = overlays in [constants.PRIVATE_OVERLAYS,
                           constants.BOTH_OVERLAYS]
@@ -48,7 +48,7 @@ def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
   details.append('in %s' % dashboard_url)
   msg = '%s: %s' % (builder_name, ' '.join(details))
 
-  return failures_lib.ValidationFailedMessage(msg, tracebacks, internal,
+  return failures_lib.BuildFailureMessage(msg, tracebacks, internal,
                                               reason)
 
 
@@ -320,7 +320,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     """Submit partial pool if possible.
 
     Args:
-      messages: A list of ValidationFailedMessage or NoneType objects from
+      messages: A list of BuildFailureMessage or NoneType objects from
         the failed slaves.
 
     Returns:
@@ -372,13 +372,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       self.CQMasterHandleFailure(failing, inflight, no_stat)
 
   def _GetFailedMessages(self, failing):
-    """Gathers the ValidationFailedMessages from the |failing| builders.
+    """Gathers the BuildFailureMessages from the |failing| builders.
 
     Args:
       failing: Names of the builders that failed.
 
     Returns:
-      A list of ValidationFailedMessage or NoneType objects.
+      A list of BuildFailureMessage or NoneType objects.
     """
     return [self._slave_statuses[x].message for x in failing]
 
@@ -443,7 +443,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: The names of the failing builders.
 
     Returns:
-      A list of ValidationFailedMessage objects.
+      A list of BuildFailureMessage objects.
     """
     msgs = self._GetFailedMessages(failing)
     # Filter out None messages because we cannot analyze them.
