@@ -145,6 +145,10 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     if fetch_url != url:
       GitSetRemoteRepo(fetch_url, destination, push_url=url)
 
+  elif clean:
+    log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
+    log_tools.CheckCall(git + ['reset', '--hard', 'HEAD'], cwd=destination)
+
   if revision is not None:
     logging.info('Checking out pinned revision...')
     log_tools.CheckCall(git + ['fetch', '--all'], cwd=destination)
@@ -153,8 +157,6 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     log_tools.CheckCall(
         git + ['checkout'] + checkout_flags + [revision] + path,
         cwd=destination)
-  if clean:
-    log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
 
 
 def CleanGitWorkingDir(directory, path):
