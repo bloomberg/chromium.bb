@@ -21,6 +21,8 @@
       'defines': [
       ],
       'sources': [
+        'feedback/feedback_common.cc',
+        'feedback/feedback_common.h',
         'feedback/feedback_data.cc',
         'feedback/feedback_data.h',
         'feedback/feedback_report.cc',

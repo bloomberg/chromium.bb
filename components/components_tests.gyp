@@ -98,6 +98,8 @@
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
             'enhanced_bookmarks/image_store_unittest.cc',
+            'feedback/feedback_common_unittest.cc',
+            'feedback/feedback_data_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
@@ -449,6 +451,8 @@
             ['OS == "android"', {
               'sources!': [
                 'gcm_driver/gcm_driver_desktop_unittest.cc',
+                'feedback/feedback_common_unittest.cc',
+                'feedback/feedback_data_unittest.cc',
                 'feedback/feedback_uploader_unittest.cc',
                 'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
                 'storage_monitor/media_storage_util_unittest.cc',
