@@ -13,7 +13,7 @@ Compositing reasons for div#backface-visibility: assumedOverlap,backfaceVisibili
 Compositing reasons for div#animation: activeAnimation,assumedOverlap
 Compositing reasons for div#transformWithCompositedDescendants: assumedOverlap,transformWithCompositedDescendants
 Compositing reasons for div#opacityWithCompositedDescendants: assumedOverlap,opacityWithCompositedDescendants
-Compositing reasons for div#reflectionWithCompositedDescendants: reflectionWithCompositedDescendants
+Compositing reasons for div#reflectionWithCompositedDescendants: assumedOverlap,reflectionWithCompositedDescendants
 Compositing reasons for div#perspective: assumedOverlap,perspectiveWith3DDescendants
 Compositing reasons for div#preserve3d: assumedOverlap,preserve3DWith3DDescendants
 

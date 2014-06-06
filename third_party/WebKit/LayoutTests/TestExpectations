@@ -226,6 +226,11 @@ crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-su
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
+Bug(abarth) media/audio-controls-rendering.html [ NeedsRebaseline ]
+Bug(abarth) media/media-controls-clone.html [ NeedsRebaseline ]
+Bug(abarth) media/audio-repaint.html [ NeedsRebaseline ]
+Bug(abarth) media/track/track-cue-rendering-vertical.html [ NeedsRebaseline ]
+
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]

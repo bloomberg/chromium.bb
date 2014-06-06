@@ -183,7 +183,6 @@ void RenderLayerStackingNode::updateNormalFlowList()
     ASSERT(m_layerListMutationAllowed);
 
     for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-        // Ignore non-overflow layers and reflections.
         if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)) {
             if (!m_normalFlowList)
                 m_normalFlowList = adoptPtr(new Vector<RenderLayerStackingNode*>);
@@ -205,23 +204,15 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
 
     layer()->updateDescendantDependentFlags();
 
-    // Overflow layers are just painted by their enclosing layers, so they don't get put in zorder lists.
     if (!isNormalFlowOnly()) {
-        // Determine which buffer the child should be in.
         OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
-
-        // Create the buffer if it doesn't exist yet.
         if (!buffer)
             buffer = adoptPtr(new Vector<RenderLayerStackingNode*>);
-
-        // Append ourselves at the end of the appropriate buffer.
         buffer->append(this);
     }
 
-    // Recur into our children to collect more layers, but only if we don't establish a stacking context.
     if (!isStackingContext()) {
         for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-            // Ignore reflections.
             if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
                 child->stackingNode()->collectLayers(posBuffer, negBuffer);
         }
@@ -303,27 +294,11 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
         clearZOrderLists();
 }
 
+// FIXME: Rename shouldBeNormalFlowOnly to something more accurate now that CSS
+// 2.1 defines the term "normal flow".
 bool RenderLayerStackingNode::shouldBeNormalFlowOnly() const
 {
-    RenderLayerModelObject* renderer = this->renderer();
-
-    const bool couldBeNormalFlow = renderer->hasOverflowClip()
-        || renderer->hasReflection()
-        || renderer->hasMask()
-        || renderer->isCanvas()
-        || renderer->isVideo()
-        || renderer->isEmbeddedObject()
-        || renderer->isRenderIFrame()
-        || (renderer->style()->specifiesColumns() && !layer()->isRootLayer());
-
-    const bool preventsElementFromBeingNormalFlow = renderer->isPositioned()
-        || renderer->hasTransform()
-        || renderer->hasClipPath()
-        || renderer->hasFilter()
-        || renderer->hasBlendMode()
-        || layer()->isTransparent();
-
-    return couldBeNormalFlow && !preventsElementFromBeingNormalFlow;
+    return !isStackingContext() && !renderer()->isPositioned();
 }
 
 void RenderLayerStackingNode::updateIsNormalFlowOnly()
