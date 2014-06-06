@@ -61,7 +61,7 @@ class DelegatingSignalStrategy;
 class FrameConsumer;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
-class PepperTokenFetcher;
+class TokenFetcherProxy;
 class PepperView;
 class RectangleUpdateDecoder;
 class SignalStrategy;
@@ -178,7 +178,7 @@ class ChromotingInstance :
       const GURL& token_url,
       const std::string& host_public_key,
       const std::string& scope,
-      const base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher);
+      const base::WeakPtr<TokenFetcherProxy> pepper_token_fetcher);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
@@ -294,7 +294,7 @@ class ChromotingInstance :
   // webapp for decoding.
   bool use_media_source_rendering_;
 
-  base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher_;
+  base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
   // Weak reference to this instance, used for global logging and task posting.
   base::WeakPtrFactory<ChromotingInstance> weak_factory_;

@@ -47,9 +47,9 @@
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
-#include "remoting/client/plugin/pepper_token_fetcher.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/software_video_renderer.h"
+#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
@@ -452,12 +452,12 @@ void ChromotingInstance::FetchThirdPartyToken(
     const GURL& token_url,
     const std::string& host_public_key,
     const std::string& scope,
-    base::WeakPtr<PepperTokenFetcher> pepper_token_fetcher) {
+    base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy) {
   // Once the Session object calls this function, it won't continue the
   // authentication until the callback is called (or connection is canceled).
   // So, it's impossible to reach this with a callback already registered.
-  DCHECK(!pepper_token_fetcher_.get());
-  pepper_token_fetcher_ = pepper_token_fetcher;
+  DCHECK(!token_fetcher_proxy_.get());
+  token_fetcher_proxy_ = token_fetcher_proxy;
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("tokenUrl", token_url.spec());
   data->SetString("hostPublicKey", host_public_key);
@@ -537,7 +537,10 @@ protocol::CursorShapeStub* ChromotingInstance::GetCursorShapeStub() {
 scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
 ChromotingInstance::GetTokenFetcher(const std::string& host_public_key) {
   return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>(
-      new PepperTokenFetcher(weak_factory_.GetWeakPtr(), host_public_key));
+      new TokenFetcherProxy(
+          base::Bind(&ChromotingInstance::FetchThirdPartyToken,
+                     weak_factory_.GetWeakPtr()),
+          host_public_key));
 }
 
 void ChromotingInstance::InjectClipboardEvent(
@@ -940,9 +943,9 @@ void ChromotingInstance::HandleOnThirdPartyTokenFetched(
     LOG(ERROR) << "Invalid onThirdPartyTokenFetched data.";
     return;
   }
-  if (pepper_token_fetcher_.get()) {
-    pepper_token_fetcher_->OnTokenFetched(token, shared_secret);
-    pepper_token_fetcher_.reset();
+  if (token_fetcher_proxy_.get()) {
+    token_fetcher_proxy_->OnTokenFetched(token, shared_secret);
+    token_fetcher_proxy_.reset();
   } else {
     LOG(WARNING) << "Ignored OnThirdPartyTokenFetched without a pending fetch.";
   }

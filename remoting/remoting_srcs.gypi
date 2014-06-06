@@ -218,6 +218,8 @@
       'client/server_log_entry_client.h',
       'client/software_video_renderer.cc',
       'client/software_video_renderer.h',
+      'client/token_fetcher_proxy.cc',
+      'client/token_fetcher_proxy.h',
       'client/video_renderer.h',
     ],
 
@@ -244,8 +246,6 @@
       'client/plugin/pepper_plugin_thread_delegate.h',
       'client/plugin/pepper_port_allocator.cc',
       'client/plugin/pepper_port_allocator.h',
-      'client/plugin/pepper_token_fetcher.cc',
-      'client/plugin/pepper_token_fetcher.h',
       'client/plugin/pepper_util.cc',
       'client/plugin/pepper_util.h',
       'client/plugin/pepper_view.cc',

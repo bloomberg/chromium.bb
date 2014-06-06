@@ -15,6 +15,7 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/log_to_server.h"
 #include "remoting/client/software_video_renderer.h"
+#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
@@ -103,6 +104,15 @@ void ChromotingJniInstance::Cleanup() {
       FROM_HERE,
       base::Bind(&ChromotingJniInstance::DisconnectFromHostOnNetworkThread,
                  this));
+}
+
+void ChromotingJniInstance::FetchThirdPartyToken(
+    const GURL& token_url,
+    const std::string& client_id,
+    const std::string& scope,
+    base::WeakPtr<TokenFetcherProxy> jni_token_fetcher) {
+  // TODO(kelvinp) Calls into the jni_runtime_ to obtain a token from the
+  // android app (Android Third Party Auth - Part II).
 }
 
 void ChromotingJniInstance::ProvideSecret(const std::string& pin,

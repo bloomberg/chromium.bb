@@ -17,6 +17,7 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
+#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -57,6 +58,13 @@ class ChromotingJniInstance
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
   void Cleanup();
+
+  // Requests the android app to fetch a third-party token.
+  void FetchThirdPartyToken(
+      const GURL& token_url,
+      const std::string& client_id,
+      const std::string& scope,
+      const base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy);
 
   // Provides the user's PIN and resumes the host authentication attempt. Call
   // on the UI thread once the user has finished entering this PIN into the UI,
