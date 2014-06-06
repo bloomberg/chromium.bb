@@ -78,6 +78,13 @@ public class ChromeShellToolbar extends LinearLayout {
         if (progress == 100) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
     }
 
+    /**
+     * Closes the suggestion popup.
+     */
+    public void hideSuggestions() {
+        if (mSuggestionPopup != null) mSuggestionPopup.hideSuggestions();
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();

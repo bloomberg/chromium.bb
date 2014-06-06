@@ -70,6 +70,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
     private WindowAndroid mWindow;
     private TabManager mTabManager;
+    private ChromeShellToolbar mToolbar;
     private DevToolsServer mDevToolsServer;
     private SyncController mSyncController;
     private PrintingController mPrintingController;
@@ -160,7 +161,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         if (!TextUtils.isEmpty(startupUrl)) {
             mTabManager.setStartupUrl(startupUrl);
         }
-        ChromeShellToolbar mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
+        mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
         mAppMenuHandler = sAppMenuHandlerFactory.getAppMenuHandler(this, this, R.menu.main_menu);
         mToolbar.setMenuHandler(mAppMenuHandler);
 
@@ -216,6 +217,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     @Override
     protected void onStop() {
         super.onStop();
+
+        if (mToolbar != null) mToolbar.hideSuggestions();
 
         ContentViewCore viewCore = getActiveContentViewCore();
         if (viewCore != null) viewCore.onHide();

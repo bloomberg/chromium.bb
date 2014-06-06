@@ -80,6 +80,14 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
     }
 
     /**
+     * Stops the autocomplete controller and closes the suggestion popup.
+     */
+    public void hideSuggestions() {
+        stopAutocomplete(true);
+        dismissPopup();
+    }
+
+    /**
      * Signals the autocomplete controller to stop generating suggestions and
      * cancels the queued task to start the autocomplete controller, if any.
      *
