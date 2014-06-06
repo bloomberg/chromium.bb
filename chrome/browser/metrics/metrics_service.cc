@@ -1305,7 +1305,6 @@ void MetricsService::LogCleanShutdown() {
 
 void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
 #if defined(ENABLE_PLUGINS)
-  // TODO(asvitkine): Move this out of here.
   plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
 #endif
 }
@@ -1326,7 +1325,6 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec, Time::Now().ToTimeT());
 
-#if defined(ENABLE_PLUGINS)
-  plugin_metrics_provider_->RecordPluginChanges();
-#endif
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->RecordCurrentState();
 }

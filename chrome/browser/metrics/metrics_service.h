@@ -207,6 +207,7 @@ class MetricsService
   bool recording_active() const;
   bool reporting_active() const;
 
+  // TODO(blundell): Move this to ChromeMetricsServiceClient.
   void LogPluginLoadingError(const base::FilePath& plugin_path);
 
   // Redundant test to ensure that we are notified of a clean exit.

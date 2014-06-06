@@ -77,6 +77,7 @@ class BrowserProcessImpl : public BrowserProcess,
   // BrowserProcess implementation.
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
+  virtual MetricsServicesManager* GetMetricsServicesManager() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;
   virtual rappor::RapporService* rappor_service() OVERRIDE;
   virtual IOThread* io_thread() OVERRIDE;
@@ -157,8 +158,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateStatusTray();
   void CreateBackgroundModeManager();
   void CreateGCMDriver();
-
-  MetricsServicesManager* GetMetricsServicesManager();
 
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();

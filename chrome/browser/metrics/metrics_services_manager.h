@@ -13,6 +13,10 @@ class ChromeMetricsServiceClient;
 class MetricsService;
 class PrefService;
 
+namespace base {
+class FilePath;
+}
+
 namespace metrics {
 class MetricsStateManager;
 }
@@ -42,6 +46,9 @@ class MetricsServicesManager {
 
   // Returns the VariationsService, creating it if it hasn't been created yet.
   chrome_variations::VariationsService* GetVariationsService();
+
+  // Should be called when a plugin loading error occurs.
+  void OnPluginLoadingError(const base::FilePath& plugin_path);
 
  private:
   metrics::MetricsStateManager* GetMetricsStateManager();

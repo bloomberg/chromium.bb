@@ -444,6 +444,13 @@ void BrowserProcessImpl::EndSession() {
 #endif
 }
 
+MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
+  DCHECK(CalledOnValidThread());
+  if (!metrics_services_manager_)
+    metrics_services_manager_.reset(new MetricsServicesManager(local_state()));
+  return metrics_services_manager_.get();
+}
+
 MetricsService* BrowserProcessImpl::metrics_service() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetMetricsService();
@@ -1033,13 +1040,6 @@ void BrowserProcessImpl::CreateGCMDriver() {
       store_path,
       system_request_context());
 #endif  // defined(OS_ANDROID)
-}
-
-MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
-  DCHECK(CalledOnValidThread());
-  if (!metrics_services_manager_)
-    metrics_services_manager_.reset(new MetricsServicesManager(local_state()));
-  return metrics_services_manager_.get();
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
