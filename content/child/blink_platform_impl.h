@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
-#include "base/platform_file.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "content/child/webcrypto/webcrypto_impl.h"
@@ -45,7 +44,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   // Platform methods (partial implementation):
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebFallbackThemeEngine* fallbackThemeEngine();
-  virtual base::PlatformFile databaseOpenFile(
+  virtual blink::Platform::FileHandle databaseOpenFile(
       const blink::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const blink::WebString& vfs_file_name,
                                  bool sync_dir);

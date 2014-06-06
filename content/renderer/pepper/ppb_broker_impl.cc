@@ -31,7 +31,7 @@ PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
       broker_(NULL),
       connect_callback_(),
-      pipe_handle_(PlatformFileToInt(base::kInvalidPlatformFileValue)),
+      pipe_handle_(PlatformFileToInt(base::SyncSocket::kInvalidHandle)),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
   ChildThread::current()->GetRouter()->AddRoute(routing_id_, this);
 }
@@ -43,7 +43,7 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
   }
 
   // The plugin owns the handle.
-  pipe_handle_ = PlatformFileToInt(base::kInvalidPlatformFileValue);
+  pipe_handle_ = PlatformFileToInt(base::SyncSocket::kInvalidHandle);
   ChildThread::current()->GetRouter()->RemoveRoute(routing_id_);
 }
 
@@ -95,7 +95,7 @@ int32_t PPB_Broker_Impl::Connect(
 }
 
 int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
-  if (pipe_handle_ == PlatformFileToInt(base::kInvalidPlatformFileValue))
+  if (pipe_handle_ == PlatformFileToInt(base::SyncSocket::kInvalidHandle))
     return PP_ERROR_FAILED;  // Handle not set yet.
   *handle = pipe_handle_;
   return PP_OK;
@@ -109,9 +109,9 @@ GURL PPB_Broker_Impl::GetDocumentUrl() {
 
 // Transfers ownership of the handle to the plugin.
 void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
-  DCHECK(pipe_handle_ == PlatformFileToInt(base::kInvalidPlatformFileValue));
+  DCHECK(pipe_handle_ == PlatformFileToInt(base::SyncSocket::kInvalidHandle));
   DCHECK(result == PP_OK ||
-         handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
+         handle == PlatformFileToInt(base::SyncSocket::kInvalidHandle));
 
   pipe_handle_ = handle;
 

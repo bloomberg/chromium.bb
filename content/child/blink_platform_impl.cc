@@ -17,7 +17,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/stats_counters.h"
-#include "base/platform_file.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -920,9 +919,13 @@ WebFallbackThemeEngine* BlinkPlatformImpl::fallbackThemeEngine() {
   return &fallback_theme_engine_;
 }
 
-base::PlatformFile BlinkPlatformImpl::databaseOpenFile(
+blink::Platform::FileHandle BlinkPlatformImpl::databaseOpenFile(
     const blink::WebString& vfs_file_name, int desired_flags) {
-  return base::kInvalidPlatformFileValue;
+#if defined(OS_WIN)
+  return INVALID_HANDLE_VALUE;
+#elif defined(OS_POSIX)
+  return -1;
+#endif
 }
 
 int BlinkPlatformImpl::databaseDeleteFile(

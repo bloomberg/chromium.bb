@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -263,7 +262,8 @@ void ShellMainDelegate::InitializeResourceBundle() {
   // ResourceBundle pak at launch time.
   int pak_fd =
       base::GlobalDescriptors::GetInstance()->MaybeGet(kShellPakDescriptor);
-  if (pak_fd != base::kInvalidPlatformFileValue) {
+  if (pak_fd >= 0) {
+    // This is clearly wrong. See crbug.com/330930
     ui::ResourceBundle::InitSharedInstanceWithPakFile(base::File(pak_fd),
                                                       false);
     ResourceBundle::GetSharedInstance().AddDataPackFromFile(
