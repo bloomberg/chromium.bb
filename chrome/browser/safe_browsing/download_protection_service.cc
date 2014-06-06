@@ -355,6 +355,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       // Request has already been cancelled.
       return;
     }
+    timeout_start_time_ = base::TimeTicks::Now();
     BrowserThread::PostDelayedTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -450,6 +451,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     fetcher_.reset();
     UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
                         base::TimeTicks::Now() - start_time_);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",
+                        base::TimeTicks::Now() - request_start_time_);
     FinishRequest(result, reason);
   }
 
@@ -733,6 +736,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     fetcher_->SetRequestContext(service_->request_context_getter_.get());
     fetcher_->SetUploadData("application/octet-stream",
                             client_download_request_data_);
+    request_start_time_ = base::TimeTicks::Now();
     UMA_HISTOGRAM_COUNTS("SBClientDownload.DownloadRequestPayloadSize",
                          client_download_request_data_.size());
     fetcher_->Start();
@@ -757,6 +761,20 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // Ensure the timeout task is cancelled while we still have a non-zero
     // refcount. (crbug.com/240449)
     weakptr_factory_.InvalidateWeakPtrs();
+    if (!request_start_time_.is_null()) {
+      UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadRequestNetworkStats",
+                                reason,
+                                REASON_MAX);
+    }
+    if (!timeout_start_time_.is_null()) {
+      UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadRequestTimeoutStats",
+                                reason,
+                                REASON_MAX);
+      if (reason != REASON_REQUEST_CANCELED) {
+        UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestTimeoutDuration",
+                            base::TimeTicks::Now() - timeout_start_time_);
+      }
+    }
     if (service_) {
       VLOG(2) << "SafeBrowsing download verdict for: "
               << item_->DebugString(true) << " verdict:" << reason;
@@ -847,6 +865,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   CancelableRequestConsumer request_consumer_;  // For HistoryService lookup.
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
+  base::TimeTicks timeout_start_time_;
+  base::TimeTicks request_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };
