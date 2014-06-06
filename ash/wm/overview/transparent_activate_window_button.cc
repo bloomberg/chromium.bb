@@ -53,12 +53,18 @@ TransparentActivateWindowButton::TransparentActivateWindowButton(
     aura::Window* activate_window)
     : event_handler_widget_(InitEventHandler(activate_window->GetRootWindow())),
       activate_window_(activate_window) {
-  views::View* transparent_button = new TransparentButton(this);
+  views::Button* transparent_button = new TransparentButton(this);
+  transparent_button->SetAccessibleName(activate_window->title());
   event_handler_widget_->SetContentsView(transparent_button);
 }
 
 void TransparentActivateWindowButton::SetBounds(const gfx::Rect& bounds) {
   event_handler_widget_->SetBounds(bounds);
+}
+
+void TransparentActivateWindowButton::SendFocusAlert() const {
+  event_handler_widget_->GetContentsView()->
+      NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 TransparentActivateWindowButton::~TransparentActivateWindowButton() {

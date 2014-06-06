@@ -20,6 +20,10 @@ class TransparentActivateWindowButton : public views::ButtonListener {
   // Sets the bounds of the transparent window.
   void SetBounds(const gfx::Rect& bounds);
 
+  // Sends an a11y focus alert so that if chromevox is enabled, the window title
+  // is read.
+  void SendFocusAlert() const;
+
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;

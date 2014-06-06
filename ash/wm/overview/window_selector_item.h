@@ -72,6 +72,10 @@ class WindowSelectorItem {
   // dispatched when the bounds of a window change.
   void RecomputeWindowTransforms();
 
+  // Sends an a11y focus alert so that, if chromevox is enabled, the window
+  // label is read.
+  void SendFocusAlert() const;
+
   const gfx::Rect& bounds() { return bounds_; }
   const gfx::Rect& target_bounds() { return target_bounds_; }
 

@@ -592,6 +592,8 @@
         'wm/overview/scoped_transform_overview_window.h',
         'wm/overview/scoped_window_copy.cc',
         'wm/overview/scoped_window_copy.h',
+        'wm/overview/window_grid.cc',
+        'wm/overview/window_grid.h',
         'wm/overview/window_selector.cc',
         'wm/overview/window_selector.h',
         'wm/window_cycle_controller.cc',

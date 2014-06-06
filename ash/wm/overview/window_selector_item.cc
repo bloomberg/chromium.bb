@@ -120,6 +120,10 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
   SetItemBounds(root_window_, inset_bounds, false);
 }
 
+void WindowSelectorItem::SendFocusAlert() const {
+  activate_window_button_->SendFocusAlert();
+}
+
 void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
                                             aura::Window* root_window,
                                             bool animate) {

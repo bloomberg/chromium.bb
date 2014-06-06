@@ -16,6 +16,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -81,6 +82,9 @@ class WindowSelectorTest : public test::AshTestBase {
     return CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
   }
 
+  aura::Window* CreateWindowWithId(const gfx::Rect& bounds, int id) {
+    return CreateTestWindowInShellWithDelegate(&delegate_, id, bounds);
+  }
   aura::Window* CreateNonActivatableWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateWindow(bounds);
     aura::client::SetActivationDelegate(window,
@@ -154,6 +158,12 @@ class WindowSelectorTest : public test::AshTestBase {
     event_generator.ClickLeftButton();
   }
 
+  void SendKey(ui::KeyboardCode key) {
+      aura::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
+      event_generator.PressKey(key, 0);
+      event_generator.ReleaseKey(key, 0);
+  }
+
   bool IsSelecting() {
     return ash::Shell::GetInstance()->window_selector_controller()->
         IsSelecting();
@@ -164,10 +174,17 @@ class WindowSelectorTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindow())->GetFocusedWindow();
     }
 
-  ScopedVector<WindowSelectorItem>* GetWindowItems() {
-    return &(ash::Shell::GetInstance()->window_selector_controller()->
-        window_selector_->windows_);
+  const std::vector<WindowSelectorItem*>& GetWindowItemsForRoot(int index) {
+    return ash::Shell::GetInstance()->window_selector_controller()->
+        window_selector_->grid_list_[index]->window_list_.get();
     }
+
+  const aura::Window* GetSelectedWindow() {
+    WindowSelector* ws = ash::Shell::GetInstance()->
+        window_selector_controller()->window_selector_.get();
+    return ws->grid_list_[ws->selected_grid_index_]->
+        SelectedWindow()->SelectionWindow();
+  }
 
   views::Widget* GetLabelWidget(ash::WindowSelectorItem* window) {
     return window->window_label_.get();
@@ -699,7 +716,7 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   base::string16 window_title = base::UTF8ToUTF16("My window");
   window->set_title(window_title);
   ToggleOverview();
-  WindowSelectorItem* window_item = GetWindowItems()->back();
+  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
   views::Widget* widget = GetLabelWidget(window_item);
   // Has the label widget been created?
   ASSERT_TRUE(widget);
@@ -728,7 +745,7 @@ TEST_F(WindowSelectorTest, CreateLabelUnderPanel) {
   panel2->set_title(panel2_title);
   wm::ActivateWindow(panel1.get());
   ToggleOverview();
-  WindowSelectorItem* window_item = GetWindowItems()->back();
+  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
   views::Widget* widget = GetLabelWidget(window_item);
   // Has the label widget been created?
   ASSERT_TRUE(widget);
@@ -768,6 +785,80 @@ TEST_F(WindowSelectorTest, DisplayOrientationChanged) {
     EXPECT_TRUE(root_window->bounds().Contains(
         ToEnclosingRect(GetTransformedTargetBounds(*iter))));
   }
+}
+
+// Tests traversing some windows in overview mode with the arrow keys in every
+// possible direction.
+TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
+  if (!SupportsHostWindowResize())
+    return;
+  const size_t test_windows = 7;
+  UpdateDisplay("400x300");
+  ScopedVector<aura::Window> windows;
+  for (size_t i = test_windows; i > 0; i--)
+    windows.push_back(CreateWindowWithId(gfx::Rect(0, 0, 100, 100), i));
+
+  ui::KeyboardCode arrow_keys[] = {
+      ui::VKEY_RIGHT,
+      ui::VKEY_DOWN,
+      ui::VKEY_LEFT,
+      ui::VKEY_UP
+  };
+  // Expected window layout:
+  // +-------+  +-------+  +-------+
+  // |   1   |  |   2   |  |   3   |
+  // +-------+  +-------+  +-------+
+  // +-------+  +-------+  +-------+
+  // |   4   |  |   5   |  |   6   |
+  // +-------+  +-------+  +-------+
+  // +-------+
+  // |   7   |
+  // +-------+
+  // Index for each window during a full loop plus wrapping around.
+  int index_path_for_direction[][test_windows + 1] = {
+      {1, 2, 3, 4, 5, 6, 7, 1},  // Right
+      {1, 4, 7, 2, 5, 3, 6, 1},  // Down
+      {7, 6, 5, 4, 3, 2, 1, 7},  // Left
+      {6, 3, 5, 2, 7, 4, 1, 6}   // Up
+  };
+
+  for (size_t key_index = 0; key_index < arraysize(arrow_keys); key_index++) {
+    ToggleOverview();
+    for (size_t i = 0; i < test_windows + 1; i++) {
+      SendKey(arrow_keys[key_index]);
+      // TODO(nsatragno): Add a more readable error message by constructing a
+      // string from the window IDs.
+      EXPECT_EQ(GetSelectedWindow()->id(),
+                index_path_for_direction[key_index][i]);
+    }
+    ToggleOverview();
+  }
+}
+
+// Tests basic selection across multiple monitors.
+TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  gfx::Rect bounds1(0, 0, 100, 100);
+  gfx::Rect bounds2(450, 0, 100, 100);
+  scoped_ptr<aura::Window> window4(CreateWindow(bounds2));
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds2));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds1));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
+
+
+  ToggleOverview();
+
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window3.get());
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window4.get());
 }
 
 }  // namespace ash
