@@ -492,7 +492,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                          video_frame->visible_rect().height(),
                                          kPMColor_SkColorType,
                                          kPremul_SkAlphaType));
-    bitmap.allocPixels();
+    bitmap.eraseColor(SK_ColorTRANSPARENT);
     SkCanvas canvas(bitmap);
 
     video_renderer.Paint(video_frame.get(),
