@@ -105,6 +105,10 @@ Patches:
     intolerant to the final extension having zero length.
     patches/reorderextensions.patch
 
+  * Ignore out-of-order DTLS ChangeCipherSpec.
+    patches/ignorechangecipherspec.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1009227
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
