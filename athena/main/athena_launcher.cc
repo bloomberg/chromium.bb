@@ -7,6 +7,7 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/home/public/home_card.h"
+#include "athena/input/public/input_manager.h"
 #include "athena/main/placeholder.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/public/window_manager.h"
@@ -47,6 +48,7 @@ void StartAthena(aura::Window* root_window,
   aura::client::SetVisibilityClient(root_window,
                                     root_window_state->visibility_client.get());
 
+  athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
   athena::HomeCard::Create();
@@ -61,6 +63,7 @@ void ShutdownAthena() {
   athena::HomeCard::Shutdown();
   athena::WindowManager::Shutdown();
   athena::ScreenManager::Shutdown();
+  athena::InputManager::Shutdown();
 }
 
 }  // namespace athena

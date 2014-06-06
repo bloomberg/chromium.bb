@@ -36,6 +36,11 @@
         'home/app_list_view_delegate.h',
         'home/home_card_impl.cc',
         'home/public/home_card.h',
+	'input/public/input_manager.h',
+	'input/public/accelerator_manager.h',
+	'input/input_manager_impl.cc',
+	'input/accelerator_manager_impl.cc',
+	'input/accelerator_manager_impl.h',
         'screen/background_controller.cc',
         'screen/background_controller.h',
         'screen/public/screen_manager.h',
@@ -104,6 +109,7 @@
       ],
       'sources': [
         'test/athena_unittests.cc',
+        'input/accelerator_manager_unittest.cc',
         'wm/window_manager_unittest.cc',
       ],
     }

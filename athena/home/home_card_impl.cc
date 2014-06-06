@@ -5,6 +5,8 @@
 #include "athena/home/public/home_card.h"
 
 #include "athena/home/app_list_view_delegate.h"
+#include "athena/input/public/accelerator_manager.h"
+#include "athena/input/public/input_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -68,7 +70,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(HomeCardLayoutManager);
 };
 
-class HomeCardImpl : public HomeCard {
+class HomeCardImpl : public HomeCard, public AcceleratorHandler {
  public:
   HomeCardImpl();
   virtual ~HomeCardImpl();
@@ -76,6 +78,20 @@ class HomeCardImpl : public HomeCard {
   void Init();
 
  private:
+  enum Command {
+    COMMAND_SHOW_HOME_CARD,
+  };
+  void InstallAccelerators();
+
+  // AcceleratorHandler:
+  virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
+  virtual bool OnAcceleratorFired(int command_id,
+                                  const ui::Accelerator& accelerator) OVERRIDE {
+    DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
+    home_card_widget_->Show();
+    return true;
+  }
+
   views::Widget* home_card_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
@@ -94,6 +110,8 @@ HomeCardImpl::~HomeCardImpl() {
 }
 
 void HomeCardImpl::Init() {
+  InstallAccelerators();
+
   aura::Window* container =
       ScreenManager::Get()->CreateContainer("HomeCardContainer");
   container->SetLayoutManager(new HomeCardLayoutManager(container));
@@ -109,6 +127,15 @@ void HomeCardImpl::Init() {
       true /* border_accepts_events */);
   home_card_widget_ = view->GetWidget();
   view->ShowWhenReady();
+}
+
+void HomeCardImpl::InstallAccelerators() {
+  const AcceleratorData accelerator_data[] = {
+      {TRIGGER_ON_PRESS, ui::VKEY_L, ui::EF_CONTROL_DOWN,
+       COMMAND_SHOW_HOME_CARD, AF_NONE},
+  };
+  InputManager::Get()->GetAcceleratorManager()->RegisterAccelerators(
+      accelerator_data, arraysize(accelerator_data), this);
 }
 
 }  // namespace
