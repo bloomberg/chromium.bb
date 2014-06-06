@@ -33,7 +33,7 @@ static int32_t shim_PPPInitializeModule(PP_Module module_id,
       &__Pnacl_PPBGetInterface);
 }
 
-static void shim_PPPShutdownModule() {
+static void shim_PPPShutdownModule(void) {
   (*g_user_start_functions.PPP_ShutdownModule)();
 }
 
