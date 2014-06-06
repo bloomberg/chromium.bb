@@ -31,5 +31,5 @@
 [
     RuntimeEnabled=FontLoadEvents,
 ] partial interface Document {
-    readonly attribute FontFaceSet fonts;
+    [MeasureAs=DocumentFonts] readonly attribute FontFaceSet fonts;
 };
