@@ -1613,7 +1613,7 @@ bool Document::needsFullRenderTreeUpdate() const
         return false;
     if (!m_useElementsNeedingUpdate.isEmpty())
         return true;
-    if (!m_layerUpdateElements.isEmpty())
+    if (!m_layerUpdateSVGFilterElements.isEmpty())
         return true;
     if (needsStyleRecalc())
         return true;
@@ -2096,28 +2096,28 @@ void Document::setIsViewSource(bool isViewSource)
 
 bool Document::dirtyElementsForLayerUpdate()
 {
-    if (m_layerUpdateElements.isEmpty())
+    if (m_layerUpdateSVGFilterElements.isEmpty())
         return false;
-    HashSet<Element*>::iterator end = m_layerUpdateElements.end();
-    for (HashSet<Element*>::iterator it = m_layerUpdateElements.begin(); it != end; ++it)
+    HashSet<Element*>::iterator end = m_layerUpdateSVGFilterElements.end();
+    for (HashSet<Element*>::iterator it = m_layerUpdateSVGFilterElements.begin(); it != end; ++it)
         (*it)->setNeedsStyleRecalc(LocalStyleChange);
-    m_layerUpdateElements.clear();
+    m_layerUpdateSVGFilterElements.clear();
     return true;
 }
 
-void Document::scheduleLayerUpdate(Element& element)
+void Document::scheduleSVGFilterLayerUpdateHack(Element& element)
 {
     if (element.styleChangeType() == NeedsReattachStyleChange)
         return;
-    element.setNeedsLayerUpdate();
-    m_layerUpdateElements.add(&element);
+    element.setSVGFilterNeedsLayerUpdate();
+    m_layerUpdateSVGFilterElements.add(&element);
     scheduleRenderTreeUpdateIfNeeded();
 }
 
-void Document::unscheduleLayerUpdate(Element& element)
+void Document::unscheduleSVGFilterLayerUpdateHack(Element& element)
 {
-    element.clearNeedsLayerUpdate();
-    m_layerUpdateElements.remove(&element);
+    element.clearSVGFilterNeedsLayerUpdate();
+    m_layerUpdateSVGFilterElements.remove(&element);
 }
 
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element)

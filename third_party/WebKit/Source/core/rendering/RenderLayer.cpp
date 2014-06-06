@@ -3890,11 +3890,11 @@ void RenderLayer::filterNeedsRepaint()
 {
     {
         DeprecatedScheduleStyleRecalcDuringLayout marker(renderer()->document().lifecycle());
-        // It's possible for scheduleLayerUpdate to schedule a style recalc, which
+        // It's possible for scheduleSVGFilterLayerUpdateHack to schedule a style recalc, which
         // is a problem because this function can be called while performing layout.
         // Presumably this represents an illegal data flow of layout or compositing
         // information into the style system.
-        toElement(renderer()->node())->scheduleLayerUpdate();
+        toElement(renderer()->node())->scheduleSVGFilterLayerUpdateHack();
     }
 
     if (renderer()->view()) {

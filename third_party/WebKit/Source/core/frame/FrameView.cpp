@@ -2875,7 +2875,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // To avoid pushing an invalid tree for display, we have to check for this case and do another
     // style recalc. The extra style recalc needs to happen after our child <iframes> were updated.
     // FIXME: We shouldn't be triggering an extra style recalc in the first place.
-    if (m_frame->document()->hasElementsRequiringLayerUpdate()) {
+    if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
         m_frame->document()->updateRenderTreeIfNeeded();
 
         if (needsLayout())
@@ -2884,7 +2884,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 
     // These asserts ensure that parent frames are clean, when child frames finished updating layout and style.
     ASSERT(!needsLayout());
-    ASSERT(!m_frame->document()->hasElementsRequiringLayerUpdate());
+    ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
 #ifndef NDEBUG
     m_frame->document()->renderView()->assertRendererLaidOut();
 #endif

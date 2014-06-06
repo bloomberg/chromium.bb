@@ -372,9 +372,9 @@ public:
 
     void recalcDistribution();
 
-    bool needsLayerUpdate() const { return getFlag(NeedsLayerUpdateFlag); }
-    void setNeedsLayerUpdate() { setFlag(NeedsLayerUpdateFlag); }
-    void clearNeedsLayerUpdate() { clearFlag(NeedsLayerUpdateFlag); }
+    bool svgFilterNeedsLayerUpdate() const { return getFlag(SVGFilterNeedsLayerUpdateFlag); }
+    void setSVGFilterNeedsLayerUpdate() { setFlag(SVGFilterNeedsLayerUpdateFlag); }
+    void clearSVGFilterNeedsLayerUpdate() { clearFlag(SVGFilterNeedsLayerUpdateFlag); }
 
     void setIsLink(bool f);
 
@@ -703,7 +703,7 @@ private:
         IsFinishedParsingChildrenFlag = 1 << 12,
 
         // Flags related to recalcStyle.
-        NeedsLayerUpdateFlag = 1 << 13,
+        SVGFilterNeedsLayerUpdateFlag = 1 << 13,
         HasCustomStyleCallbacksFlag = 1 << 14,
         ChildNeedsStyleInvalidationFlag = 1 << 15,
         NeedsStyleInvalidationFlag = 1 << 16,

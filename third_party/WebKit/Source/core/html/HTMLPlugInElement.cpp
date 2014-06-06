@@ -483,7 +483,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
         m_persistedPluginWidget = widget;
     }
     document().setContainsPlugins();
-    scheduleLayerUpdate();
+    scheduleSVGFilterLayerUpdateHack();
     return true;
 }
 

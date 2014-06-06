@@ -792,7 +792,7 @@ void Node::clearNeedsStyleRecalc()
 {
     m_nodeFlags &= ~StyleChangeMask;
 
-    clearNeedsLayerUpdate();
+    clearSVGFilterNeedsLayerUpdate();
 
     if (isElementNode() && hasRareData())
         toElement(*this).setAnimationStyleChange(false);

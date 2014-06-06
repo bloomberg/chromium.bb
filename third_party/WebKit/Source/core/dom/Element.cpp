@@ -1422,8 +1422,8 @@ void Element::detach(const AttachContext& context)
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     cancelFocusAppearanceUpdate();
     removeCallbackSelectors();
-    if (needsLayerUpdate())
-        document().unscheduleLayerUpdate(*this);
+    if (svgFilterNeedsLayerUpdate())
+        document().unscheduleSVGFilterLayerUpdateHack(*this);
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
@@ -1591,7 +1591,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
-        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || needsLayerUpdate()) {
+        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || svgFilterNeedsLayerUpdate()) {
             renderer->setStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
@@ -2949,9 +2949,9 @@ PassRefPtrWillBeRawPtr<HTMLCollection> Element::ensureCachedHTMLCollection(Colle
     return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
 }
 
-void Element::scheduleLayerUpdate()
+void Element::scheduleSVGFilterLayerUpdateHack()
 {
-    document().scheduleLayerUpdate(*this);
+    document().scheduleSVGFilterLayerUpdateHack(*this);
 }
 
 HTMLCollection* Element::cachedHTMLCollection(CollectionType type)

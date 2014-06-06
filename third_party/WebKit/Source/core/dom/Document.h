@@ -454,11 +454,10 @@ public:
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
-    // FIXME: This should be eliminated and elements that use it should be made to
-    // always have a layer so they don't need to go about creating one from reasons
-    // external to style.
-    void scheduleLayerUpdate(Element&);
-    void unscheduleLayerUpdate(Element&);
+    // FIXME: SVG filters should change to store the filter on the RenderStyle
+    // instead of the RenderObject so we can get rid of this hack.
+    void scheduleSVGFilterLayerUpdateHack(Element&);
+    void unscheduleSVGFilterLayerUpdateHack(Element&);
 
     void evaluateMediaQueryList();
 
@@ -1073,7 +1072,7 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
-    bool hasElementsRequiringLayerUpdate() const { return m_layerUpdateElements.size(); }
+    bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }
     void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }
 
 protected:
@@ -1409,7 +1408,7 @@ private:
     WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_associatedFormControls;
 
     HashSet<SVGUseElement*> m_useElementsNeedingUpdate;
-    HashSet<Element*> m_layerUpdateElements;
+    HashSet<Element*> m_layerUpdateSVGFilterElements;
 
     bool m_hasViewportUnits;
 

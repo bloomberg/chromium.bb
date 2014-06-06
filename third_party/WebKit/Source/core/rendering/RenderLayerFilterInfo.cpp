@@ -104,11 +104,11 @@ void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> rendere
 void RenderLayerFilterInfo::notifyFinished(Resource*)
 {
     RenderObject* renderer = m_layer->renderer();
-    // FIXME: This caller of scheduleLayerUpdate() is not correct. It's using the layer update
+    // FIXME: This caller of scheduleSVGFilterLayerUpdateHack() is not correct. It's using the layer update
     // system to trigger a RenderLayer to go through the filter updating logic, but that might not
     // even happen if this element is style sharing and RenderObject::setStyle() returns early.
     // Filters need to find a better way to hook into the system.
-    toElement(renderer->node())->scheduleLayerUpdate();
+    toElement(renderer->node())->scheduleSVGFilterLayerUpdateHack();
     renderer->repaint();
 }
 

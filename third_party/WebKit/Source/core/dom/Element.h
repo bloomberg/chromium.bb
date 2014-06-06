@@ -257,7 +257,7 @@ public:
     PassRefPtrWillBeRawPtr<Element> cloneElementWithChildren();
     PassRefPtrWillBeRawPtr<Element> cloneElementWithoutChildren();
 
-    void scheduleLayerUpdate();
+    void scheduleSVGFilterLayerUpdateHack();
 
     void normalizeAttributes();
 
