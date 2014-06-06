@@ -1,3 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+    function destroyed()
+    {
+        var target = document.getElementById("target");
+        target.parentNode.removeChild(target);
+    }
+
+    function loaded()
+    {
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
+
+        document.body.offsetTop;
+        location.href = "data:text/html,<head><scr" + "ipt>function loaded() { if (window.testRunner) testRunner.notifyDone(); }</scr" + "ipt></head><body onload='loaded()'>Test for rdar://problem/6937089 PASSED.</body>";
+    }
+</script>
+<body onload="loaded()">
 <p>
     Test for <i><a href="rdar://problem/6937089">rdar://problem/6937089</a> Crashes at RenderWidget::destroy()</i>.
 </p>
@@ -7,16 +29,5 @@
 <div id="target">
     <embed type="application/x-webkit-test-netscape" ondestroy="destroyed()">
 </div>
-<script>
-    function destroyed()
-    {
-        var target = document.getElementById("target");
-        target.parentNode.removeChild(target);
-    }
-
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    document.body.offsetTop;
-    location.href = "data:text/html,Test for rdar://problem/6937089 PASSED.";
-</script>
+</body>
+</html>
