@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Manages information related to each connected gamepad device.
@@ -29,16 +30,16 @@ class GamepadDevice {
     // All axis values must be linearly normalized to the range [-1.0 .. 1.0].
     // As appropriate, -1.0 should correspond to "up" or "left", and 1.0
     // should correspond to "down" or "right".
-    private float[] mAxisValues;
+    private final float[] mAxisValues = new float[CanonicalAxisIndex.NUM_CANONICAL_AXES];
 
-    private float[] mButtonsValues;
+    private final float[] mButtonsValues = new float[CanonicalButtonIndex.NUM_CANONICAL_BUTTONS];;
 
     // When the user agent recognizes the attached inputDevice, it is recommended
     // that it be remapped to a canonical ordering when possible. Devices that are
     // not recognized should still be exposed in their raw form. Therefore we must
     // pass the raw Button and raw Axis values.
-    private float[] mRawButtons;
-    private float[] mRawAxes;
+    private final float[] mRawButtons = new float[256];
+    private final float[] mRawAxes = new float[256];
 
     // An identification string for the gamepad.
     private String mDeviceName;
@@ -51,25 +52,15 @@ class GamepadDevice {
         mDeviceId = inputDevice.getId();
         mDeviceName = inputDevice.getName();
         mTimestamp = SystemClock.uptimeMillis();
-        mButtonsValues = new float[CanonicalButtonIndex.NUM_CANONICAL_BUTTONS];
-        mAxisValues = new float[CanonicalAxisIndex.NUM_CANONICAL_AXES];
-        mRawButtons = new float[256];
-        // Get the total number of axes supported by gamepad.
-        int totalAxes = 0;
-        for (MotionRange range : inputDevice.getMotionRanges()) {
-            if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-                totalAxes++;
-            }
-        }
         // Get axis ids and initialize axes values.
-        mAxes = new int[totalAxes];
-        mRawAxes = new float[totalAxes];
+        final List<MotionRange> ranges = inputDevice.getMotionRanges();
+        mAxes = new int[ranges.size()];
         int i = 0;
-        for (MotionRange range : inputDevice.getMotionRanges()) {
+        for (MotionRange range : ranges) {
             if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-                mAxes[i] = range.getAxis();
-                mRawAxes[i] = 0.0f;
-                i++;
+                int axis = range.getAxis();
+                assert axis < 256;
+                mAxes[i++] = axis;
             }
         }
     }
@@ -157,10 +148,10 @@ class GamepadDevice {
         if (!GamepadList.isGamepadEvent(event)) return false;
         // Update axes values.
         for (int i = 0; i < mAxes.length; i++) {
-            mRawAxes[i] = event.getAxisValue(mAxes[i]);
+            int axis = mAxes[i];
+            mRawAxes[axis] = event.getAxisValue(axis);
         }
         mTimestamp = event.getEventTime();
         return true;
     }
-
 }
