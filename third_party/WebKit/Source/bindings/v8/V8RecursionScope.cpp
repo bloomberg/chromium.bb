@@ -38,11 +38,13 @@ namespace WebCore {
 
 void V8RecursionScope::didLeaveScriptContext()
 {
-    Microtask::performCheckpoint();
+    // FIXME: Instrument any work that takes place when script exits to c++ (e.g. Mutation Observers).
 
     // Indexed DB requires that transactions are created with an internal |active| flag
     // set to true, but the flag becomes false when control returns to the event loop.
     IDBPendingTransactionMonitor::from(m_executionContext).deactivateNewTransactions();
+
+    Microtask::performCheckpoint();
 }
 
 } // namespace WebCore
