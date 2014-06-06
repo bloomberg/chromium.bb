@@ -331,11 +331,15 @@ component("skia") {
   } else {
     sources -= [
       "//third_party/skia/src/ports/SkFontHost_win.cpp",
-      "//third_party/skia/src/ports/SkFontHost_win_dw.cpp",
       "//third_party/skia/src/ports/SkFontMgr_default_gdi.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_win_dw.cpp",
       "//third_party/skia/src/ports/SkOSFile_win.cpp",
       "//third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp",
+      "//third_party/skia/src/ports/SkScalerContext_win_dw.cpp",
+      "//third_party/skia/src/ports/SkScalerContext_win_dw.h",
       "//third_party/skia/src/ports/SkTLS_win.cpp",
+      "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
+      "//third_party/skia/src/ports/SkTypeface_win_dw.h",
     ]
   }
   if (!is_android) {
