@@ -28,6 +28,10 @@ namespace net {
 
 namespace {
 
+// The length of time to wait for a 0-RTT handshake to complete
+// before allowing the requests to possibly proceed over TCP.
+const int k0RttHandshakeTimeoutMs = 300;
+
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
@@ -138,6 +142,7 @@ QuicClientSession::QuicClientSession(
     const QuicConfig& config,
     uint32 max_flow_control_receive_window_bytes,
     QuicCryptoClientConfig* crypto_config,
+    base::TaskRunner* task_runner,
     NetLog* net_log)
     : QuicClientSessionBase(connection,
                             max_flow_control_receive_window_bytes,
@@ -150,6 +155,7 @@ QuicClientSession::QuicClientSession(
       server_info_(server_info.Pass()),
       read_pending_(false),
       num_total_streams_(0),
+      task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       logger_(net_log_),
       num_packets_read_(0),
@@ -436,11 +442,34 @@ int QuicClientSession::CryptoConnect(bool require_confirmation,
     return ERR_CONNECTION_FAILED;
   }
 
-  bool can_notify = require_confirmation_ ?
-      IsCryptoHandshakeConfirmed() : IsEncryptionEstablished();
-  if (can_notify) {
+  if (IsCryptoHandshakeConfirmed())
     return OK;
+
+  // Unless we require handshake confirmation, activate the session if
+  // we have established initial encryption.
+  if (!require_confirmation_ && IsEncryptionEstablished()) {
+    // To mitigate the effects of hanging 0-RTT connections, set up a timer to
+    // cancel any requests, if the handshake takes too long.
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicClientSession::OnConnectTimeout,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(k0RttHandshakeTimeoutMs));
+    return OK;
+
   }
+
+  callback_ = callback;
+  return ERR_IO_PENDING;
+}
+
+int QuicClientSession::ResumeCryptoConnect(const CompletionCallback& callback) {
+
+  if (IsCryptoHandshakeConfirmed())
+    return OK;
+
+  if (!connection()->connected())
+    return ERR_QUIC_HANDSHAKE_FAILED;
 
   callback_ = callback;
   return ERR_IO_PENDING;
@@ -798,6 +827,18 @@ void QuicClientSession::NotifyFactoryOfSessionClosed() {
   // Will delete |this|.
   if (stream_factory_)
     stream_factory_->OnSessionClosed(this);
+}
+
+void QuicClientSession::OnConnectTimeout() {
+  DCHECK(callback_.is_null());
+  DCHECK(IsEncryptionEstablished());
+
+  if (IsCryptoHandshakeConfirmed())
+    return;
+
+  if (stream_factory_)
+    stream_factory_->OnSessionConnectTimeout(this);
+  CloseAllStreams(ERR_QUIC_HANDSHAKE_FAILED);
 }
 
 }  // namespace net

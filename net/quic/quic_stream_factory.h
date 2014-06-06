@@ -126,6 +126,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Called by a session after it shuts down.
   void OnSessionClosed(QuicClientSession* session);
 
+  // Called by a session whose connection has timed out.
+  void OnSessionConnectTimeout(QuicClientSession* session);
+
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
 

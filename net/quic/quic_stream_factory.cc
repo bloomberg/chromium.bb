@@ -120,6 +120,13 @@ class QuicStreamFactory::Job {
       QuicServerInfo* server_info,
       const BoundNetLog& net_log);
 
+  // Creates a new job to handle the resumption of for connecting an
+  // existing session.
+  Job(QuicStreamFactory* factory,
+      HostResolver* host_resolver,
+      QuicClientSession* session,
+      QuicServerId server_id);
+
   ~Job();
 
   int Run(const CompletionCallback& callback);
@@ -130,6 +137,7 @@ class QuicStreamFactory::Job {
   int DoLoadServerInfo();
   int DoLoadServerInfoComplete(int rv);
   int DoConnect();
+  int DoResumeConnect();
   int DoConnectComplete(int rv);
 
   void OnIOComplete(int rv);
@@ -150,6 +158,7 @@ class QuicStreamFactory::Job {
     STATE_LOAD_SERVER_INFO,
     STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_CONNECT,
+    STATE_RESUME_CONNECT,
     STATE_CONNECT_COMPLETE,
   };
   IoState io_state_;
@@ -178,7 +187,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             base::StringPiece method,
                             QuicServerInfo* server_info,
                             const BoundNetLog& net_log)
-    : factory_(factory),
+    : io_state_(STATE_RESOLVE_HOST),
+      factory_(factory),
       host_resolver_(host_resolver),
       server_id_(host_port_pair, is_https, privacy_mode),
       is_post_(method == "POST"),
@@ -189,11 +199,24 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       session_(NULL),
       weak_factory_(this) {}
 
+QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
+                            HostResolver* host_resolver,
+                            QuicClientSession* session,
+                            QuicServerId server_id)
+    : io_state_(STATE_RESUME_CONNECT),
+      factory_(factory),
+      host_resolver_(host_resolver),  // unused
+      server_id_(server_id),
+      is_post_(false),  // unused
+      was_alternate_protocol_recently_broken_(false),  // unused
+      net_log_(session->net_log()),  // unused
+      session_(session),
+      weak_factory_(this) {}
+
 QuicStreamFactory::Job::~Job() {
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
-  io_state_ = STATE_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -223,6 +246,10 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
       case STATE_CONNECT:
         CHECK_EQ(OK, rv);
         rv = DoConnect();
+        break;
+      case STATE_RESUME_CONNECT:
+        CHECK_EQ(OK, rv);
+        rv = DoResumeConnect();
         break;
       case STATE_CONNECT_COMPLETE:
         rv = DoConnectComplete(rv);
@@ -323,6 +350,16 @@ int QuicStreamFactory::Job::DoConnect() {
       require_confirmation,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
+  return rv;
+}
+
+int QuicStreamFactory::Job::DoResumeConnect() {
+  io_state_ = STATE_CONNECT_COMPLETE;
+
+  int rv = session_->ResumeCryptoConnect(
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
+                 base::Unretained(this)));
+
   return rv;
 }
 
@@ -605,6 +642,35 @@ void QuicStreamFactory::OnSessionClosed(QuicClientSession* session) {
   all_sessions_.erase(session);
 }
 
+void QuicStreamFactory::OnSessionConnectTimeout(
+    QuicClientSession* session) {
+  const AliasSet& aliases = session_aliases_[session];
+  for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();
+       ++it) {
+    DCHECK(active_sessions_.count(*it));
+    DCHECK_EQ(session, active_sessions_[*it]);
+    active_sessions_.erase(*it);
+  }
+
+  if (aliases.empty()) {
+    return;
+  }
+
+  const IpAliasKey ip_alias_key(session->connection()->peer_address(),
+                                aliases.begin()->is_https());
+  ip_aliases_[ip_alias_key].erase(session);
+  if (ip_aliases_[ip_alias_key].empty()) {
+    ip_aliases_.erase(ip_alias_key);
+  }
+  QuicServerId server_id = *aliases.begin();
+  session_aliases_.erase(session);
+  Job* job = new Job(this, host_resolver_, session, server_id);
+  active_jobs_[server_id] = job;
+  int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
+                               base::Unretained(this), job));
+  DCHECK_EQ(ERR_IO_PENDING, rv);
+}
+
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   DCHECK(ContainsKey(active_requests_, request));
   Job* job = active_requests_[request];
@@ -771,7 +837,9 @@ int QuicStreamFactory::CreateSession(
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
       quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
-      config, kInitialReceiveWindowSize, &crypto_config_, net_log.net_log());
+      config, kInitialReceiveWindowSize, &crypto_config_,
+      base::MessageLoop::current()->message_loop_proxy().get(),
+      net_log.net_log());
   all_sessions_[*session] = server_id;  // owning pointer
   return OK;
 }

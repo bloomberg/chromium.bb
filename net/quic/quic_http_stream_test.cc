@@ -214,6 +214,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                            false, PRIVACY_MODE_DISABLED),
                               DefaultQuicConfig(),
                               kInitialFlowControlWindowForTest, &crypto_config_,
+                              base::MessageLoop::current()->
+                                  message_loop_proxy().get(),
                               NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
