@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& na
 
 PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
 {
-    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, m_element->shouldIgnoreAttributeCase()) : kNotFound;
+    size_t index = m_element->hasAttributes() ? m_element->findAttributeIndexByName(name, m_element->shouldIgnoreAttributeCase()) : kNotFound;
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "No item with name '" + name + "' was found.");
         return nullptr;
@@ -69,7 +69,7 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& n
 
 PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
 {
-    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : kNotFound;
+    size_t index = m_element->hasAttributes() ? m_element->findAttributeIndexByName(QualifiedName(nullAtom, localName, namespaceURI)) : kNotFound;
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "No item with name '" + namespaceURI + "::" + localName + "' was found.");
         return nullptr;
@@ -102,7 +102,7 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::item(unsigned index) const
 {
     if (index >= length())
         return nullptr;
-    return m_element->ensureAttr(m_element->attributeItem(index).name());
+    return m_element->ensureAttr(m_element->attributeAt(index).name());
 }
 
 size_t NamedNodeMap::length() const

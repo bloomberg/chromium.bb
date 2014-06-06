@@ -70,7 +70,7 @@ ElementData::ElementData(unsigned arraySize)
 
 ElementData::ElementData(const ElementData& other, bool isUnique)
     : m_isUnique(isUnique)
-    , m_arraySize(isUnique ? 0 : other.length())
+    , m_arraySize(isUnique ? 0 : other.attributeCount())
     , m_presentationAttributeStyleIsDirty(other.m_presentationAttributeStyleIsDirty)
     , m_styleAttributeIsDirty(other.m_styleAttributeIsDirty)
     , m_animatedSVGAttributesAreDirty(other.m_animatedSVGAttributesAreDirty)
@@ -98,22 +98,22 @@ PassRefPtr<UniqueElementData> ElementData::makeUniqueCopy() const
 bool ElementData::isEquivalent(const ElementData* other) const
 {
     if (!other)
-        return isEmpty();
+        return !hasAttributes();
 
     AttributeIteratorAccessor attributes = attributesIterator();
-    if (attributes.size() != other->length())
+    if (attributes.size() != other->attributeCount())
         return false;
 
     AttributeConstIterator end = attributes.end();
     for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
-        const Attribute* otherAttr = other->getAttributeItem(it->name());
+        const Attribute* otherAttr = other->findAttributeByName(it->name());
         if (!otherAttr || it->value() != otherAttr->value())
             return false;
     }
     return true;
 }
 
-size_t ElementData::getAttrIndex(Attr* attr) const
+size_t ElementData::findAttrNodeIndex(Attr* attr) const
 {
     // This relies on the fact that Attr's QualifiedName == the Attribute's name.
     AttributeIteratorAccessor attributes = attributesIterator();
@@ -125,7 +125,7 @@ size_t ElementData::getAttrIndex(Attr* attr) const
     return kNotFound;
 }
 
-size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
+size_t ElementData::findAttributeIndexByNameSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     // Continue to checking case-insensitively and/or full namespaced names if necessary:
     AttributeIteratorAccessor attributes = attributesIterator();
@@ -198,7 +198,7 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
     ASSERT(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
     m_inlineStyle = other.m_inlineStyle;
 
-    unsigned length = other.length();
+    unsigned length = other.attributeCount();
     m_attributeVector.reserveCapacity(length);
     for (unsigned i = 0; i < length; ++i)
         m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
@@ -215,7 +215,7 @@ PassRefPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
     return adoptRef(new (slot) ShareableElementData(*this));
 }
 
-Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)
+Attribute* UniqueElementData::findAttributeByName(const QualifiedName& name)
 {
     unsigned length = m_attributeVector.size();
     for (unsigned i = 0; i < length; ++i) {

@@ -102,16 +102,16 @@ public:
     const StylePropertySet* presentationAttributeStyle() const;
 
     // This is not a trivial getter and its return value should be cached for performance.
-    size_t length() const;
-    bool isEmpty() const { return !length(); }
+    size_t attributeCount() const;
+    bool hasAttributes() const { return !!attributeCount(); }
 
     AttributeIteratorAccessor attributesIterator() const;
 
-    const Attribute& attributeItem(unsigned index) const;
-    const Attribute* getAttributeItem(const QualifiedName&) const;
-    size_t getAttributeItemIndex(const QualifiedName&, bool shouldIgnoreCase = false) const;
-    size_t getAttributeItemIndex(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
-    size_t getAttrIndex(Attr*) const;
+    const Attribute& attributeAt(unsigned index) const;
+    const Attribute* findAttributeByName(const QualifiedName&) const;
+    size_t findAttributeIndexByName(const QualifiedName&, bool shouldIgnoreCase = false) const;
+    size_t findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
+    size_t findAttrNodeIndex(Attr*) const;
 
     bool hasID() const { return !m_idForStyleResolution.isNull(); }
     bool hasClass() const { return !m_classNames.isNull(); }
@@ -145,8 +145,8 @@ private:
     void destroy();
 
     const Attribute* attributeBase() const;
-    const Attribute* getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
-    size_t getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
+    const Attribute* findAttributeByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
+    size_t findAttributeIndexByNameSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
 
     PassRefPtr<UniqueElementData> makeUniqueCopy() const;
 };
@@ -187,11 +187,11 @@ public:
     PassRefPtr<ShareableElementData> makeShareableCopy() const;
 
     // These functions do no error/duplicate checking.
-    void addAttribute(const QualifiedName&, const AtomicString&);
-    void removeAttribute(size_t index);
+    void appendAttribute(const QualifiedName&, const AtomicString&);
+    void removeAttributeAt(size_t index);
 
-    Attribute& attributeItem(unsigned index);
-    Attribute* getAttributeItem(const QualifiedName&);
+    Attribute& attributeAt(unsigned index);
+    Attribute* findAttributeByName(const QualifiedName&);
 
     UniqueElementData();
     explicit UniqueElementData(const ShareableElementData&);
@@ -212,7 +212,7 @@ inline void ElementData::deref()
     destroy();
 }
 
-inline size_t ElementData::length() const
+inline size_t ElementData::attributeCount() const
 {
     if (isUnique())
         return static_cast<const UniqueElementData*>(this)->m_attributeVector.size();
@@ -226,11 +226,11 @@ inline const StylePropertySet* ElementData::presentationAttributeStyle() const
     return static_cast<const UniqueElementData*>(this)->m_presentationAttributeStyle.get();
 }
 
-inline const Attribute* ElementData::getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const
+inline const Attribute* ElementData::findAttributeByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
-    size_t index = getAttributeItemIndex(name, shouldIgnoreAttributeCase);
+    size_t index = findAttributeIndexByName(name, shouldIgnoreAttributeCase);
     if (index != kNotFound)
-        return &attributeItem(index);
+        return &attributeAt(index);
     return 0;
 }
 
@@ -241,7 +241,7 @@ inline const Attribute* ElementData::attributeBase() const
     return static_cast<const ShareableElementData*>(this)->m_attributeArray;
 }
 
-inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name, bool shouldIgnoreCase) const
+inline size_t ElementData::findAttributeIndexByName(const QualifiedName& name, bool shouldIgnoreCase) const
 {
     AttributeIteratorAccessor attributes = attributesIterator();
     AttributeConstIterator end = attributes.end();
@@ -254,7 +254,7 @@ inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name, bool
 
 // We use a boolean parameter instead of calling shouldIgnoreAttributeCase so that the caller
 // can tune the behavior (hasAttribute is case sensitive whereas getAttribute is not).
-inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool shouldIgnoreAttributeCase) const
+inline size_t ElementData::findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     bool doSlowCheck = shouldIgnoreAttributeCase;
 
@@ -273,7 +273,7 @@ inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool 
     }
 
     if (doSlowCheck)
-        return getAttributeItemIndexSlowCase(name, shouldIgnoreAttributeCase);
+        return findAttributeIndexByNameSlowCase(name, shouldIgnoreAttributeCase);
     return kNotFound;
 }
 
@@ -286,7 +286,7 @@ inline AttributeIteratorAccessor ElementData::attributesIterator() const
     return AttributeIteratorAccessor(static_cast<const ShareableElementData*>(this)->m_attributeArray, m_arraySize);
 }
 
-inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name) const
+inline const Attribute* ElementData::findAttributeByName(const QualifiedName& name) const
 {
     AttributeIteratorAccessor attributes = attributesIterator();
     AttributeConstIterator end = attributes.end();
@@ -297,24 +297,24 @@ inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name)
     return 0;
 }
 
-inline const Attribute& ElementData::attributeItem(unsigned index) const
+inline const Attribute& ElementData::attributeAt(unsigned index) const
 {
-    RELEASE_ASSERT(index < length());
+    RELEASE_ASSERT(index < attributeCount());
     ASSERT(attributeBase() + index);
     return *(attributeBase() + index);
 }
 
-inline void UniqueElementData::addAttribute(const QualifiedName& attributeName, const AtomicString& value)
+inline void UniqueElementData::appendAttribute(const QualifiedName& attributeName, const AtomicString& value)
 {
     m_attributeVector.append(Attribute(attributeName, value));
 }
 
-inline void UniqueElementData::removeAttribute(size_t index)
+inline void UniqueElementData::removeAttributeAt(size_t index)
 {
     m_attributeVector.remove(index);
 }
 
-inline Attribute& UniqueElementData::attributeItem(unsigned index)
+inline Attribute& UniqueElementData::attributeAt(unsigned index)
 {
     return m_attributeVector.at(index);
 }

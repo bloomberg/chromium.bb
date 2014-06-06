@@ -38,7 +38,7 @@ inline unsigned attributeHash(const Vector<Attribute>& attributes)
 
 inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElementData& elementData)
 {
-    if (attributes.size() != elementData.length())
+    if (attributes.size() != elementData.attributeCount())
         return false;
     return !memcmp(attributes.data(), elementData.m_attributeArray, attributes.size() * sizeof(Attribute));
 }
