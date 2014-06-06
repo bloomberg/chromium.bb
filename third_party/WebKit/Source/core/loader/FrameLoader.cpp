@@ -949,9 +949,9 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     RefPtr<LocalFrame> protect(m_frame);
 
     bool allChildrenAreDoneLoading = true;
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            allChildrenAreDoneLoading &= toLocalFrame(child)->loader().checkLoadCompleteForThisFrame();
+            allChildrenAreDoneLoading &= toLocalFrame(child.get())->loader().checkLoadCompleteForThisFrame();
     }
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
