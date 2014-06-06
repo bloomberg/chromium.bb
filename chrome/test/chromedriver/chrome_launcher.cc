@@ -112,7 +112,7 @@ Status PrepareCommandLine(int port,
   switches.SetSwitch("disable-component-update");
   switches.SetSwitch("disable-default-apps");
   switches.SetSwitch("enable-logging");
-  switches.SetSwitch("log-level", "1");
+  switches.SetSwitch("log-level", "0");
   switches.SetSwitch("password-store", "basic");
   switches.SetSwitch("use-mock-keychain");
   switches.SetSwitch("remote-debugging-port", base::IntToString(port));
