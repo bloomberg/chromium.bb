@@ -346,6 +346,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
         return;
 
     m_idToNode.remove(id);
+    m_idToNodesMap.remove(id);
 
     if (node->isFrameOwnerElement()) {
         Document* contentDocument = toHTMLFrameOwnerElement(node)->contentDocument();
@@ -557,6 +558,7 @@ void InspectorDOMAgent::discardFrontendBindings()
     m_searchResults.clear();
     m_documentNodeToIdMap.clear();
     m_idToNode.clear();
+    m_idToNodesMap.clear();
     releaseDanglingNodes();
     m_childrenRequested.clear();
     m_cachedChildCount.clear();
