@@ -651,8 +651,6 @@
         'browser/chromeos/login/signin/oauth2_login_verifier.h',
         'browser/chromeos/login/signin/oauth2_token_fetcher.cc',
         'browser/chromeos/login/signin/oauth2_token_fetcher.h',
-        'browser/chromeos/login/signin_specifics.cc',
-        'browser/chromeos/login/signin_specifics.h',
         'browser/chromeos/login/startup_utils.cc',
         'browser/chromeos/login/startup_utils.h',
         'browser/chromeos/login/ui/captive_portal_view.cc',

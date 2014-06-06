@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
-#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -207,8 +206,7 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
 
   UserContext user_context(manager_id);
   user_context.SetKey(Key(manager_password));
-  ExistingUserController::current_controller()->Login(user_context,
-                                                      SigninSpecifics());
+  ExistingUserController::current_controller()->Login(user_context);
 }
 
 void LocallyManagedUserCreationScreen::CreateManagedUser(

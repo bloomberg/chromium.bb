@@ -81,8 +81,7 @@ void AppLaunchSigninScreen::CompleteLogin(const UserContext& user_context) {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::Login(const UserContext& user_context,
-                                  const SigninSpecifics& specifics) {
+void AppLaunchSigninScreen::Login(const UserContext& user_context) {
   // Note: LoginUtils::CreateAuthenticator doesn't necessarily create
   // a new Authenticator object, and could reuse an existing one.
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
@@ -93,7 +92,19 @@ void AppLaunchSigninScreen::Login(const UserContext& user_context,
                  user_context));
 }
 
+void AppLaunchSigninScreen::LoginAsRetailModeUser() {
+  NOTREACHED();
+}
+
+void AppLaunchSigninScreen::LoginAsGuest() {
+  NOTREACHED();
+}
+
 void AppLaunchSigninScreen::MigrateUserData(const std::string& old_password) {
+  NOTREACHED();
+}
+
+void AppLaunchSigninScreen::LoginAsPublicAccount(const std::string& username) {
   NOTREACHED();
 }
 
@@ -170,6 +181,11 @@ void AppLaunchSigninScreen::SetDisplayEmail(const std::string& email) {
 }
 
 void AppLaunchSigninScreen::Signout() {
+  NOTREACHED();
+}
+
+void AppLaunchSigninScreen::LoginAsKioskApp(const std::string& app_id,
+                                            bool diagnostic_mode) {
   NOTREACHED();
 }
 

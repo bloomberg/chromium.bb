@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
-  existing_user_controller()->Login(user_context, SigninSpecifics());
+  existing_user_controller()->Login(user_context);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Log in and check that it stopped the timer.
-  existing_user_controller()->Login(user_context, SigninSpecifics());
+  existing_user_controller()->Login(user_context);
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());

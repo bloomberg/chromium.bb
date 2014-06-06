@@ -55,9 +55,11 @@ class AppLaunchSigninScreen
   virtual void CancelUserAdding() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
   virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
-  virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) OVERRIDE;
+  virtual void Login(const UserContext& user_context) OVERRIDE;
+  virtual void LoginAsRetailModeUser() OVERRIDE;
+  virtual void LoginAsGuest() OVERRIDE;
   virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
+  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void LoadWallpaper(const std::string& username) OVERRIDE;
   virtual void LoadSigninWallpaper() OVERRIDE;
   virtual void OnSigninScreenReady() OVERRIDE;
@@ -78,6 +80,8 @@ class AppLaunchSigninScreen
   virtual bool IsUserSigninCompleted() const OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void Signout() OVERRIDE;
+  virtual void LoginAsKioskApp(const std::string& app_id,
+                               bool diagnostic_mode) OVERRIDE;
   virtual void HandleGetUsers() OVERRIDE;
   virtual void SetAuthType(
       const std::string& username,

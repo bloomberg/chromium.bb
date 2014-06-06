@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
-#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
@@ -101,41 +100,51 @@ class LoginDisplayWebUIHandler {
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
  public:
-  // --------------- Password change flow methods.
   // Cancels current password changed flow.
   virtual void CancelPasswordChangedFlow() = 0;
+
+  // Cancels user adding.
+  virtual void CancelUserAdding() = 0;
+
+  // Create a new Google account.
+  virtual void CreateAccount() = 0;
+
+  // Confirms sign up by provided credentials in |user_context|.
+  // Used for new user login via GAIA extension.
+  virtual void CompleteLogin(const UserContext& user_context) = 0;
+
+  // Sign in using username and password specified as a part of |user_context|.
+  // Used for both known and new users.
+  virtual void Login(const UserContext& user_context) = 0;
+
+  // Sign in into a retail mode session.
+  virtual void LoginAsRetailModeUser() = 0;
+
+  // Sign in into guest session.
+  virtual void LoginAsGuest() = 0;
+
+  // Sign in into the public account identified by |username|.
+  virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
   // Decrypt cryptohome using user provided |old_password|
   // and migrate to new password.
   virtual void MigrateUserData(const std::string& old_password) = 0;
 
+  // Load wallpaper for given |username|.
+  virtual void LoadWallpaper(const std::string& username) = 0;
+
+  // Loads the default sign-in wallpaper.
+  virtual void LoadSigninWallpaper() = 0;
+
+  // Notify the delegate when the sign-in UI is finished loading.
+  virtual void OnSigninScreenReady() = 0;
+
+  // Attempts to remove given user.
+  virtual void RemoveUser(const std::string& username) = 0;
+
   // Ignore password change, remove existing cryptohome and
   // force full sync of user data.
   virtual void ResyncUserData() = 0;
-
-  // --------------- Sign in/out methods.
-  // Sign in using username and password specified as a part of |user_context|.
-  // Used for both known and new users.
-  virtual void Login(const UserContext& user_context,
-                     const SigninSpecifics& specifics) = 0;
-
-  // Sign in as guest to create a new Google account.
-  virtual void CreateAccount() = 0;
-
-  // Returns true if sign in is in progress.
-  virtual bool IsSigninInProgress() const = 0;
-
-  // Signs out if the screen is currently locked.
-  virtual void Signout() = 0;
-
-  // --------------- Account creation methods.
-  // Confirms sign up by provided credentials in |user_context|.
-  // Used for new user login via GAIA extension.
-  virtual void CompleteLogin(const UserContext& user_context) = 0;
-
-  // --------------- Shared with login display methods.
-  // Notify the delegate when the sign-in UI is finished loading.
-  virtual void OnSigninScreenReady() = 0;
 
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
@@ -148,23 +157,6 @@ class SigninScreenHandlerDelegate {
 
   // Show wrong hwid screen.
   virtual void ShowWrongHWIDScreen() = 0;
-
-  // Sets the displayed email for the next login attempt. If it succeeds,
-  // user's displayed email value will be updated to |email|.
-  virtual void SetDisplayEmail(const std::string& email) = 0;
-
-  // --------------- Rest of the methods.
-  // Cancels user adding.
-  virtual void CancelUserAdding() = 0;
-
-  // Load wallpaper for given |username|.
-  virtual void LoadWallpaper(const std::string& username) = 0;
-
-  // Loads the default sign-in wallpaper.
-  virtual void LoadSigninWallpaper() = 0;
-
-  // Attempts to remove given user.
-  virtual void RemoveUser(const std::string& username) = 0;
 
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
@@ -179,8 +171,22 @@ class SigninScreenHandlerDelegate {
   // Public sessions are always shown.
   virtual bool IsShowUsers() const = 0;
 
+  // Returns true if sign in is in progress.
+  virtual bool IsSigninInProgress() const = 0;
+
   // Whether user sign in has completed.
   virtual bool IsUserSigninCompleted() const = 0;
+
+  // Sets the displayed email for the next login attempt. If it succeeds,
+  // user's displayed email value will be updated to |email|.
+  virtual void SetDisplayEmail(const std::string& email) = 0;
+
+  // Signs out if the screen is currently locked.
+  virtual void Signout() = 0;
+
+  // Login to kiosk mode for app with |app_id|.
+  virtual void LoginAsKioskApp(const std::string& app_id,
+                               bool diagnostic_mode) = 0;
 
   // Request to (re)load user list.
   virtual void HandleGetUsers() = 0;

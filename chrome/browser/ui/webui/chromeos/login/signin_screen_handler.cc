@@ -981,7 +981,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
     return;
   UserContext user_context(username);
   user_context.SetKey(Key(password));
-  delegate_->Login(user_context, SigninSpecifics());
+  delegate_->Login(user_context);
 }
 
 void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
@@ -1006,17 +1006,13 @@ void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser() {
-  UserContext context;
-  context.SetUserType(User::USER_TYPE_RETAIL_MODE);
   if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
+    delegate_->LoginAsRetailModeUser();
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
-  UserContext context;
-  context.SetUserType(User::USER_TYPE_GUEST);
   if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
+    delegate_->LoginAsGuest();
 }
 
 void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
@@ -1032,10 +1028,8 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
     const std::string& username) {
-  UserContext context(username);
-  context.SetUserType(User::USER_TYPE_PUBLIC_ACCOUNT);
   if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
+    delegate_->LoginAsPublicAccount(username);
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
@@ -1261,7 +1255,6 @@ void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
 
 void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
     double attempt_token) {
-  // TODO(antrim) : move GaiaSigninScreen dependency to GaiaSigninScreen.
   email_retriever_.reset(new AuthenticatedUserEmailRetriever(
       base::Bind(&SigninScreenHandler::CallJS<double, std::string>,
                  base::Unretained(this),
@@ -1272,12 +1265,7 @@ void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,
                                                bool diagnostic_mode) {
-  UserContext context(app_id);
-  context.SetUserType(User::USER_TYPE_KIOSK_APP);
-  SigninSpecifics specifics;
-  specifics.kiosk_diagnostic_mode = diagnostic_mode;
-  if (delegate_)
-    delegate_->Login(context, specifics);
+  delegate_->LoginAsKioskApp(app_id, diagnostic_mode);
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

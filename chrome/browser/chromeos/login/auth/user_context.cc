@@ -9,10 +9,8 @@
 
 namespace chromeos {
 
-UserContext::UserContext()
-    : is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(User::USER_TYPE_REGULAR) {
+UserContext::UserContext() : is_using_oauth_(true),
+                             auth_flow_(AUTH_FLOW_OFFLINE) {
 }
 
 UserContext::UserContext(const UserContext& other)
@@ -21,26 +19,25 @@ UserContext::UserContext(const UserContext& other)
       auth_code_(other.auth_code_),
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
-      auth_flow_(other.auth_flow_),
-      user_type_(other.user_type_) {
+      auth_flow_(other.auth_flow_) {
 }
 
 UserContext::UserContext(const std::string& user_id)
     : user_id_(login::CanonicalizeUserID(user_id)),
       is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(User::USER_TYPE_REGULAR) {
+      auth_flow_(AUTH_FLOW_OFFLINE) {
 }
 
 UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.user_id_ == user_id_ && context.key_ == key_ &&
+  return context.user_id_ == user_id_ &&
+         context.key_ == key_ &&
          context.auth_code_ == auth_code_ &&
          context.user_id_hash_ == user_id_hash_ &&
          context.is_using_oauth_ == is_using_oauth_ &&
-         context.auth_flow_ == auth_flow_ && context.user_type_ == user_type_;
+         context.auth_flow_ == auth_flow_;
 }
 
 bool UserContext::operator!=(const UserContext& context) const {
@@ -75,10 +72,6 @@ UserContext::AuthFlow UserContext::GetAuthFlow() const {
   return auth_flow_;
 }
 
-User::UserType UserContext::GetUserType() const {
-  return user_type_;
-}
-
 bool UserContext::HasCredentials() const {
   return (!user_id_.empty() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -106,10 +99,6 @@ void UserContext::SetIsUsingOAuth(bool is_using_oauth) {
 
 void UserContext::SetAuthFlow(AuthFlow auth_flow) {
   auth_flow_ = auth_flow;
-}
-
-void UserContext::SetUserType(User::UserType user_type) {
-  user_type_ = user_type;
 }
 
 void UserContext::ClearSecrets() {
