@@ -644,6 +644,17 @@ hooks = [
     {
     'action':
          [
+    'python',
+    'src/third_party/libaddressinput/chromium/tools/update-strings.py'
+],
+    'pattern':
+         '.',
+    'name':
+         'libaddressinput-strings'
+},
+    {
+    'action':
+         [
     'download_from_google_storage',
     '--no_resume',
     '--platform=win32',
