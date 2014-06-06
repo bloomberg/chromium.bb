@@ -38,6 +38,7 @@ const int64_t kDownloadSizeDelta = 1 << 19;
 // Returns UPDATE_STATUS_ERROR on error.
 UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
     const std::string& str) {
+  VLOG(1) << "UpdateStatusFromString got " << str << " as input.";
   if (str == update_engine::kUpdateStatusIdle)
     return UpdateEngineClient::UPDATE_STATUS_IDLE;
   if (str == update_engine::kUpdateStatusCheckingForUpdate)
