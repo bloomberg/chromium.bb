@@ -14,6 +14,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -243,7 +244,7 @@ bool SharedModuleHandler::Validate(
   // own, instead they rely on the permissions of the extensions which import
   // them.
   if (SharedModuleInfo::IsSharedModule(extension) &&
-      !extension->GetActivePermissions()->IsEmpty()) {
+      !extension->permissions_data()->active_permissions()->IsEmpty()) {
     *error = errors::kInvalidExportPermissions;
     return false;
   }

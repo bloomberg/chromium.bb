@@ -1672,9 +1672,9 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a version that requires additional privileges.
     is_privilege_increase =
         extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-                granted_permissions,
-                extension->GetActivePermissions().get(),
-                extension->GetType());
+            granted_permissions,
+            extension->permissions_data()->active_permissions().get(),
+            extension->GetType());
   }
 
   if (is_extension_installed) {

@@ -33,6 +33,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/identity_provider.h"
 
@@ -339,7 +340,8 @@ void PushMessagingAPI::OnExtensionLoaded(
   if (!InitEventRouterAndHandler())
     return;
 
-  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kPushMessaging)) {
     handler_->RegisterExtension(extension->id());
   }
 }
@@ -351,7 +353,8 @@ void PushMessagingAPI::OnExtensionUnloaded(
   if (!InitEventRouterAndHandler())
     return;
 
-  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kPushMessaging)) {
     handler_->UnregisterExtension(extension->id());
   }
 }
@@ -365,7 +368,8 @@ void PushMessagingAPI::Observe(int type,
 
   const Extension* extension =
       content::Details<const InstalledExtensionInfo>(details)->extension;
-  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kPushMessaging)) {
     handler_->SuppressInitialInvalidationsForExtension(extension->id());
   }
 }

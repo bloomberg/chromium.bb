@@ -64,6 +64,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -1386,7 +1387,8 @@ bool DownloadsOpenFunction::RunSync() {
       Fault(download_item->GetState() != DownloadItem::COMPLETE,
             errors::kNotComplete,
             &error_) ||
-      Fault(!GetExtension()->HasAPIPermission(APIPermission::kDownloadsOpen),
+      Fault(!GetExtension()->permissions_data()->HasAPIPermission(
+                APIPermission::kDownloadsOpen),
             errors::kOpenPermission,
             &error_))
     return false;
@@ -1431,7 +1433,8 @@ bool DownloadsSetShelfEnabledFunction::RunSync() {
   scoped_ptr<downloads::SetShelfEnabled::Params> params(
       downloads::SetShelfEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  if (!GetExtension()->HasAPIPermission(APIPermission::kDownloadsShelf)) {
+  if (!GetExtension()->permissions_data()->HasAPIPermission(
+          APIPermission::kDownloadsShelf)) {
     error_ = download_extension_errors::kShelfPermission;
     return false;
   }

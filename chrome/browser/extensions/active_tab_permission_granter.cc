@@ -55,7 +55,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
                                                          -1,  // No tab id.
                                                          GURL());
 
-  if (extension->HasAPIPermission(APIPermission::kActiveTab) ||
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kActiveTab) ||
       requires_action_for_script_execution) {
     URLPattern pattern(UserScript::ValidUserScriptSchemes());
     // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
@@ -66,7 +67,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     new_apis.insert(APIPermission::kTab);
   }
 
-  if (extension->HasAPIPermission(APIPermission::kTabCapture))
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kTabCapture))
     new_apis.insert(APIPermission::kTabCaptureForTab);
 
   if (!new_apis.empty() || !new_hosts.is_empty()) {

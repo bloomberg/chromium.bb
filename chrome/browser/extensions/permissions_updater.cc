@@ -36,7 +36,7 @@ PermissionsUpdater::~PermissionsUpdater() {}
 void PermissionsUpdater::AddPermissions(
     const Extension* extension, const PermissionSet* permissions) {
   scoped_refptr<const PermissionSet> existing(
-      extension->GetActivePermissions());
+      extension->permissions_data()->active_permissions());
   scoped_refptr<PermissionSet> total(
       PermissionSet::CreateUnion(existing.get(), permissions));
   scoped_refptr<PermissionSet> added(
@@ -53,7 +53,7 @@ void PermissionsUpdater::AddPermissions(
 void PermissionsUpdater::RemovePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   scoped_refptr<const PermissionSet> existing(
-      extension->GetActivePermissions());
+      extension->permissions_data()->active_permissions());
   scoped_refptr<PermissionSet> total(
       PermissionSet::CreateDifference(existing.get(), permissions));
   scoped_refptr<PermissionSet> removed(
@@ -77,7 +77,8 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
     return;
 
   ExtensionPrefs::Get(profile_)->AddGrantedPermissions(
-      extension->id(), extension->GetActivePermissions().get());
+      extension->id(),
+      extension->permissions_data()->active_permissions().get());
 }
 
 void PermissionsUpdater::UpdateActivePermissions(

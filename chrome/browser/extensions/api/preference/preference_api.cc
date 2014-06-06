@@ -33,6 +33,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace keys = extensions::preference_api_constants;
 namespace helpers = extensions::preference_helpers;
@@ -512,7 +513,7 @@ bool PreferenceFunction::ValidateBrowserPref(
   APIPermission::ID permission = permission_type == PERMISSION_TYPE_READ
                                      ? read_permission
                                      : write_permission;
-  if (!GetExtension()->HasAPIPermission(permission)) {
+  if (!GetExtension()->permissions_data()->HasAPIPermission(permission)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, extension_pref_key);
     return false;

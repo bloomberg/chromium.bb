@@ -11,6 +11,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 using content::CONSOLE_MESSAGE_LEVEL_WARNING;
@@ -49,7 +50,7 @@ bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
     const Extension* extension,
     content::RenderViewHost* host) {
-  if (extension && extension->HasAPIPermission(permission))
+  if (extension && extension->permissions_data()->HasAPIPermission(permission))
     return true;
 
   if (extension)

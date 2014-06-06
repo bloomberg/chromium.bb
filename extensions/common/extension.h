@@ -23,8 +23,6 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/size.h"
@@ -43,8 +41,6 @@ class ImageSkia;
 }
 
 namespace extensions {
-class APIPermissionSet;
-class ManifestPermissionSet;
 class PermissionSet;
 class PermissionsData;
 class PermissionsParser;
@@ -249,12 +245,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const ExtensionId& extension_id);
-
-  // DEPRECATED: These methods have been moved to PermissionsData.
-  // TODO(rdevlin.cronin): remove these once all calls have been updated.
-  bool HasAPIPermission(APIPermission::ID permission) const;
-  bool HasAPIPermission(const std::string& permission_name) const;
-  scoped_refptr<const PermissionSet> GetActivePermissions() const;
 
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;

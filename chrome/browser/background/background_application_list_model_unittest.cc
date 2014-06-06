@@ -25,6 +25,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of
@@ -139,7 +140,7 @@ void AddBackgroundPermission(ExtensionService* service,
   scoped_refptr<Extension> temporary =
       CreateExtension(GenerateUniqueExtensionName(), true);
   scoped_refptr<const extensions::PermissionSet> permissions =
-      temporary->GetActivePermissions();
+      temporary->permissions_data()->active_permissions();
   extensions::PermissionsUpdater(service->profile()).AddPermissions(
       extension, permissions.get());
 }
@@ -150,8 +151,8 @@ void RemoveBackgroundPermission(ExtensionService* service,
                                                        service->profile())) {
     return;
   }
-  extensions::PermissionsUpdater(service->profile())
-      .RemovePermissions(extension, extension->GetActivePermissions().get());
+  extensions::PermissionsUpdater(service->profile()).RemovePermissions(
+      extension, extension->permissions_data()->active_permissions().get());
 }
 }  // namespace
 
@@ -319,9 +320,11 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
   ASSERT_EQ(0U, model->size());
 
   scoped_refptr<Extension> ext = CreateExtension("extension", false);
-  ASSERT_FALSE(ext->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_FALSE(
+      ext->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   scoped_refptr<Extension> bgapp = CreateExtension("application", true);
-  ASSERT_TRUE(bgapp->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_TRUE(
+      bgapp->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   ASSERT_TRUE(service->extensions() != NULL);
   ASSERT_EQ(0U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
@@ -338,19 +341,23 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
 
   // Change permissions back and forth
   AddBackgroundPermission(service, ext.get());
-  ASSERT_TRUE(ext->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_TRUE(
+      ext->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(2U, model->size());
   RemoveBackgroundPermission(service, bgapp.get());
-  ASSERT_FALSE(bgapp->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_FALSE(
+      bgapp->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
   RemoveBackgroundPermission(service, ext.get());
-  ASSERT_FALSE(ext->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_FALSE(
+      ext->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
   AddBackgroundPermission(service, bgapp.get());
-  ASSERT_TRUE(bgapp->HasAPIPermission(APIPermission::kBackground));
+  ASSERT_TRUE(
+      bgapp->permissions_data()->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
 }

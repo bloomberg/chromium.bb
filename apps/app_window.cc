@@ -41,6 +41,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -432,7 +433,8 @@ bool AppWindow::PreHandleKeyboardEvent(
   if (event.windowsKeyCode == ui::VKEY_ESCAPE &&
       (fullscreen_types_ != FULLSCREEN_TYPE_NONE) &&
       ((fullscreen_types_ & FULLSCREEN_TYPE_FORCED) == 0) &&
-      !extension->HasAPIPermission(APIPermission::kOverrideEscFullscreen)) {
+      !extension->permissions_data()->HasAPIPermission(
+          APIPermission::kOverrideEscFullscreen)) {
     Restore();
     return true;
   }

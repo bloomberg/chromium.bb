@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace apps {
 
@@ -262,7 +263,7 @@ const SavedFileEntry* SavedFilesService::GetFileEntry(
 void SavedFilesService::ClearQueueIfNoRetainPermission(
     const Extension* extension) {
   if (extensions::util::IsEphemeralApp(extension->id(), profile_) ||
-      !extension->GetActivePermissions()->HasAPIPermission(
+      !extension->permissions_data()->active_permissions()->HasAPIPermission(
           APIPermission::kFileSystemRetainEntries)) {
     ClearQueue(extension);
   }

@@ -41,6 +41,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "net/base/completion_callback.h"
 #include "url/gurl.h"
 
@@ -368,8 +369,9 @@ void MessageService::OpenChannelToNativeApp(
   if (extension_service) {
     const Extension* extension =
         extension_service->GetExtensionById(source_extension_id, false);
-    has_permission = extension && extension->HasAPIPermission(
-        APIPermission::kNativeMessaging);
+    has_permission = extension &&
+                     extension->permissions_data()->HasAPIPermission(
+                         APIPermission::kNativeMessaging);
   }
 
   if (!has_permission) {

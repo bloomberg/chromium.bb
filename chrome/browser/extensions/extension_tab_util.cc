@@ -402,8 +402,9 @@ void ExtensionTabUtil::ScrubTabValueForExtension(
 
 void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
                                             api::tabs::Tab* tab) {
-  bool has_permission = extension && extension->HasAPIPermission(
-      APIPermission::kTab);
+  bool has_permission =
+      extension &&
+      extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
 
   if (!has_permission) {
     tab->url.reset();

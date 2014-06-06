@@ -1066,7 +1066,8 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
   extension_id_prompting_ = extension->id();
   prompt_.reset(new ExtensionInstallPrompt(web_contents()));
   std::vector<base::FilePath> retained_file_paths;
-  if (extension->HasAPIPermission(APIPermission::kFileSystem)) {
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kFileSystem)) {
     std::vector<apps::SavedFileEntry> retained_file_entries =
         apps::SavedFilesService::Get(Profile::FromWebUI(
             web_ui()))->GetAllFileEntries(extension_id_prompting_);

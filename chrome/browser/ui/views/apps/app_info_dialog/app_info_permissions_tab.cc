@@ -14,6 +14,7 @@
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -467,7 +468,8 @@ AppInfoPermissionsTab::GetOptionalPermissionMessages() const {
 const std::vector<base::FilePath>
 AppInfoPermissionsTab::GetRetainedFilePermissions() const {
   std::vector<base::FilePath> retained_file_paths;
-  if (app_->HasAPIPermission(extensions::APIPermission::kFileSystem)) {
+  if (app_->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kFileSystem)) {
     std::vector<apps::SavedFileEntry> retained_file_entries =
         apps::SavedFilesService::Get(profile_)->GetAllFileEntries(app_->id());
     for (std::vector<apps::SavedFileEntry>::const_iterator it =

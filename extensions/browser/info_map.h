@@ -14,6 +14,7 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
 class ContentVerifier;

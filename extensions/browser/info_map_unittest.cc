@@ -10,6 +10,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -144,16 +145,25 @@ TEST_F(InfoMapTest, CheckPermissions) {
   // chrome-extension URL or from its web extent.
   const Extension* match = info_map->extensions().GetExtensionOrAppByURL(
       app->GetResourceURL("a.html"));
-  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kNotification));
+  EXPECT_TRUE(match &&
+              match->permissions_data()->HasAPIPermission(
+                  APIPermission::kNotification));
   match = info_map->extensions().GetExtensionOrAppByURL(app_url);
-  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kNotification));
-  EXPECT_FALSE(match && match->HasAPIPermission(APIPermission::kTab));
+  EXPECT_TRUE(match &&
+              match->permissions_data()->HasAPIPermission(
+                  APIPermission::kNotification));
+  EXPECT_FALSE(
+      match &&
+      match->permissions_data()->HasAPIPermission(APIPermission::kTab));
 
   // The extension should have the tabs permission.
   match = info_map->extensions().GetExtensionOrAppByURL(
       extension->GetResourceURL("a.html"));
-  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kTab));
-  EXPECT_FALSE(match && match->HasAPIPermission(APIPermission::kNotification));
+  EXPECT_TRUE(match &&
+              match->permissions_data()->HasAPIPermission(APIPermission::kTab));
+  EXPECT_FALSE(match &&
+               match->permissions_data()->HasAPIPermission(
+                   APIPermission::kNotification));
 
   // Random URL should not have any permissions.
   GURL evil_url("http://evil.com/a.html");

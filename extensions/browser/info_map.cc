@@ -10,6 +10,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
 
@@ -150,7 +151,8 @@ void InfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
   if (origin.SchemeIs(kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
-    if (extension && extension->HasAPIPermission(permission) &&
+    if (extension &&
+        extension->permissions_data()->HasAPIPermission(permission) &&
         process_map_.Contains(id, process_id)) {
       extensions->Insert(extension);
     }
@@ -161,7 +163,7 @@ void InfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
   for (; i != extensions_.end(); ++i) {
     if ((*i)->web_extent().MatchesSecurityOrigin(origin) &&
         process_map_.Contains((*i)->id(), process_id) &&
-        (*i)->HasAPIPermission(permission)) {
+        (*i)->permissions_data()->HasAPIPermission(permission)) {
       extensions->Insert(*i);
     }
   }

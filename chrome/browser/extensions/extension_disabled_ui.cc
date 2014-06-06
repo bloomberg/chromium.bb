@@ -39,6 +39,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -290,7 +291,8 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
   std::vector<base::string16> permission_warnings =
       extensions::PermissionMessageProvider::Get()->GetWarningMessages(
-          extension_->GetActivePermissions(), extension_->GetType());
+          extension_->permissions_data()->active_permissions(),
+          extension_->GetType());
   if (is_remote_install_) {
     messages.push_back(l10n_util::GetStringFUTF16(
         extension_->is_app()

@@ -41,6 +41,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
@@ -257,7 +258,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         Extension::NO_FLAGS,
         &error);
     EXPECT_TRUE(extension.get()) << error;
-    EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kGcm));
+    EXPECT_TRUE(
+        extension->permissions_data()->HasAPIPermission(APIPermission::kGcm));
 
     return extension;
   }

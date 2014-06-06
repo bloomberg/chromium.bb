@@ -25,6 +25,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -89,7 +90,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, DISABLED_Basic) {
             AppLaunchInfo::GetLaunchWebURL(installed_extension_));
   EXPECT_EQ(LAUNCH_CONTAINER_TAB,
             AppLaunchInfo::GetLaunchContainer(installed_extension_));
-  EXPECT_EQ(0u, installed_extension_->GetActivePermissions()->apis().size());
+  EXPECT_EQ(0u,
+            installed_extension_->permissions_data()
+                ->active_permissions()
+                ->apis()
+                .size());
   EXPECT_EQ(0u, IconsInfo::GetIcons(installed_extension_).map().size());
 }
 

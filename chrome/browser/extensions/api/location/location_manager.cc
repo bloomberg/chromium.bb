@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
 
@@ -358,7 +359,8 @@ void LocationManager::Observe(int type,
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
 
-      if (extension->HasAPIPermission(APIPermission::kLocation)) {
+      if (extension->permissions_data()->HasAPIPermission(
+              APIPermission::kLocation)) {
           content::GeolocationProvider::GetInstance()->
               UserDidOptIntoLocationServices();
       }

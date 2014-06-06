@@ -530,7 +530,7 @@ void ExtensionInstallPrompt::ConfirmStandaloneInstall(
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
+  permissions_ = extension->permissions_data()->active_permissions();
   delegate_ = delegate;
   prompt_ = prompt;
 
@@ -556,7 +556,7 @@ void ExtensionInstallPrompt::ConfirmInstall(
     const ShowDialogCallback& show_dialog_callback) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
+  permissions_ = extension->permissions_data()->active_permissions();
   delegate_ = delegate;
   prompt_.set_type(INSTALL_PROMPT);
   show_dialog_callback_ = show_dialog_callback;
@@ -583,7 +583,7 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
                                              const Extension* extension) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
+  permissions_ = extension->permissions_data()->active_permissions();
   delegate_ = delegate;
   bool is_remote_install =
       install_ui_->profile() &&
@@ -607,7 +607,7 @@ void ExtensionInstallPrompt::ConfirmExternalInstall(
     const Prompt& prompt) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
+  permissions_ = extension->permissions_data()->active_permissions();
   delegate_ = delegate;
   prompt_ = prompt;
   show_dialog_callback_ = show_dialog_callback;
@@ -634,7 +634,7 @@ void ExtensionInstallPrompt::ReviewPermissions(
     const std::vector<base::FilePath>& retained_file_paths) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
+  permissions_ = extension->permissions_data()->active_permissions();
   prompt_.set_retained_files(retained_file_paths);
   delegate_ = delegate;
   prompt_.set_type(POST_INSTALL_PERMISSIONS_PROMPT);

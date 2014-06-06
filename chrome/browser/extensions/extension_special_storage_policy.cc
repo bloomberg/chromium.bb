@@ -20,6 +20,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
@@ -103,8 +104,10 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
   if (!(NeedsProtection(extension) ||
-        extension->HasAPIPermission(APIPermission::kUnlimitedStorage) ||
-        extension->HasAPIPermission(APIPermission::kFileBrowserHandler) ||
+        extension->permissions_data()->HasAPIPermission(
+            APIPermission::kUnlimitedStorage) ||
+        extension->permissions_data()->HasAPIPermission(
+            APIPermission::kFileBrowserHandler) ||
         extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
         extension->is_app())) {
     return;
@@ -119,11 +122,13 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     if (extension->is_app())
       installed_apps_.Add(extension);
 
-    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kUnlimitedStorage) &&
         unlimited_extensions_.Add(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
 
-    if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Add(extension);
 
     if (extensions::AppIsolationInfo::HasIsolatedStorage(extension))
@@ -140,8 +145,10 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
   if (!(NeedsProtection(extension) ||
-        extension->HasAPIPermission(APIPermission::kUnlimitedStorage) ||
-        extension->HasAPIPermission(APIPermission::kFileBrowserHandler) ||
+        extension->permissions_data()->HasAPIPermission(
+            APIPermission::kUnlimitedStorage) ||
+        extension->permissions_data()->HasAPIPermission(
+            APIPermission::kFileBrowserHandler) ||
         extensions::AppIsolationInfo::HasIsolatedStorage(extension) ||
         extension->is_app())) {
     return;
@@ -155,11 +162,13 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     if (extension->is_app())
       installed_apps_.Remove(extension);
 
-    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kUnlimitedStorage) &&
         unlimited_extensions_.Remove(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
 
-    if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Remove(extension);
 
     if (extensions::AppIsolationInfo::HasIsolatedStorage(extension))

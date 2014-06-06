@@ -41,6 +41,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/media_switches.h"
@@ -550,14 +551,16 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
 
   if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
       tab_capture_allowed &&
-      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kTabCapture)) {
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
   }
 
   if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
       tab_capture_allowed &&
-      extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kTabCapture)) {
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
   }
@@ -585,12 +588,14 @@ void MediaCaptureDevicesDispatcher::
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
-      extension->HasAPIPermission(extensions::APIPermission::kAudioCapture)) {
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kAudioCapture)) {
     GetDefaultDevicesForProfile(profile, true, false, &devices);
   }
 
   if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
-      extension->HasAPIPermission(extensions::APIPermission::kVideoCapture)) {
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kVideoCapture)) {
     GetDefaultDevicesForProfile(profile, false, true, &devices);
   }
 

@@ -498,7 +498,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
         extensions::APIPermission::kAdView
       };
       for (size_t i = 0; i < arraysize(perms); ++i) {
-        if (extension->HasAPIPermission(perms[i]))
+        if (extension->permissions_data()->HasAPIPermission(perms[i]))
           return false;
       }
     }

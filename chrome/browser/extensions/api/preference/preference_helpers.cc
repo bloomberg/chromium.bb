@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 namespace preference_helpers {
@@ -100,7 +101,7 @@ void DispatchEventToExtensions(
     std::string extension_id = (*it)->id();
     // TODO(bauerb): Only iterate over registered event listeners.
     if (router->ExtensionHasEventListener(extension_id, event_name) &&
-        (*it)->HasAPIPermission(permission) &&
+        (*it)->permissions_data()->HasAPIPermission(permission) &&
         (!incognito || IncognitoInfo::IsSplitMode(it->get()) ||
          util::CanCrossIncognito(it->get(), profile))) {
       // Inject level of control key-value.

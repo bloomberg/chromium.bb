@@ -44,6 +44,7 @@
 #include "content/public/common/page_zoom.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -210,7 +211,8 @@ base::DictionaryValue* GetNotificationExceptionForPage(
 template <APIPermission::ID permission>
 bool HostedAppHasPermission(
     const extensions::Extension& extension, Profile* /*profile*/) {
-    return extension.is_hosted_app() && extension.HasAPIPermission(permission);
+  return extension.is_hosted_app() &&
+         extension.permissions_data()->HasAPIPermission(permission);
 }
 
 // Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from

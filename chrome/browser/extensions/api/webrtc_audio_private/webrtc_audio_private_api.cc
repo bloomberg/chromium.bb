@@ -17,6 +17,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
 
@@ -90,7 +91,7 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
        it != extensions->end(); ++it) {
     const std::string& extension_id = (*it)->id();
     if (router->ExtensionHasEventListener(extension_id, kEventName) &&
-        (*it)->HasAPIPermission("webrtcAudioPrivate")) {
+        (*it)->permissions_data()->HasAPIPermission("webrtcAudioPrivate")) {
       scoped_ptr<Event> event(
           new Event(kEventName, make_scoped_ptr(new base::ListValue()).Pass()));
       router->DispatchEventToExtension(extension_id, event.Pass());

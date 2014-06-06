@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -69,7 +70,8 @@ const char kPrefDisableStorageNotifications[] = "disable_storage_notifications";
 bool ShouldMonitorStorageFor(const Extension* extension) {
   // Only monitor storage for extensions that are granted unlimited storage.
   // Do not monitor storage for component extensions.
-  return extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
+  return extension->permissions_data()->HasAPIPermission(
+             APIPermission::kUnlimitedStorage) &&
          extension->location() != Manifest::COMPONENT;
 }
 

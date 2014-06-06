@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extension_test_util::LoadManifest;
@@ -130,9 +131,9 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Make sure it loaded properly.
   scoped_refptr<const PermissionSet> permissions =
-      extension->GetActivePermissions();
+      extension->permissions_data()->active_permissions();
   ASSERT_EQ(*default_permissions.get(),
-            *extension->GetActivePermissions().get());
+            *extension->permissions_data()->active_permissions().get());
 
   // Add a few permissions.
   APIPermissionSet apis;
@@ -161,7 +162,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   scoped_refptr<PermissionSet> active_permissions =
       PermissionSet::CreateUnion(default_permissions.get(), delta.get());
   ASSERT_EQ(*active_permissions.get(),
-            *extension->GetActivePermissions().get());
+            *extension->permissions_data()->active_permissions().get());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
@@ -197,7 +198,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   active_permissions =
       PermissionSet::CreateDifference(active_permissions.get(), delta.get());
   ASSERT_EQ(*active_permissions.get(),
-            *extension->GetActivePermissions().get());
+            *extension->permissions_data()->active_permissions().get());
 
   // Verify that the extension prefs hold the new active permissions and the
   // same granted permissions.

@@ -93,7 +93,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
 
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
-    DCHECK(extension->HasAPIPermission(*it));
+    DCHECK(extension->permissions_data()->HasAPIPermission(*it));
   }
 
   return extension;

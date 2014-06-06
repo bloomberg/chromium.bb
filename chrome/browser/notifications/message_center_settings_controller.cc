@@ -35,6 +35,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -227,7 +229,7 @@ void MessageCenterSettingsController::GetNotifierList(
        iter != extension_set->end();
        ++iter) {
     const extensions::Extension* extension = iter->get();
-    if (!extension->HasAPIPermission(
+    if (!extension->permissions_data()->HasAPIPermission(
             extensions::APIPermission::kNotification)) {
       continue;
     }

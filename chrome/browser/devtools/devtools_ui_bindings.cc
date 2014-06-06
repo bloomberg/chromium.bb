@@ -49,6 +49,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -757,10 +758,10 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
             extensions::ManifestURL::GetDevToolsPage(
                 extension->get()).spec()));
     extension_info->Set("name", new base::StringValue((*extension)->name()));
-    extension_info->Set(
-        "exposeExperimentalAPIs",
-        new base::FundamentalValue((*extension)->HasAPIPermission(
-            extensions::APIPermission::kExperimental)));
+    extension_info->Set("exposeExperimentalAPIs",
+                        new base::FundamentalValue(
+                            (*extension)->permissions_data()->HasAPIPermission(
+                                extensions::APIPermission::kExperimental)));
     results.Append(extension_info);
   }
   CallClientFunction("WebInspector.addExtensions", &results, NULL, NULL);

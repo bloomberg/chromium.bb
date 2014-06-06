@@ -18,6 +18,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
 
@@ -62,7 +63,8 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
 
   // A neat way to implement unlimited storage; if the extension has the
   // unlimited storage permission, force through all calls to Set().
-  if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage)) {
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kUnlimitedStorage)) {
     WeakUnlimitedSettingsStorage unlimited_storage(storage);
     callback.Run(&unlimited_storage);
   } else {

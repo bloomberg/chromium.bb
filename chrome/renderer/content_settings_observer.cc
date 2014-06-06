@@ -14,6 +14,8 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/dispatcher.h"
 #include "third_party/WebKit/public/platform/WebPermissionCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -434,7 +436,8 @@ bool ContentSettingsObserver::allowWebComponents(bool default_value) {
     return true;
 
   if (const extensions::Extension* extension = GetExtension(origin)) {
-    if (extension->HasAPIPermission(APIPermission::kExperimental))
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kExperimental))
       return true;
   }
 

@@ -133,11 +133,14 @@ TEST(ExtensionPermissionsTest, EffectiveHostPermissions) {
   hosts = extension->permissions_data()->GetEffectiveHostPermissions();
   EXPECT_TRUE(hosts.MatchesURL(GURL("http://google.com")));
   EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.reddit.com")));
-  EXPECT_TRUE(extension->GetActivePermissions()->HasEffectiveAccessToURL(
-      GURL("http://www.reddit.com")));
+  EXPECT_TRUE(extension->permissions_data()
+                  ->active_permissions()
+                  ->HasEffectiveAccessToURL(GURL("http://www.reddit.com")));
   EXPECT_TRUE(hosts.MatchesURL(GURL("http://news.ycombinator.com")));
-  EXPECT_TRUE(extension->GetActivePermissions()->HasEffectiveAccessToURL(
-      GURL("http://news.ycombinator.com")));
+  EXPECT_TRUE(
+      extension->permissions_data()
+          ->active_permissions()
+          ->HasEffectiveAccessToURL(GURL("http://news.ycombinator.com")));
   EXPECT_FALSE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts.json");

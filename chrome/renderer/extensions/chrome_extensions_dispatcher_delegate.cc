@@ -75,7 +75,8 @@ void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
   // whitelist entries need to be updated when the kManagement permission
   // changes.
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
-      extension->HasAPIPermission(extensions::APIPermission::kManagement)) {
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kManagement)) {
     blink::WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
         blink::WebString::fromUTF8(content::kChromeUIScheme),
@@ -276,7 +277,8 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
   // The API will be automatically set up when first used.
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT ||
       context_type == extensions::Feature::UNBLESSED_EXTENSION_CONTEXT) {
-    if (extension->HasAPIPermission(extensions::APIPermission::kWebView)) {
+    if (extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kWebView)) {
       module_system->Require("webView");
       if (extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
         module_system->Require("webViewExperimental");
@@ -303,7 +305,8 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
       is_within_platform_app) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kEnableAdview)) {
-      if (extension->HasAPIPermission(extensions::APIPermission::kAdView)) {
+      if (extension->permissions_data()->HasAPIPermission(
+              extensions::APIPermission::kAdView)) {
         module_system->Require("adView");
       } else {
         module_system->Require("denyAdView");

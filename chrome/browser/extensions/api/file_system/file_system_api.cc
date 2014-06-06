@@ -35,6 +35,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -386,7 +387,8 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
 void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_directory_ &&
-      !extension_->HasAPIPermission(APIPermission::kFileSystemDirectory)) {
+      !extension_->permissions_data()->HasAPIPermission(
+          APIPermission::kFileSystemDirectory)) {
     error_ = kRequiresFileSystemDirectoryError;
     SendResponse(false);
   }
@@ -869,7 +871,8 @@ bool FileSystemChooseEntryFunction::RunAsync() {
       picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
     } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENDIRECTORY) {
       is_directory_ = true;
-      if (!extension_->HasAPIPermission(APIPermission::kFileSystemDirectory)) {
+      if (!extension_->permissions_data()->HasAPIPermission(
+              APIPermission::kFileSystemDirectory)) {
         error_ = kRequiresFileSystemDirectoryError;
         return false;
       }

@@ -12,6 +12,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"
@@ -329,7 +330,8 @@ void PrepareFilesForWritableApp(
 }
 
 bool HasFileSystemWritePermission(const Extension* extension) {
-  return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
+  return extension->permissions_data()->HasAPIPermission(
+      APIPermission::kFileSystemWrite);
 }
 
 bool ValidateFileEntryAndGetPath(

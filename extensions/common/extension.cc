@@ -28,12 +28,11 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/switches.h"
-#include "extensions/common/url_pattern_set.h"
+#include "extensions/common/url_pattern.h"
 #include "net/base/filename_util.h"
 #include "url/url_util.h"
 
@@ -285,18 +284,6 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(extensions::kExtensionScheme) +
               url::kStandardSchemeSeparator + extension_id + "/");
-}
-
-bool Extension::HasAPIPermission(APIPermission::ID permission) const {
-  return permissions_data_->HasAPIPermission(permission);
-}
-
-bool Extension::HasAPIPermission(const std::string& permission_name) const {
-  return permissions_data_->HasAPIPermission(permission_name);
-}
-
-scoped_refptr<const PermissionSet> Extension::GetActivePermissions() const {
-  return permissions_data_->active_permissions();
 }
 
 bool Extension::ShowConfigureContextMenus() const {

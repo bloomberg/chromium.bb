@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/features/simple_feature.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -385,7 +386,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     AppWindow* window) {
-  if (!GetExtension()->HasAPIPermission(
+  if (!GetExtension()->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kAlwaysOnTopWindows)) {
     error_ = kAlwaysOnTopPermission;
     return false;

@@ -104,6 +104,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
@@ -1401,8 +1402,9 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   expected_patterns.ClearPatterns();
   AddPattern(&expected_patterns, "http://*.google.com/*");
   AddPattern(&expected_patterns, "https://*.google.com/*");
-  EXPECT_EQ(expected_patterns,
-            extension->GetActivePermissions()->explicit_hosts());
+  EXPECT_EQ(
+      expected_patterns,
+      extension->permissions_data()->active_permissions()->explicit_hosts());
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
@@ -2605,7 +2607,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, registry_->enabled_extensions().size());
   const std::string id1 = extension->id();
-  EXPECT_TRUE(extension->HasAPIPermission(
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       extensions::AppLaunchInfo::GetFullLaunchURL(extension)));
@@ -2619,7 +2621,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, registry_->enabled_extensions().size());
   const std::string id2 = extension->id();
-  EXPECT_TRUE(extension->HasAPIPermission(
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       extensions::AppLaunchInfo::GetFullLaunchURL(extension)));
@@ -4520,7 +4522,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, registry_->enabled_extensions().size());
   const std::string id1 = extension->id();
-  EXPECT_TRUE(extension->HasAPIPermission(
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   const GURL origin1(
       extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
@@ -4533,7 +4535,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, registry_->enabled_extensions().size());
   const std::string id2 = extension->id();
-  EXPECT_TRUE(extension->HasAPIPermission(
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       extensions::AppLaunchInfo::GetFullLaunchURL(extension)));

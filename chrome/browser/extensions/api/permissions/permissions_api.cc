@@ -15,6 +15,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 namespace extensions {
@@ -60,13 +61,14 @@ bool PermissionsContainsFunction::RunSync() {
     return false;
 
   results_ = Contains::Results::Create(
-      GetExtension()->GetActivePermissions()->Contains(*permissions.get()));
+      GetExtension()->permissions_data()->active_permissions()->Contains(
+          *permissions.get()));
   return true;
 }
 
 bool PermissionsGetAllFunction::RunSync() {
-  scoped_ptr<Permissions> permissions =
-      helpers::PackPermissionSet(GetExtension()->GetActivePermissions().get());
+  scoped_ptr<Permissions> permissions = helpers::PackPermissionSet(
+      GetExtension()->permissions_data()->active_permissions().get());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }

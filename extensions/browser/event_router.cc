@@ -30,6 +30,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -533,8 +534,9 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
   // permission for it (or if the event originated from itself).
   if (!event->event_url.is_empty() &&
       event->event_url.host() != extension->id() &&
-      !extension->GetActivePermissions()->HasEffectiveAccessToURL(
-          event->event_url)) {
+      !extension->permissions_data()
+           ->active_permissions()
+           ->HasEffectiveAccessToURL(event->event_url)) {
     return;
   }
 

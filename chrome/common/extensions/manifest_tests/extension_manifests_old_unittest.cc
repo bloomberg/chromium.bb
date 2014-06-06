@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests that the old permission name "unlimited_storage" still works for
@@ -13,6 +14,6 @@ TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
   scoped_refptr<extensions::Extension> extension = LoadAndExpectSuccess(
       "old_unlimited_storage.json", extensions::Manifest::INTERNAL,
       extensions::Extension::NO_FLAGS);
-  EXPECT_TRUE(extension->HasAPIPermission(
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       extensions::APIPermission::kUnlimitedStorage));
 }

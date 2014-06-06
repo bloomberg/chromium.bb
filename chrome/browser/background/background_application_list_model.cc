@@ -33,6 +33,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -277,8 +278,10 @@ int BackgroundApplicationListModel::GetPosition(
 bool BackgroundApplicationListModel::RequiresBackgroundModeForPushMessaging(
     const Extension& extension) {
   // No PushMessaging permission - does not require the background mode.
-  if (!extension.HasAPIPermission(APIPermission::kPushMessaging))
+  if (!extension.permissions_data()->HasAPIPermission(
+          APIPermission::kPushMessaging)) {
     return false;
+  }
 
   // If in the whitelist, then does not require background mode even if
   // uses push messaging.
@@ -306,7 +309,8 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
 
   // Not a background app if we don't have the background permission or
   // the push messaging permission
-  if (!extension.HasAPIPermission(APIPermission::kBackground) &&
+  if (!extension.permissions_data()->HasAPIPermission(
+          APIPermission::kBackground) &&
       !RequiresBackgroundModeForPushMessaging(extension))
     return false;
 

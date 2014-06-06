@@ -735,7 +735,7 @@ void Dispatcher::OnUpdatePermissions(
   scoped_refptr<const PermissionSet> delta = new PermissionSet(
       apis, manifest_permissions, explicit_hosts, scriptable_hosts);
   scoped_refptr<const PermissionSet> old_active =
-      extension->GetActivePermissions();
+      extension->permissions_data()->active_permissions();
   UpdatedExtensionPermissionsInfo::Reason reason =
       static_cast<UpdatedExtensionPermissionsInfo::Reason>(reason_id);
 

@@ -17,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using extensions::api::events::Rule;
 
@@ -59,7 +60,8 @@ bool RulesFunction::HasPermission() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
   if (IsWebViewEvent(event_name) &&
-      extension_->HasAPIPermission(extensions::APIPermission::kWebView))
+      extension_->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kWebView))
     return true;
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(

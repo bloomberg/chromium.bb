@@ -20,6 +20,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -110,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppConverterTest, GoodApp) {
   EXPECT_EQ(GURL(kAppUrl), extensions::AppLaunchInfo::GetLaunchWebURL(app));
   EXPECT_EQ(extensions::LAUNCH_CONTAINER_TAB,
             extensions::AppLaunchInfo::GetLaunchContainer(app));
-  EXPECT_EQ(0u, app->GetActivePermissions()->apis().size());
+  EXPECT_EQ(0u, app->permissions_data()->active_permissions()->apis().size());
   EXPECT_EQ(1u, extensions::IconsInfo::GetIcons(app).map().size());
 
   const extensions::Extension* installed =

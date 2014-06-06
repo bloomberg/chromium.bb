@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/common/extension.h"

@@ -23,6 +23,7 @@
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extension_test_util::LoadManifestUnchecked;
@@ -348,8 +349,8 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
   EXPECT_TRUE(extension_service->extensions()->Contains(extension->id()));
-  EXPECT_TRUE(
-      extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest));
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      APIPermission::kDeclarativeWebRequest));
   env_.GetExtensionSystem()->SetReady();
 
   // 2. First run, adding a rule for the extension.

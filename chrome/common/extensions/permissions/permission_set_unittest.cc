@@ -131,7 +131,7 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   scoped_refptr<const PermissionSet> permissions;
 
   extension = LoadManifest("effective_host_permissions", "empty.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_EQ(0u,
             extension->permissions_data()
                 ->GetEffectiveHostPermissions()
@@ -142,7 +142,7 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "one_host.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(
       GURL("http://www.google.com")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToURL(
@@ -151,14 +151,14 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
 
   extension = LoadManifest("effective_host_permissions",
                            "one_host_wildcard.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("http://google.com")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(
       GURL("http://foo.google.com")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "two_hosts.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(
       GURL("http://www.google.com")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(
@@ -167,14 +167,14 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
 
   extension = LoadManifest("effective_host_permissions",
                            "https_not_considered.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("http://google.com")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("https://google.com")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions",
                            "two_content_scripts.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("http://google.com")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(
       GURL("http://www.reddit.com")));
@@ -183,7 +183,7 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("http://test/")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToURL(GURL("https://test/")));
   EXPECT_TRUE(
@@ -191,14 +191,14 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts2.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("http://test/")));
   EXPECT_TRUE(
       permissions->HasEffectiveAccessToURL(GURL("http://www.google.com")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "all_hosts3.json");
-  permissions = extension->GetActivePermissions();
+  permissions = extension->permissions_data()->active_permissions();
   EXPECT_FALSE(permissions->HasEffectiveAccessToURL(GURL("http://test/")));
   EXPECT_TRUE(permissions->HasEffectiveAccessToURL(GURL("https://test/")));
   EXPECT_TRUE(
@@ -623,9 +623,9 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
       continue;
 
     scoped_refptr<const PermissionSet> old_p(
-        old_extension->GetActivePermissions());
+        old_extension->permissions_data()->active_permissions());
     scoped_refptr<const PermissionSet> new_p(
-        new_extension->GetActivePermissions());
+        new_extension->permissions_data()->active_permissions());
     Manifest::Type extension_type = old_extension->GetType();
 
     bool increased = PermissionMessageProvider::Get()->IsPrivilegeIncrease(
@@ -947,9 +947,8 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "audio-video.json");
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
-  PermissionSet* set =
-      const_cast<PermissionSet*>(
-          extension->GetActivePermissions().get());
+  PermissionSet* set = const_cast<PermissionSet*>(
+      extension->permissions_data()->active_permissions().get());
   std::vector<base::string16> warnings =
       provider->GetWarningMessages(set, extension->GetType());
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
@@ -991,7 +990,8 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "web_request_not_all_host_permissions.json");
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
-  const PermissionSet* set = extension->GetActivePermissions().get();
+  const PermissionSet* set =
+      extension->permissions_data()->active_permissions().get();
   std::vector<base::string16> warnings =
       provider->GetWarningMessages(set, extension->GetType());
   EXPECT_TRUE(Contains(warnings, "Block parts of web pages"));
@@ -1002,7 +1002,7 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   // permissions do cover all hosts.
   extension =
       LoadManifest("permissions", "web_request_all_host_permissions.json");
-  set = extension->GetActivePermissions().get();
+  set = extension->permissions_data()->active_permissions().get();
   warnings = provider->GetWarningMessages(set, extension->GetType());
   EXPECT_FALSE(Contains(warnings, "Block parts of web pages"));
   EXPECT_TRUE(Contains(
@@ -1014,7 +1014,8 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
       LoadManifest("permissions", "serial.json");
 
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSerial));
+  EXPECT_TRUE(
+      extension->permissions_data()->HasAPIPermission(APIPermission::kSerial));
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   EXPECT_TRUE(
@@ -1028,7 +1029,8 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_any_host.json");
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  EXPECT_TRUE(
+      extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   EXPECT_EQ(1u, warnings.size());
@@ -1042,7 +1044,8 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_one_domain_two_hostnames.json");
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  EXPECT_TRUE(
+      extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
 
@@ -1068,7 +1071,8 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_two_domains_one_hostname.json");
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
+  EXPECT_TRUE(
+      extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
 
@@ -1543,7 +1547,8 @@ TEST(PermissionsTest, SyncFileSystemPermission) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kSyncFileSystem);
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSyncFileSystem));
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      APIPermission::kSyncFileSystem));
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   EXPECT_TRUE(Contains(warnings, "Store data in your Google Drive account"));
@@ -1573,12 +1578,12 @@ TEST(PermissionsTest, IsPrivilegeIncrease_DeclarativeWebRequest) {
   scoped_refptr<Extension> extension(
       LoadManifest("permissions", "permissions_all_urls.json"));
   scoped_refptr<const PermissionSet> permissions(
-      extension->GetActivePermissions());
+      extension->permissions_data()->active_permissions());
 
   scoped_refptr<Extension> extension_dwr(
       LoadManifest("permissions", "web_request_all_host_permissions.json"));
   scoped_refptr<const PermissionSet> permissions_dwr(
-      extension_dwr->GetActivePermissions());
+      extension_dwr->permissions_data()->active_permissions());
 
   EXPECT_FALSE(PermissionMessageProvider::Get()->
                    IsPrivilegeIncrease(permissions.get(),

@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 namespace sync_helper {
@@ -42,7 +43,7 @@ SyncType GetSyncType(const Extension* extension) {
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
   if (PluginInfo::HasPlugins(extension) ||
-      extension->HasAPIPermission(APIPermission::kPlugin)) {
+      extension->permissions_data()->HasAPIPermission(APIPermission::kPlugin)) {
     return SYNC_TYPE_NONE;
   }
 

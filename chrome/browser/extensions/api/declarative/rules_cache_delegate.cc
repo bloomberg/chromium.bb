@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace {
 
@@ -138,8 +139,10 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
          i != extensions->end();
          ++i) {
       bool needs_apis_storing_rules =
-          (*i)->HasAPIPermission(APIPermission::kDeclarativeContent) ||
-          (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest);
+          (*i)->permissions_data()->HasAPIPermission(
+              APIPermission::kDeclarativeContent) ||
+          (*i)->permissions_data()->HasAPIPermission(
+              APIPermission::kDeclarativeWebRequest);
       bool respects_off_the_record =
           !(profile_->IsOffTheRecord()) ||
           util::IsIncognitoEnabled((*i)->id(), profile_);
