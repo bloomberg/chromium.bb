@@ -1036,8 +1036,6 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 
 crbug.com/381373 [ Win ]  virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Failure ]
 
-crbug.com/381451 fast/frames/sandboxed-iframe-autofocus-denied.html [ Pass Failure ]
-
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
