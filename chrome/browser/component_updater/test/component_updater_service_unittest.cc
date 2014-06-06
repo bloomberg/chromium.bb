@@ -687,10 +687,11 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
           "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
-  // Also check what happens if previous check too soon.
+  // Also check what happens if previous check too soon. It works, since this
+  // direct OnDemand call does not implement a cooldown.
   test_configurator()->SetOnDemandTime(60 * 60);
   EXPECT_EQ(
-      ComponentUpdateService::kError,
+      ComponentUpdateService::kOk,
       OnDemandTester::OnDemand(component_updater(), GetCrxComponentID(com2)));
   // Okay, now reset to 0 for the other tests.
   test_configurator()->SetOnDemandTime(0);
@@ -1405,6 +1406,8 @@ class CancelResourceController : public TestResourceController {
   int resume_called_;
 };
 
+// Tests the on-demand update with resource throttle, including the
+// cooldown interval between calls.
 TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
   MockServiceObserver observer;
   {
@@ -1418,6 +1421,19 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
         .Times(1);
     EXPECT_CALL(observer,
                 OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+        .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+        .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+        .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+        .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
         .Times(1);
   }
 
@@ -1441,23 +1457,69 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
 
   EXPECT_EQ(0, post_interceptor_->GetHitCount());
 
-  CancelResourceController controller;
+  {
+    // First on-demand update check is expected to succeeded.
+    CancelResourceController controller;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
-                 component_updater(),
-                 &controller,
-                 "abagagagagagagagagagagagagagagag"));
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
+                   component_updater(),
+                   &controller,
+                   "abagagagagagagagagagagagagagagag"));
 
-  RunThreads();
+    RunThreads();
 
-  EXPECT_EQ(1, post_interceptor_->GetHitCount());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+    EXPECT_EQ(1, post_interceptor_->GetHitCount());
+    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  component_updater()->Stop();
+    component_updater()->Stop();
+  }
+
+  {
+    // Second on-demand update check is expected to succeed as well, since there
+    // is no cooldown interval between calls, due to calling SetOnDemandTime.
+    test_configurator()->SetOnDemandTime(0);
+    test_configurator()->SetLoopCount(1);
+    component_updater()->Start();
+
+    CancelResourceController controller;
+
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
+                   component_updater(),
+                   &controller,
+                   "abagagagagagagagagagagagagagagag"));
+
+    RunThreads();
+
+    EXPECT_EQ(1, post_interceptor_->GetHitCount());
+    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+    EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+    component_updater()->Stop();
+  }
+
+  {
+    // This on-demand call is expected not to trigger a component update check.
+    test_configurator()->SetOnDemandTime(1000000);
+    component_updater()->Start();
+
+    CancelResourceController controller;
+
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
+                   component_updater(),
+                   &controller,
+                   "abagagagagagagagagagagagagagagag"));
+    RunThreadsUntilIdle();
+  }
 }
 
 // Tests adding and removing observers.

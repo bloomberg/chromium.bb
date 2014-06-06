@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/version.h"
 #include "url/gurl.h"
 
@@ -199,12 +200,6 @@ class ComponentUpdateService {
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
 
-  // Returns details about registered component.
-  // Note: Object returned here is owned by this class, in simple words
-  // don't try to free this object.
-  virtual CrxUpdateItem* GetComponentDetails(
-      const std::string& component_id) const = 0;
-
   // Returns an interface for on-demand updates. On-demand updates are
   // proactively triggered outside the normal component update service schedule.
   virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
@@ -212,7 +207,13 @@ class ComponentUpdateService {
   virtual ~ComponentUpdateService() {}
 
  private:
+  // Returns details about registered component. The object returned is owned
+  // by this class. TODO(sorin): replace with a WeakPtr.
+  virtual CrxUpdateItem* GetComponentDetails(
+      const std::string& component_id) const = 0;
+
   friend class ::ComponentsUI;
+  FRIEND_TEST_ALL_PREFIXES(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate);
 };
 
 typedef ComponentUpdateService::Observer ServiceObserver;
@@ -223,7 +224,11 @@ class OnDemandUpdater {
 
   // Returns a network resource throttle. It means that a component will be
   // downloaded and installed before the resource is unthrottled. This function
-  // can be called from the IO thread.
+  // can be called from the IO thread. The function implements a cooldown
+  // interval of 30 minutes. That means it will ineffective to call the
+  // function before the cooldown interval has passed. This behavior is intended
+  // to be defensive against programming bugs, usually triggered by web fetches,
+  // where the on-demand functionality is invoked too often.
   virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
       net::URLRequest* request,
       const std::string& crx_id) = 0;
@@ -237,7 +242,7 @@ class OnDemandUpdater {
   // in progress, the function returns |kInProgress|. If an update is available,
   // the update will be applied. The caller can subscribe to component update
   // service notifications to get an indication about the outcome of the
-  // on-demand update.
+  // on-demand update. The function does not implement any cooldown interval.
   virtual ComponentUpdateService::Status OnDemandUpdate(
       const std::string& component_id) = 0;
 };

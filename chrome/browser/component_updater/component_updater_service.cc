@@ -201,6 +201,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
                         const CrxDownloader::Result& download_result);
 
   Status OnDemandUpdateInternal(CrxUpdateItem* item);
+  Status OnDemandUpdateWithCooldown(CrxUpdateItem* item);
 
   void ProcessPendingItems();
 
@@ -956,7 +957,7 @@ void CrxUpdateService::OnNewResourceThrottle(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check if we can on-demand update, else unblock the request anyway.
   CrxUpdateItem* item = FindUpdateItemById(crx_id);
-  Status status = OnDemandUpdateInternal(item);
+  Status status = OnDemandUpdateWithCooldown(item);
   if (status == kOk || status == kInProgress) {
     item->throttles.push_back(rt);
     return;
@@ -972,7 +973,7 @@ ComponentUpdateService::Status CrxUpdateService::OnDemandUpdate(
   return OnDemandUpdateInternal(FindUpdateItemById(component_id));
 }
 
-ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateInternal(
+ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateWithCooldown(
     CrxUpdateItem* uit) {
   if (!uit)
     return kError;
@@ -980,6 +981,14 @@ ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateInternal(
   // Check if the request is too soon.
   base::TimeDelta delta = base::Time::Now() - uit->last_check;
   if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay()))
+    return kError;
+
+  return OnDemandUpdateInternal(uit);
+}
+
+ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateInternal(
+    CrxUpdateItem* uit) {
+  if (!uit)
     return kError;
 
   Status service_status = GetServiceStatus(uit->status);
