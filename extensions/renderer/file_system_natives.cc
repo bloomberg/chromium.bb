@@ -149,7 +149,8 @@ void FileSystemNatives::GetDOMError(
 
   blink::WebDOMError dom_error = blink::WebDOMError::create(
       blink::WebString::fromUTF8(name), blink::WebString::fromUTF8(message));
-  args.GetReturnValue().Set(dom_error.toV8Value());
+  args.GetReturnValue().Set(
+      dom_error.toV8Value(args.Holder(), args.GetIsolate()));
 }
 
 }  // namespace extensions
