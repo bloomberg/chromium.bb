@@ -82,6 +82,8 @@ bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)
 
 bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
 {
+    TRACE_EVENT0("blink", "RenderView::hitTest");
+
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
     // into a child document, it could trigger a layout on the parent document, which can destroy RenderLayers
     // that are higher up in the call stack, leading to crashes.
