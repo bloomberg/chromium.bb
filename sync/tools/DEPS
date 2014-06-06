@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/invalidation",
   "+jingle/notifier/base",
   "+net",
   "+sync/internal_api/public",

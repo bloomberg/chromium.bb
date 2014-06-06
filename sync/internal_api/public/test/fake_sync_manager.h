@@ -12,7 +12,6 @@
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/test/null_sync_core_proxy.h"
 #include "sync/internal_api/public/test/test_user_share.h"
-#include "sync/notifier/invalidator_registrar.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -156,9 +155,6 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet downloaded_types_;
   // The set of types that have been enabled.
   ModelTypeSet enabled_types_;
-
-  // Faked invalidator state.
-  InvalidatorRegistrar registrar_;
 
   // The types for which a refresh was most recently requested.
   ModelTypeSet last_refresh_request_types_;

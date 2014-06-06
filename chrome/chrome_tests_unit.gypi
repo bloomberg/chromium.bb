@@ -21,6 +21,7 @@
         '../components/components.gyp:bookmarks_test_support',
         '../components/components.gyp:gcm_driver_test_support',
         '../components/components.gyp:history_core_test_support',
+        '../components/components.gyp:invalidation_test_support',
         '../components/components.gyp:metrics_test_support',
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:signin_core_browser_test_support',

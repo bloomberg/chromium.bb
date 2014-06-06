@@ -11,10 +11,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/invalidation_logger.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidator_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "sync/notifier/invalidator_registrar.h"
 
 class Profile;
 

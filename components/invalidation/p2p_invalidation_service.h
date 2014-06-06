@@ -6,8 +6,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/p2p_invalidator.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "sync/notifier/p2p_invalidator.h"
 
 #ifndef COMPONENTS_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 #define COMPONENTS_INVALIDATION_P2P_INVALIDATION_SERVICE_H_

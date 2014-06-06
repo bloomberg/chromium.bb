@@ -34,6 +34,7 @@ class SYNC_EXPORT UnackedInvalidationSet {
   static const size_t kMaxBufferedInvalidations;
 
   UnackedInvalidationSet(invalidation::ObjectId id);
+  UnackedInvalidationSet(const UnackedInvalidationSet& other);
   ~UnackedInvalidationSet();
 
   // Returns the ObjectID of the invalidations this class is tracking.

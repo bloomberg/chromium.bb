@@ -10,13 +10,12 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/invalidation_service_util.h"
+#include "components/invalidation/non_blocking_invalidator.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/notifier/gcm_network_channel_delegate.h"
+#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
-#include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/non_blocking_invalidator.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 
 static const char* kOAuth2Scopes[] = {

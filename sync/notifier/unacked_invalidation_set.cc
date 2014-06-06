@@ -7,7 +7,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "sync/internal_api/public/base/ack_handle.h"
 #include "sync/notifier/object_id_invalidation_map.h"
-#include "sync/notifier/sync_invalidation_listener.h"
 
 namespace {
 
@@ -26,6 +25,13 @@ UnackedInvalidationSet::UnackedInvalidationSet(
     invalidation::ObjectId id)
     : registered_(false),
       object_id_(id) {}
+
+UnackedInvalidationSet::UnackedInvalidationSet(
+    const UnackedInvalidationSet& other)
+    : registered_(other.registered_),
+      object_id_(other.object_id_),
+      invalidations_(other.invalidations_) {
+}
 
 UnackedInvalidationSet::~UnackedInvalidationSet() {}
 

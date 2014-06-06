@@ -16,13 +16,13 @@
 #include "base/values.h"
 #include "components/invalidation/invalidation_logger.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidator_registrar.h"
 #include "components/invalidation/ticl_settings_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/invalidator_registrar.h"
 
 namespace gcm {
 class GCMDriver;
