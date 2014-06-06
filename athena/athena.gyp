@@ -21,6 +21,7 @@
       ],
       'sources': [
         # All .cc, .h under athena, except unittests
+        'activity/activity.cc',
         'activity/activity_factory.cc',
         'activity/activity_manager_impl.cc',
         'activity/activity_view_manager_impl.cc',

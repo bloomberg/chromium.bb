@@ -15,7 +15,7 @@ class ActivityViewModel;
 
 class ATHENA_EXPORT Activity {
  public:
-  virtual ~Activity() {}
+  virtual ~Activity();
 
   // The Activity retains ownership of the returned view-model.
   virtual ActivityViewModel* GetActivityViewModel() = 0;

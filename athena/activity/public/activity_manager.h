@@ -20,12 +20,12 @@ class ATHENA_EXPORT ActivityManager {
 
   virtual ~ActivityManager() {}
 
-  // Adds/Removes a task.
-  virtual void AddActivity(Activity* task) = 0;
-  virtual void RemoveActivity(Activity* task) = 0;
+  // Adds/Removes an activity. ActivityManager owns the activities.
+  virtual void AddActivity(Activity* activity) = 0;
+  virtual void RemoveActivity(Activity* activity) = 0;
 
   // Updates the UI when the task color/title changes.
-  virtual void UpdateActivity(Activity* task) = 0;
+  virtual void UpdateActivity(Activity* activity) = 0;
 };
 
 }  // namespace athena

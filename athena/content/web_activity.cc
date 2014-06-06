@@ -15,7 +15,6 @@ WebActivity::WebActivity(content::WebContents* contents)
 }
 
 WebActivity::~WebActivity() {
-  ActivityManager::Get()->RemoveActivity(this);
 }
 
 ActivityViewModel* WebActivity::GetActivityViewModel() {

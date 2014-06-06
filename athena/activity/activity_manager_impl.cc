@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_manager.h"
 #include "base/logging.h"
 
@@ -23,6 +24,9 @@ class ActivityManagerImpl : public ActivityManager {
     instance = this;
   }
   virtual ~ActivityManagerImpl() {
+    while (activities_.empty())
+      delete activities_.front();
+
     CHECK_EQ(this, instance);
     instance = NULL;
   }
@@ -64,11 +68,10 @@ class ActivityManagerImpl : public ActivityManager {
 
 // static
 ActivityManager* ActivityManager::Create() {
-  new ActivityManagerImpl();
-  CHECK(instance);
-
   ActivityViewManager::Create();
 
+  new ActivityManagerImpl();
+  CHECK(instance);
   return instance;
 }
 
@@ -77,10 +80,9 @@ ActivityManager* ActivityManager::Get() {
 }
 
 void ActivityManager::Shutdown() {
-  ActivityViewManager::Shutdown();
-
   CHECK(instance);
   delete instance;
+  ActivityViewManager::Shutdown();
 }
 
 }  // namespace athena
