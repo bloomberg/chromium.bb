@@ -32,7 +32,6 @@
 #define ServiceWorkerGlobalScopeProxy_h
 
 #include "core/workers/WorkerReportingProxy.h"
-#include "public/platform/WebString.h"
 #include "public/web/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -72,7 +71,6 @@ public:
     virtual void dispatchInstallEvent(int) OVERRIDE;
     virtual void dispatchFetchEvent(int, const WebServiceWorkerRequest&) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
-    virtual void dispatchPushEvent(int, const WebString& data) OVERRIDE;
     virtual void dispatchSyncEvent(int) OVERRIDE;
 
     // WorkerReportingProxy overrides:

@@ -145,7 +145,6 @@ pointerlockchange
 pointerlockerror
 popstate
 progress
-push
 ratechange
 ready
 readystatechange
