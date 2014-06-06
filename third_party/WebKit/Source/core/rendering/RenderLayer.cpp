@@ -746,18 +746,7 @@ void RenderLayer::setHasVisibleContent()
     m_visibleContentStatusDirty = false;
 
     setNeedsToUpdateAncestorDependentProperties();
-
     repainter().computeRepaintRects();
-    if (!m_stackingNode->isNormalFlowOnly()) {
-        // We don't collect invisible layers in z-order lists if we are not in compositing mode.
-        // As we became visible, we need to dirty our stacking containers ancestors to be properly
-        // collected. FIXME: When compositing, we could skip this dirtying phase.
-        for (RenderLayerStackingNode* sc = m_stackingNode->ancestorStackingContextNode(); sc; sc = sc->ancestorStackingContextNode()) {
-            sc->dirtyZOrderLists();
-            if (sc->layer()->hasVisibleContent())
-                break;
-        }
-    }
 
     if (parent())
         parent()->setAncestorChainHasVisibleDescendant();
