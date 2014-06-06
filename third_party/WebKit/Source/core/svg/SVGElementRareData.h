@@ -59,7 +59,7 @@ public:
     SVGCursorElement* cursorElement() const { return m_cursorElement; }
     void setCursorElement(SVGCursorElement* cursorElement) { m_cursorElement = cursorElement; }
 
-    SVGElement* correspondingElement() { return m_correspondingElement; }
+    SVGElement* correspondingElement() { return m_correspondingElement.get(); }
     void setCorrespondingElement(SVGElement* correspondingElement) { m_correspondingElement = correspondingElement; }
 
     CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }
@@ -130,7 +130,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
-    RawPtrWillBeMember<SVGElement> m_correspondingElement;
+    RefPtrWillBeMember<SVGElement> m_correspondingElement;
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;

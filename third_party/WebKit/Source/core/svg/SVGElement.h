@@ -49,6 +49,8 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
 class SVGElement : public Element {
 public:
     virtual ~SVGElement();
+    virtual void attach(const AttachContext&) OVERRIDE;
+    virtual void detach(const AttachContext&) OVERRIDE;
 
     virtual short tabIndex() const OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }

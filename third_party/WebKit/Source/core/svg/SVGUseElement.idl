@@ -31,10 +31,6 @@ interface SVGUseElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength   y;
     readonly attribute SVGAnimatedLength   width;
     readonly attribute SVGAnimatedLength   height;
-
-    // in SVG 1.1, removed in SVG 2
-    [MeasureAs=SVGInstanceRoot] readonly attribute SVGElementInstance instanceRoot;
-    readonly attribute SVGElementInstance animatedInstanceRoot;
 };
 
 SVGUseElement implements SVGURIReference;

@@ -107,6 +107,20 @@ SVGElement::~SVGElement()
 #endif
 }
 
+void SVGElement::detach(const AttachContext& context)
+{
+    Element::detach(context);
+    if (SVGElement* element = correspondingElement())
+        element->removeInstanceMapping(this);
+}
+
+void SVGElement::attach(const AttachContext& context)
+{
+    Element::attach(context);
+    if (SVGElement* element = correspondingElement())
+        element->mapInstanceToElement(this);
+}
+
 short SVGElement::tabIndex() const
 {
     if (supportsFocus())
@@ -330,7 +344,7 @@ void SVGElement::childrenChanged(bool changedByParser, Node* beforeChange, Node*
 {
     Element::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 
-    // Invalidate all SVGElementInstances associated with us.
+    // Invalidate all instances associated with us.
     if (!changedByParser)
         invalidateInstances();
 }
@@ -524,6 +538,9 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
 {
     ASSERT(instance);
     ASSERT(instance->inUseShadowTree());
+
+    if (!hasSVGRareData())
+        return;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = svgRareData()->elementInstances();
     ASSERT(instances.contains(instance));
@@ -1041,6 +1058,8 @@ void SVGElement::invalidateInstances()
             element->invalidateShadowTree();
         }
     }
+
+    svgRareData()->elementInstances().clear();
 
     document().updateRenderTreeIfNeeded();
 }

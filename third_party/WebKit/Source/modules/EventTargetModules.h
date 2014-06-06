@@ -22,7 +22,6 @@ class MIDIInput;
 class MIDIPort;
 class MediaStream;
 class Notification;
-class SVGElementInstance;
 class ExecutionContext;
 class ScriptProcessorNode;
 class WebSocket;
