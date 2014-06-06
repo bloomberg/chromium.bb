@@ -8,6 +8,7 @@ div, span {
 </style>
 <script>
 var dropReceived;
+var beforeUnloadReceived = false;
 function log(str)
 {
     var result = document.getElementById('result');
@@ -57,16 +58,17 @@ window.onload = function()
     window.addEventListener('beforeunload', function (e) {
         if (!dropReceived)
             log('Drop not received');
+        beforeUnloadReceived = true;
         e.preventDefault();
         testRunner.notifyDone();
     });
 
     dragDrop(drop1);
-    unloadExpected = true;
     dragDrop(drop2);
     window.setTimeout(function () {
         // Deadman's switch to fail quickly.
-        log('FAIL: navigation expected');
+        if (!beforeUnloadReceived)
+            log('FAIL: navigation expected');
         testRunner.notifyDone();
     }, 0);
 }
