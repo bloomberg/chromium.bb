@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
 #include "content/public/renderer/render_thread.h"
@@ -144,6 +145,12 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   if (!extra_data.empty())
     metadata.set_extra_data(extra_data);
+  media::cast::proto::GeneralDescription* gen_desc =
+      metadata.mutable_general_description();
+  chrome::VersionInfo version_info;
+  gen_desc->set_product(version_info.Name());
+  gen_desc->set_product_version(version_info.Version());
+  gen_desc->set_os(version_info.OSType());
 
   scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
   int output_bytes;

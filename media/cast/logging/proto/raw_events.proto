@@ -68,6 +68,14 @@ enum EventType {
   PACKET_RECEIVED = 38;
 }
 
+// Contains information independent of the stream that describes the system
+// setup, e.g. OS and hardware info.
+message GeneralDescription {
+  optional string product = 1;
+  optional string product_version = 2;
+  optional string os = 3;
+}
+
 // Each log will contain one |LogMetadata|.
 message LogMetadata {
   // |true| if the events are related to audio. |false| if they are related to
@@ -90,9 +98,11 @@ message LogMetadata {
   // to a real time and date.
   optional int64 reference_timestamp_ms_at_unix_epoch = 5;
 
-  // Extra data to attach to the log, e.g. system info or
-  // experiment tags, in key-value JSON string format.
+  // Extra data to attach to the log, e.g. experiment tags,
+  // in key-value JSON string format. The data is supplied by the application.
   optional string extra_data = 6;
+
+  optional GeneralDescription general_description = 7;
 }
 
 message AggregatedFrameEvent {
