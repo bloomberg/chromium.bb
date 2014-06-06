@@ -973,6 +973,14 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 
 crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 
+crbug.com/369375 media/video-aspect-ratio.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-colorspace-yuv420.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-colorspace-yuv422.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-layer-crash.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-transformed.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-zoom-controls.html [ NeedsRebaseline ]
+crbug.com/369375 media/video-zoom.html [ NeedsRebaseline ]
+
 # Oilpan's conservative GC makes the test results flaky.
 # If we can rewrite these tests using asyncGC() the flakiness is gone, but we cannot do it
 # because these tests rely on not going back to the event loop during the test.
