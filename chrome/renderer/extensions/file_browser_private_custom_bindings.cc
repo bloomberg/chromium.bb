@@ -37,11 +37,11 @@ void FileBrowserPrivateCustomBindings::GetFileSystem(
       blink::WebLocalFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(
-          webframe,
-          blink::WebFileSystemTypeExternal,
-          blink::WebString::fromUTF8(name),
-          GURL(root_url)).toV8Value());
+      blink::WebDOMFileSystem::create(webframe,
+                                      blink::WebFileSystemTypeExternal,
+                                      blink::WebString::fromUTF8(name),
+                                      GURL(root_url))
+          .toV8Value(args.Holder(), args.GetIsolate()));
 }
 
 }  // namespace extensions

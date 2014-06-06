@@ -141,7 +141,8 @@ bool ResourceHostToDOMFileSystem(
       blink::WebString::fromUTF8(name),
       root_url,
       blink::WebDOMFileSystem::SerializableTypeSerializable);
-  *dom_file_system = web_dom_file_system.toV8Value();
+  *dom_file_system =
+      web_dom_file_system.toV8Value(context->Global(), context->GetIsolate());
   return true;
 }
 

@@ -39,7 +39,8 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
       blink::WebDOMFileSystem::create(webframe,
                                       blink::WebFileSystemTypeExternal,
                                       blink::WebString::fromUTF8(fs_name),
-                                      root_url).toV8Value());
+                                      root_url)
+          .toV8Value(args.Holder(), args.GetIsolate()));
 }
 
 }  // namespace

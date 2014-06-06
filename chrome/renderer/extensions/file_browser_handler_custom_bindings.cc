@@ -57,9 +57,11 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
             webframe,
             blink::WebFileSystemTypeExternal,
             blink::WebString::fromUTF8(file_system_name),
-            file_system_root).createV8Entry(
-                blink::WebString::fromUTF8(file_full_path),
-                entry_type));
+            file_system_root)
+            .createV8Entry(blink::WebString::fromUTF8(file_full_path),
+                           entry_type,
+                           args.Holder(),
+                           args.GetIsolate()));
 #endif
 }
 
