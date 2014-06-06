@@ -373,6 +373,7 @@
                         'nhiroki@chromium.org',
                         'horo+watch@chromium.org',
                         'falken@chromium.org',
+                        'michaeln@chromium.org',
                         'serviceworker-reviews@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'ch.dumez@samsung.com' ],
