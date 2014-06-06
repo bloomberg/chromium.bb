@@ -118,9 +118,6 @@ public:
 
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<RadioNodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
 
-protected:
-    virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) OVERRIDE;
-
 private:
     explicit HTMLFormElement(Document&);
 

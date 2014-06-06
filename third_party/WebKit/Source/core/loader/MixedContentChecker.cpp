@@ -58,14 +58,14 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
     return !SecurityOrigin::isSecure(url);
 }
 
-bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
+bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
 {
     if (!isMixedContent(securityOrigin, url))
         return true;
 
     Settings* settings = m_frame->settings();
     bool allowed = client()->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
-    logWarning(allowed, url, type);
+    logWarning(allowed, "displayed", url);
 
     if (allowed)
         client()->didDisplayInsecureContent();
@@ -73,15 +73,15 @@ bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* secu
     return allowed;
 }
 
-bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
+bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, bool isWebSocket) const
 {
     if (!isMixedContent(securityOrigin, url))
         return true;
 
     Settings* settings = m_frame->settings();
-    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || ((type == WebSocket) && settings->allowConnectingInsecureWebSocket()));
+    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || (isWebSocket && settings->allowConnectingInsecureWebSocket()));
     bool allowed = client()->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
-    logWarning(allowed, url, type);
+    logWarning(allowed, "ran", url);
 
     if (allowed)
         client()->didRunInsecureContent(securityOrigin, url);
@@ -89,21 +89,9 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
     return allowed;
 }
 
-void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const
+void MixedContentChecker::logWarning(bool allowed, const String& action, const KURL& target) const
 {
-    String message = String(allowed ? "" : "[blocked] ") + "The page at '" + m_frame->document()->url().elidedString() + "' was loaded over HTTPS, but ";
-    switch (type) {
-    case Display:
-        message.append("displayed insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
-        break;
-    case Execution:
-    case WebSocket:
-        message.append("ran insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n");
-        break;
-    case Submission:
-        message.append("is submitting data to an insecure location at '" + target.elidedString() + "': this content should also be submitted over HTTPS.\n");
-        break;
-    }
+    String message = String(allowed ? "" : "[blocked] ") + "The page at '" + m_frame->document()->url().elidedString() + "' was loaded over HTTPS, but " + action + " insecure content from '" + target.elidedString() + "': this content should also be loaded over HTTPS.\n";
     MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
     m_frame->document()->addConsoleMessage(SecurityMessageSource, messageLevel, message);
 }
