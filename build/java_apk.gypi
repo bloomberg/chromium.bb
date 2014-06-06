@@ -65,7 +65,6 @@
     'proguard_flags_paths': ['<(generated_proguard_file)'],
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
-    'res_v14_compatibility_dir': '<(intermediate_dir)/res_v14_compatibility',
     'R_package%':'',
     'additional_R_text_files': [],
     'additional_res_dirs': [],
@@ -480,7 +479,6 @@
         '--proguard-file', '<(generated_proguard_file)',
 
         '--resource-dir', '<(resource_dir)',
-        '--res-v14-compatibility-dir', '<(res_v14_compatibility_dir)',
         '--crunch-output-dir', '<(crunch_output_dir)',
 
         '--R-dir', '<(intermediate_dir)/gen',

@@ -111,6 +111,7 @@
       'variables': {
         'res_dir': '<(java_in_dir)/res',
         'res_crunched_dir': '<(intermediate_dir)/res_crunched',
+        'res_v14_compatibility_stamp': '<(intermediate_dir)/res_v14_compatibility.stamp',
         'res_v14_compatibility_dir': '<(intermediate_dir)/res_v14_compatibility',
         'res_input_dirs': ['<(res_dir)', '<@(res_extra_dirs)'],
         'resource_input_paths': ['<!@(find <(res_dir) -type f)'],
@@ -118,7 +119,8 @@
         'R_text_file': '<(R_dir)/R.txt',
         'R_stamp': '<(intermediate_dir)/resources.stamp',
         'generated_src_dirs': ['<(R_dir)'],
-        'additional_input_paths': ['<(R_stamp)', ],
+        'additional_input_paths': ['<(R_stamp)',
+                                   '<(res_v14_compatibility_stamp)',],
         'additional_res_dirs': [],
         'dependencies_res_input_dirs': [],
         'dependencies_res_files': [],
@@ -129,7 +131,8 @@
           # generated_R_dirs and include its resources via
           # dependencies_res_files.
           'generated_R_dirs': ['<(R_dir)'],
-          'additional_input_paths': ['<(R_stamp)', ],
+          'additional_input_paths': ['<(R_stamp)',
+                                     '<(res_v14_compatibility_stamp)',],
           'dependencies_res_files': ['<@(resource_input_paths)'],
 
           'dependencies_res_input_dirs': ['<@(res_input_dirs)'],
@@ -162,18 +165,11 @@
                                       '>@(dependencies_res_input_dirs)',],
             # Write the inputs list to a file, so that its mtime is updated when
             # the list of inputs changes.
-            'inputs_list_file': '>|(java_resources.<(_target_name).gypcmd >@(resource_input_paths) >@(dependencies_res_files))',
-            'process_resources_options': [],
-            'conditions': [
-              ['res_v14_verify_only == 1', {
-                'process_resources_options': ['--v14-verify-only']
-              }],
-            ],
+            'inputs_list_file': '>|(java_resources.<(_target_name).gypcmd >@(resource_input_paths) >@(dependencies_res_files))'
           },
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/process_resources.py',
-            '<(DEPTH)/build/android/gyp/generate_v14_compatible_resources.py',
             '>@(resource_input_paths)',
             '>@(dependencies_res_files)',
             '>(inputs_list_file)',
@@ -188,14 +184,42 @@
             '--R-dir', '<(R_dir)',
             '--dependencies-res-dirs', '>(dependencies_res_dirs)',
             '--resource-dir', '<(res_dir)',
-            '--res-v14-compatibility-dir', '<(res_v14_compatibility_dir)',
             '--crunch-output-dir', '<(res_crunched_dir)',
             '--android-manifest', '<(android_manifest)',
             '--non-constant-id',
             '--custom-package', '<(R_package)',
             '--stamp', '<(R_stamp)',
-            '<@(process_resources_options)',
           ],
+        },
+        # Generate API 14 resources.
+        {
+          'action_name': 'generate_api_14_resources_<(_target_name)',
+          'message': 'Generating Android API 14 resources <(_target_name)',
+          'variables' : {
+            'res_v14_additional_options': [],
+          },
+          'conditions': [
+            ['res_v14_verify_only == 1', {
+              'variables': {
+                'res_v14_additional_options': ['--verify-only']
+              },
+            }],
+          ],
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/generate_v14_compatible_resources.py',
+            '>@(resource_input_paths)',
+          ],
+          'outputs': [
+            '<(res_v14_compatibility_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/generate_v14_compatible_resources.py',
+            '--res-dir=<(res_dir)',
+            '--res-v14-compatibility-dir=<(res_v14_compatibility_dir)',
+            '--stamp', '<(res_v14_compatibility_stamp)',
+            '<@(res_v14_additional_options)',
+          ]
         },
       ],
     }],
