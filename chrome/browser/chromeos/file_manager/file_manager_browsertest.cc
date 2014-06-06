@@ -754,30 +754,64 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    FileDisplay,
+// Unlike TEST/TEST_F, which are macros that expand to further macros,
+// INSTANTIATE_TEST_CASE_P is a macro that expands directly to code that
+// stringizes the arguments. As a result, macros passed as parameters (such as
+// prefix or test_case_name) will not be expanded by the preprocessor. To work
+// around this, indirect the macro for INSTANTIATE_TEST_CASE_P, so that the
+// pre-processor will expand macros such as MAYBE_test_name before
+// instantiating the test.
+#define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator) \
+  INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
+
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_FileDisplay DISABLED_FileDisplay
+#else
+#define MAYBE_FileDisplay FileDisplay
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_FileDisplay,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp")));
 
-INSTANTIATE_TEST_CASE_P(
-    OpenZipFiles,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_OpenZipFiles DISABLED_OpenZipFiles
+#else
+#define MAYBE_OpenZipFiles OpenZipFiles
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_OpenZipFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    OpenVideoFiles,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_OpenVideoFiles DISABLED_OpenVideoFiles
+#else
+#define MAYBE_OpenVideoFiles OpenVideoFiles
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_OpenVideoFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    OpenAudioFiles,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
+#else
+#define MAYBE_OpenAudioFiles OpenAudioFiles
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
@@ -802,8 +836,14 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "createNewFolderDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    KeyboardOperations,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
+#else
+#define MAYBE_KeyboardOperations KeyboardOperations
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
@@ -812,12 +852,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
-                      TestParameter(IN_GUEST_MODE,
-                                    "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameFileDrive")));
+                      TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive")));
 
 // Disabled due to frequent timeouts; http://crbug.com/370980.
 INSTANTIATE_TEST_CASE_P(
@@ -829,60 +866,96 @@ INSTANTIATE_TEST_CASE_P(
                                     "openSidebarSharedWithMe"),
                       TestParameter(NOT_IN_GUEST_MODE, "autocomplete")));
 
-INSTANTIATE_TEST_CASE_P(
-    Transfer,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_Transfer DISABLED_Transfer
+#else
+#define MAYBE_Transfer Transfer
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_Transfer,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromDriveToDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromDownloadsToDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromSharedToDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromSharedToDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromRecentToDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromRecentToDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromOfflineToDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "transferFromOfflineToDrive")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    RestorePrefs,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_RestorePrefs DISABLED_RestorePrefs
+#else
+#define MAYBE_RestorePrefs RestorePrefs
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_RestorePrefs,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(IN_GUEST_MODE, "restoreCurrentView"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
 
-INSTANTIATE_TEST_CASE_P(
-    ShareDialog,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_ShareDialog DISABLED_ShareDialog
+#else
+#define MAYBE_ShareDialog ShareDialog
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_ShareDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "shareFile"),
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
 
-INSTANTIATE_TEST_CASE_P(
-    RestoreGeometry,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_RestoreGeometry DISABLED_RestoreGeometry
+#else
+#define MAYBE_RestoreGeometry RestoreGeometry
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_RestoreGeometry,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry")));
 
-INSTANTIATE_TEST_CASE_P(
-    Traverse,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_Traverse DISABLED_Traverse
+#else
+#define MAYBE_Traverse Traverse
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_Traverse,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "traverseDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    SuggestAppDialog,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_SuggestAppDialog DISABLED_SuggestAppDialog
+#else
+#define MAYBE_SuggestAppDialog SuggestAppDialog
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
-INSTANTIATE_TEST_CASE_P(
-    ExecuteDefaultTaskOnDownloads,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_ExecuteDefaultTaskOnDownloads \
+  DISABLED_ExecuteDefaultTaskOnDownloads
+#else
+#define MAYBE_ExecuteDefaultTaskOnDownloads ExecuteDefaultTaskOnDownloads
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_ExecuteDefaultTaskOnDownloads,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
@@ -894,23 +967,19 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
 
-INSTANTIATE_TEST_CASE_P(
-    NavigationList,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_NavigationList DISABLED_NavigationList
+#else
+#define MAYBE_NavigationList NavigationList
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_NavigationList,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "traverseNavigationList")));
 
-// Unlike TEST/TEST_F, which are macros that expand to further macros,
-// INSTANTIATE_TEST_CASE_P is a macro that expands directly to code that
-// stringizes the arguments. As a result, macros passed as parameters (such as
-// prefix or test_case_name) will not be expanded by the preprocessor. To work
-// around this, indirect the macro for INSTANTIATE_TEST_CASE_P, so that the
-// pre-processor will expand macros such as MAYBE_test_name before
-// instantiating the test.
-#define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator) \
-    INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
-
-// This test is too slow to run in debug build. http://crbug.com/327719
+// Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)
 #define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
 #else
@@ -928,8 +997,14 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
-INSTANTIATE_TEST_CASE_P(
-    Thumbnails,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_Thumbnails DISABLED_Thumbnails
+#else
+#define MAYBE_Thumbnails Thumbnails
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_Thumbnails,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
                       TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
@@ -1055,11 +1130,21 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   std::string test_case_name_;
 };
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDownloads) {
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
+#define MAYBE_BasicDownloads DISABLED_BasicDownloads
+#else
+#define MAYBE_PRE_BasicDownloads PRE_BasicDownloads
+#define MAYBE_BasicDownloads BasicDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       MAYBE_PRE_BasicDownloads) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       MAYBE_BasicDownloads) {
   AddAllUsers();
 
   // Sanity check that normal operations work in multi-profile setting as well.
@@ -1067,11 +1152,20 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDrive) {
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
+#define MAYBE_BasicDrive DISABLED_BasicDrive
+#else
+#define MAYBE_PRE_BasicDrive PRE_BasicDrive
+#define MAYBE_BasicDrive BasicDrive
+#endif
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       MAYBE_PRE_BasicDrive) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
   AddAllUsers();
 
   // Sanity check that normal operations work in multi-profile setting as well.
@@ -1079,22 +1173,39 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_Badge) {
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_PRE_Badge DISABLED_PRE_Badge
+#define MAYBE_Badge DISABLED_Badge
+#else
+#define MAYBE_PRE_Badge PRE_Badge
+#define MAYBE_Badge Badge
+#endif
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_PRE_Badge) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, Badge) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_Badge) {
   // Test the profile badge to be correctly shown and hidden.
   set_test_case_name("multiProfileBadge");
   StartTest();
 }
 
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_PRE_VisitDesktopMenu DISABLED_PRE_VisitDesktopMenu
+#define MAYBE_VisitDesktopMenu DISABLED_VisitDesktopMenu
+#else
+#define MAYBE_PRE_VisitDesktopMenu PRE_VisitDesktopMenu
+#define MAYBE_VisitDesktopMenu VisitDesktopMenu
+#endif
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       PRE_VisitDesktopMenu) {
+                       MAYBE_PRE_VisitDesktopMenu) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, VisitDesktopMenu) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       MAYBE_VisitDesktopMenu) {
   // Test for the menu item for visiting other profile's desktop.
   set_test_case_name("multiProfileVisitDesktopMenu");
   StartTest();
