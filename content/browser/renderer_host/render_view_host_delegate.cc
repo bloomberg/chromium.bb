@@ -35,6 +35,11 @@ SessionStorageNamespace* RenderViewHostDelegate::GetSessionStorageNamespace(
   return NULL;
 }
 
+SessionStorageNamespaceMap
+RenderViewHostDelegate::GetSessionStorageNamespaceMap() {
+  return SessionStorageNamespaceMap();
+}
+
 FrameTree* RenderViewHostDelegate::GetFrameTree() {
   return NULL;
 }

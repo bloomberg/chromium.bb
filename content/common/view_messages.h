@@ -567,6 +567,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
 IPC_MESSAGE_CONTROL0(ViewMsg_TimezoneChange)
 
 // Tells the render view to close.
+// Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
 IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
@@ -1100,6 +1101,11 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
                     gfx::Rect /* selection_rect */,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
+
+// Indicates that the render view has been closed in respose to a
+// Close message.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
+                     int /* old_route_id */);
 
 // Indicates that the current page has been closed, after a ClosePage
 // message.

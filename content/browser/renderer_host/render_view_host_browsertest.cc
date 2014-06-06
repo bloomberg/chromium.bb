@@ -129,4 +129,36 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
   EXPECT_TRUE(rvh->IsFocusedElementEditable());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, ReleaseSessionOnCloseACK) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL test_url = embedded_test_server()->GetURL(
+      "/access-session-storage.html");
+  NavigateToURL(shell(), test_url);
+
+  // Make a new Shell, a seperate tab with it's own session namespace and
+  // have it start loading a url but still be in progress.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "window.open();"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  new_shell->LoadURL(test_url);
+  RenderViewHost* rvh = new_shell->web_contents()->GetRenderViewHost();
+  SiteInstance* site_instance = rvh->GetSiteInstance();
+  scoped_refptr<SessionStorageNamespace> session_namespace =
+      rvh->GetDelegate()->GetSessionStorageNamespace(site_instance);
+  EXPECT_FALSE(session_namespace->HasOneRef());
+
+  // Close it, or rather start the close operation. The session namespace
+  // should remain until RPH gets an ACK from the renderer about having
+  // closed the view.
+  new_shell->Close();
+  EXPECT_FALSE(session_namespace->HasOneRef());
+
+  // Do something that causes ipc queues to flush and tasks in
+  // flight to complete such that we should have received the ACK.
+  NavigateToURL(shell(), test_url);
+
+  // Verify we have the only remaining reference to the namespace.
+  EXPECT_TRUE(session_namespace->HasOneRef());
+}
+
 }  // namespace content

@@ -351,7 +351,7 @@ class CONTENT_EXPORT RenderWidget
   void OnCursorVisibilityChange(bool is_visible);
   void OnMouseCaptureLost();
   virtual void OnSetFocus(bool enable);
-  void OnClose();
+  virtual void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const ViewMsg_Resize_Params& params);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);

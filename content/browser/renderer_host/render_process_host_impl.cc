@@ -354,6 +354,27 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 }
 #endif
 
+const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
+
+class SessionStorageHolder : public base::SupportsUserData::Data {
+ public:
+  SessionStorageHolder() {}
+  virtual ~SessionStorageHolder() {}
+
+  void Hold(const SessionStorageNamespaceMap& sessions, int view_route_id) {
+    session_storage_namespaces_awaiting_close_[view_route_id] = sessions;
+  }
+
+  void Release(int old_route_id) {
+    session_storage_namespaces_awaiting_close_.erase(old_route_id);
+  }
+
+ private:
+  std::map<int, SessionStorageNamespaceMap >
+      session_storage_namespaces_awaiting_close_;
+  DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
+};
+
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
@@ -1353,6 +1374,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(
           ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
           OnAllocateGpuMemoryBuffer)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)
       // Adding single handlers for your service here is fine, but once your
       // service needs more than one handler, please extract them into a new
       // message filter and add that filter to CreateMessageFilters().
@@ -1484,6 +1506,7 @@ void RenderProcessHostImpl::Cleanup() {
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
     screen_orientation_dispatcher_host_ = NULL;
+    RemoveUserData(kSessionStorageHolderKey);
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
@@ -1897,6 +1920,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
   screen_orientation_dispatcher_host_ = NULL;
+  RemoveUserData(kSessionStorageHolderKey);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
@@ -1963,6 +1987,24 @@ void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
 scoped_refptr<ScreenOrientationDispatcherHost>
 RenderProcessHostImpl::screen_orientation_dispatcher_host() const {
   return make_scoped_refptr(screen_orientation_dispatcher_host_);
+}
+
+void RenderProcessHostImpl::ReleaseOnCloseACK(
+    RenderProcessHost* host,
+    const SessionStorageNamespaceMap& sessions,
+    int view_route_id) {
+  DCHECK(host);
+  if (sessions.empty())
+    return;
+  SessionStorageHolder* holder = static_cast<SessionStorageHolder*>
+      (host->GetUserData(kSessionStorageHolderKey));
+  if (!holder) {
+    holder = new SessionStorageHolder();
+    host->SetUserData(
+        kSessionStorageHolderKey,
+        holder);
+  }
+  holder->Hold(sessions, view_route_id);
 }
 
 void RenderProcessHostImpl::OnShutdownRequest() {
@@ -2080,6 +2122,14 @@ RenderProcessHostImpl::audio_renderer_host() const {
 void RenderProcessHostImpl::OnUserMetricsRecordAction(
     const std::string& action) {
   RecordComputedAction(action);
+}
+
+void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
+  SessionStorageHolder* holder = static_cast<SessionStorageHolder*>
+      (GetUserData(kSessionStorageHolderKey));
+  if (!holder)
+    return;
+  holder->Release(old_route_id);
 }
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {

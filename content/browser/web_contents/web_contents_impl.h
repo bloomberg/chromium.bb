@@ -56,7 +56,6 @@ class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
 class SavePackage;
-class SessionStorageNamespaceImpl;
 class SiteInstance;
 class TestWebContents;
 class WebContentsDelegate;
@@ -437,6 +436,7 @@ class CONTENT_EXPORT WebContentsImpl
       const MediaResponseCallback& callback) OVERRIDE;
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) OVERRIDE;
+  virtual SessionStorageNamespaceMap GetSessionStorageNamespaceMap() OVERRIDE;
   virtual FrameTree* GetFrameTree() OVERRIDE;
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) OVERRIDE;

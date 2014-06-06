@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "content/browser/child_process_launcher.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -183,6 +184,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host() const;
 
+  // Used to extend the lifetime of the sessions until the render view
+  // in the renderer is fully closed. This is static because its also called
+  // with mock hosts as input in test cases.
+  static void ReleaseOnCloseACK(
+      RenderProcessHost* host,
+      const SessionStorageNamespaceMap& sessions,
+      int view_route_id);
+
   // Register/unregister the host identified by the host id in the global host
   // list.
   static void RegisterHost(int host_id, RenderProcessHost* host);
@@ -293,6 +302,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
+  void OnCloseACK(int old_route_id);
 
   // CompositorSurfaceBuffersSwapped handler when there's no RWH.
   void OnCompositorSurfaceBuffersSwappedNoHost(

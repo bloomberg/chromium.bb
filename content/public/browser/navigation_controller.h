@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
@@ -27,13 +28,7 @@ namespace content {
 
 class BrowserContext;
 class NavigationEntry;
-class SessionStorageNamespace;
 class WebContents;
-
-// Used to store the mapping of a StoragePartition id to
-// SessionStorageNamespace.
-typedef std::map<std::string, scoped_refptr<SessionStorageNamespace> >
-    SessionStorageNamespaceMap;
 
 // A NavigationController maintains the back-forward list for a WebContents and
 // manages all navigation within that list.
@@ -356,7 +351,7 @@ class NavigationController {
   // which cannot be used on iOS.
 #if !defined(OS_IOS)
   // Returns all the SessionStorageNamespace objects that this
-  // NavigationController knows about.
+  // NavigationController knows about, the map key is a StoragePartition id.
   virtual const SessionStorageNamespaceMap&
       GetSessionStorageNamespaceMap() const = 0;
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SESSION_STORAGE_NAMESPACE_H_
 #define CONTENT_PUBLIC_BROWSER_SESSION_STORAGE_NAMESPACE_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -78,6 +79,10 @@ class SessionStorageNamespace
   friend class base::RefCountedThreadSafe<SessionStorageNamespace>;
   virtual ~SessionStorageNamespace() {}
 };
+
+// Used to store mappings of StoragePartition id to SessionStorageNamespace.
+typedef std::map<std::string, scoped_refptr<SessionStorageNamespace> >
+    SessionStorageNamespaceMap;
 
 }  // namespace content
 

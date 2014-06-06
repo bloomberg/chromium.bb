@@ -1039,6 +1039,15 @@ void RenderViewHostImpl::Shutdown() {
     run_modal_opener_id_ = MSG_ROUTING_NONE;
   }
 
+  // We can't release the SessionStorageNamespace until our peer
+  // in the renderer has wound down.
+  if (GetProcess()->HasConnection()) {
+    RenderProcessHostImpl::ReleaseOnCloseACK(
+        GetProcess(),
+        delegate_->GetSessionStorageNamespaceMap(),
+        GetRoutingID());
+  }
+
   RenderWidgetHostImpl::Shutdown();
 }
 

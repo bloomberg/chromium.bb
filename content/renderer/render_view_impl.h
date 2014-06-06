@@ -526,6 +526,7 @@ class CONTENT_EXPORT RenderViewImpl
 
  protected:
   // RenderWidget overrides:
+  virtual void OnClose() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void OnResize(const ViewMsg_Resize_Params& params) OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;

@@ -1659,6 +1659,10 @@ SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
   return controller_.GetSessionStorageNamespace(instance);
 }
 
+SessionStorageNamespaceMap WebContentsImpl::GetSessionStorageNamespaceMap() {
+  return controller_.GetSessionStorageNamespaceMap();
+}
+
 FrameTree* WebContentsImpl::GetFrameTree() {
   return &frame_tree_;
 }

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
@@ -276,6 +277,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // create the SessionStorageNamespace on the fly.
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance);
+
+  // Returns a copy of the map of all session storage namespaces related
+  // to this view.
+  virtual SessionStorageNamespaceMap GetSessionStorageNamespaceMap();
 
   // Returns true if the RenderViewHost will never be visible.
   virtual bool IsNeverVisible();
