@@ -205,6 +205,33 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_webMediaPlayer->load(loadType, kurl, corsMode);
 }
 
+double WebMediaPlayerClientImpl::duration() const
+{
+    if (m_webMediaPlayer)
+        return m_webMediaPlayer->duration();
+    return 0.0;
+}
+
+double WebMediaPlayerClientImpl::currentTime() const
+{
+    if (m_webMediaPlayer)
+        return m_webMediaPlayer->currentTime();
+    return 0.0;
+}
+
+void WebMediaPlayerClientImpl::seek(double time)
+{
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->seek(time);
+}
+
+bool WebMediaPlayerClientImpl::seeking() const
+{
+    if (m_webMediaPlayer)
+        return m_webMediaPlayer->seeking();
+    return false;
+}
+
 double WebMediaPlayerClientImpl::rate() const
 {
     return m_rate;
@@ -215,6 +242,12 @@ void WebMediaPlayerClientImpl::setRate(double rate)
     m_rate = rate;
     if (m_webMediaPlayer)
         m_webMediaPlayer->setRate(rate);
+}
+
+void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
+{
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setPoster(WebURL(poster));
 }
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
