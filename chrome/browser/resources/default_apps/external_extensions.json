@@ -26,6 +26,14 @@
   "aohghmighlieiainnegkcijnfilokake" : {
     "external_crx": "docs.crx",
     "external_version": "0.0.0.6"
+  },
+  // Google Sheets
+  "aapocclcgogkmnckokdopfmhonfmgoek" : {
+    "external_update_url": "https://clients2.google.com/service/update2/crx"
+  },
+  // Google Slides
+  "felcaaldnbdncclmgdcncolpebgiejap" : {
+    "external_update_url": "https://clients2.google.com/service/update2/crx"
   }
 }
 
