@@ -455,7 +455,8 @@ function handleCanExecuteForDocument(e) {
       break;
     case 'sort-command':
       e.canExecute = !list.isSearch() &&
-          list.dataModel && list.dataModel.length > 1;
+          list.dataModel && list.dataModel.length > 1 &&
+          !isUnmodifiable(tree.getBookmarkNodeById(list.parentId));
       break;
     case 'undo-command':
       // The global undo command has no visible UI, so always enable it, and
@@ -485,7 +486,9 @@ function canExecuteShared(e, isSearch) {
 
     case 'add-new-bookmark-command':
     case 'new-folder-command':
-      e.canExecute = !isSearch && canEdit;
+      var parentId = computeParentFolderForNewItem();
+      var unmodifiable = isUnmodifiable(tree.getBookmarkNodeById(parentId));
+      e.canExecute = !isSearch && canEdit && !unmodifiable;
       break;
 
     case 'open-in-new-tab-command':
@@ -551,7 +554,7 @@ function canExecuteForList(e) {
         command.hidden = true;
       } else {
         var isFolder = bmm.isFolder(items[0]);
-        e.canExecute = isFolder && canEdit;
+        e.canExecute = isFolder && canEdit && !hasUnmodifiable(items);
         command.hidden = !isFolder;
       }
       break;
@@ -564,7 +567,7 @@ function canExecuteForList(e) {
         command.hidden = false;
       } else {
         var isFolder = bmm.isFolder(items[0]);
-        e.canExecute = !isFolder && canEdit;
+        e.canExecute = !isFolder && canEdit && !hasUnmodifiable(items);
         command.hidden = isFolder;
       }
       break;
@@ -575,7 +578,8 @@ function canExecuteForList(e) {
 
     case 'delete-command':
     case 'cut-command':
-      e.canExecute = canCopyItems() && canEdit;
+      e.canExecute = canCopyItems() && canEdit &&
+          !hasUnmodifiable(list.selectedItems);
       break;
 
     case 'copy-command':
@@ -620,7 +624,8 @@ function handleCanExecuteForTree(e) {
   switch (commandId) {
     case 'rename-folder-command':
       command.hidden = false;
-      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit;
+      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit &&
+          !hasUnmodifiable(tree.selectedFolders);
       break;
 
     case 'edit-command':
@@ -630,7 +635,8 @@ function handleCanExecuteForTree(e) {
 
     case 'delete-command':
     case 'cut-command':
-      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit;
+      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit &&
+          !hasUnmodifiable(tree.selectedFolders);
       break;
 
     case 'copy-command':
@@ -787,6 +793,22 @@ function getSelectedBookmarkIds() {
   return selectedNodes.map(function(node) {
     return node.id;
   });
+}
+
+/**
+ * @param {BookmarkTreeNode} node The node to test.
+ * @return {boolean} Whether the given node is unmodifiable.
+ */
+function isUnmodifiable(node) {
+  return node && node.unmodifiable;
+}
+
+/**
+ * @param {BookmarkList} A list of BookmarkNodes.
+ * @return {boolean} Whether any of the nodes is managed.
+ */
+function hasUnmodifiable(nodes) {
+  return nodes.some(isUnmodifiable);
 }
 
 /**
