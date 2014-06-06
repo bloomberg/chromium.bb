@@ -905,6 +905,14 @@ uint64 VideoTrack::VideoPayloadSize() const {
     size += EbmlElementSize(kMkvDisplayWidth, display_width_);
   if (display_height_ > 0)
     size += EbmlElementSize(kMkvDisplayHeight, display_height_);
+  if (crop_left_ > 0)
+    size += EbmlElementSize(kMkvPixelCropLeft, crop_left_);
+  if (crop_right_ > 0)
+    size += EbmlElementSize(kMkvPixelCropRight, crop_right_);
+  if (crop_top_ > 0)
+    size += EbmlElementSize(kMkvPixelCropTop, crop_top_);
+  if (crop_bottom_ > 0)
+    size += EbmlElementSize(kMkvPixelCropBottom, crop_bottom_);
   if (stereo_mode_ > kMono)
     size += EbmlElementSize(kMkvStereoMode, stereo_mode_);
   if (alpha_mode_ > kNoAlpha)
