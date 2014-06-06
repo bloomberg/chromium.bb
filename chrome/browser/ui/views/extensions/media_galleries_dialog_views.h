@@ -86,10 +86,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   MediaGalleriesDialogController* controller_;
 
-  // The containing window (a weak pointer).
-  views::Widget* window_;
-
-  // The contents of the dialog. Owned by |window_|'s RootView except for tests.
+  // The contents of the dialog. Owned by the view hierarchy, except in tests.
   views::View* contents_;
 
   // A map from gallery ID to views::Checkbox view.

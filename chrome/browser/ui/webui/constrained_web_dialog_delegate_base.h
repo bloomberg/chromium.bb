@@ -23,17 +23,15 @@ class ConstrainedWebDialogDelegateBase
     : public ConstrainedWebDialogDelegate,
       public ui::WebDialogWebContentsDelegate {
  public:
-  ConstrainedWebDialogDelegateBase(
-      content::BrowserContext* browser_context,
-      ui::WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate);
+  ConstrainedWebDialogDelegateBase(content::BrowserContext* browser_context,
+                                   ui::WebDialogDelegate* delegate,
+                                   WebDialogWebContentsDelegate* tab_delegate);
   virtual ~ConstrainedWebDialogDelegateBase();
 
   bool closed_via_webui() const;
 
   // ConstrainedWebDialogDelegate interface.
-  virtual const ui::WebDialogDelegate*
-      GetWebDialogDelegate() const OVERRIDE;
+  virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const OVERRIDE;
   virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE;

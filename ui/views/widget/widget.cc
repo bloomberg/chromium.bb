@@ -243,22 +243,6 @@ Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
 }
 
 // static
-Widget* Widget::CreateWindowAsFramelessChild(WidgetDelegate* widget_delegate,
-                                             gfx::NativeView parent) {
-  views::Widget* widget = new views::Widget;
-
-  views::Widget::InitParams params;
-  params.delegate = widget_delegate;
-  params.child = true;
-  params.parent = parent;
-  params.remove_standard_frame = true;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-
-  widget->Init(params);
-  return widget;
-}
-
-// static
 Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(native_view);

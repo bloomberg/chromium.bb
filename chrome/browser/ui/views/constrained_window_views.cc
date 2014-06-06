@@ -8,6 +8,8 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -116,6 +118,24 @@ void UpdateBrowserModalDialogPosition(views::Widget* widget,
                                       web_modal::ModalDialogHost* dialog_host) {
   UpdateModalDialogPosition(widget, dialog_host,
                             widget->GetRootView()->GetPreferredSize());
+}
+
+views::Widget* ShowWebModalDialogViews(views::WidgetDelegate* dialog,
+                                       content::WebContents* web_contents) {
+  views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)->
+      ShowModalDialog(widget->GetNativeWindow());
+  return widget;
+}
+
+views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
+                                         content::WebContents* web_contents) {
+  DCHECK_EQ(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
+  web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  const gfx::NativeWindow parent =
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView();
+  return views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
 }
 
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,

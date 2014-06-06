@@ -6,13 +6,9 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/login_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -22,12 +18,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-using autofill::PasswordForm;
-using content::BrowserThread;
-using content::WebContents;
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
-
 // ----------------------------------------------------------------------------
 // LoginHandlerViews
 
@@ -35,8 +25,7 @@ using web_modal::WebContentsModalDialogManagerDelegate;
 // the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
-class LoginHandlerViews : public LoginHandler,
-                          public views::DialogDelegate {
+class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
@@ -44,7 +33,7 @@ class LoginHandlerViews : public LoginHandler,
         dialog_(NULL) {
   }
 
-  // LoginModelObserver implementation.
+  // LoginModelObserver:
   virtual void OnAutofillDataAvailable(
       const base::string16& username,
       const base::string16& password) OVERRIDE {
@@ -52,7 +41,7 @@ class LoginHandlerViews : public LoginHandler,
   }
   virtual void OnLoginModelDestroying() OVERRIDE {}
 
-  // views::DialogDelegate methods:
+  // views::DialogDelegate:
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE {
     if (button == ui::DIALOG_BUTTON_OK)
@@ -65,20 +54,18 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual void WindowClosing() OVERRIDE {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    WebContents* tab = GetWebContentsForLogin();
-    if (tab)
-      tab->GetRenderViewHost()->SetIgnoreInputEvents(false);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::WebContents* web_contents = GetWebContentsForLogin();
+    if (web_contents)
+      web_contents->GetRenderViewHost()->SetIgnoreInputEvents(false);
 
     // Reference is no longer valid.
     dialog_ = NULL;
-
     CancelAuth();
   }
 
   virtual void DeleteDelegate() OVERRIDE {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // The widget is going to delete itself; clear our pointer.
     dialog_ = NULL;
@@ -88,23 +75,17 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual ui::ModalType GetModalType() const OVERRIDE {
-#if defined(USE_ASH)
     return ui::MODAL_TYPE_CHILD;
-#else
-    return views::WidgetDelegate::GetModalType();
-#endif
   }
 
   virtual bool Cancel() OVERRIDE {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CancelAuth();
     return true;
   }
 
   virtual bool Accept() OVERRIDE {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     SetAuth(login_view_->GetUsername(), login_view_->GetPassword());
     return true;
   }
@@ -124,11 +105,10 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   // LoginHandler:
-
   virtual void BuildViewForPasswordManager(
       password_manager::PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // Create a new LoginView and set the model for it.  The model (password
     // manager) is owned by the WebContents, but the view is parented to the
@@ -142,16 +122,7 @@ class LoginHandlerViews : public LoginHandler,
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    WebContents* requesting_contents = GetWebContentsForLogin();
-    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-        WebContentsModalDialogManager::FromWebContents(requesting_contents);
-    WebContentsModalDialogManagerDelegate* modal_delegate =
-        web_contents_modal_dialog_manager->delegate();
-    CHECK(modal_delegate);
-    dialog_ = views::Widget::CreateWindowAsFramelessChild(
-        this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-    web_contents_modal_dialog_manager->ShowModalDialog(
-        dialog_->GetNativeView());
+    dialog_ = ShowWebModalDialogViews(this, GetWebContentsForLogin());
     NotifyAuthNeeded();
   }
 
@@ -167,7 +138,7 @@ class LoginHandlerViews : public LoginHandler,
 
   virtual ~LoginHandlerViews() {}
 
-  // The LoginView that contains the user's login information
+  // The LoginView that contains the user's login information.
   LoginView* login_view_;
 
   views::Widget* dialog_;

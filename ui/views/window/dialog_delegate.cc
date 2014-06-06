@@ -23,20 +23,24 @@ DialogDelegate::~DialogDelegate() {
 }
 
 // static
-Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
+Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
                                            gfx::NativeView context,
                                            gfx::NativeView parent) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
-  params.delegate = dialog;
+  params.delegate = delegate;
+  DialogDelegate* dialog = delegate->AsDialogDelegate();
   if (!dialog || dialog->UseNewStyleForThisDialog()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
+    // The bubble frame includes its own shadow; remove any native shadowing.
+    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   }
   params.context = context;
   params.parent = parent;
-  // TODO(msw): Add a matching shadow type and remove the bubble frame border?
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  // Web-modal (ui::MODAL_TYPE_CHILD) dialogs with parents are marked as child
+  // widgets to prevent top-level window behavior (independent movement, etc).
+  params.child = parent && (delegate->GetModalType() == ui::MODAL_TYPE_CHILD);
   widget->Init(params);
   return widget;
 }

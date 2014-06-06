@@ -31,8 +31,8 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
  public:
   virtual ~DialogDelegate();
 
-  // Create a |dialog| window Widget with the specified |context| or |parent|.
-  static Widget* CreateDialogWidget(DialogDelegate* dialog,
+  // Create a dialog widget with the specified |context| or |parent|.
+  static Widget* CreateDialogWidget(WidgetDelegate* delegate,
                                     gfx::NativeView context,
                                     gfx::NativeView parent);
 

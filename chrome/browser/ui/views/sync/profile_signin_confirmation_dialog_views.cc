@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/chromium_strings.h"
@@ -53,11 +51,11 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate)
-  : browser_(browser),
-    username_(username),
-    delegate_(delegate),
-    prompt_for_new_profile_(true),
-    continue_signin_button_(NULL) {
+    : browser_(browser),
+      username_(username),
+      delegate_(delegate),
+      prompt_for_new_profile_(true),
+      continue_signin_button_(NULL) {
 }
 
 ProfileSigninConfirmationDialogViews::~ProfileSigninConfirmationDialogViews() {}
@@ -143,7 +141,7 @@ void ProfileSigninConfirmationDialogViews::OnClosed() {
 }
 
 ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_CHILD;
 }
 
 void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
