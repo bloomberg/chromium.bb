@@ -435,7 +435,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void focusNext();
   virtual void focusPrevious();
   virtual void focusedNodeChanged(const blink::WebNode& node);
-  virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
   virtual void didUpdateLayout();
 #if defined(OS_ANDROID)
   virtual bool didTapMultipleTargets(

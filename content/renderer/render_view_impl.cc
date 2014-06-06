@@ -1734,10 +1734,6 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 }
 
-void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
-  Send(new ViewHostMsg_DidChangeNumWheelEvents(routing_id_, num_handlers));
-}
-
 void RenderViewImpl::didUpdateLayout() {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidUpdateLayout());
 

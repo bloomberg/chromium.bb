@@ -1293,10 +1293,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
                     bool /* pinned_to_left */,
                     bool /* pinned_to_right */)
 
-// Notifies that the number of JavaScript scroll handlers changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
-                    int /* count */)
-
 // Notifies whether there are JavaScript touch event handlers or not.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)

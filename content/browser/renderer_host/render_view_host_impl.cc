@@ -990,8 +990,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeScrollOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
                         OnDidChangeScrollOffsetPinningForMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumWheelEvents,
-                        OnDidChangeNumWheelEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnRouteMessageEvent)
@@ -1223,9 +1221,6 @@ void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   if (view_)
     view_->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
-}
-
-void RenderViewHostImpl::OnDidChangeNumWheelEvents(int count) {
 }
 
 void RenderViewHostImpl::OnRouteCloseEvent() {
