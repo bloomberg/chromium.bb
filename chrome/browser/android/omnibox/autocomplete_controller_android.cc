@@ -115,7 +115,7 @@ void ZeroSuggestPrefetcher::OnResultChanged(bool default_match_changed) {
 AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     : autocomplete_controller_(new AutocompleteController(
           profile, this, kAndroidAutocompleteProviders)),
-      inside_classify_(false),
+      inside_synchronous_start_(false),
       profile_(profile) {
 }
 
@@ -156,18 +156,7 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::Classify(
     JNIEnv* env,
     jobject obj,
     jstring j_text) {
-  if (!autocomplete_controller_)
-    return ScopedJavaLocalRef<jobject>();
-
-  inside_classify_ = true;
-  Start(env, obj, j_text, NULL, NULL, true, false, false, false);
-  inside_classify_ = false;
-  DCHECK(autocomplete_controller_->done());
-  const AutocompleteResult& result = autocomplete_controller_->result();
-  if (result.empty())
-    return ScopedJavaLocalRef<jobject>();
-
-  return BuildOmniboxSuggestion(env, *result.begin());
+  return GetTopSynchronousResult(env, obj, j_text, true);
 }
 
 void AutocompleteControllerAndroid::StartZeroSuggest(
@@ -274,6 +263,13 @@ AutocompleteControllerAndroid::UpdateMatchDestinationURL(
   return ConvertUTF8ToJavaString(env, match.destination_url.spec());
 }
 
+ScopedJavaLocalRef<jobject>
+AutocompleteControllerAndroid::GetTopSynchronousMatch(JNIEnv* env,
+                                                      jobject obj,
+                                                      jstring query) {
+  return GetTopSynchronousResult(env, obj, query, false);
+}
+
 void AutocompleteControllerAndroid::Shutdown() {
   autocomplete_controller_.reset();
 
@@ -333,7 +329,7 @@ void AutocompleteControllerAndroid::InitJNI(JNIEnv* env, jobject obj) {
 
 void AutocompleteControllerAndroid::OnResultChanged(
     bool default_match_changed) {
-  if (autocomplete_controller_.get() != NULL && !inside_classify_)
+  if (autocomplete_controller_.get() != NULL && !inside_synchronous_start_)
     NotifySuggestionsReceived(autocomplete_controller_->result());
 }
 
@@ -371,6 +367,43 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
                                                     suggestion_list_obj.obj(),
                                                     inline_text.obj(),
                                                     j_autocomplete_result);
+}
+
+AutocompleteInput::PageClassification
+AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
+                                            bool is_query_in_omnibox,
+                                            bool focused_from_fakebox) const {
+  if (!gurl.is_valid())
+    return AutocompleteInput::INVALID_SPEC;
+
+  const std::string& url = gurl.spec();
+
+  if (gurl.SchemeIs(content::kChromeUIScheme) &&
+      gurl.host() == chrome::kChromeUINewTabHost) {
+    return AutocompleteInput::NTP;
+  }
+
+  if (url == chrome::kChromeUINativeNewTabURL) {
+    return focused_from_fakebox ?
+        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
+        AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
+  }
+
+  if (url == content::kAboutBlankURL)
+    return AutocompleteInput::BLANK;
+
+  if (url == profile_->GetPrefs()->GetString(prefs::kHomePage))
+    return AutocompleteInput::HOME_PAGE;
+
+  if (is_query_in_omnibox)
+    return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+
+  bool is_search_url = TemplateURLServiceFactory::GetForProfile(profile_)->
+      IsSearchResultsPageFromDefaultSearchProvider(gurl);
+  if (is_search_url)
+    return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
+
+  return AutocompleteInput::OTHER;
 }
 
 ScopedJavaLocalRef<jobject>
@@ -420,37 +453,32 @@ base::string16 AutocompleteControllerAndroid::FormatURLUsingAcceptLanguages(
       net::UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
-AutocompleteInput::PageClassification
-AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
-                                            bool is_query_in_omnibox,
-                                            bool focused_from_fakebox) const {
-  if (!gurl.is_valid())
-    return AutocompleteInput::INVALID_SPEC;
+ScopedJavaLocalRef<jobject>
+AutocompleteControllerAndroid::GetTopSynchronousResult(
+    JNIEnv* env,
+    jobject obj,
+    jstring j_text,
+    bool prevent_inline_autocomplete) {
+  if (!autocomplete_controller_)
+    return ScopedJavaLocalRef<jobject>();
 
-  const std::string& url = gurl.spec();
+  inside_synchronous_start_ = true;
+  Start(env,
+        obj,
+        j_text,
+        NULL,
+        NULL,
+        prevent_inline_autocomplete,
+        false,
+        false,
+        false);
+  inside_synchronous_start_ = false;
+  DCHECK(autocomplete_controller_->done());
+  const AutocompleteResult& result = autocomplete_controller_->result();
+  if (result.empty())
+    return ScopedJavaLocalRef<jobject>();
 
-  if (gurl.SchemeIs(content::kChromeUIScheme) &&
-      gurl.host() == chrome::kChromeUINewTabHost) {
-    return AutocompleteInput::NTP;
-  }
-  if (url == chrome::kChromeUINativeNewTabURL) {
-    return focused_from_fakebox ?
-        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
-        AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-  }
-  if (url == content::kAboutBlankURL)
-    return AutocompleteInput::BLANK;
-
-  if (url == profile_->GetPrefs()->GetString(prefs::kHomePage))
-    return AutocompleteInput::HOME_PAGE;
-  if (is_query_in_omnibox)
-    return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-
-  bool is_search_url = TemplateURLServiceFactory::GetForProfile(profile_)->
-      IsSearchResultsPageFromDefaultSearchProvider(gurl);
-  if (is_search_url)
-    return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  return AutocompleteInput::OTHER;
+  return BuildOmniboxSuggestion(env, *result.begin());
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {
