@@ -1,12 +1,15 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import collections
 
 from measurements import startup
 from metrics import cpu
+from metrics import histogram_util
 from metrics import startup_metric
 from telemetry.core import util
+
 
 class SessionRestore(startup.Startup):
   """Performs a measurement of Chromium's Session restore performance.
@@ -23,14 +26,20 @@ class SessionRestore(startup.Startup):
 
   def CustomizeBrowserOptions(self, options):
     super(SessionRestore, self).CustomizeBrowserOptions(options)
+    histogram_util.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs([
         '--restore-last-session'
     ])
 
   def TabForPage(self, page, browser):
     # Detect that the session restore has completed.
-    util.WaitFor(lambda: len(browser.tabs), 30)
-    return browser.tabs[0]
+    util.WaitFor(lambda: browser.tabs and
+                 histogram_util.GetHistogramCount(
+                     histogram_util.BROWSER_HISTOGRAM,
+                     'SessionRestore.AllTabsLoaded',
+                     browser.foreground_tab),
+                 30)
+    return browser.foreground_tab
 
   def CanRunForPage(self, page):
     # No matter how many pages in the pageset, just perform one test iteration.
@@ -59,7 +68,7 @@ class SessionRestore(startup.Startup):
     self._cpu_metric.Start(None, None)
 
   def MeasurePage(self, page, tab, results):
-    tab.browser.foreground_tab.WaitForDocumentReadyStateToBeComplete()
+    tab.WaitForDocumentReadyStateToBeComplete()
 
     # Record CPU usage from browser start to when the foreground page is loaded.
     self._cpu_metric.Stop(None, None)
