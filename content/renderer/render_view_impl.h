@@ -126,7 +126,6 @@ class WebURLResponseExtraDataImpl;
 
 namespace content {
 class BrowserPluginManager;
-class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
@@ -1059,9 +1058,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
-
-  // Device orientation dispatcher attached to this view; lazily initialized.
-  DeviceOrientationDispatcher* device_orientation_dispatcher_;
 
   // MediaStream dispatcher attached to this view; lazily initialized.
   MediaStreamDispatcher* media_stream_dispatcher_;
