@@ -123,7 +123,9 @@ def GetBotStepMap():
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
   experimental = ['--experimental']
-
+  bisect_chrome_output_dir = os.path.abspath(
+      os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+                   os.pardir, 'bisect', 'src', 'out'))
   B = BotConfig
   H = (lambda steps, extra_args=None, extra_gyp=None, target_arch=None :
        HostConfig('build/android/buildbot/bb_host_steps.py', steps, extra_args,
@@ -168,7 +170,9 @@ def GetBotStepMap():
         H(compile_step),
         T(['gpu'], ['--install=ContentShell'])),
       # Pass empty T([]) so that logcat monitor and device status check are run.
-      B('perf-bisect-builder-tests-dbg', H(['bisect_perf_regression']), T([])),
+      B('perf-bisect-builder-tests-dbg',
+        H(['bisect_perf_regression']),
+        T([], ['--chrome-output-dir', bisect_chrome_output_dir])),
       B('perf-tests-rel', H(std_test_steps),
         T([], ['--install=ChromeShell'])),
       B('webkit-latest-webkit-tests', H(std_test_steps),

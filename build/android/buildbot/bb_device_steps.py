@@ -649,6 +649,13 @@ def GetDeviceStepsOptParser():
   parser.add_option(
       '--logcat-dump-output',
       help='The logcat dump output will be "tee"-ed into this file')
+  # During processing perf bisects, a seperate working directory created under
+  # which builds are produced. Therefore we should look for relevent output
+  # file under this directory.(/b/build/slave/<slave_name>/build/bisect/src/out)
+  parser.add_option(
+      '--chrome-output-dir',
+      help='Chrome output directory to be used while bisecting.')
+
   parser.add_option('--disable-stack-tool',  action='store_true',
       help='Do not run stack tool.')
   parser.add_option('--asan-symbolize',  action='store_true',
@@ -668,6 +675,13 @@ def main(argv):
     return sys.exit('Unknown tests %s' % list(unknown_tests))
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
+
+  if options.chrome_output_dir:
+    global CHROME_OUT_DIR
+    global LOGCAT_DIR
+    CHROME_OUT_DIR = options.chrome_output_dir
+    LOGCAT_DIR = os.path.join(CHROME_OUT_DIR, 'logcat')
+
   if options.coverage_bucket:
     setattr(options, 'coverage_dir',
             os.path.join(CHROME_OUT_DIR, options.target, 'coverage'))
