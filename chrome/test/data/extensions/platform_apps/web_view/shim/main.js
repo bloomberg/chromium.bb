@@ -507,7 +507,9 @@ function testDestroyOnEventListener() {
     if (url != e.url)
       return;
     ++loadCommitCount;
-    if (loadCommitCount == 1) {
+    if (loadCommitCount == 2) {
+      // Pass in a timeout so that we can catch if any additional loadcommit
+      // occurs.
       setTimeout(function() {
         embedder.test.succeed();
       }, 0);
@@ -518,10 +520,12 @@ function testDestroyOnEventListener() {
 
   // The test starts from here, by setting the src to |url|.
   webview.addEventListener('loadcommit', function(e) {
+    window.console.log('loadcommit1');
     webview.parentNode.removeChild(webview);
     loadCommitCommon(e);
   });
   webview.addEventListener('loadcommit', function(e) {
+    window.console.log('loadcommit2');
     loadCommitCommon(e);
   });
   webview.setAttribute('src', url);

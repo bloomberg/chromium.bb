@@ -912,9 +912,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
   TestHelper("testLoadProgressEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
-// WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
-// http://crbug.com/255106
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestDestroyOnEventListener) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDestroyOnEventListener) {
   TestHelper("testDestroyOnEventListener", "web_view/shim", NO_TEST_SERVER);
 }
 
