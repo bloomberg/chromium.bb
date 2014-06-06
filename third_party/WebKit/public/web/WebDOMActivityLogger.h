@@ -59,11 +59,6 @@ BLINK_EXPORT bool hasDOMActivityLogger(int worldId, const WebString& extensionId
 // one.
 BLINK_EXPORT void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActivityLogger*);
 
-// FIXME: remove the following two methods after modifying Chrome to use the
-// above ones.
-BLINK_EXPORT bool hasDOMActivityLogger(int worldId);
-BLINK_EXPORT void setDOMActivityLogger(int worldId, WebDOMActivityLogger*);
-
 } // namespace blink
 
 #endif

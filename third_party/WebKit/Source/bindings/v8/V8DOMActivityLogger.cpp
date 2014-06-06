@@ -32,28 +32,14 @@ static DOMActivityLoggerMapForIsolatedWorld& domActivityLoggersForIsolatedWorld(
 
 void V8DOMActivityLogger::setActivityLogger(int worldId, const String& extensionId, PassOwnPtr<V8DOMActivityLogger> logger)
 {
-    // FIXME: The following line is a stub to allow appropriate modifications to
-    // chromium code base. When the modifications are done, remove this line.
-    domActivityLoggersForIsolatedWorld().set(worldId, logger);
-    return;
-
-    if (worldId) {
+    if (worldId)
         domActivityLoggersForIsolatedWorld().set(worldId, logger);
-    } else {
+    else
         domActivityLoggersForMainWorld().set(extensionId, logger);
-    }
 }
 
 V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const String& extensionId)
 {
-    {
-        // FIXME: The following lines are a stub to allow appropriate modifications to
-        // chromium code base. When the modifications are done, remove these lines.
-        DOMActivityLoggerMapForIsolatedWorld& loggers = domActivityLoggersForIsolatedWorld();
-        DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(worldId);
-        return it == loggers.end() ? 0 : it->value.get();
-    }
-
     if (worldId) {
         DOMActivityLoggerMapForIsolatedWorld& loggers = domActivityLoggersForIsolatedWorld();
         DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(worldId);
@@ -70,10 +56,6 @@ V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const Stri
 
 V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const KURL& url)
 {
-    // FIXME: The following line is a stub to allow appropriate modifications to
-    // chromium code base. When the modifications are done, remove this line.
-    return activityLogger(worldId, String());
-
     // extension ID is ignored for worldId != 0.
     if (worldId)
         return activityLogger(worldId, String());

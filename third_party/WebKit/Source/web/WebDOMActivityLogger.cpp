@@ -98,17 +98,4 @@ void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActiv
     V8DOMActivityLogger::setActivityLogger(worldId, extensionId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 
-// FIXME: remove the following two methods after modifying Chrome to use the
-// above ones.
-bool hasDOMActivityLogger(int worldId)
-{
-    return V8DOMActivityLogger::activityLogger(worldId, WebString());
-}
-
-void setDOMActivityLogger(int worldId, WebDOMActivityLogger* logger)
-{
-    ASSERT(logger);
-    V8DOMActivityLogger::setActivityLogger(worldId, WebString(), adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
-}
-
 } // namespace blink

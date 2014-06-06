@@ -100,6 +100,9 @@ private:
     void updateDocumentProperty();
     void clearDocumentProperty();
 
+    // Updates Activity Logger for the current context.
+    void updateActivityLogger();
+
     void createContext();
     bool installDOMWindow();
 

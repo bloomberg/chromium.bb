@@ -216,14 +216,13 @@ bool V8WindowShell::initialize()
             setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }
 
-    m_scriptState->perContextData()->setActivityLogger(V8DOMActivityLogger::activityLogger(
-        m_world->worldId(), m_frame->document() ? m_frame->document()->baseURI() : KURL()));
     if (!installDOMWindow()) {
         disposeContext(DoNotDetachGlobal);
         return false;
     }
 
     if (m_world->isMainWorld()) {
+        // ActivityLogger for main world is updated within updateDocument().
         updateDocument();
         if (m_frame->document()) {
             setSecurityToken(m_frame->document()->securityOrigin());
@@ -232,6 +231,7 @@ bool V8WindowShell::initialize()
             context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
         }
     } else {
+        updateActivityLogger();
         SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
         setSecurityToken(origin);
         if (origin && InspectorInstrumentation::hasFrontends()) {
@@ -369,6 +369,12 @@ void V8WindowShell::clearDocumentProperty()
     m_scriptState->context()->Global()->ForceDelete(v8AtomicString(m_isolate, "document"));
 }
 
+void V8WindowShell::updateActivityLogger()
+{
+    m_scriptState->perContextData()->setActivityLogger(V8DOMActivityLogger::activityLogger(
+        m_world->worldId(), m_frame->document() ? m_frame->document()->baseURI() : KURL()));
+}
+
 void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
 {
     // If two tokens are equal, then the SecurityOrigins canAccess each other.
@@ -410,6 +416,7 @@ void V8WindowShell::updateDocument()
         return;
     if (!isContextInitialized())
         return;
+    updateActivityLogger();
     updateDocumentProperty();
     updateSecurityOrigin(m_frame->document()->securityOrigin());
 }
