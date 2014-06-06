@@ -118,22 +118,27 @@ class CompoundFailure(StepFailure):
 class SetFailureType(object):
   """A wrapper to re-raise the exception as the pre-set type."""
 
-  def __init__(self, category_exception):
+  def __init__(self, category_exception, source_exception=None):
     """Initializes the decorator.
 
     Args:
       category_exception: The exception type to re-raise as. It must be
         a subclass of CompoundFailure.
+      source_exception: The exception types to re-raise. By default, re-raise
+        all Exception classes.
     """
     assert issubclass(category_exception, CompoundFailure)
     self.category_exception = category_exception
+    self.source_exception = source_exception
+    if self.source_exception is None:
+      self.source_exception = Exception
 
   def __call__(self, functor):
     """Returns a wrapped function."""
     def wrapped_functor(*args, **kwargs):
       try:
         return functor(*args, **kwargs)
-      except Exception:
+      except self.source_exception:
         # Get the information about the original exception.
         exc_type, exc_value, _ = sys.exc_info()
         exc_traceback = traceback.format_exc()

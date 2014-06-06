@@ -238,10 +238,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.config.hw_tests_warn:
       return self._HandleExceptionAsWarning(exc_info)
 
-    # Deal with timeout errors specially.
-    if issubclass(exc_type, timeout_util.TimeoutError):
-      return self._HandleStageTimeoutException(exc_info)
-
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exc_info)
 
@@ -276,12 +272,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(HWTestStage, self)._HandleStageException(exc_info)
 
-  def _HandleStageTimeoutException(self, exc_info):
-    if not self.suite_config.critical and not self.suite_config.fatal_timeouts:
-      return self._HandleExceptionAsWarning(exc_info)
-
-    return super(HWTestStage, self)._HandleStageException(exc_info)
-
   @failures_lib.SetFailureType(failures_lib.TestLabFailure)
   def _CheckLabStatus(self):
     """Checks whether lab is down or the boards has been disabled.
@@ -303,19 +293,17 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       debug = self._run.options.debug
 
     self._CheckLabStatus()
-    with timeout_util.Timeout(
-        self.suite_config.timeout + constants.HWTEST_TIMEOUT_EXTENSION):
-      commands.RunHWTestSuite(build,
-                              self.suite_config.suite,
-                              self._current_board,
-                              self.suite_config.pool,
-                              self.suite_config.num,
-                              self.suite_config.file_bugs,
-                              self.wait_for_results,
-                              self.suite_config.priority,
-                              self.suite_config.timeout_mins,
-                              self.suite_config.retry,
-                              debug)
+    commands.RunHWTestSuite(build,
+                            self.suite_config.suite,
+                            self._current_board,
+                            self.suite_config.pool,
+                            self.suite_config.num,
+                            self.suite_config.file_bugs,
+                            self.wait_for_results,
+                            self.suite_config.priority,
+                            self.suite_config.timeout_mins,
+                            self.suite_config.retry,
+                            debug)
 
 
 class AUTestStage(HWTestStage):

@@ -95,12 +95,11 @@ def OverrideConfigForTrybot(build_config, options):
       if not my_config['hw_tests']:
         my_config['hw_tests'] = HWTestConfig.DefaultList(
             num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
-            fatal_timeouts=True, file_bugs=False)
+            file_bugs=False)
       else:
         for hw_config in my_config['hw_tests']:
           hw_config.num = constants.HWTEST_TRYBOT_NUM
           hw_config.pool = constants.HWTEST_TRYBOT_POOL
-          hw_config.fatal_timeouts = True
           hw_config.file_bugs = False
           hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
 
@@ -718,9 +717,8 @@ class HWTestConfig(object):
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
-               async=False, critical=False, fatal_timeouts=True,
-               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=False):
+               async=False, critical=False, file_bugs=False,
+               priority=constants.HWTEST_BUILD_PRIORITY, retry=False):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
@@ -728,7 +726,6 @@ class HWTestConfig(object):
     self.timeout = timeout
     self.async = async
     self.critical = critical
-    self.fatal_timeouts = fatal_timeouts
     self.file_bugs = file_bugs
     self.priority = priority
     self.retry = retry

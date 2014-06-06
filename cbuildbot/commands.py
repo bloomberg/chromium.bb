@@ -703,6 +703,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return tar_files
 
 
+@failures_lib.SetFailureType(SuiteTimedOut, timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, debug=True):
@@ -758,7 +759,13 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     cros_build_lib.Info('RunHWTestSuite would run: %s',
                         cros_build_lib.CmdToStr(cmd))
   else:
-    result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    if timeout_mins is None:
+      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    else:
+      with timeout_util.Timeout(
+          timeout_mins * 60 + constants.HWTEST_TIMEOUT_EXTENSION):
+        result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+
     # run_suite error codes:
     #   0 - OK: Tests ran and passed.
     #   1 - ERROR: Tests ran and failed (or timed out).

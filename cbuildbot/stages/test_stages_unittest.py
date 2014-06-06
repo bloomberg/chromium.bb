@@ -202,24 +202,22 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
       result = cros_build_lib.CommandResult(cmd='run_hw_tests',
                                             returncode=returncode)
       m.AndReturn(result)
+
       # Raise an exception if the user wanted the command to fail.
       if timeout:
         m.AndRaise(timeout_util.TimeoutError('Timed out'))
-        cros_build_lib.PrintBuildbotStepFailure()
-        cros_build_lib.Error(mox.IgnoreArg())
-      elif returncode != 0:
-        # Make sure failures are logged correctly.
+
+      # Make sure failures are logged correctly.
+      if timeout or returncode != 0:
         if fails:
           cros_build_lib.PrintBuildbotStepFailure()
           cros_build_lib.Error(mox.IgnoreArg())
         else:
           cros_build_lib.PrintBuildbotStepWarnings()
           cros_build_lib.Warning(mox.IgnoreArg())
-      else:
-        m.AndReturn(result)
 
     self.mox.ReplayAll()
-    if fails or timeout:
+    if fails:
       self.assertRaises(failures_lib.StepFailure, self.RunStage)
     else:
       self.RunStage()
@@ -241,11 +239,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     """Test if run correctly with a test suite."""
     self._RunHWTestSuite()
 
-  def testWithTimeout(self):
-    """Test if run correctly with a critical timeout."""
-    self._Prepare('x86-alex-paladin')
-    self._RunHWTestSuite(timeout=True)
-
   def testHandleWarningCodeForCQ(self):
     """Tests that we pass CQ on WARNING."""
     self._Prepare('x86-alex-paladin')
@@ -253,7 +246,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testHandleWarningCodeForPFQ(self):
     """Tests that we pass PFQ on WARNING."""
-    self._Prepare('daisy-chromium-pfq')
+    self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(returncode=2, fails=False)
 
   def testHandleWarningCodeForCanary(self):
@@ -268,7 +261,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testHandleInfraErrorCodeForPFQ(self):
     """Tests that we fail PFQ on INFRA_FAILURE."""
-    self._Prepare('daisy-chromium-pfq')
+    self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(returncode=3, fails=True)
 
   def testHandleInfraErrorCodeForCanary(self):
@@ -285,20 +278,35 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._Prepare('x86-alex-release', extra_config={'hw_tests_warn': True})
     self._RunHWTestSuite(returncode=1, fails=False)
 
-  def testHandleTestTimeoutForCanary(self):
+  def testReturnTimeoutForCanary(self):
     """Tests that we pass canary on SUITE_TIMEOUT."""
     self._Prepare('x86-alex-release')
     self._RunHWTestSuite(returncode=4, fails=False)
 
-  def testHandleTestTimeoutForCQ(self):
+  def testReturnTimeoutForCQ(self):
     """Tests that we fail CQ on SUITE_TIMEOUT."""
     self._Prepare('x86-alex-paladin')
     self._RunHWTestSuite(returncode=4, fails=True)
 
-  def testHandleTestTimeoutForPFQ(self):
+  def testReturnTimeoutForPFQ(self):
     """Tests that we fail PFQ on SUITE_TIMEOUT."""
-    self._Prepare('daisy-chromium-pfq')
+    self._Prepare('falco-chrome-pfq')
     self._RunHWTestSuite(returncode=4, fails=True)
+
+  def testRaiseTimeoutForCanary(self):
+    """Canary should pass even if timeout exception is raised."""
+    self._Prepare('x86-alex-release')
+    self._RunHWTestSuite(timeout=True, fails=False)
+
+  def testRaiseTimeoutForCQ(self):
+    """CQ should fail if timeout exception is raised."""
+    self._Prepare('x86-alex-paladin')
+    self._RunHWTestSuite(timeout=True, fails=True)
+
+  def testRaiseTimeoutForPFQ(self):
+    """PFQ should fail if timeout exception is raised."""
+    self._Prepare('falco-chrome-pfq')
+    self._RunHWTestSuite(timeout=True, fails=True)
 
   def testHandleLabDownAsWarningForCanary(self):
     """Test that the stage passes with a warning if lab is down."""
