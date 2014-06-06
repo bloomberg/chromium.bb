@@ -14,20 +14,21 @@
 
 namespace {
 
-struct SourceVideoFormat {
+struct SourceVideoResolution {
   int width;
   int height;
-  int frame_rate;
 };
 
-// List of formats used if the source doesn't support capability enumeration.
-const SourceVideoFormat kVideoFormats[] = {{1920, 1080, 30},
-                                           {1280, 720, 30},
-                                           {960, 720, 30},
-                                           {640, 480, 30},
-                                           {640, 360, 30},
-                                           {320, 240, 30},
-                                           {320, 180, 30}};
+// Resolutions used if the source doesn't support capability enumeration.
+const SourceVideoResolution kVideoResolutions[] = {{1920, 1080},
+                                                   {1280, 720},
+                                                   {960, 720},
+                                                   {640, 480},
+                                                   {640, 360},
+                                                   {320, 240},
+                                                   {320, 180}};
+// Frame rates for sources with no support for capability enumeration.
+const int kVideoFrameRates[] = {30, 60};
 
 }  // namespace
 
@@ -190,11 +191,12 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
     // The capture device doesn't seem to support capability enumeration,
     // compose a fallback list of capabilities.
     media::VideoCaptureFormats default_formats;
-    for (size_t i = 0; i < arraysize(kVideoFormats); ++i) {
-      default_formats.push_back(media::VideoCaptureFormat(
-          gfx::Size(kVideoFormats[i].width, kVideoFormats[i].height),
-          kVideoFormats[i].frame_rate,
-          media::PIXEL_FORMAT_I420));
+    for (size_t i = 0; i < arraysize(kVideoResolutions); ++i) {
+      for (size_t j = 0; j < arraysize(kVideoFrameRates); ++j) {
+        default_formats.push_back(media::VideoCaptureFormat(
+            gfx::Size(kVideoResolutions[i].width, kVideoResolutions[i].height),
+            kVideoFrameRates[j], media::PIXEL_FORMAT_I420));
+      }
     }
     source_formats_callback_.Run(default_formats);
   }
