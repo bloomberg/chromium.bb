@@ -112,19 +112,11 @@ public:
 
     virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
 
-    virtual double rate() const = 0;
-    virtual void setRate(double) = 0;
-
     enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
     virtual NetworkState networkState() const = 0;
 
     enum ReadyState  { HaveNothing, HaveMetadata, HaveCurrentData, HaveFutureData, HaveEnoughData };
     virtual ReadyState readyState() const = 0;
-
-    virtual double maxTimeSeekable() const = 0;
-    virtual PassRefPtr<TimeRanges> buffered() const = 0;
-
-    virtual bool didLoadingProgress() const = 0;
 
     virtual void paint(GraphicsContext*, const IntRect&) = 0;
     virtual bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;

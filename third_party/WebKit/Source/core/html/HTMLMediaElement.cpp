@@ -1712,7 +1712,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
     double time = WTF::currentTime();
     double timedelta = time - m_previousProgressTime;
 
-    if (m_player->didLoadingProgress()) {
+    if (webMediaPlayer() && webMediaPlayer()->didLoadingProgress()) {
         scheduleEvent(EventTypeNames::progress);
         m_previousProgressTime = time;
         m_sentStalledEvent = false;
@@ -1989,15 +1989,15 @@ void HTMLMediaElement::setPlaybackRate(double rate)
         scheduleEvent(EventTypeNames::ratechange);
     }
 
-    if (m_player && potentiallyPlaying() && m_player->rate() != rate && !m_mediaController)
-        m_player->setRate(rate);
+    if (m_player && potentiallyPlaying() && !m_mediaController)
+        webMediaPlayer()->setRate(rate);
 }
 
 void HTMLMediaElement::updatePlaybackRate()
 {
     double effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
-    if (m_player && potentiallyPlaying() && m_player->rate() != effectiveRate)
-        m_player->setRate(effectiveRate);
+    if (m_player && potentiallyPlaying())
+        webMediaPlayer()->setRate(effectiveRate);
 }
 
 bool HTMLMediaElement::ended() const
@@ -2897,13 +2897,13 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
 
 PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
 {
-    if (!m_player)
-        return TimeRanges::create();
-
     if (m_mediaSource)
         return m_mediaSource->buffered();
 
-    return m_player->buffered();
+    if (!webMediaPlayer())
+        return TimeRanges::create();
+
+    return TimeRanges::create(webMediaPlayer()->buffered());
 }
 
 PassRefPtr<TimeRanges> HTMLMediaElement::played()
@@ -2922,8 +2922,8 @@ PassRefPtr<TimeRanges> HTMLMediaElement::played()
 
 PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
-    if (m_player) {
-        double maxTimeSeekable = m_player->maxTimeSeekable();
+    if (webMediaPlayer()) {
+        double maxTimeSeekable = webMediaPlayer()->maxTimeSeekable();
         if (maxTimeSeekable)
             return TimeRanges::create(0, maxTimeSeekable);
     }
@@ -3033,7 +3033,7 @@ void HTMLMediaElement::updatePlayState()
         if (playerPaused) {
             // Set rate, muted before calling play in case they were set before the media engine was setup.
             // The media engine should just stash the rate and muted values since it isn't already playing.
-            m_player->setRate(m_playbackRate);
+            webMediaPlayer()->setRate(m_playbackRate);
             updateVolume();
             webMediaPlayer()->play();
         }
