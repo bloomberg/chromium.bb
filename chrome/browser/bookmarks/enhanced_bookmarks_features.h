@@ -47,6 +47,10 @@ void ForceFinchBookmarkExperimentIfNeeded(
 // Experiment could be enable from Chrome sync or from Finch.
 bool IsEnhancedBookmarksExperimentEnabled();
 
+#if defined(OS_ANDROID)
+bool IsEnhancedBookmarkImageFetchingEnabled();
+#endif
+
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.
 bool IsEnableDomDistillerSet();
 

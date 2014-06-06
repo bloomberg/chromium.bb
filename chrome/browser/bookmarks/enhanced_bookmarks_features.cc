@@ -174,6 +174,22 @@ bool IsEnhancedBookmarksExperimentEnabled() {
   return IsEnhancedBookmarksExperimentEnabledFromFinch();
 }
 
+#if defined(OS_ANDROID)
+bool IsEnhancedBookmarkImageFetchingEnabled() {
+  if (IsEnhancedBookmarksExperimentEnabled())
+    return true;
+
+  // Salient images are collected from visited bookmarked pages even if the
+  // enhanced bookmark feature is turned off. This is to have some images
+  // available so that in the future, when the feature is turned on, the user
+  // experience is not a big list of flat colors. However as a precautionary
+  // measure it is possible to disable this collection of images from finch.
+  std::string disable_fetching = chrome_variations::GetVariationParamValue(
+      kFieldTrialName, "DisableImagesFetching");
+  return disable_fetching.empty();
+}
+#endif
+
 bool IsEnableDomDistillerSet() {
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableDomDistiller)) {
