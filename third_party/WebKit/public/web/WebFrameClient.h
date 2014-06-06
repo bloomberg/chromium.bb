@@ -506,7 +506,7 @@ public:
     virtual void initializeChildFrame(const WebRect& frameRect, float scaleFactor) { }
 
 protected:
-    ~WebFrameClient() { }
+    virtual ~WebFrameClient() { }
 };
 
 } // namespace blink
