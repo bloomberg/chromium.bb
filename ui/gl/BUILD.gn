@@ -117,6 +117,7 @@ component("gl") {
     "//gpu/command_buffer/common",
     "//third_party/mesa:mesa_headers",
     "//skia",
+    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
