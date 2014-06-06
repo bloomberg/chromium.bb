@@ -6,10 +6,10 @@
 
 #include "base/auto_reset.h"
 #include "mojo/aura/screen_mojo.h"
-#include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/root_view_manager_delegate.h"
+#include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -59,7 +59,7 @@ RootViewManager::RootViewManager(ServiceProvider* service_provider,
   ConnectToService(service_provider,
                    "mojo:mojo_native_viewport_service",
                    &viewport);
-  window_tree_host_.reset(new WindowTreeHostMojo(
+  window_tree_host_.reset(new WindowTreeHostImpl(
         viewport.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&RootViewManager::OnCompositorCreated,

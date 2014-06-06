@@ -243,56 +243,6 @@
           'includes': [ 'build/package_app.gypi' ],
         },
         {
-          'target_name': 'mojo_launcher_bindings',
-          'type': 'static_library',
-          'sources': [
-            'examples/launcher/launcher.mojom',
-          ],
-          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-          'export_dependent_settings': [
-            'mojo_cpp_bindings',
-          ],
-          'dependencies': [
-            'mojo_cpp_bindings',
-          ],
-        },
-        {
-          'target_name': 'mojo_launcher',
-          'type': 'shared_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/base.gyp:test_support_base',
-            '../ui/aura/aura.gyp:aura',
-            '../ui/aura/aura.gyp:aura_test_support',
-            '../ui/base/ui_base.gyp:ui_base',
-            '../ui/gfx/gfx.gyp:gfx',
-            '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/views/views.gyp:views',
-            '../ui/wm/wm.gyp:wm',
-            '../url/url.gyp:url_lib',
-            'mojo_application',
-            'mojo_aura_support',
-            'mojo_common_lib',
-            'mojo_environment_chromium',
-            'mojo_geometry_bindings',
-            'mojo_geometry_lib',
-            'mojo_gles2',
-            'mojo_launcher_bindings',
-            'mojo_system_impl',
-          ],
-          'sources': [
-            'examples/launcher/launcher.cc',
-          ],
-        },
-        {
-          'target_name': 'package_mojo_launcher',
-          'variables': {
-            'app_name': 'mojo_launcher',
-          },
-          'includes': [ 'build/package_app.gypi' ],
-        },
-        {
           'target_name': 'mojo_demo_launcher',
           'type': 'shared_library',
           'dependencies': [

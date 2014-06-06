@@ -66,7 +66,6 @@
           'dependencies': [
             'mojo_aura_demo',
             'mojo_aura_demo_init',
-            'mojo_launcher',
             'mojo_demo_launcher',
             'mojo_embedded_app',
             'mojo_window_manager',
@@ -898,12 +897,8 @@
             'mojo_native_viewport_bindings',
           ],
           'sources': [
-            'aura/context_factory_mojo.cc',
-            'aura/context_factory_mojo.h',
             'aura/screen_mojo.cc',
             'aura/screen_mojo.h',
-            'aura/window_tree_host_mojo.cc',
-            'aura/window_tree_host_mojo.h',
           ],
         },
       ],

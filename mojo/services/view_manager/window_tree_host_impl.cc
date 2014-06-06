@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/aura/window_tree_host_mojo.h"
+#include "mojo/services/view_manager/window_tree_host_impl.h"
 
-#include "mojo/aura/context_factory_mojo.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/view_manager/context_factory_impl.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -17,14 +17,17 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
+namespace view_manager {
+namespace service {
 
+// TODO(sky): nuke this. It shouldn't be static.
 // static
-mojo::ContextFactoryMojo* WindowTreeHostMojo::context_factory_ = NULL;
+ContextFactoryImpl* WindowTreeHostImpl::context_factory_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, public:
+// WindowTreeHostImpl, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(
+WindowTreeHostImpl::WindowTreeHostImpl(
     NativeViewportPtr viewport,
     const gfx::Rect& bounds,
     const base::Callback<void()>& compositor_created_callback)
@@ -43,105 +46,105 @@ WindowTreeHostMojo::WindowTreeHostMojo(
     delete context_factory_;
     context_factory_ = NULL;
   }
-  context_factory_ = new ContextFactoryMojo(pipe.handle1.Pass());
+  context_factory_ = new ContextFactoryImpl(pipe.handle1.Pass());
   aura::Env::GetInstance()->set_context_factory(context_factory_);
   CHECK(context_factory_) << "No GL bindings.";
 }
 
-WindowTreeHostMojo::~WindowTreeHostMojo() {
+WindowTreeHostImpl::~WindowTreeHostImpl() {
   DestroyCompositor();
   DestroyDispatcher();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, aura::WindowTreeHost implementation:
+// WindowTreeHostImpl, aura::WindowTreeHost implementation:
 
-ui::EventSource* WindowTreeHostMojo::GetEventSource() {
+ui::EventSource* WindowTreeHostImpl::GetEventSource() {
   return this;
 }
 
-gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
+gfx::AcceleratedWidget WindowTreeHostImpl::GetAcceleratedWidget() {
   NOTIMPLEMENTED() << "GetAcceleratedWidget";
   return gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostMojo::Show() {
+void WindowTreeHostImpl::Show() {
   window()->Show();
   native_viewport_->Show();
 }
 
-void WindowTreeHostMojo::Hide() {
+void WindowTreeHostImpl::Hide() {
   native_viewport_->Hide();
   window()->Hide();
 }
 
-gfx::Rect WindowTreeHostMojo::GetBounds() const {
+gfx::Rect WindowTreeHostImpl::GetBounds() const {
   return bounds_;
 }
 
-void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostImpl::SetBounds(const gfx::Rect& bounds) {
   native_viewport_->SetBounds(Rect::From(bounds));
 }
 
-gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostImpl::GetLocationOnNativeScreen() const {
   return gfx::Point(0, 0);
 }
 
-void WindowTreeHostMojo::SetCapture() {
+void WindowTreeHostImpl::SetCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::ReleaseCapture() {
+void WindowTreeHostImpl::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::PostNativeEvent(
+void WindowTreeHostImpl::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void WindowTreeHostImpl::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::SetCursorNative(gfx::NativeCursor cursor) {
+void WindowTreeHostImpl::SetCursorNative(gfx::NativeCursor cursor) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::MoveCursorToNative(const gfx::Point& location) {
+void WindowTreeHostImpl::MoveCursorToNative(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
+void WindowTreeHostImpl::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, ui::EventSource implementation:
+// WindowTreeHostImpl, ui::EventSource implementation:
 
-ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
+ui::EventProcessor* WindowTreeHostImpl::GetEventProcessor() {
   return dispatcher();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, NativeViewportClient implementation:
+// WindowTreeHostImpl, NativeViewportClient implementation:
 
-void WindowTreeHostMojo::OnCreated() {
+void WindowTreeHostImpl::OnCreated() {
   CreateCompositor(GetAcceleratedWidget());
   compositor_created_callback_.Run();
 }
 
-void WindowTreeHostMojo::OnBoundsChanged(RectPtr bounds) {
+void WindowTreeHostImpl::OnBoundsChanged(RectPtr bounds) {
   bounds_ = bounds.To<gfx::Rect>();
   window()->SetBounds(gfx::Rect(bounds_.size()));
   OnHostResized(bounds_.size());
 }
 
-void WindowTreeHostMojo::OnDestroyed() {
+void WindowTreeHostImpl::OnDestroyed() {
   base::MessageLoop::current()->Quit();
 }
 
-void WindowTreeHostMojo::OnEvent(EventPtr event,
+void WindowTreeHostImpl::OnEvent(EventPtr event,
                                  const mojo::Callback<void()>& callback) {
   switch (event->action) {
     case ui::ET_MOUSE_PRESSED:
@@ -170,4 +173,6 @@ void WindowTreeHostMojo::OnEvent(EventPtr event,
   callback.Run();
 };
 
+}  // namespace service
+}  // namespace view_manager
 }  // namespace mojo

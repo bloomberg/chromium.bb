@@ -16,17 +16,19 @@ class ContextFactory;
 }
 
 namespace mojo {
+namespace view_manager {
+namespace service {
 
-class ContextFactoryMojo;
+class ContextFactoryImpl;
 
-class WindowTreeHostMojo : public aura::WindowTreeHost,
+class WindowTreeHostImpl : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
  public:
-  WindowTreeHostMojo(NativeViewportPtr viewport,
+  WindowTreeHostImpl(NativeViewportPtr viewport,
                      const gfx::Rect& bounds,
                      const base::Callback<void()>& compositor_created_callback);
-  virtual ~WindowTreeHostMojo();
+  virtual ~WindowTreeHostImpl();
 
   gfx::Rect bounds() const { return bounds_; }
 
@@ -57,16 +59,18 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
 
-  static ContextFactoryMojo* context_factory_;
+  static ContextFactoryImpl* context_factory_;
 
   NativeViewportPtr native_viewport_;
   base::Callback<void()> compositor_created_callback_;
 
   gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };
 
+}  // namespace service
+}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_AURA_WINDOW_TREE_HOST_MOJO_H_
