@@ -123,14 +123,19 @@ keyboard::KeyboardControllerProxy*
 }
 
 void TestShellDelegate::VirtualKeyboardActivated(bool activated) {
+  FOR_EACH_OBSERVER(ash::VirtualKeyboardStateObserver,
+                    keyboard_state_observer_list_,
+                    OnVirtualKeyboardStateChanged(activated));
 }
 
 void TestShellDelegate::AddVirtualKeyboardStateObserver(
     VirtualKeyboardStateObserver* observer) {
+  keyboard_state_observer_list_.AddObserver(observer);
 }
 
 void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
     VirtualKeyboardStateObserver* observer) {
+  keyboard_state_observer_list_.RemoveObserver(observer);
 }
 
 content::BrowserContext* TestShellDelegate::GetActiveBrowserContext() {

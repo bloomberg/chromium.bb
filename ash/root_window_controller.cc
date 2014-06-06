@@ -34,6 +34,7 @@
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
+#include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
@@ -1011,7 +1012,13 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_LockScreenContainer,
       "LockScreenContainer",
       lock_screen_containers);
-  lock_container->SetLayoutManager(new WorkspaceLayoutManager(lock_container));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableLockLayoutManager)) {
+    lock_container->SetLayoutManager(
+            new WorkspaceLayoutManager(lock_container));
+  } else {
+    lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
+  }
   SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 

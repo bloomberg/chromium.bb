@@ -38,6 +38,10 @@ const char kAshDefaultWallpaperIsOem[] = "ash-default-wallpaper-is-oem";
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
+// Disables LockLayoutManager used for LockScreenContainer, return back to
+// WorkspaceLayoutManager.
+const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
+
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.

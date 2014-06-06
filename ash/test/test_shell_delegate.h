@@ -11,6 +11,7 @@
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 
 namespace keyboard {
 class KeyboardControllerProxy;
@@ -75,6 +76,8 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
 
   scoped_ptr<content::BrowserContext> active_browser_context_;
+
+  ObserverList<ash::VirtualKeyboardStateObserver> keyboard_state_observer_list_;
 
   TestSessionStateDelegate* test_session_state_delegate_;  // Not owned.
 
