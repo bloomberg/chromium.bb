@@ -15,10 +15,8 @@ function test()
             return 1;
         }
     };
-    var targetManager = {
-        targets: function () { return [mockTarget]},
-        observeTargets: function() {}
-    }
+    var targetManager = new WebInspector.TargetManager();
+    targetManager._targets.push(mockTarget);
 
     var defaultMapping = {
         rawLocationToUILocation: function(rawLocation)
@@ -85,6 +83,7 @@ function test()
     function DebuggerModelMock(sourceMapping)
     {
         mockTarget.debuggerModel = this;
+        this._breakpointResolvedEventTarget = new WebInspector.Object();
         this._scripts = {};
         this._sourceMapping = sourceMapping;
         this._breakpoints = {};
@@ -209,14 +208,24 @@ function test()
             sourceMapping._disabled = true;
             for (var scriptId in this._scripts)
                 this._scripts[scriptId].updateLocations();
+        },
+
+        addBreakpointListener: function(breakpointId, listener, thisObject)
+        {
+            this._breakpointResolvedEventTarget.addEventListener(breakpointId, listener, thisObject)
+        },
+
+        removeBreakpointListener: function(breakpointId, listener, thisObject)
+        {
+            this._breakpointResolvedEventTarget.removeEventListener(breakpointId, listener, thisObject);
+        },
+
+        _breakpointResolved: function(breakpointId, location)
+        {
+            this._breakpointResolvedEventTarget.dispatchEventToListeners(breakpointId, location);
         }
     }
     DebuggerModelMock.prototype.__proto__ = WebInspector.Object.prototype;
-
-    var dummySetting = {
-        get: function() { return []; },
-        set: function(breakpoints) { }
-    };
 
     function resetWorkspace(breakpointManager)
     {
@@ -294,8 +303,6 @@ function test()
         var debuggerModel = new DebuggerModelMock(sourceMapping);
         workspace = new WebInspector.Workspace();
         var breakpointManager = new WebInspector.BreakpointManager(setting, workspace, targetManager);
-        mockTarget.debuggerModel = debuggerModel;
-        breakpointManager.targetAdded(mockTarget);
         breakpointManager._networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(workspace);
         breakpointManager._debuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(workspace, "debugger:", WebInspector.projectTypes.Debugger);
         breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointAdded, breakpointAdded);
@@ -358,7 +365,7 @@ function test()
         dumpBreakpointStorage(breakpointManager);
         InspectorTest.addResult("  Resetting breakpoint manager");
         breakpointManager.removeAllBreakpoints();
-        breakpointManager.removeProvisionalBreakpointsForTest(mockTarget);
+        breakpointManager.removeProvisionalBreakpointsForTest();
         uiSourceCodes = {};
         next();
     }
@@ -597,8 +604,7 @@ function test()
                 resetWorkspace(breakpointManager);
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
                 addTemporaryUISourceCode(breakpointManager, "a.js");
-                var eventData = { breakpointId: "a.js:10", location: new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 11, 5)};
-                mockTarget.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
+                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 11, 5));
                 addUISourceCode(breakpointManager, "a.js");
                 window.setBreakpointCallback = step4.bind(this);
             }
@@ -666,9 +672,8 @@ function test()
                 mockTarget.debuggerModel.reset();
                 resetWorkspace(breakpointManager);
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
-                addTemporaryUISourceCode(breakpointManager, "a.js")            
-                var eventData = { breakpointId: "a.js:10", location: new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 11, 5)};
-                mockTarget.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
+                addTemporaryUISourceCode(breakpointManager, "a.js");
+                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 11, 5));
                 var breakpoints = breakpointManager.allBreakpoints();
                 InspectorTest.assertEquals(breakpoints.length, 1, "Exactly one provisional breakpoint should be registered in breakpoint manager.");
                 dumpBreakpointLocations(breakpointManager);
@@ -711,8 +716,7 @@ function test()
 
                 InspectorTest.addResult("\n  Adding files:");
                 addTemporaryUISourceCode(breakpointManager, "a.js");
-                var eventData = { breakpointId: "a.js:10", location: new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5)};
-                mockTarget.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
+                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5));
                 uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
                 uiSourceCodeB = addUISourceCode(breakpointManager, "b.js", true, true);
 
@@ -762,8 +766,7 @@ function test()
                 var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
 
                 InspectorTest.addResult("\n  Emulating breakpoint resolved event:");
-                var eventData = { breakpointId: "a.js:10", location: new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5)};
-                mockTarget.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
+                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5));
 
                 InspectorTest.addResult("\n  Waiting for breakpoint to be set in debugger again:");
                 window.setBreakpointCallback = step3.bind(this);

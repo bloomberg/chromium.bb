@@ -27,7 +27,7 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 InspectorTest.addResult("Adding breakpoint.");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
             }
 

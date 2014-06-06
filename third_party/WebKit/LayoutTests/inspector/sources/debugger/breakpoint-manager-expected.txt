@@ -68,9 +68,9 @@ Running: testSetConditionalBreakpoint
     a.js:30 enabled:true condition:condition
   Updating condition
     breakpointRemoved(a.js, 30, 0)
+    breakpointAdded(a.js, 30, 0, , true)
     Location disposed: a.js:30
     debuggerModel.removeBreakpoint(a.js:30)
-    breakpointAdded(a.js, 30, 0, , true)
     debuggerModel.setBreakpoint(a.js:30:)
     breakpointRemoved(a.js, 30, 0)
     breakpointAdded(a.js, 30, 0, , true)
@@ -297,9 +297,9 @@ Running: testNavigation
     Location created: a.js:11
   Adding UISourceCode: a.js
     breakpointRemoved(a.js, 11, 0)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location disposed: a.js:11
     debuggerModel.removeBreakpoint(a.js:10)
-    breakpointAdded(a.js, 10, 0, foo == bar, true)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointAdded(a.js, 20, 0, , false)
     breakpointRemoved(a.js, 10, 0)
@@ -417,9 +417,8 @@ Running: testSourceMappingReload
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
-    breakpointRemoved(b.js, 20, 0)
-    breakpointAdded(b.js, 20, 0, foo == bar, true)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
+    debuggerModel.removeBreakpoint(b.js:20)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
@@ -440,15 +439,14 @@ Running: testSourceMappingReload
   Adding UISourceCode: a.js
   Adding UISourceCode: b.js
     breakpointRemoved(a.js, 10, 0)
+    breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    breakpointAdded(b.js, 20, 0, foo == bar, true)
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
-    breakpointRemoved(b.js, 20, 0)
-    breakpointAdded(b.js, 20, 0, foo == bar, true)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
+    debuggerModel.removeBreakpoint(b.js:20)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
@@ -485,8 +483,8 @@ Running: testBreakpointInCollectedReload
 
   Adding file with script:
   Adding UISourceCode: a.js
-    debuggerModel.removeBreakpoint(a.js:10)
     breakpointAdded(a.js, 10, 0, , true)
+    debuggerModel.removeBreakpoint(a.js:10)
     debuggerModel.setBreakpoint(a.js:10:)
 
   Emulating breakpoint resolved event:
