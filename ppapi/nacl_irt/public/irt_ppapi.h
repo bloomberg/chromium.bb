@@ -14,7 +14,7 @@
 struct PP_StartFunctions {
   int32_t (*PPP_InitializeModule)(PP_Module module_id,
                                   PPB_GetInterface get_browser_interface);
-  void (*PPP_ShutdownModule)();
+  void (*PPP_ShutdownModule)(void);
   const void* (*PPP_GetInterface)(const char* interface_name);
 };
 
