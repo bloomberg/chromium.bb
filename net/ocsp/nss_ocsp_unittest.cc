@@ -23,6 +23,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,14 +40,14 @@ const char kAiaHeaders[] = "HTTP/1.1 200 OK\0"
                            "Content-type: application/pkix-cert\0"
                            "\0";
 
-class AiaResponseHandler : public net::URLRequestJobFactory::ProtocolHandler {
+class AiaResponseHandler : public net::URLRequestInterceptor {
  public:
   AiaResponseHandler(const std::string& headers, const std::string& cert_data)
       : headers_(headers), cert_data_(cert_data), request_count_(0) {}
   virtual ~AiaResponseHandler() {}
 
-  // net::URLRequestJobFactory::ProtocolHandler implementation:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  // net::URLRequestInterceptor implementation:
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     ++const_cast<AiaResponseHandler*>(this)->request_count_;
@@ -89,10 +90,10 @@ class NssHttpTest : public ::testing::Test {
         new AiaResponseHandler(kAiaHeaders, file_contents));
     handler_ = handler.get();
 
-    URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "http",
         kAiaHost,
-        handler.PassAs<URLRequestJobFactory::ProtocolHandler>());
+        handler.PassAs<URLRequestInterceptor>());
 
     SetURLRequestContextForNSSHttpIO(&context_);
     EnsureNSSHttpIOInit();

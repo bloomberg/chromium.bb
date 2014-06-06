@@ -25,7 +25,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "url/gurl.h"
 
 // This file tests that net::LoadTimingInfo is correctly hooked up to the
@@ -214,27 +214,26 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
   DISALLOW_COPY_AND_ASSIGN(MockUrlRequestJobWithTiming);
 };
 
-// A protocol handler that returns mock URLRequestJobs that return the specified
-// file with the given timings.  Constructed on the UI thread, but after that,
-// lives and is destroyed on the IO thread.
-class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+// AURLRequestInterceptor that returns mock URLRequestJobs that return the
+// specified file with the given timings.  Constructed on the UI thread, but
+// after that, lives and is destroyed on the IO thread.
+class TestInterceptor : public net::URLRequestInterceptor {
  public:
-  TestProtocolHandler(const base::FilePath& path,
-                      const TimingDeltas& load_timing_deltas)
+  TestInterceptor(const base::FilePath& path,
+                  const TimingDeltas& load_timing_deltas)
       : path_(path), load_timing_deltas_(load_timing_deltas) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  virtual ~TestProtocolHandler() {
+  virtual ~TestInterceptor() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   }
 
   // Registers |this| with the URLRequestFilter, which takes ownership of it.
   void Register() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        "http", kTestDomain,
-        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kTestDomain, scoped_ptr<net::URLRequestInterceptor>(this));
   }
 
   // Unregisters |this| with the URLRequestFilter, which should then delete
@@ -246,7 +245,7 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   }
 
   // net::URLRequestJobFactory::ProtocolHandler implementation:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -262,7 +261,7 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   // Load times for each request to use, relative to when the Job starts.
   const TimingDeltas load_timing_deltas_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
+  DISALLOW_COPY_AND_ASSIGN(TestInterceptor);
 };
 
 class LoadTimingBrowserTest : public InProcessBrowserTest {
@@ -291,20 +290,20 @@ class LoadTimingBrowserTest : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("title1.html");
 
-    // Create and register protocol handler.
-    TestProtocolHandler* protocol_handler =
-        new TestProtocolHandler(path, load_timing_deltas);
+    // Create and register request interceptor.
+    TestInterceptor* test_interceptor =
+        new TestInterceptor(path, load_timing_deltas);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&TestProtocolHandler::Register,
-                                       base::Unretained(protocol_handler)));
+                            base::Bind(&TestInterceptor::Register,
+                                       base::Unretained(test_interceptor)));
 
     // Navigate to the page.
     RunTestWithUrl(GURL(kTestUrl), navigation_deltas);
 
     // Once navigation is complete, unregister the protocol handler.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&TestProtocolHandler::Unregister,
-                                        base::Unretained(protocol_handler)));
+                            base::Bind(&TestInterceptor::Unregister,
+                                        base::Unretained(test_interceptor)));
   }
 
  private:

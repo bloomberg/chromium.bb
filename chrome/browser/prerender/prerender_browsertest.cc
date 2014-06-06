@@ -93,6 +93,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -778,18 +779,17 @@ class HangingURLRequestJob : public net::URLRequestJob {
   virtual ~HangingURLRequestJob() {}
 };
 
-class HangingFirstRequestProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
+class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  HangingFirstRequestProtocolHandler(const base::FilePath& file,
-                                     base::Closure callback)
+  HangingFirstRequestInterceptor(const base::FilePath& file,
+                                 base::Closure callback)
       : file_(file),
         callback_(callback),
         first_run_(true) {
   }
-  virtual ~HangingFirstRequestProtocolHandler() {}
+  virtual ~HangingFirstRequestInterceptor() {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     if (first_run_) {
@@ -812,13 +812,12 @@ class HangingFirstRequestProtocolHandler
 // Makes |url| never respond on the first load, and then with the contents of
 // |file| afterwards. When the first load has been scheduled, runs |callback| on
 // the UI thread.
-void CreateHangingFirstRequestProtocolHandlerOnIO(const GURL& url,
-                                                  const base::FilePath& file,
-                                                  base::Closure callback) {
+void CreateHangingFirstRequestInterceptorOnIO(
+    const GURL& url, const base::FilePath& file, base::Closure callback) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> never_respond_handler(
-      new HangingFirstRequestProtocolHandler(file, callback));
-  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+  scoped_ptr<net::URLRequestInterceptor> never_respond_handler(
+      new HangingFirstRequestInterceptor(file, callback));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, never_respond_handler.Pass());
 }
 
@@ -879,22 +878,21 @@ class RequestCounter : public base::SupportsWeakPtr<RequestCounter> {
 };
 
 // Protocol handler which counts the number of requests that start.
-class CountingProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
+class CountingInterceptor : public net::URLRequestInterceptor {
  public:
-  CountingProtocolHandler(const base::FilePath& file,
-                          const base::WeakPtr<RequestCounter>& counter)
+  CountingInterceptor(const base::FilePath& file,
+                      const base::WeakPtr<RequestCounter>& counter)
       : file_(file),
         counter_(counter),
         weak_factory_(this) {
   }
-  virtual ~CountingProtocolHandler() {}
+  virtual ~CountingInterceptor() {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     MockHTTPJob* job = new MockHTTPJob(request, network_delegate, file_);
-    job->set_start_callback(base::Bind(&CountingProtocolHandler::RequestStarted,
+    job->set_start_callback(base::Bind(&CountingInterceptor::RequestStarted,
                                        weak_factory_.GetWeakPtr()));
     return job;
   }
@@ -908,29 +906,28 @@ class CountingProtocolHandler
  private:
   base::FilePath file_;
   base::WeakPtr<RequestCounter> counter_;
-  mutable base::WeakPtrFactory<CountingProtocolHandler> weak_factory_;
+  mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
 };
 
 // Makes |url| respond to requests with the contents of |file|, counting the
 // number that start in |counter|.
-void CreateCountingProtocolHandlerOnIO(
+void CreateCountingInterceptorOnIO(
     const GURL& url,
     const base::FilePath& file,
     const base::WeakPtr<RequestCounter>& counter) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> protocol_handler(
-      new CountingProtocolHandler(file, counter));
-  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
-      url, protocol_handler.Pass());
+  scoped_ptr<net::URLRequestInterceptor> request_interceptor(
+      new CountingInterceptor(file, counter));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, request_interceptor.Pass());
 }
 
 // Makes |url| respond to requests with the contents of |file|.
-void CreateMockProtocolHandlerOnIO(const GURL& url,
-                                   const base::FilePath& file) {
+void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
-      url, content::URLRequestMockHTTPJob::CreateProtocolHandlerForSingleFile(
-          file));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url,
+      content::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(file));
 }
 
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
@@ -1897,8 +1894,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   base::RunLoop prerender_start_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
-                 kNoCommitUrl, file, prerender_start_loop.QuitClosure()));
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl, file,
+                 prerender_start_loop.QuitClosure()));
   DisableJavascriptCalls();
   PrerenderTestURL(kNoCommitUrl,
                    FINAL_STATUS_NAVIGATION_UNCOMMITTED,
@@ -1919,8 +1916,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
   base::RunLoop prerender_start_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
-                 kNoCommitUrl, file, prerender_start_loop.QuitClosure()));
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl, file,
+                 prerender_start_loop.QuitClosure()));
   DisableJavascriptCalls();
   PrerenderTestURL(CreateClientRedirect(kNoCommitUrl.spec()),
                    FINAL_STATUS_APP_TERMINATING, 1);
@@ -3123,7 +3120,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   RequestCounter unload_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingProtocolHandlerOnIO,
+      base::Bind(&CreateCountingInterceptorOnIO,
                  unload_url, empty_file, unload_counter.AsWeakPtr()));
 
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
@@ -3141,7 +3138,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHangingUnload) {
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO,
                  hang_url, empty_file,
                  base::Closure()));
 
@@ -3385,8 +3382,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   base::RunLoop hang_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
-                 kNoCommitUrl, file, hang_loop.QuitClosure()));
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl,
+                 file, hang_loop.QuitClosure()));
 
   // First, fire a prerender that aborts after it completes its load.
   std::vector<FinalStatus> expected_final_status_queue;
@@ -3772,8 +3769,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   base::FilePath file(GetTestPath("prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockProtocolHandlerOnIO,
-                 GURL(webstore_url), file));
+      base::Bind(&CreateMockInterceptorOnIO, GURL(webstore_url), file));
 
   PrerenderTestURL(CreateClientRedirect(webstore_url),
                    FINAL_STATUS_OPEN_URL, 1);
@@ -3945,14 +3941,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
   base::FilePath init_file = GetTestPath("init_session_storage.html");
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockProtocolHandlerOnIO, kInitURL, init_file));
+      base::Bind(&CreateMockInterceptorOnIO, kInitURL, init_file));
 
   const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
   base::FilePath test_file = GetTestPath("prerender_session_storage.html");
   RequestCounter counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingProtocolHandlerOnIO,
+      base::Bind(&CreateCountingInterceptorOnIO,
                  kTestURL, test_file, counter.AsWeakPtr()));
 
   PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
@@ -3995,14 +3991,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTabCrossProcess) {
   base::FilePath init_file = GetTestPath("init_session_storage.html");
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockProtocolHandlerOnIO, kInitURL, init_file));
+      base::Bind(&CreateMockInterceptorOnIO, kInitURL, init_file));
 
   const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
   base::FilePath test_file = GetTestPath("prerender_session_storage.html");
   RequestCounter counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingProtocolHandlerOnIO,
+      base::Bind(&CreateCountingInterceptorOnIO,
                  kTestURL, test_file, counter.AsWeakPtr()));
 
   PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
@@ -4169,7 +4165,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPing) {
   RequestCounter ping_counter;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateCountingProtocolHandlerOnIO,
+      base::Bind(&CreateCountingInterceptorOnIO,
                  kPingURL, empty_file, ping_counter.AsWeakPtr()));
 
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);

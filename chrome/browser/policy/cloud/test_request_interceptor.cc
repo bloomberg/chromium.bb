@@ -19,7 +19,7 @@
 #include "net/base/upload_element_reader.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
 #include "url/gurl.h"
 
@@ -143,17 +143,23 @@ net::URLRequestJob* RegisterJobCallback(
       request, network_delegate, headers, data, true);
 }
 
+void RegisterHttpInterceptor(
+    const std::string& hostname,
+    scoped_ptr<net::URLRequestInterceptor> interceptor) {
+  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+      "http", hostname, interceptor.Pass());
+}
+
 }  // namespace
 
-class TestRequestInterceptor::Delegate
-    : public net::URLRequestJobFactory::ProtocolHandler {
+class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& hostname,
            scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   virtual ~Delegate();
 
-  // ProtocolHandler implementation:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  // net::URLRequestInterceptor implementation:
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
@@ -177,7 +183,7 @@ TestRequestInterceptor::Delegate::Delegate(
 
 TestRequestInterceptor::Delegate::~Delegate() {}
 
-net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeCreateJob(
+net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
   CHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -215,11 +221,10 @@ TestRequestInterceptor::TestRequestInterceptor(const std::string& hostname,
     : hostname_(hostname),
       io_task_runner_(io_task_runner) {
   delegate_ = new Delegate(hostname_, io_task_runner_);
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> handler(delegate_);
+  scoped_ptr<net::URLRequestInterceptor> interceptor(delegate_);
   PostToIOAndWait(
-      base::Bind(&net::URLRequestFilter::AddHostnameProtocolHandler,
-                 base::Unretained(net::URLRequestFilter::GetInstance()),
-                 "http", hostname_, base::Passed(&handler)));
+      base::Bind(&RegisterHttpInterceptor, hostname_,
+                 base::Passed(&interceptor)));
 }
 
 TestRequestInterceptor::~TestRequestInterceptor() {

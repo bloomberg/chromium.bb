@@ -35,8 +35,8 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_test_util.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
 
 using base::Bind;
 using base::Callback;
@@ -55,8 +55,8 @@ using net::MockDnsClientRule;
 using net::NetworkDelegate;
 using net::URLRequest;
 using net::URLRequestFilter;
+using net::URLRequestInterceptor;
 using net::URLRequestJob;
-using net::URLRequestJobFactory;
 using ui_test_utils::NavigateToURL;
 using ui_test_utils::NavigateToURLBlockUntilNavigationsComplete;
 
@@ -215,28 +215,27 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
   const DestructionCallback destruction_callback_;
 };
 
-// ProtocolHandler for navigation correction requests.  Can cause requests to
+// Interceptor for navigation correction requests.  Can cause requests to
 // fail with an error, and/or delay a request until a test allows to continue.
 // Also can run a callback when a delayed request is cancelled.
-class BreakableCorrectionProtocolHandler
-    : public URLRequestJobFactory::ProtocolHandler {
+class BreakableCorrectionInterceptor : public URLRequestInterceptor {
  public:
-  explicit BreakableCorrectionProtocolHandler(
+  explicit BreakableCorrectionInterceptor(
       const FilePath& mock_corrections_file_path)
       : mock_corrections_file_path_(mock_corrections_file_path),
         net_error_(net::OK),
         delay_requests_(false),
         on_request_destroyed_callback_(
-            base::Bind(&BreakableCorrectionProtocolHandler::OnRequestDestroyed,
+            base::Bind(&BreakableCorrectionInterceptor::OnRequestDestroyed,
                        base::Unretained(this))) {
   }
 
-  virtual ~BreakableCorrectionProtocolHandler() {
+  virtual ~BreakableCorrectionInterceptor() {
     // All delayed requests should have been resumed or cancelled by this point.
     EXPECT_TRUE(delayed_requests_.empty());
   }
 
-  virtual URLRequestJob* MaybeCreateJob(
+  virtual URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const OVERRIDE {
     if (net_error_ != net::OK) {
@@ -328,7 +327,7 @@ class DnsProbeBrowserTestIOThreadHelper {
   IOThread* io_thread_;
   DnsProbeService* original_dns_probe_service_;
   DelayingDnsProbeService* delaying_dns_probe_service_;
-  BreakableCorrectionProtocolHandler* protocol_handler_;
+  BreakableCorrectionInterceptor* interceptor_;
   FilePath mock_corrections_file_path_;
 };
 
@@ -336,7 +335,7 @@ DnsProbeBrowserTestIOThreadHelper::DnsProbeBrowserTestIOThreadHelper()
     : io_thread_(NULL),
       original_dns_probe_service_(NULL),
       delaying_dns_probe_service_(NULL),
-      protocol_handler_(NULL),
+      interceptor_(NULL),
       mock_corrections_file_path_(GetMockLinkDoctorFilePath()) {}
 
 void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
@@ -345,7 +344,7 @@ void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
   CHECK(!io_thread_);
   CHECK(!original_dns_probe_service_);
   CHECK(!delaying_dns_probe_service_);
-  CHECK(!protocol_handler_);
+  CHECK(!interceptor_);
 
   io_thread_ = io_thread;
 
@@ -357,12 +356,10 @@ void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
 
   URLRequestFailedJob::AddUrlHandler();
 
-  scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler(
-      new BreakableCorrectionProtocolHandler(mock_corrections_file_path_));
-  protocol_handler_ =
-      static_cast<BreakableCorrectionProtocolHandler*>(protocol_handler.get());
-  URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
-      LinkDoctorBaseURL(), protocol_handler.Pass());
+  interceptor_ =
+      new BreakableCorrectionInterceptor(mock_corrections_file_path_);
+  URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      LinkDoctorBaseURL(), scoped_ptr<URLRequestInterceptor>(interceptor_));
 }
 
 void DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper() {
@@ -396,21 +393,21 @@ void DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceNetError(
     int net_error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  protocol_handler_->set_net_error(net_error);
+  interceptor_->set_net_error(net_error);
 }
 
 void DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceDelayRequests(
     bool delay_requests) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  protocol_handler_->SetDelayRequests(delay_requests);
+  interceptor_->SetDelayRequests(delay_requests);
 }
 
 void DnsProbeBrowserTestIOThreadHelper::SetRequestDestructionCallback(
     const base::Closure& callback) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  protocol_handler_->SetRequestDestructionCallback(callback);
+  interceptor_->SetRequestDestructionCallback(callback);
 }
 
 void DnsProbeBrowserTestIOThreadHelper::StartDelayedProbes(

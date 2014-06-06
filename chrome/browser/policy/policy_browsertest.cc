@@ -219,8 +219,8 @@ void RedirectHostsToTestData(const char* const urls[], size_t size) {
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
-    filter->AddUrlProtocolHandler(url,
-        URLRequestMockHTTPJob::CreateProtocolHandler(base_path));
+    filter->AddUrlInterceptor(
+        url, URLRequestMockHTTPJob::CreateInterceptor(base_path));
   }
 }
 

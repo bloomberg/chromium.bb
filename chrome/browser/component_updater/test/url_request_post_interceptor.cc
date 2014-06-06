@@ -10,7 +10,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -121,18 +121,15 @@ void URLRequestPostInterceptor::Reset() {
   ClearExpectations();
 }
 
-class URLRequestPostInterceptor::Delegate
-    : public net::URLRequestJobFactory::ProtocolHandler {
+class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& scheme, const std::string& hostname)
       : scheme_(scheme), hostname_(hostname) {}
 
   void Register() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        scheme_,
-        hostname_,
-        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        scheme_, hostname_, scoped_ptr<net::URLRequestInterceptor>(this));
   }
 
   void Unregister() {
@@ -155,7 +152,7 @@ class URLRequestPostInterceptor::Delegate
  private:
   virtual ~Delegate() {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

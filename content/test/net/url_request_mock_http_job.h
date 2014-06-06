@@ -10,10 +10,13 @@
 #include <string>
 
 #include "net/url_request/url_request_file_job.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class FilePath;
+}
+
+namespace net {
+class URLRequestInterceptor;
 }
 
 namespace content {
@@ -51,14 +54,14 @@ class URLRequestMockHTTPJob : public net::URLRequestFileJob {
   // URLRequestMockHTTPJob's responding like an HTTP server. |base_path| is the
   // file path leading to the root of the directory to use as the root of the
   // HTTP server.
-  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-  CreateProtocolHandler(const base::FilePath& base_path);
+  static scoped_ptr<net::URLRequestInterceptor>
+  CreateInterceptor(const base::FilePath& base_path);
 
   // Returns a net::URLRequestJobFactory::ProtocolHandler that serves
   // URLRequestMockHTTPJob's responding like an HTTP server. It responds to all
   // requests with the contents of |file|.
-  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-  CreateProtocolHandlerForSingleFile(const base::FilePath& file);
+  static scoped_ptr<net::URLRequestInterceptor>
+  CreateInterceptorForSingleFile(const base::FilePath& file);
 
  protected:
   virtual ~URLRequestMockHTTPJob();

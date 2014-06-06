@@ -27,22 +27,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_job_factory.h"
 
 class GURL;
 
 namespace net {
 class URLRequestJob;
+class URLRequestInterceptor;
 
 class NET_EXPORT URLRequestFilter {
  public:
-  // scheme,hostname -> ProtocolHandler
-  typedef std::map<std::pair<std::string, std::string>,
-      URLRequestJobFactory::ProtocolHandler* > HostnameHandlerMap;
-  // URL -> ProtocolHandler
-  typedef base::hash_map<std::string, URLRequestJobFactory::ProtocolHandler*>
-      UrlHandlerMap;
-
   ~URLRequestFilter();
 
   static URLRequest::ProtocolFactory Factory;
@@ -53,10 +46,10 @@ class NET_EXPORT URLRequestFilter {
   void AddHostnameHandler(const std::string& scheme,
                           const std::string& hostname,
                           URLRequest::ProtocolFactory* factory);
-  void AddHostnameProtocolHandler(
+  void AddHostnameInterceptor(
       const std::string& scheme,
       const std::string& hostname,
-      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
+      scoped_ptr<URLRequestInterceptor> interceptor);
   void RemoveHostnameHandler(const std::string& scheme,
                              const std::string& hostname);
 
@@ -64,9 +57,8 @@ class NET_EXPORT URLRequestFilter {
   // old handlers for the URL if one existed.
   bool AddUrlHandler(const GURL& url,
                      URLRequest::ProtocolFactory* factory);
-  bool AddUrlProtocolHandler(
-      const GURL& url,
-      scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler);
+  bool AddUrlInterceptor(const GURL& url,
+                         scoped_ptr<URLRequestInterceptor> interceptor);
 
   void RemoveUrlHandler(const GURL& url);
 
@@ -77,23 +69,29 @@ class NET_EXPORT URLRequestFilter {
   // Returns the number of times a handler was used to service a request.
   int hit_count() const { return hit_count_; }
 
- protected:
+ private:
+  // scheme,hostname -> URLRequestInterceptor
+  typedef std::map<std::pair<std::string, std::string>,
+      URLRequestInterceptor* > HostnameInterceptorMap;
+  // URL -> URLRequestInterceptor
+  typedef base::hash_map<std::string, URLRequestInterceptor*> URLInterceptorMap;
+
   URLRequestFilter();
 
-  // Helper method that looks up the request in the url_handler_map_.
-  URLRequestJob* FindRequestHandler(URLRequest* request,
-                                    NetworkDelegate* network_delegate,
-                                    const std::string& scheme);
+  // Helper method that passes the request to any interceptors registered to
+  // to handle it.  Returns the resulting URLRequestJob if they create one.
+  URLRequestJob* MaybeInterceptRequest(URLRequest* request,
+                                       NetworkDelegate* network_delegate,
+                                       const std::string& scheme);
 
-  // Maps hostnames to factories.  Hostnames take priority over URLs.
-  HostnameHandlerMap hostname_handler_map_;
+  // Maps hostnames to interceptors.  Hostnames take priority over URLs.
+  HostnameInterceptorMap hostname_interceptor_map_;
 
-  // Maps URLs to factories.
-  UrlHandlerMap url_handler_map_;
+  // Maps URLs to interceptors.
+  URLInterceptorMap url_interceptor_map_;
 
   int hit_count_;
 
- private:
   // Singleton instance.
   static URLRequestFilter* shared_instance_;
 

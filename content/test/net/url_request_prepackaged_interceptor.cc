@@ -11,6 +11,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -41,16 +42,16 @@ class URLRequestPrepackagedJob : public net::URLRequestFileJob {
 }  // namespace
 
 class URLRequestPrepackagedInterceptor::Delegate
-    : public net::URLRequestJobFactory::ProtocolHandler {
+    : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& scheme, const std::string& hostname)
     : scheme_(scheme), hostname_(hostname), hit_count_(0) {}
   virtual ~Delegate() {}
 
   void Register() {
-    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         scheme_, hostname_,
-        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
+        scoped_ptr<net::URLRequestInterceptor>(this));
   }
 
   static void Unregister(
@@ -88,7 +89,7 @@ class URLRequestPrepackagedInterceptor::Delegate
   typedef std::map<GURL, base::FilePath> ResponseMap;
 
   // When computing matches, this ignores the query parameters of the url.
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

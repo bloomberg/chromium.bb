@@ -15,6 +15,7 @@
 #include "net/base/filename_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 
 const char kMockHostname[] = "mock.http";
 const base::FilePath::CharType kMockHeaderFileSuffix[] =
@@ -24,20 +25,20 @@ namespace content {
 
 namespace {
 
-class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+class MockJobInterceptor : public net::URLRequestInterceptor {
  public:
   // When |map_all_requests_to_base_path| is true, all request should return the
   // contents of the file at |base_path|. When |map_all_requests_to_base_path|
   // is false, |base_path| is the file path leading to the root of the directory
   // to use as the root of the HTTP server.
-  explicit ProtocolHandler(const base::FilePath& base_path,
-                           bool map_all_requests_to_base_path)
+  MockJobInterceptor(const base::FilePath& base_path,
+                     bool map_all_requests_to_base_path)
       : base_path_(base_path),
         map_all_requests_to_base_path_(map_all_requests_to_base_path) {}
-  virtual ~ProtocolHandler() {}
+  virtual ~MockJobInterceptor() {}
 
   // net::URLRequestJobFactory::ProtocolHandler implementation
-  virtual net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     return new URLRequestMockHTTPJob(request, network_delegate,
@@ -60,7 +61,7 @@ class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   const base::FilePath base_path_;
   const bool map_all_requests_to_base_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProtocolHandler);
+  DISALLOW_COPY_AND_ASSIGN(MockJobInterceptor);
 };
 
 }  // namespace
@@ -69,8 +70,8 @@ class ProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 void URLRequestMockHTTPJob::AddUrlHandler(const base::FilePath& base_path) {
   // Add kMockHostname to net::URLRequestFilter.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameProtocolHandler("http", kMockHostname,
-      CreateProtocolHandler(base_path));
+  filter->AddHostnameInterceptor(
+      "http", kMockHostname, CreateInterceptor(base_path));
 }
 
 // static
@@ -78,8 +79,8 @@ void URLRequestMockHTTPJob::AddHostnameToFileHandler(
     const std::string& hostname,
     const base::FilePath& file) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameProtocolHandler(
-      "http", hostname, CreateProtocolHandlerForSingleFile(file));
+  filter->AddHostnameInterceptor(
+      "http", hostname, CreateInterceptorForSingleFile(file));
 }
 
 // static
@@ -102,18 +103,18 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const base::FilePath& path) {
 }
 
 // static
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-URLRequestMockHTTPJob::CreateProtocolHandler(const base::FilePath& base_path) {
-  return scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-      new ProtocolHandler(base_path, false));
+scoped_ptr<net::URLRequestInterceptor>
+URLRequestMockHTTPJob::CreateInterceptor(const base::FilePath& base_path) {
+  return scoped_ptr<net::URLRequestInterceptor>(
+      new MockJobInterceptor(base_path, false));
 }
 
 // static
-scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-URLRequestMockHTTPJob::CreateProtocolHandlerForSingleFile(
+scoped_ptr<net::URLRequestInterceptor>
+URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
     const base::FilePath& file) {
-  return scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-      new ProtocolHandler(file, true));
+  return scoped_ptr<net::URLRequestInterceptor>(
+      new MockJobInterceptor(file, true));
 }
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(

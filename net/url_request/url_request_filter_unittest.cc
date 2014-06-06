@@ -8,8 +8,8 @@
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,11 +38,11 @@ URLRequestJob* FactoryB(URLRequest* request,
 
 URLRequestTestJob* job_c;
 
-class TestProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
+class TestURLRequestInterceptor : public URLRequestInterceptor {
  public:
-  virtual ~TestProtocolHandler() {}
+  virtual ~TestURLRequestInterceptor() {}
 
-  virtual URLRequestJob* MaybeCreateJob(
+  virtual URLRequestJob* MaybeInterceptRequest(
       URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
     job_c = new URLRequestTestJob(request, network_delegate);
     return job_c;
@@ -119,10 +119,9 @@ TEST(URLRequestFilter, BasicMatching) {
   // Check ProtocolHandler hostname matching.
   URLRequestFilter::GetInstance()->ClearHandlers();
   EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+  URLRequestFilter::GetInstance()->AddHostnameInterceptor(
       url_1.scheme(), url_1.host(),
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          new TestProtocolHandler()));
+      scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
         &request_1, NULL, url_1.scheme());
@@ -135,10 +134,9 @@ TEST(URLRequestFilter, BasicMatching) {
   // Check ProtocolHandler URL matching.
   URLRequestFilter::GetInstance()->ClearHandlers();
   EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+  URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url_2,
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          new TestProtocolHandler()));
+      scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
         &request_2, NULL, url_2.scheme());
