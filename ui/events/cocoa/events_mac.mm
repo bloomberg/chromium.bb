@@ -87,13 +87,14 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
-  if (![native_event window]) {
+  NSWindow* window = [native_event window];
+  if (!window) {
     NOTIMPLEMENTED();  // Point will be in screen coordinates.
     return gfx::Point();
   }
   NSPoint location = [native_event locationInWindow];
-  return gfx::Point(location.x,
-                    NSHeight([[native_event window] frame]) - location.y);
+  NSRect content_rect = [window contentRectForFrameRect:[window frame]];
+  return gfx::Point(location.x, NSHeight(content_rect) - location.y);
 }
 
 gfx::Point EventSystemLocationFromNative(

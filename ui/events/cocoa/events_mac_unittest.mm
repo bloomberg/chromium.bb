@@ -48,8 +48,10 @@ class EventsMacTest : public CocoaTest {
   EventsMacTest() {}
 
   gfx::Point Flip(gfx::Point window_location) {
-    window_location.set_y(
-        NSHeight([test_window() frame]) - window_location.y());
+    NSRect window_frame = [test_window() frame];
+    CGFloat content_height =
+        NSHeight([test_window() contentRectForFrameRect:window_frame]);
+    window_location.set_y(content_height - window_location.y());
     return window_location;
   }
 
@@ -238,6 +240,52 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);
   ClearSwizzle();
+}
+
+// Test correct location when the window has a native titlebar.
+TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
+  gfx::Point location(5, 10);
+  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                          NSMiniaturizableWindowMask | NSResizableWindowMask;
+
+  // First check that the window provided by ui::CocoaTest is how we think.
+  DCHECK_EQ(NSBorderlessWindowMask, [test_window() styleMask]);
+  [test_window() setStyleMask:style_mask];
+  DCHECK_EQ(style_mask, [test_window() styleMask]);
+
+  // EventLocationFromNative should behave the same as the ButtonEvents test.
+  NSEvent* event = TestMouseEvent(NSLeftMouseDown, location, 0);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
+  EXPECT_EQ(location, ui::EventLocationFromNative(event));
+
+  // And be explicit, to ensure the test doesn't depend on some property of the
+  // test harness. The change to the frame rect could be OS-specfic, so set it
+  // to a known value.
+  const CGFloat kTestHeight = 400;
+  NSRect content_rect = NSMakeRect(0, 0, 600, kTestHeight);
+  NSRect frame_rect = [test_window() frameRectForContentRect:content_rect];
+  [test_window() setFrame:frame_rect display:YES];
+  event = [NSEvent mouseEventWithType:NSLeftMouseDown
+                             location:NSMakePoint(0, 0)  // Bottom-left corner.
+                        modifierFlags:0
+                            timestamp:0
+                         windowNumber:[test_window() windowNumber]
+                              context:nil
+                          eventNumber:0
+                           clickCount:0
+                             pressure:1.0];
+  // Bottom-left corner should be flipped.
+  EXPECT_EQ(gfx::Point(0, kTestHeight), ui::EventLocationFromNative(event));
+
+  // Removing the border, and sending the same event should move it down in the
+  // toolkit-views coordinate system.
+  int height_change = NSHeight(frame_rect) - kTestHeight;
+  EXPECT_GT(height_change, 0);
+  [test_window() setStyleMask:NSBorderlessWindowMask];
+  [test_window() setFrame:frame_rect display:YES];
+  EXPECT_EQ(gfx::Point(0, kTestHeight + height_change),
+            ui::EventLocationFromNative(event));
 }
 
 }  // namespace ui
