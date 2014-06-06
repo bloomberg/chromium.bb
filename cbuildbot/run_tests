@@ -73,11 +73,17 @@ EOF
 # Wrapper to run unittest.  Hides output unless test fails.
 # $1 test to run.  Must be in chromite/cbuildbot.
 # $2 Is this a dry run?
+# $3 Do we run network tests?
 run_test() {
-  local test=$1 dryrun=$2
+  local test=$1 dryrun=$2 network_tests=$3
   local log_file="${LOGFILE}.tmp.${BASHPID}"
   local special="${special_tests[${test}]:-}"
   local starttime="$(date +%s%N)"
+
+  local network_flag=""
+  if ${network_tests}; then
+    network_flag="--network"
+  fi
 
   if [[ "${special}" == "skip" ]]; then
     echo "Skipping unittest ${test}"
@@ -93,14 +99,15 @@ run_test() {
       echo "Starting unittest ${test} inside the chroot"
       if ! ${dryrun}; then
         ${TIMEOUT} ${IN_CHROOT} -- python "${CHROOT_CHROMITE}/${test}" -v \
-          &> "${log_file}" || append_failed_test "${test}" "${log_file}"
+          ${network_flag} &> "${log_file}" \
+          || append_failed_test "${test}" "${log_file}"
       fi
     fi
   else
     echo "Starting unittest ${test}"
     if ! ${dryrun}; then
-      ${TIMEOUT} python "${CHROMITE_PATH}/${test}" -v &> "${log_file}" ||
-        append_failed_test "${test}" "${log_file}"
+      ${TIMEOUT} python "${CHROMITE_PATH}/${test}" -v ${network_flag} \
+        &> "${log_file}" || append_failed_test "${test}" "${log_file}"
     fi
   fi
 
@@ -157,6 +164,7 @@ You can add a .testignore file to a dir to disable scanning it.
 Options:
   -q, --quick     Only run the really quick tests
   -n, --dry-run   Do everything but actually run the test
+  --network       Run tests that depend on good network connectivity
   -l, --list      List all the available tests
   -h, --help      This screen
 EOF
@@ -174,12 +182,14 @@ main() {
   local list=false
   local dryrun=false
   local user_tests=()
+  local network_tests=false
   while [[ $# -gt 0 ]]; do
     case $1 in
     -h|--help)     usage;;
     -q|--quick)    skip_quick_tests;;
     -n|--dry-run)  dryrun=true;;
     -l|--list)     list=true;;
+    --network)     network_tests=true;;
     -*)            usage "unknown option $1";;
     *)             user_tests+=( "$1" );;
     esac
@@ -234,7 +244,7 @@ main() {
 
   local children=()
   for test in "$@"; do
-    run_test ${test} ${dryrun} &
+    run_test ${test} ${dryrun} ${network_tests} &
     children+=( $! )
   done
 
