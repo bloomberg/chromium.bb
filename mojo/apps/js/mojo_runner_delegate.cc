@@ -17,7 +17,6 @@
 #include "mojo/bindings/js/core.h"
 #include "mojo/bindings/js/handle.h"
 #include "mojo/bindings/js/support.h"
-#include "mojo/bindings/js/unicode.h"
 
 namespace mojo {
 namespace apps {
@@ -54,7 +53,6 @@ MojoRunnerDelegate::MojoRunnerDelegate()
   AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
   AddBuiltinModule(js::Core::kModuleName, js::Core::GetModule);
   AddBuiltinModule(js::Support::kModuleName, js::Support::GetModule);
-  AddBuiltinModule(js::Unicode::kModuleName, js::Unicode::GetModule);
   AddBuiltinModule(js::gl::kModuleName, js::gl::GetModule);
   AddBuiltinModule(MonotonicClock::kModuleName, MonotonicClock::GetModule);
   AddBuiltinModule(Threading::kModuleName, Threading::GetModule);

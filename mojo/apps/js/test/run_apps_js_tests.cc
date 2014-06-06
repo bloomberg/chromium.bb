@@ -13,7 +13,6 @@
 #include "mojo/apps/js/bindings/monotonic_clock.h"
 #include "mojo/apps/js/bindings/threading.h"
 #include "mojo/bindings/js/core.h"
-#include "mojo/bindings/js/unicode.h"
 #include "mojo/common/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +25,6 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
-    AddBuiltinModule(Unicode::kModuleName, Unicode::GetModule);
     AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
     AddBuiltinModule(apps::MonotonicClock::kModuleName,
                      apps::MonotonicClock::GetModule);

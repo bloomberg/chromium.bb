@@ -11,7 +11,6 @@
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
 #include "mojo/bindings/js/core.h"
-#include "mojo/bindings/js/unicode.h"
 #include "mojo/common/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +23,6 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
-    AddBuiltinModule(Unicode::kModuleName, Unicode::GetModule);
   }
 
  private:

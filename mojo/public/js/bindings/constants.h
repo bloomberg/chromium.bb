@@ -11,6 +11,7 @@ namespace mojo {
 extern const char kCodecModuleName[];
 extern const char kConnectionModuleName[];
 extern const char kConnectorModuleName[];
+extern const char kUnicodeModuleName[];
 extern const char kRouterModuleName[];
 
 }  // namespace mojo

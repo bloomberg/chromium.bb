@@ -35,6 +35,7 @@ WebUIDataSource* WebUIDataSource::AddMojoDataSource(
     { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
     { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
     { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
+    { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i)
     mojo_source->AddResourcePath(resources[i].path, resources[i].id);
