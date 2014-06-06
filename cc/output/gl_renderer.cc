@@ -665,6 +665,8 @@ static SkBitmap ApplyImageFilter(
       use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
+  if (backing_store.get() == NULL)
+    return SkBitmap();
 
   // Create a device and canvas using that backing store.
   SkGpuDevice device(use_gr_context->context(), backing_store.get());
