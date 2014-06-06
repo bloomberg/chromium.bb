@@ -6,15 +6,14 @@
 #define DeviceLightController_h
 
 #include "core/dom/DocumentSupplementable.h"
-#include "core/frame/DOMWindowLifecycleObserver.h"
-#include "core/frame/DeviceSensorEventController.h"
-#include "modules/EventModules.h"
+#include "core/frame/DeviceSingleWindowEventController.h"
 
 namespace WebCore {
 
 class DOMWindow;
+class Event;
 
-class DeviceLightController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceLightController>, public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+class DeviceLightController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceLightController>, public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceLightController);
 public:
     virtual ~DeviceLightController();
@@ -22,24 +21,18 @@ public:
     static const char* supplementName();
     static DeviceLightController& from(Document&);
 
-    void didChangeDeviceLight(double);
-
 private:
     explicit DeviceLightController(Document&);
+
+    // Inherited from DeviceEventControllerBase.
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
-
-    // Inherited from DOMWindowLifecycleObserver.
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
-
     virtual bool hasLastData() OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
-    virtual bool isNullEvent(Event*) OVERRIDE;
-    virtual Document* document() OVERRIDE;
 
-    Document& m_document;
+    // Inherited from DeviceSingleWindowEventController.
+    virtual PassRefPtrWillBeRawPtr<Event> lastEvent() const OVERRIDE;
+    virtual const AtomicString& eventTypeName() const OVERRIDE;
+    virtual bool isNullEvent(Event*) const OVERRIDE;
 };
 
 } // namespace WebCore

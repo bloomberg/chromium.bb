@@ -15,20 +15,13 @@
 namespace WebCore {
 
 DeviceLightController::DeviceLightController(Document& document)
-    : DeviceSensorEventController(document.page())
-    , DOMWindowLifecycleObserver(document.domWindow())
-    , m_document(document)
+    : DeviceSingleWindowEventController(document)
 {
 }
 
 DeviceLightController::~DeviceLightController()
 {
     stopUpdating();
-}
-
-void DeviceLightController::didChangeDeviceLight(double value)
-{
-    dispatchDeviceEvent(DeviceLightEvent::create(EventTypeNames::devicelight, value));
 }
 
 const char* DeviceLightController::supplementName()
@@ -51,55 +44,31 @@ bool DeviceLightController::hasLastData()
     return DeviceLightDispatcher::instance().latestDeviceLightData() >= 0;
 }
 
-PassRefPtrWillBeRawPtr<Event> DeviceLightController::getLastEvent()
+void DeviceLightController::registerWithDispatcher()
+{
+    DeviceLightDispatcher::instance().addController(this);
+}
+
+void DeviceLightController::unregisterWithDispatcher()
+{
+    DeviceLightDispatcher::instance().removeController(this);
+}
+
+PassRefPtrWillBeRawPtr<Event> DeviceLightController::lastEvent() const
 {
     return DeviceLightEvent::create(EventTypeNames::devicelight,
         DeviceLightDispatcher::instance().latestDeviceLightData());
 }
 
-void DeviceLightController::registerWithDispatcher()
-{
-    DeviceLightDispatcher::instance().addDeviceLightController(this);
-}
-
-void DeviceLightController::unregisterWithDispatcher()
-{
-    DeviceLightDispatcher::instance().removeDeviceLightController(this);
-}
-
-bool DeviceLightController::isNullEvent(Event* event)
+bool DeviceLightController::isNullEvent(Event* event) const
 {
     DeviceLightEvent* lightEvent = toDeviceLightEvent(event);
     return lightEvent->value() == std::numeric_limits<double>::infinity();
 }
 
-Document* DeviceLightController::document()
+const AtomicString& DeviceLightController::eventTypeName() const
 {
-    return &m_document;
-}
-
-void DeviceLightController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
-{
-    if (eventType == EventTypeNames::devicelight && RuntimeEnabledFeatures::deviceLightEnabled()) {
-        if (page() && page()->visibilityState() == PageVisibilityStateVisible)
-            startUpdating();
-        m_hasEventListener = true;
-    }
-}
-
-void DeviceLightController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
-{
-    if (eventType != EventTypeNames::devicelight || window->hasEventListeners(EventTypeNames::devicelight))
-        return;
-
-    stopUpdating();
-    m_hasEventListener = false;
-}
-
-void DeviceLightController::didRemoveAllEventListeners(DOMWindow* window)
-{
-    stopUpdating();
-    m_hasEventListener = false;
+    return EventTypeNames::devicelight;
 }
 
 } // namespace WebCore
