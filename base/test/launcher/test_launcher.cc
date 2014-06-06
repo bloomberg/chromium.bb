@@ -449,8 +449,8 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     tests_to_retry_.insert(result.full_name);
   }
 
-  if (result.status == TestResult::TEST_UNKNOWN)
-    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
+  // TODO(phajdan.jr): Flag unreliable unknown results, unless passed on retry.
+  // See http://crbug.com/381733 .
 
   results_tracker_.AddTestResult(result);
 
