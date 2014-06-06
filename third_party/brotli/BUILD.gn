@@ -26,3 +26,26 @@ source_set("brotli") {
 
   include_dirs = [ "src/brotli/dec" ]
 }
+
+source_set("woff2_dec") {
+  sources = [
+    "src/woff2/buffer.h",
+    "src/woff2/round.h",
+    "src/woff2/store_bytes.h",
+    "src/woff2/table_tags.cc",
+    "src/woff2/table_tags.h",
+    "src/woff2/woff2_common.h",
+    "src/woff2/woff2_dec.cc",
+    "src/woff2/woff2_dec.h",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  deps = [ ":brotli" ]
+
+  include_dirs = [
+    "src/brotli/dec",
+    "src/woff2",
+  ]
+}

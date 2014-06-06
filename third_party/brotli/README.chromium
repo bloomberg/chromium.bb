@@ -2,7 +2,7 @@ Name: Brotli
 URL: https://code.google.com/p/font-compression-reference/
 Version: 0
 License: Apache 2.0
-License File: src/brotli/LICENSE
+License File: src/LICENSE
 Security Critical: yes
 
 Description:
