@@ -452,6 +452,9 @@ class KioskTest : public OobeBaseTest {
   }
 
   void RunAppLaunchNetworkDownTest() {
+    mock_user_manager()->SetActiveUser(kTestOwnerEmail);
+    AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
+
     // Mock network could be configured with owner's password.
     ScopedCanConfigureNetwork can_configure_network(true, true);
 
@@ -465,8 +468,6 @@ class KioskTest : public OobeBaseTest {
     JsExpect("$('splash-config-network').hidden == false");
 
     // Set up fake user manager with an owner for the test.
-    mock_user_manager()->SetActiveUser(kTestOwnerEmail);
-    AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
     static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
         ->GetOobeUI()->ShowOobeUI(false);
 

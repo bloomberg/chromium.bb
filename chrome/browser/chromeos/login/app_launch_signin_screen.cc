@@ -7,6 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -151,6 +153,9 @@ void AppLaunchSigninScreen::ShowSigninScreenForCreds(
 }
 
 const UserList& AppLaunchSigninScreen::GetUsers() const {
+  if (test_user_manager_) {
+    return test_user_manager_->GetUsers();
+  }
   return owner_user_list_;
 }
 
@@ -160,10 +165,6 @@ bool AppLaunchSigninScreen::IsShowGuest() const {
 
 bool AppLaunchSigninScreen::IsShowUsers() const {
   return true;
-}
-
-bool AppLaunchSigninScreen::IsShowNewUser() const {
-  return false;
 }
 
 bool AppLaunchSigninScreen::IsSigninInProgress() const {
@@ -200,6 +201,35 @@ void AppLaunchSigninScreen::OnLoginFailure(const LoginFailure& error) {
 
 void AppLaunchSigninScreen::OnLoginSuccess(const UserContext& user_context) {
   delegate_->OnOwnerSigninSuccess();
+}
+
+void AppLaunchSigninScreen::HandleGetUsers() {
+  base::ListValue users_list;
+  const UserList& users = GetUsers();
+
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    ScreenlockBridge::LockHandler::AuthType initial_auth_type =
+        UserSelectionScreen::ShouldForceOnlineSignIn(*it)
+            ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
+            : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+    base::DictionaryValue* user_dict = new base::DictionaryValue();
+    UserSelectionScreen::FillUserDictionary(
+        *it, true, false, initial_auth_type, user_dict);
+    users_list.Append(user_dict);
+  }
+
+  webui_handler_->LoadUsers(users_list, false, false);
+}
+
+void AppLaunchSigninScreen::SetAuthType(
+    const std::string& username,
+    ScreenlockBridge::LockHandler::AuthType auth_type) {
+  return;
+}
+
+ScreenlockBridge::LockHandler::AuthType AppLaunchSigninScreen::GetAuthType(
+    const std::string& username) const {
+  return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
 }
 
 }  // namespace chromeos

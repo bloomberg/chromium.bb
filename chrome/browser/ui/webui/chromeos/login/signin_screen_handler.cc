@@ -82,20 +82,6 @@ using content::BrowserThread;
 
 namespace {
 
-// User dictionary keys.
-const char kKeyUsername[] = "username";
-const char kKeyDisplayName[] = "displayName";
-const char kKeyEmailAddress[] = "emailAddress";
-const char kKeyEnterpriseDomain[] = "enterpriseDomain";
-const char kKeyPublicAccount[] = "publicAccount";
-const char kKeyLocallyManagedUser[] = "locallyManagedUser";
-const char kKeySignedIn[] = "signedIn";
-const char kKeyCanRemove[] = "canRemove";
-const char kKeyIsOwner[] = "isOwner";
-const char kKeyInitialAuthType[] = "initialAuthType";
-const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
-const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
-
 // Max number of users to show.
 const size_t kMaxUsers = 18;
 
@@ -232,37 +218,6 @@ static bool SetUserInputMethodImpl(
 
 void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.Scraping.VerificationResult", success);
-}
-
-bool ShouldForceOnlineSignIn(const User* user) {
-  // Public sessions are always allowed to log in offline.
-  // Supervised user are allowed to log in offline if their OAuth token status
-  // is unknown or valid.
-  // For all other users, force online sign in if:
-  // * The flag to force online sign-in is set for the user.
-  // * The user's OAuth token is invalid.
-  // * The user's OAuth token status is unknown (except supervised users,
-  //   see above).
-  if (user->is_logged_in())
-    return false;
-
-  const User::OAuthTokenStatus token_status = user->oauth_token_status();
-  const bool is_locally_managed_user =
-      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-  const bool is_public_session =
-      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
-
-  if (is_locally_managed_user &&
-      token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
-    return false;
-  }
-
-  if (is_public_session)
-    return false;
-
-  return user->force_online_signin() ||
-         (token_status == User::OAUTH2_TOKEN_STATUS_INVALID) ||
-         (token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
 }
 
 }  // namespace
@@ -518,7 +473,7 @@ void SigninScreenHandler::ShowImpl() {
   } else {
     // Populates account picker. Animation is turned off for now until we
     // figure out how to make it fast enough.
-    SendUserList(false);
+    delegate_->HandleGetUsers();
 
     // Reset Caps Lock state when login screen is shown.
     input_method::InputMethodManager::Get()
@@ -821,7 +776,8 @@ void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void SigninScreenHandler::HandleGetUsers() {
-  SendUserList(false);
+  if (delegate_)
+    delegate_->HandleGetUsers();
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -859,7 +815,8 @@ void SigninScreenHandler::OnPreferencesChanged() {
   if (delegate_ && !delegate_->IsShowUsers()) {
     HandleShowAddUser(NULL);
   } else {
-    SendUserList(false);
+    if (delegate_)
+      delegate_->HandleGetUsers();
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, NULL);
   }
   preferences_changed_delayed_ = false;
@@ -1001,7 +958,8 @@ void SigninScreenHandler::SetAuthType(
     const std::string& username,
     ScreenlockBridge::LockHandler::AuthType auth_type,
     const std::string& initial_value) {
-  user_auth_type_map_[username] = auth_type;
+  delegate_->SetAuthType(username, auth_type);
+
   CallJS("login.AccountPickerScreen.setAuthType",
          username,
          static_cast<int>(auth_type),
@@ -1010,9 +968,7 @@ void SigninScreenHandler::SetAuthType(
 
 ScreenlockBridge::LockHandler::AuthType SigninScreenHandler::GetAuthType(
     const std::string& username) const {
-  if (user_auth_type_map_.find(username) == user_auth_type_map_.end())
-    return OFFLINE_PASSWORD;
-  return user_auth_type_map_.find(username)->second;
+  return delegate_->GetAuthType(username);
 }
 
 void SigninScreenHandler::Unlock(const std::string& user_email) {
@@ -1318,122 +1274,12 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
     delegate_->ShowKioskAutolaunchScreen();
 }
 
-void SigninScreenHandler::FillUserDictionary(
-    User* user,
-    bool is_owner,
-    bool is_signin_to_add,
-    ScreenlockBridge::LockHandler::AuthType auth_type,
-    base::DictionaryValue* user_dict) {
-  const std::string& email = user->email();
-  const bool is_public_account =
-      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
-  const bool is_locally_managed_user =
-      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-
-  user_dict->SetString(kKeyUsername, email);
-  user_dict->SetString(kKeyEmailAddress, user->display_email());
-  user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
-  user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
-  user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
-  user_dict->SetInteger(kKeyInitialAuthType, auth_type);
-  user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
-  user_dict->SetBoolean(kKeyIsOwner, is_owner);
-
-  // Fill in multi-profiles related fields.
-  if (is_signin_to_add) {
-    MultiProfileUserController* multi_profile_user_controller =
-        UserManager::Get()->GetMultiProfileUserController();
-    std::string behavior =  multi_profile_user_controller->
-        GetCachedValue(user->email());
-    user_dict->SetBoolean(kKeyMultiProfilesAllowed,
-        multi_profile_user_controller->IsUserAllowedInSession(email) ==
-            MultiProfileUserController::ALLOWED);
-    user_dict->SetString(kKeyMultiProfilesPolicy, behavior);
-  } else {
-    user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
-  }
-
-  if (is_public_account) {
-    policy::BrowserPolicyConnectorChromeOS* policy_connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-    if (policy_connector->IsEnterpriseManaged()) {
-      user_dict->SetString(kKeyEnterpriseDomain,
-                           policy_connector->GetEnterpriseDomain());
-    }
-  }
-}
-
-void SigninScreenHandler::SendUserList(bool animated) {
-  if (!delegate_)
-    return;
-  TRACE_EVENT_ASYNC_STEP_INTO0("ui",
-                               "ShowLoginWebUI",
-                               LoginDisplayHostImpl::kShowLoginWebUIid,
-                               "SendUserList");
-  BootTimesLoader::Get()->RecordCurrentStats("login-send-user-list");
-
-  base::ListValue users_list;
-  const UserList& users = delegate_->GetUsers();
-
-  // TODO(nkostylev): Move to a separate method in UserManager.
-  // http://crbug.com/230852
-  bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
-      UserManager::Get()->IsUserLoggedIn();
-
-  user_auth_type_map_.clear();
-
-  bool single_user = users.size() == 1;
-  std::string owner;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-  bool has_owner = owner.size() > 0;
-  size_t max_non_owner_users = has_owner ? kMaxUsers - 1 : kMaxUsers;
-  size_t non_owner_count = 0;
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->
-          browser_policy_connector_chromeos();
-  bool is_enterprise_managed = connector->IsEnterpriseManaged();
-
-
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    const std::string& email = (*it)->email();
-    bool is_owner = (email == owner);
-    bool is_public_account =
-        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
-
-    if ((is_public_account && !is_signin_to_add) ||
-        is_owner ||
-        (!is_public_account && non_owner_count < max_non_owner_users)) {
-      AuthType initial_auth_type =
-          ShouldForceOnlineSignIn(*it) ? ONLINE_SIGN_IN : OFFLINE_PASSWORD;
-      user_auth_type_map_[email] = initial_auth_type;
-
-      base::DictionaryValue* user_dict = new base::DictionaryValue();
-      FillUserDictionary(
-          *it, is_owner, is_signin_to_add, initial_auth_type, user_dict);
-      bool signed_in = (*it)->is_logged_in();
-      // Single user check here is necessary because owner info might not be
-      // available when running into login screen on first boot.
-      // See http://crosbug.com/12723
-      bool can_remove_user = ((!single_user || is_enterprise_managed) &&
-          !email.empty() && !is_owner && !is_public_account &&
-          !signed_in && !is_signin_to_add);
-      user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
-
-      if (!is_owner)
-        ++non_owner_count;
-      if (is_owner && users_list.GetSize() > kMaxUsers) {
-        // Owner is always in the list.
-        users_list.Insert(kMaxUsers - 1, user_dict);
-      } else {
-        users_list.Append(user_dict);
-      }
-    }
-  }
-  while (users_list.GetSize() > kMaxUsers)
-    users_list.Remove(kMaxUsers, NULL);
-
-  CallJS("login.AccountPickerScreen.loadUsers", users_list, animated,
+void SigninScreenHandler::LoadUsers(const base::ListValue& users_list,
+                                    bool animated,
+                                    bool showGuest) {
+  CallJS("login.AccountPickerScreen.loadUsers",
+         users_list,
+         animated,
          delegate_->IsShowGuest());
 }
 
