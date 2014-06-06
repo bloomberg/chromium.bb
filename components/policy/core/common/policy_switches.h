@@ -13,7 +13,7 @@ namespace policy {
 namespace switches {
 
 POLICY_EXPORT extern const char kDeviceManagementUrl[];
-POLICY_EXPORT extern const char kEnableComponentCloudPolicy[];
+POLICY_EXPORT extern const char kDisableComponentCloudPolicy[];
 POLICY_EXPORT extern const char kDisablePolicyKeyVerification[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
