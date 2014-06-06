@@ -24,7 +24,7 @@ class ActivityManagerImpl : public ActivityManager {
     instance = this;
   }
   virtual ~ActivityManagerImpl() {
-    while (activities_.empty())
+    while (!activities_.empty())
       delete activities_.front();
 
     CHECK_EQ(this, instance);
