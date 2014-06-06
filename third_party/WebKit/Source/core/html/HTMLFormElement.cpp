@@ -37,6 +37,10 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -46,18 +50,25 @@
 #include "core/html/forms/FormController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
+#include "wtf/text/AtomicString.h"
 
 using namespace std;
 
 namespace WebCore {
 
 using namespace HTMLNames;
+
+namespace {
+
+    KURL getActionURL(const Document& document, const String& action)
+    {
+        return (action.isEmpty() ? document.url() : document.completeURL(action));
+    }
+
+} // namespace
 
 HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(formTag, document)
@@ -346,6 +357,10 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
         return;
 
     m_wasUserSubmitted = processingUserGesture;
+
+    KURL actionURL = getActionURL(document(), m_attributes.action());
+    if (MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
+        UseCounter::count(document(), UseCounter::MixedContentSubmittedForm);
 
     RefPtrWillBeRawPtr<HTMLFormControlElement> firstSuccessfulSubmitButton = nullptr;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
@@ -788,6 +803,22 @@ void HTMLFormElement::setDemoted(bool demoted)
     if (demoted)
         UseCounter::count(document(), UseCounter::DemotedFormElement);
     m_wasDemoted = demoted;
+}
+
+void HTMLFormElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
+{
+    Element::attributeChanged(name, newValue);
+    if (name == actionAttr) {
+        // If the new action attribute is pointing to insecure "action" location from a secure page
+        // it is marked as "passive" mixed content. In other words, it will just
+        // show a console warning unless the user override the preferences to
+        // block all mixed content.
+        KURL actionURL = getActionURL(document(), m_attributes.action());
+        if (!document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), actionURL))
+            Element::attributeChanged(name, AtomicString(""));
+        if (MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
+            UseCounter::count(document(), UseCounter::MixedContentForm);
+    }
 }
 
 } // namespace

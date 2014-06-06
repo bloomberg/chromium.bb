@@ -45,24 +45,41 @@ class MixedContentChecker {
 public:
     MixedContentChecker(LocalFrame*);
 
-    bool canDisplayInsecureContent(SecurityOrigin*, const KURL&) const;
+    bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
+    {
+        return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Display);
+    }
+    bool canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
+    {
+        return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Submission);
+    }
+
     bool canRunInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
-        return canRunInsecureContentInternal(securityOrigin, url, false);
+        return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::Execution);
     }
     bool canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
     {
-        return canRunInsecureContentInternal(securityOrigin, url, true);
+        return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
     }
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
 private:
+    enum MixedContentType {
+        Display,
+        Execution,
+        WebSocket,
+        Submission
+    };
+
     // FIXME: This should probably have a separate client from FrameLoader.
     FrameLoaderClient* client() const;
 
-    bool canRunInsecureContentInternal(SecurityOrigin*, const KURL&, bool isWebSocket) const;
+    bool canDisplayInsecureContentInternal(SecurityOrigin*, const KURL&, const MixedContentType) const;
 
-    void logWarning(bool allowed, const String& action, const KURL&) const;
+    bool canRunInsecureContentInternal(SecurityOrigin*, const KURL&, const MixedContentType) const;
+
+    void logWarning(bool allowed, const KURL& i, const MixedContentType) const;
 
     LocalFrame* m_frame;
 };

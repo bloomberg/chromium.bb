@@ -1,0 +1,3 @@
+CONSOLE ERROR: line 2: [blocked] The page at 'https://127.0.0.1:8443/security/mixedContent/resources/frame-with-insecure-formSubmission.html' was loaded over HTTPS, but is submitting data to an insecure location at 'http://127.0.0.1:8080/security/resources/boring.html': this content should also be submitted over HTTPS.
+
+This test opens a window that shows a form with "action" pointing to an insecure location. We should not trigger a mixed content callback even though the main frame in the window is HTTPS and the form is pointing to insecure content, because we've set the preference to block this.
