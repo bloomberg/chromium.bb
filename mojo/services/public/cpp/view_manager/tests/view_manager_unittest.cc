@@ -52,7 +52,7 @@ void WaitForAllChangesToBeAcked(ViewManager* manager) {
 
 class ConnectServiceLoader : public ServiceLoader {
  public:
-  explicit ConnectServiceLoader(base::Callback<void(ViewManager*)> callback)
+  explicit ConnectServiceLoader(const ViewManager::RootCallback& callback)
       : callback_(callback) {}
   virtual ~ConnectServiceLoader() {}
 
@@ -62,7 +62,8 @@ class ConnectServiceLoader : public ServiceLoader {
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
     scoped_ptr<Application> app(new Application(shell_handle.Pass()));
-    ViewManager::Create(app.get(), callback_);
+    // TODO(beng): test removed callback.
+    ViewManager::Create(app.get(), callback_, ViewManager::RootCallback());
     apps_.push_back(app.release());
   }
   virtual void OnServiceError(ServiceManager* manager,
@@ -70,7 +71,7 @@ class ConnectServiceLoader : public ServiceLoader {
   }
 
   ScopedVector<Application> apps_;
-  base::Callback<void(ViewManager*)> callback_;
+  ViewManager::RootCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
 };
@@ -327,7 +328,7 @@ class ViewManagerTest : public testing::Test {
  private:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    base::Callback<void(ViewManager*)> ready_callback =
+    ViewManager::RootCallback ready_callback =
         base::Bind(&ViewManagerTest::OnViewManagerLoaded,
                    base::Unretained(this));
     test_helper_.Init();
@@ -362,7 +363,7 @@ class ViewManagerTest : public testing::Test {
     return result;
   }
 
-  void OnViewManagerLoaded(ViewManager* view_manager) {
+  void OnViewManagerLoaded(ViewManager* view_manager, ViewTreeNode* root) {
     loaded_view_manager_ = view_manager;
     connect_loop_->Quit();
   }

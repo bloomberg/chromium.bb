@@ -50,14 +50,18 @@ void ViewManagerPrivate::AddRoot(ViewTreeNode* root) {
   }
   manager_->roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
-  manager_->root_added_callback_.Run(manager_);
+  if (!manager_->root_added_callback_.is_null())
+    manager_->root_added_callback_.Run(manager_, root);
 }
 
 void ViewManagerPrivate::RemoveRoot(ViewTreeNode* root) {
   std::vector<ViewTreeNode*>::iterator it =
       std::find(manager_->roots_.begin(), manager_->roots_.end(), root);
-  if (it != manager_->roots_.end())
+  if (it != manager_->roots_.end()) {
     manager_->roots_.erase(it);
+    if (!manager_->root_removed_callback_.is_null())
+      manager_->root_removed_callback_.Run(manager_, root);
+  }
 }
 
 void ViewManagerPrivate::AddNode(TransportNodeId node_id, ViewTreeNode* node) {

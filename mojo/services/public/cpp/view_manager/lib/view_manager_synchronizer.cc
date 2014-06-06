@@ -234,6 +234,7 @@ class DestroyViewTreeNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
+    GetAndAdvanceNextServerChangeId();
     service()->DeleteNode(node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {

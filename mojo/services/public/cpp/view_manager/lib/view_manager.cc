@@ -16,7 +16,9 @@ namespace mojo {
 namespace view_manager {
 namespace {
 
-void OnViewManagerReady(base::RunLoop* loop, ViewManager* manager) {
+void OnViewManagerReady(base::RunLoop* loop,
+                        ViewManager* manager,
+                        ViewTreeNode* root) {
   loop->Quit();
 }
 
@@ -43,13 +45,12 @@ ViewManager::~ViewManager() {
 }
 
 // static
-ViewManager* ViewManager::CreateBlocking(
-    Application* application,
-    const base::Callback<void(ViewManager*)>& root_added_callback) {
+ViewManager* ViewManager::CreateBlocking(Application* application) {
   base::RunLoop init_loop;
   ViewManager* manager = new ViewManager(
       application,
-      base::Bind(&OnViewManagerReady, &init_loop));
+      base::Bind(&OnViewManagerReady, &init_loop),
+      RootCallback());
   init_loop.Run();
   return manager;
 }
@@ -57,8 +58,9 @@ ViewManager* ViewManager::CreateBlocking(
 // static
 void ViewManager::Create(
     Application* application,
-    const base::Callback<void(ViewManager*)>& root_added_callback) {
-  new ViewManager(application, root_added_callback);
+    const RootCallback& root_added_callback,
+    const RootCallback& root_removed_callback) {
+  new ViewManager(application, root_added_callback, root_removed_callback);
 }
 
 ViewTreeNode* ViewManager::GetNodeById(TransportNodeId id) {
@@ -76,8 +78,10 @@ View* ViewManager::GetViewById(TransportViewId id) {
 
 ViewManager::ViewManager(
     Application* application,
-    const base::Callback<void(ViewManager*)>& root_added_callback)
+    const RootCallback& root_added_callback,
+    const RootCallback& root_removed_callback)
     : root_added_callback_(root_added_callback),
+      root_removed_callback_(root_removed_callback),
       synchronizer_(NULL) {
   application->AddService<ViewManagerSynchronizer>(this);
 }

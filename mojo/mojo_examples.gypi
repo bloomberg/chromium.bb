@@ -312,6 +312,20 @@
           ],
         },
         {
+          'target_name': 'mojo_window_manager_bindings',
+          'type': 'static_library',
+          'sources': [
+            'examples/window_manager/window_manager.mojom',
+          ],
+          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_cpp_bindings',
+          ],
+          'dependencies': [
+            'mojo_cpp_bindings',
+          ],
+        },
+        {
           'target_name': 'mojo_window_manager',
           'type': 'shared_library',
           'dependencies': [
@@ -324,6 +338,7 @@
             'mojo_geometry_bindings',
             'mojo_gles2',
             'mojo_view_manager_lib',
+            'mojo_window_manager_bindings',
             'mojo_system_impl',
             'mojo_utility',
           ],
@@ -345,6 +360,7 @@
             'mojo_geometry_bindings',
             'mojo_gles2',
             'mojo_view_manager_lib',
+            'mojo_window_manager_bindings',
             'mojo_system_impl',
             'mojo_utility',
           ],

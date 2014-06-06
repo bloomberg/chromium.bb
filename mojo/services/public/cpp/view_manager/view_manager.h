@@ -28,17 +28,18 @@ class ViewTreeNode;
 // TODO: displays
 class ViewManager {
  public:
+  typedef base::Callback<void(ViewManager*, ViewTreeNode*)> RootCallback;
+
   ~ViewManager();
 
   // |ready_callback| is run when the ViewManager connection is established
   // and ready to use.
   static void Create(
       Application* application,
-      const base::Callback<void(ViewManager*)>& root_added_callback);
+      const RootCallback& root_added_callback,
+      const RootCallback& root_removed_callback);
   // Blocks until ViewManager is ready to use.
-  static ViewManager* CreateBlocking(
-      Application* application,
-      const base::Callback<void(ViewManager*)>& root_added_callback);
+  static ViewManager* CreateBlocking(Application* application);
 
   const std::vector<ViewTreeNode*>& roots() { return roots_; }
 
@@ -51,9 +52,11 @@ class ViewManager {
   typedef std::map<TransportViewId, View*> IdToViewMap;
 
   ViewManager(Application* application,
-              const base::Callback<void(ViewManager*)>& root_added_callback);
+              const RootCallback& root_added_callback,
+              const RootCallback& root_removed_callback);
 
-  base::Callback<void(ViewManager*)> root_added_callback_;
+  RootCallback root_added_callback_;
+  RootCallback root_removed_callback_;
 
   ViewManagerSynchronizer* synchronizer_;
 
