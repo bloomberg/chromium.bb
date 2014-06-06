@@ -434,14 +434,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.
   // Note that it's up to the embedder to verify that the data is
-  // well-formed. |cert_data| will be NULL if file_size is 0.
-  virtual void AddCertificate(
-      net::URLRequest* request,
-      net::CertificateMimeType cert_type,
-      const void* cert_data,
-      size_t cert_size,
-      int render_process_id,
-      int render_view_id) {}
+  // well-formed. |cert_data| will be NULL if |cert_size| is 0.
+  virtual void AddCertificate(net::CertificateMimeType cert_type,
+                              const void* cert_data,
+                              size_t cert_size,
+                              int render_process_id,
+                              int render_frame_id) {}
 
   // Returns a class to get notifications about media event. The embedder can
   // return NULL if they're not interested.

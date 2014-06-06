@@ -57,6 +57,12 @@ public interface TabObserver {
     void onUrlUpdated(Tab tab);
 
     /**
+     * Called when the SSL state of a {@link Tab} changes.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onSSLStateUpdated(Tab tab);
+
+    /**
      * Called when the WebContents of a {@link Tab} have been swapped.
      * @param tab The notifying {@link Tab}.
      * @param didStartLoad Whether WebContentsObserver::DidStartProvisionalLoadForFrame() has

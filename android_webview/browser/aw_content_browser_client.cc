@@ -168,12 +168,11 @@ AwContentBrowserClient::AwContentBrowserClient(
 AwContentBrowserClient::~AwContentBrowserClient() {
 }
 
-void AwContentBrowserClient::AddCertificate(net::URLRequest* request,
-                                            net::CertificateMimeType cert_type,
+void AwContentBrowserClient::AddCertificate(net::CertificateMimeType cert_type,
                                             const void* cert_data,
                                             size_t cert_size,
                                             int render_process_id,
-                                            int render_view_id) {
+                                            int render_frame_id) {
   if (cert_size > 0)
     net::android::StoreCertificate(cert_type, cert_data, cert_size);
 }

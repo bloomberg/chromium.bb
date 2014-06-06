@@ -232,6 +232,11 @@ public class Tab implements NavigationClient {
                 for (TabObserver observer : mObservers) observer.onUrlUpdated(Tab.this);
             }
         }
+
+        @Override
+        public void visibleSSLStateChanged() {
+            for (TabObserver observer : mObservers) observer.onSSLStateUpdated(Tab.this);
+        }
     }
 
     private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {

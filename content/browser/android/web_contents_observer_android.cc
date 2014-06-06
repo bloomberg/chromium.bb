@@ -236,14 +236,6 @@ void WebContentsObserverAndroid::NavigationEntryCommitted(
   Java_WebContentsObserverAndroid_navigationEntryCommitted(env, obj.obj());
 }
 
-void WebContentsObserverAndroid::DidChangeVisibleSSLState() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
-  if (obj.is_null())
-    return;
-  Java_WebContentsObserverAndroid_didChangeVisibleSSLState(env, obj.obj());
-}
-
 void WebContentsObserverAndroid::DidAttachInterstitialPage() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));

@@ -107,8 +107,8 @@ void CertificateResourceHandler::OnResponseCompleted(
   // data is well-formed.
   const ResourceRequestInfo* info = GetRequestInfo();
   GetContentClient()->browser()->AddCertificate(
-      request(), cert_type_, content_bytes, content_length_,
-      info->GetChildID(), info->GetRouteID());
+      cert_type_, content_bytes, content_length_,
+      info->GetChildID(), info->GetRenderFrameID());
 }
 
 void CertificateResourceHandler::AssembleResource() {

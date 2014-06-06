@@ -311,9 +311,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when the renderer has toggled the tab into/out of fullscreen mode.
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) {}
 
-  // Invoked when visible SSL state (as defined by SSLStatus) changes.
-  virtual void DidChangeVisibleSSLState() {}
-
   // Invoked when an interstitial page is attached or detached.
   virtual void DidAttachInterstitialPage() {}
   virtual void DidDetachInterstitialPage() {}

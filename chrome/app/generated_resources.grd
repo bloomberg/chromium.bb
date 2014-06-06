@@ -3404,12 +3404,7 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
 
-      <!-- Add Client Certificate Dialog -->
-      <if expr="is_macosx">
-        <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
-          Add Certificate
-        </message>
-      </if>
+      <!-- Client certificate enrollment failure infobar -->
       <message name="IDS_ADD_CERT_ERR_INVALID_CERT" desc="Error message when the server returns an invalid client certificate after key generation">
         The server returned an invalid client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
@@ -3417,7 +3412,7 @@ Even if you have downloaded files from this website before, the website might ha
         There was an error while trying to store the client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
 
-      <!-- Certificate success infobar -->
+      <!-- Client certificate enrollment infobar -->
       <message name="IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL" desc="Label displayed in an infobar when the browser successfully imports a certificate">
         Successfully stored client certificate issued by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>.
       </message>

@@ -89,6 +89,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void NavigationStateChanged(const WebContents* source,
                                       unsigned changed_flags) {}
 
+  // Called to inform the delegate that the WebContent's visible SSL state (as
+  // defined by SSLStatus) changed.
+  virtual void VisibleSSLStateChanged(const WebContents* source) {}
+
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |initial_pos| should hold

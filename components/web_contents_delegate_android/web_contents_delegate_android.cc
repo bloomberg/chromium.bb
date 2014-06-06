@@ -151,6 +151,17 @@ void WebContentsDelegateAndroid::NavigationStateChanged(
       changed_flags);
 }
 
+void WebContentsDelegateAndroid::VisibleSSLStateChanged(
+    const WebContents* source) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_visibleSSLStateChanged(
+      env,
+      obj.obj());
+}
+
 void WebContentsDelegateAndroid::ActivateContents(WebContents* contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

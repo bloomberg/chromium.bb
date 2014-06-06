@@ -189,13 +189,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE;
-  virtual void AddCertificate(
-      net::URLRequest* request,
-      net::CertificateMimeType cert_type,
-      const void* cert_data,
-      size_t cert_size,
-      int render_process_id,
-      int render_view_id) OVERRIDE;
+  virtual void AddCertificate(net::CertificateMimeType cert_type,
+                              const void* cert_data,
+                              size_t cert_size,
+                              int render_process_id,
+                              int render_frame_id) OVERRIDE;
   virtual content::MediaObserver* GetMediaObserver() OVERRIDE;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,

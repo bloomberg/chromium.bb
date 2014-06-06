@@ -30,12 +30,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual ~AwContentBrowserClient();
 
   // Overriden methods from ContentBrowserClient.
-  virtual void AddCertificate(net::URLRequest* request,
-                              net::CertificateMimeType cert_type,
+  virtual void AddCertificate(net::CertificateMimeType cert_type,
                               const void* cert_data,
                               size_t cert_size,
                               int render_process_id,
-                              int render_view_id) OVERRIDE;
+                              int render_frame_id) OVERRIDE;
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(

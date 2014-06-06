@@ -25,7 +25,6 @@ namespace chrome {
 //   not valid, so the UI performed by SSLAddCertHandler would
 //   be redundant.
 void SSLAddCertificate(
-    net::URLRequest* /* request */,
     net::CertificateMimeType cert_type,
     const void* cert_data,
     size_t cert_size,

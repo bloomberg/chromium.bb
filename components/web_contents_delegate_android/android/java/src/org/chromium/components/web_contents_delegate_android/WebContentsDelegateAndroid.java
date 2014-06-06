@@ -77,6 +77,10 @@ public class WebContentsDelegateAndroid {
     public void navigationStateChanged(int flags) {
     }
 
+    @CalledByNative
+    public void visibleSSLStateChanged() {
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private final void notifyLoadProgressChanged(double progress) {

@@ -133,13 +133,6 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
-     * Invoked when visible SSL state changes.
-     */
-    @CalledByNative
-    public void didChangeVisibleSSLState() {
-    }
-
-    /**
      * Called when an interstitial page gets attached to the tab content.
      */
     @CalledByNative

@@ -2917,8 +2917,8 @@ void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidChangeVisibleSSLState());
+  if (delegate_)
+    delegate_->VisibleSSLStateChanged(this);
 }
 
 void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {

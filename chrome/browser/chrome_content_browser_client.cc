@@ -77,7 +77,7 @@
 #include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/ssl/ssl_tab_helper.h"
+#include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
@@ -2004,27 +2004,18 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  SSLTabHelper* ssl_tab_helper = SSLTabHelper::FromWebContents(tab);
-  if (!ssl_tab_helper) {
-    // If there is no SSLTabHelper for the given WebContents then we can't
-    // show the user a dialog to select a client certificate. So we simply
-    // proceed with no client certificate.
-    callback.Run(NULL);
-    return;
-  }
-  ssl_tab_helper->ShowClientCertificateRequestDialog(
-      network_session, cert_request_info, callback);
+  chrome::ShowSSLClientCertificateSelector(tab, network_session,
+                                           cert_request_info, callback);
 }
 
 void ChromeContentBrowserClient::AddCertificate(
-    net::URLRequest* request,
     net::CertificateMimeType cert_type,
     const void* cert_data,
     size_t cert_size,
     int render_process_id,
-    int render_view_id) {
-  chrome::SSLAddCertificate(request, cert_type, cert_data, cert_size,
-      render_process_id, render_view_id);
+    int render_frame_id) {
+  chrome::SSLAddCertificate(cert_type, cert_data, cert_size,
+                            render_process_id, render_frame_id);
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {

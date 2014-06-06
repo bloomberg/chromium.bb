@@ -17,7 +17,6 @@ namespace chrome {
 // This method is used to add a new certificate file.
 //
 void SSLAddCertificate(
-    net::URLRequest* request,
     net::CertificateMimeType cert_type,
     const void* cert_data,
     size_t cert_size,

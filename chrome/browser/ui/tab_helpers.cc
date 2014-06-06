@@ -15,7 +15,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
@@ -138,7 +137,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
   SearchTabHelper::CreateForWebContents(web_contents);
-  SSLTabHelper::CreateForWebContents(web_contents);
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
 

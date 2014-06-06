@@ -30,6 +30,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onUrlUpdated(Tab tab) { }
 
     @Override
+    public void onSSLStateUpdated(Tab tab) { }
+
+    @Override
     public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) { }
 
     @Override

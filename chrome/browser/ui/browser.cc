@@ -771,15 +771,6 @@ void Browser::WindowFullscreenStateChanged() {
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
 
-void Browser::VisibleSSLStateChanged(content::WebContents* web_contents) {
-  // When the current tab's SSL state changes, we need to update the URL
-  // bar to reflect the new state.
-  DCHECK(web_contents);
-  if (tab_strip_model_->GetActiveWebContents() == web_contents)
-    UpdateToolbar(false);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
@@ -1334,6 +1325,14 @@ void Browser::NavigationStateChanged(const WebContents* source,
   if (changed_flags & (content::INVALIDATE_TYPE_URL |
                        content::INVALIDATE_TYPE_LOAD))
     command_controller_->TabStateChanged();
+}
+
+void Browser::VisibleSSLStateChanged(const WebContents* source) {
+  // When the current tab's SSL state changes, we need to update the URL
+  // bar to reflect the new state.
+  DCHECK(source);
+  if (tab_strip_model_->GetActiveWebContents() == source)
+    UpdateToolbar(false);
 }
 
 void Browser::AddNewContents(WebContents* source,
