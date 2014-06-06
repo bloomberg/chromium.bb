@@ -345,7 +345,7 @@
           {
             "type": "string",
             "name": "src",
-            "description": "The src of the guest <webview> process."
+            "description": "The src of the guest <webview> tag."
           },
           {
             "$ref": "tabs.InjectDetails",
@@ -372,7 +372,7 @@
       {
         "name": "insertCSS",
         "type": "function",
-        "description": "Injects JavaScript code into a <webview> page.",
+        "description": "Injects CSS into a <webview> page. For details, see the <a href='/extensions/content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
         "parameters": [
           {
             "type": "integer",
@@ -382,27 +382,19 @@
           {
             "type": "string",
             "name": "src",
-            "description": "The src of the guest <webview> process."
+            "description": "The src of the guest <webview> tag."
           },
           {
             "$ref": "tabs.InjectDetails",
             "name": "details",
-            "description": "Details of the script to run."
+            "description": "Details of the CSS text to insert."
           },
           {
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called after all the JavaScript has been executed.",
-            "parameters": [
-              {
-                "name": "result",
-                "optional": true,
-                "type": "array",
-                "items": {"type": "any", "minimum": 0},
-                "description": "The result of the script in every injected frame."
-              }
-            ]
+            "description": "Called when all the CSS has been inserted.",
+            "parameters": []
           }
         ]
       },
@@ -713,4 +705,3 @@
     ]
   }
 ]
-
