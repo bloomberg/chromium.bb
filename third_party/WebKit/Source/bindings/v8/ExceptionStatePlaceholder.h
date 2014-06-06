@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 

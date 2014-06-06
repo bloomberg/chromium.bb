@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8LazyEventListener.h"
-
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

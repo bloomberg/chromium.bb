@@ -31,11 +31,11 @@
 #ifndef PageScriptDebugServer_h
 #define PageScriptDebugServer_h
 
-
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptPreprocessor.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
+#include <v8.h>
 
 namespace WebCore {
 

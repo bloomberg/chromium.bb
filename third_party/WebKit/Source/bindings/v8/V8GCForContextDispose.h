@@ -31,7 +31,6 @@
 #ifndef V8GCForContextDispose_h
 #define V8GCForContextDispose_h
 
-#include <v8.h>
 #include "platform/Timer.h"
 
 namespace WebCore {

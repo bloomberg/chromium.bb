@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "wtf/PassOwnPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 

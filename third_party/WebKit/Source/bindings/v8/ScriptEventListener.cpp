@@ -40,6 +40,7 @@
 #include "core/dom/DocumentParser.h"
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
+#include <v8.h>
 
 namespace WebCore {
 

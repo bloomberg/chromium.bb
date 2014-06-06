@@ -32,6 +32,7 @@
 #include "bindings/v8/V8GCForContextDispose.h"
 
 #include "wtf/StdLibExtras.h"
+#include <v8.h>
 
 namespace WebCore {
 

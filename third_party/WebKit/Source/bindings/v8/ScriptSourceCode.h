@@ -38,8 +38,6 @@
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
-#include <v8.h>
-
 namespace WebCore {
 
 class ScriptSourceCode {

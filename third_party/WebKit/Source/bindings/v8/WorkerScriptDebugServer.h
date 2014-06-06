@@ -32,10 +32,7 @@
 #define WorkerScriptDebugServer_h
 
 #include "bindings/v8/ScriptDebugServer.h"
-
-namespace v8 {
-class Isolate;
-}
+#include <v8.h>
 
 namespace WebCore {
 

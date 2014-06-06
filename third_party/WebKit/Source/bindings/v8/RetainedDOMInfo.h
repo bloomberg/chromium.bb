@@ -32,6 +32,7 @@
 #define RetainedDOMInfo_h
 
 #include "bindings/v8/RetainedObjectInfo.h"
+#include <v8-profiler.h>
 
 namespace WebCore {
 

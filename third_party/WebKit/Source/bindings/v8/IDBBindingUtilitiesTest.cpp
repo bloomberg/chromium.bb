@@ -30,7 +30,6 @@
 #include "bindings/v8/V8PerIsolateData.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
-
 #include <gtest/gtest.h>
 
 using namespace WebCore;

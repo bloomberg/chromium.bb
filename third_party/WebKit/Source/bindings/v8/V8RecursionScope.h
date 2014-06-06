@@ -35,6 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
+#include <v8.h>
 
 namespace WebCore {
 
