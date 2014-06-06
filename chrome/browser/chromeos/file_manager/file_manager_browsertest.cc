@@ -900,6 +900,29 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "traverseNavigationList")));
 
+// Unlike TEST/TEST_F, which are macros that expand to further macros,
+// INSTANTIATE_TEST_CASE_P is a macro that expands directly to code that
+// stringizes the arguments. As a result, macros passed as parameters (such as
+// prefix or test_case_name) will not be expanded by the preprocessor. To work
+// around this, indirect the macro for INSTANTIATE_TEST_CASE_P, so that the
+// pre-processor will expand macros such as MAYBE_test_name before
+// instantiating the test.
+#define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator) \
+    INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
+
+// This test is too slow to run in debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
+#else
+#define MAYBE_FolderShortcuts FolderShortcuts
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_FolderShortcuts,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
+        TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
+
 INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTest,
