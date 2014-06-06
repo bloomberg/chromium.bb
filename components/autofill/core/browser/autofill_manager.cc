@@ -623,6 +623,11 @@ void AutofillManager::FillOrPreviewForm(
         // user edits an autofilled field (for metrics).
         form_structure->field(i)->is_autofilled = true;
 
+        // Mark the field as autofilled when a non-empty value is assigned to
+        // it. This allows the renderer to distinguish autofilled fields from
+        // fields with non-empty values, such as select-one fields.
+        result.fields[i].is_autofilled = true;
+
         if (should_notify)
           manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
       }

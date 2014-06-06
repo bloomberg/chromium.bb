@@ -537,6 +537,9 @@ void FillFormField(const FormFieldData& data,
   if (data.value.empty())
     return;
 
+  if (!data.is_autofilled)
+    return;
+
   field->setAutofilled(true);
 
   WebInputElement* input_element = toWebInputElement(field);
@@ -569,6 +572,9 @@ void PreviewFormField(const FormFieldData& data,
                       blink::WebFormControlElement* field) {
   // Nothing to preview.
   if (data.value.empty())
+    return;
+
+  if (!data.is_autofilled)
     return;
 
   // Preview input, textarea and select fields. For input fields, excludes

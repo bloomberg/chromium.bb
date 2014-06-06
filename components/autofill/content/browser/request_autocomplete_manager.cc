@@ -76,11 +76,20 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
   if (!host)
     return;
 
+  FormData form_data;
+  if (form_structure) {
+    form_data = form_structure->ToFormData();
+    for (size_t i = 0; i < form_data.fields.size(); ++i) {
+      if(!form_data.fields[i].value.empty())
+        form_data.fields[i].is_autofilled = true;
+    }
+  }
+
   host->Send(new AutofillMsg_RequestAutocompleteResult(
       host->GetRoutingID(),
       ToWebkitAutocompleteResult(result),
       debug_message,
-      form_structure ? form_structure->ToFormData() : FormData()));
+      form_data));
 }
 
 void RequestAutocompleteManager::ShowRequestAutocompleteDialog(

@@ -80,6 +80,10 @@ static const char kFormHtml[] =
     "    <OPTION value=\"CA\" selected>California</OPTION>"
     "    <OPTION value=\"TX\">Texas</OPTION>"
     "  </SELECT>"
+    "  <SELECT id=\"select-unchanged\">"
+    "    <OPTION value=\"CA\" selected>California</OPTION>"
+    "    <OPTION value=\"TX\">Texas</OPTION>"
+    "  </SELECT>"
     "  <TEXTAREA id=\"textarea\"></TEXTAREA>"
     "  <TEXTAREA id=\"textarea-nonempty\">Go&#10;away!</TEXTAREA>"
     "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
@@ -215,6 +219,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[i]);
       // Fill the form_data for the field.
       form_data.fields[i].value = ASCIIToUTF16(field_cases[i].autofill_value);
+      // Set the is_autofilled property for the field.
+      form_data.fields[i].is_autofilled = field_cases[i].should_be_autofilled;
     }
 
     // Autofill the form using the given fill form function.
@@ -1352,6 +1358,9 @@ TEST_F(FormAutofillTest, FillForm) {
       // Select fields should be autofilled even if they already have a
       // non-empty value.
       {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
+      // Select fields should not be autofilled if no new value is passed from
+      // autofill profile. The existing value should not be overriden.
+      {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
       // Regular textarea elements should be autofilled.
       {"textarea", "textarea", "", "", true, "some multi-\nline value",
        "some multi-\nline value"},
@@ -1401,6 +1410,9 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
       // Select fields should be autofilled even if they already have a
       // non-empty value.
       {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
+      // Select fields should not be autofilled if no new value is passed from
+      // autofill profile. The existing value should not be overriden.
+      {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
       // Regular textarea elements should be autofilled.
       {"textarea", "textarea", "", "", true, "some multi-\nline value",
        "some multi-\nline value"},
@@ -1443,6 +1455,9 @@ TEST_F(FormAutofillTest, PreviewForm) {
       // Select fields should be previewed even if they already have a
       // non-empty value.
       {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
+      // Select fields should not be previewed if no suggestion is passed from
+      // autofill profile.
+      {"select-one", "select-unchanged", "CA", "", false, "", ""},
       // Normal textarea elements should be previewed.
       {"textarea", "textarea", "", "", true, "suggested multi-\nline value",
        "suggested multi-\nline value"},
@@ -2376,6 +2391,9 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
   form.fields[0].value = ASCIIToUTF16("Brother");
   form.fields[1].value = ASCIIToUTF16("Jonathan");
   form.fields[2].value = ASCIIToUTF16("brotherj@example.com");
+  form.fields[0].is_autofilled = true;
+  form.fields[1].is_autofilled = true;
+  form.fields[2].is_autofilled = true;
   FillForm(form, input_element);
 
   // Find the newly-filled form that contains the input element.
@@ -2642,6 +2660,9 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   form.fields[0].value = ASCIIToUTF16("Red");
   form.fields[1].value = ASCIIToUTF16("Yellow");
   form.fields[2].value = ASCIIToUTF16("Also Yellow");
+  form.fields[0].is_autofilled = true;
+  form.fields[1].is_autofilled = true;
+  form.fields[2].is_autofilled = true;
   FillForm(form, input_element);
 
   // Find the newly-filled form that contains the input element.
@@ -2868,6 +2889,9 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
   form.fields[0].value = ASCIIToUTF16("Wyatt");
   form.fields[1].value = ASCIIToUTF16("Earp");
   form.fields[2].value = ASCIIToUTF16("wyatt@example.com");
+  form.fields[0].is_autofilled = true;
+  form.fields[1].is_autofilled = true;
+  form.fields[2].is_autofilled = true;
   PreviewForm(form, input_element);
   EXPECT_EQ(2, input_element.selectionStart());
   EXPECT_EQ(5, input_element.selectionEnd());
