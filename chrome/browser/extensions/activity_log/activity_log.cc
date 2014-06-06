@@ -19,8 +19,6 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -32,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -361,7 +360,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       db_enabled_(false),
       testing_mode_(false),
       has_threads_(true),
-      tracker_(NULL),
+      extension_registry_observer_(this),
       watchdog_apps_active_(0) {
   // This controls whether logging statements are printed & which policy is set.
   testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -393,7 +392,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
 
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
-      base::Bind(&ActivityLog::InitInstallTracker, base::Unretained(this)));
+      base::Bind(&ActivityLog::StartObserving, base::Unretained(this)));
 
 // None of this should run on Android since the AL is behind ENABLE_EXTENSION
 // checks. However, UmaPolicy can't even compile on Android because it uses
@@ -438,12 +437,6 @@ void ActivityLog::SetDatabasePolicy(
   database_policy_type_ = policy_type;
 }
 
-// SHUT DOWN. ------------------------------------------------------------------
-
-void ActivityLog::Shutdown() {
-  if (tracker_) tracker_->RemoveObserver(this);
-}
-
 ActivityLog::~ActivityLog() {
   if (uma_policy_)
     uma_policy_->Close();
@@ -453,9 +446,8 @@ ActivityLog::~ActivityLog() {
 
 // MAINTAIN STATUS. ------------------------------------------------------------
 
-void ActivityLog::InitInstallTracker() {
-  tracker_ = InstallTrackerFactory::GetForProfile(profile_);
-  tracker_->AddObserver(this);
+void ActivityLog::StartObserving() {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 void ActivityLog::ChooseDatabasePolicy() {
@@ -481,7 +473,8 @@ void ActivityLog::SetWatchdogAppActiveForTesting(bool active) {
   watchdog_apps_active_ = active ? 1 : 0;
 }
 
-void ActivityLog::OnExtensionLoaded(const Extension* extension) {
+void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const Extension* extension) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id())) return;
   if (has_threads_)
     db_enabled_ = true;
@@ -492,7 +485,9 @@ void ActivityLog::OnExtensionLoaded(const Extension* extension) {
     ChooseDatabasePolicy();
 }
 
-void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
+void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id())) return;
   watchdog_apps_active_--;
   profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
@@ -505,7 +500,9 @@ void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
 }
 
 // OnExtensionUnloaded will also be called right before this.
-void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
+void ActivityLog::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
   if (ActivityLogAPI::IsExtensionWhitelisted(extension->id()) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging) &&
@@ -697,7 +694,7 @@ void ActivityLog::DeleteDatabase() {
 template <>
 void BrowserContextKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(InstallTrackerFactory::GetInstance());
+  DependsOn(ExtensionRegistryFactory::GetInstance());
 }
 
 }  // namespace extensions

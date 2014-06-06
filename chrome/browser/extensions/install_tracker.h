@@ -59,12 +59,6 @@ class InstallTracker : public KeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual void OnExtensionWillBeInstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,

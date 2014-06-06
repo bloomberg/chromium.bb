@@ -14,6 +14,7 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
+class ExtensionRegistry;
 struct UnloadedExtensionInfo;
 
 // Observer for ExtensionRegistry. Exists in a separate header file to reduce
@@ -62,6 +63,9 @@ class ExtensionRegistryObserver {
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) {}
+
+  // Notifies observers that the observed object is going away.
+  virtual void OnShutdown(ExtensionRegistry* registry) {}
 };
 
 }  // namespace extensions

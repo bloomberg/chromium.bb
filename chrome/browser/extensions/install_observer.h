@@ -62,11 +62,9 @@ class InstallObserver {
   // Called if the installation succeeds.
   virtual void OnExtensionInstalled(const Extension* extension) {}
 
-  // Called when an extension is [Loaded, Unloaded, Uninstalled] or an app is
+  // Called when an extension is [Uninstalled] or an app is
   // installed to the app list. These are simply forwarded from the
   // chrome::NOTIFICATIONs.
-  virtual void OnExtensionLoaded(const Extension* extension) {}
-  virtual void OnExtensionUnloaded(const Extension* extension) {}
   virtual void OnExtensionUninstalled(const Extension* extension) {}
   virtual void OnDisabledExtensionUpdated(const Extension* extension) {}
   virtual void OnAppInstalledToAppList(const std::string& extension_id) {}

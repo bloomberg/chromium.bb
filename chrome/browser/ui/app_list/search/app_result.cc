@@ -6,8 +6,6 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -16,6 +14,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -34,7 +33,7 @@ AppResult::AppResult(Profile* profile,
     : profile_(profile),
       app_id_(app_id),
       controller_(controller),
-      install_tracker_(NULL) {
+      extension_registry_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
 
   const extensions::Extension* extension =
@@ -52,11 +51,12 @@ AppResult::AppResult(Profile* profile,
       extensions::util::GetDefaultAppIcon(),
       this));
   UpdateIcon();
-  StartObservingInstall();
+
+  StartObservingExtensionRegistry();
 }
 
 AppResult::~AppResult() {
-  StopObservingInstall();
+  StopObservingExtensionRegistry();
 }
 
 void AppResult::UpdateFromMatch(const TokenizedString& title,
@@ -121,18 +121,17 @@ ui::MenuModel* AppResult::GetContextMenuModel() {
   return context_menu_->GetMenuModel();
 }
 
-void AppResult::StartObservingInstall() {
-  DCHECK(!install_tracker_);
+void AppResult::StartObservingExtensionRegistry() {
+  DCHECK(!extension_registry_);
 
-  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
-  install_tracker_->AddObserver(this);
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
+  extension_registry_->AddObserver(this);
 }
 
-void AppResult::StopObservingInstall() {
-  if (install_tracker_)
-    install_tracker_->RemoveObserver(this);
-
-  install_tracker_ = NULL;
+void AppResult::StopObservingExtensionRegistry() {
+  if (extension_registry_)
+    extension_registry_->RemoveObserver(this);
+  extension_registry_ = NULL;
 }
 
 bool AppResult::RunExtensionEnableFlow() {
@@ -183,17 +182,22 @@ void AppResult::ExtensionEnableFlowAborted(bool user_initiated) {
   controller_->OnCloseChildDialog();
 }
 
-void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {
+void AppResult::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension) {
   UpdateIcon();
 }
 
-void AppResult::OnExtensionUninstalled(const extensions::Extension* extension) {
+void AppResult::OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                       const extensions::Extension* extension) {
   if (extension->id() != app_id_)
     return;
 
   NotifyItemUninstalled();
 }
 
-void AppResult::OnShutdown() { StopObservingInstall(); }
+void AppResult::OnShutdown(extensions::ExtensionRegistry* registry) {
+  DCHECK_EQ(extension_registry_, registry);
+  StopObservingExtensionRegistry();
+}
 
 }  // namespace app_list

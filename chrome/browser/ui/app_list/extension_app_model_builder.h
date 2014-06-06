@@ -10,7 +10,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
 
@@ -24,6 +26,7 @@ class AppListSyncableService;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 class ExtensionSet;
 class InstallTracker;
 }
@@ -35,6 +38,7 @@ class ImageSkia;
 // This class populates and maintains the given |model| with information from
 // |profile|.
 class ExtensionAppModelBuilder : public extensions::InstallObserver,
+                                 public extensions::ExtensionRegistryObserver,
                                  public app_list::AppListItemListObserver {
  public:
   explicit ExtensionAppModelBuilder(AppListControllerDelegate* controller);
@@ -48,30 +52,38 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   void InitializeWithProfile(Profile* profile, app_list::AppListModel* model);
 
  private:
+  using extensions::InstallObserver::OnExtensionUninstalled;
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
 
   // Builds the model with the current profile.
   void BuildModel();
 
-  // extensions::InstallObserver
+  // extensions::InstallObserver.
   virtual void OnBeginExtensionInstall(
       const ExtensionInstallParams& params) OVERRIDE;
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
-  virtual void OnExtensionLoaded(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionUninstalled(
-      const extensions::Extension* extension) OVERRIDE;
   virtual void OnDisabledExtensionUpdated(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnAppInstalledToAppList(
       const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
-  // AppListItemListObserver
+  // extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
+
+  // AppListItemListObserver.
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
                                app_list::AppListItem* item) OVERRIDE;
@@ -133,6 +145,9 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
 
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_;
+
+  // Listen extension's load, unload, uninstalled.
+  extensions::ExtensionRegistry* extension_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilder);
 };

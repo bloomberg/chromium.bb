@@ -74,6 +74,10 @@ class TestObserver : public ExtensionRegistryObserver {
     uninstalled_.push_back(extension);
   }
 
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE {
+    Reset();
+  }
+
   ExtensionList loaded_;
   ExtensionList unloaded_;
   ExtensionList installed_;
@@ -252,14 +256,14 @@ TEST_F(ExtensionRegistryTest, Observer) {
 
   EXPECT_TRUE(HasSingleExtension(observer.loaded(), extension.get()));
   EXPECT_TRUE(observer.unloaded().empty());
-  observer.Reset();
+  registry.Shutdown();
 
   registry.RemoveEnabled(extension->id());
   registry.TriggerOnUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
 
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));
-  observer.Reset();
+  registry.Shutdown();
 
   registry.TriggerOnUninstalled(extension);
   EXPECT_TRUE(observer.installed().empty());

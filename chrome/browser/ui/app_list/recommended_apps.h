@@ -11,9 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/extensions/install_observer.h"
+#include "base/scoped_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
+
+namespace extensions {
+class ExtensionRegistry;
+}
 
 namespace app_list {
 
@@ -21,7 +26,7 @@ class RecommendedAppsObserver;
 
 // A class that maintains a list of recommended apps by watching changes
 // to app state.
-class RecommendedApps : public extensions::InstallObserver {
+class RecommendedApps : public extensions::ExtensionRegistryObserver {
  public:
   typedef std::vector<scoped_refptr<const extensions::Extension> > Apps;
 
@@ -36,14 +41,22 @@ class RecommendedApps : public extensions::InstallObserver {
  private:
   void Update();
 
-  // extensions::InstallObserver overrides:
-  virtual void OnExtensionInstalled(
-      const extensions::Extension* extension) OVERRIDE;
+  // extensions::ExtensionRegistryObserver overrides:
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
   virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(
-      const extensions::Extension* extension) OVERRIDE;
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
       const extensions::Extension* extension) OVERRIDE;
 
   Profile* profile_;
@@ -51,6 +64,10 @@ class RecommendedApps : public extensions::InstallObserver {
 
   Apps apps_;
   ObserverList<RecommendedAppsObserver, true> observers_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendedApps);
 };

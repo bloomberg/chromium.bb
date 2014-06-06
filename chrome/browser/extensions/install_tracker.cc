@@ -129,19 +129,6 @@ void InstallTracker::Observe(int type,
   }
 }
 
-void InstallTracker::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                       const Extension* extension) {
-  FOR_EACH_OBSERVER(InstallObserver, observers_, OnExtensionLoaded(extension));
-}
-
-void InstallTracker::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
-  FOR_EACH_OBSERVER(
-      InstallObserver, observers_, OnExtensionUnloaded(extension));
-}
-
 void InstallTracker::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,

@@ -151,6 +151,7 @@ void ExtensionRegistry::SetDisabledModificationCallback(
 void ExtensionRegistry::Shutdown() {
   // Release references to all Extension objects in the sets.
   ClearAll();
+  FOR_EACH_OBSERVER(ExtensionRegistryObserver, observers_, OnShutdown(this));
 }
 
 }  // namespace extensions

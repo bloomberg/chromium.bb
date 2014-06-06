@@ -9,8 +9,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
 #include "chrome/common/pref_names.h"
@@ -40,21 +38,18 @@ bool AppLaunchedMoreRecent(const AppSortInfo& app1, const AppSortInfo& app2) {
 
 }  // namespace
 
-RecommendedApps::RecommendedApps(Profile* profile) : profile_(profile) {
-  extensions::InstallTrackerFactory::GetForProfile(profile_)->AddObserver(this);
-
+RecommendedApps::RecommendedApps(Profile* profile)
+    : profile_(profile), extension_registry_observer_(this) {
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   pref_change_registrar_.Init(prefs->pref_service());
   pref_change_registrar_.Add(extensions::pref_names::kExtensions,
                              base::Bind(&RecommendedApps::Update,
                                         base::Unretained(this)));
-
+  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
   Update();
 }
 
 RecommendedApps::~RecommendedApps() {
-  extensions::InstallTrackerFactory::GetForProfile(profile_)
-      ->RemoveObserver(this);
 }
 
 void RecommendedApps::AddObserver(RecommendedAppsObserver* observer) {
@@ -99,22 +94,30 @@ void RecommendedApps::Update() {
   }
 }
 
-void RecommendedApps::OnExtensionInstalled(
-    const extensions::Extension* extension) {
+void RecommendedApps::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
   Update();
 }
 
 void RecommendedApps::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
   Update();
 }
 
 void RecommendedApps::OnExtensionUnloaded(
-    const extensions::Extension* extension) {
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
   Update();
 }
 
 void RecommendedApps::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
   Update();
 }
