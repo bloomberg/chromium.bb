@@ -150,8 +150,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   int16* audio_data = &render_buffer_[0];
   while (accumulated_audio_frames < audio_bus->frames()) {
     // Get 10ms and append output to temporary byte buffer.
-    uint32_t rtp_ts = 0;
-    int64_t ntp_ts = 0;
+    int64_t elapsed_time_ms = -1;
+    int64_t ntp_time_ms = -1;
     if (is_audio_track_processing_enabled_) {
       // When audio processing is enabled in the audio track, we use
       // PullRenderData() instead of NeedMorePlayData() to avoid passing the
@@ -163,8 +163,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                                 audio_bus->channels(),
                                                 frames_per_10_ms,
                                                 audio_data,
-                                                &rtp_ts,
-                                                &ntp_ts);
+                                                &elapsed_time_ms,
+                                                &ntp_time_ms);
       accumulated_audio_frames += frames_per_10_ms;
     } else {
       // TODO(xians): Remove the following code after the APM in WebRTC is
@@ -175,8 +175,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                                   sample_rate,
                                                   audio_data,
                                                   num_audio_frames,
-                                                  &rtp_ts,
-                                                  &ntp_ts);
+                                                  &elapsed_time_ms,
+                                                  &ntp_time_ms);
       accumulated_audio_frames += num_audio_frames;
     }
 
