@@ -45,8 +45,6 @@
 
 namespace WebCore {
 
-static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-
 FrameFetchContext::FrameFetchContext(LocalFrame* frame)
     : m_frame(frame)
 {
@@ -90,9 +88,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
         return;
 
     m_frame->loader().applyUserAgent(request);
-
-    if (isMainResource)
-        request.setHTTPAccept(defaultAcceptHeader);
 
     // Default to sending an empty Origin header if one hasn't been set yet.
     FrameLoader::addHTTPOriginIfNeeded(request, nullAtom);
