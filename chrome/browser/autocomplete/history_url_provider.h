@@ -219,10 +219,6 @@ class HistoryURLProvider : public HistoryProvider {
   // 1415, 1414, ...).
   int CalculateRelevance(MatchType match_type, size_t match_number) const;
 
-  // Helper function that actually launches the two autocomplete passes.
-  void RunAutocompletePasses(const AutocompleteInput& input,
-                             bool fixup_input_and_run_pass_1);
-
   // Given a |match| containing the "what you typed" suggestion created by
   // SuggestExactInput(), looks up its info in the DB.  If found, fills in the
   // title from the DB, promotes the match's priority to that of an inline

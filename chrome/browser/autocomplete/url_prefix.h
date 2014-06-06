@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 
 struct URLPrefix;
 typedef std::vector<URLPrefix> URLPrefixes;
@@ -48,8 +47,8 @@ struct URLPrefix {
   // a protocol at the beginning, and we want to allow these matches to be
   // inlineable.  ("www." is not otherwise on the default prefix list.)
   static size_t GetInlineAutocompleteOffset(
-      const AutocompleteInput& input,
-      const AutocompleteInput& fixed_up_input,
+      const base::string16& input,
+      const base::string16& fixed_up_input,
       const bool allow_www_prefix_without_scheme,
       const base::string16& text);
 

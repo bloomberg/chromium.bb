@@ -408,7 +408,91 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress query.
   Stop(false);
 
-  RunAutocompletePasses(input, true);
+  matches_.clear();
+
+  if ((input.type() == AutocompleteInput::INVALID) ||
+      (input.type() == AutocompleteInput::FORCED_QUERY))
+    return;
+
+  // Create a match for exactly what the user typed.  This will only be used as
+  // a fallback in case we can't get the history service or URL DB; otherwise,
+  // we'll run this again in DoAutocomplete() and use that result instead.
+  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
+  // Don't do this for queries -- while we can sometimes mark up a match for
+  // this, it's not what the user wants, and just adds noise.
+  if (input.type() != AutocompleteInput::QUERY) {
+    AutocompleteMatch what_you_typed(SuggestExactInput(
+        input.text(), input.canonicalized_url(), trim_http));
+    what_you_typed.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
+    matches_.push_back(what_you_typed);
+  }
+
+  // We'll need the history service to run both passes, so try to obtain it.
+  if (!profile_)
+    return;
+  HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  if (!history_service)
+    return;
+
+  // Get the default search provider and search terms data now since we have to
+  // retrieve these on the UI thread, and the second pass runs on the history
+  // thread. |template_url_service| can be NULL when testing.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURL* default_search_provider = template_url_service ?
+      template_url_service->GetDefaultSearchProvider() : NULL;
+  UIThreadSearchTermsData data(profile_);
+
+  // Do some fixup on the user input before matching against it, so we provide
+  // good results for local file paths, input with spaces, etc.
+  const FixupReturn fixup_return(FixupUserInput(input));
+  if (!fixup_return.first)
+    return;
+  url::Parsed parts;
+  URLFixerUpper::SegmentURL(fixup_return.second, &parts);
+  AutocompleteInput fixed_up_input(input);
+  fixed_up_input.UpdateText(fixup_return.second, base::string16::npos, parts);
+
+  // Create the data structure for the autocomplete passes.  We'll save this off
+  // onto the |params_| member for later deletion below if we need to run pass
+  // 2.
+  scoped_ptr<HistoryURLProviderParams> params(
+      new HistoryURLProviderParams(
+          fixed_up_input, trim_http,
+          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+          default_search_provider, data));
+  // Note that we use the non-fixed-up input here, since fixup may strip
+  // trailing whitespace.
+  params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);
+
+  // Pass 1: Get the in-memory URL database, and use it to find and promote
+  // the inline autocomplete match, if any.
+  history::URLDatabase* url_db = history_service->InMemoryDatabase();
+  // url_db can be NULL if it hasn't finished initializing (or failed to
+  // initialize).  In this case all we can do is fall back on the second
+  // pass.
+  //
+  // TODO(pkasting): We should just block here until this loads.  Any time
+  // someone unloads the history backend, we'll get inconsistent inline
+  // autocomplete behavior here.
+  if (url_db) {
+    DoAutocomplete(NULL, url_db, params.get());
+    // params->matches now has the matches we should expose to the provider.
+    // Pass 2 expects a "clean slate" set of matches.
+    matches_.clear();
+    matches_.swap(params->matches);
+    UpdateStarredStateOfMatches();
+  }
+
+  // Pass 2: Ask the history service to call us back on the history thread,
+  // where we can read the full on-disk DB.
+  if (search_url_database_ && input.want_asynchronous_matches()) {
+    done_ = false;
+    params_ = params.release();  // This object will be destroyed in
+                                 // QueryComplete() once we're done with it.
+    history_service->ScheduleAutocomplete(this, params_);
+  }
 }
 
 void HistoryURLProvider::Stop(bool clear_cached_results) {
@@ -685,93 +769,6 @@ int HistoryURLProvider::CalculateRelevance(MatchType match_type,
     default:  // NORMAL
       return kBaseScoreForNonInlineableResult +
           static_cast<int>(match_number);
-  }
-}
-
-void HistoryURLProvider::RunAutocompletePasses(
-    const AutocompleteInput& input,
-    bool fixup_input_and_run_pass_1) {
-  matches_.clear();
-
-  if ((input.type() == AutocompleteInput::INVALID) ||
-      (input.type() == AutocompleteInput::FORCED_QUERY))
-    return;
-
-  // Create a match for exactly what the user typed.  This will only be used as
-  // a fallback in case we can't get the history service or URL DB; otherwise,
-  // we'll run this again in DoAutocomplete() and use that result instead.
-  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
-  // Don't do this for queries -- while we can sometimes mark up a match for
-  // this, it's not what the user wants, and just adds noise.
-  if (input.type() != AutocompleteInput::QUERY) {
-    AutocompleteMatch what_you_typed(SuggestExactInput(
-        input.text(), input.canonicalized_url(), trim_http));
-    what_you_typed.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
-    matches_.push_back(what_you_typed);
-  }
-
-  // We'll need the history service to run both passes, so try to obtain it.
-  if (!profile_)
-    return;
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!history_service)
-    return;
-
-  // Get the default search provider and search terms data now since we have to
-  // retrieve these on the UI thread, and the second pass runs on the history
-  // thread. |template_url_service| can be NULL when testing.
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  TemplateURL* default_search_provider = template_url_service ?
-      template_url_service->GetDefaultSearchProvider() : NULL;
-  UIThreadSearchTermsData data(profile_);
-
-  // Create the data structure for the autocomplete passes.  We'll save this off
-  // onto the |params_| member for later deletion below if we need to run pass
-  // 2.
-  scoped_ptr<HistoryURLProviderParams> params(
-      new HistoryURLProviderParams(
-          input, trim_http,
-          profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-          default_search_provider, data));
-
-  params->prevent_inline_autocomplete =
-      PreventInlineAutocomplete(input);
-
-  if (fixup_input_and_run_pass_1) {
-    // Do some fixup on the user input before matching against it, so we provide
-    // good results for local file paths, input with spaces, etc.
-    if (!FixupUserInput(&params->input))
-      return;
-
-    // Pass 1: Get the in-memory URL database, and use it to find and promote
-    // the inline autocomplete match, if any.
-    history::URLDatabase* url_db = history_service->InMemoryDatabase();
-    // url_db can be NULL if it hasn't finished initializing (or failed to
-    // initialize).  In this case all we can do is fall back on the second
-    // pass.
-    //
-    // TODO(pkasting): We should just block here until this loads.  Any time
-    // someone unloads the history backend, we'll get inconsistent inline
-    // autocomplete behavior here.
-    if (url_db) {
-      DoAutocomplete(NULL, url_db, params.get());
-      // params->matches now has the matches we should expose to the provider.
-      // Pass 2 expects a "clean slate" set of matches.
-      matches_.clear();
-      matches_.swap(params->matches);
-      UpdateStarredStateOfMatches();
-    }
-  }
-
-  // Pass 2: Ask the history service to call us back on the history thread,
-  // where we can read the full on-disk DB.
-  if (search_url_database_ && input.want_asynchronous_matches()) {
-    done_ = false;
-    params_ = params.release();  // This object will be destroyed in
-                                 // QueryComplete() once we're done with it.
-    history_service->ScheduleAutocomplete(this, params_);
   }
 }
 

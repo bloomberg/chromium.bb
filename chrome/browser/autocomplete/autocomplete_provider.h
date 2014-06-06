@@ -241,6 +241,8 @@ class AutocompleteProvider
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
   FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);
 
+  typedef std::pair<bool, base::string16> FixupReturn;
+
   virtual ~AutocompleteProvider();
 
   // Updates the starred state of each of the matches in matches_ from the
@@ -257,9 +259,11 @@ class AutocompleteProvider
   // Note that we don't do this in AutocompleteInput's constructor, because if
   // e.g. we convert a Unicode hostname to punycode, other providers will show
   // output that surprises the user ("Search Google for xn--6ca.com").
-  // Returns false if the fixup attempt resulted in an empty string (which
-  // providers generally can't do anything with).
-  static bool FixupUserInput(AutocompleteInput* input);
+  // Returns a bool indicating whether fixup succeeded, as well as the fixed-up
+  // input text.  The returned string will be the same as the input string if
+  // fixup failed; this lets callers who don't care about failure simply use the
+  // string unconditionally.
+  static FixupReturn FixupUserInput(const AutocompleteInput& input);
 
   // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
   // number of characters that were trimmed.

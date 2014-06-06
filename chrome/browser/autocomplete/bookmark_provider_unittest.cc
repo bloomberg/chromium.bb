@@ -394,8 +394,8 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             false, true);
-    AutocompleteInput fixed_up_input(input);
-    provider_->FixupUserInput(&fixed_up_input);
+    const base::string16 fixed_up_input(
+        provider_->FixupUserInput(input).second);
     BookmarkNode node(GURL(query_data[i].url));
     node.SetTitle(base::ASCIIToUTF16(query_data[i].url));
     BookmarkMatch bookmark_match;

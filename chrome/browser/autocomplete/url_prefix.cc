@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 
 namespace {
 
@@ -78,24 +77,22 @@ bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
 
 // static
 size_t URLPrefix::GetInlineAutocompleteOffset(
-    const AutocompleteInput& input,
-    const AutocompleteInput& fixed_up_input,
+    const base::string16& input,
+    const base::string16& fixed_up_input,
     const bool allow_www_prefix_without_scheme,
     const base::string16& text) {
   const URLPrefix* best_prefix = allow_www_prefix_without_scheme ?
-      BestURLPrefixWithWWWCase(text, input.text()) :
-      BestURLPrefix(text, input.text());
-  const base::string16* matching_string = &input.text();
+      BestURLPrefixWithWWWCase(text, input) : BestURLPrefix(text, input);
+  const base::string16* matching_string = &input;
   // If we failed to find a best_prefix initially, try again using a fixed-up
   // version of the user input.  This is especially useful to get about: URLs
   // to inline against chrome:// shortcuts.  (about: URLs are fixed up to the
   // chrome:// scheme.)
-  if ((best_prefix == NULL) && !fixed_up_input.text().empty() &&
-      (fixed_up_input.text() != input.text())) {
+  if (!best_prefix && !fixed_up_input.empty() && (fixed_up_input != input)) {
     best_prefix = allow_www_prefix_without_scheme ?
-        BestURLPrefixWithWWWCase(text, fixed_up_input.text()) :
-        BestURLPrefix(text, fixed_up_input.text());
-    matching_string = &fixed_up_input.text();
+        BestURLPrefixWithWWWCase(text, fixed_up_input) :
+        BestURLPrefix(text, fixed_up_input);
+    matching_string = &fixed_up_input;
   }
   return (best_prefix != NULL) ?
       (best_prefix->prefix.length() + matching_string->length()) :

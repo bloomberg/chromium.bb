@@ -52,13 +52,13 @@ class ShortcutsProvider
   // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
   // |relevance| score in the process, and highlights the description and
   // contents against |input|, which should be the lower-cased version
-  // of the user's input. |input|, |fixed_up_input|, and
+  // of the user's input. |input|, |fixed_up_input_text|, and
   // |input_as_gurl| are used to decide what can be inlined.
   AutocompleteMatch ShortcutToACMatch(
       const history::ShortcutsDatabase::Shortcut& shortcut,
       int relevance,
       const AutocompleteInput& input,
-      const AutocompleteInput& fixed_up_input,
+      const base::string16& fixed_up_input_text,
       const GURL& input_as_gurl);
 
   // Returns a map mapping characters to groups of words from |text| that start

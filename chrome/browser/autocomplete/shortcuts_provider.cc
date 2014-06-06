@@ -139,10 +139,9 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   base::string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
-  AutocompleteInput fixed_up_input(input);
-  FixupUserInput(&fixed_up_input);
   const GURL& input_as_gurl = URLFixerUpper::FixupURL(
       base::UTF16ToUTF8(input.text()), std::string());
+  const base::string16 fixed_up_input(FixupUserInput(input).second);
 
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -156,8 +155,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     // Don't return shortcuts with zero relevance.
     int relevance = CalculateScore(term_string, it->second, max_relevance);
     if (relevance) {
-      matches_.push_back(ShortcutToACMatch(
-          it->second, relevance, input, fixed_up_input, input_as_gurl));
+      matches_.push_back(ShortcutToACMatch(it->second, relevance, input,
+                                           fixed_up_input, input_as_gurl));
       matches_.back().ComputeStrippedDestinationURL(profile_);
     }
   }
@@ -189,7 +188,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const history::ShortcutsDatabase::Shortcut& shortcut,
     int relevance,
     const AutocompleteInput& input,
-    const AutocompleteInput& fixed_up_input,
+    const base::string16& fixed_up_input_text,
     const GURL& input_as_gurl) {
   DCHECK(!input.text().empty());
   AutocompleteMatch match;
@@ -234,7 +233,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   } else {
     const size_t inline_autocomplete_offset =
         URLPrefix::GetInlineAutocompleteOffset(
-            input, fixed_up_input, true, match.fill_into_edit);
+            input.text(), fixed_up_input_text, true, match.fill_into_edit);
     if (inline_autocomplete_offset != base::string16::npos) {
       match.inline_autocompletion =
           match.fill_into_edit.substr(inline_autocomplete_offset);

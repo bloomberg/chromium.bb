@@ -134,15 +134,18 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 }
 
 // static
-bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
-  const base::string16& input_text = input->text();
+AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
+    const AutocompleteInput& input) {
+  const base::string16& input_text = input.text();
+  const FixupReturn failed(false, input_text);
+
   // Fixup and canonicalize user input.
   const GURL canonical_gurl(URLFixerUpper::FixupURL(
       base::UTF16ToUTF8(input_text), std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
     // This probably won't happen, but there are no guarantees.
-    return false;
+    return failed;
   }
 
   // If the user types a number, GURL will convert it to a dotted quad.
@@ -151,11 +154,11 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
   // for hostname beginning with numbers (e.g. input of "17173" will be matched
   // against "0.0.67.21" instead of the original "17173", failing to find
   // "17173.com"), swap the original hostname in for the fixed-up one.
-  if ((input->type() != AutocompleteInput::URL) &&
+  if ((input.type() != AutocompleteInput::URL) &&
       canonical_gurl.HostIsIPAddress()) {
     std::string original_hostname =
-        base::UTF16ToUTF8(input_text.substr(input->parts().host.begin,
-                                            input->parts().host.len));
+        base::UTF16ToUTF8(input_text.substr(input.parts().host.begin,
+                                            input.parts().host.len));
     const url::Parsed& parts =
         canonical_gurl.parsed_for_possibly_invalid_spec();
     // parts.host must not be empty when HostIsIPAddress() is true.
@@ -163,7 +166,7 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
     canonical_gurl_str.replace(parts.host.begin, parts.host.len,
                                original_hostname);
   }
-  base::string16 output = base::UTF8ToUTF16(canonical_gurl_str);
+  base::string16 output(base::UTF8ToUTF16(canonical_gurl_str));
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
   if (!AutocompleteInput::HasHTTPScheme(input_text))
@@ -197,11 +200,10 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
     output.append(num_input_slashes - num_output_slashes, '/');
   else if (num_output_slashes > num_input_slashes)
     output.erase(output.length() - num_output_slashes + num_input_slashes);
+  if (output.empty())
+    return failed;
 
-  url::Parsed parts;
-  URLFixerUpper::SegmentURL(output, &parts);
-  input->UpdateText(output, base::string16::npos, parts);
-  return !output.empty();
+  return FixupReturn(true, output);
 }
 
 // static
