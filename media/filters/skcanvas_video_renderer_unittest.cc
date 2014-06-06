@@ -60,9 +60,8 @@ class SkCanvasVideoRendererTest : public testing::Test {
   VideoFrame* smaller_frame() { return smaller_frame_.get(); }
   VideoFrame* cropped_frame() { return cropped_frame_.get(); }
 
-  // Getters for canvases that trigger the various painting paths.
-  SkCanvas* fast_path_canvas() { return &fast_path_canvas_; }
-  SkCanvas* slow_path_canvas() { return &slow_path_canvas_; }
+  // Standard canvas.
+  SkCanvas* target_canvas() { return &target_canvas_; }
 
  private:
   SkCanvasVideoRenderer renderer_;
@@ -72,19 +71,14 @@ class SkCanvasVideoRendererTest : public testing::Test {
   scoped_refptr<VideoFrame> smaller_frame_;
   scoped_refptr<VideoFrame> cropped_frame_;
 
-  SkCanvas fast_path_canvas_;
-  SkCanvas slow_path_canvas_;
+  SkCanvas target_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
 };
 
-static SkBitmap AllocBitmap(int width, int height, bool isOpaque) {
-  SkAlphaType alpha_type = isOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+static SkBitmap AllocBitmap(int width, int height) {
   SkBitmap bitmap;
-
-  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, alpha_type));
-  if (!isOpaque)
-    bitmap.eraseColor(0);
+  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
   return bitmap;
 }
 
@@ -100,8 +94,7 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
           gfx::Rect(6, 6, 8, 6),
           gfx::Size(8, 6),
           base::TimeDelta::FromMilliseconds(4))),
-      fast_path_canvas_(AllocBitmap(kWidth, kHeight, true)),
-      slow_path_canvas_(AllocBitmap(kWidth, kHeight, false)) {
+      target_canvas_(AllocBitmap(kWidth, kHeight)) {
   // Give each frame a unique timestamp.
   natural_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(1));
   larger_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(2));
@@ -213,172 +206,73 @@ void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
   renderer_.Paint(video_frame, canvas, kNaturalRect, 0xFF);
 }
 
-TEST_F(SkCanvasVideoRendererTest, FastPaint_NoFrame) {
+TEST_F(SkCanvasVideoRendererTest, NoFrame) {
   // Test that black gets painted over canvas.
-  FillCanvas(fast_path_canvas(), SK_ColorRED);
-  PaintWithoutFrame(fast_path_canvas());
-  EXPECT_EQ(SK_ColorBLACK, GetColor(fast_path_canvas()));
+  FillCanvas(target_canvas(), SK_ColorRED);
+  PaintWithoutFrame(target_canvas());
+  EXPECT_EQ(SK_ColorBLACK, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_NoFrame) {
-  // Test that black gets painted over canvas.
-  FillCanvas(slow_path_canvas(), SK_ColorRED);
-  PaintWithoutFrame(slow_path_canvas());
-  EXPECT_EQ(SK_ColorBLACK, GetColor(slow_path_canvas()));
+TEST_F(SkCanvasVideoRendererTest, Natural) {
+  Paint(natural_frame(), target_canvas(), kRed);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, FastPaint_Natural) {
-  Paint(natural_frame(), fast_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
+TEST_F(SkCanvasVideoRendererTest, Larger) {
+  Paint(natural_frame(), target_canvas(), kRed);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
+
+  Paint(larger_frame(), target_canvas(), kBlue);
+  EXPECT_EQ(SK_ColorBLUE, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_Natural) {
-  Paint(natural_frame(), slow_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
+TEST_F(SkCanvasVideoRendererTest, Smaller) {
+  Paint(natural_frame(), target_canvas(), kRed);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
+
+  Paint(smaller_frame(), target_canvas(), kBlue);
+  EXPECT_EQ(SK_ColorBLUE, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, FastPaint_Larger) {
-  Paint(natural_frame(), fast_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
-
-  Paint(larger_frame(), fast_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_Larger) {
-  Paint(natural_frame(), slow_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
-
-  Paint(larger_frame(), slow_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorBLUE, GetColor(slow_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, FastPaint_Smaller) {
-  Paint(natural_frame(), fast_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
-
-  Paint(smaller_frame(), fast_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_Smaller) {
-  Paint(natural_frame(), slow_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
-
-  Paint(smaller_frame(), slow_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorBLUE, GetColor(slow_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, FastPaint_NoTimestamp) {
+TEST_F(SkCanvasVideoRendererTest, NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
   video_frame->set_timestamp(media::kNoTimestamp());
-  Paint(video_frame, fast_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
+  Paint(video_frame, target_canvas(), kRed);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_NoTimestamp) {
-  VideoFrame* video_frame = natural_frame();
-  video_frame->set_timestamp(media::kNoTimestamp());
-  Paint(video_frame, slow_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, FastPaint_SameVideoFrame) {
-  Paint(natural_frame(), fast_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
-
-  // Fast paints always get painted to the canvas.
-  Paint(natural_frame(), fast_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
-}
-
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_SameVideoFrame) {
-  Paint(natural_frame(), slow_path_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
+TEST_F(SkCanvasVideoRendererTest, SameVideoFrame) {
+  Paint(natural_frame(), target_canvas(), kRed);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 
   // Slow paints can get cached, expect the old color value.
-  Paint(natural_frame(), slow_path_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
+  Paint(natural_frame(), target_canvas(), kBlue);
+  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, FastPaint_CroppedFrame) {
-  Paint(cropped_frame(), fast_path_canvas(), kNone);
+TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
+  Paint(cropped_frame(), target_canvas(), kNone);
   // Check the corners.
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(fast_path_canvas(), 0, 0));
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(fast_path_canvas(), kWidth - 1, 0));
-  EXPECT_EQ(SK_ColorGREEN, GetColorAt(fast_path_canvas(), 0, kHeight - 1));
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(fast_path_canvas(), kWidth - 1,
-                                                          kHeight - 1));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(target_canvas(), 0, 0));
+  EXPECT_EQ(SK_ColorRED,   GetColorAt(target_canvas(), kWidth - 1, 0));
+  EXPECT_EQ(SK_ColorGREEN, GetColorAt(target_canvas(), 0, kHeight - 1));
+  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(target_canvas(), kWidth - 1,
+                                                       kHeight - 1));
   // Check the interior along the border between color regions.  Note that we're
   // bilinearly upscaling, so we'll need to take care to pick sample points that
   // are just outside the "zone of resampling".
-  // TODO(sheu): commenting out two checks due to http://crbug.com/158462.
-#if 0
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(fast_path_canvas(), kWidth  * 1 / 8 - 1,
-                                                          kHeight * 1 / 6 - 1));
-#endif
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(fast_path_canvas(), kWidth  * 3 / 8,
-                                                          kHeight * 1 / 6 - 1));
-#if 0
-  EXPECT_EQ(SK_ColorGREEN, GetColorAt(fast_path_canvas(), kWidth  * 1 / 8 - 1,
-                                                          kHeight * 3 / 6));
-#endif
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(fast_path_canvas(), kWidth  * 3 / 8,
-                                                          kHeight * 3 / 6));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(target_canvas(), kWidth  * 1 / 8 - 1,
+                                                       kHeight * 1 / 6 - 1));
+  EXPECT_EQ(SK_ColorRED,   GetColorAt(target_canvas(), kWidth  * 3 / 8,
+                                                       kHeight * 1 / 6 - 1));
+  EXPECT_EQ(SK_ColorGREEN, GetColorAt(target_canvas(), kWidth  * 1 / 8 - 1,
+                                                       kHeight * 3 / 6));
+  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(target_canvas(), kWidth  * 3 / 8,
+                                                       kHeight * 3 / 6));
 }
 
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_CroppedFrame) {
-  Paint(cropped_frame(), slow_path_canvas(), kNone);
-  // Check the corners.
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(slow_path_canvas(), 0, 0));
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(slow_path_canvas(), kWidth - 1, 0));
-  EXPECT_EQ(SK_ColorGREEN, GetColorAt(slow_path_canvas(), 0, kHeight - 1));
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(slow_path_canvas(), kWidth - 1,
-                                                          kHeight - 1));
-  // Check the interior along the border between color regions.  Note that we're
-  // bilinearly upscaling, so we'll need to take care to pick sample points that
-  // are just outside the "zone of resampling".
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(slow_path_canvas(), kWidth  * 1 / 8 - 1,
-                                                          kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(slow_path_canvas(), kWidth  * 3 / 8,
-                                                          kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorGREEN, GetColorAt(slow_path_canvas(), kWidth  * 1 / 8 - 1,
-                                                          kHeight * 3 / 6));
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(slow_path_canvas(), kWidth  * 3 / 8,
-                                                          kHeight * 3 / 6));
-}
-
-TEST_F(SkCanvasVideoRendererTest, FastPaint_CroppedFrame_NoScaling) {
-  SkCanvas canvas(AllocBitmap(kWidth, kHeight, true /* opaque */));
-  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
-
-  // Force painting to a non-zero position on the destination bitmap, to check
-  // if the coordinates are calculated properly.
-  const int offset_x = 10;
-  const int offset_y = 15;
-  canvas.translate(offset_x, offset_y);
-
-  // Create a destination canvas with dimensions and scale which would not
-  // cause scaling. This is to detect the code path using libyuv in FastPaint.
-  canvas.scale(static_cast<SkScalar>(crop_rect.width()) / kWidth,
-               static_cast<SkScalar>(crop_rect.height()) / kHeight);
-
-  Paint(cropped_frame(), &canvas, kNone);
-
-  // Check the corners.
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, offset_x, offset_y));
-  EXPECT_EQ(SK_ColorRED,
-            GetColorAt(&canvas, offset_x + crop_rect.width() - 1, offset_y));
-  EXPECT_EQ(SK_ColorGREEN,
-            GetColorAt(&canvas, offset_x, offset_y + crop_rect.height() - 1));
-  EXPECT_EQ(SK_ColorBLUE,
-            GetColorAt(&canvas,
-                       offset_x + crop_rect.width() - 1,
-                       offset_y + crop_rect.height() - 1));
-}
-
-TEST_F(SkCanvasVideoRendererTest, SlowPaint_CroppedFrame_NoScaling) {
-  SkCanvas canvas(AllocBitmap(kWidth, kHeight, false /* opaque */));
+TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight));
   const gfx::Rect crop_rect = cropped_frame()->visible_rect();
 
   // Force painting to a non-zero position on the destination bitmap, to check
