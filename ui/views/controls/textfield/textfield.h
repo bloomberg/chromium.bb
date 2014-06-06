@@ -295,6 +295,8 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnCandidateWindowShown() OVERRIDE;
   virtual void OnCandidateWindowUpdated() OVERRIDE;
   virtual void OnCandidateWindowHidden() OVERRIDE;
+  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE;
+  virtual void ExecuteEditingCommand(int command_id) OVERRIDE;
 
  protected:
   // Returns the TextfieldModel's text/cursor/selection rendering model.

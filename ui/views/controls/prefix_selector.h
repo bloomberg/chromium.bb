@@ -55,6 +55,9 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   virtual void OnCandidateWindowUpdated() OVERRIDE;
   virtual void OnCandidateWindowHidden() OVERRIDE;
 
+  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE;
+  virtual void ExecuteEditingCommand(int command_id) OVERRIDE;
+
  private:
   // Invoked when text is typed. Tries to change the selection appropriately.
   void OnTextInput(const base::string16& text);

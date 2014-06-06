@@ -1590,6 +1590,13 @@ void RenderWidgetHostViewAura::OnCandidateWindowHidden() {
   host_->CandidateWindowHidden();
 }
 
+bool RenderWidgetHostViewAura::IsEditingCommandEnabled(int command_id) {
+  return false;
+}
+
+void RenderWidgetHostViewAura::ExecuteEditingCommand(int command_id) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, gfx::DisplayObserver implementation:
 

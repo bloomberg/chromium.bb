@@ -79,6 +79,8 @@ class InputMethodBridge : public InputMethodBase,
   virtual void OnCandidateWindowShown() OVERRIDE;
   virtual void OnCandidateWindowUpdated() OVERRIDE;
   virtual void OnCandidateWindowHidden() OVERRIDE;
+  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE;
+  virtual void ExecuteEditingCommand(int command_id) OVERRIDE;
 
   // Overridden from FocusChangeListener.
   virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;

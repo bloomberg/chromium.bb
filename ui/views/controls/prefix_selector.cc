@@ -143,6 +143,13 @@ void PrefixSelector::OnCandidateWindowUpdated() {
 void PrefixSelector::OnCandidateWindowHidden() {
 }
 
+bool PrefixSelector::IsEditingCommandEnabled(int command_id) {
+  return false;
+}
+
+void PrefixSelector::ExecuteEditingCommand(int command_id) {
+}
+
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is
   // that they are control characters and will not affect the currently-active

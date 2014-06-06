@@ -316,6 +316,10 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   virtual void OnCandidateWindowShown() OVERRIDE {}
   virtual void OnCandidateWindowUpdated() OVERRIDE {}
   virtual void OnCandidateWindowHidden() OVERRIDE {}
+  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE {
+    return false;
+  }
+  virtual void ExecuteEditingCommand(int command_id) OVERRIDE {}
 
   bool HasNativeEvent() const {
     return dispatched_key_event_.HasNativeEvent();

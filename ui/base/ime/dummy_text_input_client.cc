@@ -111,4 +111,11 @@ void DummyTextInputClient::OnCandidateWindowUpdated() {
 void DummyTextInputClient::OnCandidateWindowHidden() {
 }
 
+bool DummyTextInputClient::IsEditingCommandEnabled(int command_id) {
+  return false;
+}
+
+void DummyTextInputClient::ExecuteEditingCommand(int command_id) {
+}
+
 }  // namespace ui

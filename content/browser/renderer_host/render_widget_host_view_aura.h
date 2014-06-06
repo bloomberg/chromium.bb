@@ -263,6 +263,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnCandidateWindowShown() OVERRIDE;
   virtual void OnCandidateWindowUpdated() OVERRIDE;
   virtual void OnCandidateWindowHidden() OVERRIDE;
+  virtual bool IsEditingCommandEnabled(int command_id) OVERRIDE;
+  virtual void ExecuteEditingCommand(int command_id) OVERRIDE;
 
   // Overridden from gfx::DisplayObserver:
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;

@@ -1499,6 +1499,14 @@ void Textfield::OnCandidateWindowUpdated() {}
 
 void Textfield::OnCandidateWindowHidden() {}
 
+bool Textfield::IsEditingCommandEnabled(int command_id) {
+  return IsCommandIdEnabled(command_id);
+}
+
+void Textfield::ExecuteEditingCommand(int command_id) {
+  ExecuteCommand(command_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:
 

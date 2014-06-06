@@ -166,6 +166,11 @@ class UI_BASE_EXPORT TextInputClient {
   virtual void OnCandidateWindowUpdated() = 0;
   // Called when IME hides the candidate window.
   virtual void OnCandidateWindowHidden() = 0;
+
+  // Returns true if |command_id| is currently allowed to be executed.
+  virtual bool IsEditingCommandEnabled(int command_id) = 0;
+  // Execute the command specified by |command_id|.
+  virtual void ExecuteEditingCommand(int command_id) = 0;
 };
 
 }  // namespace ui

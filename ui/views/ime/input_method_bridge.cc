@@ -319,6 +319,13 @@ void InputMethodBridge::OnCandidateWindowUpdated() {
 void InputMethodBridge::OnCandidateWindowHidden() {
 }
 
+bool InputMethodBridge::IsEditingCommandEnabled(int command_id) {
+  return false;
+}
+
+void InputMethodBridge::ExecuteEditingCommand(int command_id) {
+}
+
 // Overridden from FocusChangeListener.
 void InputMethodBridge::OnWillChangeFocus(View* focused_before, View* focused) {
   if (HasCompositionText()) {
