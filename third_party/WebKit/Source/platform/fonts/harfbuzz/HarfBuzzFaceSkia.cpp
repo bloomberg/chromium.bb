@@ -128,7 +128,7 @@ static hb_position_t harfBuzzGetGlyphHorizontalKerning(hb_font_t*, void* fontDat
 
     SkTypeface* typeface = hbFontData->m_paint.getTypeface();
 
-    const uint16_t glyphs[2] = { leftGlyph, rightGlyph };
+    const uint16_t glyphs[2] = { static_cast<uint16_t>(leftGlyph), static_cast<uint16_t>(rightGlyph) };
     int32_t kerningAdjustments[1] = { 0 };
 
     if (typeface->getKerningPairAdjustments(glyphs, 2, kerningAdjustments)) {
@@ -150,7 +150,7 @@ static hb_position_t harfBuzzGetGlyphVerticalKerning(hb_font_t*, void* fontData,
 
     SkTypeface* typeface = hbFontData->m_paint.getTypeface();
 
-    const uint16_t glyphs[2] = { topGlyph, bottomGlyph };
+    const uint16_t glyphs[2] = { static_cast<uint16_t>(topGlyph), static_cast<uint16_t>(bottomGlyph) };
     int32_t kerningAdjustments[1] = { 0 };
 
     if (typeface->getKerningPairAdjustments(glyphs, 2, kerningAdjustments)) {
