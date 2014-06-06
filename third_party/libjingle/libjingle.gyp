@@ -586,6 +586,8 @@
           'target_name': 'libpeerconnection',
           'type': '<(libpeer_target_type)',
           'sources': [
+            '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.cc',
