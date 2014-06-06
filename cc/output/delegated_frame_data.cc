@@ -6,7 +6,8 @@
 
 namespace cc {
 
-DelegatedFrameData::DelegatedFrameData() {}
+DelegatedFrameData::DelegatedFrameData() : device_scale_factor(1.0f) {
+}
 
 DelegatedFrameData::~DelegatedFrameData() {}
 

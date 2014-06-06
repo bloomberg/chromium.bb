@@ -13,8 +13,10 @@
 namespace cc {
 
 FakeDelegatedRendererLayerImpl::FakeDelegatedRendererLayerImpl(
-    LayerTreeImpl* tree_impl, int id)
-    : DelegatedRendererLayerImpl(tree_impl, id) {}
+    LayerTreeImpl* tree_impl,
+    int id)
+    : DelegatedRendererLayerImpl(tree_impl, id) {
+}
 
 FakeDelegatedRendererLayerImpl::~FakeDelegatedRendererLayerImpl() {}
 
@@ -49,8 +51,10 @@ ResourceProvider::ResourceIdSet FakeDelegatedRendererLayerImpl::Resources()
 void NoopReturnCallback(const ReturnedResourceArray& returned) {}
 
 void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
+    float device_scale_factor,
     ScopedPtrVector<RenderPass>* pass_list) {
   scoped_ptr<DelegatedFrameData> delegated_frame(new DelegatedFrameData);
+  delegated_frame->device_scale_factor = device_scale_factor;
   delegated_frame->render_pass_list.swap(*pass_list);
 
   ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
