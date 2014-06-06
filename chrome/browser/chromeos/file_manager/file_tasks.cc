@@ -110,47 +110,6 @@ void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
   tasks->swap(filtered);
 }
 
-// Finds a task that matches |app_id| and |action_id| from |task_list|.
-// Returns a mutable iterator to the handler if found. Returns task_list->end()
-// if not found.
-std::vector<FullTaskDescriptor>::iterator
-FindTaskForAppIdAndActionId(
-    std::vector<FullTaskDescriptor>* task_list,
-    const std::string& app_id,
-    const std::string& action_id) {
-  DCHECK(task_list);
-
-  std::vector<FullTaskDescriptor>::iterator iter = task_list->begin();
-  while (iter != task_list->end() &&
-         !(iter->task_descriptor().app_id == app_id &&
-           iter->task_descriptor().action_id == action_id)) {
-    ++iter;
-  }
-  return iter;
-}
-
-// Chooses a suitable video handeler and removes other internal video hander.
-// Both "watch" and "gallery-video" actions are applicable which means that the
-// selection is all videos. Showing them both is confusing, so we only keep
-// the one that makes more sense ("watch" for single selection, "gallery"
-// for multiple selection).
-void ChooseSuitableVideoHandler(
-    const std::vector<GURL>& file_urls,
-    std::vector<FullTaskDescriptor>* task_list) {
-  std::vector<FullTaskDescriptor>::iterator video_player_iter =
-      FindTaskForAppIdAndActionId(task_list, kVideoPlayerAppId, "video");
-  std::vector<FullTaskDescriptor>::iterator gallery_video_iter =
-      FindTaskForAppIdAndActionId(task_list, kGalleryAppId, "open");
-
-  if (video_player_iter != task_list->end() &&
-      gallery_video_iter != task_list->end()) {
-    if (file_urls.size() == 1)
-      task_list->erase(gallery_video_iter);
-    else
-      task_list->erase(video_player_iter);
-  }
-}
-
 }  // namespace
 
 FullTaskDescriptor::FullTaskDescriptor(
@@ -511,8 +470,6 @@ void FindAllTypesOfTasks(
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(path_mime_set))
     KeepOnlyFileManagerInternalTasks(result_list);
-
-  ChooseSuitableVideoHandler(file_urls, result_list);
 
   ChooseAndSetDefaultTask(*profile->GetPrefs(), path_mime_set, result_list);
 }
