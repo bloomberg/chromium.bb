@@ -51,14 +51,14 @@ class PolicyHeaderIOHelperTest : public testing::Test {
 TEST_F(PolicyHeaderIOHelperTest, InitialHeader) {
   net::TestURLRequest request(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(&request);
+  helper_->AddPolicyHeaders(request.url(), &request);
   ValidateHeader(request.extra_request_headers(), kInitialPolicyHeader);
 }
 
 TEST_F(PolicyHeaderIOHelperTest, NoHeaderOnNonMatchingURL) {
   net::TestURLRequest request(
       GURL("http://non-matching.com"), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(&request);
+  helper_->AddPolicyHeaders(request.url(), &request);
   EXPECT_TRUE(request.extra_request_headers().IsEmpty());
 }
 
@@ -68,7 +68,7 @@ TEST_F(PolicyHeaderIOHelperTest, HeaderChange) {
   task_runner_->RunUntilIdle();
   net::TestURLRequest request(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(&request);
+  helper_->AddPolicyHeaders(request.url(), &request);
   ValidateHeader(request.extra_request_headers(), new_header);
 }
 
@@ -77,7 +77,7 @@ TEST_F(PolicyHeaderIOHelperTest, ChangeToNoHeader) {
   task_runner_->RunUntilIdle();
   net::TestURLRequest request(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context_);
-  helper_->AddPolicyHeaders(&request);
+  helper_->AddPolicyHeaders(request.url(), &request);
   EXPECT_TRUE(request.extra_request_headers().IsEmpty());
 }
 

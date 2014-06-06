@@ -52,6 +52,9 @@ enum PolicyFetchStatus {
 
 }  // namespace dm_protocol
 
+// The header used to transmit the policy ID for this client.
+POLICY_EXPORT extern const char kChromePolicyHeader[];
+
 // Information about the verification key used to verify that policy signing
 // keys are valid.
 POLICY_EXPORT std::string GetPolicyVerificationKey();

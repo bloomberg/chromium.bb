@@ -7,14 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "net/url_request/url_request.h"
-
-namespace {
-
-// The name of the header containing the policy information.
-const char kChromePolicyHeader[] = "Chrome-Policy-Posture";
-
-}  // namespace
 
 namespace policy {
 
@@ -31,9 +25,9 @@ PolicyHeaderIOHelper::~PolicyHeaderIOHelper() {
 }
 
 // Sets any necessary policy headers on the passed request.
-void PolicyHeaderIOHelper::AddPolicyHeaders(net::URLRequest* request) const {
+void PolicyHeaderIOHelper::AddPolicyHeaders(const GURL& url,
+                                            net::URLRequest* request) const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  const GURL& url = request->url();
   if (!policy_header_.empty() &&
       url.spec().compare(0, server_url_.size(), server_url_) == 0) {
     request->SetExtraRequestHeaderByName(kChromePolicyHeader,
@@ -54,6 +48,20 @@ void PolicyHeaderIOHelper::UpdateHeaderOnIOThread(
     const std::string& new_header) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   policy_header_ = new_header;
+}
+
+void PolicyHeaderIOHelper::SetServerURLForTest(const std::string& server_url) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PolicyHeaderIOHelper::SetServerURLOnIOThread,
+                 base::Unretained(this), server_url));
+
+}
+
+void PolicyHeaderIOHelper::SetServerURLOnIOThread(
+    const std::string& server_url) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  server_url_ = server_url;
 }
 
 }  // namespace policy

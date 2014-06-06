@@ -387,7 +387,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())
-    io_data->policy_header_helper()->AddPolicyHeaders(request);
+    io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 #endif
 
   signin::AppendMirrorRequestHeaderIfPossible(
@@ -690,7 +690,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())
-    io_data->policy_header_helper()->AddPolicyHeaders(request);
+    io_data->policy_header_helper()->AddPolicyHeaders(redirect_url, request);
 #endif
 }
 

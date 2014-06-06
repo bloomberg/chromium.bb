@@ -1326,6 +1326,7 @@
         'browser/renderer_context_menu/render_view_context_menu_test_util.h',
         'browser/renderer_context_menu/spellchecker_submenu_observer_browsertest.cc',
         'browser/renderer_context_menu/spelling_menu_observer_browsertest.cc',
+        'browser/renderer_host/chrome_resource_dispatcher_host_delegate_browsertest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
         'browser/repost_form_warning_browsertest.cc',

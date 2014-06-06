@@ -51,6 +51,8 @@ const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 
 }  // namespace dm_protocol
 
+const char kChromePolicyHeader[] = "Chrome-Policy-Posture";
+
 #if !defined(OS_CHROMEOS)
 const uint8 kPolicyVerificationKey[] = {
   0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7,

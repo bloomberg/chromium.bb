@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/policy_export.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;
@@ -31,9 +32,10 @@ class POLICY_EXPORT PolicyHeaderIOHelper {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~PolicyHeaderIOHelper();
 
-  // Sets any necessary policy headers on the passed request. Should be invoked
-  // only from the I/O thread.
-  void AddPolicyHeaders(net::URLRequest* request) const;
+  // Sets any necessary policy headers for the specified URL on the passed
+  // request. Should be invoked only from the I/O thread.
+  void AddPolicyHeaders(const GURL& url,
+                        net::URLRequest* request) const;
 
   // API invoked when the header changes. Can be called from any thread - calls
   // are marshalled via the TaskRunner to run on the appropriate thread.
@@ -41,9 +43,17 @@ class POLICY_EXPORT PolicyHeaderIOHelper {
   // outgoing requests.
   void UpdateHeader(const std::string& new_header);
 
+  // Test-only routine used to inject the server URL at runtime - this is
+  // required because PolicyHeaderIOHelper is created very early in BrowserTest
+  // initialization, before we startup the EmbeddedTestServer.
+  void SetServerURLForTest(const std::string& server_url);
+
  private:
   // API invoked via the TaskRunner to update the header.
   void UpdateHeaderOnIOThread(const std::string& new_header);
+
+  // Helper routine invoked via the TaskRunner to update the cached server URL.
+  void SetServerURLOnIOThread(const std::string& new_header);
 
   // The URL we should add policy headers to.
   std::string server_url_;

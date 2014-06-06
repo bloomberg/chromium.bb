@@ -108,7 +108,7 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   net::TestURLRequestContext context;
   net::TestURLRequest request(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
-  helper_->AddPolicyHeaders(&request);
+  helper_->AddPolicyHeaders(request.url(), &request);
   ValidateHeader(request.extra_request_headers(), expected_dmtoken,
                  expected_policy_token);
 
@@ -118,7 +118,7 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
 
   net::TestURLRequest request2(
       GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, &context);
-  helper_->AddPolicyHeaders(&request2);
+  helper_->AddPolicyHeaders(request2.url(), &request2);
   ValidateHeader(request2.extra_request_headers(), "", "");
 }
 

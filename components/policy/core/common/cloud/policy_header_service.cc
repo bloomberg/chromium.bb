@@ -98,4 +98,8 @@ void PolicyHeaderService::OnStoreError(CloudPolicyStore* store) {
   // Do nothing on errors.
 }
 
+std::vector<PolicyHeaderIOHelper*> PolicyHeaderService::GetHelpersForTest() {
+  return helpers_;
+}
+
 }  // namespace policy
