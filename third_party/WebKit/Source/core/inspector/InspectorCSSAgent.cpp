@@ -1181,11 +1181,10 @@ void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& resu
 
 void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, Vector<CSSStyleSheet*>& result)
 {
-    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
-    for (WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
-        StyleSheet* styleSheet = it->get();
-        if (styleSheet->isCSSStyleSheet())
-            collectStyleSheets(toCSSStyleSheet(styleSheet), result);
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
+    for (WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
+        CSSStyleSheet* styleSheet = it->get();
+        collectStyleSheets(styleSheet, result);
     }
 }
 

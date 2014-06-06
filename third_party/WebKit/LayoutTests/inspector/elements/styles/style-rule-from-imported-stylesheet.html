@@ -1,0 +1,25 @@
+<html>
+<head>
+<link rel="import" href="resources/imported-stylesheet.html"/>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("square", step1);
+
+    function step1()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that rules from imported stylesheets are correctly shown in inspector.</p>
+<div id="square" class="square"></div>
+</body>
+</html>

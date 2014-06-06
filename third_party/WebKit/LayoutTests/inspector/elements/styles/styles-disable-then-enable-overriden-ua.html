@@ -14,10 +14,16 @@ function injectStyleSheet()
 
 function test()
 {
-    InspectorTest.evaluateInPage("injectStyleSheet()", step1);
+    InspectorTest.selectNodeAndWaitForStyles("container", step0);
+
+    function step0()
+    {
+        InspectorTest.evaluateInPage("injectStyleSheet()", step1);
+    }
+
     function step1()
     {
-        InspectorTest.selectNodeAndWaitForStyles("container", step2);
+        InspectorTest.waitForStyles("container", step2);
     }
 
     function step2()

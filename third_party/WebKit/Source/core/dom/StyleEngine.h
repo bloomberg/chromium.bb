@@ -101,7 +101,7 @@ public:
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheetsForInspector() const;
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > activeStyleSheetsForInspector() const;
 
     void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);

@@ -1,0 +1,16 @@
+Tests that rules from imported stylesheets are correctly shown in inspector.
+
+ [expanded] 
+element.style  { ()
+
+[expanded] 
+.square  { (imported-stylesheet.css:1 -> imported-stylesheet.css:1:1)
+background-color: red;
+display: inline-block;
+
+[expanded] 
+div  { (user agent stylesheet)
+/-- overloaded --/ display: block;
+
+
+

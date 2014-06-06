@@ -398,20 +398,20 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     return requiresFullStyleRecalc;
 }
 
-const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
+const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
 {
     if (m_activeTreeScopes.isEmpty())
-        return documentStyleSheetCollection()->styleSheetsForStyleSheetList();
+        return documentStyleSheetCollection()->activeAuthorStyleSheets();
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > activeStyleSheets;
 
-    activeStyleSheets.appendVector(documentStyleSheetCollection()->styleSheetsForStyleSheetList());
+    activeStyleSheets.appendVector(documentStyleSheetCollection()->activeAuthorStyleSheets());
 
     TreeScopeSet::const_iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::const_iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::const_iterator it = begin; it != end; ++it) {
         if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
-            activeStyleSheets.appendVector(collection->styleSheetsForStyleSheetList());
+            activeStyleSheets.appendVector(collection->activeAuthorStyleSheets());
     }
 
     // FIXME: Inspector needs a vector which has all active stylesheets.
