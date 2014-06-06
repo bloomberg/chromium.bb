@@ -6,7 +6,7 @@
 
 var GetAvailability = requireNative('v8_context').GetAvailability;
 if (!GetAvailability('app').is_available) {
-  exports.chromeApp = {};
+  exports.binding = {};
   exports.onInstallStateResponse = function(){};
   return;
 }
