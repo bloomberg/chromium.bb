@@ -665,12 +665,18 @@ static SkBitmap ApplyImageFilter(
       use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
-  if (backing_store.get() == NULL)
+  if (backing_store.get() == NULL) {
+    TRACE_EVENT_INSTANT0("cc",
+                         "ApplyImageFilter scratch texture allocation failed",
+                         TRACE_EVENT_SCOPE_THREAD);
     return SkBitmap();
+  }
 
   // Create a device and canvas using that backing store.
-  SkGpuDevice device(use_gr_context->context(), backing_store.get());
-  SkCanvas canvas(&device);
+  skia::RefPtr<SkGpuDevice> device =
+      skia::AdoptRef(SkGpuDevice::Create(backing_store->asRenderTarget()));
+  DCHECK(device.get());
+  SkCanvas canvas(device.get());
 
   // Draw the source bitmap through the filter to the canvas.
   SkPaint paint;
@@ -688,7 +694,7 @@ static SkBitmap ApplyImageFilter(
   // GL context again.
   use_gr_context->context()->flush();
 
-  return device.accessBitmap(false);
+  return device->accessBitmap(false);
 }
 
 static SkBitmap ApplyBlendModeWithBackdrop(
@@ -785,10 +791,19 @@ static SkBitmap ApplyBlendModeWithBackdrop(
       use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
+  if (backing_store.get() == NULL) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "ApplyBlendModeWithBackdrop scratch texture allocation failed",
+        TRACE_EVENT_SCOPE_THREAD);
+    return source_bitmap_with_filters;
+  }
 
   // Create a device and canvas using that backing store.
-  SkGpuDevice device(use_gr_context->context(), backing_store.get());
-  SkCanvas canvas(&device);
+  skia::RefPtr<SkGpuDevice> device =
+      skia::AdoptRef(SkGpuDevice::Create(backing_store->asRenderTarget()));
+  DCHECK(device.get());
+  SkCanvas canvas(device.get());
 
   // Draw the source bitmap through the filter to the canvas.
   canvas.clear(SK_ColorTRANSPARENT);
@@ -802,7 +817,7 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   // GL context again.
   use_gr_context->context()->flush();
 
-  return device.accessBitmap(false);
+  return device->accessBitmap(false);
 }
 
 scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
