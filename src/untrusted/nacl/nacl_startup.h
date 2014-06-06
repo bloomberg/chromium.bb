@@ -32,11 +32,13 @@ enum NaClStartupInfoIndex {
   NACL_STARTUP_ARGV   /* argv[0] pointer.  */
 };
 
+typedef void (*nacl_startup_fini_func_t)(void);
+
 /*
  * Return the dynamic linker finalizer function.
  */
 static inline __attribute__((unused))
-void (*nacl_startup_fini(const uint32_t info[]))(void) {
+nacl_startup_fini_func_t nacl_startup_fini(const uint32_t info[]) {
   return (void (*)(void)) info[NACL_STARTUP_FINI];
 }
 
