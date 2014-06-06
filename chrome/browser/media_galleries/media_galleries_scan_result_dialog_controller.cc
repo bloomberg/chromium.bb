@@ -121,7 +121,7 @@ base::string16 MediaGalleriesScanResultDialogController::GetSubtext() const {
   extensions::MediaGalleriesPermission::CheckParam delete_param(
       extensions::MediaGalleriesPermission::kDeletePermission);
   const extensions::PermissionsData* permissions_data =
-      extensions::PermissionsData::ForExtension(extension_);
+      extension_->permissions_data();
   bool has_copy_to_permission = permissions_data->CheckAPIPermissionWithParam(
       extensions::APIPermission::kMediaGalleries, &copy_to_param);
   bool has_delete_permission = permissions_data->CheckAPIPermissionWithParam(

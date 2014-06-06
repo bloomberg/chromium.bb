@@ -69,7 +69,7 @@ TEST_F(SettingsOverridePermissionTest, HomePage) {
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kHomepage));
   std::vector<base::string16> warnings =
-      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
+      extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your home page to: google.com/",
             base::UTF16ToUTF8(warnings[0]));
@@ -93,7 +93,7 @@ TEST_F(SettingsOverridePermissionTest, StartupPages) {
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kStartupPages));
   std::vector<base::string16> warnings =
-      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
+      extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your start page to: startup.com/startup.html",
             base::UTF16ToUTF8(warnings[0]));
@@ -117,7 +117,7 @@ TEST_F(SettingsOverridePermissionTest, SearchSettings) {
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kSearchProvider));
   std::vector<base::string16> warnings =
-      PermissionsData::ForExtension(extension)->GetPermissionMessageStrings();
+      extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your search settings to: google.com",
             base::UTF16ToUTF8(warnings[0]));

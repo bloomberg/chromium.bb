@@ -20,6 +20,5 @@ TEST_F(DevToolsPageManifestTest, DevToolsExtensions) {
   extension = LoadAndExpectSuccess("devtools_extension.json");
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extensions::ManifestURL::GetDevToolsPage(extension.get()).spec());
-  EXPECT_TRUE(extensions::PermissionsData::ForExtension(extension)
-                  ->HasEffectiveAccessToAllHosts());
+  EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
 }

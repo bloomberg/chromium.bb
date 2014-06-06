@@ -335,8 +335,7 @@ void ChromeExtensionsDispatcherDelegate::ClearTabSpecificPermissions(
     const extensions::Extension* extension =
         dispatcher->extensions()->GetByID(*it);
     if (extension)
-      extensions::PermissionsData::ForExtension(extension)
-          ->ClearTabSpecificPermissions(tab_id);
+      extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
   }
 }
 
@@ -360,13 +359,12 @@ void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
   if (!extension)
     return;
 
-  extensions::PermissionsData::ForExtension(extension)
-      ->UpdateTabSpecificPermissions(
-          tab_id,
-          new extensions::PermissionSet(extensions::APIPermissionSet(),
-                                        extensions::ManifestPermissionSet(),
-                                        origin_set,
-                                        extensions::URLPatternSet()));
+  extension->permissions_data()->UpdateTabSpecificPermissions(
+      tab_id,
+      new extensions::PermissionSet(extensions::APIPermissionSet(),
+                                    extensions::ManifestPermissionSet(),
+                                    origin_set,
+                                    extensions::URLPatternSet()));
 }
 
 void ChromeExtensionsDispatcherDelegate::HandleWebRequestAPIUsage(

@@ -288,15 +288,15 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
 }
 
 bool Extension::HasAPIPermission(APIPermission::ID permission) const {
-  return PermissionsData::ForExtension(this)->HasAPIPermission(permission);
+  return permissions_data_->HasAPIPermission(permission);
 }
 
 bool Extension::HasAPIPermission(const std::string& permission_name) const {
-  return PermissionsData::ForExtension(this)->HasAPIPermission(permission_name);
+  return permissions_data_->HasAPIPermission(permission_name);
 }
 
 scoped_refptr<const PermissionSet> Extension::GetActivePermissions() const {
-  return PermissionsData::ForExtension(this)->active_permissions();
+  return permissions_data_->active_permissions();
 }
 
 bool Extension::ShowConfigureContextMenus() const {

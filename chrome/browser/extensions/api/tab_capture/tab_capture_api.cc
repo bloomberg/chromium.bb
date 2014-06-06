@@ -89,8 +89,8 @@ bool TabCaptureCaptureFunction::RunSync() {
 
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
-  if (!PermissionsData::ForExtension(extension)
-           ->HasAPIPermissionForTab(tab_id, APIPermission::kTabCaptureForTab) &&
+  if (!extension->permissions_data()->HasAPIPermissionForTab(
+          tab_id, APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInList(

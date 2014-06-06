@@ -32,17 +32,16 @@ namespace extensions {
 namespace {
 
 base::ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
-  extensions::URLPatternSet pattern_set;
-  if (effective_perm) {
-    pattern_set = extensions::PermissionsData::ForExtension(ext)
-                      ->GetEffectiveHostPermissions();
-  } else {
+  URLPatternSet pattern_set;
+  if (effective_perm)
+    pattern_set = ext->permissions_data()->GetEffectiveHostPermissions();
+  else
     pattern_set = ext->GetActivePermissions()->explicit_hosts();
-  }
 
   base::ListValue* permissions = new base::ListValue;
-  for (extensions::URLPatternSet::const_iterator perm = pattern_set.begin();
-       perm != pattern_set.end(); ++perm) {
+  for (URLPatternSet::const_iterator perm = pattern_set.begin();
+       perm != pattern_set.end();
+       ++perm) {
     permissions->Append(new base::StringValue(perm->GetAsString()));
   }
 
@@ -150,10 +149,9 @@ bool AutotestPrivateLockScreenFunction::RunSync() {
 bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateGetExtensionsInfoFunction";
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      GetProfile())->extension_service();
-  ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(GetProfile());
+  ExtensionService* service =
+      ExtensionSystem::Get(GetProfile())->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
   const ExtensionSet& extensions = registry->enabled_extensions();
   const ExtensionSet& disabled_extensions = registry->disabled_extensions();
   ExtensionActionManager* extension_action_manager =
@@ -173,10 +171,10 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
     extension_value->SetString("name", extension->name());
     extension_value->SetString("publicKey", extension->public_key());
     extension_value->SetString("description", extension->description());
-    extension_value->SetString("backgroundUrl",
-        extensions::BackgroundInfo::GetBackgroundURL(extension).spec());
+    extension_value->SetString(
+        "backgroundUrl", BackgroundInfo::GetBackgroundURL(extension).spec());
     extension_value->SetString("optionsUrl",
-        extensions::ManifestURL::GetOptionsPage(extension).spec());
+                               ManifestURL::GetOptionsPage(extension).spec());
 
     extension_value->Set("hostPermissions",
                          GetHostPermissions(extension, false));

@@ -53,14 +53,6 @@ void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
 }
 
 // static
-const PermissionsData* PermissionsData::ForExtension(
-    const Extension* extension) {
-  // TODO(rdevlin.cronin): Figure out what we're doing with this (i.e. whether
-  // or not we want to expose PermissionsData on the extension).
-  return extension->permissions_data();
-}
-
-// static
 bool PermissionsData::CanSilentlyIncreasePermissions(
     const Extension* extension) {
   return extension->location() != Manifest::INTERNAL;

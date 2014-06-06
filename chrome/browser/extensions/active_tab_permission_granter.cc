@@ -43,8 +43,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   APIPermissionSet new_apis;
   URLPatternSet new_hosts;
 
-  const PermissionsData* permissions_data =
-      PermissionsData::ForExtension(extension);
+  const PermissionsData* permissions_data = extension->permissions_data();
 
   // If the extension requires action for script execution, we grant it
   // active tab-style permissions, even if it doesn't have the activeTab
@@ -125,8 +124,7 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   for (ExtensionSet::const_iterator it = granted_extensions_.begin();
        it != granted_extensions_.end(); ++it) {
-    PermissionsData::ForExtension(it->get())
-        ->ClearTabSpecificPermissions(tab_id_);
+    it->get()->permissions_data()->ClearTabSpecificPermissions(tab_id_);
     extension_ids.push_back((*it)->id());
   }
 

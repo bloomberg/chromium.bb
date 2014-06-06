@@ -57,9 +57,6 @@ class PermissionsData {
   PermissionsData(const Extension* extension);
   virtual ~PermissionsData();
 
-  // Return the PermissionsData associated with the given |extension|.
-  static const PermissionsData* ForExtension(const Extension* extension);
-
   // Returns true if the |extension| can silently increase its permission level.
   // Users must approve permissions for unpacked and packed extensions in the
   // following situations:

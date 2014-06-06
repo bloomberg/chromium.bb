@@ -297,9 +297,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
         // To skip manifest checking, the extension must be a shared module
         // and not request any permissions.
       if (SharedModuleInfo::IsSharedModule(extension) &&
-          PermissionsData::ForExtension(extension)
-              ->active_permissions()
-              ->IsEmpty()) {
+          extension->permissions_data()->active_permissions()->IsEmpty()) {
           valid = true;
         }
     } else {
@@ -315,11 +313,10 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
                               &error);
         if (error.empty()) {
           scoped_refptr<const PermissionSet> expected_permissions =
-              PermissionsData::ForExtension(dummy_extension)
-                  ->active_permissions();
+              dummy_extension->permissions_data()->active_permissions();
           valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
               expected_permissions,
-              PermissionsData::ForExtension(extension)->active_permissions(),
+              extension->permissions_data()->active_permissions(),
               extension->GetType()));
         }
       }

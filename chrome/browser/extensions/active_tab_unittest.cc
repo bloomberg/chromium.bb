@@ -107,8 +107,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  const GURL& url,
                  PermittedFeature feature,
                  int tab_id) {
-    const PermissionsData* permissions_data =
-        PermissionsData::ForExtension(extension);
+    const PermissionsData* permissions_data = extension->permissions_data();
     bool script = permissions_data->CanExecuteScriptOnPage(
         extension, url, url, tab_id, NULL, -1, NULL);
     bool capture = HasTabsPermission(extension, tab_id) &&
@@ -144,13 +143,13 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
 
   bool HasTabsPermission(const scoped_refptr<const Extension>& extension,
                          int tab_id) {
-    return PermissionsData::ForExtension(extension)
-        ->HasAPIPermissionForTab(tab_id, APIPermission::kTab);
+    return extension->permissions_data()->HasAPIPermissionForTab(
+        tab_id, APIPermission::kTab);
   }
 
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
-    return PermissionsData::ForExtension(extension)->HasAPIPermissionForTab(
+    return extension->permissions_data()->HasAPIPermissionForTab(
         SessionID::IdForTab(web_contents), APIPermission::kTab);
   }
 
@@ -370,7 +369,7 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
   EXPECT_TRUE(IsAllowed(extension_with_tab_capture, internal,
                         PERMITTED_CAPTURE_ONLY));
   const PermissionsData* permissions_data =
-      PermissionsData::ForExtension(extension_with_tab_capture);
+      extension_with_tab_capture->permissions_data();
   EXPECT_TRUE(permissions_data->HasAPIPermissionForTab(
       tab_id(), APIPermission::kTabCaptureForTab));
 

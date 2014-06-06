@@ -175,8 +175,7 @@ EphemeralAppLauncher::CreateInstallPrompt() const {
   // Skip the prompt by returning null if the app does not need to display
   // permission warnings.
   extensions::PermissionMessages permissions =
-      extensions::PermissionsData::ForExtension(extension_)
-          ->GetPermissionMessages();
+      extension_->permissions_data()->GetPermissionMessages();
   if (permissions.empty())
     return scoped_ptr<ExtensionInstallPrompt::Prompt>();
 

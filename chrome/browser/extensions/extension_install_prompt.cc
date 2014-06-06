@@ -711,7 +711,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   if (permissions_.get()) {
     if (extension_) {
       const extensions::PermissionsData* permissions_data =
-          extensions::PermissionsData::ForExtension(extension_);
+          extension_->permissions_data();
       prompt_.SetPermissions(permissions_data->GetPermissionMessageStrings());
       prompt_.SetPermissionsDetails(
           permissions_data->GetPermissionMessageDetailsStrings());

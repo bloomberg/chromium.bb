@@ -84,7 +84,7 @@ void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   ExtensionPrefs::Get(profile_)->SetActivePermissions(
       extension->id(), permissions);
-  PermissionsData::ForExtension(extension)->SetActivePermissions(permissions);
+  extension->permissions_data()->SetActivePermissions(permissions);
 }
 
 void PermissionsUpdater::DispatchEvent(

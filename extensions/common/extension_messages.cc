@@ -47,9 +47,8 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   scoped_refptr<Extension> extension =
       Extension::Create(path, location, *manifest, creation_flags, error);
   if (extension.get()) {
-    extensions::PermissionsData::ForExtension(extension)
-        ->SetActivePermissions(new PermissionSet(
-            apis, manifest_permissions, explicit_hosts, scriptable_hosts));
+    extension->permissions_data()->SetActivePermissions(new PermissionSet(
+        apis, manifest_permissions, explicit_hosts, scriptable_hosts));
   }
   return extension;
 }

@@ -1178,14 +1178,14 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
-    if (!PermissionsData::ForExtension(GetExtension())
-             ->CanExecuteScriptOnPage(GetExtension(),
-                                      web_contents_->GetURL(),
-                                      web_contents_->GetURL(),
-                                      tab_id,
-                                      NULL,
-                                      process ? process->GetID() : -1,
-                                      &error_)) {
+    if (!GetExtension()->permissions_data()->CanExecuteScriptOnPage(
+            GetExtension(),
+            web_contents_->GetURL(),
+            web_contents_->GetURL(),
+            tab_id,
+            NULL,
+            process ? process->GetID() : -1,
+            &error_)) {
       return false;
     }
 
@@ -1504,8 +1504,8 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
     return NULL;
   }
 
-  if (!PermissionsData::ForExtension(GetExtension())
-           ->CanCaptureVisiblePage(SessionID::IdForTab(contents), &error_)) {
+  if (!GetExtension()->permissions_data()->CanCaptureVisiblePage(
+          SessionID::IdForTab(contents), &error_)) {
     return NULL;
   }
   return contents;
@@ -1627,8 +1627,8 @@ ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
 bool ExecuteCodeInTabFunction::HasPermission() {
   if (Init() &&
-      PermissionsData::ForExtension(extension_)
-          ->HasAPIPermissionForTab(execute_tab_id_, APIPermission::kTab)) {
+      extension_->permissions_data()->HasAPIPermissionForTab(
+          execute_tab_id_, APIPermission::kTab)) {
     return true;
   }
   return ExtensionFunction::HasPermission();
@@ -1656,14 +1656,14 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
   content::RenderProcessHost* process = contents->GetRenderProcessHost();
-  if (!PermissionsData::ForExtension(GetExtension())
-           ->CanExecuteScriptOnPage(GetExtension(),
-                                    contents->GetURL(),
-                                    contents->GetURL(),
-                                    execute_tab_id_,
-                                    NULL,
-                                    process ? process->GetID() : -1,
-                                    &error_)) {
+  if (!GetExtension()->permissions_data()->CanExecuteScriptOnPage(
+          GetExtension(),
+          contents->GetURL(),
+          contents->GetURL(),
+          execute_tab_id_,
+          NULL,
+          process ? process->GetID() : -1,
+          &error_)) {
     return false;
   }
 

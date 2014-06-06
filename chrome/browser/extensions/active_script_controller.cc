@@ -73,11 +73,10 @@ ActiveScriptController* ActiveScriptController::GetForWebContents(
 bool ActiveScriptController::RequiresUserConsentForScriptInjection(
     const Extension* extension) {
   CHECK(extension);
-  if (!PermissionsData::ForExtension(extension)
-           ->RequiresActionForScriptExecution(
-               extension,
-               SessionID::IdForTab(web_contents()),
-               web_contents()->GetVisibleURL()) ||
+  if (!extension->permissions_data()->RequiresActionForScriptExecution(
+          extension,
+          SessionID::IdForTab(web_contents()),
+          web_contents()->GetVisibleURL()) ||
       util::AllowedScriptingOnAllUrls(extension->id(),
                                       web_contents()->GetBrowserContext())) {
     return false;

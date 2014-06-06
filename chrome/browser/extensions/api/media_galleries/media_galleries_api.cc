@@ -143,8 +143,7 @@ base::ListValue* ConstructFileSystemList(
 
   MediaGalleriesPermission::CheckParam read_param(
       MediaGalleriesPermission::kReadPermission);
-  const PermissionsData* permissions_data =
-      PermissionsData::ForExtension(extension);
+  const PermissionsData* permissions_data = extension->permissions_data();
   bool has_read_permission = permissions_data->CheckAPIPermissionWithParam(
       APIPermission::kMediaGalleries, &read_param);
   MediaGalleriesPermission::CheckParam copy_to_param(
@@ -211,7 +210,7 @@ bool CheckScanPermission(const extensions::Extension* extension,
   MediaGalleriesPermission::CheckParam scan_param(
       MediaGalleriesPermission::kScanPermission);
   bool has_scan_permission =
-      PermissionsData::ForExtension(extension)->CheckAPIPermissionWithParam(
+      extension->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kMediaGalleries, &scan_param);
   if (!has_scan_permission)
     *error = kNoScanPermission;

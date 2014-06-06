@@ -196,8 +196,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   ASSERT_FALSE(
-      PermissionsData::ForExtension(
-          service->GetExtensionById(last_loaded_extension_id(), false))
+      service->GetExtensionById(last_loaded_extension_id(), false)
+          ->permissions_data()
           ->HasAPIPermissionForTab(
               SessionID::IdForTab(
                   browser()->tab_strip_model()->GetActiveWebContents()),

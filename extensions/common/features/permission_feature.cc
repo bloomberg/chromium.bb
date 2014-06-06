@@ -27,8 +27,7 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   if (!availability.is_available())
     return availability;
 
-  if (extension &&
-      !PermissionsData::ForExtension(extension)->HasAPIPermission(name()))
+  if (extension && !extension->permissions_data()->HasAPIPermission(name()))
     return CreateAvailability(NOT_PRESENT, extension->GetType());
 
   return CreateAvailability(IS_AVAILABLE);

@@ -68,13 +68,13 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptSigninProcess) {
   scoped_refptr<const Extension> extension(CreateTestExtension("a"));
   std::string error;
 
-  EXPECT_TRUE(PermissionsData::ForExtension(extension)->CanExecuteScriptOnPage(
+  EXPECT_TRUE(extension->permissions_data()->CanExecuteScriptOnPage(
       extension, kSigninUrl, kSigninUrl, -1, NULL, -1, &error))
       << error;
   // Pretend we are in the signin process. We should not be able to execute
   // script.
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSigninProcess);
-  EXPECT_FALSE(PermissionsData::ForExtension(extension)->CanExecuteScriptOnPage(
+  EXPECT_FALSE(extension->permissions_data()->CanExecuteScriptOnPage(
       extension, kSigninUrl, kSigninUrl, -1, NULL, -1, &error))
       << error;
 }
@@ -86,7 +86,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   scoped_refptr<const Extension> extension(CreateTestExtension("a"));
   std::string error;
 
-  EXPECT_TRUE(PermissionsData::ForExtension(extension)->CanExecuteScriptOnPage(
+  EXPECT_TRUE(extension->permissions_data()->CanExecuteScriptOnPage(
       extension, kAnyUrl, kAnyUrl, -1, NULL, -1, &error))
       << error;
 
@@ -96,7 +96,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
       CreateTestExtension(extension_misc::kWebStoreAppId));
   extension_dispatcher_->OnLoadedInternal(webstore_extension);
   extension_dispatcher_->OnActivateExtension(extension_misc::kWebStoreAppId);
-  EXPECT_FALSE(PermissionsData::ForExtension(extension)->CanExecuteScriptOnPage(
+  EXPECT_FALSE(extension->permissions_data()->CanExecuteScriptOnPage(
       extension, kAnyUrl, kAnyUrl, -1, NULL, -1, &error))
       << error;
 }

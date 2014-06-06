@@ -74,8 +74,7 @@ TEST_F(BrowserPermissionsPolicyDelegateTest, CanExecuteScriptOnPage) {
 
   // The same call should succeed with a normal process, but fail with a signin
   // process.
-  const PermissionsData* permissions_data =
-      PermissionsData::ForExtension(extension);
+  const PermissionsData* permissions_data = extension->permissions_data();
   EXPECT_TRUE(permissions_data->CanExecuteScriptOnPage(extension,
                                                        kSigninUrl,
                                                        kSigninUrl,

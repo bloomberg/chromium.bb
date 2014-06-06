@@ -136,8 +136,7 @@ void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
     // Ignore any cookie whose domain doesn't match the extension's
     // host permissions.
     GURL cookie_domain_url = GetURLFromCanonicalCookie(*it);
-    if (!PermissionsData::ForExtension(extension)
-             ->HasHostPermission(cookie_domain_url))
+    if (!extension->permissions_data()->HasHostPermission(cookie_domain_url))
       continue;
     // Filter the cookie using the match filter.
     cookies_helpers::MatchFilter filter(details);

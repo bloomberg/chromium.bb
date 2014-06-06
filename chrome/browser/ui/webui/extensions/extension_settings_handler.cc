@@ -260,9 +260,10 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   // - The feature is enabled.
   // - The extension has access to enough urls that we can't just let it run
   //   on those specified in the permissions.
-  bool wants_all_urls = FeatureSwitch::scripts_require_action()->IsEnabled() &&
-                        PermissionsData::ForExtension(extension)
-                            ->RequiresActionForScriptExecution(extension);
+  bool wants_all_urls =
+      FeatureSwitch::scripts_require_action()->IsEnabled() &&
+      extension->permissions_data()->RequiresActionForScriptExecution(
+          extension);
   extension_data->SetBoolean("wantsAllUrls", wants_all_urls);
   extension_data->SetBoolean(
       "allowAllUrls",

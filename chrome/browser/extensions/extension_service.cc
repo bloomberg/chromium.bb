@@ -979,8 +979,8 @@ void ExtensionService::RecordPermissionMessagesHistogram(
       PermissionMessage::kEnumBoundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
-  PermissionMessages permissions = extensions::PermissionsData::ForExtension(
-                                       extension)->GetPermissionMessages();
+  PermissionMessages permissions =
+      extension->permissions_data()->GetPermissionMessages();
   if (permissions.empty()) {
     counter->Add(PermissionMessage::kNone);
   } else {
@@ -1044,7 +1044,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   UpdateActiveExtensionsInCrashReporter();
 
   const extensions::PermissionsData* permissions_data =
-      extensions::PermissionsData::ForExtension(extension);
+      extension->permissions_data();
 
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the FaviconSource is registered with the

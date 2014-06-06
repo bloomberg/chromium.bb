@@ -2508,7 +2508,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
       const Extension* extension = extension_set->GetByID(url.host());
       if (extension) {
         const extensions::PermissionsData* permissions_data =
-            extensions::PermissionsData::ForExtension(extension);
+            extension->permissions_data();
         if (params) {
           extensions::SocketPermission::CheckParam check_params(
               params->type, params->host, params->port);
