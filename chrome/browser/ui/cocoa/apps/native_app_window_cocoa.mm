@@ -46,6 +46,7 @@ using apps::AppWindow;
 
 @interface NSWindow (NSPrivateApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
+- (BOOL)_isTitleHidden;
 @end
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
@@ -223,6 +224,13 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 @interface ShellNSWindow : ChromeEventProcessingWindow
 @end
 @implementation ShellNSWindow
+
+// Similar to ChromeBrowserWindow, don't draw the title, but allow it to be seen
+// in menus, Expose, etc.
+- (BOOL)_isTitleHidden {
+  return YES;
+}
+
 @end
 
 @interface ShellCustomFrameNSWindow : ShellNSWindow {
