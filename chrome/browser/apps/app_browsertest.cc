@@ -750,8 +750,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        AppWindowAdjustBoundsToBeVisibleOnScreen) {
   // TODO(benwells): Remove this logging once flakiness has been observed.
   // See http://crbug.com/377754.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+
   LOG(WARNING) << "Loading minimal app";
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+
   LOG(WARNING) << "Creating window";
   AppWindow* window = CreateAppWindow(extension);
 
