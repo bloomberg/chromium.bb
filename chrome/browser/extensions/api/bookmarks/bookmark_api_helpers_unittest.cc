@@ -7,10 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -22,12 +26,19 @@ namespace bookmark_api_helpers {
 
 class ExtensionBookmarksTest : public testing::Test {
  public:
+  ExtensionBookmarksTest() : client_(NULL), model_(NULL), folder_(NULL) {}
+
   virtual void SetUp() OVERRIDE {
-    model_ = client_.CreateModel(false);
+    profile_.CreateBookmarkModel(false);
+    client_ =
+        BookmarkModelFactory::GetChromeBookmarkClientForProfile(&profile_);
+    model_ = client_->model();
+    test::WaitForBookmarkModelToLoad(model_);
+
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
-                     GURL("http://www.reddit.com"));
+                   GURL("http://www.reddit.com"));
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("News"),
-                     GURL("http://www.foxnews.com"));
+                   GURL("http://www.foxnews.com"));
     folder_ = model_->AddFolder(
         model_->other_node(), 0, base::ASCIIToUTF16("outer folder"));
     model_->AddFolder(folder_, 0, base::ASCIIToUTF16("inner folder 1"));
@@ -38,10 +49,13 @@ class ExtensionBookmarksTest : public testing::Test {
         folder_, 0, base::ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
   }
 
-  test::TestBookmarkClient client_;
-  scoped_ptr<BookmarkModel> model_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+  ChromeBookmarkClient* client_;
+  BookmarkModel* model_;
   const BookmarkNode* folder_;
 };
+
 TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
   scoped_ptr<BookmarkTreeNode> tree(
       GetBookmarkTreeNode(model_->other_node(),
@@ -78,6 +92,43 @@ TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
   linked_ptr<BookmarkTreeNode> inner_folder = tree->children->at(1);
   ASSERT_TRUE(inner_folder.get());
   ASSERT_EQ("inner folder 1", inner_folder->title);
+}
+
+TEST_F(ExtensionBookmarksTest, RemoveNodeInvalidId) {
+  int64 invalid_id = model_->next_node_id();
+  std::string error;
+  EXPECT_FALSE(RemoveNode(client_, invalid_id, true, &error));
+  EXPECT_EQ(keys::kNoNodeError, error);
+}
+
+TEST_F(ExtensionBookmarksTest, RemoveNodePermanent) {
+  std::string error;
+  EXPECT_FALSE(RemoveNode(client_, model_->other_node()->id(), true, &error));
+  EXPECT_EQ(keys::kModifySpecialError, error);
+}
+
+TEST_F(ExtensionBookmarksTest, RemoveNodeManaged) {
+  const BookmarkNode* managed_bookmark =
+      model_->AddURL(client_->managed_node(),
+                     0,
+                     base::ASCIIToUTF16("Chromium"),
+                     GURL("http://www.chromium.org"));
+  std::string error;
+  EXPECT_FALSE(RemoveNode(client_, managed_bookmark->id(), true, &error));
+  EXPECT_EQ(keys::kModifyManagedError, error);
+}
+
+TEST_F(ExtensionBookmarksTest, RemoveNodeNotRecursive) {
+  std::string error;
+  EXPECT_FALSE(RemoveNode(client_, folder_->id(), false, &error));
+  EXPECT_EQ(keys::kFolderNotEmptyError, error);
+}
+
+TEST_F(ExtensionBookmarksTest, RemoveNodeRecursive) {
+  EXPECT_EQ(3, model_->other_node()->child_count());
+  std::string error;
+  EXPECT_TRUE(RemoveNode(client_, folder_->id(), true, &error));
+  EXPECT_EQ(2, model_->other_node()->child_count());
 }
 
 }  // namespace bookmark_api_helpers

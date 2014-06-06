@@ -12,7 +12,13 @@
 var expected = [
   {"children": [
       {children:[], id:"1", parentId:"0", index:0, title:"Bookmarks bar"},
-      {children:[], id:"2", parentId:"0", index:1, title:"Other bookmarks"}
+      {children:[], id:"2", parentId:"0", index:1, title:"Other bookmarks"},
+      {id:"4", parentId:"0", index:3, title:"Managed bookmarks", children:[
+          {id:"5", parentId:"4", index:0, title:"Managed Bookmark",
+           url: "http://www.chromium.org/"},
+          {id:"6", parentId:"4", index:1, title:"Managed Folder", children:[]}
+        ]
+      }
     ],
    id:"0", title:""
   }
@@ -130,6 +136,10 @@ chrome.test.runTests([
     chrome.bookmarks.get("1", pass(function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
+    chrome.bookmarks.get("5", pass(function(results) {
+      chrome.test.assertTrue(compareNode(
+          results[0], expected[0].children[2].children[0]));
+    }));
     chrome.bookmarks.get("42", fail("Can't find bookmark for id."));
   },
 
@@ -190,6 +200,12 @@ chrome.test.runTests([
   function createInRoot() {
     const error = "Can't modify the root bookmark folders.";
     var node = {parentId:"0", title:"g404", url:"http://www.google.com/404"};
+    chrome.bookmarks.create(node, fail(error));
+  },
+
+  function createInManaged() {
+    const error = "Can't modify managed bookmarks.";
+    var node = {parentId:"4", title:"g404", url:"http://www.google.com/404"};
     chrome.bookmarks.create(node, fail(error));
   },
 
@@ -286,6 +302,23 @@ chrome.test.runTests([
     }));
   },
 
+  function moveToManaged() {
+    var managed_node = expected[0].children[2];
+    chrome.test.assertEq("4", managed_node.id);
+    const error = "Can't modify managed bookmarks.";
+    chrome.bookmarks.move(node1.id, {parentId:managed_node.id}, fail(error));
+    verifyTreeIsExpected(pass());
+  },
+
+  function moveFromManaged() {
+    var managed_node = expected[0].children[2];
+    var moving_node = managed_node.children[0];
+    var other = expected[0].children[1];
+    const error = "Can't modify managed bookmarks.";
+    chrome.bookmarks.move(moving_node.id, {parentId:other.id}, fail(error));
+    verifyTreeIsExpected(pass());
+  },
+
   function search() {
     chrome.bookmarks.search("baz bar", pass(function(results) {
       // matches node1 & node3
@@ -311,6 +344,11 @@ chrome.test.runTests([
     chrome.bookmarks.search("Bookmark Bar", pass(function(results) {
       // Does not match any node since permanent nodes are stripped from search
       chrome.test.assertEq(0, results.length);
+    }));
+    chrome.bookmarks.search("Managed", pass(function(results) {
+      // Matches the Managed Bookmark and the Managed Folder but not the
+      // managed_node.
+      chrome.test.assertEq(2, results.length);
     }));
   },
 
@@ -353,6 +391,13 @@ chrome.test.runTests([
     }));
   },
 
+  function updateManaged() {
+    var managed_node = expected[0].children[2];
+    var updating_node = managed_node.children[0];
+    const error = "Can't modify managed bookmarks.";
+    chrome.bookmarks.update(updating_node.id, {"title": "New"}, fail(error));
+  },
+
   function remove() {
     var parentId = node1.parentId;
     chrome.test.listenOnce(chrome.bookmarks.onRemoved,
@@ -370,6 +415,13 @@ chrome.test.runTests([
       expected[0].children[1].children[1].children[1].index = 1;
       verifyTreeIsExpected(pass());
     }));
+  },
+
+  function removeManaged() {
+    var managed_node = expected[0].children[2];
+    var removing_node = managed_node.children[0];
+    const error = "Can't modify managed bookmarks.";
+    chrome.bookmarks.remove(removing_node.id, fail(error));
   },
 
   function searchRemoved() {
@@ -394,6 +446,13 @@ chrome.test.runTests([
       expected[0].children[1].children.pop();
       verifyTreeIsExpected(pass());
     }));
+  },
+
+  function removeManagedTree() {
+    var managed_node = expected[0].children[2];
+    var managed_folder = managed_node.children[1];
+    const error = "Can't modify managed bookmarks.";
+    chrome.bookmarks.removeTree(managed_folder.id, fail(error));
   },
 
   function searchRemovedTree() {
@@ -493,7 +552,8 @@ chrome.test.runTests([
     chrome.test.assertTrue(failed, "Calling with 0 should fail");
 
     chrome.bookmarks.getRecent(10000, pass(function(results) {
-      chrome.test.assertEq(3, results.length,
+      // Should include the "Managed Bookmark".
+      chrome.test.assertEq(4, results.length,
                            "Should have gotten all recent bookmarks");
     }));
 

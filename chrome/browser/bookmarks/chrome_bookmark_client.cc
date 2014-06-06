@@ -69,6 +69,15 @@ bool ChromeBookmarkClient::IsDescendantOfManagedNode(const BookmarkNode* node) {
   return node && node->HasAncestor(managed_node_);
 }
 
+bool ChromeBookmarkClient::HasDescendantsOfManagedNode(
+    const std::vector<const BookmarkNode*>& list) {
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (IsDescendantOfManagedNode(list[i]))
+      return true;
+  }
+  return false;
+}
+
 bool ChromeBookmarkClient::PreferTouchIcon() {
 #if !defined(OS_IOS)
   return false;

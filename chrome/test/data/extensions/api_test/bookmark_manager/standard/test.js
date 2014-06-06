@@ -9,6 +9,7 @@ const pass = chrome.test.callbackPass;
 const fail = chrome.test.callbackFail;
 const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
+const assertFalse = chrome.test.assertFalse;
 const bookmarks = chrome.bookmarks;
 const bookmarkManager = chrome.bookmarkManagerPrivate;
 var fooNode, fooNode2, barNode, gooNode, count, emptyFolder, emptyFolder2;
@@ -291,6 +292,26 @@ var tests = [
       assertEq(emptyFolder2.title, emptyFolder.title);
       assertEq(emptyFolder2.url, emptyFolder.url);
       assertEq(emptyFolder2.parentId, emptyFolder.parentId);
+    }));
+  },
+
+  function clipboard6() {
+    // Verify that we can't cut managed folders.
+    bookmarks.getChildren('4', pass(function(result) {
+      assertEq(2, result.length);
+      const error = "Can't modify managed bookmarks.";
+      bookmarkManager.cut([ result[0].id ], fail(error));
+
+      // Copying is fine.
+      bookmarkManager.copy([ result[0].id ], pass());
+
+      // Pasting to a managed folder is not allowed.
+      assertTrue(result[1].url === undefined);
+      bookmarkManager.canPaste(result[1].id, pass(function(result) {
+        assertFalse(result, 'Should not be able to paste to managed folders.');
+      }));
+
+      bookmarkManager.paste(result[1].id, fail(error));
     }));
   },
 

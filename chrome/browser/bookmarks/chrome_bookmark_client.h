@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_CHROME_BOOKMARK_CLIENT_H_
 #define CHROME_BROWSER_BOOKMARKS_CHROME_BOOKMARK_CLIENT_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +38,10 @@ class ChromeBookmarkClient : public BookmarkClient,
 
   // Returns true if the given node belongs to the managed bookmarks tree.
   bool IsDescendantOfManagedNode(const BookmarkNode* node);
+
+  // Returns true if there is at least one managed node in the |list|.
+  bool HasDescendantsOfManagedNode(
+      const std::vector<const BookmarkNode*>& list);
 
   // BookmarkClient:
   virtual bool PreferTouchIcon() OVERRIDE;

@@ -13,6 +13,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class ChromeBookmarkClient;
 
 // Helper functions.
 namespace extensions {
@@ -34,7 +35,7 @@ void AddNodeFoldersOnly(const BookmarkNode* node,
                             api::bookmarks::BookmarkTreeNode> >* nodes,
                         bool recurse);
 
-bool RemoveNode(BookmarkModel* model,
+bool RemoveNode(ChromeBookmarkClient* client,
                 int64 id,
                 bool recursive,
                 std::string* error);

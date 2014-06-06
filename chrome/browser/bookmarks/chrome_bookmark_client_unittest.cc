@@ -266,3 +266,19 @@ TEST_F(ChromeBookmarkClientTest, RemoveAllDoesntRemoveManaged) {
   EXPECT_EQ(0, model_->bookmark_bar_node()->child_count());
   Mock::VerifyAndClearExpectations(&observer_);
 }
+
+TEST_F(ChromeBookmarkClientTest, HasDescendantsOfManagedNode) {
+  const BookmarkNode* user_node = model_->AddURL(model_->other_node(),
+                                                 0,
+                                                 base::ASCIIToUTF16("foo bar"),
+                                                 GURL("http://www.google.com"));
+  const BookmarkNode* managed_node = client_->managed_node()->GetChild(0);
+  ASSERT_TRUE(managed_node);
+
+  std::vector<const BookmarkNode*> nodes;
+  EXPECT_FALSE(client_->HasDescendantsOfManagedNode(nodes));
+  nodes.push_back(user_node);
+  EXPECT_FALSE(client_->HasDescendantsOfManagedNode(nodes));
+  nodes.push_back(managed_node);
+  EXPECT_TRUE(client_->HasDescendantsOfManagedNode(nodes));
+}

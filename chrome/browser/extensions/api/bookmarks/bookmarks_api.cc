@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
@@ -117,6 +118,10 @@ bool BookmarksFunction::RunAsync() {
   return true;
 }
 
+ChromeBookmarkClient* BookmarksFunction::GetChromeBookmarkClient() {
+  return BookmarkModelFactory::GetChromeBookmarkClientForProfile(GetProfile());
+}
+
 bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
                                              int64* id) {
   if (base::StringToInt64(id_string, id))
@@ -154,14 +159,8 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
       return NULL;
   }
   const BookmarkNode* parent = GetBookmarkNodeByID(model, parentId);
-  if (!parent) {
-    error_ = keys::kNoParentError;
+  if (!CanBeModified(parent))
     return NULL;
-  }
-  if (parent->is_root()) {  // Can't create children of the root.
-    error_ = keys::kModifySpecialError;
-    return NULL;
-  }
 
   int index;
   if (!details.index.get()) {  // Optional (defaults to end).
@@ -209,6 +208,23 @@ bool BookmarksFunction::EditBookmarksEnabled() {
     return true;
   error_ = keys::kEditBookmarksDisabled;
   return false;
+}
+
+bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
+  if (!node) {
+    error_ = keys::kNoParentError;
+    return false;
+  }
+  if (node->is_root()) {
+    error_ = keys::kModifySpecialError;
+    return false;
+  }
+  ChromeBookmarkClient* client = GetChromeBookmarkClient();
+  if (client->IsDescendantOfManagedNode(node)) {
+    error_ = keys::kModifyManagedError;
+    return false;
+  }
+  return true;
 }
 
 void BookmarksFunction::BookmarkModelChanged() {
@@ -566,8 +582,8 @@ bool BookmarksRemoveFunction::RunOnReady() {
   if (name() == BookmarksRemoveTreeFunction::function_name())
     recursive = true;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
-  if (!bookmark_api_helpers::RemoveNode(model, id, recursive, &error_))
+  ChromeBookmarkClient* client = GetChromeBookmarkClient();
+  if (!bookmark_api_helpers::RemoveNode(client, id, recursive, &error_))
     return false;
 
   return true;
@@ -630,15 +646,8 @@ bool BookmarksMoveFunction::RunOnReady() {
 
     parent = GetBookmarkNodeByID(model, parentId);
   }
-  if (!parent) {
-    error_ = keys::kNoParentError;
-    // TODO(erikkay) return an error message.
+  if (!CanBeModified(parent) || !CanBeModified(node))
     return false;
-  }
-  if (parent == model->root_node()) {
-    error_ = keys::kModifySpecialError;
-    return false;
-  }
 
   int index;
   if (params->destination.index.get()) {  // Optional (defaults to end).
@@ -695,7 +704,7 @@ bool BookmarksUpdateFunction::RunOnReady() {
   }
 
   const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
-  if (!node)
+  if (!CanBeModified(node))
     return false;
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
@@ -896,7 +905,7 @@ void BookmarksMoveFunction::GetQuotaLimitHeuristics(
 void BookmarksUpdateFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   BookmarksQuotaLimitFactory::Build<BookmarksUpdateFunction>(heuristics);
-};
+}
 
 void BookmarksCreateFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {

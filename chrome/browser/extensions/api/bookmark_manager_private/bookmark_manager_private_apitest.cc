@@ -7,12 +7,15 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/user_prefs/user_prefs.h"
 
@@ -23,6 +26,25 @@
 #define MAYBE_BookmarkManager BookmarkManager
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
+  // Add managed bookmarks.
+  Profile* profile = browser()->profile();
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile);
+  BookmarkModel* model = client->model();
+  test::WaitForBookmarkModelToLoad(model);
+
+  base::ListValue list;
+  base::DictionaryValue* node = new base::DictionaryValue();
+  node->SetString("name", "Managed Bookmark");
+  node->SetString("url", "http://www.chromium.org");
+  list.Append(node);
+  node = new base::DictionaryValue();
+  node->SetString("name", "Managed Folder");
+  node->Set("children", new base::ListValue());
+  list.Append(node);
+  profile->GetPrefs()->Set(prefs::kManagedBookmarks, list);
+  ASSERT_EQ(2, client->managed_node()->child_count());
+
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/standard"))
       << message_;
 }

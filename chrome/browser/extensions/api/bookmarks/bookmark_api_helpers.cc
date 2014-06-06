@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -97,10 +98,11 @@ void AddNodeFoldersOnly(const BookmarkNode* node,
   return AddNodeHelper(node, nodes, recurse, true);
 }
 
-bool RemoveNode(BookmarkModel* model,
+bool RemoveNode(ChromeBookmarkClient* client,
                 int64 id,
                 bool recursive,
                 std::string* error) {
+  BookmarkModel* model = client->model();
   const BookmarkNode* node = GetBookmarkNodeByID(model, id);
   if (!node) {
     *error = keys::kNoNodeError;
@@ -108,6 +110,10 @@ bool RemoveNode(BookmarkModel* model,
   }
   if (model->is_permanent_node(node)) {
     *error = keys::kModifySpecialError;
+    return false;
+  }
+  if (client->IsDescendantOfManagedNode(node)) {
+    *error = keys::kModifyManagedError;
     return false;
   }
   if (node->is_folder() && !node->empty() && !recursive) {
