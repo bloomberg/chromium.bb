@@ -108,7 +108,7 @@ TEST(HTTPParsersTest, parseHTTPHeaderSimple)
 {
     String failureReason;
     AtomicString name, value;
-    EXPECT_EQ(11u, parseHTTPHeader("foo:   bar\r\notherdata", failureReason, name, value));
+    EXPECT_EQ(12u, parseHTTPHeader("foo:   bar\r\notherdata", failureReason, name, value));
     EXPECT_TRUE(failureReason.isEmpty());
     EXPECT_EQ("foo", name.string());
     EXPECT_EQ("bar", value.string());
@@ -126,7 +126,7 @@ TEST(HTTPParsersTest, parseHTTPHeaderEmptyValue)
 {
     String failureReason;
     AtomicString name, value;
-    EXPECT_EQ(6u, parseHTTPHeader("foo: \r\notherdata", failureReason, name, value));
+    EXPECT_EQ(7u, parseHTTPHeader("foo: \r\notherdata", failureReason, name, value));
     EXPECT_TRUE(failureReason.isEmpty());
     EXPECT_EQ("foo", name.string());
     EXPECT_TRUE(value.isEmpty());
@@ -212,12 +212,12 @@ TEST(HTTPParsersTest, parseHTTPHeaderTwoLines)
     String failureReason;
     AtomicString name, value;
 
-    EXPECT_EQ(9u, parseHTTPHeader(data, failureReason, name, value));
+    EXPECT_EQ(10u, parseHTTPHeader(data, failureReason, name, value));
     EXPECT_TRUE(failureReason.isEmpty());
     EXPECT_EQ("foo", name.string());
     EXPECT_EQ("bar", value.string());
 
-    EXPECT_EQ(11u, parseHTTPHeader(data + 10, failureReason, name, value));
+    EXPECT_EQ(12u, parseHTTPHeader(data + 10, failureReason, name, value));
     EXPECT_TRUE(failureReason.isEmpty());
     EXPECT_EQ("hoge", name.string());
     EXPECT_EQ("fuga", value.string());

@@ -668,7 +668,8 @@ static bool parseHTTPHeaderValue(const char* s, size_t start, size_t size, Strin
         return false;
     }
 
-    *position = i + 1;
+    // 2 for strlen("\r\n")
+    *position = i + 2;
     return true;
 }
 

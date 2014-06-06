@@ -452,7 +452,7 @@ const char* WebSocketHandshake::readHTTPHeaders(const char* start, const char* e
     bool sawSecWebSocketAcceptHeaderField = false;
     bool sawSecWebSocketProtocolHeaderField = false;
     const char* p = start;
-    for (; p < end; p++) {
+    while (p < end) {
         size_t consumedLength = parseHTTPHeader(p, end - p, m_failureReason, name, value);
         if (!consumedLength)
             return 0;
