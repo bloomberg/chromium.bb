@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_profile_mac.h"
-#include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -40,6 +39,31 @@
                                 inType:(BluetoothHCITransmitPowerLevelType)type
                  outTransmitPowerLevel:(BluetoothHCITransmitPowerLevel*)level;
 @end
+
+namespace {
+
+void ExtractUuid(IOBluetoothSDPDataElement* service_class_data,
+                 std::string* uuid) {
+  NSArray* inner_elements = [service_class_data getArrayValue];
+  IOBluetoothSDPUUID* sdp_uuid = nil;
+  for (IOBluetoothSDPDataElement* inner_element in inner_elements) {
+    if ([inner_element getTypeDescriptor] == kBluetoothSDPDataElementTypeUUID) {
+      sdp_uuid = [[inner_element getUUIDValue] getUUIDWithLength:16];
+      break;
+    }
+  }
+  if (sdp_uuid != nil) {
+    const uint8* uuid_bytes = reinterpret_cast<const uint8*>([sdp_uuid bytes]);
+    *uuid = base::StringPrintf(
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        uuid_bytes[0], uuid_bytes[1], uuid_bytes[2], uuid_bytes[3],
+        uuid_bytes[4], uuid_bytes[5], uuid_bytes[6], uuid_bytes[7],
+        uuid_bytes[8], uuid_bytes[9], uuid_bytes[10], uuid_bytes[11],
+        uuid_bytes[12], uuid_bytes[13], uuid_bytes[14], uuid_bytes[15]);
+  }
+}
+
+}  // namespace
 
 namespace device {
 
@@ -130,13 +154,18 @@ bool BluetoothDeviceMac::IsConnecting() const {
   return false;
 }
 
-// TODO(keybuk): BluetoothServiceRecord is deprecated; implement this method
-// without using BluetoothServiceRecord.
 BluetoothDevice::UUIDList BluetoothDeviceMac::GetUUIDs() const {
   UUIDList uuids;
-  for (IOBluetoothSDPServiceRecord* service in [device_ services]) {
-    BluetoothServiceRecordMac service_record(service);
-    uuids.push_back(service_record.uuid());
+  for (IOBluetoothSDPServiceRecord* service_record in [device_ services]) {
+    const BluetoothSDPServiceAttributeID service_class_id = 1;
+    IOBluetoothSDPDataElement* service_class_data =
+        [service_record getAttributeDataElement:service_class_id];
+    if ([service_class_data getTypeDescriptor] ==
+            kBluetoothSDPDataElementTypeDataElementSequence) {
+      std::string uuid_str;
+      ExtractUuid(service_class_data, &uuid_str);
+      uuids.push_back(BluetoothUUID(uuid_str));
+    }
   }
   return uuids;
 }

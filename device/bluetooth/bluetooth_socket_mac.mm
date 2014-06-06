@@ -19,8 +19,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
-#include "device/bluetooth/bluetooth_service_record.h"
-#include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "net/base/io_buffer.h"
 
 @interface BluetoothRFCOMMChannelDelegate

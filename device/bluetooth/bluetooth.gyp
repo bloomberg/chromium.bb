@@ -63,8 +63,6 @@
         'bluetooth_remote_gatt_service_chromeos.h',
         'bluetooth_service_record.cc',
         'bluetooth_service_record.h',
-        'bluetooth_service_record_mac.h',
-        'bluetooth_service_record_mac.mm',
         'bluetooth_service_record_win.cc',
         'bluetooth_service_record_win.h',
         'bluetooth_socket.cc',
