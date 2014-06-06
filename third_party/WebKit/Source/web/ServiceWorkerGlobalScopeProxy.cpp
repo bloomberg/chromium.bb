@@ -36,7 +36,6 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/push_messaging/PushEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/InstallPhaseEvent.h"
@@ -95,12 +94,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& messag
     OwnPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports.release(), value));
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebString& data)
-{
-    ASSERT(m_workerGlobalScope);
-    m_workerGlobalScope->dispatchEvent(PushEvent::create(EventTypeNames::push, data));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
