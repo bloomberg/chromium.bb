@@ -110,16 +110,17 @@ namespace WebCore {
             Tag, // Example: div
             Id, // Example: #id
             Class, // example: .class
-            Exact, // Example: E[foo="bar"]
-            Set, // Example: E[foo]
-            List, // Example: E[foo~="bar"]
-            Hyphen, // Example: E[foo|="bar"]
             PseudoClass, // Example:  :nth-child(2)
             PseudoElement, // Example: ::first-line
+            PagePseudoClass, // ??
+            Exact, // Example: E[foo="bar"]
+            Set, // Example: E[foo]
+            Hyphen, // Example: E[foo|="bar"]
+            List, // Example: E[foo~="bar"]
             Contain, // css3: E[foo*="bar"]
             Begin, // css3: E[foo^="bar"]
             End, // css3: E[foo$="bar"]
-            PagePseudoClass // ??
+            FirstAttributeSelectorMatch = Exact,
         };
 
         enum Relation {
@@ -402,13 +403,7 @@ inline bool CSSSelector::isSiblingSelector() const
 
 inline bool CSSSelector::isAttributeSelector() const
 {
-    return m_match == CSSSelector::Exact
-        || m_match ==  CSSSelector::Set
-        || m_match == CSSSelector::List
-        || m_match == CSSSelector::Hyphen
-        || m_match == CSSSelector::Contain
-        || m_match == CSSSelector::Begin
-        || m_match == CSSSelector::End;
+    return m_match >= FirstAttributeSelectorMatch;
 }
 
 inline bool CSSSelector::isContentPseudoElement() const
