@@ -8,6 +8,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
@@ -15,6 +16,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 
@@ -27,17 +30,28 @@ ConflictResolver::ConflictResolver(SyncEngineContext* sync_context)
 
 ConflictResolver::~ConflictResolver() {}
 
-void ConflictResolver::RunExclusive(const SyncStatusCallback& callback) {
+void ConflictResolver::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+  token->InitializeTaskLog("Conflict Resolution");
+
+  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+  blocking_factor->exclusive = true;
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(), blocking_factor.Pass(),
+      base::Bind(&ConflictResolver::RunExclusive,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
   // Conflict resolution should be invoked on clean tree.
   if (metadata_database()->HasDirtyTracker()) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -47,14 +61,13 @@ void ConflictResolver::RunExclusive(const SyncStatusCallback& callback) {
     DCHECK_LT(1u, trackers.size());
     if (!trackers.has_active()) {
       NOTREACHED();
-      callback.Run(SYNC_STATUS_FAILED);
+      SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
       return;
     }
 
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[ConflictResolver] Detected multi-parent trackers "
-              "(active tracker_id=%" PRId64 ")",
-              trackers.active_tracker());
+    token->RecordLog(base::StringPrintf(
+        "Detected multi-parent trackers (active tracker_id=%" PRId64 ")",
+        trackers.active_tracker()));
 
     DCHECK(trackers.has_active());
     for (TrackerIDSet::const_iterator itr = trackers.begin();
@@ -73,12 +86,12 @@ void ConflictResolver::RunExclusive(const SyncStatusCallback& callback) {
           tracker.parent_tracker_id(), &parent_tracker);
       if (!should_success) {
         NOTREACHED();
-        callback.Run(SYNC_STATUS_FAILED);
+        SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
         return;
       }
       parents_to_remove_.push_back(parent_tracker.file_id());
     }
-    DetachFromNonPrimaryParents(callback);
+    DetachFromNonPrimaryParents(token.Pass());
     return;
   }
 
@@ -101,50 +114,52 @@ void ConflictResolver::RunExclusive(const SyncStatusCallback& callback) {
       }
     }
 
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[ConflictResolver] Detected %" PRIuS " conflicting trackers "
-              "(primary tracker_id=%" PRId64 ")",
-              non_primary_file_ids_.size(), primary_tracker_id);
+    token->RecordLog(base::StringPrintf(
+        "Detected %" PRIuS " conflicting trackers "
+        "(primary tracker_id=%" PRId64 ")",
+        non_primary_file_ids_.size(), primary_tracker_id));
 
-    RemoveNonPrimaryFiles(callback);
+    RemoveNonPrimaryFiles(token.Pass());
     return;
   }
 
-  callback.Run(SYNC_STATUS_NO_CONFLICT);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_NO_CONFLICT);
 }
 
 void ConflictResolver::DetachFromNonPrimaryParents(
-    const SyncStatusCallback& callback) {
+    scoped_ptr<SyncTaskToken> token) {
   DCHECK(!parents_to_remove_.empty());
 
   // TODO(tzik): Check if ETag match is available for
   // RemoteResourceFromDirectory.
   std::string parent_folder_id = parents_to_remove_.back();
   parents_to_remove_.pop_back();
+
+  token->RecordLog(base::StringPrintf(
+      "Detach %s from %s",
+      target_file_id_.c_str(), parent_folder_id.c_str()));
+
   drive_service()->RemoveResourceFromDirectory(
       parent_folder_id, target_file_id_,
       base::Bind(&ConflictResolver::DidDetachFromParent,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[ConflictResolver] Detach %s from %s",
-            target_file_id_.c_str(), parent_folder_id.c_str());
+                 base::Passed(&token)));
 }
 
-void ConflictResolver::DidDetachFromParent(const SyncStatusCallback& callback,
+void ConflictResolver::DidDetachFromParent(scoped_ptr<SyncTaskToken> token,
                                            google_apis::GDataErrorCode error) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
   }
 
   if (!parents_to_remove_.empty()) {
-    DetachFromNonPrimaryParents(callback);
+    DetachFromNonPrimaryParents(token.Pass());
     return;
   }
 
-  callback.Run(SYNC_STATUS_OK);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
 }
 
 std::string ConflictResolver::PickPrimaryFile(const TrackerIDSet& trackers) {
@@ -212,8 +227,7 @@ std::string ConflictResolver::PickPrimaryFile(const TrackerIDSet& trackers) {
   return std::string();
 }
 
-void ConflictResolver::RemoveNonPrimaryFiles(
-    const SyncStatusCallback& callback) {
+void ConflictResolver::RemoveNonPrimaryFiles(scoped_ptr<SyncTaskToken> token) {
   DCHECK(!non_primary_file_ids_.empty());
 
   std::string file_id = non_primary_file_ids_.back().first;
@@ -222,8 +236,8 @@ void ConflictResolver::RemoveNonPrimaryFiles(
 
   DCHECK_NE(target_file_id_, file_id);
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[ConflictResolver] Remove non-primary file %s", file_id.c_str());
+  token->RecordLog(base::StringPrintf(
+      "Remove non-primary file %s", file_id.c_str()));
 
   // TODO(tzik): Check if the file is a folder, and merge its contents into
   // the folder identified by |target_file_id_|.
@@ -231,32 +245,32 @@ void ConflictResolver::RemoveNonPrimaryFiles(
       file_id, etag,
       base::Bind(&ConflictResolver::DidRemoveFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, file_id));
+                 base::Passed(&token), file_id));
 }
 
-void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
+void ConflictResolver::DidRemoveFile(scoped_ptr<SyncTaskToken> token,
                                      const std::string& file_id,
                                      google_apis::GDataErrorCode error) {
   if (error == google_apis::HTTP_PRECONDITION ||
       error == google_apis::HTTP_CONFLICT) {
-    UpdateFileMetadata(file_id, callback);
+    UpdateFileMetadata(file_id, token.Pass());
     return;
   }
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
-    callback.Run(status);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
   }
 
   deleted_file_ids_.push_back(file_id);
   if (!non_primary_file_ids_.empty()) {
-    RemoveNonPrimaryFiles(callback);
+    RemoveNonPrimaryFiles(token.Pass());
     return;
   }
 
   metadata_database()->UpdateByDeletedRemoteFileList(
-      deleted_file_ids_, callback);
+      deleted_file_ids_, SyncTaskToken::WrapToCallback(token.Pass()));
 }
 
 bool ConflictResolver::IsContextReady() {
@@ -266,36 +280,39 @@ bool ConflictResolver::IsContextReady() {
 
 void ConflictResolver::UpdateFileMetadata(
     const std::string& file_id,
-    const SyncStatusCallback& callback) {
+    scoped_ptr<SyncTaskToken> token) {
   drive_service()->GetFileResource(
       file_id,
       base::Bind(&ConflictResolver::DidGetRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(), file_id, callback));
+                 weak_ptr_factory_.GetWeakPtr(), file_id,
+                 base::Passed(&token)));
 }
 
 void ConflictResolver::DidGetRemoteMetadata(
     const std::string& file_id,
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::FileResource> entry) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
-    callback.Run(status);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
     return;
   }
 
   if (error != google_apis::HTTP_NOT_FOUND) {
-    metadata_database()->UpdateByDeletedRemoteFile(file_id, callback);
+    metadata_database()->UpdateByDeletedRemoteFile(
+        file_id, SyncTaskToken::WrapToCallback(token.Pass()));
     return;
   }
 
   if (!entry) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
-  metadata_database()->UpdateByFileResource(*entry, callback);
+  metadata_database()->UpdateByFileResource(
+      *entry, SyncTaskToken::WrapToCallback(token.Pass()));
 }
 
 drive::DriveServiceInterface* ConflictResolver::drive_service() {

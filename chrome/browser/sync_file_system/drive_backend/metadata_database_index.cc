@@ -328,7 +328,8 @@ void MetadataDatabaseIndex::AddToPathIndexes(
 
   trackers_by_parent_and_title_[parent][title].Insert(new_tracker);
 
-  if (trackers_by_parent_and_title_[parent][title].size() > 1) {
+  if (trackers_by_parent_and_title_[parent][title].size() > 1 &&
+      !title.empty()) {
     DVLOG_IF(3, !ContainsKey(multi_backing_file_paths_,
                              ParentIDAndTitle(parent, title)))
         << "  Add to multi_backing_file_paths_: " << parent << " " << title;
@@ -369,15 +370,17 @@ void MetadataDatabaseIndex::UpdateInPathIndexes(
 
     (*trackers_by_title)[title].Insert(new_tracker);
 
-    if (trackers_by_parent_and_title_[parent][old_title].size() <= 1) {
+    if (trackers_by_parent_and_title_[parent][old_title].size() <= 1 &&
+        !old_title.empty()) {
       DVLOG_IF(3, ContainsKey(multi_backing_file_paths_,
-                              ParentIDAndTitle(parent, title)))
+                              ParentIDAndTitle(parent, old_title)))
           << "  Remove from multi_backing_file_paths_: "
-          << parent << " " << title;
-      multi_backing_file_paths_.erase(ParentIDAndTitle(parent, title));
+          << parent << " " << old_title;
+      multi_backing_file_paths_.erase(ParentIDAndTitle(parent, old_title));
     }
 
-    if (trackers_by_parent_and_title_[parent][title].size() > 1) {
+    if (trackers_by_parent_and_title_[parent][title].size() > 1 &&
+        !title.empty()) {
       DVLOG_IF(3, !ContainsKey(multi_backing_file_paths_,
                                ParentIDAndTitle(parent, title)))
           << "  Add to multi_backing_file_paths_: " << parent << " " << title;
@@ -407,7 +410,8 @@ void MetadataDatabaseIndex::RemoveFromPathIndexes(
 
   trackers_by_parent_and_title_[parent][title].Erase(tracker_id);
 
-  if (trackers_by_parent_and_title_[parent][title].size() <= 1) {
+  if (trackers_by_parent_and_title_[parent][title].size() <= 1 &&
+      !title.empty()) {
     DVLOG_IF(3, ContainsKey(multi_backing_file_paths_,
                             ParentIDAndTitle(parent, title)))
         << "  Remove from multi_backing_file_paths_: "

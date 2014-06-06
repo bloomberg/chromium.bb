@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -77,6 +78,8 @@ LocalToRemoteSyncer::~LocalToRemoteSyncer() {
 }
 
 void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+  token->InitializeTaskLog("Local -> Remote");
+
   scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
   blocking_factor->exclusive = true;
   SyncTaskManager::UpdateBlockingFactor(
@@ -87,24 +90,22 @@ void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 
 void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Local -> Remote] Context not ready.");
+    token->RecordLog("Context not ready.");
     NOTREACHED();
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Local -> Remote] Start: %s on %s@%s %s",
-            local_change_.DebugString().c_str(),
-            url_.path().AsUTF8Unsafe().c_str(),
-            url_.origin().host().c_str(),
-            local_is_missing_ ? "(missing)" : "");
+  token->RecordLog(base::StringPrintf(
+      "Start: %s on %s@%s %s",
+      local_change_.DebugString().c_str(),
+      url_.path().AsUTF8Unsafe().c_str(),
+      url_.origin().host().c_str(),
+      local_is_missing_ ? "(missing)" : ""));
 
   if (local_is_missing_ && !local_change_.IsDelete()) {
     // Stray file, we can just return.
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Local -> Remote]: Missing file for non-delete change");
+    token->RecordLog("Missing file for non-delete change.");
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
     return;
   }
@@ -118,8 +119,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
           app_id, path,
           active_ancestor_tracker.get(), &active_ancestor_path)) {
     // The app is disabled or not registered.
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Local -> Remote]: App is disabled or not registered");
+    token->RecordLog("App is disabled or not registered");
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
@@ -139,8 +139,10 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     missing_entries = path;
   } else if (active_ancestor_path != path) {
     if (!active_ancestor_path.AppendRelativePath(path, &missing_entries)) {
-      NOTREACHED() << "[Local -> Remote]: Detected invalid ancestor: "
-                   << active_ancestor_path.value();
+      NOTREACHED();
+      token->RecordLog(base::StringPrintf(
+          "Detected invalid ancestor: %s",
+          active_ancestor_path.value().c_str()));
       SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
       return;
     }
@@ -151,8 +153,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
 
   if (!missing_components.empty()) {
     if (local_is_missing_) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Local -> Remote]: Both local and remote are marked missing");
+      token->RecordLog("Both local and remote are marked missing");
       // !IsDelete() but SYNC_FILE_TYPE_UNKNOWN could happen when a file is
       // deleted by recursive deletion (which is not recorded by tracker)
       // but there're remaining changes for the same file in the tracker.
@@ -164,19 +165,16 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     }
   }
 
-  SyncStatusCallback callback = base::Bind(
-      &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(&token));
-
   if (missing_components.size() > 1) {
     // The original target doesn't have remote file and parent.
     // Try creating the parent first.
     if (active_ancestor_details.file_kind() == FILE_KIND_FOLDER) {
       remote_parent_folder_tracker_ = active_ancestor_tracker.Pass();
       target_path_ = active_ancestor_path.Append(missing_components[0]);
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Local -> Remote]: Detected missing parent folder.");
-      CreateRemoteFolder(callback);
+      token->RecordLog("Detected missing parent folder.");
+      CreateRemoteFolder(base::Bind(
+          &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(&token)));
       return;
     }
 
@@ -186,11 +184,12 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
                         active_ancestor_tracker->parent_tracker_id());
     remote_file_tracker_ = active_ancestor_tracker.Pass();
     target_path_ = active_ancestor_path;
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Local -> Remote]: Detected non-folder file in its path.");
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                callback));
+    token->RecordLog("Detected non-folder file in its path.");
+    DeleteRemoteFile(base::Bind(
+        &LocalToRemoteSyncer::DidDeleteForCreateFolder,
+        weak_ptr_factory_.GetWeakPtr(),
+        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token))));
     return;
   }
 
@@ -204,16 +203,20 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     DCHECK(target_path_ == active_ancestor_path);
 
     if (remote_file_tracker_->dirty()) {
-      util::Log(logging::LOG_VERBOSE, FROM_HERE,
-                "[Local -> Remote]: Detected conflicting dirty tracker:%"
-                PRId64, remote_file_tracker_->tracker_id());
+      token->RecordLog(base::StringPrintf(
+          "Detected conflicting dirty tracker:%" PRId64,
+           remote_file_tracker_->tracker_id()));
       // Both local and remote file has pending modification.
-      HandleConflict(callback);
+      HandleConflict(base::Bind(
+          &LocalToRemoteSyncer::SyncCompleted,
+          weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
       return;
     }
 
     // Non-conflicting file/folder update case.
-    HandleExistingRemoteFile(callback);
+    HandleExistingRemoteFile(base::Bind(
+        &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
+        base::Passed(&token)));
     return;
   }
 
@@ -226,14 +229,17 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   target_path_ = url_.path();
   DCHECK(target_path_ == active_ancestor_path.Append(missing_components[0]));
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Local -> Remote]: Detected a new file.");
-    UploadNewFile(callback);
+    token->RecordLog("Detected a new file.");
+    UploadNewFile(base::Bind(
+        &LocalToRemoteSyncer::SyncCompleted,
+        weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
     return;
   }
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Local -> Remote]: Detected a new folder.");
-  CreateRemoteFolder(callback);
+
+  token->RecordLog("Detected a new folder.");
+  CreateRemoteFolder(base::Bind(
+      &LocalToRemoteSyncer::SyncCompleted,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,

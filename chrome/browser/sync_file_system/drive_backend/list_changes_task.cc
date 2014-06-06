@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -31,14 +32,11 @@ ListChangesTask::~ListChangesTask() {
 }
 
 void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Start.");
+  token->InitializeTaskLog("List Changes");
 
   if (!IsContextReady()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Changes] Failed to get required service.");
-    RunSoon(FROM_HERE, base::Bind(&SyncTaskManager::NotifyTaskDone,
-                                  base::Passed(&token),
-                                  SYNC_STATUS_FAILED));
+    token->RecordLog("Failed to get required service.");
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -62,8 +60,7 @@ void ListChangesTask::DidListChanges(
     scoped_ptr<google_apis::ChangeList> change_list) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Changes] Failed to fetch change list.");
+    token->RecordLog("Failed to fetch change list.");
     SyncTaskManager::NotifyTaskDone(
         token.Pass(), SYNC_STATUS_NETWORK_ERROR);
     return;
@@ -71,10 +68,8 @@ void ListChangesTask::DidListChanges(
 
   if (!change_list) {
     NOTREACHED();
-    util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Changes] Got invalid change list.");
-    SyncTaskManager::NotifyTaskDone(
-        token.Pass(), SYNC_STATUS_FAILED);
+    token->RecordLog("Got invalid change list.");
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -96,7 +91,7 @@ void ListChangesTask::DidListChanges(
   }
 
   if (change_list_.empty()) {
-    util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Got no change.");
+    token->RecordLog("Got no change.");
     SyncTaskManager::NotifyTaskDone(
         token.Pass(), SYNC_STATUS_NO_CHANGE_TO_SYNC);
     return;
@@ -114,9 +109,10 @@ void ListChangesTask::DidListChanges(
 
 void ListChangesTask::CheckInChangeList(int64 largest_change_id,
                                         scoped_ptr<SyncTaskToken> token) {
-  util::Log(logging::LOG_VERBOSE, FROM_HERE,
-            "[Changes] Got %" PRIuS " changes, updating MetadataDatabase.",
-            change_list_.size());
+  token->RecordLog(base::StringPrintf(
+      "Got %" PRIuS " changes, updating MetadataDatabase.",
+      change_list_.size()));
+
   metadata_database()->UpdateByChangeList(
       largest_change_id,
       change_list_.Pass(),

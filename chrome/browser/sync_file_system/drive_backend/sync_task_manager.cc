@@ -208,8 +208,12 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
     token->clear_blocking_factor();
   }
 
-  if (client_)
-    client_->RecordTaskLog(token->PassTaskLog());
+  if (client_) {
+    if (token->has_task_log()) {
+      token->FinalizeTaskLog(SyncStatusCodeToString(status));
+      client_->RecordTaskLog(token->PassTaskLog());
+    }
+  }
 
   scoped_ptr<SyncTask> task;
   SyncStatusCallback callback = token->callback();
@@ -246,6 +250,7 @@ void SyncTaskManager::UpdateBlockingFactorBody(
   if (!maximum_background_task_) {
     DCHECK(foreground_task_token);
     DCHECK(!background_task_token);
+    foreground_task_token->SetTaskLog(task_log.Pass());
     continuation.Run(foreground_task_token.Pass());
     return;
   }

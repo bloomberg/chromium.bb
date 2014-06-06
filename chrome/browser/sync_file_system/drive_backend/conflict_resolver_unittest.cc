@@ -215,7 +215,8 @@ class ConflictResolverTest : public testing::Test {
   SyncStatusCode RunConflictResolver() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     ConflictResolver resolver(context_.get());
-    resolver.RunExclusive(CreateResultReceiver(&status));
+    resolver.RunPreflight(SyncTaskToken::CreateForTesting(
+        CreateResultReceiver(&status)));
     base::RunLoop().RunUntilIdle();
     return status;
   }

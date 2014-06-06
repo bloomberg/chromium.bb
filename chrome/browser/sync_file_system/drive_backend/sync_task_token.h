@@ -58,6 +58,7 @@ class SyncTaskToken {
   void FinalizeTaskLog(const std::string& result_description);
   void RecordLog(const std::string& message);
 
+  bool has_task_log() const { return task_log_; }
   void SetTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log);
   scoped_ptr<TaskLogger::TaskLog> PassTaskLog();
 
