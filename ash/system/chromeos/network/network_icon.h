@@ -34,6 +34,13 @@ ASH_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
+// Similar to GetImageForNetwork but returns the cached image url based on
+// |scale_factor| instead.
+ASH_EXPORT std::string GetImageUrlForNetwork(
+    const chromeos::NetworkState* network,
+    IconType icon_type,
+    float scale_factor);
+
 // Gets the fulls strength image for a connected network type.
 ASH_EXPORT gfx::ImageSkia GetImageForConnectedNetwork(
     IconType icon_type,
@@ -48,6 +55,12 @@ ASH_EXPORT gfx::ImageSkia GetImageForConnectingNetwork(
 ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedNetwork(
     IconType icon_type,
     const std::string& network_type);
+
+// Gets a url representing the image for a disconnected network type.
+ASH_EXPORT std::string GetImageUrlForDisconnectedNetwork(
+    IconType icon_type,
+    const std::string& network_type,
+    float scale_factor);
 
 // Returns the label for |network| based on |icon_type|. |network| can be NULL.
 ASH_EXPORT base::string16 GetLabelForNetwork(

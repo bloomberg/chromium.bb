@@ -312,13 +312,8 @@ bool HasPolicyForNetwork(const NetworkState* network,
 }
 
 void SetCommonNetworkInfo(const ManagedState* state,
-                          const gfx::ImageSkia& icon,
-                          float icon_scale_factor,
+                          const std::string& icon_url,
                           base::DictionaryValue* network_info) {
-  gfx::ImageSkiaRep image_rep =
-      icon.GetRepresentation(icon_scale_factor);
-  std::string icon_url =
-      icon.isNull() ? "" : webui::GetBitmapDataUrl(image_rep.sk_bitmap());
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
 
   std::string name = state->name();
@@ -347,9 +342,9 @@ base::DictionaryValue* BuildNetworkDictionary(
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
                            HasPolicyForNetwork(network, profile_prefs));
 
-  gfx::ImageSkia icon = ash::network_icon::GetImageForNetwork(
-      network, ash::network_icon::ICON_TYPE_LIST);
-  SetCommonNetworkInfo(network, icon, icon_scale_factor, network_info.get());
+  std::string icon_url = ash::network_icon::GetImageUrlForNetwork(
+      network, ash::network_icon::ICON_TYPE_LIST, icon_scale_factor);
+  SetCommonNetworkInfo(network, icon_url, network_info.get());
   return network_info.release();
 }
 
@@ -364,9 +359,9 @@ base::DictionaryValue* BuildFavoriteDictionary(
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
                            HasPolicyForFavorite(favorite, profile_prefs));
 
-  gfx::ImageSkia icon = ash::network_icon::GetImageForDisconnectedNetwork(
-      ash::network_icon::ICON_TYPE_LIST, favorite->type());
-  SetCommonNetworkInfo(favorite, icon, icon_scale_factor, network_info.get());
+  std::string icon_url = ash::network_icon::GetImageUrlForDisconnectedNetwork(
+      ash::network_icon::ICON_TYPE_LIST, favorite->type(), icon_scale_factor);
+  SetCommonNetworkInfo(favorite, icon_url, network_info.get());
   return network_info.release();
 }
 
