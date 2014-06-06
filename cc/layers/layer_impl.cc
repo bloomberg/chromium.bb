@@ -635,6 +635,7 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   result->Set("DrawTransform", list);
 
   result->SetBoolean("DrawsContent", draws_content_);
+  result->SetBoolean("Is3DSorted", is_3d_sorted_);
   result->SetDouble("Opacity", opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
 
