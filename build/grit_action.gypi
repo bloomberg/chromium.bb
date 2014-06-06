@@ -10,7 +10,7 @@
 
 # It would be really nice to do this with a rule instead of actions, but it
 # would need to determine inputs and outputs via grit_info on a per-file
-# basis. GYP rules don’t currently support that. They could be extended to
+# basis. GYP rules don't currently support that. They could be extended to
 # do this, but then every generator would need to be updated to handle this.
 
 {
