@@ -110,7 +110,7 @@ static void parseKeySplinesInternal(const String& string, Vector<UnitBezier>& re
         }
 
         float posD = 0;
-        if (!parseNumber(ptr, end, posD, DisallowWhitespace)) {
+        if (!parseNumber(ptr, end, posD, false)) {
             result.clear();
             return;
         }

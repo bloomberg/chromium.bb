@@ -83,7 +83,7 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, Exc
     clear();
     while (ptr < end) {
         const CharType* start = ptr;
-        while (ptr < end && *ptr != ',' && !isHTMLSpace<CharType>(*ptr))
+        while (ptr < end && *ptr != ',' && !isSVGSpace(*ptr))
             ptr++;
         if (ptr == start)
             break;

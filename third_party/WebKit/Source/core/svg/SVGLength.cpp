@@ -73,41 +73,32 @@ SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
     if (ptr == end)
         return LengthTypeNumber;
 
-    SVGLengthType type = LengthTypeUnknown;
-    const CharType firstChar = *ptr++;
+    const UChar firstChar = *ptr;
 
-    if (firstChar == '%') {
-        type = LengthTypePercentage;
-    } else if (isHTMLSpace<CharType>(firstChar)) {
-        type = LengthTypeNumber;
-    } else if (ptr < end) {
-        const CharType secondChar = *ptr++;
+    if (++ptr == end)
+        return firstChar == '%' ? LengthTypePercentage : LengthTypeUnknown;
 
-        if (firstChar == 'p') {
-            if (secondChar == 'x')
-                type = LengthTypePX;
-            if (secondChar == 't')
-                type = LengthTypePT;
-            if (secondChar == 'c')
-                type = LengthTypePC;
-        } else if (firstChar == 'e') {
-            if (secondChar == 'm')
-                type = LengthTypeEMS;
-            if (secondChar == 'x')
-                type = LengthTypeEXS;
-        } else if (firstChar == 'c' && secondChar == 'm') {
-            type = LengthTypeCM;
-        } else if (firstChar == 'm' && secondChar == 'm') {
-            type = LengthTypeMM;
-        } else if (firstChar == 'i' && secondChar == 'n') {
-            type = LengthTypeIN;
-        } else if (isHTMLSpace<CharType>(firstChar) && isHTMLSpace<CharType>(secondChar)) {
-            type = LengthTypeNumber;
-        }
-    }
+    const UChar secondChar = *ptr;
 
-    if (!skipOptionalSVGSpaces(ptr, end))
-        return type;
+    if (++ptr != end)
+        return LengthTypeUnknown;
+
+    if (firstChar == 'e' && secondChar == 'm')
+        return LengthTypeEMS;
+    if (firstChar == 'e' && secondChar == 'x')
+        return LengthTypeEXS;
+    if (firstChar == 'p' && secondChar == 'x')
+        return LengthTypePX;
+    if (firstChar == 'c' && secondChar == 'm')
+        return LengthTypeCM;
+    if (firstChar == 'm' && secondChar == 'm')
+        return LengthTypeMM;
+    if (firstChar == 'i' && secondChar == 'n')
+        return LengthTypeIN;
+    if (firstChar == 'p' && secondChar == 't')
+        return LengthTypePT;
+    if (firstChar == 'p' && secondChar == 'c')
+        return LengthTypePC;
 
     return LengthTypeUnknown;
 }
@@ -198,7 +189,7 @@ static bool parseValueInternal(const String& string, float& convertedNumber, SVG
     const CharType* ptr = string.getCharacters<CharType>();
     const CharType* end = ptr + string.length();
 
-    if (!parseNumber(ptr, end, convertedNumber, AllowLeadingWhitespace))
+    if (!parseNumber(ptr, end, convertedNumber, false))
         return false;
 
     type = stringToLengthType(ptr, end);

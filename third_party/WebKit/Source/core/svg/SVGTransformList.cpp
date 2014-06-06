@@ -93,7 +93,7 @@ int parseTransformParamList(const CharType*& ptr, const CharType* end, float* va
 
     skipOptionalSVGSpaces(ptr, end);
     while (parsedParams < maxPossibleParams) {
-        if (!parseNumber(ptr, end, values[parsedParams], DisallowWhitespace))
+        if (!parseNumber(ptr, end, values[parsedParams], false))
             break;
 
         ++parsedParams;

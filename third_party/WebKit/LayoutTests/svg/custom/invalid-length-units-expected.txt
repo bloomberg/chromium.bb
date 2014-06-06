@@ -2,6 +2,8 @@ CONSOLE ERROR: Error: Invalid value for <rect> attribute x=" "
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="foo"
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10foo"
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="px"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10px "
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10% "
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 % "
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 %"
 CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 px "
@@ -16,8 +18,8 @@ PASS rect.setAttribute('x', ' '); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', 'foo'); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', '10foo'); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', 'px'); rect.x.baseVal.valueAsString is '0'
-PASS rect.setAttribute('x', '10px '); rect.x.baseVal.valueAsString is '10px'
-PASS rect.setAttribute('x', '10% '); rect.x.baseVal.valueAsString is '10%'
+PASS rect.setAttribute('x', '10px '); rect.x.baseVal.valueAsString is '0'
+PASS rect.setAttribute('x', '10% '); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', '10 % '); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', '10 %'); rect.x.baseVal.valueAsString is '0'
 PASS rect.setAttribute('x', '10 px '); rect.x.baseVal.valueAsString is '0'

@@ -74,7 +74,7 @@ void SVGPoint::parse(const CharType*& ptr, const CharType* end, ExceptionState& 
 
     float x = 0.0f;
     float y = 0.0f;
-    bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, DisallowWhitespace);
+    bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, false);
 
     if (!valid) {
         exceptionState.throwDOMException(SyntaxError, "Problem parsing point \"" + String(start, end - start) + "\"");

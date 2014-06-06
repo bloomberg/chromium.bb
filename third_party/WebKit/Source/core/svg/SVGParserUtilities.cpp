@@ -43,7 +43,7 @@ static inline bool isValidRange(const FloatType& x)
 // at a higher precision internally, without any unnecessary runtime cost or code
 // complexity.
 template <typename CharType, typename FloatType>
-static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatType& number, WhitespaceMode mode)
+static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatType& number, bool skip)
 {
     FloatType integer, decimal, frac, exponent;
     int sign, expsign;
@@ -55,9 +55,6 @@ static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatT
     decimal = 0;
     sign = 1;
     expsign = 1;
-
-    if (mode & AllowLeadingWhitespace)
-        skipOptionalSVGSpaces(ptr, end);
 
     // read the sign
     if (ptr < end && *ptr == '+')
@@ -139,7 +136,7 @@ static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatT
     if (start == ptr)
         return false;
 
-    if (mode & AllowTrailingWhitespace)
+    if (skip)
         skipOptionalSVGSpacesOrDelimiter(ptr, end);
 
     return true;
@@ -150,21 +147,21 @@ bool parseSVGNumber(CharType* begin, size_t length, double& number)
 {
     const CharType* ptr = begin;
     const CharType* end = ptr + length;
-    return genericParseNumber(ptr, end, number, AllowLeadingAndTrailingWhitespace);
+    return genericParseNumber(ptr, end, number, false);
 }
 
 // Explicitly instantiate the two flavors of parseSVGNumber() to satisfy external callers
 template bool parseSVGNumber(LChar* begin, size_t length, double&);
 template bool parseSVGNumber(UChar* begin, size_t length, double&);
 
-bool parseNumber(const LChar*& ptr, const LChar* end, float& number, WhitespaceMode mode)
+bool parseNumber(const LChar*& ptr, const LChar* end, float& number, bool skip)
 {
-    return genericParseNumber(ptr, end, number, mode);
+    return genericParseNumber(ptr, end, number, skip);
 }
 
-bool parseNumber(const UChar*& ptr, const UChar* end, float& number, WhitespaceMode mode)
+bool parseNumber(const UChar*& ptr, const UChar* end, float& number, bool skip)
 {
-    return genericParseNumber(ptr, end, number, mode);
+    return genericParseNumber(ptr, end, number, skip);
 }
 
 // only used to parse largeArcFlag and sweepFlag which must be a "0" or "1"
@@ -205,7 +202,7 @@ static bool genericParseNumberOptionalNumber(const CharType*& ptr, const CharTyp
 
     if (ptr == end)
         y = x;
-    else if (!parseNumber(ptr, end, y, AllowLeadingAndTrailingWhitespace))
+    else if (!parseNumber(ptr, end, y, false))
         return false;
 
     return ptr == end;
@@ -215,7 +212,6 @@ bool parseNumberOptionalNumber(const String& string, float& x, float& y)
 {
     if (string.isEmpty())
         return false;
-
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
@@ -224,43 +220,6 @@ bool parseNumberOptionalNumber(const String& string, float& x, float& y)
     const UChar* ptr = string.characters16();
     const UChar* end = ptr + string.length();
     return genericParseNumberOptionalNumber(ptr, end, x, y);
-}
-
-template<typename CharType>
-bool genericParseNumberOrPercentage(const CharType*& ptr, const CharType* end, float& number)
-{
-    if (genericParseNumber(ptr, end, number, AllowLeadingWhitespace)) {
-        if (ptr == end)
-            return true;
-
-        bool isPercentage = (*ptr == '%');
-        if (isPercentage)
-            ptr++;
-
-        skipOptionalSVGSpaces(ptr, end);
-
-        if (isPercentage)
-            number /= 100.f;
-
-        return ptr == end;
-    }
-
-    return false;
-}
-
-bool parseNumberOrPercentage(const String& string, float& number)
-{
-    if (string.isEmpty())
-        return false;
-
-    if (string.is8Bit()) {
-        const LChar* ptr = string.characters8();
-        const LChar* end = ptr + string.length();
-        return genericParseNumberOrPercentage(ptr, end, number);
-    }
-    const UChar* ptr = string.characters16();
-    const UChar* end = ptr + string.length();
-    return genericParseNumberOrPercentage(ptr, end, number);
 }
 
 template<typename CharType>
@@ -279,7 +238,7 @@ static bool parseGlyphName(const CharType*& ptr, const CharType* end, HashSet<St
 
         // walk backwards from the ; to ignore any whitespace
         const CharType* inputEnd = ptr - 1;
-        while (inputStart < inputEnd && isHTMLSpace<CharType>(*inputEnd))
+        while (inputStart < inputEnd && isSVGSpace(*inputEnd))
             --inputEnd;
 
         values.add(String(inputStart, inputEnd - inputStart + 1));
@@ -431,7 +390,7 @@ static Vector<String> genericParseDelimitedString(const CharType*& ptr, const Ch
 
         // walk backwards from the ; to ignore any whitespace
         const CharType* inputEnd = ptr - 1;
-        while (inputStart < inputEnd && isHTMLSpace<CharType>(*inputEnd))
+        while (inputStart < inputEnd && isSVGSpace(*inputEnd))
             inputEnd--;
 
         values.append(String(inputStart, inputEnd - inputStart + 1));

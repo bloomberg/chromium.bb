@@ -152,27 +152,35 @@ static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr, const Char
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNSPECIFIED;
 
-    SVGAngle::SVGAngleType type = SVGAngle::SVG_ANGLETYPE_UNKNOWN;
-    const CharType firstChar = *ptr++;
+    const CharType firstChar = *ptr;
 
-    if (isHTMLSpace<CharType>(firstChar)) {
-        type = SVGAngle::SVG_ANGLETYPE_UNSPECIFIED;
-    } else if (end - ptr >= 2) {
-        const CharType secondChar = *ptr++;
-        const CharType thirdChar = *ptr++;
-        if (firstChar == 'd' && secondChar == 'e' && thirdChar == 'g') {
-            type = SVGAngle::SVG_ANGLETYPE_DEG;
-        } else if (firstChar == 'r' && secondChar == 'a' && thirdChar == 'd') {
-            type = SVGAngle::SVG_ANGLETYPE_RAD;
-        } else if (ptr != end) {
-            const CharType fourthChar = *ptr++;
-            if (firstChar == 'g' && secondChar == 'r' && thirdChar == 'a' && fourthChar == 'd')
-                type = SVGAngle::SVG_ANGLETYPE_GRAD;
-        }
-    }
+    // If the unit contains only one character, the angle type is unknown.
+    ++ptr;
+    if (ptr == end)
+        return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 
-    if (!skipOptionalSVGSpaces(ptr, end))
-        return type;
+    const CharType secondChar = *ptr;
+
+    // If the unit contains only two characters, the angle type is unknown.
+    ++ptr;
+    if (ptr == end)
+        return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
+
+    const CharType thirdChar = *ptr;
+    if (firstChar == 'd' && secondChar == 'e' && thirdChar == 'g')
+        return SVGAngle::SVG_ANGLETYPE_DEG;
+    if (firstChar == 'r' && secondChar == 'a' && thirdChar == 'd')
+        return SVGAngle::SVG_ANGLETYPE_RAD;
+
+    // If the unit contains three characters, but is not deg or rad, then it's unknown.
+    ++ptr;
+    if (ptr == end)
+        return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
+
+    const CharType fourthChar = *ptr;
+
+    if (firstChar == 'g' && secondChar == 'r' && thirdChar == 'a' && fourthChar == 'd')
+        return SVGAngle::SVG_ANGLETYPE_GRAD;
 
     return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 }
@@ -207,7 +215,7 @@ static bool parseValue(const String& value, float& valueInSpecifiedUnits, SVGAng
     const CharType* ptr = value.getCharacters<CharType>();
     const CharType* end = ptr + value.length();
 
-    if (!parseNumber(ptr, end, valueInSpecifiedUnits, AllowLeadingWhitespace))
+    if (!parseNumber(ptr, end, valueInSpecifiedUnits, false))
         return false;
 
     unitType = stringToAngleType(ptr, end);
