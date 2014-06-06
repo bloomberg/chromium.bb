@@ -31,6 +31,10 @@ class MediaGalleriesDialog {
   // Constructs a platform-specific dialog owned and controlled by |controller|.
   static MediaGalleriesDialog* Create(
       MediaGalleriesDialogController* controller);
+ private:
+  friend class TestMediaGalleriesAddScanResultsFunction;
+
+  virtual void AcceptDialogForTesting() = 0;
 };
 
 // Multiple dialog controllers are based on this interface.

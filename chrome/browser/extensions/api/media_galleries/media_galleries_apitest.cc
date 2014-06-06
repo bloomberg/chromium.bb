@@ -18,7 +18,7 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_scan_result_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -95,11 +95,11 @@ class TestMediaGalleriesAddScanResultsFunction
   virtual ~TestMediaGalleriesAddScanResultsFunction() {}
 
   // Accepts the dialog as soon as it is created.
-  virtual MediaGalleriesScanResultDialogController* MakeDialog(
+  virtual MediaGalleriesScanResultController* MakeDialog(
       content::WebContents* web_contents,
       const extensions::Extension& extension,
       const base::Closure& on_finish) OVERRIDE {
-    MediaGalleriesScanResultDialogController* controller =
+    MediaGalleriesScanResultController* controller =
         extensions::MediaGalleriesAddScanResultsFunction::MakeDialog(
             web_contents, extension, on_finish);
     controller->dialog_->AcceptDialogForTesting();

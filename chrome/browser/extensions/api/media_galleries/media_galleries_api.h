@@ -24,7 +24,7 @@
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
-class MediaGalleriesScanResultDialogController;
+class MediaGalleriesScanResultController;
 
 namespace content {
 class BlobHandle;
@@ -237,7 +237,7 @@ class MediaGalleriesAddScanResultsFunction
   virtual bool RunAsync() OVERRIDE;
 
   // Pulled out for testing.
-  virtual MediaGalleriesScanResultDialogController* MakeDialog(
+  virtual MediaGalleriesScanResultController* MakeDialog(
       content::WebContents* web_contents,
       const extensions::Extension& extension,
       const base::Closure& on_finish);

@@ -109,6 +109,10 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {
 }
 
+void MediaGalleriesDialogCocoa::AcceptDialogForTesting() {
+  OnAcceptClicked();
+}
+
 void MediaGalleriesDialogCocoa::InitDialogControls() {
   main_container_.reset([[NSBox alloc] init]);
   [main_container_ setBoxType:NSBoxCustom];

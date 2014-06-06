@@ -28,7 +28,7 @@
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_scan_result_controller.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -760,14 +760,14 @@ bool MediaGalleriesAddScanResultsFunction::RunAsync() {
       &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
 }
 
-MediaGalleriesScanResultDialogController*
+MediaGalleriesScanResultController*
 MediaGalleriesAddScanResultsFunction::MakeDialog(
     content::WebContents* web_contents,
     const extensions::Extension& extension,
     const base::Closure& on_finish) {
   // Controller will delete itself.
-  return new MediaGalleriesScanResultDialogController(web_contents, extension,
-                                                      on_finish);
+  return new MediaGalleriesScanResultController(web_contents, extension,
+                                                on_finish);
 }
 
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
@@ -775,7 +775,7 @@ void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   const Extension* extension = GetExtension();
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
-  if (MediaGalleriesScanResultDialogController::ScanResultCountForExtension(
+  if (MediaGalleriesScanResultController::ScanResultCountForExtension(
           preferences, extension) == 0) {
     GetAndReturnGalleries();
     return;

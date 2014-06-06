@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller_test_util.h"
 #include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
@@ -35,38 +36,6 @@ std::string GalleryName(const MediaGalleryPrefInfo& gallery) {
   base::string16 name = gallery.GetGalleryDisplayName();
   return base::UTF16ToASCII(name);
 }
-
-class MockMediaGalleriesDialog
-    : public MediaGalleriesDialog {
- public:
-  typedef base::Callback<void(int update_count)> DialogDestroyedCallback;
-
-  explicit MockMediaGalleriesDialog(const DialogDestroyedCallback& callback)
-      : update_count_(0),
-        dialog_destroyed_callback_(callback) {
-  }
-
-  virtual ~MockMediaGalleriesDialog() {
-    dialog_destroyed_callback_.Run(update_count_);
-  }
-
-  // MockMediaGalleriesDialog implementation.
-  virtual void UpdateGalleries() OVERRIDE {
-    update_count_++;
-  }
-
-  // Number of times UpdateResults has been called.
-  int update_count() {
-    return update_count_;
-  }
-
- private:
-  int update_count_;
-
-  DialogDestroyedCallback dialog_destroyed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMediaGalleriesDialog);
-};
 
 }  // namespace
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_CONTROLLER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_CONTROLLER_H_
 
 #include <map>
 #include <set>
@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 
@@ -27,87 +28,50 @@ namespace ui {
 class MenuModel;
 }
 
-class MediaGalleriesScanResultDialogController;
+class MediaGalleriesScanResultController;
 class MediaGalleryContextMenu;
 class Profile;
-
-// The view.
-class MediaGalleriesScanResultDialog {
- public:
-  virtual ~MediaGalleriesScanResultDialog();
-
-  // Tell the dialog to update its display list of scan results.
-  virtual void UpdateResults() = 0;
-
-  // Constructs a platform-specific dialog owned and controlled by |controller|.
-  static MediaGalleriesScanResultDialog* Create(
-      MediaGalleriesScanResultDialogController* controller);
-
- private:
-  friend class TestMediaGalleriesAddScanResultsFunction;
-
-  virtual void AcceptDialogForTesting() = 0;
-};
 
 // The controller is responsible for handling the logic of the dialog and
 // interfacing with the model (i.e., MediaGalleriesPreferences). It shows
 // the dialog and owns itself.
-class MediaGalleriesScanResultDialogController
-    : public storage_monitor::RemovableStorageObserver,
+class MediaGalleriesScanResultController
+    : public MediaGalleriesDialogController,
+      public storage_monitor::RemovableStorageObserver,
       public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
-  struct ScanResult {
-    ScanResult(const MediaGalleryPrefInfo& pref_info, bool selected)
-        : pref_info(pref_info),
-          selected(selected) {
-    }
-    ScanResult() : selected(false) {}
-
-    MediaGalleryPrefInfo pref_info;
-    bool selected;
-  };
-  typedef std::vector<ScanResult> OrderedScanResults;
-
   // |preferences| must be already initialized.
   static size_t ScanResultCountForExtension(
       MediaGalleriesPreferences* preferences,
       const extensions::Extension* extension);
 
   // The constructor creates a dialog controller which owns itself.
-  MediaGalleriesScanResultDialogController(
+  MediaGalleriesScanResultController(
       content::WebContents* web_contents,
       const extensions::Extension& extension,
       const base::Closure& on_finish);
 
-  // The title of the dialog view.
-  base::string16 GetHeader() const;
-
-  // Explanatory text directly below the title.
-  base::string16 GetSubtext() const;
-
-  // Get the scan results and their current selection state.
-  virtual OrderedScanResults GetGalleryList() const;
-
-  // A checkbox beside a scan result was toggled.
-  virtual void DidToggleGalleryId(MediaGalleryPrefId pref_id, bool selected);
-
-  // A folder viewer icon was clicked.
-  virtual void DidClickOpenFolderViewer(MediaGalleryPrefId pref_id) const;
-
-  // The forget command in the context menu was selected.
-  virtual void DidForgetGallery(MediaGalleryPrefId pref_id);
-
-  // The dialog is being deleted.
-  virtual void DialogFinished(bool accepted);
-
-  virtual content::WebContents* web_contents();
-
-  ui::MenuModel* GetContextMenu(MediaGalleryPrefId id);
+  // MediaGalleriesDialogController implementation.
+  virtual base::string16 GetHeader() const OVERRIDE;
+  virtual base::string16 GetSubtext() const OVERRIDE;
+  virtual bool IsAcceptAllowed() const OVERRIDE;
+  virtual bool ShouldShowFolderViewer(const Entry& entry) const OVERRIDE;
+  virtual std::vector<base::string16> GetSectionHeaders() const OVERRIDE;
+  virtual Entries GetSectionEntries(size_t index) const OVERRIDE;
+  virtual base::string16 GetAuxiliaryButtonText() const OVERRIDE;
+  virtual void DidClickAuxiliaryButton() OVERRIDE;
+  virtual void DidToggleEntry(MediaGalleryPrefId id, bool selected) OVERRIDE;
+  virtual void DidClickOpenFolderViewer(MediaGalleryPrefId id) OVERRIDE;
+  virtual void DidForgetEntry(MediaGalleryPrefId id) OVERRIDE;
+  virtual base::string16 GetAcceptButtonText() const OVERRIDE;
+  virtual void DialogFinished(bool accepted) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId id) OVERRIDE;
+  virtual content::WebContents* WebContents() OVERRIDE;
 
  protected:
-  typedef base::Callback<MediaGalleriesScanResultDialog* (
-      MediaGalleriesScanResultDialogController*)> CreateDialogCallback;
-  typedef std::map<MediaGalleryPrefId, ScanResult> ScanResults;
+  typedef base::Callback<MediaGalleriesDialog* (
+      MediaGalleriesDialogController*)> CreateDialogCallback;
+  typedef std::map<MediaGalleryPrefId, Entry> ScanResults;
 
   // Updates |scan_results| from |preferences|. Will not add galleries from
   // |ignore_list| onto |scan_results|.
@@ -118,17 +82,17 @@ class MediaGalleriesScanResultDialogController
       ScanResults* scan_results);
 
   // Used for unit tests.
-  MediaGalleriesScanResultDialogController(
+  MediaGalleriesScanResultController(
       const extensions::Extension& extension,
       MediaGalleriesPreferences* preferences_,
       const CreateDialogCallback& create_dialog_callback,
       const base::Closure& on_finish);
 
-  virtual ~MediaGalleriesScanResultDialogController();
+  virtual ~MediaGalleriesScanResultController();
 
  private:
-  friend class MediaGalleriesScanResultDialogControllerTest;
-  friend class MediaGalleriesScanResultDialogCocoaTest;
+  friend class MediaGalleriesScanResultControllerTest;
+  friend class MediaGalleriesScanResultCocoaTest;
   friend class TestMediaGalleriesAddScanResultsFunction;
 
   // Bottom half of constructor -- called when |preferences_| is initialized.
@@ -190,11 +154,11 @@ class MediaGalleriesScanResultDialogController
   CreateDialogCallback create_dialog_callback_;
 
   // The view that's showing.
-  scoped_ptr<MediaGalleriesScanResultDialog> dialog_;
+  scoped_ptr<MediaGalleriesDialog> dialog_;
 
   scoped_ptr<MediaGalleryContextMenu> context_menu_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultDialogController);
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultController);
 };
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_SCAN_RESULT_CONTROLLER_H_

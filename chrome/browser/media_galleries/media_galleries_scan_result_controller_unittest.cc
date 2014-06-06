@@ -12,8 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller_test_util.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_scan_result_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/storage_monitor/test_storage_monitor.h"
@@ -29,50 +30,9 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-namespace {
-
-class MockMediaGalleriesScanResultDialog
-    : public MediaGalleriesScanResultDialog {
+class MediaGalleriesScanResultControllerTest : public testing::Test {
  public:
-  typedef base::Callback<void(int update_count)> DialogDestroyedCallback;
-
-  explicit MockMediaGalleriesScanResultDialog(
-      const DialogDestroyedCallback& callback)
-      : update_count_(0),
-        dialog_destroyed_callback_(callback) {
-  }
-
-  virtual ~MockMediaGalleriesScanResultDialog() {
-    dialog_destroyed_callback_.Run(update_count_);
-  }
-
-  // MediaGalleriesScanResultDialog implementation.
-  virtual void UpdateResults() OVERRIDE {
-    update_count_++;
-  }
-
-  // Number up times UpdateResults has been called.
-  int update_count() {
-    return update_count_;
-  }
-
- private:
-  // MediaGalleriesScanResultDialog implementation.
-  virtual void AcceptDialogForTesting() OVERRIDE {
-  }
-
-  int update_count_;
-
-  DialogDestroyedCallback dialog_destroyed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMediaGalleriesScanResultDialog);
-};
-
-}  // namespace
-
-class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
- public:
-  MediaGalleriesScanResultDialogControllerTest()
+  MediaGalleriesScanResultControllerTest()
       : dialog_(NULL),
         dialog_update_count_at_destruction_(0),
         controller_(NULL),
@@ -80,7 +40,7 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
         weak_factory_(this) {
   }
 
-  virtual ~MediaGalleriesScanResultDialogControllerTest() {
+  virtual ~MediaGalleriesScanResultControllerTest() {
     EXPECT_FALSE(controller_);
     EXPECT_FALSE(dialog_);
   }
@@ -111,22 +71,26 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
 
   void StartDialog() {
     ASSERT_FALSE(controller_);
-    controller_ = new MediaGalleriesScanResultDialogController(
+    controller_ = new MediaGalleriesScanResultController(
         *extension_.get(),
         gallery_prefs_.get(),
         base::Bind(
-            &MediaGalleriesScanResultDialogControllerTest::CreateMockDialog,
+            &MediaGalleriesScanResultControllerTest::CreateMockDialog,
             base::Unretained(this)),
         base::Bind(
-            &MediaGalleriesScanResultDialogControllerTest::OnControllerDone,
+            &MediaGalleriesScanResultControllerTest::OnControllerDone,
             base::Unretained(this)));
   }
 
-  MediaGalleriesScanResultDialogController* controller() {
+  size_t GetFirstSectionSize() const {
+    return controller()->GetSectionEntries(0).size();
+  }
+
+  MediaGalleriesScanResultController* controller() const {
     return controller_;
   }
 
-  MockMediaGalleriesScanResultDialog* dialog() {
+  MockMediaGalleriesDialog* dialog() {
     return dialog_;
   }
 
@@ -169,12 +133,12 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
   }
 
  private:
-  MediaGalleriesScanResultDialog* CreateMockDialog(
-      MediaGalleriesScanResultDialogController* controller) {
+  MediaGalleriesDialog* CreateMockDialog(
+      MediaGalleriesDialogController* controller) {
     EXPECT_FALSE(dialog_);
     dialog_update_count_at_destruction_ = 0;
-    dialog_ = new MockMediaGalleriesScanResultDialog(base::Bind(
-        &MediaGalleriesScanResultDialogControllerTest::OnDialogDestroyed,
+    dialog_ = new MockMediaGalleriesDialog(base::Bind(
+        &MediaGalleriesScanResultControllerTest::OnDialogDestroyed,
         weak_factory_.GetWeakPtr()));
     return dialog_;
   }
@@ -194,11 +158,11 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
 
   // The dialog is owned by the controller, but this pointer should only be
   // valid while the dialog is live within the controller.
-  MockMediaGalleriesScanResultDialog* dialog_;
+  MockMediaGalleriesDialog* dialog_;
   int dialog_update_count_at_destruction_;
 
   // The controller owns itself.
-  MediaGalleriesScanResultDialogController* controller_;
+  MediaGalleriesScanResultController* controller_;
 
   scoped_refptr<extensions::Extension> extension_;
 
@@ -214,17 +178,16 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
 
-  base::WeakPtrFactory<MediaGalleriesScanResultDialogControllerTest>
-      weak_factory_;
+  base::WeakPtrFactory<MediaGalleriesScanResultControllerTest> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultDialogControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultControllerTest);
 };
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, EmptyDialog) {
+TEST_F(MediaGalleriesScanResultControllerTest, EmptyDialog) {
   StartDialog();
   EXPECT_TRUE(controller());
   EXPECT_TRUE(dialog());
-  EXPECT_EQ(0U, controller()->GetGalleryList().size());
+  EXPECT_EQ(0U, GetFirstSectionSize());
 
   controller()->DialogFinished(true);
   EXPECT_FALSE(controller());
@@ -232,7 +195,7 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, EmptyDialog) {
   EXPECT_EQ(0, dialog_update_count_at_destruction());
 }
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
+TEST_F(MediaGalleriesScanResultControllerTest, AddScanResults) {
   // Start with two scan results.
   MediaGalleryPrefId scan_id = AddScanResult("scan_id", 1, 0, 0);
   MediaGalleryPrefId auto_id =
@@ -241,22 +204,22 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
 
   // Show the dialog, but cancel it.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
+  EXPECT_EQ(2U, GetFirstSectionSize());
   controller()->DialogFinished(false);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Show the dialog, unselect both and accept it.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan_id, false);
-  controller()->DidToggleGalleryId(auto_id, false);
+  EXPECT_EQ(2U, GetFirstSectionSize());
+  controller()->DidToggleEntry(scan_id, false);
+  controller()->DidToggleEntry(auto_id, false);
   controller()->DialogFinished(true);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Show the dialog, leave one selected and accept it.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan_id, false);
+  EXPECT_EQ(2U, GetFirstSectionSize());
+  controller()->DidToggleEntry(scan_id, false);
   controller()->DialogFinished(true);
   MediaGalleryPrefIdSet permitted =
       gallery_prefs()->GalleriesForExtension(*extension());
@@ -265,14 +228,14 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, AddScanResults) {
 
   // Show the dialog, toggle the remaining entry twice and then accept it.
   StartDialog();
-  EXPECT_EQ(1U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(scan_id, false);
-  controller()->DidToggleGalleryId(scan_id, true);
+  EXPECT_EQ(1U, GetFirstSectionSize());
+  controller()->DidToggleEntry(scan_id, false);
+  controller()->DidToggleEntry(scan_id, true);
   controller()->DialogFinished(true);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 }
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
+TEST_F(MediaGalleriesScanResultControllerTest, Blacklisted) {
   // Start with two scan results.
   MediaGalleryPrefId scan_id = AddScanResult("scan_id", 1, 0, 0);
   MediaGalleryPrefId auto_id =
@@ -281,30 +244,30 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, Blacklisted) {
 
   // Show the dialog, but cancel it.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
+  EXPECT_EQ(2U, GetFirstSectionSize());
   controller()->DialogFinished(false);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Blacklist one and try again.
   gallery_prefs()->ForgetGalleryById(scan_id);
   StartDialog();
-  EXPECT_EQ(1U, controller()->GetGalleryList().size());
+  EXPECT_EQ(1U, GetFirstSectionSize());
   controller()->DialogFinished(false);
 
   // Adding it as a user gallery should change its type.
   AddGallery("scan_id", MediaGalleryPrefInfo::kUserAdded, 1, 0, 0);
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
+  EXPECT_EQ(2U, GetFirstSectionSize());
 
   // Blacklisting the other while the dialog is open should remove it.
   gallery_prefs()->ForgetGalleryById(auto_id);
-  EXPECT_EQ(1U, controller()->GetGalleryList().size());
+  EXPECT_EQ(1U, GetFirstSectionSize());
   controller()->DialogFinished(false);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
   EXPECT_EQ(1, dialog_update_count_at_destruction());
 }
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
+TEST_F(MediaGalleriesScanResultControllerTest, PrefUpdates) {
   MediaGalleryPrefId selected = AddScanResult("selected", 1, 0, 0);
   MediaGalleryPrefId unselected = AddScanResult("unselected", 1, 0, 0);
   MediaGalleryPrefId selected_add_permission =
@@ -332,33 +295,33 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   StartDialog();
-  EXPECT_EQ(8U, controller()->GetGalleryList().size());
-  controller()->DidToggleGalleryId(unselected, false);
-  controller()->DidToggleGalleryId(unselected_add_permission, false);
-  controller()->DidToggleGalleryId(unselected_removed, false);
-  controller()->DidToggleGalleryId(unselected_update, false);
+  EXPECT_EQ(8U, GetFirstSectionSize());
+  controller()->DidToggleEntry(unselected, false);
+  controller()->DidToggleEntry(unselected_add_permission, false);
+  controller()->DidToggleEntry(unselected_removed, false);
+  controller()->DidToggleEntry(unselected_update, false);
   EXPECT_EQ(0, dialog()->update_count());
-  EXPECT_EQ(8U, controller()->GetGalleryList().size());
+  EXPECT_EQ(8U, GetFirstSectionSize());
 
   // Add permission.
   gallery_prefs()->SetGalleryPermissionForExtension(*extension(),
                                                     unselected_add_permission,
                                                     true);
   EXPECT_EQ(1, dialog()->update_count());
-  EXPECT_EQ(7U, controller()->GetGalleryList().size());
+  EXPECT_EQ(7U, GetFirstSectionSize());
   gallery_prefs()->SetGalleryPermissionForExtension(*extension(),
                                                     selected_add_permission,
                                                     true);
   EXPECT_EQ(2, dialog()->update_count());
-  EXPECT_EQ(6U, controller()->GetGalleryList().size());
+  EXPECT_EQ(6U, GetFirstSectionSize());
 
   // Blacklist scan results.
   gallery_prefs()->ForgetGalleryById(unselected_removed);
   EXPECT_EQ(3, dialog()->update_count());
-  EXPECT_EQ(5U, controller()->GetGalleryList().size());
+  EXPECT_EQ(5U, GetFirstSectionSize());
   gallery_prefs()->ForgetGalleryById(selected_removed);
   EXPECT_EQ(4, dialog()->update_count());
-  EXPECT_EQ(4U, controller()->GetGalleryList().size());
+  EXPECT_EQ(4U, GetFirstSectionSize());
 
   // Update names.
   const MediaGalleryPrefInfo& unselected_update_info =
@@ -369,7 +332,7 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
       base::ASCIIToUTF16("Updated & Unselected"),
       base::string16(), base::string16(), 0, base::Time(), 1, 0, 0);
   EXPECT_EQ(5, dialog()->update_count());
-  EXPECT_EQ(4U, controller()->GetGalleryList().size());
+  EXPECT_EQ(4U, GetFirstSectionSize());
   const MediaGalleryPrefInfo& selected_update_info =
       gallery_prefs()->known_galleries().find(selected_update)->second;
   gallery_prefs()->AddGallery(
@@ -378,10 +341,10 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
       base::ASCIIToUTF16("Updated & Selected"),
       base::string16(), base::string16(), 0, base::Time(), 1, 0, 0);
   EXPECT_EQ(6, dialog()->update_count());
-  ASSERT_EQ(4U, controller()->GetGalleryList().size());
+  EXPECT_EQ(4U, GetFirstSectionSize());
 
-  MediaGalleriesScanResultDialogController::OrderedScanResults results =
-      controller()->GetGalleryList();
+  MediaGalleriesDialogController::Entries results =
+      controller()->GetSectionEntries(0);
   EXPECT_EQ(selected, results[0].pref_info.pref_id);
   EXPECT_TRUE(results[0].selected);
   EXPECT_EQ(selected_update, results[1].pref_info.pref_id);
@@ -398,11 +361,11 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, PrefUpdates) {
   controller()->DialogFinished(true);
   EXPECT_EQ(4U, gallery_prefs()->GalleriesForExtension(*extension()).size());
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
+  EXPECT_EQ(2U, GetFirstSectionSize());
   controller()->DialogFinished(false);
 }
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
+TEST_F(MediaGalleriesScanResultControllerTest, ForgetGallery) {
   // Start with two scan results.
   MediaGalleryPrefId scan1 = AddScanResult("scan1", 1, 0, 0);
   MediaGalleryPrefId scan2 = AddScanResult("scan2", 2, 0, 0);
@@ -410,17 +373,17 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
 
   // Remove one and then cancel.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidForgetGallery(scan1);
+  EXPECT_EQ(2U, GetFirstSectionSize());
+  controller()->DidForgetEntry(scan1);
   controller()->DialogFinished(false);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Remove one and then have it blacklisted from prefs.
   StartDialog();
-  EXPECT_EQ(2U, controller()->GetGalleryList().size());
-  controller()->DidForgetGallery(scan1);
+  EXPECT_EQ(2U, GetFirstSectionSize());
+  controller()->DidForgetEntry(scan1);
   EXPECT_EQ(1, dialog()->update_count());
-  controller()->DidToggleGalleryId(scan2, false);  // Uncheck the second.
+  controller()->DidToggleEntry(scan2, false);  // Uncheck the second.
   gallery_prefs()->ForgetGalleryById(scan1);
   controller()->DialogFinished(true);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
@@ -428,18 +391,18 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, ForgetGallery) {
 
   // Remove the other.
   StartDialog();
-  EXPECT_EQ(1U, controller()->GetGalleryList().size());
-  controller()->DidForgetGallery(scan2);
+  EXPECT_EQ(1U, GetFirstSectionSize());
+  controller()->DidForgetEntry(scan2);
   controller()->DialogFinished(true);
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Check that nothing shows up.
   StartDialog();
-  EXPECT_EQ(0U, controller()->GetGalleryList().size());
+  EXPECT_EQ(0U, GetFirstSectionSize());
   controller()->DialogFinished(false);
 }
 
-TEST_F(MediaGalleriesScanResultDialogControllerTest, SortOrder) {
+TEST_F(MediaGalleriesScanResultControllerTest, SortOrder) {
   // Intentionally out of order numerically and alphabetically.
   MediaGalleryPrefId third = AddScanResult("third", 2, 2, 2);
   MediaGalleryPrefId second =
@@ -449,8 +412,8 @@ TEST_F(MediaGalleriesScanResultDialogControllerTest, SortOrder) {
   MediaGalleryPrefId fourth = AddScanResult("aaa", 3, 0, 0);
 
   StartDialog();
-  MediaGalleriesScanResultDialogController::OrderedScanResults results =
-      controller()->GetGalleryList();
+  MediaGalleriesDialogController::Entries results =
+      controller()->GetSectionEntries(0);
   ASSERT_EQ(5U, results.size());
   EXPECT_EQ(first, results[0].pref_info.pref_id);
   EXPECT_EQ(second, results[1].pref_info.pref_id);
