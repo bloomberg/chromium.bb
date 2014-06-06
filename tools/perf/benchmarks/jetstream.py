@@ -70,6 +70,7 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
 
 
 @test.Disabled('android')  # Crashes on GN.
+@test.Disabled('xp')  # Crashes on Win XP. See crbug.com/381742 for an example.
 class Jetstream(test.Test):
   test = _JetstreamMeasurement
 
