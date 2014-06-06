@@ -8,24 +8,15 @@ import android.animation.TimeAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
-import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.SystemClock;
-import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.view.ViewConfiguration;
-import android.view.ViewParent;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UmaBridge;
 
 import java.util.ArrayList;
 
@@ -37,8 +28,6 @@ import java.util.ArrayList;
  */
 @SuppressLint("NewApi")
 class AppMenuDragHelper {
-    private static final String TAG = "AppMenuDragHelper";
-
     private final Activity mActivity;
     private final AppMenu mAppMenu;
 
@@ -48,28 +37,15 @@ class AppMenuDragHelper {
     private static final int ITEM_ACTION_CLEAR_HIGHLIGHT_ALL = 2;
 
     private static final float AUTO_SCROLL_AREA_MAX_RATIO = 0.25f;
-    private static final int EDGE_SWIPE_IN_ADDITIONAL_SLOP_TIME_MS = 500;
 
     // Dragging related variables, i.e., menu showing initiated by touch down and drag to navigate.
     private final float mAutoScrollFullVelocity;
-    private final int mEdgeSwipeInSlop;
-    private final int mEdgeSwipeInAdditionalSlop;
-    private final int mEdgeSwipeOutSlop;
-    private int mScaledTouchSlop;
-    private long mHardwareMenuButtonUpTime;
-    private boolean mDragPending;
     private final TimeAnimator mDragScrolling = new TimeAnimator();
     private float mDragScrollOffset;
     private int mDragScrollOffsetRounded;
     private volatile float mDragScrollingVelocity;
     private volatile float mLastTouchX;
     private volatile float mLastTouchY;
-    private float mTopTouchMovedBound;
-    private float mBottomTouchMovedBound;
-    private boolean mIsDownScrollable;
-    private boolean mIsUpScrollable;
-    private boolean mIsByHardwareButton;
-    private int mCurrentScreenRotation = -1;
     private final int mItemRowHeight;
 
     // These are used in a function locally, but defined here to avoid heap allocation on every
@@ -77,28 +53,12 @@ class AppMenuDragHelper {
     private final Rect mScreenVisibleRect = new Rect();
     private final int[] mScreenVisiblePoint = new int[2];
 
-    // Sub-UI-controls, backward, forward, bookmark and listView, are getting a touch event first
-    // if the app menu is initiated by hardware menu button. For those cases, we need to
-    // conditionally forward the touch event to our drag scrolling method.
-    private final OnTouchListener mDragScrollTouchEventForwarder = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
-            return handleDragging(event);
-        }
-    };
-
     AppMenuDragHelper(Activity activity, AppMenu appMenu, int itemRowHeight) {
         mActivity = activity;
         mAppMenu = appMenu;
         mItemRowHeight = itemRowHeight;
-        mScaledTouchSlop = ViewConfiguration.get(
-                mActivity.getApplicationContext()).getScaledTouchSlop();
         Resources res = mActivity.getResources();
         mAutoScrollFullVelocity = res.getDimensionPixelSize(R.dimen.auto_scroll_full_velocity);
-        mEdgeSwipeInSlop = res.getDimensionPixelSize(R.dimen.edge_swipe_in_slop);
-        mEdgeSwipeInAdditionalSlop = res.getDimensionPixelSize(
-                R.dimen.edge_swipe_in_additional_slop);
-        mEdgeSwipeOutSlop = res.getDimensionPixelSize(R.dimen.edge_swipe_out_slop);
         // If user is dragging and the popup ListView is too big to display at once,
         // mDragScrolling animator scrolls mPopup.getListView() automatically depending on
         // the user's touch position.
@@ -118,10 +78,8 @@ class AppMenuDragHelper {
 
                 // Force touch move event to highlight items correctly for the scrolled position.
                 if (!Float.isNaN(mLastTouchX) && !Float.isNaN(mLastTouchY)) {
-                    int actionToPerform = isInSwipeOutRegion(mLastTouchX, mLastTouchY) ?
-                            ITEM_ACTION_CLEAR_HIGHLIGHT_ALL : ITEM_ACTION_HIGHLIGHT;
                     menuItemAction(Math.round(mLastTouchX), Math.round(mLastTouchY),
-                            actionToPerform);
+                            ITEM_ACTION_HIGHLIGHT);
                 }
             }
         });
@@ -129,61 +87,23 @@ class AppMenuDragHelper {
 
     /**
      * Sets up all the internal state to prepare for menu dragging.
-     *
-     * @param isByHardwareButton Whether or not hardware button triggered it. (oppose to software
-     *                           button)
      * @param startDragging      Whether dragging is started. For example, if the app menu
      *                           is showed by tapping on a button, this should be false. If it is
      *                           showed by start dragging down on the menu button, this should be
-     *                           true. Note that if isByHardwareButton is true, this is ignored.
+     *                           true.
      */
-    void onShow(boolean isByHardwareButton, boolean startDragging) {
-        mCurrentScreenRotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+    void onShow(boolean startDragging) {
         mLastTouchX = Float.NaN;
         mLastTouchY = Float.NaN;
         mDragScrollOffset = 0.0f;
         mDragScrollOffsetRounded = 0;
         mDragScrollingVelocity = 0.0f;
 
-        mIsByHardwareButton = isByHardwareButton;
-        mDragPending = isByHardwareButton;
-        mIsDownScrollable = !isByHardwareButton;
-        mIsUpScrollable = !isByHardwareButton;
-
-        mTopTouchMovedBound = Float.POSITIVE_INFINITY;
-        mBottomTouchMovedBound = Float.NEGATIVE_INFINITY;
-        mHardwareMenuButtonUpTime = -1;
-
-        ListPopupWindow popup = mAppMenu.getPopup();
-        popup.getListView().setOnTouchListener(mDragScrollTouchEventForwarder);
-
-        // We assume that the parent of popup ListView is an instance of View. Otherwise, dragging
-        // from a hardware menu button won't work.
-        ViewParent listViewParent = popup.getListView().getParent();
-        if (listViewParent instanceof View) {
-            ((View) listViewParent).setOnTouchListener(mDragScrollTouchEventForwarder);
-        } else {
-            assert false;
-        }
-
-
-
-        if (!isByHardwareButton && startDragging) mDragScrolling.start();
+        if (startDragging) mDragScrolling.start();
     }
 
     void onDismiss() {
         mDragScrolling.cancel();
-    }
-
-    /**
-     * This is a hint for adjusting edgeSwipeInSlop. For example. If the touch event started
-     * immediately after hardware menu button up, then we use larger edgeSwipeInSlop because it
-     * implies user is swiping in fast.
-     */
-    public void hardwareMenuButtonUp() {
-        // There should be only one time hardware menu button up.
-        assert mHardwareMenuButtonUpTime == -1;
-        mHardwareMenuButtonUpTime = SystemClock.uptimeMillis();
     }
 
     /**
@@ -196,7 +116,7 @@ class AppMenuDragHelper {
      * @return Whether the event is handled.
      */
     boolean handleDragging(MotionEvent event) {
-        if (!mAppMenu.isShowing() || (!mDragPending && !mDragScrolling.isRunning())) return false;
+        if (!mAppMenu.isShowing() || !mDragScrolling.isRunning()) return false;
 
         // We will only use the screen space coordinate (rawX, rawY) to reduce confusion.
         // This code works across many different controls, so using local coordinates will be
@@ -212,41 +132,9 @@ class AppMenuDragHelper {
         mLastTouchX = rawX;
         mLastTouchY = rawY;
 
-        // Because (hardware) menu button can be right or left side of the screen, if we just
-        // trigger auto scrolling based on Y inside the listView, it might be scrolled
-        // unintentionally. Therefore, we will require touch position to move up or down a certain
-        // amount of distance to trigger auto scrolling up or down.
-        mTopTouchMovedBound = Math.min(mTopTouchMovedBound, rawY);
-        mBottomTouchMovedBound = Math.max(mBottomTouchMovedBound, rawY);
-        if (rawY <= mBottomTouchMovedBound - mScaledTouchSlop) {
-            mIsUpScrollable = true;
-        }
-        if (rawY >= mTopTouchMovedBound + mScaledTouchSlop) {
-            mIsDownScrollable = true;
-        }
-
         if (eventActionMasked == MotionEvent.ACTION_CANCEL) {
             mAppMenu.dismiss();
             return true;
-        }
-
-        if (eventActionMasked == MotionEvent.ACTION_DOWN) {
-            assert mIsByHardwareButton != mDragScrolling.isStarted();
-            if (mIsByHardwareButton) {
-                if (mDragPending && getDistanceFromHardwareMenuButtonSideEdge(rawX, rawY) <
-                        getEdgeSwipeInSlop(event)) {
-                    mDragScrolling.start();
-                    mDragPending = false;
-                    UmaBridge.usingMenu(true, true);
-                } else {
-                    if (!getScreenVisibleRect(listView).contains(roundedRawX, roundedRawY)) {
-                        mAppMenu.dismiss();
-                    }
-                    mDragPending = false;
-                    UmaBridge.usingMenu(true, false);
-                    return false;
-                }
-            }
         }
 
         // After this line, drag scrolling is happening.
@@ -254,18 +142,16 @@ class AppMenuDragHelper {
 
         boolean didPerformClick = false;
         int itemAction = ITEM_ACTION_CLEAR_HIGHLIGHT_ALL;
-        if (!isInSwipeOutRegion(rawX, rawY)) {
-            switch (eventActionMasked) {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_MOVE:
-                    itemAction = ITEM_ACTION_HIGHLIGHT;
-                    break;
-                case MotionEvent.ACTION_UP:
-                    itemAction = ITEM_ACTION_PERFORM;
-                    break;
-                default:
-                    break;
-            }
+        switch (eventActionMasked) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                itemAction = ITEM_ACTION_HIGHLIGHT;
+                break;
+            case MotionEvent.ACTION_UP:
+                itemAction = ITEM_ACTION_PERFORM;
+                break;
+            default:
+                break;
         }
         didPerformClick = menuItemAction(roundedRawX, roundedRawY, itemAction);
 
@@ -278,11 +164,11 @@ class AppMenuDragHelper {
                         mItemRowHeight * 1.2f / listView.getHeight());
                 float normalizedY =
                         (rawY - getScreenVisibleRect(listView).top) / listView.getHeight();
-                if (mIsUpScrollable && normalizedY < autoScrollAreaRatio) {
+                if (normalizedY < autoScrollAreaRatio) {
                     // Top
                     mDragScrollingVelocity = (normalizedY / autoScrollAreaRatio - 1.0f)
                             * mAutoScrollFullVelocity;
-                } else if (mIsDownScrollable && normalizedY > 1.0f - autoScrollAreaRatio) {
+                } else if (normalizedY > 1.0f - autoScrollAreaRatio) {
                     // Bottom
                     mDragScrollingVelocity = ((normalizedY - 1.0f) / autoScrollAreaRatio + 1.0f)
                             * mAutoScrollFullVelocity;
@@ -294,33 +180,6 @@ class AppMenuDragHelper {
         }
 
         return true;
-    }
-
-    /**
-     * @return Whether or not the position should be considered swiping-out, if ACTION_UP happens
-     *         at the position.
-     */
-    private boolean isInSwipeOutRegion(float rawX, float rawY) {
-        return getShortestDistanceFromEdge(rawX, rawY) < mEdgeSwipeOutSlop;
-    }
-
-    /**
-     * @return The shortest distance from the screen edges for the given position rawX, rawY
-     *         in screen coordinates.
-     */
-    private float getShortestDistanceFromEdge(float rawX, float rawY) {
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        Point displaySize = new Point();
-        display.getSize(displaySize);
-
-        float distance = Math.min(
-                Math.min(rawY, displaySize.y - rawY - 1),
-                Math.min(rawX, displaySize.x - rawX - 1));
-        if (distance < 0.0f) {
-            Log.d(TAG, "Received touch event out of the screen edge boundary. distance = " +
-                    distance);
-        }
-        return Math.abs(distance);
     }
 
     /**
@@ -375,43 +234,6 @@ class AppMenuDragHelper {
     }
 
     /**
-     * @return The distance from the screen edge that is likely where the hardware menu button is
-     *         located at. We assume the hardware menu button is at the bottom in the default,
-     *         ROTATION_0, rotation. Note that there is a bug filed for Android API to request
-     *         hardware menu button position b/10007237.
-     */
-    private float getDistanceFromHardwareMenuButtonSideEdge(float rawX, float rawY) {
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        Point displaySize = new Point();
-        display.getSize(displaySize);
-
-        float distance;
-        switch (mCurrentScreenRotation) {
-            case Surface.ROTATION_0:
-                distance = displaySize.y - rawY - 1;
-                break;
-            case Surface.ROTATION_180:
-                distance = rawY;
-                break;
-            case Surface.ROTATION_90:
-                distance = displaySize.x - rawX - 1;
-                break;
-            case Surface.ROTATION_270:
-                distance = rawX;
-                break;
-            default:
-                distance = 0.0f;
-                assert false;
-                break;
-        }
-        if (distance < 0.0f) {
-            Log.d(TAG, "Received touch event out of hardware menu button side edge boundary." +
-                    " distance = " + distance);
-        }
-        return Math.abs(distance);
-    }
-
-    /**
      * @return Visible rect in screen coordinates for the given View.
      */
     private Rect getScreenVisibleRect(View view) {
@@ -419,33 +241,5 @@ class AppMenuDragHelper {
         view.getLocationOnScreen(mScreenVisiblePoint);
         mScreenVisibleRect.offset(mScreenVisiblePoint[0], mScreenVisiblePoint[1]);
         return mScreenVisibleRect;
-    }
-
-    /**
-     * Computes Edge-swipe-in-slop and returns it.
-     *
-     * When user swipes in from a hardware menu button, because the swiping-in touch event doesn't
-     * necessarily start form the exact edge, we should also consider slightly more inside touch
-     * event as swiping-in. This value, Edge-swipe-in-slop, is the threshold distance from the
-     * edge that separates swiping-in and normal touch.
-     *
-     * @param event Touch event that eventually made this call.
-     * @return Edge-swipe-in-slop.
-     */
-    private float getEdgeSwipeInSlop(MotionEvent event) {
-        float edgeSwipeInSlope = mEdgeSwipeInSlop;
-        if (mHardwareMenuButtonUpTime == -1) {
-            // Hardware menu hasn't even had UP event yet. That means, user is swiping in really
-            // really fast. So use large edgeSwipeInSlope.
-            edgeSwipeInSlope += mEdgeSwipeInAdditionalSlop;
-        } else {
-            // If it's right after we had hardware menu button UP event, use large edgeSwipeInSlop,
-            // Otherwise, use small edgeSwipeInSlop.
-            float additionalEdgeSwipeInSlop = ((mHardwareMenuButtonUpTime - event.getEventTime()
-                    + EDGE_SWIPE_IN_ADDITIONAL_SLOP_TIME_MS) * 0.001f)
-                    * mEdgeSwipeInAdditionalSlop;
-            edgeSwipeInSlope += Math.max(0.0f, additionalEdgeSwipeInSlop);
-        }
-        return edgeSwipeInSlope;
     }
 }
