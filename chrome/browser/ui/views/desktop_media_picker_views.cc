@@ -14,6 +14,7 @@
 #include "grit/generated_resources.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
@@ -94,6 +95,7 @@ class DesktopMediaSourceView : public views::View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   DesktopMediaListView* parent_;
@@ -332,6 +334,23 @@ bool DesktopMediaSourceView::OnMousePressed(const ui::MouseEvent& event) {
     parent_->OnDoubleClick();
   }
   return true;
+}
+
+void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP &&
+      event->details().tap_count() == 2) {
+    RequestFocus();
+    parent_->OnDoubleClick();
+    event->SetHandled();
+    return;
+  }
+
+  // Detect tap gesture using ET_GESTURE_TAP_DOWN so the view also gets focused
+  // on the long tap (when the tap gesture starts).
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    RequestFocus();
+    event->SetHandled();
+  }
 }
 
 DesktopMediaListView::DesktopMediaListView(
