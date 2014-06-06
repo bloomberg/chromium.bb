@@ -180,6 +180,10 @@ SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener,
 }
 
 SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
+  for (std::set<aura::Window*>::iterator iter = parents_.begin();
+       iter != parents_.end(); ++iter) {
+    (*iter)->RemoveObserver(this);
+  }
   while (dialogs_.begin() != dialogs_.end()) {
     gtk_widget_destroy(*(dialogs_.begin()));
   }
