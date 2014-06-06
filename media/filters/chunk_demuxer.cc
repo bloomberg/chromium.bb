@@ -1322,6 +1322,16 @@ void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
 
   DCHECK(!id.empty());
   CHECK(IsValidId(id));
+  DCHECK(start >= base::TimeDelta()) << start.InSecondsF();
+  DCHECK(start < end) << "start " << start.InSecondsF()
+                      << " end " << end.InSecondsF();
+  DCHECK(duration_ != kNoTimestamp());
+  DCHECK(start <= duration_) << "start " << start.InSecondsF()
+                             << " duration " << duration_.InSecondsF();
+
+  if (start == duration_)
+    return;
+
   source_state_map_[id]->Remove(start, end, duration_);
 }
 

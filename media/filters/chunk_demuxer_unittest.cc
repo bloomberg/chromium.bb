@@ -3030,17 +3030,6 @@ TEST_P(ChunkDemuxerTest, GCDuringSeek) {
   CheckExpectedRanges(kSourceId, "{ [500,592) [792,815) }");
 }
 
-TEST_P(ChunkDemuxerTest, RemoveBeforeInitSegment) {
-    EXPECT_CALL(*this, DemuxerOpened());
-    demuxer_->Initialize(
-        &host_, CreateInitDoneCB(kNoTimestamp(), PIPELINE_OK), true);
-
-    EXPECT_EQ(ChunkDemuxer::kOk, AddId(kSourceId, HAS_AUDIO | HAS_VIDEO));
-
-    demuxer_->Remove(kSourceId, base::TimeDelta::FromMilliseconds(0),
-                     base::TimeDelta::FromMilliseconds(1));
-}
-
 TEST_P(ChunkDemuxerTest, AppendWindow_Video) {
   ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
   DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
@@ -3267,6 +3256,33 @@ TEST_P(ChunkDemuxerTest, Remove_AudioVideoText) {
   CheckExpectedBuffers(audio_stream, "1 21 41 61 81 101 121 141");
   CheckExpectedBuffers(video_stream, "1 31 61 91 121 151 181");
   CheckExpectedBuffers(text_stream, "1 101 201");
+}
+
+TEST_P(ChunkDemuxerTest, Remove_StartAtDuration) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Set the duration to something small so that the append that
+  // follows updates the duration to reflect the end of the appended data.
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(1)));
+  demuxer_->SetDuration(0.001);
+
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(160)));
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum,
+                            "0K 20K 40K 60K 80K 100K 120K 140K");
+
+  CheckExpectedRanges(kSourceId, "{ [0,160) }");
+  CheckExpectedBuffers(audio_stream, "0 20 40 60 80 100 120 140");
+
+  demuxer_->Remove(kSourceId,
+                   base::TimeDelta::FromSecondsD(demuxer_->GetDuration()),
+                   kInfiniteDuration());
+
+  Seek(base::TimeDelta());
+  CheckExpectedRanges(kSourceId, "{ [0,160) }");
+  CheckExpectedBuffers(audio_stream, "0 20 40 60 80 100 120 140");
 }
 
 // Verifies that a Seek() will complete without text cues for
