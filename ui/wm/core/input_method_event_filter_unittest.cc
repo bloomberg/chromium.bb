@@ -10,6 +10,8 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
@@ -25,70 +27,107 @@ DISABLED_TestInputMethodKeyEventPropagation
 
 namespace wm {
 
-typedef aura::test::AuraTestBase InputMethodEventFilterTest;
+class TestTextInputClient : public ui::DummyTextInputClient {
+ public:
+  explicit TestTextInputClient(aura::Window* window) : window_(window) {}
+
+  virtual aura::Window* GetAttachedWindow() const OVERRIDE { return window_; }
+
+ private:
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
+};
+
+class InputMethodEventFilterTest : public aura::test::AuraTestBase {
+ public:
+  InputMethodEventFilterTest() {}
+  virtual ~InputMethodEventFilterTest() {}
+
+  // testing::Test overrides:
+  virtual void SetUp() OVERRIDE {
+    aura::test::AuraTestBase::SetUp();
+
+    root_window()->AddPreTargetHandler(&root_filter_);
+    input_method_event_filter_.reset(
+        new InputMethodEventFilter(host()->GetAcceleratedWidget()));
+    input_method_event_filter_->SetInputMethodPropertyInRootWindow(
+        root_window());
+    root_filter_.AddHandler(input_method_event_filter_.get());
+    root_filter_.AddHandler(&test_filter_);
+
+    test_window_.reset(aura::test::CreateTestWindowWithDelegate(
+        &test_window_delegate_, -1, gfx::Rect(), root_window()));
+    test_input_client_.reset(new TestTextInputClient(test_window_.get()));
+
+    input_method_event_filter_->input_method()->SetFocusedTextInputClient(
+        test_input_client_.get());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    test_window_.reset();
+    root_filter_.RemoveHandler(&test_filter_);
+    root_filter_.RemoveHandler(input_method_event_filter_.get());
+    root_window()->RemovePreTargetHandler(&root_filter_);
+
+    input_method_event_filter_.reset();
+    test_input_client_.reset();
+    aura::test::AuraTestBase::TearDown();
+  }
+
+ protected:
+  CompoundEventFilter root_filter_;
+  ui::test::TestEventHandler test_filter_;
+  scoped_ptr<InputMethodEventFilter> input_method_event_filter_;
+  aura::test::TestWindowDelegate test_window_delegate_;
+  scoped_ptr<aura::Window> test_window_;
+  scoped_ptr<TestTextInputClient> test_input_client_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilterTest);
+};
 
 TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
-  CompoundEventFilter root_filter;
-  root_window()->AddPreTargetHandler(&root_filter);
-
-  InputMethodEventFilter input_method_event_filter(
-      host()->GetAcceleratedWidget());
-  root_filter.AddHandler(&input_method_event_filter);
-
   // Tests if InputMethodEventFilter adds a window property on its
   // construction.
   EXPECT_TRUE(root_window()->GetProperty(
       aura::client::kRootWindowInputMethodKey));
-
-  root_filter.RemoveHandler(&input_method_event_filter);
-  root_window()->RemovePreTargetHandler(&root_filter);
 }
 
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  new wm::DefaultActivationClient(root_window());
-
-  CompoundEventFilter root_filter;
-  root_window()->AddPreTargetHandler(&root_filter);
-
-  // Add the InputMethodEventFilter before the TestEventFilter.
-  InputMethodEventFilter input_method_event_filter(
-      host()->GetAcceleratedWidget());
-  root_filter.AddHandler(&input_method_event_filter);
-
-  // Add TestEventFilter to the RootWindow.
-  ui::test::TestEventHandler test_filter;
-  root_filter.AddHandler(&test_filter);
-
-  // We need an active window. Otherwise, the root window will not forward a key
-  // event to event filters.
-  aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      &test_delegate,
-      -1,
-      gfx::Rect(),
-      root_window()));
-  aura::client::GetActivationClient(root_window())->ActivateWindow(
-      window.get());
-
   // Send a fake key event to the root window. InputMethodEventFilter, which is
   // automatically set up by AshTestBase, consumes it and sends a new
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
   aura::test::EventGenerator generator(root_window());
-  EXPECT_EQ(0, test_filter.num_key_events());
+  EXPECT_EQ(0, test_filter_.num_key_events());
   generator.PressKey(ui::VKEY_SPACE, 0);
-  EXPECT_EQ(1, test_filter.num_key_events());
+  EXPECT_EQ(1, test_filter_.num_key_events());
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
-  EXPECT_EQ(2, test_filter.num_key_events());
+  EXPECT_EQ(2, test_filter_.num_key_events());
+}
 
-  root_filter.RemoveHandler(&input_method_event_filter);
-  root_filter.RemoveHandler(&test_filter);
+TEST_F(InputMethodEventFilterTest, TestEventDispatching) {
+  ui::KeyEvent evt(ui::ET_KEY_PRESSED,
+                   ui::VKEY_PROCESSKEY,
+                   ui::EF_IME_FABRICATED_KEY,
+                   false);
+  // Calls DispatchKeyEventPostIME() without a focused text input client.
+  input_method_event_filter_->input_method()->SetFocusedTextInputClient(NULL);
+  input_method_event_filter_->input_method()->DispatchKeyEvent(evt);
+  // Verifies 0 key event happened because InputMethodEventFilter::
+  // DispatchKeyEventPostIME() returns false.
+  EXPECT_EQ(0, test_filter_.num_key_events());
 
-  // Reset window before |test_delegate| gets deleted.
-  window.reset();
-  root_window()->RemovePreTargetHandler(&root_filter);
+  // Calls DispatchKeyEventPostIME() with a focused text input client.
+  input_method_event_filter_->input_method()->SetFocusedTextInputClient(
+      test_input_client_.get());
+  input_method_event_filter_->input_method()->DispatchKeyEvent(evt);
+  // Verifies 1 key event happened because InputMethodEventFilter::
+  // DispatchKeyEventPostIME() returns true.
+  EXPECT_EQ(1, test_filter_.num_key_events());
 }
 
 }  // namespace wm

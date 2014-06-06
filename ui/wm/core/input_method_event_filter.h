@@ -42,9 +42,6 @@ class WM_EXPORT InputMethodEventFilter
 
   scoped_ptr<ui::InputMethod> input_method_;
 
-  // The target dispatcher that will receive translated key events from the IME.
-  ui::EventProcessor* target_dispatcher_;
-
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };
 

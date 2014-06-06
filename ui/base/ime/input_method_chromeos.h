@@ -88,6 +88,9 @@ class UI_BASE_EXPORT InputMethodChromeOS
   // Checks if there is pending input method result.
   bool HasInputMethodResult() const;
 
+  // Sends a fake key event for IME composing without physical key events.
+  void SendFakeProcessKeyEvent(bool pressed) const;
+
   // Abandons all pending key events. It usually happends when we lose keyboard
   // focus, the text input type is changed or we are destroyed.
   void AbandonAllPendingKeyEvents();

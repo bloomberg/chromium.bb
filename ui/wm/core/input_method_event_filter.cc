@@ -8,6 +8,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 
@@ -17,8 +18,7 @@ namespace wm {
 // InputMethodEventFilter, public:
 
 InputMethodEventFilter::InputMethodEventFilter(gfx::AcceleratedWidget widget)
-    : input_method_(ui::CreateInputMethod(this, widget)),
-      target_dispatcher_(NULL) {
+    : input_method_(ui::CreateInputMethod(this, widget)) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().
   input_method_->Init(true);
@@ -63,11 +63,6 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     // IME again.  Just let the event dispatcher continue to dispatch the event.
     event->SetTranslated(false);
   } else {
-    // If the focused window is changed, all requests to IME will be
-    // discarded so it's safe to update the target_dispatcher_ here.
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    target_dispatcher_ = target->GetRootWindow()->GetHost()->event_processor();
-    DCHECK(target_dispatcher_);
     if (input_method_->DispatchKeyEvent(*event))
       event->StopPropagation();
   }
@@ -86,10 +81,23 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
   // This time we have to skip dispatching the event to the IME, we mark the
   // event as TRANSLATED so we can distinguish this event as a second time
   // dispatched event.
+  // For the target where to dispatch the event, always tries the current
+  // focused text input client's attached window. And fallback to the target
+  // carried by event.
+  aura::Window* target_window = NULL;
+  ui::TextInputClient* input = input_method_->GetTextInputClient();
+  if (input)
+    target_window = input->GetAttachedWindow();
+  if (!target_window)
+    target_window = static_cast<aura::Window*>(event.target());
+  if (!target_window)
+    return false;
+  ui::EventProcessor* target_dispatcher =
+      target_window->GetRootWindow()->GetHost()->event_processor();
   ui::KeyEvent aura_event(event);
   aura_event.SetTranslated(true);
   ui::EventDispatchDetails details =
-      target_dispatcher_->OnEventFromSource(&aura_event);
+      target_dispatcher->OnEventFromSource(&aura_event);
   CHECK(!details.dispatcher_destroyed);
   return aura_event.handled();
 }
