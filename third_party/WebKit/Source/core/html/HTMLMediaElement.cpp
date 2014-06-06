@@ -1735,7 +1735,7 @@ void HTMLMediaElement::addPlayedRange(double start, double end)
 
 bool HTMLMediaElement::supportsSave() const
 {
-    return webMediaPlayer() && webMediaPlayer()->supportsSave();
+    return m_player ? m_player->supportsSave() : false;
 }
 
 void HTMLMediaElement::prepareToPlay()
@@ -1791,13 +1791,12 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     // time scale, we will ask the media engine to "seek" to the current movie time, which may be a noop and
     // not generate a timechanged callback. This means m_seeking will never be cleared and we will never
     // fire a 'seeked' event.
-    double mediaTime = webMediaPlayer()->mediaTimeForTimeValue(time);
-    if (time != mediaTime) {
 #if !LOG_DISABLED
+    double mediaTime = m_player->mediaTimeForTimeValue(time);
+    if (time != mediaTime)
         WTF_LOG(Media, "HTMLMediaElement::seek(%f) - media timeline equivalent is %f", time, mediaTime);
 #endif
-        time = mediaTime;
-    }
+    time = m_player->mediaTimeForTimeValue(time);
 
     // 7 - If the (possibly now changed) new playback position is not in one of the ranges given in the
     // seekable attribute, then let it be the position in one of the ranges given in the seekable attribute
@@ -2842,7 +2841,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
     if (!m_player || m_pausedInternal)
         return;
 
-    if (webMediaPlayer()->paused())
+    if (m_player->paused())
         pause();
     else
         playInternal();
@@ -3008,8 +3007,8 @@ void HTMLMediaElement::updatePlayState()
         return;
 
     if (m_pausedInternal) {
-        if (webMediaPlayer() && !webMediaPlayer()->paused())
-            webMediaPlayer()->pause();
+        if (!m_player->paused())
+            m_player->pause();
         refreshCachedTime();
         m_playbackProgressTimer.stop();
         if (hasMediaControls())
@@ -3018,7 +3017,7 @@ void HTMLMediaElement::updatePlayState()
     }
 
     bool shouldBePlaying = potentiallyPlaying();
-    bool playerPaused = webMediaPlayer() && webMediaPlayer()->paused();
+    bool playerPaused = m_player->paused();
 
     WTF_LOG(Media, "HTMLMediaElement::updatePlayState - shouldBePlaying = %s, playerPaused = %s",
         boolString(shouldBePlaying), boolString(playerPaused));
@@ -3032,7 +3031,8 @@ void HTMLMediaElement::updatePlayState()
             // The media engine should just stash the rate and muted values since it isn't already playing.
             m_player->setRate(m_playbackRate);
             updateVolume();
-            webMediaPlayer()->play();
+
+            m_player->play();
         }
 
         if (hasMediaControls())
@@ -3041,8 +3041,8 @@ void HTMLMediaElement::updatePlayState()
         m_playing = true;
 
     } else { // Should not be playing right now
-        if (!playerPaused && webMediaPlayer())
-            webMediaPlayer()->pause();
+        if (!playerPaused)
+            m_player->pause();
         refreshCachedTime();
 
         m_playbackProgressTimer.stop();

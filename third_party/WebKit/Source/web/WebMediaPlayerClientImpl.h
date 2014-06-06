@@ -94,12 +94,16 @@ public:
     // MediaPlayer methods:
     virtual WebMediaPlayer* webMediaPlayer() const OVERRIDE;
     virtual void load(WebMediaPlayer::LoadType, const WTF::String& url, WebMediaPlayer::CORSMode) OVERRIDE;
+    virtual void play() OVERRIDE;
+    virtual void pause() OVERRIDE;
+    virtual bool supportsSave() const OVERRIDE;
     virtual double duration() const OVERRIDE;
     virtual double currentTime() const OVERRIDE;
     virtual void seek(double time) OVERRIDE;
     virtual bool seeking() const OVERRIDE;
     virtual double rate() const OVERRIDE;
     virtual void setRate(double) OVERRIDE;
+    virtual bool paused() const OVERRIDE;
     virtual void setPoster(const WebCore::KURL&) OVERRIDE;
     virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
     virtual WebCore::MediaPlayer::ReadyState readyState() const OVERRIDE;
@@ -109,6 +113,8 @@ public:
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
+    virtual bool hasSingleSecurityOrigin() const OVERRIDE;
+    virtual double mediaTimeForTimeValue(double timeValue) const OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
     virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;

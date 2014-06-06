@@ -112,6 +112,11 @@ public:
 
     virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
 
+    virtual void play() = 0;
+    virtual void pause() = 0;
+
+    virtual bool supportsSave() const = 0;
+
     virtual double duration() const = 0;
 
     virtual double currentTime() const = 0;
@@ -122,6 +127,8 @@ public:
 
     virtual double rate() const = 0;
     virtual void setRate(double) = 0;
+
+    virtual bool paused() const = 0;
 
     virtual void setPoster(const KURL&) = 0;
 
@@ -141,6 +148,12 @@ public:
 
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;
+
+    virtual bool hasSingleSecurityOrigin() const = 0;
+
+    // Time value in the movie's time scale. It is only necessary to override this if the media
+    // engine uses rational numbers to represent media time.
+    virtual double mediaTimeForTimeValue(double timeValue) const = 0;
 
 #if ENABLE(WEB_AUDIO)
     virtual AudioSourceProvider* audioSourceProvider() = 0;

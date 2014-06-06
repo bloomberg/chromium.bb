@@ -234,7 +234,7 @@ public:
     // of one of them here.
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return HTMLElement::executionContext(); }
 
-    bool hasSingleSecurityOrigin() const { return webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin(); }
+    bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 
     bool isFullscreen() const;
     void enterFullscreen();
