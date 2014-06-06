@@ -160,11 +160,6 @@ bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
       base::Passed(managed_bookmarks_tracker_.GetInitialManagedBookmarks()));
 }
 
-bool ChromeBookmarkClient::CanRemovePermanentNodeChildren(
-    const BookmarkNode* node) {
-  return !IsDescendantOfManagedNode(node);
-}
-
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
     const BookmarkNode* permanent_node) {
   // The |managed_node_| can have its title updated if the user signs in or
@@ -177,8 +172,8 @@ bool ChromeBookmarkClient::CanSyncNode(const BookmarkNode* node) {
   return !IsDescendantOfManagedNode(node);
 }
 
-bool ChromeBookmarkClient::CanReorderChildren(const BookmarkNode* parent) {
-  return !IsDescendantOfManagedNode(parent);
+bool ChromeBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
+  return !IsDescendantOfManagedNode(node);
 }
 
 void ChromeBookmarkClient::Observe(

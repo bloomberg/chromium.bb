@@ -271,7 +271,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   CopyToClipboard(model.get(), nodes, false);
 
   // And make sure we can paste a bookmark from the clipboard.
-  EXPECT_TRUE(CanPasteFromClipboard(model->bookmark_bar_node()));
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), model->bookmark_bar_node()));
 
   // Write some text to the clipboard.
   {
@@ -282,7 +282,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   }
 
   // Now we shouldn't be able to paste from the clipboard.
-  EXPECT_FALSE(CanPasteFromClipboard(model->bookmark_bar_node()));
+  EXPECT_FALSE(CanPasteFromClipboard(model.get(), model->bookmark_bar_node()));
 }
 
 TEST_F(BookmarkUtilsTest, CutToClipboard) {
@@ -308,7 +308,35 @@ TEST_F(BookmarkUtilsTest, CutToClipboard) {
   ExpectGroupedChangeCount(1, 1);
 
   // And make sure we can paste from the clipboard.
-  EXPECT_TRUE(CanPasteFromClipboard(model->other_node()));
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), model->other_node()));
+}
+
+TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
+  test::TestBookmarkClient client;
+  // Load a model with an extra node that is not editable.
+  BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
+  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(extra_node);
+  client.SetExtraNodesToLoad(extra_nodes.Pass());
+
+  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  const BookmarkNode* node = model->AddURL(model->other_node(),
+                                           0,
+                                           ASCIIToUTF16("foo bar"),
+                                           GURL("http://www.google.com"));
+
+  // Copy a node to the clipboard.
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(node);
+  CopyToClipboard(model.get(), nodes, false);
+
+  // And make sure we can paste a bookmark from the clipboard.
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), model->bookmark_bar_node()));
+
+  // But it can't be pasted into a non-editable folder.
+  BookmarkClient* upcast = &client;
+  EXPECT_FALSE(upcast->CanBeEditedByUser(extra_node));
+  EXPECT_FALSE(CanPasteFromClipboard(model.get(), extra_node));
 }
 #endif  // !defined(OS_IOS)
 
@@ -384,6 +412,42 @@ TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
   EXPECT_EQ("somevalue", value);
   EXPECT_TRUE(clone->GetMetaInfo("someotherkey", &value));
   EXPECT_EQ("someothervalue", value);
+}
+
+TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
+  test::TestBookmarkClient client;
+  // Load a model with an extra node that is not editable.
+  BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
+  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(extra_node);
+  client.SetExtraNodesToLoad(extra_nodes.Pass());
+
+  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  EXPECT_TRUE(model->bookmark_bar_node()->empty());
+  EXPECT_TRUE(model->other_node()->empty());
+  EXPECT_TRUE(model->mobile_node()->empty());
+  EXPECT_TRUE(extra_node->empty());
+
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  const GURL url("http://google.com");
+  model->AddURL(model->bookmark_bar_node(), 0, title, url);
+  model->AddURL(model->other_node(), 0, title, url);
+  model->AddURL(model->mobile_node(), 0, title, url);
+  model->AddURL(extra_node, 0, title, url);
+
+  std::vector<const BookmarkNode*> nodes;
+  model->GetNodesByURL(url, &nodes);
+  ASSERT_EQ(4u, nodes.size());
+
+  RemoveAllBookmarks(model.get(), url);
+
+  nodes.clear();
+  model->GetNodesByURL(url, &nodes);
+  ASSERT_EQ(1u, nodes.size());
+  EXPECT_TRUE(model->bookmark_bar_node()->empty());
+  EXPECT_TRUE(model->other_node()->empty());
+  EXPECT_TRUE(model->mobile_node()->empty());
+  EXPECT_EQ(1, extra_node->child_count());
 }
 
 }  // namespace

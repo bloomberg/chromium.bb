@@ -69,18 +69,17 @@ class BookmarkClient {
   // task will be invoked in the Profile's IO task runner.
   virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() = 0;
 
-  // Checks if the children of the given permanent |node| can be removed from
-  // the bookmark model.
-  virtual bool CanRemovePermanentNodeChildren(const BookmarkNode* node) = 0;
-
-  // Checks if the |permanent_node| can have its title updated.
+  // Returns true if the |permanent_node| can have its title updated.
   virtual bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) = 0;
 
-  // Checks if |node| should sync.
+  // Returns true if |node| should sync.
   virtual bool CanSyncNode(const BookmarkNode* node) = 0;
 
-  // Checks if the children of |parent| can be reordered or sorted.
-  virtual bool CanReorderChildren(const BookmarkNode* parent) = 0;
+  // Returns true if this node can be edited by the user.
+  // TODO(joaodasilva): the model should check this more aggressively, and
+  // should give the client a means to temporarily disable those checks.
+  // http://crbug.com/49598
+  virtual bool CanBeEditedByUser(const BookmarkNode* node) = 0;
 
  protected:
   virtual ~BookmarkClient() {}

@@ -19,7 +19,10 @@ TestBookmarkClient::~TestBookmarkClient() {}
 
 scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel(bool index_urls) {
   scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(this, index_urls));
-  bookmark_model->DoneLoading(bookmark_model->CreateLoadDetails(std::string()));
+  scoped_ptr<bookmarks::BookmarkLoadDetails> details =
+      bookmark_model->CreateLoadDetails(std::string());
+  details->LoadExtraNodes();
+  bookmark_model->DoneLoading(details.Pass());
   return bookmark_model.Pass();
 }
 
@@ -65,11 +68,6 @@ bookmarks::LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
                     base::Passed(&extra_nodes_to_load_));
 }
 
-bool TestBookmarkClient::CanRemovePermanentNodeChildren(
-    const BookmarkNode* node) {
-  return !IsAnExtraNode(node);
-}
-
 bool TestBookmarkClient::CanSetPermanentNodeTitle(
     const BookmarkNode* permanent_node) {
   return IsExtraNodeRoot(permanent_node);
@@ -79,8 +77,8 @@ bool TestBookmarkClient::CanSyncNode(const BookmarkNode* node) {
   return !IsAnExtraNode(node);
 }
 
-bool TestBookmarkClient::CanReorderChildren(const BookmarkNode* parent) {
-  return !IsAnExtraNode(parent);
+bool TestBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
+  return !IsAnExtraNode(node);
 }
 
 // static

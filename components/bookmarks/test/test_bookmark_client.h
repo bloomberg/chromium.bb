@@ -22,8 +22,7 @@ class TestBookmarkClient : public BookmarkClient {
   scoped_ptr<BookmarkModel> CreateModel(bool index_urls);
 
   // Sets the list of extra nodes to be returned by the next call to
-  // GetLoadExtraNodesCallback(). CreateModel() won't pick this up; the model
-  // needs to get Load() invoked to reach to the client for this call.
+  // CreateModel() or GetLoadExtraNodesCallback().
   void SetExtraNodesToLoad(bookmarks::BookmarkPermanentNodeList extra_nodes);
 
   // Returns the current extra_nodes, set via SetExtraNodesToLoad().
@@ -43,12 +42,10 @@ class TestBookmarkClient : public BookmarkClient {
       const BookmarkPermanentNode* node) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
   virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() OVERRIDE;
-  virtual bool CanRemovePermanentNodeChildren(
-      const BookmarkNode* node) OVERRIDE;
   virtual bool CanSetPermanentNodeTitle(
       const BookmarkNode* permanent_node) OVERRIDE;
   virtual bool CanSyncNode(const BookmarkNode* node) OVERRIDE;
-  virtual bool CanReorderChildren(const BookmarkNode* parent) OVERRIDE;
+  virtual bool CanBeEditedByUser(const BookmarkNode* node) OVERRIDE;
 
   // Helpers for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(

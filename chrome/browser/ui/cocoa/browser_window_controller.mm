@@ -1720,7 +1720,7 @@ enum {
   if (!bookmarkBubbleController_) {
     BookmarkModel* model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
-    const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
+    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
                                                          model:model

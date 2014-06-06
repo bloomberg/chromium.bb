@@ -131,9 +131,9 @@ class BookmarkModel {
   // recursively removes all nodes. Observers are notified immediately.
   void Remove(const BookmarkNode* parent, int index);
 
-  // Removes all the non-permanent bookmark nodes. Observers are only notified
-  // when all nodes have been removed. There is no notification for individual
-  // node removals.
+  // Removes all the non-permanent bookmark nodes that are editable by the user.
+  // Observers are only notified when all nodes have been removed. There is no
+  // notification for individual node removals.
   void RemoveAll();
 
   // Moves |node| to |new_parent| and inserts it at the given |index|.
@@ -166,9 +166,10 @@ class BookmarkModel {
   // Returns the set of nodes with the |url|.
   void GetNodesByURL(const GURL& url, std::vector<const BookmarkNode*>* nodes);
 
-  // Returns the most recently added node for the |url|. Returns NULL if |url|
-  // is not bookmarked.
-  const BookmarkNode* GetMostRecentlyAddedNodeForURL(const GURL& url);
+  // Returns the most recently added user node for the |url|; urls from any
+  // nodes that are not editable by the user are never returned by this call.
+  // Returns NULL if |url| is not bookmarked.
+  const BookmarkNode* GetMostRecentlyAddedUserNodeForURL(const GURL& url);
 
   // Returns true if there are bookmarks, otherwise returns false.
   // This method is thread safe.

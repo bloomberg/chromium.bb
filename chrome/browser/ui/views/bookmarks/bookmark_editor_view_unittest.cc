@@ -51,7 +51,7 @@ class BookmarkEditorViewTest : public testing::Test {
   std::string base_path() const { return "file:///c:/tmp/"; }
 
   const BookmarkNode* GetNode(const std::string& name) {
-    return model_->GetMostRecentlyAddedNodeForURL(GURL(base_path() + name));
+    return model_->GetMostRecentlyAddedUserNodeForURL(GURL(base_path() + name));
   }
 
   BookmarkNode* GetMutableNode(const std::string& name) {

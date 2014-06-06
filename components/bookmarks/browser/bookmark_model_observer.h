@@ -102,7 +102,8 @@ class BookmarkModelObserver {
   // Invoked before all non-permanent bookmark nodes are removed.
   virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) {}
 
-  // Invoked when all non-permanent bookmark nodes have been removed.
+  // Invoked when all non-permanent bookmark nodes that are editable by the
+  // user have been removed.
   // |removed_urls| is populated with the urls which no longer have any
   // bookmarks associated with them.
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model,

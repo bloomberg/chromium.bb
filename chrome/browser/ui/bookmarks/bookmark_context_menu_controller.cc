@@ -20,6 +20,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/page_navigator.h"
@@ -321,9 +322,12 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();
-  bool can_edit = prefs->GetBoolean(prefs::kEditBookmarksEnabled);
+  bool can_edit =
+      prefs->GetBoolean(prefs::kEditBookmarksEnabled) &&
+      bookmark_utils::CanAllBeEditedByUser(model_->client(), selection_);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(prefs);
+
   switch (command_id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
@@ -360,8 +364,9 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
     case IDC_BOOKMARK_BAR_NEW_FOLDER:
     case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK:
-      return can_edit && bookmark_utils::GetParentForNewNodes(
-          parent_, selection_, NULL) != NULL;
+      return can_edit && model_->client()->CanBeEditedByUser(parent_) &&
+             bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL) !=
+                 NULL;
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
       return !prefs->IsManagedPreference(prefs::kShowBookmarkBar);
@@ -378,8 +383,8 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else
       return can_edit &&
              ((!selection_.empty() &&
-               bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
-              bookmark_utils::CanPasteFromClipboard(parent_));
+               bookmark_utils::CanPasteFromClipboard(model_, selection_[0])) ||
+              bookmark_utils::CanPasteFromClipboard(model_, parent_));
   }
   return true;
 }

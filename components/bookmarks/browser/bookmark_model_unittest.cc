@@ -267,6 +267,23 @@ class BookmarkModelTest : public testing::Test,
 
   int AllNodesRemovedObserverCount() const { return all_bookmarks_removed_; }
 
+  BookmarkPermanentNode* ReloadModelWithExtraNode() {
+    BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
+    bookmarks::BookmarkPermanentNodeList extra_nodes;
+    extra_nodes.push_back(extra_node);
+    client_.SetExtraNodesToLoad(extra_nodes.Pass());
+
+    model_->RemoveObserver(this);
+    model_ = client_.CreateModel(false);
+    model_->AddObserver(this);
+    ClearCounts();
+
+    if (model_->root_node()->GetIndexOf(extra_node) == -1)
+      ADD_FAILURE();
+
+    return extra_node;
+  }
+
  protected:
   test::TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
@@ -323,7 +340,7 @@ TEST_F(BookmarkModelTest, AddURL) {
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
-  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedUserNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_->other_node()->id() &&
@@ -344,7 +361,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
-  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedUserNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_->other_node()->id() &&
@@ -388,7 +405,7 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   ASSERT_EQ(time, new_node->date_added());
   ASSERT_TRUE(new_node->GetMetaInfoMap());
   ASSERT_EQ(meta_info, *new_node->GetMetaInfoMap());
-  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedUserNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_->other_node()->id() &&
@@ -408,7 +425,7 @@ TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
-  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_TRUE(new_node == model_->GetMostRecentlyAddedUserNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model_->other_node()->id() &&
@@ -467,7 +484,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
-  ASSERT_TRUE(model_->GetMostRecentlyAddedNodeForURL(url) == NULL);
+  ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
 }
 
 TEST_F(BookmarkModelTest, RemoveFolder) {
@@ -490,7 +507,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
-  ASSERT_TRUE(model_->GetMostRecentlyAddedNodeForURL(url) == NULL);
+  ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
 }
 
 TEST_F(BookmarkModelTest, RemoveAll) {
@@ -602,7 +619,7 @@ TEST_F(BookmarkModelTest, Move) {
   model_->Remove(root, 0);
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
-  EXPECT_TRUE(model_->GetMostRecentlyAddedNodeForURL(url) == NULL);
+  EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
   EXPECT_EQ(0, root->child_count());
 }
 
@@ -709,7 +726,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
 
   // Make sure folder is in the most recently modified.
   std::vector<const BookmarkNode*> most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedFolders(model_.get(), 1);
+      bookmark_utils::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_EQ(folder, most_recent_folders[0]);
 
@@ -717,7 +734,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
   // returned list.
   model_->Remove(folder->parent(), 0);
   most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedFolders(model_.get(), 1);
+      bookmark_utils::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
 }
@@ -766,8 +783,8 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
   ASSERT_TRUE(n4 == recently_added[3]);
 }
 
-// Makes sure GetMostRecentlyAddedNodeForURL stays in sync.
-TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
+// Makes sure GetMostRecentlyAddedUserNodeForURL stays in sync.
+TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURL) {
   // Add a couple of nodes such that the following holds for the time of the
   // nodes: n1 > n2
   Time base_time = Time::Now();
@@ -780,11 +797,11 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
   n2->set_date_added(base_time + TimeDelta::FromDays(3));
 
   // Make sure order is honored.
-  ASSERT_EQ(n1, model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_EQ(n1, model_->GetMostRecentlyAddedUserNodeForURL(url));
 
   // swap 1 and 2, then check again.
   SwapDateAdded(n1, n2);
-  ASSERT_EQ(n2, model_->GetMostRecentlyAddedNodeForURL(url));
+  ASSERT_EQ(n2, model_->GetMostRecentlyAddedUserNodeForURL(url));
 }
 
 // Makes sure GetBookmarks removes duplicates.
@@ -1095,6 +1112,60 @@ TEST_F(BookmarkModelTest, MultipleExtensiveChangesObserver) {
   model_->EndExtensiveChanges();
   EXPECT_FALSE(model_->IsDoingExtensiveChanges());
   AssertExtensiveChangesObserverCount(1, 1);
+}
+
+// Verifies that IsBookmarked is true if any bookmark matches the given URL,
+// and that IsBookmarkedByUser is true only if at least one of the matching
+// bookmarks can be edited by the user.
+TEST_F(BookmarkModelTest, IsBookmarked) {
+  // Reload the model with an extra node that is not editable by the user.
+  BookmarkPermanentNode* extra_node = ReloadModelWithExtraNode();
+
+  // "google.com" is a "user" bookmark.
+  model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("User"),
+                 GURL("http://google.com"));
+  // "youtube.com" is not.
+  model_->AddURL(extra_node, 0, base::ASCIIToUTF16("Extra"),
+                 GURL("http://youtube.com"));
+
+  EXPECT_TRUE(model_->IsBookmarked(GURL("http://google.com")));
+  EXPECT_TRUE(model_->IsBookmarked(GURL("http://youtube.com")));
+  EXPECT_FALSE(model_->IsBookmarked(GURL("http://reddit.com")));
+
+  EXPECT_TRUE(bookmark_utils::IsBookmarkedByUser(model_.get(),
+                                                 GURL("http://google.com")));
+  EXPECT_FALSE(bookmark_utils::IsBookmarkedByUser(model_.get(),
+                                                  GURL("http://youtube.com")));
+  EXPECT_FALSE(bookmark_utils::IsBookmarkedByUser(model_.get(),
+                                                  GURL("http://reddit.com")));
+}
+
+// Verifies that GetMostRecentlyAddedUserNodeForURL skips bookmarks that
+// are not owned by the user.
+TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURLSkipsManagedNodes) {
+  // Reload the model with an extra node that is not editable by the user.
+  BookmarkPermanentNode* extra_node = ReloadModelWithExtraNode();
+
+  const base::string16 title = base::ASCIIToUTF16("Title");
+  const BookmarkNode* user_parent = model_->other_node();
+  const BookmarkNode* managed_parent = extra_node;
+  const GURL url("http://google.com");
+
+  // |url| is not bookmarked yet.
+  EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
+
+  // Having a managed node doesn't count.
+  model_->AddURL(managed_parent, 0, title, url);
+  EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
+
+  // Now add a user node.
+  const BookmarkNode* user = model_->AddURL(user_parent, 0, title, url);
+  EXPECT_EQ(user, model_->GetMostRecentlyAddedUserNodeForURL(url));
+
+  // Having a more recent managed node doesn't count either.
+  const BookmarkNode* managed = model_->AddURL(managed_parent, 0, title, url);
+  EXPECT_GT(managed->date_added(), user->date_added());
+  EXPECT_EQ(user, model_->GetMostRecentlyAddedUserNodeForURL(url));
 }
 
 TEST(BookmarkNodeTest, NodeMetaInfo) {

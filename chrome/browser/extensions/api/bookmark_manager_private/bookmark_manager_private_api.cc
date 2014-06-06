@@ -389,7 +389,7 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!CanBeModified(parent_node))
     return false;
-  bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
+  bool can_paste = bookmark_utils::CanPasteFromClipboard(model, parent_node);
   if (!can_paste)
     return false;
 
@@ -417,15 +417,14 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
   scoped_ptr<CanPaste::Params> params(CanPaste::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ChromeBookmarkClient* client = GetChromeBookmarkClient();
-  const BookmarkNode* parent_node =
-      GetNodeFromString(client->model(), params->parent_id);
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!parent_node) {
     error_ = bookmark_keys::kNoParentError;
     return false;
   }
-  bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node) &&
-                   !client->IsDescendantOfManagedNode(parent_node);
+  bool can_paste =
+      bookmark_utils::CanPasteFromClipboard(model, parent_node);
   SetResult(new base::FundamentalValue(can_paste));
   return true;
 }

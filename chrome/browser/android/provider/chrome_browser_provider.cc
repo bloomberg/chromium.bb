@@ -217,7 +217,7 @@ class AddBookmarkTask : public BookmarkModelTask {
     GURL gurl = ParseAndMaybeAppendScheme(url, kDefaultUrlScheme);
 
     // Check if the bookmark already exists.
-    const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(gurl);
+    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(gurl);
     if (!node) {
       const BookmarkNode* parent_node = NULL;
       if (parent_id >= 0)

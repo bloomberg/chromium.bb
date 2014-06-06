@@ -59,12 +59,10 @@ class ChromeBookmarkClient : public BookmarkClient,
       const BookmarkPermanentNode* node) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
   virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() OVERRIDE;
-  virtual bool CanRemovePermanentNodeChildren(
-      const BookmarkNode* node) OVERRIDE;
   virtual bool CanSetPermanentNodeTitle(
       const BookmarkNode* permanent_node) OVERRIDE;
   virtual bool CanSyncNode(const BookmarkNode* node) OVERRIDE;
-  virtual bool CanReorderChildren(const BookmarkNode* parent) OVERRIDE;
+  virtual bool CanBeEditedByUser(const BookmarkNode* node) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

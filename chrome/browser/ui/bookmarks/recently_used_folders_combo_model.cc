@@ -54,7 +54,8 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   bookmark_model_->AddObserver(this);
   // Use + 2 to account for bookmark bar and other node.
   std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetMostRecentlyModifiedFolders(model, kMaxMRUFolders + 2);
+      bookmark_utils::GetMostRecentlyModifiedUserFolders(model,
+                                                         kMaxMRUFolders + 2);
 
   for (size_t i = 0; i < nodes.size(); ++i)
     items_.push_back(Item(nodes[i], Item::TYPE_NODE));

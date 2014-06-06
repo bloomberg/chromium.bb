@@ -12,6 +12,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
+class BookmarkClient;
 class BookmarkModel;
 class BookmarkNode;
 class GURL;
@@ -60,11 +61,11 @@ void PasteFromClipboard(BookmarkModel* model,
                         int index);
 
 // Returns true if the user can copy from the pasteboard.
-bool CanPasteFromClipboard(const BookmarkNode* node);
+bool CanPasteFromClipboard(BookmarkModel* model, const BookmarkNode* node);
 
 // Returns a vector containing up to |max_count| of the most recently modified
-// folders. This never returns an empty vector.
-std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
+// user folders. This never returns an empty vector.
+std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     BookmarkModel* model, size_t max_count);
 
 // Returns the most recently added bookmarks. This does not return folders,
@@ -101,7 +102,7 @@ const BookmarkNode* GetParentForNewNodes(
 // Deletes the bookmark folders for the given list of |ids|.
 void DeleteBookmarkFolders(BookmarkModel* model, const std::vector<int64>& ids);
 
-// If there are no bookmarks for url, a bookmark is created.
+// If there are no user bookmarks for url, a bookmark is created.
 void AddIfNotBookmarked(BookmarkModel* model,
                         const GURL& url,
                         const base::string16& title);
@@ -135,6 +136,15 @@ base::string16 CleanUpUrlForMatching(
 // Returns the lower-cased title, possibly truncated if the original title
 // is overly-long.
 base::string16 CleanUpTitleForMatching(const base::string16& title);
+
+// Returns true if all the |nodes| can be edited by the user,
+// as determined by BookmarkClient::CanBeEditedByUser().
+bool CanAllBeEditedByUser(BookmarkClient* client,
+                          const std::vector<const BookmarkNode*>& nodes);
+
+// Returns true if |url| has a bookmark in the |model| that can be edited
+// by the user.
+bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url);
 
 }  // namespace bookmark_utils
 

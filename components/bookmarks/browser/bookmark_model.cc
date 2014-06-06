@@ -150,7 +150,7 @@ void BookmarkModel::Load(
 
 const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetMostRecentlyModifiedFolders(this, 1);
+      bookmark_utils::GetMostRecentlyModifiedUserFolders(this, 1);
   DCHECK(!nodes.empty());  // This list is always padded with default folders.
   return nodes[0];
 }
@@ -213,7 +213,7 @@ void BookmarkModel::RemoveAll() {
     for (int i = 0; i < root_.child_count(); ++i) {
       BookmarkNode* permanent_node = root_.GetChild(i);
 
-      if (!client_->CanRemovePermanentNodeChildren(permanent_node))
+      if (!client_->CanBeEditedByUser(permanent_node))
         continue;
 
       for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
@@ -503,15 +503,19 @@ void BookmarkModel::GetNodesByURL(const GURL& url,
   }
 }
 
-const BookmarkNode* BookmarkModel::GetMostRecentlyAddedNodeForURL(
+const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
     const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   GetNodesByURL(url, &nodes);
-  if (nodes.empty())
-    return NULL;
-
   std::sort(nodes.begin(), nodes.end(), &bookmark_utils::MoreRecentlyAdded);
-  return nodes.front();
+
+  // Look for the first node that the user can edit.
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    if (client_->CanBeEditedByUser(nodes[i]))
+      return nodes[i];
+  }
+
+  return NULL;
 }
 
 bool BookmarkModel::HasBookmarks() {
@@ -620,7 +624,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
 }
 
 void BookmarkModel::SortChildren(const BookmarkNode* parent) {
-  DCHECK(client_->CanReorderChildren(parent));
+  DCHECK(client_->CanBeEditedByUser(parent));
 
   if (!parent || !parent->is_folder() || is_root_node(parent) ||
       parent->child_count() <= 1) {
@@ -649,7 +653,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
 void BookmarkModel::ReorderChildren(
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& ordered_nodes) {
-  DCHECK(client_->CanReorderChildren(parent));
+  DCHECK(client_->CanBeEditedByUser(parent));
 
   // Ensure that all children in |parent| are in |ordered_nodes|.
   DCHECK_EQ(static_cast<size_t>(parent->child_count()), ordered_nodes.size());
