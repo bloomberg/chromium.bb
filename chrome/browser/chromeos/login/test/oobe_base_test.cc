@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -26,13 +27,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 
 namespace chromeos {
-
-namespace {
-
-// Note the path name must be the same as in shill stub.
-const char kStubEthernetServicePath[] = "eth1";
-
-}  // namespace
 
 OobeBaseTest::OobeBaseTest()
     : fake_gaia_(new FakeGaia()),
@@ -64,7 +58,7 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   network_portal_detector_ = new NetworkPortalDetectorTestImpl();
   NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
   network_portal_detector_->SetDefaultNetworkPathForTesting(
-      kStubEthernetServicePath);
+      FakeShillManagerClient::kFakeEthernetNetworkPath);
 
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
@@ -115,7 +109,7 @@ void OobeBaseTest::SimulateNetworkOffline() {
   NetworkPortalDetector::CaptivePortalState offline_state;
   offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
   network_portal_detector_->SetDetectionResultsForTesting(
-      kStubEthernetServicePath, offline_state);
+      FakeShillManagerClient::kFakeEthernetNetworkPath, offline_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -129,7 +123,7 @@ void OobeBaseTest::SimulateNetworkOnline() {
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
   network_portal_detector_->SetDetectionResultsForTesting(
-      kStubEthernetServicePath, online_state);
+      FakeShillManagerClient::kFakeEthernetNetworkPath, online_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -142,7 +136,7 @@ void OobeBaseTest::SimulateNetworkPortal() {
   NetworkPortalDetector::CaptivePortalState portal_state;
   portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   network_portal_detector_->SetDetectionResultsForTesting(
-      kStubEthernetServicePath, portal_state);
+      FakeShillManagerClient::kFakeEthernetNetworkPath, portal_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 

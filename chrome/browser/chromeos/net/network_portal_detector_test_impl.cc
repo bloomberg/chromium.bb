@@ -17,6 +17,7 @@ NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
 
 void NetworkPortalDetectorTestImpl::SetDefaultNetworkPathForTesting(
     const std::string& service_path) {
+  DVLOG(1) << "SetDefaultNetworkPathForTesting: " << service_path;
   if (service_path.empty())
     default_network_.reset();
   else
@@ -26,6 +27,8 @@ void NetworkPortalDetectorTestImpl::SetDefaultNetworkPathForTesting(
 void NetworkPortalDetectorTestImpl::SetDetectionResultsForTesting(
     const std::string& service_path,
     const CaptivePortalState& state) {
+  DVLOG(1) << "SetDetectionResultsForTesting: " << service_path << " = "
+           << NetworkPortalDetector::CaptivePortalStatusString(state.status);
   if (!service_path.empty())
     portal_state_map_[service_path] = state;
 }
@@ -69,8 +72,12 @@ NetworkPortalDetector::CaptivePortalState
 NetworkPortalDetectorTestImpl::GetCaptivePortalState(
     const std::string& service_path) {
   CaptivePortalStateMap::iterator it = portal_state_map_.find(service_path);
-  if (it == portal_state_map_.end())
+  if (it == portal_state_map_.end()) {
+    DVLOG(2) << "GetCaptivePortalState Not found: " << service_path;
     return CaptivePortalState();
+  }
+  DVLOG(2) << "GetCaptivePortalState: " << service_path << " = "
+           << CaptivePortalStatusString(it->second.status);
   return it->second;
 }
 

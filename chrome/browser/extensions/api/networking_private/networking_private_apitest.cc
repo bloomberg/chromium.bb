@@ -234,13 +234,12 @@ class ExtensionNetworkingPrivateApiTest
                   const std::string& name,
                   const std::string& type,
                   const std::string& state) {
-    const bool add_to_watchlist = true;
     const bool add_to_visible = true;
     // Tests need a known GUID, so use 'service_path'.
     service_test_->AddServiceWithIPConfig(
         service_path, service_path /* guid */, name,
         type, state, "" /* ipconfig_path */,
-        add_to_visible, add_to_watchlist);
+        add_to_visible);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -264,6 +263,7 @@ class ExtensionNetworkingPrivateApiTest
 
     device_test_->ClearDevices();
     service_test_->ClearServices();
+    profile_test->ClearProfiles();
 
     // Sends a notification about the added profile.
     profile_test->AddProfile(kUser1ProfilePath, userhash_);

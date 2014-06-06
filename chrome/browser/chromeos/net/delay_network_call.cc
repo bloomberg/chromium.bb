@@ -17,15 +17,31 @@ const unsigned chromeos::kDefaultNetworkRetryDelayMS = 3000;
 
 void chromeos::DelayNetworkCall(const base::Closure& callback,
                                 base::TimeDelta retry) {
+  bool delay_network_call = false;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  bool delay_network_call = !default_network ||
-    !NetworkState::StateIsConnected(default_network->connection_state());
+  if (!default_network) {
+    delay_network_call = true;
+    DVLOG(1) << "DelayNetworkCall: No default network.";
+  } else {
+    std:: string default_connection_state = default_network->connection_state();
+    if (!NetworkState::StateIsConnected(default_connection_state)) {
+      delay_network_call = true;
+      DVLOG(1) << "DelayNetworkCall: "
+               << "Default network: " << default_network->name()
+               << " State: " << default_connection_state;
+    }
+  }
   if (!delay_network_call && NetworkPortalDetector::IsInitialized()) {
     NetworkPortalDetector* detector = NetworkPortalDetector::Get();
-    if (detector->GetCaptivePortalState(default_network->path()).status !=
-            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)
+    NetworkPortalDetector::CaptivePortalStatus status =
+        detector->GetCaptivePortalState(default_network->path()).status;
+    if (status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
       delay_network_call = true;
+      DVLOG(1) << "DelayNetworkCall: Captive portal status for "
+              << default_network->name() << ": "
+              << NetworkPortalDetector::CaptivePortalStatusString(status);
+    }
   }
   if (delay_network_call) {
     content::BrowserThread::PostDelayedTask(

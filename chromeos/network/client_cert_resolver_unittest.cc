@@ -157,13 +157,11 @@ class ClientCertResolverTest : public testing::Test {
 
   void SetupWifi() {
     const bool add_to_visible = true;
-    const bool add_to_watchlist = true;
     service_test_->AddService(kWifiStub,
                               kWifiSSID,
                               shill::kTypeWifi,
                               shill::kStateOnline,
-                              add_to_visible,
-                              add_to_watchlist);
+                              add_to_visible);
     service_test_->SetServiceProperty(
         kWifiStub, shill::kGuidProperty, base::StringValue(kWifiStub));
 

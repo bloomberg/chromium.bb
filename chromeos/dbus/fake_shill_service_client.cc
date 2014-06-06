@@ -308,11 +308,10 @@ void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,
-                                        bool add_to_visible_list,
-                                        bool add_to_watch_list) {
+                                        bool add_to_visible_list) {
   AddServiceWithIPConfig(service_path, "" /* guid */, name,
                          type, state, "" /* ipconfig_path */,
-                         add_to_visible_list, add_to_watch_list);
+                         add_to_visible_list);
 }
 
 void FakeShillServiceClient::AddServiceWithIPConfig(
@@ -322,10 +321,9 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
     const std::string& type,
     const std::string& state,
     const std::string& ipconfig_path,
-    bool add_to_visible_list,
-    bool add_to_watch_list) {
+    bool add_to_visible_list) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddManagerService(service_path, add_to_visible_list, add_to_watch_list);
+      AddManagerService(service_path, add_to_visible_list);
   std::string device_path =
       DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
       GetDevicePathForType(type);
@@ -379,8 +377,7 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
         new base::StringValue(shill::kSecurityNone));
   }
 
-  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      SortManagerServices();
+  CallSortManagerServices();
 
   if (!profile_path.empty()) {
     DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->

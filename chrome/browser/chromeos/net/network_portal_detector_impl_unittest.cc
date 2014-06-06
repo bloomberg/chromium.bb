@@ -238,31 +238,26 @@ class NetworkPortalDetectorImplTest
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     const bool add_to_visible = true;
-    const bool add_to_watchlist = true;
     service_test->AddService(kStubEthernet,
                              kStubEthernet,
                              shill::kTypeEthernet,
                              shill::kStateIdle,
-                             add_to_visible,
-                             add_to_watchlist);
+                             add_to_visible);
     service_test->AddService(kStubWireless1,
                              kStubWireless1,
                              shill::kTypeWifi,
                              shill::kStateIdle,
-                             add_to_visible,
-                             add_to_watchlist);
+                             add_to_visible);
     service_test->AddService(kStubWireless2,
                              kStubWireless2,
                              shill::kTypeWifi,
                              shill::kStateIdle,
-                             add_to_visible,
-                             add_to_watchlist);
+                             add_to_visible);
     service_test->AddService(kStubCellular,
                              kStubCellular,
                              shill::kTypeCellular,
                              shill::kStateIdle,
-                             add_to_visible,
-                             add_to_watchlist);
+                             add_to_visible);
   }
 
   void SetupNetworkHandler() {

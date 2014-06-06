@@ -94,8 +94,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void SetManagerProperty(const std::string& key,
                                   const base::Value& value) OVERRIDE;
   virtual void AddManagerService(const std::string& service_path,
-                                 bool add_to_visible_list,
-                                 bool add_to_watch_list) OVERRIDE;
+                                 bool add_to_visible_list) OVERRIDE;
   virtual void RemoveManagerService(const std::string& service_path,
                                     bool remove_from_complete_list) OVERRIDE;
   virtual void ClearManagerServices() OVERRIDE;
@@ -107,11 +106,13 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void SetBestServiceToConnect(
       const std::string& service_path) OVERRIDE;
 
+  // Constants used for testing.
+  static const char kFakeEthernetNetworkPath[];
+
  private:
   // |property| should be kServicesProperty or kServiceCompleteListProperty.
   void SortServiceList(const std::string& property);
 
-  void AddServiceToWatchList(const std::string& service_path);
   void SetDefaultProperties();
   void PassStubProperties(const DictionaryValueCallback& callback) const;
   void PassStubGeoNetworks(const DictionaryValueCallback& callback) const;

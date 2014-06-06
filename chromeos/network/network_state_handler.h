@@ -242,6 +242,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // connected using EAP, returns NULL.
   const FavoriteState* GetEAPForEthernet(const std::string& service_path) const;
 
+  const std::string& default_network_path() const {
+    return default_network_path_;
+  }
+
   // Construct and initialize an instance for testing.
   static NetworkStateHandler* InitializeForTest();
 

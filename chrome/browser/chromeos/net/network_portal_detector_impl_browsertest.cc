@@ -109,8 +109,7 @@ class NetworkPortalDetectorImplBrowserTest
                              kWifi,
                              shill::kTypeEthernet,
                              shill::kStateIdle,
-                             true /* add_to_visible */,
-                             true /* add_to_watchlist */);
+                             true /* add_to_visible */);
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifi),
         shill::kStateProperty,

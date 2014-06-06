@@ -70,12 +70,11 @@ class NetworkStateNotifierTest : public AshTestBase {
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
-    const bool add_to_watchlist = true;
     const bool add_to_visible = true;
     // Create wifi and cellular networks and set to online.
     service_test->AddService("wifi1", "wifi1",
                              shill::kTypeWifi, shill::kStateIdle,
-                             add_to_visible, add_to_watchlist);
+                             add_to_visible);
     service_test->SetServiceProperty("wifi1",
                                      shill::kSecurityProperty,
                                      base::StringValue(shill::kSecurityWep));

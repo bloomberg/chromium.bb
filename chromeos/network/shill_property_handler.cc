@@ -61,9 +61,11 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
         path_(path),
         handler_(handler) {
     if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
+      DVLOG(2) << "ShillPropertyObserver: Network: " << path;
       DBusThreadManager::Get()->GetShillServiceClient()->
           AddPropertyChangedObserver(dbus::ObjectPath(path_), this);
     } else if (type_ == ManagedState::MANAGED_TYPE_DEVICE) {
+      DVLOG(2) << "ShillPropertyObserver: Device: " << path;
       DBusThreadManager::Get()->GetShillDeviceClient()->
           AddPropertyChangedObserver(dbus::ObjectPath(path_), this);
     } else {
@@ -206,7 +208,8 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
   if (pending_updates_[type].find(path) != pending_updates_[type].end())
     return;  // Update already requested.
 
-  NET_LOG_DEBUG("Request Properties", path);
+  NET_LOG_DEBUG("Request Properties: " + ManagedState::TypeToString(type),
+                path);
   pending_updates_[type].insert(path);
   if (type == ManagedState::MANAGED_TYPE_NETWORK ||
       type == ManagedState::MANAGED_TYPE_FAVORITE) {
@@ -289,6 +292,7 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
 
 void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
                                                   const base::Value& value) {
+  NET_LOG_DEBUG("ManagerPropertyChanged", key);
   if (key == shill::kDefaultServiceProperty) {
     std::string service_path;
     value.GetAsString(&service_path);
@@ -346,9 +350,8 @@ void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
   std::set<std::string>& requested_service_updates =
       requested_updates_[ManagedState::MANAGED_TYPE_NETWORK];  // For favorites
   std::set<std::string> new_requested_updates;
-  NET_LOG_DEBUG(
-      base::StringPrintf("UpdateProperties: %" PRIuS, entries.GetSize()),
-      ManagedState::TypeToString(type));
+  NET_LOG_DEBUG("UpdateProperties: " + ManagedState::TypeToString(type),
+                base::StringPrintf("%" PRIuS, entries.GetSize()));
   for (base::ListValue::const_iterator iter = entries.begin();
        iter != entries.end(); ++iter) {
     std::string path;

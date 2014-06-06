@@ -16,12 +16,11 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
 
 namespace chromeos {
 
 namespace {
-
-const char kStubEthernetServicePath[] = "eth1";
 
 // Stub implementation of CaptivePortalWindowProxyDelegate, does
 // nothing and used to instantiate CaptivePortalWindowProxy.
@@ -189,9 +188,9 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
     portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
     portal_state.response_code = 200;
     network_portal_detector_->SetDefaultNetworkPathForTesting(
-        kStubEthernetServicePath);
+        FakeShillManagerClient::kFakeEthernetNetworkPath);
     network_portal_detector_->SetDetectionResultsForTesting(
-        kStubEthernetServicePath, portal_state);
+        FakeShillManagerClient::kFakeEthernetNetworkPath, portal_state);
   }
 
  protected:

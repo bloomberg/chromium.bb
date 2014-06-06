@@ -853,8 +853,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
                              "eth0",
                              shill::kTypeEthernet,
                              shill::kStateOnline,
-                             true,   // add to visible
-                             true);  // add to watchlist
+                             true /* add_to_visible */ );
     service_test->SetServiceProperty("stub_ethernet",
                                      shill::kGuidProperty,
                                      base::StringValue("stub_ethernet"));

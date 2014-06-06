@@ -427,7 +427,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
-    // Default detworks happens to be usually "eth1" in tests.
     network_portal_detector_->SetDefaultNetworkPathForTesting(
         NetworkHandler::Get()
             ->network_state_handler()

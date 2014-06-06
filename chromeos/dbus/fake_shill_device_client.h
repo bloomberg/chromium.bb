@@ -88,7 +88,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   // ShillDeviceClient::TestInterface overrides.
   virtual void AddDevice(const std::string& device_path,
                          const std::string& type,
-                         const std::string& object_path) OVERRIDE;
+                         const std::string& name) OVERRIDE;
   virtual void RemoveDevice(const std::string& device_path) OVERRIDE;
   virtual void ClearDevices() OVERRIDE;
   virtual void SetDeviceProperty(const std::string& device_path,

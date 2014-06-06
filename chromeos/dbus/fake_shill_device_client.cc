@@ -237,18 +237,17 @@ ShillDeviceClient::TestInterface* FakeShillDeviceClient::GetTestInterface() {
 
 void FakeShillDeviceClient::AddDevice(const std::string& device_path,
                                       const std::string& type,
-                                      const std::string& object_path) {
+                                      const std::string& name) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddDevice(device_path);
 
   base::DictionaryValue* properties = GetDeviceProperties(device_path);
   properties->SetWithoutPathExpansion(shill::kTypeProperty,
                                       base::Value::CreateStringValue(type));
+  properties->SetWithoutPathExpansion(shill::kNameProperty,
+                                      base::Value::CreateStringValue(name));
   properties->SetWithoutPathExpansion(
-      shill::kNameProperty,
-      base::Value::CreateStringValue(object_path));
-  properties->SetWithoutPathExpansion(
-      shill::kDBusObjectProperty, base::Value::CreateStringValue(object_path));
+      shill::kDBusObjectProperty, base::Value::CreateStringValue(device_path));
   properties->SetWithoutPathExpansion(
       shill::kDBusServiceProperty,
       base::Value::CreateStringValue(modemmanager::kModemManager1ServiceName));

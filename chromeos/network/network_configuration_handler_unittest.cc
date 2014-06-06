@@ -506,7 +506,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
   // TODO(stevenjb): Remove dependency on default Stub service.
-  const std::string service_path("wifi1");
+  const std::string service_path("/service/wifi1");
   const std::string test_identity("test_identity");
   const std::string test_passphrase("test_passphrase");
 
@@ -558,7 +558,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   // TODO(stevenjb): Remove dependency on default Stub service.
-  const std::string service_path("wifi1");
+  const std::string service_path("/service/wifi1");
   std::string wifi_hex = "5468697320697320484558205353494421";
   std::string expected_name = "This is HEX SSID!";
 
@@ -593,7 +593,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
 }
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
-  const std::string service_path("test_wifi");
+  const std::string service_path("/service/test_wifi");
   base::DictionaryValue properties;
   shill_property_util::SetSSID(service_path, &properties);
   properties.SetStringWithoutPathExpansion(shill::kNameProperty, service_path);

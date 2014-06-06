@@ -63,8 +63,7 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
 
     // Modify services in the Manager's list.
     virtual void AddManagerService(const std::string& service_path,
-                                   bool add_to_visible_list,
-                                   bool add_to_watch_list) = 0;
+                                   bool add_to_visible_list) = 0;
     virtual void RemoveManagerService(const std::string& service_path,
                                       bool remove_from_complete_list) = 0;
     virtual void ClearManagerServices() = 0;

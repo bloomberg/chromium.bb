@@ -145,7 +145,7 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
   DCHECK(profile);
   profile->entries.SetWithoutPathExpansion(entry_path, properties.DeepCopy());
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddManagerService(entry_path, false /* visible */, false /* watch */);
+      AddManagerService(entry_path, false /* visible */);
 }
 
 bool FakeShillProfileClient::AddService(const std::string& profile_path,

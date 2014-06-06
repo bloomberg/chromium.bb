@@ -106,13 +106,11 @@ class NetworkCertMigratorTest : public testing::Test {
 
   void SetupWifiWithNss() {
     const bool add_to_visible = true;
-    const bool add_to_watchlist = true;
     service_test_->AddService(kWifiStub,
                               kWifiStub,
                               shill::kTypeWifi,
                               shill::kStateOnline,
-                              add_to_visible,
-                              add_to_watchlist);
+                              add_to_visible);
     service_test_->SetServiceProperty(kWifiStub,
                                       shill::kEapCaCertNssProperty,
                                       base::StringValue(kNSSNickname));
@@ -134,13 +132,11 @@ class NetworkCertMigratorTest : public testing::Test {
 
   void SetupVpnWithNss(bool open_vpn) {
     const bool add_to_visible = true;
-    const bool add_to_watchlist = true;
     service_test_->AddService(kVPNStub,
                               kVPNStub,
                               shill::kTypeVPN,
                               shill::kStateIdle,
-                              add_to_visible,
-                              add_to_watchlist);
+                              add_to_visible);
     base::DictionaryValue provider;
     const char* nss_property = open_vpn ? shill::kOpenVPNCaCertNSSProperty
                                         : shill::kL2tpIpsecCaCertNssProperty;

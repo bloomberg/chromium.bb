@@ -100,6 +100,9 @@ const char* kNetworkDisabled = "disabled";
 
 }  // namespace
 
+// static
+const char FakeShillManagerClient::kFakeEthernetNetworkPath[] = "/service/eth1";
+
 FakeShillManagerClient::FakeShillManagerClient()
     : interactive_delay_(0),
       weak_ptr_factory_(this) {
@@ -144,6 +147,7 @@ void FakeShillManagerClient::SetProperty(const std::string& name,
                                          const base::Value& value,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
+  DVLOG(2) << "SetProperty: " << name;
   stub_properties_.SetWithoutPathExpansion(name, value.DeepCopy());
   CallNotifyObserversPropertyChanged(name);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
@@ -255,8 +259,7 @@ void FakeShillManagerClient::ConfigureService(
                                            guid /* name */,
                                            type,
                                            shill::kStateIdle, ipconfig_path,
-                                           true /* visible */,
-                                           true /* watch */);
+                                           true /* visible */);
     existing_properties = service_client->GetServiceProperties(service_path);
   }
 
@@ -444,8 +447,9 @@ void FakeShillManagerClient::SetManagerProperty(const std::string& key,
 }
 
 void FakeShillManagerClient::AddManagerService(const std::string& service_path,
-                                               bool add_to_visible_list,
-                                               bool add_to_watch_list) {
+                                               bool add_to_visible_list) {
+  DVLOG(2) << "AddManagerService: " << service_path
+           << " Visible: " << add_to_visible_list;
   // Always add to ServiceCompleteListProperty.
   GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
       base::Value::CreateStringValue(service_path));
@@ -455,13 +459,12 @@ void FakeShillManagerClient::AddManagerService(const std::string& service_path,
           base::Value::CreateStringValue(service_path))) {
     CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   }
-  if (add_to_watch_list)
-    AddServiceToWatchList(service_path);
 }
 
 void FakeShillManagerClient::RemoveManagerService(
     const std::string& service_path,
     bool remove_from_complete_list) {
+  DVLOG(2) << "RemoveManagerService: " << service_path;
   base::StringValue service_path_value(service_path);
   if (remove_from_complete_list) {
     GetListProperty(shill::kServiceCompleteListProperty)->Remove(
@@ -471,18 +474,13 @@ void FakeShillManagerClient::RemoveManagerService(
       service_path_value, NULL)) {
     CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   }
-  if (GetListProperty(shill::kServiceWatchListProperty)->Remove(
-      service_path_value, NULL)) {
-    CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
-  }
 }
 
 void FakeShillManagerClient::ClearManagerServices() {
+  DVLOG(1) << "ClearManagerServices";
   GetListProperty(shill::kServiceCompleteListProperty)->Clear();
   GetListProperty(shill::kServicesProperty)->Clear();
-  GetListProperty(shill::kServiceWatchListProperty)->Clear();
   CallNotifyObserversPropertyChanged(shill::kServicesProperty);
-  CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
 }
 
 void FakeShillManagerClient::ServiceStateChanged(
@@ -497,6 +495,7 @@ void FakeShillManagerClient::ServiceStateChanged(
 }
 
 void FakeShillManagerClient::SortManagerServices() {
+  DVLOG(1) << "SortManagerServices";
   SortServiceList(shill::kServicesProperty);
   SortServiceList(shill::kServiceCompleteListProperty);
 }
@@ -511,6 +510,7 @@ void FakeShillManagerClient::SortServiceList(const std::string& property) {
   };
 
   base::ListValue* service_list = GetListProperty(property);
+  scoped_ptr<base::ListValue> prev_service_list(service_list->DeepCopy());
   std::vector<std::string> active_services;
   std::vector<std::string> inactive_services;
   if (service_list && !service_list->empty()) {
@@ -528,7 +528,8 @@ void FakeShillManagerClient::SortServiceList(const std::string& property) {
   if (property != shill::kServicesProperty)
     return;
 
-  CallNotifyObserversPropertyChanged(property);
+  if (!service_list->Equals(prev_service_list.get()))
+    CallNotifyObserversPropertyChanged(shill::kServicesProperty);
 
   // Set the first active service as the Default service.
   std::string new_default_service;
@@ -582,7 +583,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   profiles->AddProfile(shared_profile, std::string());
 
   const bool add_to_visible = true;
-  const bool add_to_watchlist = true;
 
   bool enabled;
   std::string state;
@@ -620,11 +620,11 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/eth1",
                                shill::kIPConfigsProperty,
                                eth_ip_configs);
-    services->AddService("eth1", "eth1",
+    services->AddService(kFakeEthernetNetworkPath, "eth1",
                          shill::kTypeEthernet,
                          state,
-                         add_to_visible, add_to_watchlist);
-    profiles->AddService(shared_profile, "eth1");
+                         add_to_visible);
+    profiles->AddService(shared_profile, kFakeEthernetNetworkPath);
   }
 
   // Wifi
@@ -647,37 +647,37 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                shill::kIPConfigsProperty,
                                wifi_ip_configs);
 
-    services->AddService("wifi1",
+    services->AddService("/service/wifi1",
                          "wifi1",
                          shill::kTypeWifi,
                          state,
-                         add_to_visible, add_to_watchlist);
-    services->SetServiceProperty("wifi1",
+                         add_to_visible);
+    services->SetServiceProperty("/service/wifi1",
                                  shill::kSecurityProperty,
                                  base::StringValue(shill::kSecurityWep));
-    profiles->AddService(shared_profile, "wifi1");
+    profiles->AddService(shared_profile, "/service/wifi1");
 
-    services->AddService("wifi2",
+    services->AddService("/service/wifi2",
                          "wifi2_PSK",
                          shill::kTypeWifi,
                          shill::kStateIdle,
-                         add_to_visible, add_to_watchlist);
-    services->SetServiceProperty("wifi2",
+                         add_to_visible);
+    services->SetServiceProperty("/service/wifi2",
                                  shill::kSecurityProperty,
                                  base::StringValue(shill::kSecurityPsk));
 
     base::FundamentalValue strength_value(80);
     services->SetServiceProperty(
-        "wifi2", shill::kSignalStrengthProperty, strength_value);
-    profiles->AddService(shared_profile, "wifi2");
+        "/service/wifi2", shill::kSignalStrengthProperty, strength_value);
+    profiles->AddService(shared_profile, "/service/wifi2");
 
     if (portaled) {
-      const std::string kPortaledWifiPath = "portaled_wifi";
+      const std::string kPortaledWifiPath = "/service/portaled_wifi";
       services->AddService(kPortaledWifiPath,
                            "Portaled Wifi",
                            shill::kTypeWifi,
                            shill::kStatePortal,
-                           add_to_visible, add_to_watchlist);
+                           add_to_visible);
       services->SetServiceProperty(kPortaledWifiPath,
                                    shill::kSecurityProperty,
                                    base::StringValue(shill::kSecurityNone));
@@ -698,13 +698,14 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->AddDevice(
         "/device/wimax1", shill::kTypeWimax, "stub_wimax_device1");
 
-    services->AddService("wimax1",
+    services->AddService("/service/wimax1",
                          "wimax1",
                          shill::kTypeWimax,
                          state,
-                         add_to_visible, add_to_watchlist);
-    services->SetServiceProperty(
-        "wimax1", shill::kConnectableProperty, base::FundamentalValue(true));
+                         add_to_visible);
+    services->SetServiceProperty("/service/wimax1",
+                                 shill::kConnectableProperty,
+                                 base::FundamentalValue(true));
   }
 
   // Cellular
@@ -722,31 +723,32 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                shill::kCarrierProperty,
                                base::StringValue(shill::kCarrierSprint));
 
-    services->AddService("cellular1",
+    services->AddService("/service/cellular1",
                          "cellular1",
                          shill::kTypeCellular,
                          state,
-                         add_to_visible, add_to_watchlist);
+                         add_to_visible);
     base::StringValue technology_value(shill::kNetworkTechnologyGsm);
-    services->SetServiceProperty(
-        "cellular1", shill::kNetworkTechnologyProperty, technology_value);
+    services->SetServiceProperty("/service/cellular1",
+                                 shill::kNetworkTechnologyProperty,
+                                 technology_value);
 
     if (activated) {
       services->SetServiceProperty(
-          "cellular1",
+          "/service/cellular1",
           shill::kActivationStateProperty,
           base::StringValue(shill::kActivationStateActivated));
-      services->SetServiceProperty("cellular1",
+      services->SetServiceProperty("/service/cellular1",
                                    shill::kConnectableProperty,
                                    base::FundamentalValue(true));
     } else {
       services->SetServiceProperty(
-          "cellular1",
+          "/service/cellular1",
           shill::kActivationStateProperty,
           base::StringValue(shill::kActivationStateNotActivated));
     }
 
-    services->SetServiceProperty("cellular1",
+    services->SetServiceProperty("/service/cellular1",
                                  shill::kRoamingStateProperty,
                                  base::StringValue(shill::kRoamingStateHome));
   }
@@ -763,39 +765,28 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                   shill::kProviderOpenVpn);
     provider_properties.SetString(shill::kHostProperty, "vpn_host");
 
-    services->AddService("vpn1",
+    services->AddService("/service/vpn1",
                          "vpn1",
                          shill::kTypeVPN,
                          state,
-                         add_to_visible, add_to_watchlist);
+                         add_to_visible);
     services->SetServiceProperty(
-        "vpn1", shill::kProviderProperty, provider_properties);
-    profiles->AddService(shared_profile, "vpn1");
+        "/service/vpn1", shill::kProviderProperty, provider_properties);
+    profiles->AddService(shared_profile, "/service/vpn1");
 
-    services->AddService("vpn2",
+    services->AddService("/service/vpn2",
                          "vpn2",
                          shill::kTypeVPN,
                          shill::kStateIdle,
-                         add_to_visible, add_to_watchlist);
+                         add_to_visible);
     services->SetServiceProperty(
-        "vpn2", shill::kProviderProperty, provider_properties);
+        "/service/vpn2", shill::kProviderProperty, provider_properties);
   }
 
   SortManagerServices();
 }
 
 // Private methods
-
-void FakeShillManagerClient::AddServiceToWatchList(
-    const std::string& service_path) {
-  // Remove and insert the service, moving it to the front of the watch list.
-  GetListProperty(shill::kServiceWatchListProperty)->Remove(
-      base::StringValue(service_path), NULL);
-  GetListProperty(shill::kServiceWatchListProperty)->Insert(
-      0, base::Value::CreateStringValue(service_path));
-  CallNotifyObserversPropertyChanged(
-      shill::kServiceWatchListProperty);
-}
 
 void FakeShillManagerClient::PassStubProperties(
     const DictionaryValueCallback& callback) const {
@@ -805,9 +796,6 @@ void FakeShillManagerClient::PassStubProperties(
   stub_properties->SetWithoutPathExpansion(
       shill::kServicesProperty,
       GetEnabledServiceList(shill::kServicesProperty));
-  stub_properties->SetWithoutPathExpansion(
-      shill::kServiceWatchListProperty,
-      GetEnabledServiceList(shill::kServiceWatchListProperty));
   callback.Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
 }
 
@@ -831,8 +819,8 @@ void FakeShillManagerClient::CallNotifyObserversPropertyChanged(
 
 void FakeShillManagerClient::NotifyObserversPropertyChanged(
     const std::string& property) {
-  if (property == shill::kServicesProperty ||
-      property == shill::kServiceWatchListProperty) {
+  DVLOG(1) << "NotifyObserversPropertyChanged: " << property;
+  if (property == shill::kServicesProperty) {
     scoped_ptr<base::ListValue> services(GetEnabledServiceList(property));
     FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
                       observer_list_,
@@ -899,7 +887,6 @@ void FakeShillManagerClient::SetTechnologyEnabled(
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
   // May affect available services
   CallNotifyObserversPropertyChanged(shill::kServicesProperty);
-  CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
 }
 
 base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
@@ -937,8 +924,8 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
                           shill::kScanningProperty,
                           base::FundamentalValue(false));
   }
+  DVLOG(2) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServicesProperty);
-  CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
