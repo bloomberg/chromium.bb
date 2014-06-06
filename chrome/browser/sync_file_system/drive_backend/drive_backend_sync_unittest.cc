@@ -130,7 +130,10 @@ class DriveBackendSyncTest : public testing::Test,
     }
     file_systems_.clear();
 
+    local_sync_service_->Shutdown();
+
     fake_drive_service_helper_.reset();
+    local_sync_service_.reset();
     remote_sync_service_.reset();
 
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
