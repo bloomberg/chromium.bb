@@ -510,7 +510,5 @@ tree:focus .tree-item[selected] > .tree-row >
 
 list:focus li[selected] [volume-type-icon='provided'],
 tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='provided']{
-  /* Create a white version from a full-color icon. Works in most cases.
-     TODO(mtomasz): Replace with a shader or a JS code. */
-  -webkit-filter: grayscale(100%) contrast(10000%) invert(100%);
+  -webkit-filter: invert(100%) grayscale(100%) brightness(200%);
 }
