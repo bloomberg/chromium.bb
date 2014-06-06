@@ -707,7 +707,7 @@ void ContainerNode::notifyNodeRemoved(Node& root)
         if (!node->inDocument() && !node->isContainerNode())
             continue;
         if (document.cssTarget() == node)
-            document.setCSSTarget(0);
+            document.setCSSTarget(nullptr);
         node->removedFrom(this);
         for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             notifyNodeRemoved(*shadowRoot);

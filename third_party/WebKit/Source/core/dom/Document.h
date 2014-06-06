@@ -1290,7 +1290,7 @@ private:
 
     Timer<Document> m_updateFocusAppearanceTimer;
 
-    Element* m_cssTarget;
+    RawPtrWillBeMember<Element> m_cssTarget;
 
     LoadEventProgress m_loadEventProgress;
 

@@ -446,7 +446,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_titleSetExplicitly(false)
     , m_markers(adoptPtrWillBeNoop(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
-    , m_cssTarget(0)
+    , m_cssTarget(nullptr)
     , m_loadEventProgress(LoadEventNotRun)
     , m_startTime(currentTime())
     , m_scriptRunner(ScriptRunner::create(this))
@@ -3681,13 +3681,13 @@ SetFocusedElementDone:
     return !focusChangeBlocked;
 }
 
-void Document::setCSSTarget(Element* n)
+void Document::setCSSTarget(Element* newTarget)
 {
     if (m_cssTarget)
         m_cssTarget->didAffectSelector(AffectedSelectorTarget);
-    m_cssTarget = n;
-    if (n)
-        n->didAffectSelector(AffectedSelectorTarget);
+    m_cssTarget = newTarget;
+    if (m_cssTarget)
+        m_cssTarget->didAffectSelector(AffectedSelectorTarget);
 }
 
 void Document::registerNodeList(const LiveNodeListBase* list)
@@ -5780,6 +5780,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_documentElement);
     visitor->trace(m_titleElement);
     visitor->trace(m_markers);
+    visitor->trace(m_cssTarget);
     visitor->trace(m_currentScriptStack);
     visitor->trace(m_scriptRunner);
     visitor->trace(m_transformSourceDocument);
