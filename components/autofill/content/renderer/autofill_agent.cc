@@ -293,6 +293,7 @@ void AutofillAgent::didRequestAutocomplete(
         WebConsoleMessage::LevelLog,
         WebString(base::ASCIIToUTF16("requestAutocomplete: ") +
                       base::ASCIIToUTF16(error_message)));
+    form.document().frame()->addMessageToConsole(console_message);
     WebFormElement(form).finishRequestAutocomplete(
         WebFormElement::AutocompleteResultErrorDisabled);
     return;
