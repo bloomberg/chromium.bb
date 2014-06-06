@@ -21,6 +21,21 @@ bool TestSink::Send(Message* message) {
   return true;
 }
 
+bool TestSink::Connect() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void TestSink::Close() {
+  NOTIMPLEMENTED();
+}
+
+base::ProcessId TestSink::GetPeerPID() const {
+  NOTIMPLEMENTED();
+  return base::ProcessId();
+}
+
+
 bool TestSink::OnMessageReceived(const Message& msg) {
   ObserverListBase<Listener>::Iterator it(filter_list_);
   Listener* observer;
@@ -73,5 +88,38 @@ void TestSink::AddFilter(Listener* filter) {
 void TestSink::RemoveFilter(Listener* filter) {
   filter_list_.RemoveObserver(filter);
 }
+
+#if defined(OS_POSIX) && !defined(OS_NACL)
+
+int TestSink::GetClientFileDescriptor() const {
+  NOTREACHED();
+  return -1;
+}
+
+int TestSink::TakeClientFileDescriptor() {
+  NOTREACHED();
+  return -1;
+}
+
+bool TestSink::AcceptsConnections() const {
+  NOTREACHED();
+  return false;
+}
+
+bool TestSink::HasAcceptedConnection() const {
+  NOTREACHED();
+  return false;
+}
+
+bool TestSink::GetPeerEuid(uid_t* peer_euid) const {
+  NOTREACHED();
+  return false;
+}
+
+void TestSink::ResetToAcceptingConnectionState() {
+  NOTREACHED();
+}
+
+#endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
 }  // namespace IPC

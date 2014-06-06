@@ -97,8 +97,9 @@ bool IPCTestBase::StartClient() {
   client_process_ = SpawnChild(test_main);
 #elif defined(OS_POSIX)
   base::FileHandleMappingVector fds_to_map;
-  const int ipcfd = channel_.get() ? channel_->GetClientFileDescriptor() :
-                                     channel_proxy_->GetClientFileDescriptor();
+  const int ipcfd = channel_.get()
+      ? channel_->GetClientFileDescriptor()
+      : channel_proxy_->GetClientFileDescriptor();
   if (ipcfd > -1)
     fds_to_map.push_back(std::pair<int, int>(ipcfd,
         kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));

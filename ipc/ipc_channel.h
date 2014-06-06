@@ -117,8 +117,9 @@ class IPC_EXPORT Channel : public Sender {
   //
   // TODO(morrita): Replace CreateByModeForProxy() with one of above Create*().
   //
-  static scoped_ptr<Channel> CreateByModeForProxy(
+  static scoped_ptr<Channel> Create(
       const IPC::ChannelHandle &channel_handle, Mode mode,Listener* listener);
+
   static scoped_ptr<Channel> CreateClient(
       const IPC::ChannelHandle &channel_handle, Listener* listener);
 
@@ -149,14 +150,14 @@ class IPC_EXPORT Channel : public Sender {
   // connect to a pre-existing pipe.  Note, calling Connect()
   // will not block the calling thread and may complete
   // asynchronously.
-  bool Connect() WARN_UNUSED_RESULT;
+  virtual bool Connect() WARN_UNUSED_RESULT = 0;
 
   // Close this Channel explicitly.  May be called multiple times.
   // On POSIX calling close on an IPC channel that listens for connections will
   // cause it to close any accepted connections, and it will stop listening for
   // new connections. If you just want to close the currently accepted
   // connection and listen for new ones, use ResetToAcceptingConnectionState.
-  void Close();
+  virtual void Close() = 0;
 
   // Get the process ID for the connected peer.
   //
@@ -167,25 +168,25 @@ class IPC_EXPORT Channel : public Sender {
   // in response to a message from the remote side (which guarantees that it's
   // been connected), or you wait for the "connected" notification on the
   // listener.
-  base::ProcessId peer_pid() const;
+  virtual base::ProcessId GetPeerPID() const = 0;
 
   // Send a message over the Channel to the listener on the other end.
   //
   // |message| must be allocated using operator new.  This object will be
   // deleted once the contents of the Message have been sent.
-  virtual bool Send(Message* message) OVERRIDE;
+  virtual bool Send(Message* message) = 0;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_NACL)
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
   // This method may only be called on the server side of a channel.
   // This method can be called on any thread.
-  int GetClientFileDescriptor() const;
+  virtual int GetClientFileDescriptor() const = 0;
 
   // Same as GetClientFileDescriptor, but transfers the ownership of the
   // file descriptor to the caller.
   // This method can be called on any thread.
-  int TakeClientFileDescriptor();
+  virtual int TakeClientFileDescriptor() = 0;
 
   // On POSIX an IPC::Channel can either wrap an established socket, or it
   // can wrap a socket that is listening for connections. Currently an
@@ -193,19 +194,19 @@ class IPC_EXPORT Channel : public Sender {
   // at a time.
 
   // Returns true if the channel supports listening for connections.
-  bool AcceptsConnections() const;
+  virtual bool AcceptsConnections() const = 0;
 
   // Returns true if the channel supports listening for connections and is
   // currently connected.
-  bool HasAcceptedConnection() const;
+  virtual bool HasAcceptedConnection() const = 0;
 
   // Returns true if the peer process' effective user id can be determined, in
   // which case the supplied peer_euid is updated with it.
-  bool GetPeerEuid(uid_t* peer_euid) const;
+  virtual bool GetPeerEuid(uid_t* peer_euid) const = 0;
 
   // Closes any currently connected socket, and returns to a listening state
   // for more connections.
-  void ResetToAcceptingConnectionState();
+  virtual void ResetToAcceptingConnectionState() = 0;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Returns true if a named server channel is initialized on the given channel
@@ -238,20 +239,6 @@ class IPC_EXPORT Channel : public Sender {
   static void NotifyProcessForkedForTesting();
 #endif
 
- protected:
-  // Used in Chrome by the TestSink to provide a dummy channel implementation
-  // for testing. TestSink overrides the "interesting" functions in Channel so
-  // no actual implementation is needed. This will cause un-overridden calls to
-  // segfault. Do not use outside of test code!
-  Channel() : channel_impl_(0) { }
-
- private:
-  Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
-          Listener* listener);
-
-  // PIMPL to which all channel calls are delegated.
-  class ChannelImpl;
-  ChannelImpl *channel_impl_;
 };
 
 #if defined(OS_POSIX)

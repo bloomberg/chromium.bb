@@ -7,49 +7,41 @@
 namespace IPC {
 
 // static
-scoped_ptr<Channel> Channel::CreateByModeForProxy(
-    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, mode, listener));
-}
-
-// static
 scoped_ptr<Channel> Channel::CreateClient(
     const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, Channel::MODE_CLIENT, listener));
+  return Channel::Create(channel_handle, Channel::MODE_CLIENT, listener);
 }
 
 // static
 scoped_ptr<Channel> Channel::CreateNamedServer(
     const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, Channel::MODE_NAMED_SERVER, listener));
+  return Channel::Create(channel_handle, Channel::MODE_NAMED_SERVER, listener);
 }
 
 // static
 scoped_ptr<Channel> Channel::CreateNamedClient(
     const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, Channel::MODE_NAMED_CLIENT, listener));
+  return Channel::Create(channel_handle, Channel::MODE_NAMED_CLIENT, listener);
 }
 
 #if defined(OS_POSIX)
 // static
 scoped_ptr<Channel> Channel::CreateOpenNamedServer(
     const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, Channel::MODE_OPEN_NAMED_SERVER, listener));
+  return Channel::Create(channel_handle,
+                         Channel::MODE_OPEN_NAMED_SERVER,
+                         listener);
 }
 #endif
 
 // static
 scoped_ptr<Channel> Channel::CreateServer(
     const IPC::ChannelHandle &channel_handle, Listener* listener) {
-  return make_scoped_ptr(
-      new Channel(channel_handle, Channel::MODE_SERVER, listener));
+  return Channel::Create(channel_handle, Channel::MODE_SERVER, listener);
 }
 
+Channel::~Channel() {
+}
 
 }  // namespace IPC
 

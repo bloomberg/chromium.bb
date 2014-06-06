@@ -234,7 +234,8 @@ class PipeChannelHelper {
   void Init() {
     IPC::ChannelHandle in_handle("IN");
     in = IPC::Channel::CreateServer(in_handle, &null_listener_);
-    base::FileDescriptor out_fd(in->TakeClientFileDescriptor(), false);
+    base::FileDescriptor out_fd(
+        in->TakeClientFileDescriptor(), false);
     IPC::ChannelHandle out_handle("OUT", out_fd);
     out = IPC::Channel::CreateClient(out_handle, &cb_listener_);
     // PostTask the connect calls to make sure the callbacks happens

@@ -22,7 +22,7 @@ namespace IPC {
 // descriptors).
 struct MessageContents;
 
-// Similar to the Posix version of ChannelImpl but for Native Client code.
+// Similar to the ChannelPosix but for Native Client code.
 // This is somewhat different because sendmsg/recvmsg here do not follow POSIX
 // semantics. Instead, they are implemented by a custom embedding of
 // NaClDescCustom. See NaClIPCAdapter for the trusted-side implementation.
@@ -31,19 +31,20 @@ struct MessageContents;
 // sharing handles. We also currently do not support passing file descriptors or
 // named pipes, and we use background threads to emulate signaling when we can
 // read or write without blocking.
-class Channel::ChannelImpl : public internal::ChannelReader {
+class ChannelNacl : public Channel,
+                    public internal::ChannelReader {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
-  ChannelImpl(const IPC::ChannelHandle& channel_handle,
+  ChannelNacl(const IPC::ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener);
-  virtual ~ChannelImpl();
+  virtual ~ChannelNacl();
 
   // Channel implementation.
-  base::ProcessId peer_pid() const;
-  bool Connect();
-  void Close();
-  bool Send(Message* message);
+  virtual base::ProcessId GetPeerPID() const OVERRIDE;
+  virtual bool Connect() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual bool Send(Message* message) OVERRIDE;
 
   // Posted to the main thread by ReaderThreadRunner.
   void DidRecvMsg(scoped_ptr<MessageContents> contents);
@@ -110,9 +111,9 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   // called. Normally after we're connected, the queue is empty.
   std::deque<linked_ptr<Message> > output_queue_;
 
-  base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ChannelNacl> weak_ptr_factory_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelNacl);
 };
 
 }  // namespace IPC

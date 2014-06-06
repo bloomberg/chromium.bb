@@ -266,7 +266,7 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
   // Windows needs to explicitly duplicate the handle out to another process.
   base::SharedMemoryHandle target_handle;
   if (!BrokerDuplicateHandle(source_handle,
-                             channel_->peer_pid(),
+                             channel_->GetPeerPID(),
                              &target_handle,
                              FILE_GENERIC_READ | FILE_GENERIC_WRITE,
                              0)) {

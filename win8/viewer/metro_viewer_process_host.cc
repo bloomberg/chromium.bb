@@ -85,13 +85,13 @@ MetroViewerProcessHost::~MetroViewerProcessHost() {
 
 base::ProcessId MetroViewerProcessHost::GetViewerProcessId() {
   if (channel_)
-    return channel_->peer_pid();
+    return channel_->GetPeerPID();
   return base::kNullProcessId;
 }
 
 bool MetroViewerProcessHost::LaunchViewerAndWaitForConnection(
     const base::string16& app_user_model_id) {
-  DCHECK_EQ(base::kNullProcessId, channel_->peer_pid());
+  DCHECK_EQ(base::kNullProcessId, channel_->GetPeerPID());
 
   channel_connected_event_.reset(new base::WaitableEvent(false, false));
 

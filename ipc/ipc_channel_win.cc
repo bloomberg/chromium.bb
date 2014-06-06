@@ -23,17 +23,17 @@
 
 namespace IPC {
 
-Channel::ChannelImpl::State::State(ChannelImpl* channel) : is_pending(false) {
+ChannelWin::State::State(ChannelWin* channel) : is_pending(false) {
   memset(&context.overlapped, 0, sizeof(context.overlapped));
   context.handler = channel;
 }
 
-Channel::ChannelImpl::State::~State() {
-  COMPILE_ASSERT(!offsetof(Channel::ChannelImpl::State, context),
+ChannelWin::State::~State() {
+  COMPILE_ASSERT(!offsetof(ChannelWin::State, context),
                  starts_with_io_context);
 }
 
-Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
+ChannelWin::ChannelWin(const IPC::ChannelHandle &channel_handle,
                                   Mode mode, Listener* listener)
     : ChannelReader(listener),
       input_state_(this),
@@ -48,11 +48,11 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
   CreatePipe(channel_handle, mode);
 }
 
-Channel::ChannelImpl::~ChannelImpl() {
+ChannelWin::~ChannelWin() {
   Close();
 }
 
-void Channel::ChannelImpl::Close() {
+void ChannelWin::Close() {
   if (thread_check_.get()) {
     DCHECK(thread_check_->CalledOnValidThread());
   }
@@ -80,7 +80,7 @@ void Channel::ChannelImpl::Close() {
   }
 }
 
-bool Channel::ChannelImpl::Send(Message* message) {
+bool ChannelWin::Send(Message* message) {
   DCHECK(thread_check_->CalledOnValidThread());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
@@ -103,8 +103,12 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
+base::ProcessId ChannelWin::GetPeerPID() const {
+  return peer_pid_;
+}
+
 // static
-bool Channel::ChannelImpl::IsNamedServerInitialized(
+bool ChannelWin::IsNamedServerInitialized(
     const std::string& channel_id) {
   if (WaitNamedPipe(PipeName(channel_id, NULL).c_str(), 1))
     return true;
@@ -113,7 +117,7 @@ bool Channel::ChannelImpl::IsNamedServerInitialized(
   return GetLastError() == ERROR_SEM_TIMEOUT;
 }
 
-Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
+ChannelWin::ReadState ChannelWin::ReadData(
     char* buffer,
     int buffer_len,
     int* /* bytes_read */) {
@@ -145,14 +149,14 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
   return READ_PENDING;
 }
 
-bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+bool ChannelWin::WillDispatchInputMessage(Message* msg) {
   // Make sure we get a hello when client validation is required.
   if (validate_client_)
     return IsHelloMessage(*msg);
   return true;
 }
 
-void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
+void ChannelWin::HandleInternalMessage(const Message& msg) {
   DCHECK_EQ(msg.type(), static_cast<unsigned>(Channel::HELLO_MESSAGE_TYPE));
   // The hello message contains one parameter containing the PID.
   PickleIterator it(msg);
@@ -177,13 +181,13 @@ void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
   listener()->OnChannelConnected(claimed_pid);
 }
 
-bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+bool ChannelWin::DidEmptyInputBuffers() {
   // We don't need to do anything here.
   return true;
 }
 
 // static
-const base::string16 Channel::ChannelImpl::PipeName(
+const base::string16 ChannelWin::PipeName(
     const std::string& channel_id, int32* secret) {
   std::string name("\\\\.\\pipe\\chrome.");
 
@@ -201,7 +205,7 @@ const base::string16 Channel::ChannelImpl::PipeName(
   return base::ASCIIToWide(name.append(channel_id));
 }
 
-bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
+bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
   DCHECK_EQ(INVALID_HANDLE_VALUE, pipe_);
   base::string16 pipe_name;
@@ -286,7 +290,7 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
   return true;
 }
 
-bool Channel::ChannelImpl::Connect() {
+bool ChannelWin::Connect() {
   DLOG_IF(WARNING, thread_check_.get()) << "Connect called more than once";
 
   if (!thread_check_.get())
@@ -307,7 +311,7 @@ bool Channel::ChannelImpl::Connect() {
     // initialization signal.
     base::MessageLoopForIO::current()->PostTask(
         FROM_HERE,
-        base::Bind(&Channel::ChannelImpl::OnIOCompleted,
+        base::Bind(&ChannelWin::OnIOCompleted,
                    weak_factory_.GetWeakPtr(),
                    &input_state_.context,
                    0,
@@ -319,7 +323,7 @@ bool Channel::ChannelImpl::Connect() {
   return true;
 }
 
-bool Channel::ChannelImpl::ProcessConnection() {
+bool ChannelWin::ProcessConnection() {
   DCHECK(thread_check_->CalledOnValidThread());
   if (input_state_.is_pending)
     input_state_.is_pending = false;
@@ -356,7 +360,7 @@ bool Channel::ChannelImpl::ProcessConnection() {
   return true;
 }
 
-bool Channel::ChannelImpl::ProcessOutgoingMessages(
+bool ChannelWin::ProcessOutgoingMessages(
     base::MessageLoopForIO::IOContext* context,
     DWORD bytes_written) {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
@@ -413,7 +417,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
   return true;
 }
 
-void Channel::ChannelImpl::OnIOCompleted(
+void ChannelWin::OnIOCompleted(
     base::MessageLoopForIO::IOContext* context,
     DWORD bytes_transfered,
     DWORD error) {
@@ -463,36 +467,18 @@ void Channel::ChannelImpl::OnIOCompleted(
 }
 
 //------------------------------------------------------------------------------
-// Channel's methods simply call through to ChannelImpl.
-Channel::Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
-                 Listener* listener)
-    : channel_impl_(new ChannelImpl(channel_handle, mode, listener)) {
-}
+// Channel's methods
 
-Channel::~Channel() {
-  delete channel_impl_;
-}
-
-bool Channel::Connect() {
-  return channel_impl_->Connect();
-}
-
-void Channel::Close() {
-  if (channel_impl_)
-    channel_impl_->Close();
-}
-
-base::ProcessId Channel::peer_pid() const {
-  return channel_impl_->peer_pid();
-}
-
-bool Channel::Send(Message* message) {
-  return channel_impl_->Send(message);
+// static
+scoped_ptr<Channel> Channel::Create(
+    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
+  return scoped_ptr<Channel>(
+      new ChannelWin(channel_handle, mode, listener));
 }
 
 // static
 bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
-  return ChannelImpl::IsNamedServerInitialized(channel_id);
+  return ChannelWin::IsNamedServerInitialized(channel_id);
 }
 
 // static

@@ -174,11 +174,11 @@ void Channel::NotifyProcessForkedForTesting() {
 //------------------------------------------------------------------------------
 
 #if defined(OS_LINUX)
-int Channel::ChannelImpl::global_pid_ = 0;
+int ChannelPosix::global_pid_ = 0;
 #endif  // OS_LINUX
 
-Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
-                                  Mode mode, Listener* listener)
+ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
+                           Mode mode, Listener* listener)
     : ChannelReader(listener),
       mode_(mode),
       peer_pid_(base::kNullProcessId),
@@ -203,7 +203,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
   }
 }
 
-Channel::ChannelImpl::~ChannelImpl() {
+ChannelPosix::~ChannelPosix() {
   Close();
 }
 
@@ -231,7 +231,7 @@ bool SocketPair(int* fd1, int* fd2) {
   return true;
 }
 
-bool Channel::ChannelImpl::CreatePipe(
+bool ChannelPosix::CreatePipe(
     const IPC::ChannelHandle& channel_handle) {
   DCHECK(server_listen_pipe_ == -1 && pipe_ == -1);
 
@@ -337,7 +337,7 @@ bool Channel::ChannelImpl::CreatePipe(
   return true;
 }
 
-bool Channel::ChannelImpl::Connect() {
+bool ChannelPosix::Connect() {
   if (server_listen_pipe_ == -1 && pipe_ == -1) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;
@@ -359,7 +359,7 @@ bool Channel::ChannelImpl::Connect() {
   return did_connect;
 }
 
-void Channel::ChannelImpl::CloseFileDescriptors(Message* msg) {
+void ChannelPosix::CloseFileDescriptors(Message* msg) {
 #if defined(OS_MACOSX)
   // There is a bug on OSX which makes it dangerous to close
   // a file descriptor while it is in transit. So instead we
@@ -380,7 +380,7 @@ void Channel::ChannelImpl::CloseFileDescriptors(Message* msg) {
 #endif
 }
 
-bool Channel::ChannelImpl::ProcessOutgoingMessages() {
+bool ChannelPosix::ProcessOutgoingMessages() {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
                               // no connection?
   if (output_queue_.empty())
@@ -526,7 +526,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   return true;
 }
 
-bool Channel::ChannelImpl::Send(Message* message) {
+bool ChannelPosix::Send(Message* message) {
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";
@@ -544,12 +544,12 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
-int Channel::ChannelImpl::GetClientFileDescriptor() {
+int ChannelPosix::GetClientFileDescriptor() const {
   base::AutoLock lock(client_pipe_lock_);
   return client_pipe_;
 }
 
-int Channel::ChannelImpl::TakeClientFileDescriptor() {
+int ChannelPosix::TakeClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
   int fd = client_pipe_;
   if (client_pipe_ != -1) {
@@ -559,7 +559,7 @@ int Channel::ChannelImpl::TakeClientFileDescriptor() {
   return fd;
 }
 
-void Channel::ChannelImpl::CloseClientFileDescriptor() {
+void ChannelPosix::CloseClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
   if (client_pipe_ != -1) {
     PipeMap::GetInstance()->Remove(pipe_name_);
@@ -569,20 +569,20 @@ void Channel::ChannelImpl::CloseClientFileDescriptor() {
   }
 }
 
-bool Channel::ChannelImpl::AcceptsConnections() const {
+bool ChannelPosix::AcceptsConnections() const {
   return server_listen_pipe_ != -1;
 }
 
-bool Channel::ChannelImpl::HasAcceptedConnection() const {
+bool ChannelPosix::HasAcceptedConnection() const {
   return AcceptsConnections() && pipe_ != -1;
 }
 
-bool Channel::ChannelImpl::GetPeerEuid(uid_t* peer_euid) const {
+bool ChannelPosix::GetPeerEuid(uid_t* peer_euid) const {
   DCHECK(!(mode_ & MODE_SERVER) || HasAcceptedConnection());
   return IPC::GetPeerEuid(pipe_, peer_euid);
 }
 
-void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
+void ChannelPosix::ResetToAcceptingConnectionState() {
   // Unregister libevent for the unix domain socket and close it.
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
@@ -626,20 +626,20 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
 }
 
 // static
-bool Channel::ChannelImpl::IsNamedServerInitialized(
+bool ChannelPosix::IsNamedServerInitialized(
     const std::string& channel_id) {
   return base::PathExists(base::FilePath(channel_id));
 }
 
 #if defined(OS_LINUX)
 // static
-void Channel::ChannelImpl::SetGlobalPid(int pid) {
+void ChannelPosix::SetGlobalPid(int pid) {
   global_pid_ = pid;
 }
 #endif  // OS_LINUX
 
 // Called by libevent when we can read from the pipe without blocking.
-void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
+void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   if (fd == server_listen_pipe_) {
     int new_pipe = 0;
     if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe) ||
@@ -705,7 +705,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 // Called by libevent when we can write to the pipe without blocking.
-void Channel::ChannelImpl::OnFileCanWriteWithoutBlocking(int fd) {
+void ChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK_EQ(pipe_, fd);
   is_blocked_on_write_ = false;
   if (!ProcessOutgoingMessages()) {
@@ -713,7 +713,7 @@ void Channel::ChannelImpl::OnFileCanWriteWithoutBlocking(int fd) {
   }
 }
 
-bool Channel::ChannelImpl::AcceptConnection() {
+bool ChannelPosix::AcceptConnection() {
   base::MessageLoopForIO::current()->WatchFileDescriptor(
       pipe_, true, base::MessageLoopForIO::WATCH_READ, &read_watcher_, this);
   QueueHelloMessage();
@@ -733,7 +733,7 @@ bool Channel::ChannelImpl::AcceptConnection() {
   }
 }
 
-void Channel::ChannelImpl::ClosePipeOnError() {
+void ChannelPosix::ClosePipeOnError() {
   if (HasAcceptedConnection()) {
     ResetToAcceptingConnectionState();
     listener()->OnChannelError();
@@ -747,7 +747,7 @@ void Channel::ChannelImpl::ClosePipeOnError() {
   }
 }
 
-int Channel::ChannelImpl::GetHelloMessageProcId() {
+int ChannelPosix::GetHelloMessageProcId() {
   int pid = base::GetCurrentProcId();
 #if defined(OS_LINUX)
   // Our process may be in a sandbox with a separate PID namespace.
@@ -758,7 +758,7 @@ int Channel::ChannelImpl::GetHelloMessageProcId() {
   return pid;
 }
 
-void Channel::ChannelImpl::QueueHelloMessage() {
+void ChannelPosix::QueueHelloMessage() {
   // Create the Hello message
   scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
                                       HELLO_MESSAGE_TYPE,
@@ -779,7 +779,7 @@ void Channel::ChannelImpl::QueueHelloMessage() {
   output_queue_.push(msg.release());
 }
 
-Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
+ChannelPosix::ReadState ChannelPosix::ReadData(
     char* buffer,
     int buffer_len,
     int* bytes_read) {
@@ -837,7 +837,7 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
 }
 
 #if defined(IPC_USES_READWRITE)
-bool Channel::ChannelImpl::ReadFileDescriptorsFromFDPipe() {
+bool ChannelPosix::ReadFileDescriptorsFromFDPipe() {
   char dummy;
   struct iovec fd_pipe_iov = { &dummy, 1 };
 
@@ -862,7 +862,7 @@ bool Channel::ChannelImpl::ReadFileDescriptorsFromFDPipe() {
 //
 // This will read from the input_fds_ (READWRITE mode only) and read more
 // handles from the FD pipe if necessary.
-bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+bool ChannelPosix::WillDispatchInputMessage(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   if (!header_fds)
     return true;  // Nothing to do.
@@ -902,14 +902,14 @@ bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
   return true;
 }
 
-bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+bool ChannelPosix::DidEmptyInputBuffers() {
   // When the input data buffer is empty, the fds should be too. If this is
   // not the case, we probably have a rogue renderer which is trying to fill
   // our descriptor table.
   return input_fds_.empty();
 }
 
-bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
+bool ChannelPosix::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
   // Check that there are any control messages. On OSX, CMSG_FIRSTHDR will
   // return an invalid non-NULL pointer in the case that controllen == 0.
   if (msg->msg_controllen == 0)
@@ -941,7 +941,7 @@ bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
   return true;
 }
 
-void Channel::ChannelImpl::ClearInputFDs() {
+void ChannelPosix::ClearInputFDs() {
   for (size_t i = 0; i < input_fds_.size(); ++i) {
     if (IGNORE_EINTR(close(input_fds_[i])) < 0)
       PLOG(ERROR) << "close ";
@@ -949,7 +949,7 @@ void Channel::ChannelImpl::ClearInputFDs() {
   input_fds_.clear();
 }
 
-void Channel::ChannelImpl::QueueCloseFDMessage(int fd, int hops) {
+void ChannelPosix::QueueCloseFDMessage(int fd, int hops) {
   switch (hops) {
     case 1:
     case 2: {
@@ -971,7 +971,7 @@ void Channel::ChannelImpl::QueueCloseFDMessage(int fd, int hops) {
   }
 }
 
-void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
+void ChannelPosix::HandleInternalMessage(const Message& msg) {
   // The Hello message contains only the process id.
   PickleIterator iter(msg);
 
@@ -1025,7 +1025,7 @@ void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
   }
 }
 
-void Channel::ChannelImpl::Close() {
+void ChannelPosix::Close() {
   // Close can be called multiple time, so we need to make sure we're
   // idempotent.
 
@@ -1046,61 +1046,18 @@ void Channel::ChannelImpl::Close() {
   CloseClientFileDescriptor();
 }
 
+base::ProcessId ChannelPosix::GetPeerPID() const {
+  return peer_pid_;
+}
+
 //------------------------------------------------------------------------------
-// Channel's methods simply call through to ChannelImpl.
-Channel::Channel(const IPC::ChannelHandle& channel_handle, Mode mode,
-                 Listener* listener)
-    : channel_impl_(new ChannelImpl(channel_handle, mode, listener)) {
-}
-
-Channel::~Channel() {
-  delete channel_impl_;
-}
-
-bool Channel::Connect() {
-  return channel_impl_->Connect();
-}
-
-void Channel::Close() {
-  if (channel_impl_)
-    channel_impl_->Close();
-}
-
-base::ProcessId Channel::peer_pid() const {
-  return channel_impl_->peer_pid();
-}
-
-bool Channel::Send(Message* message) {
-  return channel_impl_->Send(message);
-}
-
-int Channel::GetClientFileDescriptor() const {
-  return channel_impl_->GetClientFileDescriptor();
-}
-
-int Channel::TakeClientFileDescriptor() {
-  return channel_impl_->TakeClientFileDescriptor();
-}
-
-bool Channel::AcceptsConnections() const {
-  return channel_impl_->AcceptsConnections();
-}
-
-bool Channel::HasAcceptedConnection() const {
-  return channel_impl_->HasAcceptedConnection();
-}
-
-bool Channel::GetPeerEuid(uid_t* peer_euid) const {
-  return channel_impl_->GetPeerEuid(peer_euid);
-}
-
-void Channel::ResetToAcceptingConnectionState() {
-  channel_impl_->ResetToAcceptingConnectionState();
-}
+// Channel's methods
 
 // static
-bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
-  return ChannelImpl::IsNamedServerInitialized(channel_id);
+scoped_ptr<Channel> Channel::Create(
+    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
+  return scoped_ptr<Channel>(
+      new ChannelPosix(channel_handle, mode, listener));
 }
 
 // static
@@ -1116,10 +1073,15 @@ std::string Channel::GenerateVerifiedChannelID(const std::string& prefix) {
 }
 
 
+bool Channel::IsNamedServerInitialized(
+    const std::string& channel_id) {
+  return ChannelPosix::IsNamedServerInitialized(channel_id);
+}
+
 #if defined(OS_LINUX)
 // static
 void Channel::SetGlobalPid(int pid) {
-  ChannelImpl::SetGlobalPid(pid);
+  ChannelPosix::SetGlobalPid(pid);
 }
 #endif  // OS_LINUX
 

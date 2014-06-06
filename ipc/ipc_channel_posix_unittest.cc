@@ -245,7 +245,8 @@ TEST_F(IPCChannelPosixTest, SendHangTest) {
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::Channel> in_chan(
       IPC::Channel::CreateServer(in_handle, &in_listener));
-  base::FileDescriptor out_fd(in_chan->TakeClientFileDescriptor(), false);
+  base::FileDescriptor out_fd(
+      in_chan->TakeClientFileDescriptor(), false);
   IPC::ChannelHandle out_handle("OUT", out_fd);
   scoped_ptr<IPC::Channel> out_chan(
       IPC::Channel::CreateClient(out_handle, &out_listener));
@@ -270,7 +271,8 @@ TEST_F(IPCChannelPosixTest, AcceptHangTest) {
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::Channel> in_chan(
       IPC::Channel::CreateServer(in_handle, &in_listener));
-  base::FileDescriptor out_fd(in_chan->TakeClientFileDescriptor(), false);
+  base::FileDescriptor out_fd(
+      in_chan->TakeClientFileDescriptor(), false);
   IPC::ChannelHandle out_handle("OUT", out_fd);
   scoped_ptr<IPC::Channel> out_chan(
       IPC::Channel::CreateClient(out_handle, &out_listener));
@@ -423,7 +425,7 @@ TEST_F(IPCChannelPosixTest, BadMode) {
   // Test setting up two servers with a bad mode.
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateByModeForProxy(
+  scoped_ptr<IPC::Channel> channel(IPC::Channel::Create(
       chan_handle, IPC::Channel::MODE_NONE, &listener));
   ASSERT_FALSE(channel->Connect());
 }

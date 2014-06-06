@@ -21,18 +21,23 @@ class ThreadChecker;
 
 namespace IPC {
 
-class Channel::ChannelImpl : public internal::ChannelReader,
-                             public base::MessageLoopForIO::IOHandler {
+class ChannelWin : public Channel,
+                   public internal::ChannelReader,
+                   public base::MessageLoopForIO::IOHandler {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
-  ChannelImpl(const IPC::ChannelHandle &channel_handle, Mode mode,
-              Listener* listener);
-  ~ChannelImpl();
-  bool Connect();
-  void Close();
-  bool Send(Message* message);
+  ChannelWin(const IPC::ChannelHandle &channel_handle, Mode mode,
+             Listener* listener);
+  ~ChannelWin();
+
+  // Channel implementation
+  virtual bool Connect() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual bool Send(Message* message) OVERRIDE;
+  virtual base::ProcessId GetPeerPID() const OVERRIDE;
+
   static bool IsNamedServerInitialized(const std::string& channel_id);
-  base::ProcessId peer_pid() const { return peer_pid_; }
+
 
  private:
   // ChannelReader implementation.
@@ -58,7 +63,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
 
  private:
   struct State {
-    explicit State(ChannelImpl* channel);
+    explicit State(ChannelWin* channel);
     ~State();
     base::MessageLoopForIO::IOContext context;
     bool is_pending;
@@ -94,11 +99,11 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   int32 client_secret_;
 
 
-  base::WeakPtrFactory<ChannelImpl> weak_factory_;
+  base::WeakPtrFactory<ChannelWin> weak_factory_;
 
   scoped_ptr<base::ThreadChecker> thread_check_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChannelImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };
 
 }  // namespace IPC

@@ -62,7 +62,7 @@ bool ReadDataOnReaderThread(int pipe, MessageContents* contents) {
 
 }  // namespace
 
-class Channel::ChannelImpl::ReaderThreadRunner
+class ChannelNacl::ReaderThreadRunner
     : public base::DelegateSimpleThread::Delegate {
  public:
   // |pipe|: A file descriptor from which we will read using imc_recvmsg.
@@ -91,7 +91,7 @@ class Channel::ChannelImpl::ReaderThreadRunner
   DISALLOW_COPY_AND_ASSIGN(ReaderThreadRunner);
 };
 
-Channel::ChannelImpl::ReaderThreadRunner::ReaderThreadRunner(
+ChannelNacl::ReaderThreadRunner::ReaderThreadRunner(
     int pipe,
     base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback,
     base::Callback<void ()> failure_callback,
@@ -102,7 +102,7 @@ Channel::ChannelImpl::ReaderThreadRunner::ReaderThreadRunner(
       main_message_loop_(main_message_loop) {
 }
 
-void Channel::ChannelImpl::ReaderThreadRunner::Run() {
+void ChannelNacl::ReaderThreadRunner::Run() {
   while (true) {
     scoped_ptr<MessageContents> msg_contents(new MessageContents);
     bool success = ReadDataOnReaderThread(pipe_, msg_contents.get());
@@ -118,9 +118,9 @@ void Channel::ChannelImpl::ReaderThreadRunner::Run() {
   }
 }
 
-Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
-                                  Mode mode,
-                                  Listener* listener)
+ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
+                         Mode mode,
+                         Listener* listener)
     : ChannelReader(listener),
       mode_(mode),
       waiting_connect_(true),
@@ -135,17 +135,17 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
   }
 }
 
-Channel::ChannelImpl::~ChannelImpl() {
+ChannelNacl::~ChannelNacl() {
   Close();
 }
 
-base::ProcessId Channel::ChannelImpl::peer_pid() const {
+base::ProcessId ChannelNacl::GetPeerPID() const {
   // This shouldn't actually get used in the untrusted side of the proxy, and we
   // don't have the real pid anyway.
   return -1;
 }
 
-bool Channel::ChannelImpl::Connect() {
+bool ChannelNacl::Connect() {
   if (pipe_ == -1) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;
@@ -159,9 +159,9 @@ bool Channel::ChannelImpl::Connect() {
   reader_thread_runner_.reset(
       new ReaderThreadRunner(
           pipe_,
-          base::Bind(&Channel::ChannelImpl::DidRecvMsg,
+          base::Bind(&ChannelNacl::DidRecvMsg,
                      weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&Channel::ChannelImpl::ReadDidFail,
+          base::Bind(&ChannelNacl::ReadDidFail,
                      weak_ptr_factory_.GetWeakPtr()),
           base::MessageLoopProxy::current()));
   reader_thread_.reset(
@@ -172,13 +172,13 @@ bool Channel::ChannelImpl::Connect() {
   // If there were any messages queued before connection, send them.
   ProcessOutgoingMessages();
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(&Channel::ChannelImpl::CallOnChannelConnected,
+      base::Bind(&ChannelNacl::CallOnChannelConnected,
                  weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
 
-void Channel::ChannelImpl::Close() {
+void ChannelNacl::Close() {
   // For now, we assume that at shutdown, the reader thread will be woken with
   // a failure (see NaClIPCAdapter::BlockingRead and CloseChannel). Or... we
   // might simply be killed with no chance to clean up anyway :-).
@@ -195,7 +195,7 @@ void Channel::ChannelImpl::Close() {
   output_queue_.clear();
 }
 
-bool Channel::ChannelImpl::Send(Message* message) {
+bool ChannelNacl::Send(Message* message) {
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type();
   scoped_ptr<Message> message_ptr(message);
@@ -212,7 +212,7 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
-void Channel::ChannelImpl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
+void ChannelNacl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
   // Close sets the pipe to -1. It's possible we'll get a buffer sent to us from
   // the reader thread after Close is called. If so, we ignore it.
   if (pipe_ == -1)
@@ -233,11 +233,11 @@ void Channel::ChannelImpl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
   ProcessIncomingMessages();
 }
 
-void Channel::ChannelImpl::ReadDidFail() {
+void ChannelNacl::ReadDidFail() {
   Close();
 }
 
-bool Channel::ChannelImpl::CreatePipe(
+bool ChannelNacl::CreatePipe(
     const IPC::ChannelHandle& channel_handle) {
   DCHECK(pipe_ == -1);
 
@@ -256,7 +256,7 @@ bool Channel::ChannelImpl::CreatePipe(
   return true;
 }
 
-bool Channel::ChannelImpl::ProcessOutgoingMessages() {
+bool ChannelNacl::ProcessOutgoingMessages() {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
                               // no connection?
   if (output_queue_.empty())
@@ -304,11 +304,11 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   return true;
 }
 
-void Channel::ChannelImpl::CallOnChannelConnected() {
-  listener()->OnChannelConnected(peer_pid());
+void ChannelNacl::CallOnChannelConnected() {
+  listener()->OnChannelConnected(GetPeerPID());
 }
 
-Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
+ChannelNacl::ReadState ChannelNacl::ReadData(
     char* buffer,
     int buffer_len,
     int* bytes_read) {
@@ -339,7 +339,7 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
   return READ_SUCCEEDED;
 }
 
-bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+bool ChannelNacl::WillDispatchInputMessage(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   CHECK(header_fds == input_fds_.size());
   if (header_fds == 0)
@@ -354,44 +354,24 @@ bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
   return true;
 }
 
-bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+bool ChannelNacl::DidEmptyInputBuffers() {
   // When the input data buffer is empty, the fds should be too.
   return input_fds_.empty();
 }
 
-void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
+void ChannelNacl::HandleInternalMessage(const Message& msg) {
   // The trusted side IPC::Channel should handle the "hello" handshake; we
   // should not receive the "Hello" message.
   NOTREACHED();
 }
 
-//------------------------------------------------------------------------------
-// Channel's methods simply call through to ChannelImpl.
+// Channel's methods
 
-Channel::Channel(const IPC::ChannelHandle& channel_handle,
-                 Mode mode,
-                 Listener* listener)
-    : channel_impl_(new ChannelImpl(channel_handle, mode, listener)) {
-}
-
-Channel::~Channel() {
-  delete channel_impl_;
-}
-
-bool Channel::Connect() {
-  return channel_impl_->Connect();
-}
-
-void Channel::Close() {
-  channel_impl_->Close();
-}
-
-base::ProcessId Channel::peer_pid() const {
-  return channel_impl_->peer_pid();
-}
-
-bool Channel::Send(Message* message) {
-  return channel_impl_->Send(message);
+// static
+scoped_ptr<Channel> Channel::Create(
+    const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
+  return scoped_ptr<Channel>(
+      new ChannelNacl(channel_handle, mode, listener));
 }
 
 }  // namespace IPC

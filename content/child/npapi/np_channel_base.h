@@ -86,7 +86,7 @@ class NPChannelBase : public IPC::Listener,
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  base::ProcessId peer_pid() { return channel_->peer_pid(); }
+  base::ProcessId peer_pid() { return channel_->GetPeerPID(); }
   IPC::ChannelHandle channel_handle() const { return channel_handle_; }
 
   // Returns the number of open NPObject channels in this process.

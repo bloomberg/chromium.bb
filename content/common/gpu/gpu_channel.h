@@ -76,7 +76,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   int TakeRendererFileDescriptor();
 #endif  // defined(OS_POSIX)
 
-  base::ProcessId renderer_pid() const { return channel_->peer_pid(); }
+  base::ProcessId renderer_pid() const { return channel_->GetPeerPID(); }
 
   int client_id() const { return client_id_; }
 

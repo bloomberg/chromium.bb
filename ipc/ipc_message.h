@@ -222,6 +222,9 @@ class IPC_EXPORT Message : public Pickle {
 
  protected:
   friend class Channel;
+  friend class ChannelNacl;
+  friend class ChannelPosix;
+  friend class ChannelWin;
   friend class MessageReplyDeserializer;
   friend class SyncMessage;
 
