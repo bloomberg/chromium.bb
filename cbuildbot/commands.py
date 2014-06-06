@@ -40,6 +40,7 @@ _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
 _AUTOTEST_RPC_HOSTNAME = 'master2'
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
+STATEFUL_FILE = 'stateful.tgz'
 # For sorting through VM test results.
 _TEST_REPORT_FILENAME = 'test_report.log'
 _TEST_PASSED = 'PASSED'
@@ -1706,15 +1707,54 @@ def GeneratePayloads(build_root, target_image_path, archive_dir):
     target_image_path: The path to the image to generate payloads to.
     archive_dir: Where to store payloads we generated.
   """
-  crostestutils = os.path.join(build_root, 'src', 'platform', 'crostestutils')
-  payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
-  cmd = [os.path.join(crostestutils, payload_generator),
-         '--target=%s' % target_image_path,
-         '--full_payload',
-         '--nplus1',
-         '--nplus1_archive_dir=%s' % archive_dir,
-        ]
-  cros_build_lib.RunCommand(cmd)
+  real_target = os.path.realpath(target_image_path)
+  # The path to the target should look something like this:
+  # .../link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin
+  board, os_version = real_target.split('/')[-3:-1]
+  prefix = 'chromeos'
+  suffix = 'dev.bin'
+
+  cwd = os.path.join(build_root, 'src', 'scripts')
+  path = git.ReinterpretPathForChroot(
+      os.path.join(build_root, 'src', 'platform', 'dev'))
+  chroot_dir = os.path.join(build_root, 'chroot')
+  chroot_tmp = os.path.join(chroot_dir, 'tmp')
+  chroot_target = git.ReinterpretPathForChroot(target_image_path)
+
+  with osutils.TempDir(base_dir=chroot_tmp,
+      prefix='generate_payloads') as temp_dir:
+    chroot_temp_dir = temp_dir.replace(chroot_dir, '', 1)
+
+    cmd = [
+        os.path.join(path, 'cros_generate_update_payload'),
+        '--patch_kernel',
+        '--image', chroot_target,
+        '--output', os.path.join(chroot_temp_dir, 'update.gz')
+    ]
+    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+    name = '_'.join([prefix, os_version, board, 'full', suffix])
+    # Names for full payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
+    shutil.move(os.path.join(temp_dir, 'update.gz'),
+                os.path.join(archive_dir, name))
+
+    cmd.extend(['--src_image', chroot_target])
+    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+    # Names for delta payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
+    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
+    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
+    shutil.move(os.path.join(temp_dir, 'update.gz'),
+                os.path.join(archive_dir, name))
+
+    cmd = [
+        os.path.join(path, 'cros_generate_stateful_update_payload'),
+        '--image', chroot_target,
+        '--output', chroot_temp_dir
+    ]
+    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+    shutil.move(os.path.join(temp_dir, STATEFUL_FILE),
+                os.path.join(archive_dir, STATEFUL_FILE))
 
 
 def GetChromeLKGM(svn_revision):

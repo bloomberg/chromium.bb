@@ -5,6 +5,7 @@
 
 """Unittests for the artifact stages."""
 
+import argparse
 import mox
 import os
 import sys
@@ -21,6 +22,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
@@ -461,6 +463,7 @@ class UploadTestArtifactsStageTest(
   """Tests UploadTestArtifactsStage."""
 
   def setUp(self):
+    osutils.SafeMakedirs(os.path.join(self.build_root, 'chroot', 'tmp'))
     self.StartPatcher(UploadTestArtifactsStageMock())
 
   def ConstructStage(self):
@@ -477,12 +480,67 @@ class UploadTestArtifactsStageTest(
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('images_generated', True)
 
+    chroot_base = os.path.join(self.build_root, 'chroot')
+
+    def _ExtractOutputParam(cmd):
+      """Extract the --output option from a list of arguments."""
+      argparser = argparse.ArgumentParser()
+      argparser.add_argument('--output', action='store')
+      options, _ = argparser.parse_known_args(cmd)
+      return options.output
+
+    def _SimUpdatePayload(cmd, *_args, **kwargs):
+      """Simulate cros_generate_update_payload by creating its output file."""
+      self.assertTrue(kwargs.get('enter_chroot'))
+
+      output = _ExtractOutputParam(cmd)
+      self.assertTrue(output)
+      self.assertTrue(os.path.dirname(output))
+
+      # Join these paths manually since output is absolute and os.path.join
+      # will throw away chroot_base.
+      output = os.sep.join([chroot_base, output])
+
+      if not os.path.isdir(os.path.dirname(output)):
+        os.makedirs(os.path.dirname(output))
+      self.assertFalse(os.path.exists(output))
+
+      osutils.Touch(output)
+
+    def _SimUpdateStatefulPayload(cmd, *_args, **kwargs):
+      """Simulate cros_generate_stateful_update_payload like above."""
+      self.assertTrue(kwargs.get('enter_chroot'))
+
+      output = _ExtractOutputParam(cmd)
+      self.assertTrue(output)
+
+      # Join these paths manually since output is absolute and os.path.join
+      # will throw away chroot_base.
+      output = os.sep.join([chroot_base, output])
+
+      if not os.path.isdir(output):
+        os.makedirs(output)
+
+      output = os.path.join(output, commands.STATEFUL_FILE)
+
+      self.assertFalse(os.path.exists(output))
+
+      osutils.Touch(output)
+
+    def _HookRunCommand(rc):
+      rc.AddCmdResult(
+        partial_mock.ListRegex('cros_generate_update_payload'),
+        side_effect=_SimUpdatePayload)
+      rc.AddCmdResult(
+        partial_mock.ListRegex('cros_generate_stateful_update_payload'),
+        side_effect=_SimUpdateStatefulPayload)
+
     with parallel_unittest.ParallelMock():
-      with self.RunStageWithConfig() as rc:
-        cfg = self._run.config
-        hw = cfg['upload_hw_test_artifacts']
-        rc.assertCommandContains(['--full_payload'], expected=hw)
-        rc.assertCommandContains(['--nplus1'], expected=hw)
+      with self.RunStageWithConfig(mock_configurator=_HookRunCommand) as rc:
+        if self._run.config.upload_hw_test_artifacts:
+          self.assertNotEqual(rc.call_count, 0)
+        else:
+          self.assertEqual(rc.call_count, 0)
 
 
 # TODO: Delete ArchivingMock once ArchivingStage is deprecated.
