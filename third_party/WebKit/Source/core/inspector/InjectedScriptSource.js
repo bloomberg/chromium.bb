@@ -105,8 +105,9 @@ function toStringDescription(obj)
 /**
  * Please use this bind, not the one from Function.prototype
  * @param {function(...)} func
- * @param {Object} thisObject
+ * @param {?Object} thisObject
  * @param {...} var_args
+ * @return {function(...)}
  */
 function bind(func, thisObject, var_args)
 {
@@ -179,13 +180,13 @@ var InjectedScript = function()
 {
     /** @type {number} */
     this._lastBoundObjectId = 1;
-    /** @type {!Object.<number, Object>} */
+    /** @type {!Object.<number, !Object>} */
     this._idToWrappedObject = { __proto__: null };
     /** @type {!Object.<number, string>} */
     this._idToObjectGroupName = { __proto__: null };
-    /** @type {!Object.<string, Array.<number>>} */
+    /** @type {!Object.<string, !Array.<number>>} */
     this._objectGroups = { __proto__: null };
-    /** @type {!Object.<string, Object>} */
+    /** @type {!Object.<string, !Object>} */
     this._modules = { __proto__: null };
 }
 
@@ -243,8 +244,8 @@ InjectedScript.prototype = {
 
     /**
      * @param {boolean} canAccessInspectedWindow
-     * @param {Object} table
-     * @param {Array.<string>|string|boolean} columns
+     * @param {!Object} table
+     * @param {!Array.<string>|string|boolean} columns
      * @return {!RuntimeAgent.RemoteObject}
      */
     wrapTable: function(canAccessInspectedWindow, table, columns)
@@ -312,7 +313,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object} object
+     * @param {!Object} object
      * @param {string=} objectGroupName
      * @return {string}
      */
@@ -375,7 +376,7 @@ InjectedScript.prototype = {
      * @param {string} objectId
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
-     * @return {Array.<RuntimeAgent.PropertyDescriptor>|boolean}
+     * @return {!Array.<!RuntimeAgent.PropertyDescriptor>|boolean}
      */
     getProperties: function(objectId, ownProperties, accessorPropertiesOnly)
     {
@@ -408,9 +409,9 @@ InjectedScript.prototype = {
 
     /**
      * @param {string} objectId
-     * @return {Array.<Object>|boolean}
+     * @return {!Array.<!Object>|boolean}
      */
-    getInternalProperties: function(objectId, ownProperties)
+    getInternalProperties: function(objectId)
     {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
@@ -475,10 +476,10 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object} object
+     * @param {!Object} object
      * @param {boolean=} ownProperties
      * @param {boolean=} accessorPropertiesOnly
-     * @return {Array.<Object>}
+     * @return {!Array.<!Object>}
      */
     _propertyDescriptors: function(object, ownProperties, accessorPropertiesOnly)
     {
@@ -486,7 +487,7 @@ InjectedScript.prototype = {
         var propertyProcessed = { __proto__: null };
 
         /**
-         * @param {Object} o
+         * @param {?Object} o
          * @param {!Array.<string|symbol>} properties
          */
         function process(o, properties)
@@ -571,6 +572,7 @@ InjectedScript.prototype = {
     /**
      * @param {string} objectId
      * @param {string} expression
+     * @param {string} args
      * @param {boolean} returnByValue
      * @return {!Object|string}
      */
@@ -609,7 +611,7 @@ InjectedScript.prototype = {
 
     /**
      * Resolves a value from CallArgument description.
-     * @param {RuntimeAgent.CallArgument} callArgumentJson
+     * @param {!RuntimeAgent.CallArgument} callArgumentJson
      * @return {*} resolved value
      * @throws {string} error message
      */
@@ -637,8 +639,9 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Function} evalFunction
-     * @param {Object} object
+     * @param {!Function} evalFunction
+     * @param {!Object} object
+     * @param {string} expression
      * @param {string} objectGroup
      * @param {boolean} isEvalOnCallFrame
      * @param {boolean} injectCommandLineAPI
@@ -673,8 +676,8 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Function} evalFunction
-     * @param {Object} object
+     * @param {!Function} evalFunction
+     * @param {!Object} object
      * @param {string} objectGroup
      * @param {string} expression
      * @param {boolean} isEvalOnCallFrame
@@ -873,8 +876,8 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object} objectId
-     * @return {Object}
+     * @param {!Object} objectId
+     * @return {!Object}
      */
     _objectForId: function(objectId)
     {
@@ -883,7 +886,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {string} objectId
-     * @return {Object}
+     * @return {!Object}
      */
     findObjectById: function(objectId)
     {
@@ -893,19 +896,19 @@ InjectedScript.prototype = {
 
     /**
      * @param {string} objectId
-     * @return {Node}
+     * @return {?Node}
      */
     nodeForObjectId: function(objectId)
     {
         var object = this.findObjectById(objectId);
         if (!object || this._subtype(object) !== "node")
             return null;
-        return /** @type {Node} */ (object);
+        return /** @type {!Node} */ (object);
     },
 
     /**
      * @param {string} name
-     * @return {Object}
+     * @return {!Object}
      */
     module: function(name)
     {
@@ -915,7 +918,7 @@ InjectedScript.prototype = {
     /**
      * @param {string} name
      * @param {string} source
-     * @return {Object}
+     * @return {?Object}
      */
     injectModule: function(name, source)
     {
@@ -951,7 +954,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {*} obj
-     * @return {string?}
+     * @return {?string}
      */
     _subtype: function(obj)
     {
@@ -977,7 +980,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {*} obj
-     * @return {string?}
+     * @return {?string}
      */
     _describe: function(obj)
     {
@@ -1082,7 +1085,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
         return;
     }
 
-    object = /** @type {Object} */ (object);
+    object = /** @type {!Object} */ (object);
 
     this.objectId = injectedScript._bind(object, objectGroupName);
     var subtype = injectedScript._subtype(object);
@@ -1099,8 +1102,8 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
 
 InjectedScript.RemoteObject.prototype = {
     /**
-     * @param {Object} object
-     * @param {Array.<string>=} firstLevelKeys
+     * @param {!Object} object
+     * @param {?Array.<string>=} firstLevelKeys
      * @param {?Array.<string>=} secondLevelKeys
      * @param {boolean=} isTable
      * @param {boolean=} isTableRow
@@ -1270,8 +1273,8 @@ InjectedScript.CallFrameProxy = function(ordinal, callFrame, asyncOrdinal)
 
 InjectedScript.CallFrameProxy.prototype = {
     /**
-     * @param {Object} callFrame
-     * @return {!Array.<DebuggerAgent.Scope>}
+     * @param {!Object} callFrame
+     * @return {!Array.<!DebuggerAgent.Scope>}
      */
     _wrapScopeChain: function(callFrame)
     {
@@ -1309,15 +1312,15 @@ InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeOb
 
     return {
         object: injectedScript._wrapObject(scopeObject, groupId),
-        type: /** @type {DebuggerAgent.ScopeType} */ (scopeTypeNames[scopeTypeCode]),
+        type: /** @type {!DebuggerAgent.ScopeType} */ (scopeTypeNames[scopeTypeCode]),
         __proto__: null
     };
 }
 
 /**
  * @constructor
- * @param {CommandLineAPIImpl} commandLineAPIImpl
- * @param {Object} callFrame
+ * @param {!CommandLineAPIImpl} commandLineAPIImpl
+ * @param {?Object} callFrame
  */
 function CommandLineAPI(commandLineAPIImpl, callFrame)
 {
@@ -1385,7 +1388,7 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
 // NOTE: Please keep the list of API methods below snchronized to that in WebInspector.RuntimeModel!
 // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
 /**
- * @type {Array.<string>}
+ * @type {!Array.<string>}
  * @const
  */
 CommandLineAPI.members_ = [
@@ -1404,7 +1407,8 @@ function CommandLineAPIImpl()
 CommandLineAPIImpl.prototype = {
     /**
      * @param {string} selector
-     * @param {Node=} opt_startNode
+     * @param {!Node=} opt_startNode
+     * @return {*}
      */
     $: function (selector, opt_startNode)
     {
@@ -1416,7 +1420,8 @@ CommandLineAPIImpl.prototype = {
 
     /**
      * @param {string} selector
-     * @param {Node=} opt_startNode
+     * @param {!Node=} opt_startNode
+     * @return {*}
      */
     $$: function (selector, opt_startNode)
     {
@@ -1426,7 +1431,7 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @param {Node=} node
+     * @param {!Node=} node
      * @return {boolean}
      */
     _canQuerySelectorOnNode: function(node)
@@ -1436,7 +1441,8 @@ CommandLineAPIImpl.prototype = {
 
     /**
      * @param {string} xpath
-     * @param {Node=} opt_startNode
+     * @param {!Node=} opt_startNode
+     * @return {*}
      */
     $x: function(xpath, opt_startNode)
     {
@@ -1458,21 +1464,33 @@ CommandLineAPIImpl.prototype = {
         }
     },
 
+    /**
+     * @return {*}
+     */
     dir: function(var_args)
     {
         return inspectedWindow.console.dir.apply(inspectedWindow.console, arguments)
     },
 
+    /**
+     * @return {*}
+     */
     dirxml: function(var_args)
     {
         return inspectedWindow.console.dirxml.apply(inspectedWindow.console, arguments)
     },
 
+    /**
+     * @return {!Array.<string>}
+     */
     keys: function(object)
     {
         return Object.keys(object);
     },
 
+    /**
+     * @return {!Array.<*>}
+     */
     values: function(object)
     {
         var result = [];
@@ -1481,19 +1499,25 @@ CommandLineAPIImpl.prototype = {
         return result;
     },
 
+    /**
+     * @return {*}
+     */
     profile: function(opt_title)
     {
         return inspectedWindow.console.profile.apply(inspectedWindow.console, arguments)
     },
 
+    /**
+     * @return {*}
+     */
     profileEnd: function(opt_title)
     {
         return inspectedWindow.console.profileEnd.apply(inspectedWindow.console, arguments)
     },
 
     /**
-     * @param {Object} object
-     * @param {Array.<string>|string=} opt_types
+     * @param {!Object} object
+     * @param {!Array.<string>|string=} opt_types
      */
     monitorEvents: function(object, opt_types)
     {
@@ -1507,8 +1531,8 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @param {Object} object
-     * @param {Array.<string>|string=} opt_types
+     * @param {!Object} object
+     * @param {!Array.<string>|string=} opt_types
      */
     unmonitorEvents: function(object, opt_types)
     {
@@ -1554,8 +1578,8 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @param {Node} node
-     * @return {{type: string, listener: function(), useCapture: boolean, remove: function()}|undefined}
+     * @param {!Node} node
+     * @return {!{type: string, listener: function(), useCapture: boolean, remove: function()}|undefined}
      */
     getEventListeners: function(node)
     {
@@ -1611,8 +1635,8 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @param {Array.<string>|string=} types
-     * @return {Array.<string>}
+     * @param {!Array.<string>|string=} types
+     * @return {!Array.<string>}
      */
     _normalizeEventTypes: function(types)
     {
@@ -1638,7 +1662,7 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _logEvent: function(event)
     {
