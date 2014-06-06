@@ -52,7 +52,10 @@ _NEGATIVE_FILTER = [
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
-_VERSION_SPECIFIC_FILTER['HEAD'] = []
+_VERSION_SPECIFIC_FILTER['HEAD'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=815
+    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
