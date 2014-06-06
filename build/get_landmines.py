@@ -50,6 +50,7 @@ def print_landmines(target):
     print "Switched win from VS2010 to VS2013."
     print "Update to VS2013 Update 2."
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
+  print 'Need to clobber everything due to gen file moves in r175513 (Blink)'
   if (platform() != 'ios'):
     print 'Clobber to get rid of obselete test plugin after r248358'
     print 'Clobber to rebuild GN files for V8'
