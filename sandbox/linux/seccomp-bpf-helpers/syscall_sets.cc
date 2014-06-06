@@ -546,14 +546,14 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
   }
 }
 
-bool SyscallSets::IsAllowedPrctl(int sysno) {
+bool SyscallSets::IsPrctl(int sysno) {
   switch (sysno) {
-    case __NR_prctl:
-      return true;
-    default:
 #if defined(__x86_64__)
     case __NR_arch_prctl:
 #endif
+    case __NR_prctl:
+      return true;
+    default:
       return false;
   }
 }

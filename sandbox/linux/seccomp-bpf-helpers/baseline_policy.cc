@@ -36,7 +36,6 @@ bool IsBaselinePolicyAllowed(int sysno) {
          SyscallSets::IsAllowedGeneralIo(sysno) ||
          SyscallSets::IsAllowedGetOrModifySocket(sysno) ||
          SyscallSets::IsAllowedGettime(sysno) ||
-         SyscallSets::IsAllowedPrctl(sysno) ||
          SyscallSets::IsAllowedProcessStartOrDeath(sysno) ||
          SyscallSets::IsAllowedSignalHandling(sysno) ||
          SyscallSets::IsGetSimpleId(sysno) ||
@@ -71,6 +70,7 @@ bool IsBaselinePolicyWatched(int sysno) {
          SyscallSets::IsNetworkSocketInformation(sysno) ||
 #endif
          SyscallSets::IsNuma(sysno) ||
+         SyscallSets::IsPrctl(sysno) ||
          SyscallSets::IsProcessGroupOrSession(sysno) ||
 #if defined(__i386__)
          SyscallSets::IsSocketCall(sysno) ||
@@ -144,6 +144,9 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
 
   if (sysno == __NR_mprotect)
     return RestrictMprotectFlags(sandbox);
+
+  if (sysno == __NR_prctl)
+    return sandbox::RestrictPrctl(sandbox);
 
 #if defined(__x86_64__) || defined(__arm__)
   if (sysno == __NR_socketpair) {

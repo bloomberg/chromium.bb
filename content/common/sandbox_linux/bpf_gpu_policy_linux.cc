@@ -179,6 +179,8 @@ ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     // We also hit this on the linux_chromeos bot but don't yet know what
     // weird flags were involved.
     case __NR_mprotect:
+    // TODO(jln): restrict prctl.
+    case __NR_prctl:
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
     case __NR_setpriority:

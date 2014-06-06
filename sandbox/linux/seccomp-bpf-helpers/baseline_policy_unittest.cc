@@ -9,6 +9,7 @@
 #include <sched.h>
 #include <signal.h>
 #include <string.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -261,6 +262,26 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   _exit(1);
 }
 #endif  // !defined(OS_ANDROID)
+
+BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
+  const int is_dumpable = prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);
+  BPF_ASSERT(is_dumpable == 1 || is_dumpable == 0);
+  const int prctl_ret = prctl(PR_SET_DUMPABLE, is_dumpable, 0, 0, 0, 0);
+  BPF_ASSERT_EQ(0, prctl_ret);
+}
+
+// Workaround incomplete Android headers.
+#if !defined(PR_CAPBSET_READ)
+#define PR_CAPBSET_READ 23
+#endif
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 PrctlSigsys,
+                 DEATH_MESSAGE(GetPrctlErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  prctl(PR_CAPBSET_READ, 0, 0, 0, 0);
+  _exit(1);
+}
 
 }  // namespace
 

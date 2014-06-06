@@ -24,6 +24,8 @@ PpapiProcessPolicy::~PpapiProcessPolicy() {}
 ErrorCode PpapiProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                               int sysno) const {
   switch (sysno) {
+    // TODO(jln): restrict prctl.
+    case __NR_prctl:
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
