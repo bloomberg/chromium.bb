@@ -34,6 +34,7 @@ class SpeedometerMeasurement(page_measurement.PageMeasurement):
         'Total', 'ms', tab.EvaluateJavaScript('benchmarkClient._timeValues'))
 
 
+@test.Disabled('android')  # Times out
 class Speedometer(test.Test):
   test = SpeedometerMeasurement
 
