@@ -637,7 +637,7 @@ void PrintPreviewHandler::RegisterMessages() {
 
 bool PrintPreviewHandler::PrivetPrintingEnabled() {
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
     switches::kDisableDeviceDiscovery);
 #else
   return false;
@@ -1191,11 +1191,12 @@ void PrintPreviewHandler::SendInitialSettings(
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
-  if (sticky_settings->printer_app_state())
+  if (sticky_settings->printer_app_state()) {
     initial_settings.SetString(kAppState,
                                *sticky_settings->printer_app_state());
+  }
 
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode,
                               cmdline->HasSwitch(switches::kKioskModePrinting));
 #if defined(OS_WIN)
@@ -1460,7 +1461,7 @@ void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
     settings->SetInteger(printing::kSettingColor, color_model);
 }
 
-#endif
+#endif  // defined(USE_CUPS)
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
 void PrintPreviewHandler::LocalPrinterChanged(
@@ -1468,7 +1469,7 @@ void PrintPreviewHandler::LocalPrinterChanged(
     const std::string& name,
     bool has_local_printing,
     const local_discovery::DeviceDescription& description) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (has_local_printing ||
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
     base::DictionaryValue info;
@@ -1649,7 +1650,7 @@ void PrintPreviewHandler::FillPrinterDescription(
     const local_discovery::DeviceDescription& description,
     bool has_local_printing,
     base::DictionaryValue* printer_value) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   printer_value->SetString("serviceName", name);
   printer_value->SetString("name", description.name);
@@ -1661,4 +1662,4 @@ void PrintPreviewHandler::FillPrinterDescription(
   printer_value->SetString("cloudID", description.id);
 }
 
-#endif
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)

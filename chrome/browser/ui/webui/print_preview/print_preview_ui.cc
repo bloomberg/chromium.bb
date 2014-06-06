@@ -236,8 +236,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddString(
       "printWithCloudPrintWait",
       l10n_util::GetStringFUTF16(
-        IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
-        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+          IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
+          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
   source->AddString(
       "noDestsPromoLearnMoreUrl",
       chrome::kCloudPrintNoDestinationsLearnMoreURL);
