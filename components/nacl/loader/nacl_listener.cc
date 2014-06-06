@@ -263,139 +263,52 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStart(const nacl::NaClStartParams& params) {
-#if !defined(OS_LINUX)
-  CHECK(!uses_nonsfi_mode_) << "Non-SFI NaCl is only supported on Linux";
-#endif
-
-  // Random number source initialization.
-#if defined(OS_LINUX)
   if (uses_nonsfi_mode_) {
-    nacl::nonsfi::SetUrandomFd(base::GetUrandomFD());
+    StartNonSfi(params);
+    return;
   }
-#endif
+
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  if (!uses_nonsfi_mode_) {
-    int urandom_fd = dup(base::GetUrandomFD());
-    if (urandom_fd < 0) {
-      LOG(ERROR) << "Failed to dup() the urandom FD";
-      return;
-    }
-    NaClChromeMainSetUrandomFd(urandom_fd);
+  int urandom_fd = dup(base::GetUrandomFD());
+  if (urandom_fd < 0) {
+    LOG(ERROR) << "Failed to dup() the urandom FD";
+    return;
   }
+  NaClChromeMainSetUrandomFd(urandom_fd);
 #endif
 
   struct NaClApp* nap = NULL;
-  if (!uses_nonsfi_mode_) {
-    NaClChromeMainInit();
-    nap = NaClAppCreate();
-    if (nap == NULL) {
-      LOG(ERROR) << "NaClAppCreate() failed";
-      return;
-    }
+  NaClChromeMainInit();
+  nap = NaClAppCreate();
+  if (nap == NULL) {
+    LOG(ERROR) << "NaClAppCreate() failed";
+    return;
   }
 
   IPC::ChannelHandle browser_handle;
   IPC::ChannelHandle ppapi_renderer_handle;
-  IPC::ChannelHandle manifest_service_handle;
 
   if (params.enable_ipc_proxy) {
     browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
     ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
 
-#if defined(OS_LINUX)
-    if (uses_nonsfi_mode_) {
-      manifest_service_handle =
-          IPC::Channel::GenerateVerifiedChannelID("nacl");
-
-      // In non-SFI mode, we neither intercept nor rewrite the message using
-      // NaClIPCAdapter, and the channels are connected between the plugin and
-      // the hosts directly. So, the IPC::Channel instances will be created in
-      // the plugin side, because the IPC::Listener needs to live on the
-      // plugin's main thread. However, on initialization (i.e. before loading
-      // the plugin binary), the FD needs to be passed to the hosts. So, here
-      // we create raw FD pairs, and pass the client side FDs to the hosts,
-      // and the server side FDs to the plugin.
-      int browser_server_ppapi_fd;
-      int browser_client_ppapi_fd;
-      int renderer_server_ppapi_fd;
-      int renderer_client_ppapi_fd;
-      int manifest_service_server_fd;
-      int manifest_service_client_fd;
-      if (!IPC::SocketPair(
-              &browser_server_ppapi_fd, &browser_client_ppapi_fd) ||
-          !IPC::SocketPair(
-              &renderer_server_ppapi_fd, &renderer_client_ppapi_fd) ||
-          !IPC::SocketPair(
-              &manifest_service_server_fd, &manifest_service_client_fd)) {
-        LOG(ERROR) << "Failed to create sockets for IPC.";
-        return;
-      }
-
-      // Set the plugin IPC channel FDs.
-      ppapi::SetIPCFileDescriptors(browser_server_ppapi_fd,
-                                   renderer_server_ppapi_fd,
-                                   manifest_service_server_fd);
-      ppapi::StartUpPlugin();
-
-      // Send back to the client side IPC channel FD to the host.
-      browser_handle.socket =
-          base::FileDescriptor(browser_client_ppapi_fd, true);
-      ppapi_renderer_handle.socket =
-          base::FileDescriptor(renderer_client_ppapi_fd, true);
-      manifest_service_handle.socket =
-          base::FileDescriptor(manifest_service_client_fd, true);
-    } else {
-#endif
-      // Create the PPAPI IPC channels between the NaCl IRT and the host
-      // (browser/renderer) processes. The IRT uses these channels to
-      // communicate with the host and to initialize the IPC dispatchers.
-      SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
-                      nap, NACL_CHROME_DESC_BASE);
-      SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
-                      nap, NACL_CHROME_DESC_BASE + 1);
-#if defined(OS_LINUX)
-    }
-#endif
+    // Create the PPAPI IPC channels between the NaCl IRT and the host
+    // (browser/renderer) processes. The IRT uses these channels to
+    // communicate with the host and to initialize the IPC dispatchers.
+    SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE);
+    SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE + 1);
   }
 
-  // The argument passed to GenerateVerifiedChannelID() here MUST be "nacl".
-  // Using an alternate channel name prevents the pipe from being created on
-  // Windows when the sandbox is enabled.
-  IPC::ChannelHandle trusted_renderer_handle =
-      IPC::Channel::GenerateVerifiedChannelID("nacl");
-  trusted_listener_ = new NaClTrustedListener(
-      trusted_renderer_handle, io_thread_.message_loop_proxy(),
-      &shutdown_event_);
-#if defined(OS_POSIX)
-  trusted_renderer_handle.socket = base::FileDescriptor(
-      trusted_listener_->TakeClientFileDescriptor(), true);
-#endif
+  IPC::ChannelHandle trusted_renderer_handle = CreateTrustedListener(
+      io_thread_.message_loop_proxy(), &shutdown_event_);
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
           browser_handle, ppapi_renderer_handle,
-          trusted_renderer_handle, manifest_service_handle)))
+          trusted_renderer_handle, IPC::ChannelHandle())))
     LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   std::vector<nacl::FileDescriptor> handles = params.handles;
-
-#if defined(OS_LINUX)
-  if (uses_nonsfi_mode_) {
-    // Ensure that the validation cache key (used as an extra input to the
-    // validation cache's hashing) isn't exposed accidentally.
-    CHECK(!params.validation_cache_enabled);
-    CHECK(params.validation_cache_key.size() == 0);
-    CHECK(params.version.size() == 0);
-    // Ensure that a debug stub FD isn't passed through accidentally.
-    CHECK(!params.enable_debug_stub);
-    CHECK(params.debug_stub_server_bound_socket.fd == -1);
-
-    CHECK(!params.uses_irt);
-    CHECK(handles.size() == 1);
-    int imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
-    nacl::nonsfi::MainStart(imc_bootstrap_handle);
-    return;
-  }
-#endif
-
   struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
@@ -477,4 +390,104 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   NaClChromeMainStartApp(nap, args);
   NOTREACHED();
+}
+
+void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
+#if !defined(OS_LINUX)
+  NOTREACHED() << "Non-SFI NaCl is only supported on Linux";
+#else
+  // Random number source initialization.
+  nacl::nonsfi::SetUrandomFd(base::GetUrandomFD());
+
+  IPC::ChannelHandle browser_handle;
+  IPC::ChannelHandle ppapi_renderer_handle;
+  IPC::ChannelHandle manifest_service_handle;
+
+  if (params.enable_ipc_proxy) {
+    browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
+    ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
+    manifest_service_handle =
+        IPC::Channel::GenerateVerifiedChannelID("nacl");
+
+    // In non-SFI mode, we neither intercept nor rewrite the message using
+    // NaClIPCAdapter, and the channels are connected between the plugin and
+    // the hosts directly. So, the IPC::Channel instances will be created in
+    // the plugin side, because the IPC::Listener needs to live on the
+    // plugin's main thread. However, on initialization (i.e. before loading
+    // the plugin binary), the FD needs to be passed to the hosts. So, here
+    // we create raw FD pairs, and pass the client side FDs to the hosts,
+    // and the server side FDs to the plugin.
+    int browser_server_ppapi_fd;
+    int browser_client_ppapi_fd;
+    int renderer_server_ppapi_fd;
+    int renderer_client_ppapi_fd;
+    int manifest_service_server_fd;
+    int manifest_service_client_fd;
+    if (!IPC::SocketPair(
+            &browser_server_ppapi_fd, &browser_client_ppapi_fd) ||
+        !IPC::SocketPair(
+            &renderer_server_ppapi_fd, &renderer_client_ppapi_fd) ||
+        !IPC::SocketPair(
+            &manifest_service_server_fd, &manifest_service_client_fd)) {
+      LOG(ERROR) << "Failed to create sockets for IPC.";
+      return;
+    }
+
+    // Set the plugin IPC channel FDs.
+    ppapi::SetIPCFileDescriptors(browser_server_ppapi_fd,
+                                 renderer_server_ppapi_fd,
+                                 manifest_service_server_fd);
+    ppapi::StartUpPlugin();
+
+    // Send back to the client side IPC channel FD to the host.
+    browser_handle.socket =
+        base::FileDescriptor(browser_client_ppapi_fd, true);
+    ppapi_renderer_handle.socket =
+        base::FileDescriptor(renderer_client_ppapi_fd, true);
+    manifest_service_handle.socket =
+        base::FileDescriptor(manifest_service_client_fd, true);
+  }
+
+  // TODO(teravest): Do we plan on using this renderer handle for nexe loading
+  // for non-SFI? Right now, passing an empty channel handle instead causes
+  // hangs, so we'll keep it.
+  IPC::ChannelHandle trusted_renderer_handle = CreateTrustedListener(
+      io_thread_.message_loop_proxy(), &shutdown_event_);
+  if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
+          browser_handle, ppapi_renderer_handle,
+          trusted_renderer_handle, manifest_service_handle)))
+    LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
+
+  // Ensure that the validation cache key (used as an extra input to the
+  // validation cache's hashing) isn't exposed accidentally.
+  CHECK(!params.validation_cache_enabled);
+  CHECK(params.validation_cache_key.size() == 0);
+  CHECK(params.version.size() == 0);
+  // Ensure that a debug stub FD isn't passed through accidentally.
+  CHECK(!params.enable_debug_stub);
+  CHECK(params.debug_stub_server_bound_socket.fd == -1);
+
+  CHECK(!params.uses_irt);
+  CHECK(params.handles.size() == 1);
+  int imc_bootstrap_handle = nacl::ToNativeHandle(params.handles[0]);
+  nacl::nonsfi::MainStart(imc_bootstrap_handle);
+#endif  // defined(OS_LINUX)
+}
+
+IPC::ChannelHandle NaClListener::CreateTrustedListener(
+    base::MessageLoopProxy* message_loop_proxy,
+    base::WaitableEvent* shutdown_event) {
+  // The argument passed to GenerateVerifiedChannelID() here MUST be "nacl".
+  // Using an alternate channel name prevents the pipe from being created on
+  // Windows when the sandbox is enabled.
+  IPC::ChannelHandle trusted_renderer_handle =
+      IPC::Channel::GenerateVerifiedChannelID("nacl");
+  trusted_listener_ = new NaClTrustedListener(
+      trusted_renderer_handle, io_thread_.message_loop_proxy(),
+      &shutdown_event_);
+#if defined(OS_POSIX)
+  trusted_renderer_handle.socket = base::FileDescriptor(
+      trusted_listener_->TakeClientFileDescriptor(), true);
+#endif
+  return trusted_renderer_handle;
 }

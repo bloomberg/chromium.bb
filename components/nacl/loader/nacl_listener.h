@@ -14,6 +14,10 @@
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "ipc/ipc_listener.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace IPC {
 class SyncChannel;
 class SyncMessageFilter;
@@ -45,8 +49,16 @@ class NaClListener : public IPC::Listener {
 #endif
 
  private:
-  void OnStart(const nacl::NaClStartParams& params);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  void OnStart(const nacl::NaClStartParams& params);
+
+  // Non-SFI version of OnStart().
+  void StartNonSfi(const nacl::NaClStartParams& params);
+
+  IPC::ChannelHandle CreateTrustedListener(
+      base::MessageLoopProxy* message_loop_proxy,
+      base::WaitableEvent* shutdown_event);
 
   // A channel back to the browser.
   scoped_ptr<IPC::SyncChannel> channel_;
