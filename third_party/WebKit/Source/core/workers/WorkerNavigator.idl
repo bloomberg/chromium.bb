@@ -34,5 +34,6 @@
 ] interface WorkerNavigator {
 };
 
+WorkerNavigator implements NavigatorCPU;
 WorkerNavigator implements NavigatorID;
 WorkerNavigator implements NavigatorOnLine;

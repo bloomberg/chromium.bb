@@ -36,6 +36,7 @@
     [MeasureAs=NavigatorVendorSub] readonly attribute DOMString vendorSub;
 };
 
+Navigator implements NavigatorCPU;
 Navigator implements NavigatorID;
 Navigator implements NavigatorLanguage;
 Navigator implements NavigatorOnLine;
