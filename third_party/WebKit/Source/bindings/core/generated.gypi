@@ -13,14 +13,12 @@
       '<(blink_core_output_dir)/WindowCoreConstructors.idl',
       '<(blink_core_output_dir)/SharedWorkerGlobalScopeCoreConstructors.idl',
       '<(blink_core_output_dir)/DedicatedWorkerGlobalScopeCoreConstructors.idl',
-      '<(blink_core_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
     ],
 
     'core_global_constructors_generated_header_files': [
       '<(blink_core_output_dir)/WindowCoreConstructors.h',
       '<(blink_core_output_dir)/SharedWorkerGlobalScopeCoreConstructors.h',
       '<(blink_core_output_dir)/DedicatedWorkerGlobalScopeCoreConstructors.h',
-      '<(blink_core_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.h',
     ],
   },
 }

@@ -10,10 +10,6 @@
   'includes': [
     # ../.. == Source
     '../../bindings/bindings.gypi',
-    # FIXME: need info about modules for constructors on global objects
-    # http://crbug.com/358074
-    '../../bindings/modules/idl.gypi',
-    '../../bindings/modules/modules.gypi',
     '../../bindings/scripts/scripts.gypi',
     '../../core/core.gypi',
     'core.gypi',
@@ -27,7 +23,7 @@
     'target_name': 'core_global_objects',
     'type': 'none',
     'actions': [{
-      'action_name': 'core_modules_global_objects',
+      'action_name': 'compute_core_global_objects',
       'inputs': [
         '<(bindings_scripts_dir)/compute_global_objects.py',
         '<(bindings_scripts_dir)/utilities.py',
@@ -54,46 +50,10 @@
   },
 ################################################################################
   {
-    # FIXME: should be in modules/generated.gyp http://crbug.com/358074
-    'target_name': 'modules_global_objects',
-    'type': 'none',
-    'dependencies': [
-        'core_global_objects',
-    ],
-    'actions': [{
-      'action_name': 'compute_modules_global_objects',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only look in main IDL files (exclude dependencies and testing,
-        # which should not define global objects).
-        '<(modules_idl_files_list)',
-        '<@(modules_idl_files)',
-      ],
-      'outputs': [
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '--idl-files-list',
-        '<(modules_idl_files_list)',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-       ],
-       'message': 'Computing global objects in modules',
-      }]
-  },
-################################################################################
-  {
     'target_name': 'core_global_constructors_idls',
     'type': 'none',
     'dependencies': [
-        # FIXME: should be core_global_objects http://crbug.com/358074
-        'modules_global_objects',
+        'core_global_objects',
     ],
     'actions': [{
       'action_name': 'generate_core_global_constructors_idls',
@@ -104,7 +64,7 @@
         # which should not appear on global objects).
         '<(core_idl_files_list)',
         '<@(core_idl_files)',
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
       ],
       'outputs': [
         '<@(core_global_constructors_generated_idl_files)',
@@ -116,7 +76,7 @@
         '--idl-files-list',
         '<(core_idl_files_list)',
         '--global-objects-file',
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--',
@@ -126,8 +86,6 @@
         '<(blink_core_output_dir)/SharedWorkerGlobalScopeCoreConstructors.idl',
         'DedicatedWorkerGlobalScope',
         '<(blink_core_output_dir)/DedicatedWorkerGlobalScopeCoreConstructors.idl',
-        'ServiceWorkerGlobalScope',
-        '<(blink_core_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
        ],
        'message':
          'Generating IDL files for constructors on global objects from core',

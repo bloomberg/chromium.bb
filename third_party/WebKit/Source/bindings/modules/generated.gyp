@@ -22,6 +22,7 @@
   'targets': [
 ################################################################################
   {
+    # FIXME: Should be in modules, not bindings_modules http://crbug.com/358074
     'target_name': 'modules_event_generated',
     'type': 'none',
     'actions': [
@@ -41,7 +42,6 @@
           '<@(event_idl_files)',
         ],
         'outputs': [
-          # FIXME: should output to bindings_modules_output_dir  http://crbug.com/358074
           '<(blink_modules_output_dir)/EventModulesInterfaces.in',
         ],
         'action': [
@@ -134,10 +134,85 @@
   },
 ################################################################################
   {
+    'target_name': 'modules_global_objects',
+    'type': 'none',
+    'dependencies': [
+        '../core/generated.gyp:core_global_objects',
+    ],
+    'actions': [{
+      'action_name': 'compute_modules_global_objects',
+      'inputs': [
+        '<(bindings_scripts_dir)/compute_global_objects.py',
+        '<(bindings_scripts_dir)/utilities.py',
+        # Only look in main IDL files (exclude dependencies and testing,
+        # which should not define global objects).
+        '<(modules_idl_files_list)',
+        '<@(modules_idl_files)',
+      ],
+      'outputs': [
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+      ],
+      'action': [
+        'python',
+        '<(bindings_scripts_dir)/compute_global_objects.py',
+        '--idl-files-list',
+        '<(modules_idl_files_list)',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+       ],
+       'message': 'Computing global objects in modules',
+      }]
+  },
+################################################################################
+  {
+    # Global constructors for global objects in modules (ServiceWorker)
+    # but interfaces in core.
+    'target_name': 'modules_core_global_constructors_idls',
+    'type': 'none',
+    'dependencies': [
+        'modules_global_objects',
+    ],
+    'actions': [{
+      'action_name': 'generate_modules_core_global_constructors_idls',
+      'inputs': [
+        '<(bindings_scripts_dir)/generate_global_constructors.py',
+        '<(bindings_scripts_dir)/utilities.py',
+        # Only includes main IDL files (exclude dependencies and testing,
+        # which should not appear on global objects).
+        '<(core_idl_files_list)',
+        '<@(core_idl_files)',
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+      ],
+      'outputs': [
+        '<@(modules_core_global_constructors_generated_idl_files)',
+        '<@(modules_core_global_constructors_generated_header_files)',
+      ],
+      'action': [
+        'python',
+        '<(bindings_scripts_dir)/generate_global_constructors.py',
+        '--idl-files-list',
+        '<(core_idl_files_list)',
+        '--global-objects-file',
+        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
+        '--',
+        'ServiceWorkerGlobalScope',
+        '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
+       ],
+       'message':
+         'Generating IDL files for constructors for interfaces in core, on global objects from modules',
+      }]
+  },
+################################################################################
+  {
     'target_name': 'modules_global_constructors_idls',
     'type': 'none',
     'dependencies': [
-      '../core/generated.gyp:modules_global_objects',
+      'modules_global_objects',
     ],
     'actions': [{
       'action_name': 'generate_modules_global_constructors_idls',
@@ -182,6 +257,7 @@
     'target_name': 'interfaces_info_individual_modules',
     'type': 'none',
     'dependencies': [
+      'modules_core_global_constructors_idls',
       'modules_global_constructors_idls',
     ],
     'actions': [{

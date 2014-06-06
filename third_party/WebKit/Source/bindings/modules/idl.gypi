@@ -65,6 +65,7 @@
 
     # Generated IDL files
     'modules_generated_dependency_idl_files': [
+      '<@(modules_core_global_constructors_generated_idl_files)',  # partial interfaces
       '<@(modules_global_constructors_generated_idl_files)',  # partial interfaces
     ],
   },
