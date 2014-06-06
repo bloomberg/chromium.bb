@@ -56,7 +56,6 @@ EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalWebSocket status=stable
-FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileConstructor status=experimental
 FileSystem status=stable
