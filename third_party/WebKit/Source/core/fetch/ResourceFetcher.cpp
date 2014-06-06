@@ -652,6 +652,9 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
 
 void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type)
 {
+    if (type == ResourceLoadingFromCache)
+        notifyLoadedFromMemoryCache(resource);
+
     if (request.resourceRequest().url().protocolIsData() || (m_documentLoader && m_documentLoader->substituteData().isValid()))
         return;
 
@@ -705,7 +708,6 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         break;
     case Use:
         memoryCache()->updateForAccess(resource.get());
-        notifyLoadedFromMemoryCache(resource.get());
         break;
     }
 
