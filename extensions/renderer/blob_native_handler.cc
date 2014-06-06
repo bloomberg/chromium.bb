@@ -34,7 +34,7 @@ void TakeBrowserProcessBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
       blink::WebBlob::createFromUUID(blink::WebString::fromUTF8(uuid),
                                      blink::WebString::fromUTF8(type),
                                      args[2]->Int32Value());
-  args.GetReturnValue().Set(blob.toV8Value());
+  args.GetReturnValue().Set(blob.toV8Value(args.Holder(), args.GetIsolate()));
 }
 
 }  // namespace

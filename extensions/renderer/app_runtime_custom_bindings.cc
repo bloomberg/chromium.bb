@@ -49,7 +49,8 @@ void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(base::StringToInt64(blob_length_string, &blob_length));
   blink::WebBlob web_blob =
       WebBlob::createFromFile(WebString::fromUTF8(blob_file_path), blob_length);
-  args.GetReturnValue().Set(web_blob.toV8Value());
+  args.GetReturnValue().Set(
+      web_blob.toV8Value(args.Holder(), args.GetIsolate()));
 }
 
 }  // namespace
