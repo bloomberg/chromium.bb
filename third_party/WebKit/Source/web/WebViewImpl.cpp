@@ -1802,6 +1802,48 @@ bool WebViewImpl::hasVerticalScrollbar()
 
 const WebInputEvent* WebViewImpl::m_currentInputEvent = 0;
 
+// FIXME: autogenerate this kind of code, and use it throughout Blink rather than
+// the one-offs for subsets of these values.
+static const AtomicString* inputTypeToName(WebInputEvent::Type type)
+{
+    switch (type) {
+    case WebInputEvent::MouseDown:
+        return &EventTypeNames::mousedown;
+    case WebInputEvent::MouseUp:
+        return &EventTypeNames::mouseup;
+    case WebInputEvent::MouseMove:
+        return &EventTypeNames::mousemove;
+    case WebInputEvent::MouseEnter:
+        return &EventTypeNames::mouseenter;
+    case WebInputEvent::MouseLeave:
+        return &EventTypeNames::mouseleave;
+    case WebInputEvent::ContextMenu:
+        return &EventTypeNames::contextmenu;
+    case WebInputEvent::MouseWheel:
+        return &EventTypeNames::mousewheel;
+    case WebInputEvent::KeyDown:
+        return &EventTypeNames::keydown;
+    case WebInputEvent::KeyUp:
+        return &EventTypeNames::keyup;
+    case WebInputEvent::GestureScrollBegin:
+        return &EventTypeNames::gesturescrollstart;
+    case WebInputEvent::GestureScrollEnd:
+        return &EventTypeNames::gesturescrollend;
+    case WebInputEvent::GestureScrollUpdate:
+        return &EventTypeNames::gesturescrollupdate;
+    case WebInputEvent::TouchStart:
+        return &EventTypeNames::touchstart;
+    case WebInputEvent::TouchMove:
+        return &EventTypeNames::touchmove;
+    case WebInputEvent::TouchEnd:
+        return &EventTypeNames::touchend;
+    case WebInputEvent::TouchCancel:
+        return &EventTypeNames::touchcancel;
+    default:
+        return 0;
+    }
+}
+
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
     UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
@@ -1817,7 +1859,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         m_autofillClient->firstUserGestureObserved();
     }
 
-    TRACE_EVENT0("input", "WebViewImpl::handleInputEvent");
+    const AtomicString* inputEventName = inputTypeToName(inputEvent.type);
+    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputEventName ? TRACE_STR_COPY(inputEventName->ascii().data()) : "unknown");
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)
