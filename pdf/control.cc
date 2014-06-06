@@ -44,11 +44,14 @@ void Control::PaintMultipleRects(pp::ImageData* image_data,
   }
 
   // Some rects in the input list may overlap. To prevent double
-  // paining (causes problems with semi-transparent controls) we'll
+  // painting (causes problems with semi-transparent controls) we'll
   // paint control into buffer image data only once and copy requested
   // rectangles.
   pp::ImageData buffer(owner()->GetInstance(), image_data->format(),
                        rect().size(), false);
+  if (buffer.is_null())
+    return;
+
   pp::Rect draw_rc = pp::Rect(image_data->size()).Intersect(rect());
   pp::Rect ctrl_rc = pp::Rect(rect().point() - draw_rc.point(), draw_rc.size());
   CopyImage(*image_data, draw_rc, &buffer, ctrl_rc, false);
