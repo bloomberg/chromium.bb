@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithFirstHdSecondVga) {
+                       DISABLED_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
   std::string constraints2 =
