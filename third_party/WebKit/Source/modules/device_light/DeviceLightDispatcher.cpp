@@ -8,7 +8,6 @@
 #include "core/frame/DeviceSensorEventDispatcher.h"
 #include "modules/device_light/DeviceLightController.h"
 #include "public/platform/Platform.h"
-#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -27,17 +26,6 @@ DeviceLightDispatcher::~DeviceLightDispatcher()
 {
 }
 
-
-void DeviceLightDispatcher::addDeviceLightController(DeviceLightController* controller)
-{
-    addController(controller);
-}
-
-void DeviceLightDispatcher::removeDeviceLightController(DeviceLightController* controller)
-{
-    removeController(controller);
-}
-
 void DeviceLightDispatcher::startListening()
 {
     blink::Platform::current()->setDeviceLightListener(this);
@@ -52,19 +40,7 @@ void DeviceLightDispatcher::stopListening()
 void DeviceLightDispatcher::didChangeDeviceLight(double value)
 {
     m_lastDeviceLightData = value;
-
-    {
-        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
-        // Don't fire controllers removed or added during event dispatch.
-        size_t size = m_controllers.size();
-        for (size_t i = 0; i < size; ++i) {
-            if (m_controllers[i])
-                static_cast<DeviceLightController*>(m_controllers[i])->didChangeDeviceLight(m_lastDeviceLightData);
-        }
-    }
-
-    if (m_needsPurge)
-        purgeControllers();
+    notifyControllers();
 }
 
 double DeviceLightDispatcher::latestDeviceLightData() const

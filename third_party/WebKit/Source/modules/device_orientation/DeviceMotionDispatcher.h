@@ -31,7 +31,7 @@
 #ifndef DeviceMotionDispatcher_h
 #define DeviceMotionDispatcher_h
 
-#include "core/frame/DeviceSensorEventDispatcher.h"
+#include "core/frame/DeviceEventDispatcherBase.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"
@@ -45,9 +45,8 @@ namespace WebCore {
 class DeviceMotionController;
 class DeviceMotionData;
 
-// This class listens to device motion data and dispatches it to all
-// listening controllers.
-class DeviceMotionDispatcher FINAL : public DeviceSensorEventDispatcher, public blink::WebDeviceMotionListener {
+// This class listens to device motion data and notifies all registered controllers.
+class DeviceMotionDispatcher FINAL : public DeviceEventDispatcherBase, public blink::WebDeviceMotionListener {
 public:
     static DeviceMotionDispatcher& instance();
 
@@ -55,15 +54,14 @@ public:
     // FIXME: make the return value const, see crbug.com/233174.
     DeviceMotionData* latestDeviceMotionData();
 
-    // This method is called every time new device motion data is available.
+    // Inherited from WebDeviceMotionListener.
     virtual void didChangeDeviceMotion(const blink::WebDeviceMotionData&) OVERRIDE;
-    void addDeviceMotionController(DeviceMotionController*);
-    void removeDeviceMotionController(DeviceMotionController*);
 
 private:
     DeviceMotionDispatcher();
     virtual ~DeviceMotionDispatcher();
 
+    // Inherited from DeviceEventDispatcherBase.
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
