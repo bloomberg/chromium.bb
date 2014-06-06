@@ -63,10 +63,11 @@ enum ClassElementListBehavior { AllElements, OnlyRoots };
 
 template <ClassElementListBehavior onlyRoots>
 class ClassElementList {
+    STACK_ALLOCATED();
 public:
     ClassElementList(ContainerNode& rootNode, const AtomicString& className)
         : m_className(className)
-        , m_rootNode(rootNode)
+        , m_rootNode(&rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
 
     bool isEmpty() const { return !m_currentElement; }
@@ -76,16 +77,16 @@ public:
         Element* current = m_currentElement;
         ASSERT(current);
         if (onlyRoots)
-            m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(*m_currentElement, &m_rootNode));
+            m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(*m_currentElement, m_rootNode));
         else
-            m_currentElement = nextInternal(ElementTraversal::next(*m_currentElement, &m_rootNode));
+            m_currentElement = nextInternal(ElementTraversal::next(*m_currentElement, m_rootNode));
         return current;
     }
 
 private:
     Element* nextInternal(Element* element)
     {
-        for (; element; element = ElementTraversal::next(*element, &m_rootNode)) {
+        for (; element; element = ElementTraversal::next(*element, m_rootNode)) {
             if (element->hasClass() && element->classNames().contains(m_className))
                 return element;
         }
@@ -93,8 +94,8 @@ private:
     }
 
     const AtomicString& m_className;
-    ContainerNode& m_rootNode;
-    Element* m_currentElement;
+    RawPtrWillBeMember<ContainerNode> m_rootNode;
+    RawPtrWillBeMember<Element> m_currentElement;
 };
 
 void SelectorDataList::initialize(const CSSSelectorList& selectorList)

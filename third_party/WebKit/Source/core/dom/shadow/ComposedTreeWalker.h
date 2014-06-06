@@ -39,6 +39,7 @@ class ShadowRoot;
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
 class ComposedTreeWalker {
+    STACK_ALLOCATED();
 public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 
@@ -49,7 +50,7 @@ public:
 
     ComposedTreeWalker(const Node*, StartPolicy = CannotStartFromShadowBoundary);
 
-    Node* get() const { return const_cast<Node*>(m_node); }
+    Node* get() const { return const_cast<Node*>(m_node.get()); }
 
     void firstChild();
     void lastChild();
@@ -109,7 +110,7 @@ private:
 
     Node* traverseParentOrHost(const Node*) const;
 
-    const Node* m_node;
+    RawPtrWillBeMember<const Node> m_node;
 };
 
 inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, StartPolicy startPolicy)

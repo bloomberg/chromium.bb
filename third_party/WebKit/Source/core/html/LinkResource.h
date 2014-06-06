@@ -67,6 +67,7 @@ protected:
 };
 
 class LinkRequestBuilder {
+    STACK_ALLOCATED();
 public:
     explicit LinkRequestBuilder(HTMLLinkElement* owner);
 
@@ -76,7 +77,7 @@ public:
     FetchRequest build(bool blocking) const;
 
 private:
-    HTMLLinkElement* m_owner;
+    RawPtrWillBeMember<HTMLLinkElement> m_owner;
     KURL m_url;
     AtomicString m_charset;
 };

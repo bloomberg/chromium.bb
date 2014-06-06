@@ -241,17 +241,17 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 // --------
 
 TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavior)
-    : m_startContainer(0)
+    : m_startContainer(nullptr)
     , m_startOffset(0)
-    , m_endContainer(0)
+    , m_endContainer(nullptr)
     , m_endOffset(0)
-    , m_positionNode(0)
+    , m_positionNode(nullptr)
     , m_textLength(0)
     , m_needsAnotherNewline(false)
     , m_textBox(0)
     , m_remainingTextBox(0)
     , m_firstLetterText(0)
-    , m_lastTextNode(0)
+    , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_lastCharacter(0)
     , m_sortedTextBoxesPosition(0)
@@ -271,17 +271,17 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
 }
 
 TextIterator::TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
-    : m_startContainer(0)
+    : m_startContainer(nullptr)
     , m_startOffset(0)
-    , m_endContainer(0)
+    , m_endContainer(nullptr)
     , m_endOffset(0)
-    , m_positionNode(0)
+    , m_positionNode(nullptr)
     , m_textLength(0)
     , m_needsAnotherNewline(false)
     , m_textBox(0)
     , m_remainingTextBox(0)
     , m_firstLetterText(0)
-    , m_lastTextNode(0)
+    , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_lastCharacter(0)
     , m_sortedTextBoxesPosition(0)
@@ -361,7 +361,7 @@ void TextIterator::advance()
         return;
 
     // reset the run information
-    m_positionNode = 0;
+    m_positionNode = nullptr;
     m_textLength = 0;
 
     // handle remembered node that needed a newline after the text node's newline
@@ -372,7 +372,7 @@ void TextIterator::advance()
         // break begins.
         // FIXME: It would be cleaner if we emitted two newlines during the last
         // iteration, instead of using m_needsAnotherNewline.
-        Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node;
+        Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node.get();
         emitCharacter('\n', baseNode->parentNode(), baseNode, 1, 1);
         m_needsAnotherNewline = false;
         return;
@@ -401,7 +401,7 @@ void TextIterator::advance()
         // precedes the element
         if (m_node == m_endContainer && !m_endOffset) {
             representNodeOffsetZero();
-            m_node = 0;
+            m_node = nullptr;
             return;
         }
 
@@ -1081,7 +1081,7 @@ void TextIterator::exitNode()
     // Emit with a position *inside* m_node, after m_node's contents, in
     // case it is a block, because the run should start where the
     // emitted character is positioned visually.
-    Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node;
+    Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node.get();
     // FIXME: This shouldn't require the m_lastTextNode to be true, but we can't change that without making
     // the logic in _web_attributedStringFromRange match. We'll get that for free when we switch to use
     // TextIterator in _web_attributedStringFromRange.
@@ -1140,7 +1140,7 @@ void TextIterator::emitText(Node* textNode, RenderObject* renderObject, int text
     ASSERT(textStartOffset <= textEndOffset);
 
     m_positionNode = textNode;
-    m_positionOffsetBaseNode = 0;
+    m_positionOffsetBaseNode = nullptr;
     m_positionStartOffset = textStartOffset;
     m_positionEndOffset = textEndOffset;
     m_singleCharacterBuffer = 0;
@@ -1164,7 +1164,7 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::range() const
             int index = m_positionOffsetBaseNode->nodeIndex();
             m_positionStartOffset += index;
             m_positionEndOffset += index;
-            m_positionOffsetBaseNode = 0;
+            m_positionOffsetBaseNode = nullptr;
         }
         return Range::create(m_positionNode->document(), m_positionNode, m_positionStartOffset, m_positionNode, m_positionEndOffset);
     }
@@ -1194,20 +1194,20 @@ Node* TextIterator::node() const
 // --------
 
 SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r, TextIteratorBehaviorFlags behavior)
-    : m_node(0)
+    : m_node(nullptr)
     , m_offset(0)
     , m_handledNode(false)
     , m_handledChildren(false)
-    , m_startNode(0)
+    , m_startNode(nullptr)
     , m_startOffset(0)
-    , m_endNode(0)
+    , m_endNode(nullptr)
     , m_endOffset(0)
-    , m_positionNode(0)
+    , m_positionNode(nullptr)
     , m_positionStartOffset(0)
     , m_positionEndOffset(0)
     , m_textOffset(0)
     , m_textLength(0)
-    , m_lastTextNode(0)
+    , m_lastTextNode(nullptr)
     , m_lastCharacter(0)
     , m_singleCharacterBuffer(0)
     , m_havePassedStartNode(false)
@@ -1261,7 +1261,7 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     m_positionNode = endNode;
 #endif
 
-    m_lastTextNode = 0;
+    m_lastTextNode = nullptr;
     m_lastCharacter = '\n';
 
     m_havePassedStartNode = false;
@@ -1281,7 +1281,7 @@ void SimplifiedBackwardsTextIterator::advance()
         return;
     }
 
-    m_positionNode = 0;
+    m_positionNode = nullptr;
     m_textLength = 0;
 
     while (m_node && !m_havePassedStartNode) {
@@ -1337,7 +1337,7 @@ void SimplifiedBackwardsTextIterator::advance()
             if (advanceRespectingRange(m_node->previousSibling()))
                 pushFullyClippedState(m_fullyClippedStack, m_node);
             else
-                m_node = 0;
+                m_node = nullptr;
         }
 
         // For the purpose of word boundary detection,

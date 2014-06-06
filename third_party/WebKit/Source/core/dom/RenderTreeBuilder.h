@@ -38,10 +38,11 @@ class RenderObject;
 class RenderStyle;
 
 class RenderTreeBuilder {
+    STACK_ALLOCATED();
 public:
     RenderTreeBuilder(Node* node, RenderStyle* style)
         : m_node(node)
-        , m_renderingParent(0)
+        , m_renderingParent(nullptr)
         , m_style(style)
     {
         ASSERT(!node->renderer());
@@ -66,8 +67,8 @@ private:
     bool shouldCreateRenderer() const;
     RenderStyle& style() const;
 
-    Node* m_node;
-    ContainerNode* m_renderingParent;
+    RawPtrWillBeMember<Node> m_node;
+    RawPtrWillBeMember<ContainerNode> m_renderingParent;
     NodeRenderingTraversal::ParentDetails m_parentDetails;
     mutable RefPtr<RenderStyle> m_style;
 };
