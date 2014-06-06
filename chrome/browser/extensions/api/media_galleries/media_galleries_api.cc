@@ -25,8 +25,8 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
+#include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
@@ -469,7 +469,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   // Controller will delete itself.
   base::Closure cb = base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
-  new MediaGalleriesDialogController(contents, *extension, cb);
+  new MediaGalleriesPermissionController(contents, *extension, cb);
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(

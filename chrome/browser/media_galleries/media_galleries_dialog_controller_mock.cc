@@ -4,28 +4,22 @@
 
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/strings/utf_string_conversions.h"
 
+using ::testing::_;
 using ::testing::Return;
 
-namespace {
-MediaGalleriesDialog* NullDialog(MediaGalleriesDialogController*) {
-  return NULL;
-}
-
-}  // namespace
-
-MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock(
-    const extensions::Extension& extension)
-    : MediaGalleriesDialogController(
-          extension, NULL,
-          base::Bind(&NullDialog),
-          base::Bind(&base::DoNothing)) {
-  EXPECT_CALL(*this, GetHeader()).
-      WillRepeatedly(Return(base::string16()));
-  EXPECT_CALL(*this, GetSubtext()).
-      WillRepeatedly(Return(base::string16()));
+MediaGalleriesDialogControllerMock::MediaGalleriesDialogControllerMock() {
+  ON_CALL(*this, GetHeader()).
+      WillByDefault(Return(base::ASCIIToUTF16("Title")));
+  ON_CALL(*this, GetSubtext()).
+      WillByDefault(Return(base::ASCIIToUTF16("Desc")));
+  ON_CALL(*this, GetAcceptButtonText()).
+      WillByDefault(Return(base::ASCIIToUTF16("OK")));
+  ON_CALL(*this, GetAuxiliaryButtonText()).
+      WillByDefault(Return(base::ASCIIToUTF16("Button")));
+  ON_CALL(*this, GetSectionEntries(_)).
+      WillByDefault(Return(Entries()));
 }
 
 MediaGalleriesDialogControllerMock::~MediaGalleriesDialogControllerMock() {

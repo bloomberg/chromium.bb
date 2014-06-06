@@ -1181,6 +1181,8 @@
         'browser/media_galleries/media_galleries_dialog_controller.h',
         'browser/media_galleries/media_galleries_histograms.cc',
         'browser/media_galleries/media_galleries_histograms.h',
+        'browser/media_galleries/media_galleries_permission_controller.cc',
+        'browser/media_galleries/media_galleries_permission_controller.h',
         'browser/media_galleries/media_galleries_preferences.cc',
         'browser/media_galleries/media_galleries_preferences.h',
         'browser/media_galleries/media_galleries_preferences_factory.cc',

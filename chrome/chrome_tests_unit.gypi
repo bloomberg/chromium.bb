@@ -1094,7 +1094,7 @@
         'browser/media_galleries/media_folder_finder_unittest.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.h',
-        'browser/media_galleries/media_galleries_dialog_controller_unittest.cc',
+        'browser/media_galleries/media_galleries_permission_controller_unittest.cc',
         'browser/media_galleries/media_galleries_permissions_unittest.cc',
         'browser/media_galleries/media_galleries_preferences_unittest.cc',
         'browser/media_galleries/media_galleries_scan_result_dialog_controller_unittest.cc',

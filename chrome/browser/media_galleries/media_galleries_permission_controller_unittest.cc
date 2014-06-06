@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_permission_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -70,9 +70,9 @@ class MockMediaGalleriesDialog
 
 }  // namespace
 
-class MediaGalleriesDialogControllerTest : public ::testing::Test {
+class MediaGalleriesPermissionControllerTest : public ::testing::Test {
  public:
-  MediaGalleriesDialogControllerTest()
+  MediaGalleriesPermissionControllerTest()
       : dialog_(NULL),
         dialog_update_count_at_destruction_(0),
         controller_(NULL),
@@ -80,7 +80,7 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
         weak_factory_(this) {
   }
 
-  virtual ~MediaGalleriesDialogControllerTest() {
+  virtual ~MediaGalleriesPermissionControllerTest() {
     EXPECT_FALSE(controller_);
     EXPECT_FALSE(dialog_);
   }
@@ -111,17 +111,17 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
 
   void StartDialog() {
     ASSERT_FALSE(controller_);
-    controller_ = new MediaGalleriesDialogController(
+    controller_ = new MediaGalleriesPermissionController(
         *extension_.get(),
         gallery_prefs_.get(),
-        base::Bind(&MediaGalleriesDialogControllerTest::CreateMockDialog,
+        base::Bind(&MediaGalleriesPermissionControllerTest::CreateMockDialog,
                    base::Unretained(this)),
         base::Bind(
-            &MediaGalleriesDialogControllerTest::OnControllerDone,
+            &MediaGalleriesPermissionControllerTest::OnControllerDone,
             base::Unretained(this)));
   }
 
-  MediaGalleriesDialogController* controller() {
+  MediaGalleriesPermissionController* controller() {
     return controller_;
   }
 
@@ -155,7 +155,7 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
     EXPECT_FALSE(dialog_);
     dialog_update_count_at_destruction_ = 0;
     dialog_ = new MockMediaGalleriesDialog(base::Bind(
-        &MediaGalleriesDialogControllerTest::OnDialogDestroyed,
+        &MediaGalleriesPermissionControllerTest::OnDialogDestroyed,
         weak_factory_.GetWeakPtr()));
     return dialog_;
   }
@@ -179,7 +179,7 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
   int dialog_update_count_at_destruction_;
 
   // The controller owns itself.
-  MediaGalleriesDialogController* controller_;
+  MediaGalleriesPermissionController* controller_;
 
   scoped_refptr<extensions::Extension> extension_;
 
@@ -193,19 +193,19 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
 
-  base::WeakPtrFactory<MediaGalleriesDialogControllerTest>
+  base::WeakPtrFactory<MediaGalleriesPermissionControllerTest>
       weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPermissionControllerTest);
 };
 
 GalleryDialogId
-MediaGalleriesDialogControllerTest::GetDialogIdFromPrefId(
+MediaGalleriesPermissionControllerTest::GetDialogIdFromPrefId(
     MediaGalleryPrefId pref_id) {
   return controller_->GetDialogId(pref_id);
 }
 
-void MediaGalleriesDialogControllerTest::TestForgottenType(
+void MediaGalleriesPermissionControllerTest::TestForgottenType(
     MediaGalleryPrefInfo::Type type) {
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -216,26 +216,26 @@ void MediaGalleriesDialogControllerTest::TestForgottenType(
   // Show dialog and accept to verify 2 entries
   StartDialog();
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
-            controller()->AttachedPermissions().size());
-  EXPECT_EQ(0U, controller()->UnattachedPermissions().size());
-  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten1), true);
-  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten2), true);
+            controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(0U, controller()->GetSectionEntries(1).size());
+  controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten1), true);
+  controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten2), true);
   controller()->DialogFinished(true);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Forget one and cancel to see that it's still there.
   StartDialog();
-  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten1));
+  controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten1));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->AttachedPermissions().size());
+            controller()->GetSectionEntries(0).size());
   controller()->DialogFinished(false);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Forget one and confirm to see that it's gone.
   StartDialog();
-  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten1));
+  controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten1));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->AttachedPermissions().size());
+            controller()->GetSectionEntries(0).size());
   controller()->DialogFinished(true);
   EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -244,29 +244,29 @@ void MediaGalleriesDialogControllerTest::TestForgottenType(
       MakeMediaGalleriesTestingPath("forgotten3"), type);
   StartDialog();
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
-            controller()->AttachedPermissions().size());
-  EXPECT_EQ(0U, controller()->UnattachedPermissions().size());
-  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten3), true);
-  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten3));
+            controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(0U, controller()->GetSectionEntries(1).size());
+  controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten3), true);
+  controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten3));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->AttachedPermissions().size());
+            controller()->GetSectionEntries(0).size());
   controller()->DialogFinished(true);
   EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 }
 
-TEST_F(MediaGalleriesDialogControllerTest, TestForgottenUserAdded) {
+TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenUserAdded) {
   TestForgottenType(MediaGalleryPrefInfo::kUserAdded);
 }
 
-TEST_F(MediaGalleriesDialogControllerTest, TestForgottenAutoDetected) {
+TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenAutoDetected) {
   TestForgottenType(MediaGalleryPrefInfo::kAutoDetected);
 }
 
-TEST_F(MediaGalleriesDialogControllerTest, TestForgottenScanResult) {
+TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenScanResult) {
   TestForgottenType(MediaGalleryPrefInfo::kScanResult);
 }
 
-TEST_F(MediaGalleriesDialogControllerTest, TestNameGeneration) {
+TEST_F(MediaGalleriesPermissionControllerTest, TestNameGeneration) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = 1;
   gallery.device_id = StorageInfo::MakeDeviceId(

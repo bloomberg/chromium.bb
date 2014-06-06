@@ -65,20 +65,20 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  typedef std::map<GalleryDialogId, MediaGalleryCheckboxView*> CheckboxMap;
+  typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*> CheckboxMap;
 
   void InitChildViews();
 
   // Adds a checkbox or updates an existing checkbox. Returns true if a new one
   // was added.
   bool AddOrUpdateGallery(
-      const MediaGalleriesDialogController::GalleryPermission& gallery,
+      const MediaGalleriesDialogController::Entry& gallery,
       views::View* container,
       int trailing_vertical_space);
 
   void ShowContextMenu(const gfx::Point& point,
                        ui::MenuSourceType source_type,
-                       GalleryDialogId id);
+                       MediaGalleryPrefId id);
 
   // Whether |controller_| has a valid WebContents or not.
   // In unit tests, it may not.
@@ -92,9 +92,9 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // A map from gallery ID to views::Checkbox view.
   CheckboxMap checkbox_map_;
 
-  // Pointer to the button to add a new gallery. Owned by parent in
-  // the dialog views tree.
-  views::LabelButton* add_gallery_button_;
+  // Pointer to the controller specific auxiliary button, NULL otherwise.
+  // Owned by parent in the dialog views tree.
+  views::LabelButton* auxiliary_button_;
 
   // This tracks whether the confirm button can be clicked. It starts as false
   // if no checkboxes are ticked. After there is any interaction, or some

@@ -14,6 +14,7 @@
 
 @class ConstrainedWindowAlert;
 @class MediaGalleriesCocoaController;
+@class NSString;
 
 class MediaGalleriesDialogBrowserTest;
 class MediaGalleriesDialogTest;
@@ -22,8 +23,8 @@ namespace ui {
 class MenuModel;
 }
 
-// This class displays an alert that can be used to grant permission for
-// extensions to access a gallery (media folders).
+// This class displays an alert that can be used to manage lists of media
+// galleries.
 class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
                                   public MediaGalleriesDialog,
                                   public MediaGalleryListEntryController {
@@ -37,8 +38,8 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnAcceptClicked();
   // Called when the user clicks the cancel button.
   void OnCancelClicked();
-  // Called when the user clicks the Add Gallery button.
-  void OnAddFolderClicked();
+  // Called when the user clicks the auxiliary button.
+  void OnAuxiliaryButtonClicked();
 
   // MediaGalleriesDialog implementation:
   virtual void UpdateGalleries() OVERRIDE;
@@ -48,9 +49,10 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
       ConstrainedWindowMac* window) OVERRIDE;
 
   // MediaGalleryListEntryController implementation.
-  virtual void OnCheckboxToggled(GalleryDialogId gallery_id,
+  virtual void OnCheckboxToggled(MediaGalleryPrefId pref_id,
                                  bool checked) OVERRIDE;
-  virtual ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id) OVERRIDE;
+  virtual void OnFolderViewerClicked(MediaGalleryPrefId prefId) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -59,17 +61,11 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  void UpdateGalleryCheckbox(
-      const MediaGalleriesDialogController::GalleryPermission& gallery,
-      CGFloat y_pos);
-
   void InitDialogControls();
-  CGFloat CreateAddFolderButton();
   CGFloat CreateCheckboxes(
       CGFloat y_pos,
-      const MediaGalleriesDialogController::GalleryPermissionsVector&
-          permissions);
-  CGFloat CreateCheckboxSeparator(CGFloat y_pos);
+      const MediaGalleriesDialogController::Entries& entries);
+  CGFloat CreateCheckboxSeparator(CGFloat y_pos, NSString* header);
 
   MediaGalleriesDialogController* controller_;  // weak
   scoped_ptr<ConstrainedWindowMac> window_;
