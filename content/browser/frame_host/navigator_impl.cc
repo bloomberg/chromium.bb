@@ -426,8 +426,25 @@ void NavigatorImpl::DidNavigate(
       // calling RenderFrameHostManager::DidNavigateMainFrame, because that can
       // change WebContents::GetRenderViewHost to return the new host, instead
       // of the one that may have just been swapped out.
-      if (delegate_->CanOverscrollContent())
-        controller_->TakeScreenshot();
+      if (delegate_->CanOverscrollContent()) {
+        bool page_id_changed;
+        bool url_changed;
+        NavigationEntry* current_entry = controller_->GetLastCommittedEntry();
+        if (current_entry) {
+          page_id_changed = params.page_id > 0 &&
+              params.page_id != current_entry->GetPageID();
+          url_changed = params.url != current_entry->GetURL();
+        } else {
+          page_id_changed = params.page_id > 0;
+          url_changed = params.url != GURL::EmptyGURL();
+        }
+
+        // We only want to take the screenshot if the are navigating to a
+        // different history entry than the current one. So if neither the
+        // page id nor the url changed - don't take the screenshot.
+        if (page_id_changed || url_changed)
+          controller_->TakeScreenshot();
+      }
 
       // Run tasks that must execute just before the commit.
       delegate_->DidNavigateMainFramePreCommit(params);
