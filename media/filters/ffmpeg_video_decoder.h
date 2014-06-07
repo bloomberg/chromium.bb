@@ -31,6 +31,10 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~FFmpegVideoDecoder();
 
+  // Allow decoding of individual NALU. Entire frames are required by default.
+  // Disables low-latency mode. Must be called before Initialize().
+  void set_decode_nalus(bool decode_nalus) { decode_nalus_ = decode_nalus; }
+
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
@@ -83,6 +87,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   VideoDecoderConfig config_;
 
   VideoFramePool frame_pool_;
+
+  bool decode_nalus_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoder);
 };

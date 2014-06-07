@@ -68,7 +68,8 @@ static void ReleaseVideoBufferImpl(void* opaque, uint8* data) {
 
 FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner), state_(kUninitialized) {}
+    : task_runner_(task_runner), state_(kUninitialized),
+      decode_nalus_(false) {}
 
 int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
                                        AVFrame* frame,
@@ -359,6 +360,9 @@ bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
   codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
   codec_context_->get_buffer2 = GetVideoBufferImpl;
   codec_context_->refcounted_frames = 1;
+
+  if (decode_nalus_)
+    codec_context_->flags2 |= CODEC_FLAG2_CHUNKS;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {
