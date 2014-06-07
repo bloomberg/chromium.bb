@@ -156,15 +156,13 @@ public:
 
     // Notifies the node that it's list of children have changed (either by adding or removing child nodes), or a child
     // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
-    // FIXME: Replace the bool for createdByParser with the InsertionSourceType.
     virtual void childrenChanged(bool createdByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
     void disconnectDescendantFrames();
 
     virtual void trace(Visitor*) OVERRIDE;
 
-    enum InsertionSourceType { InsertedByDOM, InsertedByParser };
-    void notifyNodeInserted(Node&, InsertionSourceType = InsertedByDOM);
+    void notifyNodeInserted(Node&);
     void notifyNodeRemoved(Node&);
 
 protected:
