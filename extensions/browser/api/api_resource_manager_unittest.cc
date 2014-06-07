@@ -1,14 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/extension.h"
@@ -21,10 +19,9 @@ using content::BrowserThread;
 
 namespace extensions {
 
-// TODO(rockot): Move these tests to src/extensions.
-class ApiResourceManagerUnitTest : public BrowserWithTestWindowTest {
- public:
-  virtual void SetUp() { BrowserWithTestWindowTest::SetUp(); }
+class ApiResourceManagerUnitTest : public testing::Test {
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 class FakeApiResource : public ApiResource {

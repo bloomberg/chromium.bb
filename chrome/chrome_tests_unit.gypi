@@ -531,6 +531,7 @@
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
         '../extensions/browser/admin_policy_unittest.cc',
+        '../extensions/browser/api/api_resource_manager_unittest.cc',
         '../extensions/browser/api/storage/settings_quota_unittest.cc',
         '../extensions/browser/api/storage/settings_test_util.cc',
         '../extensions/browser/api/storage/settings_test_util.h',
@@ -866,7 +867,6 @@
         'browser/extensions/activity_log/uma_policy_unittest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
-        'browser/extensions/api/api_resource_manager_unittest.cc',
         'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
         'browser/extensions/api/cast_channel/cast_channel_api_unittest.cc',
