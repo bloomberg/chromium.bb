@@ -95,6 +95,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
       restore_focus_window_(aura::client::GetFocusClient(
           Shell::GetPrimaryRootWindow())->GetFocusedWindow()),
       ignore_activations_(false),
+      overview_start_time_(base::Time::Now()),
       selected_grid_index_(0) {
   DCHECK(delegate_);
   Shell* shell = Shell::GetInstance();
