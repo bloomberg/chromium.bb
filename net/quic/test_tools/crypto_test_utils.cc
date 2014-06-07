@@ -192,8 +192,11 @@ int CryptoTestUtils::HandshakeWithFakeClient(
 
   if (options.channel_id_enabled) {
     scoped_ptr<ChannelIDKey> channel_id_key;
-    EXPECT_TRUE(crypto_config.channel_id_source()->GetChannelIDKey(
-        kServerHostname, &channel_id_key));
+    QuicAsyncStatus status =
+        crypto_config.channel_id_source()->GetChannelIDKey(kServerHostname,
+                                                           &channel_id_key,
+                                                           NULL);
+    EXPECT_EQ(QUIC_SUCCESS, status);
     EXPECT_EQ(channel_id_key->SerializeKey(),
               server->crypto_negotiated_params().channel_id);
   }

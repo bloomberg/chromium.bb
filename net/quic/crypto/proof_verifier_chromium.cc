@@ -40,8 +40,8 @@ class ProofVerifierChromium::Job {
       CertVerifier* cert_verifier,
       const BoundNetLog& net_log);
 
-  // Starts the proof verification.  If |PENDING| is returned, then |callback|
-  // will be invoked asynchronously when the verification completes.
+  // Starts the proof verification.  If |QUIC_PENDING| is returned, then
+  // |callback| will be invoked asynchronously when the verification completes.
   QuicAsyncStatus VerifyProof(const std::string& hostname,
                               const std::string& server_config,
                               const std::vector<std::string>& certs,

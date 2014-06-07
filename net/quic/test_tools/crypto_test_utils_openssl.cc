@@ -38,7 +38,7 @@ class TestChannelIDKey : public ChannelIDKey {
   // ChannelIDKey implementation.
 
   virtual bool Sign(StringPiece signed_data,
-                    string* out_signature) OVERRIDE {
+                    string* out_signature) const OVERRIDE {
     EVP_MD_CTX md_ctx;
     EVP_MD_CTX_init(&md_ctx);
     crypto::ScopedOpenSSL<EVP_MD_CTX, EvpMdCtxCleanUp>
@@ -85,7 +85,7 @@ class TestChannelIDKey : public ChannelIDKey {
     return true;
   }
 
-  virtual string SerializeKey() OVERRIDE {
+  virtual string SerializeKey() const OVERRIDE {
     // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
     // key, is 0x04 (meaning uncompressed) followed by the x and y field
     // elements as 32-byte, big-endian numbers.
@@ -113,11 +113,12 @@ class TestChannelIDSource : public ChannelIDSource {
 
   // ChannelIDSource implementation.
 
-  virtual bool GetChannelIDKey(
+  virtual QuicAsyncStatus GetChannelIDKey(
       const string& hostname,
-      scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE {
+      scoped_ptr<ChannelIDKey>* channel_id_key,
+      ChannelIDSourceCallback* /*callback*/) OVERRIDE {
     channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
-    return true;
+    return QUIC_SUCCESS;
   }
 
  private:

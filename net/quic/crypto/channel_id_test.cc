@@ -226,7 +226,9 @@ TEST(ChannelIDTest, SignAndVerify) {
   const string signed_data = "signed data";
   const string hostname = "foo.example.com";
   scoped_ptr<ChannelIDKey> channel_id_key;
-  ASSERT_TRUE(source->GetChannelIDKey(hostname, &channel_id_key));
+  QuicAsyncStatus status =
+      source->GetChannelIDKey(hostname, &channel_id_key, NULL);
+  ASSERT_EQ(QUIC_SUCCESS, status);
 
   string signature;
   ASSERT_TRUE(channel_id_key->Sign(signed_data, &signature));

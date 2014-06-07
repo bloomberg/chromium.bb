@@ -18,6 +18,7 @@
 
 namespace net {
 
+class ChannelIDKey;
 class ChannelIDSource;
 class CryptoHandshakeMessage;
 class ProofVerifier;
@@ -168,6 +169,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // accept. |preferred_version| is the version of the QUIC protocol that this
   // client chose to use initially. This allows the server to detect downgrade
   // attacks.
+  //
+  // If |channel_id_key| is not null, it is used to sign a secret value derived
+  // from the client and server's keys, and the Channel ID public key and the
+  // signature are placed in the CETV value of the CHLO.
   QuicErrorCode FillClientHello(const QuicServerId& server_id,
                                 QuicConnectionId connection_id,
                                 const QuicVersion preferred_version,
@@ -175,6 +180,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                                 const CachedState* cached,
                                 QuicWallTime now,
                                 QuicRandom* rand,
+                                const ChannelIDKey* channel_id_key,
                                 QuicCryptoNegotiatedParameters* out_params,
                                 CryptoHandshakeMessage* out,
                                 std::string* error_details) const;

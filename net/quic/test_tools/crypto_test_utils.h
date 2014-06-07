@@ -133,7 +133,9 @@ class CryptoTestUtils {
                                              va_list ap);
 
   // ChannelIDSourceForTesting returns a ChannelIDSource that generates keys
-  // deterministically based on the hostname given in the GetChannelID call.
+  // deterministically based on the hostname given in the GetChannelIDKey call.
+  // This ChannelIDSource works in synchronous mode, i.e., its GetChannelIDKey
+  // method never returns QUIC_PENDING.
   static ChannelIDSource* ChannelIDSourceForTesting();
 
  private:

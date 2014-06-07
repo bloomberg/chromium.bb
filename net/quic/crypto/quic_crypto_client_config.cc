@@ -350,6 +350,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
+    const ChannelIDKey* channel_id_key,
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
@@ -447,22 +448,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
   out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
 
-  bool do_channel_id = false;
-  if (channel_id_source_.get()) {
-    const QuicTag* their_proof_demands;
-    size_t num_their_proof_demands;
-    if (scfg->GetTaglist(kPDMD, &their_proof_demands,
-                         &num_their_proof_demands) == QUIC_NO_ERROR) {
-      for (size_t i = 0; i < num_their_proof_demands; i++) {
-        if (their_proof_demands[i] == kCHID) {
-          do_channel_id = true;
-          break;
-        }
-      }
-    }
-  }
-
-  if (do_channel_id) {
+  if (channel_id_key) {
     // In order to calculate the encryption key for the CETV block we need to
     // serialise the client hello as it currently is (i.e. without the CETV
     // block). For this, the client hello is serialized without padding.
@@ -482,12 +468,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
 
-    scoped_ptr<ChannelIDKey> channel_id_key;
-    if (!channel_id_source_->GetChannelIDKey(server_id.host(),
-                                             &channel_id_key)) {
-      *error_details = "Channel ID lookup failed";
-      return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
-    }
     string key = channel_id_key->SerializeKey();
     string signature;
     if (!channel_id_key->Sign(hkdf_input, &signature)) {
@@ -523,6 +503,10 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     out->set_minimum_size(orig_min_size);
   }
 
+  // Derive the symmetric keys and set up the encrypters and decrypters.
+  // Set the following members of out_params:
+  //   out_params->hkdf_input_suffix
+  //   out_params->initial_crypters
   out_params->hkdf_input_suffix.clear();
   out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&connection_id),
                                        sizeof(connection_id));

@@ -37,7 +37,7 @@ class NET_EXPORT_PRIVATE ProofVerifierCallback {
 
   // Run is called on the original thread to mark the completion of an
   // asynchonous verification. If |ok| is true then the certificate is valid
-  // and |*error_details| is unused. Otherwise, |*error_details| contains a
+  // and |error_details| is unused. Otherwise, |error_details| contains a
   // description of the error. |details| contains implementation-specific
   // details of the verification. |Run| may take ownership of |details| by
   // calling |release| on it.
@@ -55,7 +55,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   // VerifyProof checks that |signature| is a valid signature of
   // |server_config| by the public key in the leaf certificate of |certs|, and
   // that |certs| is a valid chain for |hostname|. On success, it returns
-  // QUIC_SUCCESS. On failure, it returns QUIC_ERROR and sets |*error_details|
+  // QUIC_SUCCESS. On failure, it returns QUIC_FAILURE and sets |*error_details|
   // to a description of the problem. In either case it may set |*details|,
   // which the caller takes ownership of.
   //

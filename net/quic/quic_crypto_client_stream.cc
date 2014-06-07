@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
+#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -151,6 +152,35 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         session()->config()->ToHandshakeMessage(&out);
+
+        scoped_ptr<ChannelIDKey> channel_id_key;
+        bool do_channel_id = false;
+        if (crypto_config_->channel_id_source()) {
+          const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
+          DCHECK(scfg);
+          const QuicTag* their_proof_demands;
+          size_t num_their_proof_demands;
+          if (scfg->GetTaglist(kPDMD, &their_proof_demands,
+                               &num_their_proof_demands) == QUIC_NO_ERROR) {
+            for (size_t i = 0; i < num_their_proof_demands; i++) {
+              if (their_proof_demands[i] == kCHID) {
+                do_channel_id = true;
+                break;
+              }
+            }
+          }
+        }
+        if (do_channel_id) {
+          QuicAsyncStatus status =
+              crypto_config_->channel_id_source()->GetChannelIDKey(
+                  server_id_.host(), &channel_id_key, NULL);
+          if (status != QUIC_SUCCESS) {
+            CloseConnectionWithDetails(QUIC_INVALID_CHANNEL_ID_SIGNATURE,
+                                       "Channel ID lookup failed");
+            return;
+          }
+        }
+
         error = crypto_config_->FillClientHello(
             server_id_,
             session()->connection()->connection_id(),
@@ -159,6 +189,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached,
             session()->connection()->clock()->WallNow(),
             session()->connection()->random_generator(),
+            channel_id_key.get(),
             &crypto_negotiated_params_,
             &out,
             &error_details);

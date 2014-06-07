@@ -122,6 +122,7 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
                          &state,
                          QuicWallTime::Zero(),
                          &rand,
+                         NULL,  // channel_id_key
                          &params,
                          &chlo,
                          &error_details);

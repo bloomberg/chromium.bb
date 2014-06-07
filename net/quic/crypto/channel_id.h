@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_types.h"
 
 namespace net {
 
@@ -22,10 +23,23 @@ class NET_EXPORT_PRIVATE ChannelIDKey {
   // Sign signs |signed_data| using the ChannelID private key and puts the
   // signature into |out_signature|. It returns true on success.
   virtual bool Sign(base::StringPiece signed_data,
-                    std::string* out_signature) = 0;
+                    std::string* out_signature) const = 0;
 
   // SerializeKey returns the serialized ChannelID public key.
-  virtual std::string SerializeKey() = 0;
+  virtual std::string SerializeKey() const = 0;
+};
+
+// ChannelIDSourceCallback provides a generic mechanism for a ChannelIDSource
+// to call back after an asynchronous GetChannelIDKey operation.
+class ChannelIDSourceCallback {
+ public:
+  virtual ~ChannelIDSourceCallback() {}
+
+  // Run is called on the original thread to mark the completion of an
+  // asynchonous GetChannelIDKey operation. If |*channel_id_key| is not NULL
+  // then the channel ID lookup is successful. |Run| may take ownership of
+  // |*channel_id_key| by calling |release| on it.
+  virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) = 0;
 };
 
 // ChannelIDSource is an abstract interface by which a QUIC client can obtain
@@ -35,9 +49,17 @@ class NET_EXPORT_PRIVATE ChannelIDSource {
   virtual ~ChannelIDSource() {}
 
   // GetChannelIDKey looks up the ChannelIDKey for |hostname|. On success it
-  // returns true and stores the ChannelIDKey in |*channel_id|.
-  virtual bool GetChannelIDKey(const std::string& hostname,
-                               scoped_ptr<ChannelIDKey>* channel_id_key) = 0;
+  // returns QUIC_SUCCESS and stores the ChannelIDKey in |*channel_id_key|,
+  // which the caller takes ownership of. On failure, it returns QUIC_FAILURE.
+  //
+  // This function may also return QUIC_PENDING, in which case the
+  // ChannelIDSource will call back, on the original thread, via |callback|
+  // when complete. In this case, the ChannelIDSource will take ownership of
+  // |callback|.
+  virtual QuicAsyncStatus GetChannelIDKey(
+      const std::string& hostname,
+      scoped_ptr<ChannelIDKey>* channel_id_key,
+      ChannelIDSourceCallback* callback) = 0;
 };
 
 // ChannelIDVerifier verifies ChannelID signatures.

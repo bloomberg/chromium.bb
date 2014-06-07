@@ -31,7 +31,7 @@ class TestChannelIDKey : public ChannelIDKey {
   // ChannelIDKey implementation.
 
   virtual bool Sign(StringPiece signed_data,
-                    string* out_signature) OVERRIDE {
+                    string* out_signature) const OVERRIDE {
     unsigned char hash_buf[SHA256_LENGTH];
     SECItem hash_item = { siBuffer, hash_buf, sizeof(hash_buf) };
 
@@ -71,13 +71,13 @@ class TestChannelIDKey : public ChannelIDKey {
     return true;
   }
 
-  virtual string SerializeKey() OVERRIDE {
-    static const unsigned int kExpectedKeyLength = 65;
-
+  virtual string SerializeKey() const OVERRIDE {
     const SECKEYPublicKey* public_key = ecdsa_keypair_->public_key();
+
     // public_key->u.ec.publicValue is an ANSI X9.62 public key which, for
     // a P-256 key, is 0x04 (meaning uncompressed) followed by the x and y field
     // elements as 32-byte, big-endian numbers.
+    static const unsigned int kExpectedKeyLength = 65;
 
     const unsigned char* const data = public_key->u.ec.publicValue.data;
     const unsigned int len = public_key->u.ec.publicValue.len;
@@ -101,11 +101,12 @@ class TestChannelIDSource : public ChannelIDSource {
 
   // ChannelIDSource implementation.
 
-  virtual bool GetChannelIDKey(
+  virtual QuicAsyncStatus GetChannelIDKey(
       const string& hostname,
-      scoped_ptr<ChannelIDKey>* channel_id_key) OVERRIDE {
+      scoped_ptr<ChannelIDKey>* channel_id_key,
+      ChannelIDSourceCallback* /*callback*/) OVERRIDE {
     channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
-    return true;
+    return QUIC_SUCCESS;
   }
 
  private:
@@ -124,7 +125,6 @@ class TestChannelIDSource : public ChannelIDSource {
     hostname_to_key_[hostname] = keypair;
     return keypair;
   }
-
 
   HostnameToKeyMap hostname_to_key_;
 };
