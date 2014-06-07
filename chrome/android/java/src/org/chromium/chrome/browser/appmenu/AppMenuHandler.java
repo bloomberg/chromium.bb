@@ -57,12 +57,14 @@ public class AppMenuHandler {
      * @param startDragging      Whether dragging is started. For example, if the app menu is
      *                           showed by tapping on a button, this should be false. If it is
      *                           showed by start dragging down on the menu button, this should
-     *                           be true. Note that if isByHardwareButton is true, this is
-     *                           ignored.
+     *                           be true. Note that if isByHardwareButton is true, this must
+     *                           be false since we no longer support hardware menu button
+     *                           dragging.
      * @return True, if the menu is shown, false, if menu is not shown, example reasons:
      *         the menu is not yet available to be shown, or the menu is already showing.
      */
     public boolean showAppMenu(View anchorView, boolean isByHardwareButton, boolean startDragging) {
+        assert !(isByHardwareButton && startDragging);
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
 
         if (mMenu == null) {
@@ -93,7 +95,7 @@ public class AppMenuHandler {
         mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
         int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         mAppMenu.show(wrapper, anchorView, isByHardwareButton, rotation, appRect);
-        mAppMenuDragHelper.onShow(isByHardwareButton, startDragging);
+        mAppMenuDragHelper.onShow(startDragging);
         UmaBridge.menuShow();
         return true;
     }
@@ -156,12 +158,5 @@ public class AppMenuHandler {
         for (int i = 0; i < mObservers.size(); ++i) {
             mObservers.get(i).onMenuVisibilityChanged(isVisible);
         }
-    }
-
-    /**
-     * TODO(kkimlabs) remove this call.
-     */
-    public void hardwareMenuButtonUp() {
-        if (mAppMenuDragHelper != null) mAppMenuDragHelper.hardwareMenuButtonUp();
     }
 }
