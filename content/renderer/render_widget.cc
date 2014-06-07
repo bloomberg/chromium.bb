@@ -489,8 +489,6 @@ void RenderWidget::CompleteInit() {
 
   init_complete_ = true;
 
-  if (webwidget_)
-    webwidget_->enterForceCompositingMode(true);
   if (compositor_)
     StartCompositor();
 
