@@ -14,6 +14,8 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (0,100) size 0x19
 layer at (8,44) size 300x30
   RenderMedia {AUDIO} at (0,0) size 300x30 [bgcolor=#0000FF]
+layer at (8,94) size 320x30
+  RenderMedia {AUDIO} at (0,50) size 320x30 [bgcolor=#0000FF]
 layer at (8,44) size 300x30
   RenderFlexibleBox {DIV} at (0,0) size 300x30
     RenderBlock {DIV} at (0,0) size 300x30
@@ -33,8 +35,6 @@ layer at (8,44) size 300x30
       RenderFlexibleBox {DIV} at (0,0) size 43.61x8 [border: (1px solid #E6E6E659)]
         RenderBlock {DIV} at (1,-8) size 55.61x24
           RenderBlock {DIV} at (24.61,0) size 24x24
-layer at (8,94) size 320x30
-  RenderMedia {AUDIO} at (0,50) size 320x30 [bgcolor=#0000FF]
 layer at (8,94) size 320x30
   RenderFlexibleBox {DIV} at (0,0) size 320x30
     RenderBlock {DIV} at (0,0) size 320x30
