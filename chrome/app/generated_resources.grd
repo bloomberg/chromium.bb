@@ -4306,7 +4306,7 @@ Make sure you do not expose any sensitive information.
         Manage your apps, extensions, and themes
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_TABS" desc="Permission string for access to tabs.">
-        Access your tabs and browsing activity
+        Access your browsing activity
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
         Access the page debugger backend
