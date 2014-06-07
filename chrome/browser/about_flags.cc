@@ -1472,18 +1472,18 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "disable-app-list-app-info",
+    IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,
+    IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST_DESCRIPTION,
+    kOsLinux | kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kDisableAppInfo)
+  },
+  {
     "disable-app-list-voice-search",
     IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH,
     IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(app_list::switches::kDisableVoiceSearch)
-  },
-  {
-    "enable-app-list-app-info",
-    IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST,
-    IDS_FLAGS_ENABLE_APP_INFO_IN_APP_LIST_DESCRIPTION,
-    kOsLinux | kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableAppInfo)
   },
 #endif
 #if defined(OS_ANDROID)

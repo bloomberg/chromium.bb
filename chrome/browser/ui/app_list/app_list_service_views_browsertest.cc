@@ -96,7 +96,6 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(app_list::switches::kEnableAppInfo);
   }
 
  private:
