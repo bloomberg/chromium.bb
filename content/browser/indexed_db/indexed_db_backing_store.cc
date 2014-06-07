@@ -2230,9 +2230,9 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                           public base::RefCounted<LocalWriteClosure> {
  public:
   LocalWriteClosure(IndexedDBBackingStore::Transaction::ChainedBlobWriter*
-                        chained_blob_writer_,
+                        chained_blob_writer,
                     base::TaskRunner* task_runner)
-      : chained_blob_writer_(chained_blob_writer_),
+      : chained_blob_writer_(chained_blob_writer),
         task_runner_(task_runner),
         bytes_written_(-1) {}
 
