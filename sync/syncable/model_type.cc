@@ -1057,6 +1057,10 @@ bool IsRealDataType(ModelType model_type) {
   return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
 }
 
+bool IsProxyType(ModelType model_type) {
+  return model_type >= FIRST_PROXY_TYPE && model_type <= LAST_PROXY_TYPE;
+}
+
 bool IsActOnceDataType(ModelType model_type) {
   return model_type == HISTORY_DELETE_DIRECTIVES;
 }

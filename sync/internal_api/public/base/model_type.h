@@ -311,6 +311,9 @@ SYNC_EXPORT bool NotificationTypeToRealModelType(
 // Returns true if |model_type| is a real datatype
 SYNC_EXPORT bool IsRealDataType(ModelType model_type);
 
+// Returns true if |model_type| is a proxy type
+SYNC_EXPORT bool IsProxyType(ModelType model_type);
+
 // Returns true if |model_type| is an act-once type. Act once types drop
 // entities after applying them. Drops are deletes that are not synced to other
 // clients.

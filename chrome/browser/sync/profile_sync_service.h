@@ -591,9 +591,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // [ {"name": <name>, "value": <value>, "status": <status> }, ... ]
   // where <name> is a type's name, <value> is a string providing details for
   // the type's status, and <status> is one of "error", "warning" or "ok"
-  // dpending on the type's current status.
+  // depending on the type's current status.
   //
-  // This function is used by sync_ui_util.cc to help populate the about:sync
+  // This function is used by about_sync_util.cc to help populate the about:sync
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
   base::Value* GetTypeStatusMap() const;

@@ -2005,6 +2005,11 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
           ", " + error.message();
       type_status->SetString("status", "error");
       type_status->SetString("value", error_text);
+    } else if (syncer::IsProxyType(type) && passive_types.Has(type)) {
+      // Show a proxy type in "ok" state unless it is disabled by user.
+      DCHECK(!throttled_types.Has(type));
+      type_status->SetString("status", "ok");
+      type_status->SetString("value", "Passive");
     } else if (throttled_types.Has(type) && passive_types.Has(type)) {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Passive, Throttled");

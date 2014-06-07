@@ -71,6 +71,12 @@ TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_TRUE(IsRealDataType(APPS));
 }
 
+TEST_F(ModelTypeTest, IsProxyType) {
+  EXPECT_FALSE(IsProxyType(BOOKMARKS));
+  EXPECT_FALSE(IsProxyType(MODEL_TYPE_COUNT));
+  EXPECT_TRUE(IsProxyType(PROXY_TABS));
+}
+
 // Make sure we can convert ModelTypes to and from specifics field
 // numbers.
 TEST_F(ModelTypeTest, ModelTypeToFromSpecificsFieldNumber) {
