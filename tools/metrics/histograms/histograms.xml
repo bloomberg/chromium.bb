@@ -14297,6 +14297,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HandshakeConfirmedTime" units="Milliseconds">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The elapsed time between starting the crypto handshake, and receiving
+    confirmation from the server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.HandshakeRoundTrips" units="RTTs">
   <obsolete>
     see Net.QuicSession.Connect*PortForHTTP*

@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_client_session_base.h"
@@ -235,6 +236,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
+  base::TimeTicks handshake_start_;  // Time the handshake was started.
   QuicConnectionLogger logger_;
   // Number of packets read in the current read loop.
   size_t num_packets_read_;

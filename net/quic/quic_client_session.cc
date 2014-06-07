@@ -435,6 +435,7 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
 int QuicClientSession::CryptoConnect(bool require_confirmation,
                                      const CompletionCallback& callback) {
   require_confirmation_ = require_confirmation;
+  handshake_start_ = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   if (!crypto_stream_->CryptoConnect()) {
     // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
@@ -544,6 +545,8 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     base::ResetAndReturn(&callback_).Run(OK);
   }
   if (event == HANDSHAKE_CONFIRMED) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.HandshakeConfirmedTime",
+                        base::TimeTicks::Now() - handshake_start_);
     ObserverSet::iterator it = observers_.begin();
     while (it != observers_.end()) {
       Observer* observer = *it;
