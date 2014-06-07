@@ -196,10 +196,10 @@ class WrenchMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
  private:
   void Build(Browser* browser) {
     int help_string_id = IDS_HELP_PAGE;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kDisableGeniusApp)) {
-      help_string_id = IDS_GENIUS_APP_NAME;
+      help_string_id = IDS_GET_HELP;
     }
 #endif
     AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);

@@ -1454,8 +1454,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_HELP_PAGE" desc="The text label of the Help Center menu item">
           H&amp;elp center
         </message>
+        <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
+          Get H&amp;elp
+        </message>
         <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
-          Help
+          H&amp;elp
         </message>
         <if expr="is_win">
           <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
@@ -1497,8 +1500,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_HELP_PAGE" desc="The text label of the Help Center menu item">
           H&amp;elp Center
         </message>
+        <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
+          Get H&amp;elp
+        </message>
         <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
-          Help
+          H&amp;elp
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
