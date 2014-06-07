@@ -44,7 +44,7 @@ void V8MessageChannel::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
 {
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
 
-    RefPtr<MessageChannel> obj = MessageChannel::create(context);
+    RefPtrWillBeRawPtr<MessageChannel> obj = MessageChannel::create(context);
 
     v8::Local<v8::Object> wrapper = info.Holder();
 

@@ -57,4 +57,10 @@ MessageChannel::~MessageChannel()
 {
 }
 
+void MessageChannel::trace(Visitor* visitor)
+{
+    visitor->trace(m_port1);
+    visitor->trace(m_port2);
+}
+
 } // namespace WebCore
