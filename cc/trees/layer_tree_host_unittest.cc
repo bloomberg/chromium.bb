@@ -574,15 +574,13 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     // and each damage should be the bounding box of it and its child. If this
     // was working improperly, the damage might not include its childs bounding
     // box.
-    // TODO(enne): This compositor thread function is asking for the
-    // frame number from the layer tree host on the main thread.  :(
-    switch (layer_tree_host()->source_frame_number()) {
-      case 1:
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
         EXPECT_RECT_EQ(gfx::Rect(root_layer_->bounds()), root_damage_rect);
         break;
+      case 1:
       case 2:
       case 3:
-      case 4:
         EXPECT_RECT_EQ(gfx::Rect(child_layer_->bounds()), root_damage_rect);
         break;
       default:
@@ -623,8 +621,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
   scoped_refptr<FakeContentLayer> child_layer_;
 };
 
-// TODO(enne): http://crbug.com/380895
-// SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
 
 // Tests that if a layer is not drawn because of some reason in the parent,
 // causing its content bounds to not be computed, then when it is later drawn,
