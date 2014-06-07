@@ -9,16 +9,25 @@
 // button: click logic, and when to show it.
 (function() {
 
-var isLargerThanMobileQuery =
-    window.matchMedia('screen and (min-width: 581px)');
-
 var sidebar = document.querySelector('.inline-toc');
-var sidebarOffsetTop = null;
 var articleBody = document.querySelector('[itemprop="articleBody"]');
 
 // Bomb out unless we're on an article page and have a TOC.
+// Ideally, template shouldn't load this JS file on a non-article page
 if (!(sidebar && articleBody)) {
   return;
+}
+
+var isLargerThanMobileQuery =
+    window.matchMedia('screen and (min-width: 581px)');
+
+var toc = sidebar.querySelector('#toc');
+var tocOffsetTop = sidebar.offsetParent.offsetTop + toc.offsetTop;
+
+function updateTocOffsetTop() {
+  // Note: Attempting to read offsetTop with sticky on causes toc overlap
+  toc.classList.remove('sticky');
+  tocOffsetTop = sidebar.offsetParent.offsetTop + toc.offsetTop;
 }
 
 function addPermalink(el) {
@@ -37,17 +46,21 @@ function addPermalinkHeadings(container) {
   }
 }
 
+function toggleStickySidenav(){
+  toc.classList.toggle('sticky', window.scrollY >= tocOffsetTop);
+}
+
 function onScroll(e) {
-  window.scrollY >= sidebarOffsetTop ? sidebar.classList.add('sticky') :
-                                       sidebar.classList.remove('sticky');
+  toggleStickySidenav();
 }
 
 function onMediaQuery(e) {
   if (e.matches) {
     // On tablet & desktop, show permalinks, manage TOC position.
     document.body.classList.remove('no-permalink');
-    sidebarOffsetTop = sidebar.offsetParent.offsetTop
     document.addEventListener('scroll', onScroll);
+    updateTocOffsetTop();
+    toggleStickySidenav();
   } else {
     // On mobile, hide permalinks. TOC is hidden, doesn't need to scroll.
     document.body.classList.add('no-permalink');
@@ -62,14 +75,20 @@ articleBody.addEventListener('click', function(e) {
   }
 });
 
-sidebar.querySelector('#toc').addEventListener('click', function(e) {
-  var parent = e.target.parentElement;
-  if (e.target.localName == 'a' && parent.classList.contains('toplevel')) {
-    // Allow normal link click if  h2 toplevel heading doesn't have h3s.
-    if (parent.querySelector('.toc')) {
-      e.preventDefault();
-      parent.classList.toggle('active');
-    }
+toc.addEventListener('click', function(e) {
+  // React only if clicking on a toplevel menu anchor item
+  // that is not currently open
+  if (e.target.classList.contains('hastoc') &&
+      !e.target.parentElement.classList.contains('active')) {
+    e.stopPropagation();
+
+    // close any previously open subnavs
+    [].forEach.call(toc.querySelectorAll('.active'), function(li) {
+      li.classList.remove('active');
+    });
+
+    // then open the clicked one
+    e.target.parentElement.classList.add('active');
   }
 });
 

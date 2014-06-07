@@ -2,6 +2,8 @@ $nav-item-shaded-bg: $gray-light url(data:image/png;base64,iVBORw0KGgoAAAANSUhEU
 $nav-border-color: rgb(232, 232, 232);
 $nav-font-size: 0.9em;
 $z-index-nav-hover: 1001;
+$nav-hover-gradient: linear-gradient(205deg,rgba(229,229,229,.7) 0,rgba(233,233,233,.7) 20%, rgba(244,244,244,.7) 100%);
+$nav-box-shadow: 0 3px 4px rgba(0, 0, 0, 0.12);
 
 #topnav {
   @include display-flex();
@@ -116,7 +118,7 @@ $z-index-nav-hover: 1001;
       color: $gray-dark;
 
       &:hover {
-        @include background-image(linear-gradient(205deg,rgba(229,229,229,.7) 0,rgba(233,233,233,.7) 20%, rgba(244,244,244,.7) 100%));
+        background-image: $nav-hover-gradient;
       }
     }
 
@@ -127,11 +129,10 @@ $z-index-nav-hover: 1001;
         color: #333;;
         font-size: 1.1em;
         font-weight: bold;
-        cursor: pointer;
         @include flex(1);
 
         &.active {
-          @include background-image(linear-gradient(205deg,rgba(229,229,229,.7) 0,rgba(233,233,233,.7) 20%, rgba(244,244,244,.7) 100%));
+          background-image: $nav-hover-gradient;
         }
 
         > ul {
@@ -227,7 +228,7 @@ $z-index-nav-hover: 1001;
 
           &::after {
             position: absolute;
-            @include background-image(linear-gradient(bottom,rgba(255, 255, 255, 0) 0,rgba(211, 211, 211, 0.5) 25%,rgb(211, 211, 211) 50%,rgba(211, 211, 211, 0.5) 75%,rgba(255, 255, 255, 0) 100%));
+            background-image: linear-gradient(bottom,rgba(255, 255, 255, 0) 0,rgba(211, 211, 211, 0.5) 25%,rgb(211, 211, 211) 50%,rgba(211, 211, 211, 0.5) 75%,rgba(255, 255, 255, 0) 100%);
             right: 0;
             top: 0;
             content: '';
@@ -240,7 +241,7 @@ $z-index-nav-hover: 1001;
       .expandee {
         min-height: 400px;
         font-size: $nav-font-size;
-        box-shadow: 0 3px 4px rgba(0, 0, 0, 0.12);
+        box-shadow: $nav-box-shadow;
         top: $top-nav-height;
 
         .submenu {

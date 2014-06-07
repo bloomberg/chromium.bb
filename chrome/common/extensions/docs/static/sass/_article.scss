@@ -1,5 +1,5 @@
-$toc-width: 240px;
-$toc-margin-left: 195px;
+$article-width: 70%;
+$toc-width: 28%;
 
 // TOC on article pages
 .inline-toc {
@@ -34,10 +34,21 @@ $toc-margin-left: 195px;
 
   .related {
     display: block;
+    background-color: $gray-light;
+    box-shadow: $nav-box-shadow;
+    padding: 1em 1em 0.5em 1em;
+    margin-bottom: 1em; /* so the box shadow doesn't get cut off */
+
+    h3 {
+      margin-top: 0;
+    }
 
     li a {
       &.active {
         color: $black;
+      }
+      &:hover {
+        background-image: $nav-hover-gradient;
       }
     }
   }
@@ -66,7 +77,7 @@ $toc-margin-left: 195px;
         }
         > a.hastoc {
           &::after {
-            content: '-';
+            content: ''; /* don't make it look like you can toggle it closed */
           }
         }
       }
@@ -75,7 +86,7 @@ $toc-margin-left: 195px;
 
   .toc {
     margin: 0;
-    padding: 0;
+    padding: 0.3em 0 0 0;
     border-top: $default-border;
 
     .toc {
@@ -111,36 +122,29 @@ $toc-margin-left: 195px;
   .inline-toc { 
     position: absolute;
     top: 0;
-    left: 50%;
-    margin-left: $toc-margin-left;
     width: $toc-width;
+    right: 0;
     overflow: auto;
     overflow-x: hidden;
 
-    // scroll.js adds and removes the floating class depending on the scroll position.
-    &.sticky {
-      position: fixed;
-    }
-
     #toc {
       display: block;
+      // article.js adds and removes the fixed nav depending on the scroll position.
+      &.sticky {
+        top: 0;
+        position: fixed;
+        -webkit-transform: translateZ(0); /* repaint issue */
+      }
     }
   }
   .article-content {
-    width: 70%;
+    width: $article-width;
     padding-right: 5%;
     border-right: 1px solid $gray-light;
+    min-height: 250px; /* add min-height so fatnav and sidenav doesn't overlap badly */
   }
   .cc-logo {
     margin: 0 0 0 auto;
-  }
-}
-
-// Tablet
-@media only screen and (min-width: $break-small + 1) and (max-width: $break-large) { 
-  .inline-toc {
-    width: $toc-width - 40;
-    margin-left: $toc-margin-left - 30;
   }
 }
 
