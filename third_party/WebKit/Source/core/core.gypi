@@ -1680,6 +1680,8 @@
             'rendering/compositing/CompositingRequirementsUpdater.h',
             'rendering/compositing/CompositingState.h',
             'rendering/compositing/CompositingTriggers.h',
+            'rendering/compositing/GraphicsLayerTreeBuilder.cpp',
+            'rendering/compositing/GraphicsLayerTreeBuilder.h',
             'rendering/compositing/GraphicsLayerUpdater.cpp',
             'rendering/compositing/GraphicsLayerUpdater.h',
             'rendering/compositing/RenderLayerCompositor.cpp',

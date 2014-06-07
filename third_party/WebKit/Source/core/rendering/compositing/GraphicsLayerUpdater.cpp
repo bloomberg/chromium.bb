@@ -36,16 +36,6 @@
 
 namespace WebCore {
 
-static bool shouldAppendLayer(const RenderLayer& layer)
-{
-    if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
-        return true;
-    Node* node = layer.renderer()->node();
-    if (node && isHTMLMediaElement(*node) && toHTMLMediaElement(node)->isFullscreen())
-        return false;
-    return true;
-}
-
 GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other, const RenderLayer& layer)
     : m_compositingStackingContext(other.m_compositingStackingContext)
     , m_compositingAncestor(other.compositingContainer(layer))
@@ -70,72 +60,6 @@ GraphicsLayerUpdater::GraphicsLayerUpdater()
 
 GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
-}
-
-void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, GraphicsLayerVector& childLayersOfEnclosingLayer)
-{
-    // Make the layer compositing if necessary, and set up clipping and content layers.
-    // Note that we can only do work here that is independent of whether the descendant layers
-    // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
-
-    layer.stackingNode()->updateLayerListsIfNeeded();
-
-    const bool hasCompositedLayerMapping = layer.hasCompositedLayerMapping();
-    CompositedLayerMappingPtr currentCompositedLayerMapping = layer.compositedLayerMapping();
-
-    // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
-    // Otherwise children continue to append to the child list of the enclosing layer.
-    GraphicsLayerVector layerChildren;
-    GraphicsLayerVector& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer.stackingNode());
-#endif
-
-    if (layer.stackingNode()->isStackingContext()) {
-        RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
-        while (RenderLayerStackingNode* curNode = iterator.next())
-            rebuildTree(*curNode->layer(), childList);
-
-        // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
-        if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
-            childList.append(currentCompositedLayerMapping->foregroundLayer());
-    }
-
-    RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        rebuildTree(*curNode->layer(), childList);
-
-    if (hasCompositedLayerMapping) {
-        bool parented = false;
-        if (layer.renderer()->isRenderPart())
-            parented = RenderLayerCompositor::parentFrameContentLayers(toRenderPart(layer.renderer()));
-
-        if (!parented)
-            currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);
-
-        // If the layer has a clipping layer the overflow controls layers will be siblings of the clipping layer.
-        // Otherwise, the overflow control layers are normal children.
-        if (!currentCompositedLayerMapping->hasClippingLayer() && !currentCompositedLayerMapping->hasScrollingLayer()) {
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForHorizontalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForVerticalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForScrollCorner()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-        }
-
-        if (shouldAppendLayer(layer))
-            childLayersOfEnclosingLayer.append(currentCompositedLayerMapping->childForSuperlayers());
-    }
 }
 
 void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, const UpdateContext& context)

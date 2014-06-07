@@ -47,6 +47,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/CompositingLayerAssigner.h"
 #include "core/rendering/compositing/CompositingRequirementsUpdater.h"
+#include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/OverscrollTheme.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -404,8 +405,8 @@ void RenderLayerCompositor::updateIfNeeded()
         // Update the hierarchy of the compositing layers.
         GraphicsLayerVector childList;
         {
-            TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
-            GraphicsLayerUpdater().rebuildTree(*updateRoot, childList);
+            TRACE_EVENT0("blink_rendering", "GraphicsLayerTreeBuilder::rebuild");
+            GraphicsLayerTreeBuilder().rebuild(*updateRoot, childList);
         }
 
         if (childList.isEmpty())
