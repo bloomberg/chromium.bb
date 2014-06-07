@@ -59,7 +59,7 @@ int StringForChromeHost(const GURL& url) {
   if (host == chrome::kChromeUIExtensionsHost)
     return IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE;
   if (host == chrome::kChromeUIHelpHost)
-    return IDS_ABOUT_TAB_TITLE;
+    return IDS_ABOUT_TITLE;
   if (host == chrome::kChromeUIHistoryHost)
     return IDS_HISTORY_TITLE;
   if (host == chrome::kChromeUINewTabHost)

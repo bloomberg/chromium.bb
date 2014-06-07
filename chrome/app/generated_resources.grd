@@ -9467,9 +9467,6 @@ Chrome ran out of memory.
 
       <!-- chrome://help -->
       <if expr="not is_android">
-        <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
-          Help
-        </message>
         <if expr="chromeos">
           <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
             More info...
@@ -9479,8 +9476,7 @@ Chrome ran out of memory.
           </message>
         </if>
 
-        <!-- The About page is now part of options. -->
-        <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
+        <message name="IDS_ABOUT_TITLE" desc="Label used for title of the About page, chrome://help.">
           About
         </message>
         <if expr="not chromeos and use_titlecase">

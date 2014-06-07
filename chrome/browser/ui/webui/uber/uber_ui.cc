@@ -108,7 +108,7 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddString("helpHost",
                     ASCIIToUTF16(chrome::kChromeUIHelpHost));
-  source->AddLocalizedString("helpDisplayName", IDS_HELP_TITLE);
+  source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
   source->AddString("historyHost",
                     ASCIIToUTF16(chrome::kChromeUIHistoryHost));
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);

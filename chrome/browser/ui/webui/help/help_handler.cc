@@ -149,8 +149,7 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
   };
 
   static L10nResources resources[] = {
-    { "helpTitle", IDS_HELP_TITLE },
-    { "aboutTitle", IDS_ABOUT_TAB_TITLE },
+    { "aboutTitle", IDS_ABOUT_TITLE },
 #if defined(OS_CHROMEOS)
     { "aboutProductTitle", IDS_PRODUCT_OS_NAME },
 #else
