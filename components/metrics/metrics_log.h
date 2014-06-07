@@ -12,13 +12,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "components/metrics/metrics_log_base.h"
+#include "base/time/time.h"
+#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
 class DictionaryValue;
+class HistogramSamples;
 }
 
 namespace content {
@@ -38,8 +40,13 @@ namespace variations {
 struct ActiveGroupId;
 }
 
-class MetricsLog : public metrics::MetricsLogBase {
+class MetricsLog {
  public:
+  enum LogType {
+    INITIAL_STABILITY_LOG,  // The initial log containing stability stats.
+    ONGOING_LOG,            // Subsequent logs in a session.
+  };
+
   // Creates a new metrics log of the specified type.
   // |client_id| is the identifier for this profile on this installation
   // |session_id| is an integer that's incremented on each application launch
@@ -57,6 +64,28 @@ class MetricsLog : public metrics::MetricsLogBase {
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Computes the MD5 hash of the given string, and returns the first 8 bytes of
+  // the hash.
+  static uint64 Hash(const std::string& value);
+
+  // Get the GMT buildtime for the current binary, expressed in seconds since
+  // January 1, 1970 GMT.
+  // The value is used to identify when a new build is run, so that previous
+  // reliability stats, from other builds, can be abandoned.
+  static int64 GetBuildTime();
+
+  // Convenience function to return the current time at a resolution in seconds.
+  // This wraps base::TimeTicks, and hence provides an abstract time that is
+  // always incrementing for use in measuring time durations.
+  static int64 GetCurrentTime();
+
+  // Records a user-initiated action.
+  void RecordUserAction(const std::string& key);
+
+  // Record any changes in a given histogram for transmission.
+  void RecordHistogramDelta(const std::string& histogram_name,
+                            const base::HistogramSamples& snapshot);
 
   // Records the current operating environment, including metrics provided by
   // the specified set of |metrics_providers|.  Takes the list of installed
@@ -92,21 +121,39 @@ class MetricsLog : public metrics::MetricsLogBase {
   void RecordGeneralMetrics(
       const std::vector<metrics::MetricsProvider*>& metrics_providers);
 
+  // Stop writing to this record and generate the encoded representation.
+  // None of the Record* methods can be called after this is called.
+  void CloseLog();
+
+  // Fills |encoded_log| with the serialized protobuf representation of the
+  // record.  Must only be called after CloseLog() has been called.
+  void GetEncodedLog(std::string* encoded_log);
+
   const base::TimeTicks& creation_time() const {
     return creation_time_;
   }
 
+  int num_events() const {
+    return uma_proto_.omnibox_event_size() +
+           uma_proto_.user_action_event_size();
+  }
+
+  LogType log_type() const { return log_type_; }
+
  protected:
-  // Exposed for the sake of mocking in test code.
+  // Exposed for the sake of mocking/accessing in test code.
 
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
       std::vector<variations::ActiveGroupId>* field_trial_ids) const;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
+  metrics::ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
+  const metrics::ChromeUserMetricsExtension* uma_proto() const {
+    return &uma_proto_;
+  }
 
+ private:
   // Returns true if the environment has already been filled in by a call to
   // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
   bool HasEnvironment() const;
@@ -125,6 +172,16 @@ class MetricsLog : public metrics::MetricsLogBase {
   void WriteRealtimeStabilityAttributes(PrefService* pref,
                                         base::TimeDelta incremental_uptime,
                                         base::TimeDelta uptime);
+
+  // closed_ is true when record has been packed up for sending, and should
+  // no longer be written to.  It is only used for sanity checking.
+  bool closed_;
+
+  // The type of the log, i.e. initial or ongoing.
+  const LogType log_type_;
+
+  // Stores the protocol buffer representation for this log.
+  metrics::ChromeUserMetricsExtension uma_proto_;
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.

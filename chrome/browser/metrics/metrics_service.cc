@@ -181,9 +181,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
@@ -191,9 +188,7 @@
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log.h"
-#include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -201,6 +196,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/variations/entropy_provider.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_PLUGINS)
 // TODO(asvitkine): Move this out of MetricsService.
@@ -809,8 +805,7 @@ void MetricsService::SaveLocalState() {
 void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
-  log_manager_.BeginLoggingWithLog(
-      CreateLog(MetricsLog::ONGOING_LOG).PassAs<metrics::MetricsLogBase>());
+  log_manager_.BeginLoggingWithLog(CreateLog(MetricsLog::ONGOING_LOG));
   NotifyOnDidCreateMetricsLog();
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
@@ -1041,15 +1036,12 @@ void MetricsService::PrepareInitialStabilityLog() {
   log_manager_.LoadPersistedUnsentLogs();
 
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(
-      initial_stability_log.PassAs<metrics::MetricsLogBase>());
+  log_manager_.BeginLoggingWithLog(initial_stability_log.Pass());
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
-  MetricsLog* current_log =
-      static_cast<MetricsLog*>(log_manager_.current_log());
-  current_log->RecordStabilityMetrics(metrics_providers_.get(),
-                                      base::TimeDelta(), base::TimeDelta());
+  log_manager_.current_log()->RecordStabilityMetrics(
+      metrics_providers_.get(), base::TimeDelta(), base::TimeDelta());
   RecordCurrentStabilityHistograms();
 
   // Note: RecordGeneralMetrics() intentionally not called since this log is for
@@ -1079,8 +1071,7 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(
-      initial_metrics_log_.PassAs<metrics::MetricsLogBase>());
+  log_manager_.BeginLoggingWithLog(initial_metrics_log_.Pass());
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().

@@ -111,8 +111,8 @@
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'metrics/machine_id_provider_win_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
-            'metrics/metrics_log_base_unittest.cc',
             'metrics/metrics_log_manager_unittest.cc',
+            'metrics/metrics_log_unittest.cc',
             'metrics/metrics_reporting_scheduler_unittest.cc',
             'metrics/metrics_state_manager_unittest.cc',
             'metrics/net/compression_utils_unittest.cc',
@@ -273,6 +273,7 @@
             # Dependencies of metrics
             'components.gyp:metrics',
             'components.gyp:metrics_net',
+            'components.gyp:metrics_test_support',
 
             # Dependencies of network_time
             'components.gyp:network_time',

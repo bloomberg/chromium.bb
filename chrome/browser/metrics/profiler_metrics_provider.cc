@@ -5,14 +5,14 @@
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
 
 #include <ctype.h>
+#include <string>
 #include <vector>
 
 #include "base/tracked_objects.h"
-#include "components/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/process_type.h"
 
-using metrics::MetricsLogBase;
 using metrics::ProfilerEventProto;
 using tracked_objects::ProcessDataSnapshot;
 
@@ -88,13 +88,13 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        MetricsLogBase::Hash(MapThreadName(it->birth.thread_name)));
+        MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
     tracked_object->set_exec_thread_name_hash(
-        MetricsLogBase::Hash(MapThreadName(it->death_thread_name)));
+        MetricsLog::Hash(MapThreadName(it->death_thread_name)));
     tracked_object->set_source_file_name_hash(
-        MetricsLogBase::Hash(NormalizeFileName(it->birth.location.file_name)));
+        MetricsLog::Hash(NormalizeFileName(it->birth.location.file_name)));
     tracked_object->set_source_function_name_hash(
-        MetricsLogBase::Hash(it->birth.location.function_name));
+        MetricsLog::Hash(it->birth.location.function_name));
     tracked_object->set_source_line_number(it->birth.location.line_number);
     tracked_object->set_exec_count(death_data.count);
     tracked_object->set_exec_time_total(death_data.run_duration_sum);

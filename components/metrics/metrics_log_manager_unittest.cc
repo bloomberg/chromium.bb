@@ -10,8 +10,9 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
-#include "components/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/test_metrics_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -25,10 +26,11 @@ class TestLogPrefService : public TestingPrefServiceSimple {
     registry()->RegisterListPref(prefs::kMetricsInitialLogs);
     registry()->RegisterListPref(prefs::kMetricsOngoingLogs);
   }
+
   // Returns the number of logs of the given type.
-  size_t TypeCount(MetricsLogManager::LogType log_type) {
+  size_t TypeCount(MetricsLog::LogType log_type) {
     int list_length = 0;
-    if (log_type == MetricsLogBase::INITIAL_STABILITY_LOG)
+    if (log_type == MetricsLog::INITIAL_STABILITY_LOG)
       list_length = GetList(prefs::kMetricsInitialLogs)->GetSize();
     else
       list_length = GetList(prefs::kMetricsOngoingLogs)->GetSize();
@@ -39,6 +41,7 @@ class TestLogPrefService : public TestingPrefServiceSimple {
 }  // namespace
 
 TEST(MetricsLogManagerTest, StandardFlow) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   MetricsLogManager log_manager(&pref_service, 0);
 
@@ -48,8 +51,8 @@ TEST(MetricsLogManagerTest, StandardFlow) {
   EXPECT_FALSE(log_manager.has_unsent_logs());
 
   // Check that the normal flow works.
-  MetricsLogBase* initial_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
+  MetricsLog* initial_log = new MetricsLog(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service);
   log_manager.BeginLoggingWithLog(make_scoped_ptr(initial_log));
   EXPECT_EQ(initial_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
@@ -59,8 +62,8 @@ TEST(MetricsLogManagerTest, StandardFlow) {
   EXPECT_TRUE(log_manager.has_unsent_logs());
   EXPECT_FALSE(log_manager.has_staged_log());
 
-  MetricsLogBase* second_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
+  MetricsLog* second_log =
+      new MetricsLog("id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service);
   log_manager.BeginLoggingWithLog(make_scoped_ptr(second_log));
   EXPECT_EQ(second_log, log_manager.current_log());
 
@@ -77,11 +80,12 @@ TEST(MetricsLogManagerTest, StandardFlow) {
 }
 
 TEST(MetricsLogManagerTest, AbandonedLog) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   MetricsLogManager log_manager(&pref_service, 0);
 
-  MetricsLogBase* dummy_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
+  MetricsLog* dummy_log = new MetricsLog(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service);
   log_manager.BeginLoggingWithLog(make_scoped_ptr(dummy_log));
   EXPECT_EQ(dummy_log, log_manager.current_log());
 
@@ -91,13 +95,14 @@ TEST(MetricsLogManagerTest, AbandonedLog) {
 }
 
 TEST(MetricsLogManagerTest, InterjectedLog) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   MetricsLogManager log_manager(&pref_service, 0);
 
-  MetricsLogBase* ongoing_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v");
-  MetricsLogBase* temp_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
+  MetricsLog* ongoing_log =
+      new MetricsLog("id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service);
+  MetricsLog* temp_log = new MetricsLog(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service);
 
   log_manager.BeginLoggingWithLog(make_scoped_ptr(ongoing_log));
   EXPECT_EQ(ongoing_log, log_manager.current_log());
@@ -120,15 +125,16 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
 }
 
 TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   MetricsLogManager log_manager(&pref_service, 0);
   log_manager.LoadPersistedUnsentLogs();
 
-  log_manager.BeginLoggingWithLog(make_scoped_ptr(
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
   log_manager.PauseCurrentLog();
-  log_manager.BeginLoggingWithLog(make_scoped_ptr(
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
   log_manager.FinishCurrentLog();
   log_manager.ResumePausedLog();
   log_manager.StageNextLogForUpload();
@@ -138,11 +144,12 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
   // has the right type.
   log_manager.FinishCurrentLog();
   log_manager.PersistUnsentLogs();
-  EXPECT_EQ(0U, pref_service.TypeCount(MetricsLogBase::INITIAL_STABILITY_LOG));
-  EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+  EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+  EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
 }
 
 TEST(MetricsLogManagerTest, StoreAndLoad) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   // Set up some in-progress logging in a scoped log manager simulating the
   // leadup to quitting, then persist as would be done on quit.
@@ -158,28 +165,26 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
       ongoing_logs.StoreLog(&log);
       ongoing_logs.SerializeLogs();
     }
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
     EXPECT_FALSE(log_manager.has_unsent_logs());
     log_manager.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
-        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
     log_manager.FinishCurrentLog();
 
     // Nothing should be written out until PersistUnsentLogs is called.
-    EXPECT_EQ(0U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(1U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 
   // Now simulate the relaunch, ensure that the log manager restores
@@ -195,9 +200,8 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     // The initial log should be sent first; update the persisted storage to
     // verify.
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(0U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
 
     // Handle the first ongoing log.
     log_manager.StageNextLogForUpload();
@@ -211,32 +215,32 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
 
     // Nothing should have changed "on disk" since PersistUnsentLogs hasn't been
     // called again.
-    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(2U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
     // Persist, and make sure nothing is left.
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(0U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 }
 
 TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
+  TestMetricsServiceClient client;
+
   // Ensure that types are preserved when storing staged logs.
   {
     TestLogPrefService pref_service;
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
     log_manager.PersistUnsentLogs();
 
-    EXPECT_EQ(0U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 
   {
@@ -244,50 +248,52 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
-        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
     log_manager.PersistUnsentLogs();
 
-    EXPECT_EQ(1U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 }
 
 TEST(MetricsLogManagerTest, LargeLogDiscarding) {
+  TestMetricsServiceClient client;
   TestLogPrefService pref_service;
   // Set the size threshold very low, to verify that it's honored.
   MetricsLogManager log_manager(&pref_service, 1);
   log_manager.LoadPersistedUnsentLogs();
 
-  log_manager.BeginLoggingWithLog(make_scoped_ptr(
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
   log_manager.FinishCurrentLog();
-  log_manager.BeginLoggingWithLog(make_scoped_ptr(
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
   log_manager.FinishCurrentLog();
 
   // Only the ongoing log should be written out, due to the threshold.
   log_manager.PersistUnsentLogs();
-  EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::INITIAL_STABILITY_LOG));
-  EXPECT_EQ(0U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+  EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+  EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
 }
 
 TEST(MetricsLogManagerTest, ProvisionalStoreStandardFlow) {
+  TestMetricsServiceClient client;
+
   // Ensure that provisional store works, and discards the correct log.
   {
     TestLogPrefService pref_service;
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
-        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(
         metrics::PersistedLogs::PROVISIONAL_STORE);
@@ -295,13 +301,14 @@ TEST(MetricsLogManagerTest, ProvisionalStoreStandardFlow) {
     log_manager.DiscardLastProvisionalStore();
 
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(0U, pref_service.TypeCount(
-        MetricsLogBase::INITIAL_STABILITY_LOG));
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 }
 
 TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
+  TestMetricsServiceClient client;
+
   // Ensure that trying to drop a sent log is a no-op, even if another log has
   // since been staged.
   {
@@ -309,23 +316,23 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(
         metrics::PersistedLogs::PROVISIONAL_STORE);
     log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
     log_manager.DiscardLastProvisionalStore();
 
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 
   // Ensure that trying to drop more than once is a no-op
@@ -334,13 +341,13 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
-    log_manager.BeginLoggingWithLog(make_scoped_ptr(
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
+        "id", 0, MetricsLog::ONGOING_LOG,  &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(
@@ -349,7 +356,7 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     log_manager.DiscardLastProvisionalStore();
 
     log_manager.PersistUnsentLogs();
-    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLogBase::ONGOING_LOG));
+    EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
   }
 }
 

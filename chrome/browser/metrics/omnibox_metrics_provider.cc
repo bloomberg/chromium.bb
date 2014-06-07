@@ -16,7 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/ui/browser_otr_state.h"
-#include "components/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log.h"
 #include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;
@@ -156,7 +156,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
       static_cast<int>(Tokenize(log.text, base::kWhitespaceUTF16, &terms));
 
   OmniboxEventProto* omnibox_event = omnibox_events_cache.add_omnibox_event();
-  omnibox_event->set_time(metrics::MetricsLogBase::GetCurrentTime());
+  omnibox_event->set_time(MetricsLog::GetCurrentTime());
   if (log.tab_id != -1) {
     // If we know what tab the autocomplete URL was opened in, log it.
     omnibox_event->set_tab_id(log.tab_id);

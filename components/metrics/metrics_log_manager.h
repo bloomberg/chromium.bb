@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log.h"
 #include "components/metrics/persisted_logs.h"
 
 namespace metrics {
@@ -20,8 +20,6 @@ namespace metrics {
 // text, as well as saving logs to, and loading logs from, persistent storage.
 class MetricsLogManager {
  public:
-  typedef MetricsLogBase::LogType LogType;
-
   // The metrics log manager will persist it's unsent logs by storing them in
   // |local_state|, and will not persist ongoing logs over
   // |max_ongoing_log_size|.
@@ -30,10 +28,10 @@ class MetricsLogManager {
 
   // Makes |log| the current_log. This should only be called if there is not a
   // current log.
-  void BeginLoggingWithLog(scoped_ptr<MetricsLogBase> log);
+  void BeginLoggingWithLog(scoped_ptr<MetricsLog> log);
 
   // Returns the in-progress log.
-  MetricsLogBase* current_log() { return current_log_.get(); }
+  MetricsLog* current_log() { return current_log_.get(); }
 
   // Closes current_log(), compresses it, and stores the compressed log for
   // later, leaving current_log() NULL.
@@ -110,16 +108,16 @@ class MetricsLogManager {
   // Saves |log| as the given type.
   // NOTE: This clears the contents of |log| (to avoid an expensive copy),
   // so the log should be discarded after this call.
-  void StoreLog(std::string* log, LogType log_type);
+  void StoreLog(std::string* log, MetricsLog::LogType log_type);
 
   // Tracks whether unsent logs (if any) have been loaded from the serializer.
   bool unsent_logs_loaded_;
 
   // The log that we are still appending to.
-  scoped_ptr<MetricsLogBase> current_log_;
+  scoped_ptr<MetricsLog> current_log_;
 
   // A paused, previously-current log.
-  scoped_ptr<MetricsLogBase> paused_log_;
+  scoped_ptr<MetricsLog> paused_log_;
 
   // Logs that have not yet been sent.
   metrics::PersistedLogs initial_log_queue_;

@@ -2,46 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/metrics_log_base.h"
+#include "components/metrics/metrics_log.h"
 
 #include <string>
 
 #include "base/base64.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
+#include "base/prefs/testing_pref_service.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/metrics/test_metrics_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
 
 namespace {
 
-class TestMetricsLogBase : public MetricsLogBase {
+class TestMetricsLog : public MetricsLog {
  public:
-  TestMetricsLogBase()
-      : MetricsLogBase("client_id", 1, MetricsLogBase::ONGOING_LOG, "1.2.3.4") {
+  TestMetricsLog(TestMetricsServiceClient* client,
+                 TestingPrefServiceSimple* prefs)
+      : MetricsLog("client_id", 1, MetricsLog::ONGOING_LOG, client, prefs) {
   }
-  virtual ~TestMetricsLogBase() {}
+  virtual ~TestMetricsLog() {}
 
-  using MetricsLogBase::uma_proto;
+  using MetricsLog::uma_proto;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestMetricsLogBase);
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
 }  // namespace
 
-TEST(MetricsLogBaseTest, LogType) {
-  MetricsLogBase log1("id", 0, MetricsLogBase::ONGOING_LOG, "1.2.3");
-  EXPECT_EQ(MetricsLogBase::ONGOING_LOG, log1.log_type());
+TEST(MetricsLogTest, LogType) {
+  TestMetricsServiceClient client;
+  TestingPrefServiceSimple prefs;
 
-  MetricsLogBase log2("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "1.2.3");
-  EXPECT_EQ(MetricsLogBase::INITIAL_STABILITY_LOG, log2.log_type());
+  MetricsLog log1("id", 0, MetricsLog::ONGOING_LOG, &client, &prefs);
+  EXPECT_EQ(MetricsLog::ONGOING_LOG, log1.log_type());
+
+  MetricsLog log2("id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &prefs);
+  EXPECT_EQ(MetricsLog::INITIAL_STABILITY_LOG, log2.log_type());
 }
 
-TEST(MetricsLogBaseTest, EmptyRecord) {
-  MetricsLogBase log("totally bogus client ID", 137,
-                     MetricsLogBase::ONGOING_LOG, "bogus version");
+TEST(MetricsLogTest, EmptyRecord) {
+  TestMetricsServiceClient client;
+  client.set_version_string("bogus version");
+  TestingPrefServiceSimple prefs;
+  MetricsLog log("totally bogus client ID", 137, MetricsLog::ONGOING_LOG,
+                 &client, &prefs);
   log.CloseLog();
 
   std::string encoded;
@@ -49,20 +58,21 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
 
   // A couple of fields are hard to mock, so these will be copied over directly
   // for the expected output.
-  metrics::ChromeUserMetricsExtension parsed;
+  ChromeUserMetricsExtension parsed;
   ASSERT_TRUE(parsed.ParseFromString(encoded));
 
-  metrics::ChromeUserMetricsExtension expected;
+  ChromeUserMetricsExtension expected;
   expected.set_client_id(5217101509553811875);  // Hashed bogus client ID
   expected.set_session_id(137);
   expected.mutable_system_profile()->set_build_timestamp(
       parsed.system_profile().build_timestamp());
   expected.mutable_system_profile()->set_app_version("bogus version");
+  expected.mutable_system_profile()->set_channel(client.GetChannel());
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }
 
-TEST(MetricsLogBaseTest, HistogramBucketFields) {
+TEST(MetricsLogTest, HistogramBucketFields) {
   // Create buckets: 1-5, 5-7, 7-8, 8-9, 9-10, 10-11, 11-12.
   base::BucketRanges ranges(8);
   ranges.set_range(0, 1);
@@ -81,7 +91,9 @@ TEST(MetricsLogBaseTest, HistogramBucketFields) {
   samples.Accumulate(10, 1);  // Bucket 10-11. (9-10 skipped)
   samples.Accumulate(11, 1);  // Bucket 11-12.
 
-  TestMetricsLogBase log;
+  TestMetricsServiceClient client;
+  TestingPrefServiceSimple prefs;
+  TestMetricsLog log(&client, &prefs);
   log.RecordHistogramDelta("Test", samples);
 
   const metrics::ChromeUserMetricsExtension* uma_proto = log.uma_proto();

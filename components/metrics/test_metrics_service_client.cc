@@ -13,7 +13,8 @@ namespace metrics {
 const char TestMetricsServiceClient::kBrandForTesting[] = "brand_for_testing";
 
 TestMetricsServiceClient::TestMetricsServiceClient()
-    : install_date_(0) {
+    : install_date_(0),
+      version_string_("5.0.322.0-64-devel") {
 }
 
 TestMetricsServiceClient::~TestMetricsServiceClient() {
@@ -41,7 +42,7 @@ SystemProfileProto::Channel TestMetricsServiceClient::GetChannel() {
 }
 
 std::string TestMetricsServiceClient::GetVersionString() {
-  return "5.0.322.0-64-devel";
+  return version_string_;
 }
 
 int64 TestMetricsServiceClient::GetInstallDate() {
