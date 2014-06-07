@@ -47,8 +47,8 @@ class TimelineController(object):
     # Stop tracing.
     timeline_data = tab.browser.StopTracing()
     self._model = TimelineModel(timeline_data)
-    self._renderer_process = self._model.GetRendererProcessFromTab(tab)
-    renderer_thread = self.model.GetRendererThreadFromTab(tab)
+    self._renderer_process = self._model.GetRendererProcessFromTabId(tab.id)
+    renderer_thread = self.model.GetRendererThreadFromTabId(tab.id)
 
     run_smooth_actions_record = None
     self._smooth_records = []

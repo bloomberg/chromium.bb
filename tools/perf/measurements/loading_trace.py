@@ -31,7 +31,7 @@ class LoadingTrace(page_measurement.PageMeasurement):
     loading.LoadingMetric().AddResults(tab, results)
     timeline_metric = timeline.LoadTimesTimelineMetric()
     renderer_thread = \
-        self._timeline_controller.model.GetRendererThreadFromTab(tab)
+        self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)
     record = tir_module.TimelineInteractionRecord(
       "loading_trace_interaction", 0, float('inf'))
     timeline_metric.AddResults(

@@ -39,7 +39,7 @@ class ThreadTimes(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
-        self._timeline_controller.model.GetRendererThreadFromTab(tab)
+        self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)
     if self.options.report_silk_results:
       metric.results_to_report = timeline.ReportSilkResults
     if self.options.report_silk_details:
