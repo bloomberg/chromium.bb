@@ -358,9 +358,6 @@ IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 
 // JavaScript related messages -----------------------------------------------
 
-// Asks the renderer to send back FPS.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
-
 // Tells the frame it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
@@ -626,11 +623,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
 
 // This message indicates the monitored frame loading had completed.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FrameLoadingCompleted)
-
-// Provide the browser process with current renderer framerate.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_FPS,
-                     int /* routing id */,
-                     float /* frames per second */)
 
 // Logs events from InstantExtended New Tab Pages.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,

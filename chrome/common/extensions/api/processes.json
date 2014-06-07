@@ -71,11 +71,6 @@
             "optional": true,
             "description": "The most recent measurement of the process’s SQLite memory usage, in bytes. Only available when receiving the object as part of a callback from onUpdated or onUpdatedWithMemory."
           },
-          "fps": {
-            "type": "number",
-            "optional": true,
-            "description": "The most recent measurement of the process frames per second. Only available when receiving the object as part of a callback from onUpdated or onUpdatedWithMemory."
-          },
           "imageCache": {
             "$ref": "Cache",
             "optional": true,

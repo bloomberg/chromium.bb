@@ -54,8 +54,6 @@ const struct ColumnWidth {
       arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
       arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_FPS_COLUMN,
-      arraysize("100") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN,
       arraysize("2000.0K") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
@@ -303,7 +301,6 @@ class SortHelper {
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN
                 visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_FPS_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN

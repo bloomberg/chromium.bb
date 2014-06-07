@@ -98,9 +98,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() const = 0;
 
-  // Filtered time per frame based on UpdateRect messages.
-  virtual float GetFilteredTimePerFrame() const = 0;
-
   // Returns the current visibility of the WebView.
   virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 

@@ -57,7 +57,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetName(const std::string& name);
   void OnSetVisuallyDeemphasized(bool deemphasized);
-  void OnGetFPS();
 #if defined(OS_ANDROID)
   void OnUpdateTopControlsState(content::TopControlsState constraints,
                                 content::TopControlsState current,

@@ -64,7 +64,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FPS, OnFPS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
@@ -130,22 +129,6 @@ void ChromeRenderMessageFilter::OnResourceTypeStats(
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
     const WebCache::UsageStats& stats) {
   WebCacheManager::GetInstance()->ObserveStats(render_process_id_, stats);
-}
-
-void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &ChromeRenderMessageFilter::OnFPS, this,
-            routing_id, fps));
-    return;
-  }
-
-#if defined(ENABLE_TASK_MANAGER)
-  TaskManager::GetInstance()->model()->NotifyFPS(
-      peer_pid(), routing_id, fps);
-#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,

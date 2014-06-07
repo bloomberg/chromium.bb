@@ -20,8 +20,6 @@ RendererResource::RendererResource(base::ProcessHandle process,
     : process_(process),
       render_view_host_(render_view_host),
       pending_stats_update_(false),
-      fps_(0.0f),
-      pending_fps_update_(false),
       v8_memory_allocated_(0),
       v8_memory_used_(0),
       pending_v8_memory_allocated_update_(false) {
@@ -40,11 +38,6 @@ void RendererResource::Refresh() {
     render_view_host_->Send(new ChromeViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
   }
-  if (!pending_fps_update_) {
-    render_view_host_->Send(
-        new ChromeViewMsg_GetFPS(render_view_host_->GetRoutingID()));
-    pending_fps_update_ = true;
-  }
   if (!pending_v8_memory_allocated_update_) {
     render_view_host_->Send(new ChromeViewMsg_GetV8HeapStats);
     pending_v8_memory_allocated_update_ = true;
@@ -54,10 +47,6 @@ void RendererResource::Refresh() {
 blink::WebCache::ResourceTypeStats
 RendererResource::GetWebCoreCacheStats() const {
   return stats_;
-}
-
-float RendererResource::GetFPS() const {
-  return fps_;
 }
 
 size_t RendererResource::GetV8MemoryAllocated() const {
@@ -72,11 +61,6 @@ void RendererResource::NotifyResourceTypeStats(
     const blink::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
-}
-
-void RendererResource::NotifyFPS(float fps) {
-  fps_ = fps;
-  pending_fps_update_ = false;
 }
 
 void RendererResource::NotifyV8HeapStats(
@@ -108,10 +92,6 @@ int RendererResource::GetRoutingID() const {
 }
 
 bool RendererResource::ReportsCacheStats() const {
-  return true;
-}
-
-bool RendererResource::ReportsFPS() const {
   return true;
 }
 

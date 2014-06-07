@@ -180,7 +180,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
                         OnSetVisuallyDeemphasized)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
@@ -321,12 +320,6 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
   } else {
     dimmed_color_overlay_.reset();
   }
-}
-
-void ChromeRenderViewObserver::OnGetFPS() {
-  float fps = (render_view()->GetFilteredTimePerFrame() > 0.0f)?
-      1.0f / render_view()->GetFilteredTimePerFrame() : 0.0f;
-  Send(new ChromeViewHostMsg_FPS(routing_id(), fps));
 }
 
 void ChromeRenderViewObserver::DidStartLoading() {

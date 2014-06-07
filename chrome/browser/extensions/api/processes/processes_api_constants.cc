@@ -11,7 +11,6 @@ namespace processes_api_constants {
 // Process object properties.
 const char kCpuKey[] = "cpu";
 const char kCssCacheKey[] = "cssCache";
-const char kFPSKey[] = "fps";
 const char kIdKey[] = "id";
 const char kImageCacheKey[] = "imageCache";
 const char kJsMemoryAllocatedKey[] = "jsMemoryAllocated";

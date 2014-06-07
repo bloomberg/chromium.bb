@@ -497,7 +497,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual bool GetContentStateImmediately() const OVERRIDE;
-  virtual float GetFilteredTimePerFrame() const OVERRIDE;
   virtual blink::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;

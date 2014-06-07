@@ -200,8 +200,6 @@ TaskManagerModel::PerResourceValues::PerResourceValues()
       is_goats_teleported_valid(false),
       goats_teleported(0),
       is_webcore_stats_valid(false),
-      is_fps_valid(false),
-      fps(0),
       is_sqlite_memory_bytes_valid(false),
       sqlite_memory_bytes(0),
       is_v8_memory_valid(false),
@@ -376,9 +374,6 @@ base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       return GetResourceWebCoreCSSCacheSize(index);
 
-    case IDS_TASK_MANAGER_FPS_COLUMN:
-      return GetResourceFPS(index);
-
     case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
       return GetResourceVideoMemory(index);
 
@@ -519,14 +514,6 @@ base::string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
     return GetMemCellText(video_memory) + base::ASCIIToUTF16("*");
   }
   return GetMemCellText(video_memory);
-}
-
-base::string16 TaskManagerModel::GetResourceFPS(
-    int index) const {
-  float fps = 0;
-  if (!GetFPS(index, &fps))
-    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  return base::UTF8ToUTF16(base::StringPrintf("%.0f", fps));
 }
 
 base::string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
@@ -676,19 +663,6 @@ bool TaskManagerModel::GetVideoMemory(int index,
   }
   *video_memory = values.video_memory;
   *has_duplicates = values.video_memory_has_duplicates;
-  return true;
-}
-
-bool TaskManagerModel::GetFPS(int index, float* result) const {
-  *result = 0;
-  PerResourceValues& values(GetPerResourceValues(index));
-  if (!values.is_fps_valid) {
-    if (!GetResource(index)->ReportsFPS())
-      return false;
-    values.is_fps_valid = true;
-    values.fps = GetResource(index)->GetFPS();
-  }
-  *result = values.fps;
   return true;
 }
 
@@ -929,10 +903,6 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       }
       return OrderUnavailableValue(row1_stats_valid, row2_stats_valid);
     }
-
-    case IDS_TASK_MANAGER_FPS_COLUMN:
-      return ValueCompareMember(
-          this, &TaskManagerModel::GetFPS, row1, row2);
 
     case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN: {
       size_t value1;
@@ -1257,18 +1227,6 @@ void TaskManagerModel::NotifyResourceTypeStats(
        it != resources_.end(); ++it) {
     if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
       (*it)->NotifyResourceTypeStats(stats);
-    }
-  }
-}
-
-void TaskManagerModel::NotifyFPS(base::ProcessId renderer_id,
-                                 int routing_id,
-                                 float fps) {
-  for (ResourceList::iterator it = resources_.begin();
-       it != resources_.end(); ++it) {
-    if (base::GetProcId((*it)->GetProcess()) == renderer_id &&
-        (*it)->GetRoutingID() == routing_id) {
-      (*it)->NotifyFPS(fps);
     }
   }
 }

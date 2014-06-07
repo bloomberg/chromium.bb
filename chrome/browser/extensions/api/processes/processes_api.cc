@@ -182,18 +182,13 @@ base::DictionaryValue* CreateProcessFromModel(int process_id,
                 CreateCacheData(cache_stats.cssStyleSheets));
   }
 
-  // Network and FPS are reported by the TaskManager per resource (tab), not
-  // per process, therefore we need to iterate through the group of resources
+  // Network is reported by the TaskManager per resource (tab), not per
+  // process, therefore we need to iterate through the group of resources
   // and aggregate the data.
-  float fps = 0, tmp = 0;
   int64 net = 0;
   int length = model->GetGroupRangeForResource(index).second;
-  for (int i = 0; i < length; ++i) {
+  for (int i = 0; i < length; ++i)
     net += model->GetNetworkUsage(index + i);
-    if (model->GetFPS(index + i, &tmp))
-      fps += tmp;
-  }
-  result->SetDouble(keys::kFPSKey, static_cast<double>(fps));
   result->SetDouble(keys::kNetworkKey, static_cast<double>(net));
 
   return result;

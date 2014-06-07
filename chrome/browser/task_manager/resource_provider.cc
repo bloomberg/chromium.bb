@@ -28,14 +28,6 @@ blink::WebCache::ResourceTypeStats Resource::GetWebCoreCacheStats() const {
   return blink::WebCache::ResourceTypeStats();
 }
 
-bool Resource::ReportsFPS() const {
-  return false;
-}
-
-float Resource::GetFPS() const {
-  return 0.0f;
-}
-
 bool Resource::ReportsSqliteMemoryUsed() const {
   return false;
 }

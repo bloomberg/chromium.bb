@@ -67,9 +67,6 @@ class Resource {
   virtual bool ReportsCacheStats() const;
   virtual blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
-  virtual bool ReportsFPS() const;
-  virtual float GetFPS() const;
-
   virtual bool ReportsSqliteMemoryUsed() const;
   virtual size_t SqliteMemoryUsedBytes() const;
 
@@ -105,7 +102,6 @@ class Resource {
 
   virtual void NotifyResourceTypeStats(
       const blink::WebCache::ResourceTypeStats& stats) {}
-  virtual void NotifyFPS(float fps) {}
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used) {}
 

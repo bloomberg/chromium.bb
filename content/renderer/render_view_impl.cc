@@ -2363,10 +2363,6 @@ bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
 
-float RenderViewImpl::GetFilteredTimePerFrame() const {
-  return 0.0f;
-}
-
 blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
   return visibilityState();
 }
