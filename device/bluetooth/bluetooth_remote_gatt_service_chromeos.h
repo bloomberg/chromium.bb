@@ -69,6 +69,14 @@ class BluetoothRemoteGattServiceChromeOS
   // service observers when characteristic descriptors get added and removed.
   void NotifyServiceChanged();
 
+  // Notifies its observers that the value of a characteristic has changed.
+  // Called by BluetoothRemoteGattCharacteristicChromeOS instances to notify
+  // service observers when their cached value is updated after a successful
+  // read request or when a "ValueUpdated" signal is received.
+  void NotifyCharacteristicValueChanged(
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+      const std::vector<uint8>& value);
+
   // Notifies its observers that a descriptor |descriptor| belonging to
   // characteristic |characteristic| has been added or removed. This is used
   // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
@@ -105,9 +113,6 @@ class BluetoothRemoteGattServiceChromeOS
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void GattCharacteristicRemoved(
       const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void GattCharacteristicPropertyChanged(
-      const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE;
 
   // Object path of the GATT service.
   dbus::ObjectPath object_path_;

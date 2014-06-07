@@ -13,15 +13,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// TODO(armansito): Add these to service_constants.h when they are defined
-// in the BlueZ doc.
-const char kDeviceProperty[] = "Device";
-const char kPrimaryProperty[] = "Primary";
-
-}  // namespace
-
 BluetoothGattServiceClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
     const std::string& interface_name,
@@ -29,8 +20,8 @@ BluetoothGattServiceClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_service::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_service::kIncludesProperty, &includes);
-  RegisterProperty(kDeviceProperty, &device);
-  RegisterProperty(kPrimaryProperty, &primary);
+  RegisterProperty(bluetooth_gatt_service::kDeviceProperty, &device);
+  RegisterProperty(bluetooth_gatt_service::kPrimaryProperty, &primary);
 }
 
 BluetoothGattServiceClient::Properties::~Properties() {

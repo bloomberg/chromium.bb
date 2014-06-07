@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
 #include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -32,6 +33,7 @@ class BluetoothRemoteGattServiceChromeOS;
 // platform.
 class BluetoothRemoteGattCharacteristicChromeOS
     : public device::BluetoothGattCharacteristic,
+      public BluetoothGattCharacteristicClient::Observer,
       public BluetoothGattDescriptorClient::Observer {
  public:
   // device::BluetoothGattCharacteristic overrides.
@@ -68,6 +70,11 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path);
   virtual ~BluetoothRemoteGattCharacteristicChromeOS();
 
+  // BluetoothGattCharacteristicClient::Observer overrides.
+  virtual void GattCharacteristicValueUpdated(
+      const dbus::ObjectPath& object_path,
+      const std::vector<uint8>& value) OVERRIDE;
+
   // BluetoothGattDescriptorClient::Observer overrides.
   virtual void GattDescriptorAdded(
       const dbus::ObjectPath& object_path) OVERRIDE;
@@ -77,23 +84,26 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path,
       const std::string& property_name) OVERRIDE;
 
-  // Called by dbus:: on completion of the request to get the characteristic
-  // value.
-  void OnGetValue(const ValueCallback& callback,
-                  const ErrorCallback& error_callback,
-                  bool success);
+  // Called by dbus:: on successful completion of a request to read
+  // the characteristic value.
+  void OnValueSuccess(const ValueCallback& callback,
+                      const std::vector<uint8>& value);
 
-  // Called by dbus:: on completion of the request to set the characteristic
-  // value.
-  void OnSetValue(const base::Closure& callback,
-                  const ErrorCallback& error_callback,
-                  bool success);
+  // Called by dbus:: on unsuccessful completion of a request to read or write
+  // the characteristic value.
+  void OnError(const ErrorCallback& error_callback,
+               const std::string& error_name,
+               const std::string& error_message);
 
   // Object path of the D-Bus characteristic object.
   dbus::ObjectPath object_path_;
 
   // The GATT service this GATT characteristic belongs to.
   BluetoothRemoteGattServiceChromeOS* service_;
+
+  // The cached characteristic value based on the most recent read or
+  // notification.
+  std::vector<uint8> cached_value_;
 
   // Mapping from GATT descriptor object paths to descriptor objects owned by
   // this characteristic. Since the Chrome OS implementation uses object paths

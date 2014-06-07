@@ -14,20 +14,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// Stream operator for logging vector<uint8>.
-std::ostream& operator<<(std::ostream& out, const std::vector<uint8> bytes) {
-  out << "[";
-  for (std::vector<uint8>::const_iterator iter = bytes.begin();
-       iter != bytes.end(); ++iter) {
-    out << base::StringPrintf("%02X", *iter);
-  }
-  return out << "]";
-}
-
-}  // namespace
-
 BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
     BluetoothDeviceChromeOS* device,
     const dbus::ObjectPath& object_path)
@@ -165,6 +151,16 @@ void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
                     GattServiceChanged(this));
 }
 
+void BluetoothRemoteGattServiceChromeOS::NotifyCharacteristicValueChanged(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    const std::vector<uint8>& value) {
+  DCHECK(characteristic->GetService() == this);
+  FOR_EACH_OBSERVER(
+      device::BluetoothGattService::Observer,
+      observers_,
+      GattCharacteristicValueChanged(this, characteristic, value));
+}
+
 void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
     BluetoothRemoteGattCharacteristicChromeOS* characteristic,
     BluetoothRemoteGattDescriptorChromeOS* descriptor,
@@ -252,31 +248,6 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
   NotifyServiceChanged();
 
   delete characteristic;
-}
-
-void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
-    const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
-  CharacteristicMap::iterator iter = characteristics_.find(object_path);
-  if (iter == characteristics_.end()) {
-    VLOG(2) << "Unknown GATT characteristic property changed: "
-            << object_path.value();
-    return;
-  }
-
-  // Ignore all property changes except for "Value".
-  BluetoothGattCharacteristicClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
-          GetProperties(object_path);
-  DCHECK(properties);
-  if (property_name != properties->value.name())
-    return;
-
-  VLOG(1) << "GATT characteristic value has changed: " << object_path.value()
-          << ": " << properties->value.value();
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattCharacteristicValueChanged(this, iter->second,
-                                                   properties->value.value()));
 }
 
 }  // namespace chromeos

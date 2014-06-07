@@ -806,9 +806,10 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   EXPECT_EQ(2, error_callback_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
 
-  // Issue write request to writeable characteristic. Writing "1" to the control
-  // point characteristic will immediately change its value back to "0", hence
-  // sending "ValueChanged" events twice.
+  // Issue write request to writeable characteristic. The "Body Sensor Location"
+  // characteristic does not send notifications and WriteValue does not result
+  // in a CharacteristicValueChanged event, thus no such event should be
+  // received.
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateControlPointPath().value());
@@ -823,15 +824,14 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
                  base::Unretained(this)),
       base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  EXPECT_EQ(characteristic->GetIdentifier(),
-            service_observer.last_gatt_characteristic_id_);
-  EXPECT_EQ(characteristic->GetUUID(),
-            service_observer.last_gatt_characteristic_uuid_);
+  EXPECT_TRUE(service_observer.last_gatt_characteristic_id_.empty());
+  EXPECT_FALSE(service_observer.last_gatt_characteristic_uuid_.IsValid());
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(5, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(3, service_observer.gatt_characteristic_value_changed_count_);
 
-  // Issue a read request.
+  // Issue a read request. A successful read results in a
+  // CharacteristicValueChanged notification.
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetBodySensorLocationPath().value());
@@ -847,12 +847,12 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
                  base::Unretained(this)));
   EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(5, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(4, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(ValuesEqual(characteristic->GetValue(), last_read_value_));
 
   // One last value changed notification.
   base::MessageLoop::current()->Run();
-  EXPECT_EQ(6, service_observer.gatt_characteristic_value_changed_count_);
+  EXPECT_EQ(5, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_EQ(kHeartRateMeasurementUUID,
             service_observer.last_gatt_characteristic_uuid_);
   EXPECT_EQ(fake_bluetooth_gatt_characteristic_client_->

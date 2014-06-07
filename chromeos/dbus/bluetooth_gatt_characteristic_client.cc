@@ -13,6 +13,13 @@
 
 namespace chromeos {
 
+// static
+const char BluetoothGattCharacteristicClient::kNoResponseError[] =
+    "org.chromium.Error.NoResponse";
+// static
+const char BluetoothGattCharacteristicClient::kUnknownCharacteristicError[] =
+    "org.chromium.Error.UnknownCharacteristic";
+
 BluetoothGattCharacteristicClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
     const std::string& interface_name,
@@ -20,7 +27,6 @@ BluetoothGattCharacteristicClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_characteristic::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_characteristic::kServiceProperty, &service);
-  RegisterProperty(bluetooth_gatt_characteristic::kValueProperty, &value);
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
 }
 
@@ -74,6 +80,61 @@ class BluetoothGattCharacteristicClientImpl
                 kBluetoothGattCharacteristicInterface));
   }
 
+  // BluetoothGattCharacteristicClient override.
+  virtual void ReadValue(const dbus::ObjectPath& object_path,
+                         const ValueCallback& callback,
+                         const ErrorCallback& error_callback) OVERRIDE {
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownCharacteristicError, "");
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        bluetooth_gatt_characteristic::kReadValue);
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnValueSuccess,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback),
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
+  // BluetoothGattCharacteristicClient override.
+  virtual void WriteValue(const dbus::ObjectPath& object_path,
+                          const std::vector<uint8>& value,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownCharacteristicError, "");
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        bluetooth_gatt_characteristic::kWriteValue);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfBytes(value.data(), value.size());
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback),
+        base::Bind(&BluetoothGattCharacteristicClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
   // dbus::ObjectManager::Interface override.
   virtual dbus::PropertySet* CreateProperties(
       dbus::ObjectProxy *object_proxy,
@@ -94,6 +155,21 @@ class BluetoothGattCharacteristicClientImpl
     VLOG(2) << "Remote GATT characteristic added: " << object_path.value();
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicAdded(object_path));
+
+    // Connect the "ValueUpdated" signal.
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    DCHECK(object_proxy);
+
+    object_proxy->ConnectToSignal(
+        bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+        bluetooth_gatt_characteristic::kValueUpdatedSignal,
+        base::Bind(&BluetoothGattCharacteristicClientImpl::ValueUpdatedReceived,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   object_path),
+        base::Bind(
+            &BluetoothGattCharacteristicClientImpl::ValueUpdatedConnected,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // dbus::ObjectManager::Interface override.
@@ -127,6 +203,78 @@ class BluetoothGattCharacteristicClientImpl
     FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
                       GattCharacteristicPropertyChanged(object_path,
                                                         property_name));
+  }
+
+  // Called by dbus:: when a "ValueUpdated" signal is received.
+  void ValueUpdatedReceived(const dbus::ObjectPath& object_path,
+                            dbus::Signal* signal) {
+    DCHECK(signal);
+    const uint8* bytes = NULL;
+    size_t length = 0;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytes(&bytes, &length)) {
+      LOG(WARNING) << "ValueUpdated signal has incorrect parameters: "
+                   << signal->ToString();
+      return;
+    }
+
+    std::vector<uint8> value;
+    if (bytes)
+      value.assign(bytes, bytes + length);
+
+    FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer,
+                      observers_,
+                      GattCharacteristicValueUpdated(object_path, value));
+  }
+
+  // Called by dbus:: when the "ValueUpdated" signal is initially connected.
+  void ValueUpdatedConnected(const std::string& interface_name,
+                             const std::string& signal_name,
+                             bool success) {
+    LOG_IF(WARNING, !success) << "Failed to connect to the ValueUpdated signal";
+  }
+
+  // Called when a response for successful method call is received.
+  void OnSuccess(const base::Closure& callback, dbus::Response* response) {
+    DCHECK(response);
+    callback.Run();
+  }
+
+  // Called when a characteristic value response for a successful method call
+  // is received.
+  void OnValueSuccess(const ValueCallback& callback, dbus::Response* response) {
+    DCHECK(response);
+    dbus::MessageReader reader(response);
+
+    const uint8* bytes = NULL;
+    size_t length = 0;
+
+    if (!reader.PopArrayOfBytes(&bytes, &length))
+      VLOG(2) << "Error reading array of bytes in ValueCallback";
+
+    std::vector<uint8> value;
+
+    if (bytes)
+      value.assign(bytes, bytes + length);
+
+    callback.Run(value);
+  }
+
+  // Called when a response for a failed method call is received.
+  void OnError(const ErrorCallback& error_callback,
+               dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name;
+    std::string error_message;
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      reader.PopString(&error_message);
+    } else {
+      error_name = kNoResponseError;
+      error_message = "";
+    }
+    error_callback.Run(error_name, error_message);
   }
 
   dbus::ObjectManager* object_manager_;
