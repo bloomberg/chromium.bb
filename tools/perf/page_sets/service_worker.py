@@ -17,9 +17,10 @@ class ServiceWorkerPage(page.Page):
 
 
 class ServiceWorkerPageSet(page_set.PageSet):
+  """ServiceWorker performance tests"""
+
   def __init__(self):
     super(ServiceWorkerPageSet, self).__init__(
-        description='ServiceWorker performance tests',
         archive_data_file=archive_data_file_path,
         make_javascript_deterministic=False)
 

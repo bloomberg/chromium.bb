@@ -11,6 +11,8 @@ class BlankPage(page_module.Page):
 
 
 class BlankPageSet(page_set_module.PageSet):
+  """A single blank page."""
+
   def __init__(self):
-    super(BlankPageSet, self).__init__(description='A single blank page.')
+    super(BlankPageSet, self).__init__()
     self.AddPage(BlankPage('file://blank_page/blank_page.html', self))

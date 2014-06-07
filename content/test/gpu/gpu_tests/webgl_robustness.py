@@ -67,7 +67,6 @@ class WebglRobustness(test.Test):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       file_path=conformance_path,
-      description='Test cases for WebGL robustness',
       user_agent_type='desktop',
       serving_dirs=[''])
     ps.AddPage(WebglRobustnessPage(ps, ps.base_dir))

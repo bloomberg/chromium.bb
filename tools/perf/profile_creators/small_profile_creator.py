@@ -2,11 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
-from telemetry.core import util
-from telemetry.page import page_set
 from telemetry.page import profile_creator
+
+import page_sets
 
 
 class SmallProfileCreator(profile_creator.ProfileCreator):
@@ -16,8 +14,7 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
 
   def __init__(self):
     super(SmallProfileCreator, self).__init__()
-    typical_25 = os.path.join(util.GetBaseDir(), 'page_sets', 'typical_25.py')
-    self._page_set = page_set.PageSet.FromFile(typical_25)
+    self._page_set = page_sets.Typical25()
 
     # Open all links in the same tab save for the last _NUM_TABS links which
     # are each opened in a new tab.

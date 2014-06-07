@@ -108,7 +108,6 @@ class WebglConformance(test_module.Test):
         options.webgl_conformance_version)
 
     ps = page_set.PageSet(
-      description='Executes WebGL conformance tests',
       user_agent_type='desktop',
       serving_dirs=[''],
       file_path=conformance_path)

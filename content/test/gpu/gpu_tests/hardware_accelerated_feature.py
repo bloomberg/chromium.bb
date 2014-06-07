@@ -53,10 +53,7 @@ class HardwareAcceleratedFeature(test.Test):
   def CreatePageSet(self, options):
     features = ['WebGL', 'Canvas']
 
-    ps = page_set.PageSet(
-      description='Tests GPU acceleration is reported as active',
-      user_agent_type='desktop',
-      file_path='')
+    ps = page_set.PageSet(user_agent_type='desktop', file_path='')
 
     for feature in features:
       ps.AddPage(ChromeGpuPage(page_set=ps, feature=feature))

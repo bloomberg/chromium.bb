@@ -78,11 +78,7 @@ class PeaceKeeperBenchmark(test.Test):
     if not hasattr(self, 'test_param'):
       raise NotImplementedError('test_param not in PeaceKeeper benchmark.')
 
-    # The docstring of benchmark classes may also be used as a description
-    # when 'run_benchmarks list' is run.
-    description = self.__doc__ or 'PeaceKeeper Benchmark'
     ps = page_set.PageSet(
-      description=description,
       archive_data_file='../page_sets/data/peacekeeper_%s.json' % self.tag,
       make_javascript_deterministic=False)
     for test_name in self.test_param:

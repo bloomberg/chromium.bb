@@ -87,9 +87,10 @@ class Facebook(SimpleScrollPage):
 
 
 class Top10PageSet(page_set_module.PageSet):
+  """10 Pages chosen from Alexa top sites"""
+
   def __init__(self):
     super(Top10PageSet, self).__init__(
-      description='10 Pages chosen from Alexa top sites',
       archive_data_file='data/top_10.json',
       credentials_path='data/credentials.json',
       user_agent_type='desktop')

@@ -183,7 +183,6 @@ class ContextLost(test_module.Test):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       file_path=data_path,
-      description='Test cases for real and synthetic context lost events',
       user_agent_type='desktop',
       serving_dirs=set(['']))
     ps.AddPage(WebGLContextLostFromGPUProcessExitPage(ps, ps.base_dir))
