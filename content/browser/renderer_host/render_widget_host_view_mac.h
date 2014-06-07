@@ -370,9 +370,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                              float scale_factor,
                              const std::vector<ui::LatencyInfo>& latency_info);
 
-  // Draw the IOSurface by making its context current to this view.
-  void DrawIOSurfaceWithoutCoreAnimation();
-
   // Called when a GPU error is detected. Posts a task to destroy all
   // compositing state.
   void GotAcceleratedCompositingError();
@@ -419,17 +416,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // someone (other than superview) has retained |cocoa_view_|.
   RenderWidgetHostImpl* render_widget_host_;
 
-  // Whether last rendered frame was accelerated.
-  bool last_frame_was_accelerated_;
-
-  // The time at which this view started displaying white pixels as a result of
-  // not having anything to paint (empty backing store from renderer). This
-  // value returns true for is_null() if we are not recording whiteout times.
-  base::TimeTicks whiteout_start_time_;
-
-  // The time it took after this view was selected for it to be fully painted.
-  base::TimeTicks web_contents_switch_paint_time_;
-
   // Current text input type.
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
@@ -461,12 +447,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
-
-  // Whether to allow overlapping views.
-  bool allow_overlapping_views_;
-
-  // Whether to use the CoreAnimation path to draw content.
-  bool use_core_animation_;
 
   // Latency info to send back when the next frame appears on the
   // screen.
@@ -572,17 +552,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   };
   void DestroyCompositedIOSurfaceLayer(
       DestroyCompositedIOSurfaceLayerBehavior destroy_layer_behavior);
-  enum DestroyContextBehavior {
-    kLeaveContextBoundToView,
-    kDestroyContext,
-  };
-  void DestroyCompositedIOSurfaceAndLayer(
-      DestroyContextBehavior destroy_context_behavior);
+  void DestroyCompositedIOSurfaceAndLayer();
 
   void DestroyCompositingStateOnError();
-
-  // Unbind the GL context (if any) that is bound to |cocoa_view_|.
-  void ClearBoundContextDrawable();
 
   // Called when a GPU SwapBuffers is received.
   void GotAcceleratedFrame();
@@ -640,17 +612,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Overlay view has |underlay_view_| set to this view.
   base::WeakPtr<RenderWidgetHostViewMac> overlay_view_;
 
-  // Offset at which overlay view should be rendered.
-  gfx::Point overlay_view_offset_;
-
   // The underlay view which this view is rendered above in the same
   // accelerated IOSurface.
   // Underlay view has |overlay_view_| set to this view.
   base::WeakPtr<RenderWidgetHostViewMac> underlay_view_;
-
-  // Set to true when |underlay_view_| has drawn this view. After that point,
-  // this view should not draw again until |underlay_view_| is changed.
-  bool underlay_view_has_drawn_;
 
   // Factory used to safely reference overlay view set in SetOverlayView.
   base::WeakPtrFactory<RenderWidgetHostViewMac>

@@ -147,8 +147,6 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
-- (void)drawWithDirtyRect:(CGRect)dirtyRect
-                inContext:(CGContextRef)context;
 - (void)checkForPluginImeCancellation;
 - (void)updateScreenProperties;
 - (void)setResponderDelegate:
@@ -190,8 +188,6 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
                               styleMask:windowStyle
                                 backing:bufferingType
                                   defer:deferCreation]) {
-    DCHECK_EQ(content::CORE_ANIMATION_DISABLED,
-              content::GetCoreAnimationStatus());
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
     [self startObservingClicks];
@@ -477,18 +473,14 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
-      last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
-      allow_overlapping_views_(false),
-      use_core_animation_(false),
       pending_latency_info_delay_(0),
       pending_latency_info_delay_weak_ptr_factory_(this),
       backing_store_scale_factor_(1),
       is_loading_(false),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
-      underlay_view_has_drawn_(false),
       overlay_view_weak_factory_(this),
       software_frame_weak_ptr_factory_(this) {
   software_frame_manager_.reset(new SoftwareFrameManager(
@@ -499,14 +491,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
-  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED) {
-    use_core_animation_ = true;
-    background_layer_.reset([[CALayer alloc] init]);
-    [background_layer_
-        setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-    [cocoa_view_ setLayer:background_layer_];
-    [cocoa_view_ setWantsLayer:YES];
-  }
+  background_layer_.reset([[CALayer alloc] init]);
+  [background_layer_
+      setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+  [cocoa_view_ setLayer:background_layer_];
+  [cocoa_view_ setWantsLayer:YES];
 
   render_widget_host_->SetView(this);
 }
@@ -519,7 +508,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   UnlockMouse();
 
   // Make sure that the layer doesn't reach into the now-invalid object.
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  DestroyCompositedIOSurfaceAndLayer();
   DestroySoftwareLayer();
 
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
@@ -535,11 +524,7 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
-  if (allow_overlapping_views_ == overlapping)
-    return;
-  allow_overlapping_views_ = overlapping;
-  [cocoa_view_ setNeedsDisplay:YES];
-  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+  // TODO(ccameron): Remove callers of this function.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -561,9 +546,8 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
     return false;
   }
 
-  int current_window_number = use_core_animation_ ?
-      CompositingIOSurfaceContext::kOffscreenContextWindowNumber :
-      window_number();
+  int current_window_number =
+      CompositingIOSurfaceContext::kOffscreenContextWindowNumber;
   bool new_surface_needed = !compositing_iosurface_;
   bool new_context_needed =
     !compositing_iosurface_context_ ||
@@ -582,7 +566,6 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
     // context. Having two GL contexts bound to a view will result in
     // crashes and corruption.
     // http://crbug.com/230883
-    ClearBoundContextDrawable();
     if (!new_context) {
       LOG(ERROR) << "Failed to create CompositingIOSurfaceContext";
       return false;
@@ -604,7 +587,7 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
 
 void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::EnsureSoftwareLayer");
-  if (software_layer_ || !use_core_animation_)
+  if (software_layer_)
     return;
 
   software_layer_.reset([[SoftwareLayer alloc] init]);
@@ -629,7 +612,7 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer");
   DCHECK(compositing_iosurface_context_);
-  if (compositing_iosurface_layer_ || !use_core_animation_)
+  if (compositing_iosurface_layer_)
     return;
 
   compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
@@ -657,40 +640,13 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer(
   compositing_iosurface_layer_.reset();
 }
 
-void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
-    DestroyContextBehavior destroy_context_behavior) {
+void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer() {
   // Any pending frames will not be displayed, so ack them now.
   SendPendingSwapAck();
 
   DestroyCompositedIOSurfaceLayer(kRemoveLayerFromHierarchy);
   compositing_iosurface_ = NULL;
-
-  switch (destroy_context_behavior) {
-    case kLeaveContextBoundToView:
-      break;
-    case kDestroyContext:
-      ClearBoundContextDrawable();
-      compositing_iosurface_context_ = NULL;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void RenderWidgetHostViewMac::ClearBoundContextDrawable() {
-  if (use_core_animation_)
-    return;
-
-  if (compositing_iosurface_context_ &&
-      cocoa_view_ &&
-      [[compositing_iosurface_context_->nsgl_context() view]
-          isEqual:cocoa_view_]) {
-    // Disable screen updates because removing the GL context from below can
-    // cause flashes.
-    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
-    [compositing_iosurface_context_->nsgl_context() clearDrawable];
-  }
+  compositing_iosurface_context_ = NULL;
 }
 
 bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
@@ -876,8 +832,6 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!render_widget_host_->is_hidden())
     return;
 
-  if (web_contents_switch_paint_time_.is_null())
-    web_contents_switch_paint_time_ = base::TimeTicks::Now();
   render_widget_host_->WasShown();
   software_frame_manager_->SetVisibility(true);
   if (delegated_frame_host_)
@@ -887,10 +841,6 @@ void RenderWidgetHostViewMac::WasShown() {
   // do, and are drawn, then the needsDisplay bit will be cleared.
   [compositing_iosurface_layer_ setNeedsDisplay];
   PauseForPendingResizeOrRepaintsAndDraw();
-
-  // We're messing with the window, so do this to ensure no flashes.
-  if (!use_core_animation_)
-    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -908,16 +858,6 @@ void RenderWidgetHostViewMac::WasHidden() {
   software_frame_manager_->SetVisibility(false);
   if (delegated_frame_host_)
     delegated_frame_host_->WasHidden();
-
-  // There can be a transparent flash as this view is removed and the next is
-  // added, because of OSX windowing races between displaying the contents of
-  // the NSView and its corresponding OpenGL context.
-  // disableScreenUpdatesUntilFlush prevents the transparent flash by avoiding
-  // screen updates until the next tab draws.
-  if (!use_core_animation_)
-    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
-
-  web_contents_switch_paint_time_ = base::TimeTicks();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
@@ -1023,10 +963,6 @@ void RenderWidgetHostViewMac::Show() {
 }
 
 void RenderWidgetHostViewMac::Hide() {
-  // We're messing with the window, so do this to ensure no flashes.
-  if (!use_core_animation_)
-    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
-
   [cocoa_view_ setHidden:YES];
 
   WasHidden();
@@ -1466,7 +1402,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     scoped_layer_remover.Reset(
         base::Bind(RemoveLayerFromSuperlayer, compositing_iosurface_layer_));
     DestroyCompositedIOSurfaceLayer(kLeaveLayerInHierarchy);
-    DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+    DestroyCompositedIOSurfaceAndLayer();
   }
 
   // Ensure compositing_iosurface_ and compositing_iosurface_context_ be
@@ -1575,14 +1511,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // If we reach here, then the frame will be displayed by a future draw
   // call, so don't make the callback.
   ignore_result(scoped_ack.Release());
-  if (use_core_animation_) {
-    DCHECK(compositing_iosurface_layer_);
-    [compositing_iosurface_layer_ gotNewFrame];
-  } else {
-    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-        compositing_iosurface_context_->cgl_context());
-    DrawIOSurfaceWithoutCoreAnimation();
-  }
+  DCHECK(compositing_iosurface_layer_);
+  [compositing_iosurface_layer_ gotNewFrame];
 
   // Try to finish previous copy requests after draw to get better pipelining.
   if (compositing_iosurface_)
@@ -1591,72 +1521,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // The IOSurface's size may have changed, so re-layout the layers to take
   // this into account. This may force an immediate draw.
   LayoutLayers();
-}
-
-void RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
-  CHECK(!use_core_animation_);
-  CHECK(compositing_iosurface_);
-
-  // If there is a pending frame, it should be acked by the end of this
-  // function. Note that the ack should happen only after all drawing is
-  // complete, so that the ack happens after any blocking due to vsync.
-  base::ScopedClosureRunner scoped_ack(
-      base::Bind(&RenderWidgetHostViewMac::SendPendingSwapAck,
-                 weak_factory_.GetWeakPtr()));
-
-  GLint old_gl_surface_order = 0;
-  GLint new_gl_surface_order = allow_overlapping_views_ ? -1 : 1;
-  [compositing_iosurface_context_->nsgl_context()
-      getValues:&old_gl_surface_order
-      forParameter:NSOpenGLCPSurfaceOrder];
-  if (old_gl_surface_order != new_gl_surface_order) {
-    [compositing_iosurface_context_->nsgl_context()
-        setValues:&new_gl_surface_order
-        forParameter:NSOpenGLCPSurfaceOrder];
-  }
-
-  // Instead of drawing, request that underlay view redraws.
-  if (underlay_view_ &&
-      underlay_view_->compositing_iosurface_ &&
-      underlay_view_has_drawn_) {
-    [underlay_view_->cocoa_view() setNeedsDisplayInRect:NSMakeRect(0, 0, 1, 1)];
-    return;
-  }
-
-  bool has_overlay = overlay_view_ && overlay_view_->compositing_iosurface_;
-  if (has_overlay) {
-    // Un-bind the overlay view's OpenGL context, since its content will be
-    // drawn by this context. Not doing this can result in corruption.
-    // http://crbug.com/330701
-    overlay_view_->ClearBoundContextDrawable();
-  }
-  [compositing_iosurface_context_->nsgl_context() setView:cocoa_view_];
-
-  gfx::Rect view_rect(NSRectToCGRect([cocoa_view_ frame]));
-  if (!compositing_iosurface_->DrawIOSurface(
-          compositing_iosurface_context_, view_rect,
-          ViewScaleFactor(), !has_overlay)) {
-    GotAcceleratedCompositingError();
-    return;
-  }
-
-  if (has_overlay) {
-    overlay_view_->underlay_view_has_drawn_ = true;
-    gfx::Rect overlay_view_rect(
-        NSRectToCGRect([overlay_view_->cocoa_view() frame]));
-    overlay_view_rect.set_x(overlay_view_offset_.x());
-    overlay_view_rect.set_y(view_rect.height() -
-                            overlay_view_rect.height() -
-                            overlay_view_offset_.y());
-    if (!overlay_view_->compositing_iosurface_->DrawIOSurface(
-            compositing_iosurface_context_, overlay_view_rect,
-            overlay_view_->ViewScaleFactor(), true)) {
-      GotAcceleratedCompositingError();
-      return;
-    }
-  }
-
-  SendPendingLatencyInfoToHost();
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
@@ -1677,16 +1541,12 @@ void RenderWidgetHostViewMac::DestroyCompositingStateOnError() {
   if (compositing_iosurface_context_)
     compositing_iosurface_context_->PoisonContextAndSharegroup();
 
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  DestroyCompositedIOSurfaceAndLayer();
 
   // Request that a new frame be generated and dirty the view.
   if (render_widget_host_)
     render_widget_host_->ScheduleComposite();
   [cocoa_view_ setNeedsDisplay:YES];
-
-  // Mark the last frame as not accelerated (so that the window is prepared for
-  // an underlay next time an accelerated frame comes in).
-  last_frame_was_accelerated_ = false;
 
   // TODO(ccameron): It may be a good idea to request that the renderer recreate
   // its GL context as well, and fall back to software if this happens
@@ -1700,14 +1560,6 @@ void RenderWidgetHostViewMac::SetOverlayView(
 
   overlay_view_ = overlay->overlay_view_weak_factory_.GetWeakPtr();
   overlay_view_->underlay_view_ = overlay_view_weak_factory_.GetWeakPtr();
-  if (use_core_animation_)
-    return;
-
-  overlay_view_offset_ = offset;
-  overlay_view_->underlay_view_has_drawn_ = false;
-
-  [cocoa_view_ setNeedsDisplay:YES];
-  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 void RenderWidgetHostViewMac::RemoveOverlayView() {
@@ -1715,11 +1567,6 @@ void RenderWidgetHostViewMac::RemoveOverlayView() {
     overlay_view_->underlay_view_.reset();
     overlay_view_.reset();
   }
-  if (use_core_animation_)
-    return;
-
-  [cocoa_view_ setNeedsDisplay:YES];
-  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
@@ -1895,21 +1742,20 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  DestroyCompositedIOSurfaceAndLayer();
 }
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  if (last_frame_was_accelerated_) {
-    return compositing_iosurface_ &&
-           compositing_iosurface_->HasIOSurface() &&
+  if (compositing_iosurface_) {
+    return compositing_iosurface_->HasIOSurface() &&
            (desired_size.IsEmpty() ||
                compositing_iosurface_->dip_io_surface_size() == desired_size);
-  } else {
-    return (software_frame_manager_->HasCurrentFrame() &&
-           (desired_size.IsEmpty() ||
+  }
+  if (software_frame_manager_->HasCurrentFrame()) {
+    return (desired_size.IsEmpty() ||
                software_frame_manager_->GetCurrentFrameSizeInDIP() ==
-                   desired_size));
+                   desired_size);
   }
   return false;
 }
@@ -1953,21 +1799,19 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     // Add latency info to report when the frame finishes drawing.
     AddPendingLatencyInfo(frame->metadata.latency_info);
 
-    if (use_core_animation_) {
-      const void* pixels = software_frame_manager_->GetCurrentFramePixels();
-      gfx::Size size_in_pixels =
-          software_frame_manager_->GetCurrentFrameSizeInPixels();
+    const void* pixels = software_frame_manager_->GetCurrentFramePixels();
+    gfx::Size size_in_pixels =
+        software_frame_manager_->GetCurrentFrameSizeInPixels();
 
-      EnsureSoftwareLayer();
-      [software_layer_ setContentsToData:pixels
-                            withRowBytes:4 * size_in_pixels.width()
-                           withPixelSize:size_in_pixels
-                         withScaleFactor:frame->metadata.device_scale_factor];
+    EnsureSoftwareLayer();
+    [software_layer_ setContentsToData:pixels
+                          withRowBytes:4 * size_in_pixels.width()
+                         withPixelSize:size_in_pixels
+                       withScaleFactor:frame->metadata.device_scale_factor];
 
-      // Send latency information to the host immediately, as there will be no
-      // subsequent draw call in which to do so.
-      SendPendingLatencyInfoToHost();
-    }
+    // Send latency information to the host immediately, as there will be no
+    // subsequent draw call in which to do so.
+    SendPendingLatencyInfoToHost();
 
     GotSoftwareFrame();
 
@@ -2098,19 +1942,10 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
   EnsureCompositedIOSurfaceLayer();
   SendVSyncParametersToRenderer();
-  if (!last_frame_was_accelerated_) {
-    last_frame_was_accelerated_ = true;
 
-    if (!use_core_animation_) {
-      // Need to wipe the software view with transparency to expose the GL
-      // underlay. Invalidate the whole window to do that.
-      [cocoa_view_ setNeedsDisplay:YES];
-    }
-
-    // Delete software backingstore and layer.
-    software_frame_manager_->DiscardCurrentFrame();
-    DestroySoftwareLayer();
-  }
+  // Delete software backingstore and layer.
+  software_frame_manager_->DiscardCurrentFrame();
+  DestroySoftwareLayer();
 }
 
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
@@ -2126,34 +1961,9 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
   // Draw the contents of the frame immediately. It is critical that this
   // happen before the frame be acked, otherwise the new frame will likely be
   // ready before the drawing is complete, thrashing the browser main thread.
-  if (use_core_animation_) {
-    [software_layer_ displayIfNeeded];
-  } else {
-    [cocoa_view_ setNeedsDisplay:YES];
-    [cocoa_view_ displayIfNeeded];
-  }
+  [software_layer_ displayIfNeeded];
 
-  if (last_frame_was_accelerated_) {
-    last_frame_was_accelerated_ = false;
-
-    // If overlapping views are allowed, then don't unbind the context
-    // from the view (that is, don't call clearDrawble -- just delete the
-    // texture and IOSurface). Rather, let it sit behind the software frame
-    // that will be put up in front. This will prevent transparent
-    // flashes.
-    // http://crbug.com/154531
-    // Also note that it is necessary that clearDrawable be called if
-    // overlapping views are not allowed, e.g, for content shell.
-    // http://crbug.com/178408
-    // Disable screen updates so that the changes of flashes is minimized.
-    // http://crbug.com/279472
-    if (!use_core_animation_)
-      [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
-    if (allow_overlapping_views_)
-      DestroyCompositedIOSurfaceAndLayer(kLeaveContextBoundToView);
-    else
-      DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
-  }
+  DestroyCompositedIOSurfaceAndLayer();
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
@@ -2186,12 +1996,6 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
     render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
         render_widget_host_->GetRoutingID(), GetBoundsInRootWindow(),
         GetViewBounds()));
-  }
-
-  if (compositing_iosurface_ && !use_core_animation_) {
-    // This will migrate the context to the appropriate window.
-    if (!EnsureCompositedIOSurface())
-      GotAcceleratedCompositingError();
   }
 }
 
@@ -2311,29 +2115,27 @@ void RenderWidgetHostViewMac::AddPendingLatencyInfo(
   // If a screenshot is being taken when using CoreAnimation, send a few extra
   // calls to setNeedsDisplay and wait for their resulting display calls,
   // before reporting that the frame has reached the screen.
-  if (use_core_animation_) {
-    bool should_defer = false;
-    for (size_t i = 0; i < latency_info.size(); i++) {
-      if (latency_info[i].FindLatency(
-              ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-              render_widget_host_->GetLatencyComponentId(),
-              NULL)) {
-        should_defer = true;
-      }
+  bool should_defer = false;
+  for (size_t i = 0; i < latency_info.size(); i++) {
+    if (latency_info[i].FindLatency(
+            ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+            render_widget_host_->GetLatencyComponentId(),
+            NULL)) {
+      should_defer = true;
     }
-    if (should_defer) {
-      // Multiple pending screenshot requests will work, but if every frame
-      // requests a screenshot, then the delay will never expire. Assert this
-      // here to avoid this.
-      CHECK_EQ(pending_latency_info_delay_, 0u);
-      // Wait a fixed number of frames (calls to CALayer::display) before
-      // claiming that the screenshot has reached the screen. This number
-      // comes from taking the first number where tests didn't fail (six),
-      // and doubling it.
-      const uint32 kScreenshotLatencyDelayInFrames = 12;
-      pending_latency_info_delay_ = kScreenshotLatencyDelayInFrames;
-      TickPendingLatencyInfoDelay();
-    }
+  }
+  if (should_defer) {
+    // Multiple pending screenshot requests will work, but if every frame
+    // requests a screenshot, then the delay will never expire. Assert this
+    // here to avoid this.
+    CHECK_EQ(pending_latency_info_delay_, 0u);
+    // Wait a fixed number of frames (calls to CALayer::display) before
+    // claiming that the screenshot has reached the screen. This number
+    // comes from taking the first number where tests didn't fail (six),
+    // and doubling it.
+    const uint32 kScreenshotLatencyDelayInFrames = 12;
+    pending_latency_info_delay_ = kScreenshotLatencyDelayInFrames;
+    TickPendingLatencyInfoDelay();
   }
 
   for (size_t i = 0; i < latency_info.size(); i++) {
@@ -2425,9 +2227,6 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 }
 
 void RenderWidgetHostViewMac::LayoutLayers() {
-  if (!use_core_animation_)
-    return;
-
   if (browser_compositor_view_) {
     [browser_compositor_view_ layoutLayers];
     return;
@@ -2544,11 +2343,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
       [self setWantsBestResolutionOpenGLSurface:YES];
     }
     handlingGlobalFrameDidChange_ = NO;
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(globalFrameDidChange:)
-               name:NSViewGlobalFrameDidChangeNotification
-             object:self];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(didChangeScreenParameters:)
@@ -3182,11 +2976,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
   NSWindow* oldWindow = [self window];
 
-  // We're messing with the window, so do this to ensure no flashes. This one
-  // prevents a flash when the current tab is closed.
-  if (!renderWidgetHostView_->use_core_animation_)
-    [oldWindow disableScreenUpdatesUntilFlush];
-
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
@@ -3251,19 +3040,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
              afterDelay:0];
 }
 
-- (void)globalFrameDidChange:(NSNotification*)notification {
-  if (handlingGlobalFrameDidChange_)
-    return;
-
-  handlingGlobalFrameDidChange_ = YES;
-  if (!renderWidgetHostView_->use_core_animation_ &&
-      renderWidgetHostView_->compositing_iosurface_context_) {
-    [renderWidgetHostView_->compositing_iosurface_context_->nsgl_context()
-        update];
-  }
-  handlingGlobalFrameDidChange_ = NO;
-}
-
 - (void)windowChangedGlobalFrame:(NSNotification*)notification {
   renderWidgetHostView_->UpdateScreenInfo(
       renderWidgetHostView_->GetNativeView());
@@ -3294,181 +3070,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
   // because the view widget is still hidden, and the pause call in WasShown
   // will have this effect for us.
   renderWidgetHostView_->PauseForPendingResizeOrRepaintsAndDraw();
-}
-
-// Fills with white the parts of the area to the right and bottom for |rect|
-// that intersect |damagedRect|.
-- (void)fillBottomRightRemainderOfRect:(gfx::Rect)rect
-                             dirtyRect:(gfx::Rect)damagedRect
-                             inContext:(CGContextRef)context {
-  if (damagedRect.right() > rect.right()) {
-    int x = std::max(rect.right(), damagedRect.x());
-    int y = std::min(rect.bottom(), damagedRect.bottom());
-    int width = damagedRect.right() - x;
-    int height = damagedRect.y() - y;
-
-    // Extra fun to get around the fact that gfx::Rects can't have
-    // negative sizes.
-    if (width < 0) {
-      x += width;
-      width = -width;
-    }
-    if (height < 0) {
-      y += height;
-      height = -height;
-    }
-
-    NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-    CGContextSetFillColorWithColor(context,
-                                   CGColorGetConstantColor(kCGColorWhite));
-    CGContextFillRect(context, NSRectToCGRect(r));
-  }
-  if (damagedRect.bottom() > rect.bottom()) {
-    int x = damagedRect.x();
-    int y = damagedRect.bottom();
-    int width = damagedRect.right() - x;
-    int height = std::max(rect.bottom(), damagedRect.y()) - y;
-
-    // Extra fun to get around the fact that gfx::Rects can't have
-    // negative sizes.
-    if (width < 0) {
-      x += width;
-      width = -width;
-    }
-    if (height < 0) {
-      y += height;
-      height = -height;
-    }
-
-    NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-    CGContextSetFillColorWithColor(context,
-                                   CGColorGetConstantColor(kCGColorWhite));
-    CGContextFillRect(context, NSRectToCGRect(r));
-  }
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::drawRect");
-  DCHECK(!renderWidgetHostView_->use_core_animation_);
-
-  if (!renderWidgetHostView_->render_widget_host_) {
-    // When using CoreAnimation, this path is used to paint the contents area
-    // white before any frames come in. When layers to draw frames exist, this
-    // is not hit.
-    [[NSColor whiteColor] set];
-    NSRectFill(dirtyRect);
-    return;
-  }
-
-  const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
-
-  if (renderWidgetHostView_->last_frame_was_accelerated_ &&
-      renderWidgetHostView_->compositing_iosurface_) {
-    if (renderWidgetHostView_->allow_overlapping_views_) {
-      // If overlapping views need to be allowed, punch a hole in the window
-      // to expose the GL underlay.
-      TRACE_EVENT2("gpu", "NSRectFill clear", "w", damagedRect.width(),
-                   "h", damagedRect.height());
-      // NSRectFill is extremely slow (15ms for a window on a fast MacPro), so
-      // this is only done when it's a real invalidation from window damage (not
-      // when a BuffersSwapped was received). Note that even a 1x1 NSRectFill
-      // can take many milliseconds sometimes (!) so this is skipped completely
-      // for drawRects that are triggered by BuffersSwapped messages.
-      [[NSColor clearColor] set];
-      NSRectFill(dirtyRect);
-    }
-
-    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-        renderWidgetHostView_->compositing_iosurface_context_->cgl_context());
-    renderWidgetHostView_->DrawIOSurfaceWithoutCoreAnimation();
-    return;
-  }
-
-  CGContextRef context = static_cast<CGContextRef>(
-      [[NSGraphicsContext currentContext] graphicsPort]);
-  [self drawWithDirtyRect:NSRectToCGRect(dirtyRect)
-                inContext:context];
-}
-
-- (void)drawWithDirtyRect:(CGRect)dirtyRect
-                inContext:(CGContextRef)context {
-  content::SoftwareFrameManager* software_frame_manager =
-      renderWidgetHostView_->software_frame_manager_.get();
-  if (software_frame_manager->HasCurrentFrame()) {
-    // Note: All coordinates are in view units, not pixels.
-    gfx::Rect bitmapRect(
-            software_frame_manager->GetCurrentFrameSizeInDIP());
-
-    // Specify the proper y offset to ensure that the view is rooted to the
-    // upper left corner.  This can be negative, if the window was resized
-    // smaller and the renderer hasn't yet repainted.
-    int yOffset = NSHeight([self bounds]) - bitmapRect.height();
-
-    NSRect nsDirtyRect = NSRectFromCGRect(dirtyRect);
-    const gfx::Rect damagedRect([self flipNSRectToRect:nsDirtyRect]);
-
-    gfx::Rect paintRect = gfx::IntersectRects(bitmapRect, damagedRect);
-    if (!paintRect.IsEmpty()) {
-      gfx::Size sizeInPixels =
-          software_frame_manager->GetCurrentFrameSizeInPixels();
-      base::ScopedCFTypeRef<CGDataProviderRef> dataProvider(
-          CGDataProviderCreateWithData(
-              NULL,
-              software_frame_manager->GetCurrentFramePixels(),
-              4 * sizeInPixels.width() * sizeInPixels.height(),
-              NULL));
-      base::ScopedCFTypeRef<CGImageRef> image(
-          CGImageCreate(
-              sizeInPixels.width(),
-              sizeInPixels.height(),
-              8,
-              32,
-              4 * sizeInPixels.width(),
-              base::mac::GetSystemColorSpace(),
-              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-              dataProvider,
-              NULL,
-              false,
-              kCGRenderingIntentDefault));
-      CGRect imageRect = bitmapRect.ToCGRect();
-      imageRect.origin.y = yOffset;
-      CGContextDrawImage(context, imageRect, image);
-    }
-
-    renderWidgetHostView_->SendPendingLatencyInfoToHost();
-
-    // Fill the remaining portion of the damagedRect with white
-    [self fillBottomRightRemainderOfRect:bitmapRect
-                               dirtyRect:damagedRect
-                               inContext:context];
-
-    if (!renderWidgetHostView_->whiteout_start_time_.is_null()) {
-      base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
-          renderWidgetHostView_->whiteout_start_time_;
-      UMA_HISTOGRAM_TIMES("MPArch.RWHH_WhiteoutDuration", whiteout_duration);
-
-      // Reset the start time to 0 so that we start recording again the next
-      // time the backing store is NULL...
-      renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks();
-    }
-    if (!renderWidgetHostView_->web_contents_switch_paint_time_.is_null()) {
-      base::TimeDelta web_contents_switch_paint_duration =
-          base::TimeTicks::Now() -
-              renderWidgetHostView_->web_contents_switch_paint_time_;
-      UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration",
-          web_contents_switch_paint_duration);
-      // Reset contents_switch_paint_time_ to 0 so future tab selections are
-      // recorded.
-      renderWidgetHostView_->web_contents_switch_paint_time_ =
-          base::TimeTicks();
-    }
-  } else {
-    CGContextSetFillColorWithColor(context,
-                                   CGColorGetConstantColor(kCGColorWhite));
-    CGContextFillRect(context, dirtyRect);
-    if (renderWidgetHostView_->whiteout_start_time_.is_null())
-      renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
-  }
 }
 
 - (BOOL)canBecomeKeyView {
@@ -4400,9 +4001,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (BOOL)isOpaque {
-  if (renderWidgetHostView_->use_core_animation_)
-    return YES;
-  return [super isOpaque];
+  return YES;
 }
 
 // "-webkit-app-region: drag | no-drag" is implemented on Mac by excluding

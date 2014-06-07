@@ -66,8 +66,7 @@ class CompositingIOSurfaceMac
   bool DrawIOSurface(
       scoped_refptr<CompositingIOSurfaceContext> drawing_context,
       const gfx::Rect& window_rect,
-      float window_scale_factor,
-      bool flush_drawable) WARN_UNUSED_RESULT;
+      float window_scale_factor) WARN_UNUSED_RESULT;
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The copied region is specified with |src_pixel_subrect| and

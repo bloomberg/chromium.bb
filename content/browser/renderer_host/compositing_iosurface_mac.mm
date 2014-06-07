@@ -283,8 +283,7 @@ int CompositingIOSurfaceMac::GetRendererID() {
 bool CompositingIOSurfaceMac::DrawIOSurface(
     scoped_refptr<CompositingIOSurfaceContext> drawing_context,
     const gfx::Rect& window_rect,
-    float window_scale_factor,
-    bool flush_drawable) {
+    float window_scale_factor) {
   DCHECK_EQ(CGLGetCurrentContext(), drawing_context->cgl_context());
 
   bool has_io_surface = HasIOSurface();
@@ -358,27 +357,14 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   bool workaround_needed =
       GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
           gpu::FORCE_GL_FINISH_AFTER_COMPOSITING);
-  // Note that this is not necessary when not flushing the drawable in Mavericks
-  // or later if we are in one of the two following situations:
-  // - we are drawing an underlay, and we will call glFinish() when drawing
-  //   the overlay.
-  // - we are using CoreAnimation, where this bug does not manifest.
-  if (workaround_needed && !flush_drawable && base::mac::IsOSMavericksOrLater())
-    workaround_needed = false;
-
   if (workaround_needed) {
     TRACE_EVENT0("gpu", "glFinish");
     glFinish();
   }
 
-  bool result = true;
-  if (flush_drawable) {
-    TRACE_EVENT0("gpu", "flushBuffer");
-    [drawing_context->nsgl_context() flushBuffer];
-  }
-
   // Check if any of the drawing calls result in an error.
   GetAndSaveGLError();
+  bool result = true;
   if (gl_error_ != GL_NO_ERROR) {
     LOG(ERROR) << "GL error in DrawIOSurface: " << gl_error_;
     result = false;
@@ -935,8 +921,6 @@ void CompositingIOSurfaceMac::EvictionMarkEvicted() {
 
 // static
 void CompositingIOSurfaceMac::EvictionScheduleDoEvict() {
-  if (GetCoreAnimationStatus() == CORE_ANIMATION_DISABLED)
-    return;
   if (eviction_scheduled_)
     return;
   if (eviction_queue_.Get().size() <= kMaximumUnevictedSurfaces)

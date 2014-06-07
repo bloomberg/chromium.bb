@@ -206,7 +206,7 @@ class CompositingIOSurfaceLayerHelper {
       gfx::ScaleRect(window_rect, 1.f/window_scale_factor));
 
   bool draw_succeeded = iosurface_->DrawIOSurface(
-      context_, window_rect, window_scale_factor, false);
+      context_, window_rect, window_scale_factor);
 
   [self ackPendingFrame:draw_succeeded];
   needs_display_ = NO;
