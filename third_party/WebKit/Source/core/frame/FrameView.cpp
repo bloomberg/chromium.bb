@@ -970,7 +970,7 @@ void FrameView::layout(bool allowSubtree)
         adjustViewSize();
 
     layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullPaintInvalidation));
-    renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
+    renderView()->compositor()->didLayout();
 
     m_layoutCount++;
 

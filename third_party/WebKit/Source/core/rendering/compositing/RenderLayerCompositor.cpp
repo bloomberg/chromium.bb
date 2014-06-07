@@ -257,23 +257,23 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
 {
     ASSERT(updateType != CompositingUpdateNone);
-    // FIXME: Technically we only need to do this when the FrameView's isScrollable method
-    // would return a different value.
-    if (updateType == CompositingUpdateAfterLayout)
-        m_rootShouldAlwaysCompositeDirty = true;
-
-    // FIXME: This function should only set dirty bits. We shouldn't
-    // enable compositing mode here.
-    // We check needsLayout here because we don't know if we need to enable
-    // compositing mode until layout is up-to-date because we need to know
-    // if this frame scrolls.
-    if (!m_renderView.needsLayout())
-        enableCompositingModeIfNeeded();
-
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
-
     page()->animator().scheduleVisualUpdate();
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
+}
+
+void RenderLayerCompositor::didLayout()
+{
+    // FIXME: Technically we only need to do this when the FrameView's
+    // isScrollable method would return a different value.
+    m_rootShouldAlwaysCompositeDirty = true;
+    enableCompositingModeIfNeeded();
+
+    // FIXME: Rather than marking the entire RenderView as dirty, we should
+    // track which RenderLayers moved during layout and only dirty those
+    // specific RenderLayers.
+    rootRenderLayer()->setNeedsToUpdateAncestorDependentProperties();
+    setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 #if ASSERT_ENABLED
@@ -347,12 +347,6 @@ void RenderLayerCompositor::updateIfNeeded()
 
     GraphicsLayerUpdater::UpdateType graphicsLayerUpdateType = GraphicsLayerUpdater::DoNotForceUpdate;
     CompositingPropertyUpdater::UpdateType compositingPropertyUpdateType = CompositingPropertyUpdater::DoNotForceUpdate;
-
-    // FIXME: Teach non-style compositing updates how to do partial tree walks.
-    if (updateType >= CompositingUpdateAfterLayout) {
-        graphicsLayerUpdateType = GraphicsLayerUpdater::ForceUpdate;
-        compositingPropertyUpdateType = CompositingPropertyUpdater::ForceUpdate;
-    }
 
     RenderLayer* updateRoot = rootRenderLayer();
 

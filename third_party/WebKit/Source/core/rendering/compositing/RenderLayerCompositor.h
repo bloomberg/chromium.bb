@@ -49,7 +49,6 @@ enum CompositingUpdateType {
     CompositingUpdateNone,
     CompositingUpdateOnCompositedScroll,
     CompositingUpdateAfterCompositingInputChange,
-    CompositingUpdateAfterLayout,
 };
 
 enum CompositingStateTransitionType {
@@ -101,6 +100,8 @@ public:
 
     // Used to indicate that a compositing update will be needed for the next frame that gets drawn.
     void setNeedsCompositingUpdate(CompositingUpdateType);
+
+    void didLayout();
 
     enum UpdateLayerCompositingStateOptions {
         Normal,
