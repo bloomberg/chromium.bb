@@ -124,15 +124,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
     // This variant does not work in worker threads.
     ASSERT(eventTarget.toDOMWindow());
 
-    if (!video->player()) {
-        exceptionState.throwDOMException(InvalidStateError, "No player can be retrieved from the provided video element.");
-        return ScriptPromise();
-    }
     if (video->networkState() == HTMLMediaElement::NETWORK_EMPTY) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();
     }
-    if (video->player()->readyState() <= MediaPlayer::HaveMetadata) {
+    if (video->readyState() <= HTMLMediaElement::HAVE_METADATA) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
         return ScriptPromise();
     }
@@ -144,7 +140,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
         return ScriptPromise();
     }
-    if (!(video->webMediaPlayer() && video->webMediaPlayer()->didPassCORSAccessCheck())
+    if (!video->webMediaPlayer()->didPassCORSAccessCheck()
         && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
         exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
         return ScriptPromise();

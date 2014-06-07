@@ -1234,9 +1234,9 @@ bool HTMLMediaElement::textTracksAreReady() const
 
 void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track)
 {
-    if (m_player && m_textTracksWhenResourceSelectionBegan.contains(track)) {
+    if (webMediaPlayer()&& m_textTracksWhenResourceSelectionBegan.contains(track)) {
         if (track->readinessState() != TextTrack::Loading)
-            setReadyState(m_player->readyState());
+            setReadyState(static_cast<ReadyState>(webMediaPlayer()->readyState()));
     } else {
         // The track readiness state might have changed as a result of the user
         // clicking the captions button. In this case, a check whether all the
@@ -1588,10 +1588,10 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 
 void HTMLMediaElement::mediaPlayerReadyStateChanged()
 {
-    setReadyState(m_player->readyState());
+    setReadyState(static_cast<ReadyState>(webMediaPlayer()->readyState()));
 }
 
-void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
+void HTMLMediaElement::setReadyState(ReadyState state)
 {
     WTF_LOG(Media, "HTMLMediaElement::setReadyState(%d) - current state is %d,", static_cast<int>(state), static_cast<int>(m_readyState));
 
@@ -1599,7 +1599,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     bool wasPotentiallyPlaying = potentiallyPlaying();
 
     ReadyState oldState = m_readyState;
-    ReadyState newState = static_cast<ReadyState>(state);
+    ReadyState newState = state;
 
     bool tracksAreReady = textTracksAreReady();
 

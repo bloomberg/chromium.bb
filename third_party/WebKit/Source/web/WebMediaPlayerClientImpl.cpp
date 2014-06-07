@@ -283,13 +283,6 @@ MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
     return MediaPlayer::Empty;
 }
 
-MediaPlayer::ReadyState WebMediaPlayerClientImpl::readyState() const
-{
-    if (m_webMediaPlayer)
-        return static_cast<MediaPlayer::ReadyState>(m_webMediaPlayer->readyState());
-    return MediaPlayer::HaveNothing;
-}
-
 double WebMediaPlayerClientImpl::maxTimeSeekable() const
 {
     if (m_webMediaPlayer)

@@ -324,7 +324,7 @@ private:
 
     virtual void updateDisplayState() { }
 
-    void setReadyState(MediaPlayer::ReadyState);
+    void setReadyState(ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
 
     virtual void mediaPlayerNetworkStateChanged() OVERRIDE FINAL;

@@ -106,7 +106,6 @@ public:
     virtual bool paused() const OVERRIDE;
     virtual void setPoster(const WebCore::KURL&) OVERRIDE;
     virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
-    virtual WebCore::MediaPlayer::ReadyState readyState() const OVERRIDE;
     virtual double maxTimeSeekable() const OVERRIDE;
     virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
     virtual bool didLoadingProgress() const OVERRIDE;
