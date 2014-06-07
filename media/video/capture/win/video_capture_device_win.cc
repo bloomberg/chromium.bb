@@ -194,29 +194,6 @@ void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
   }
 }
 
-// TODO(mcasas): Remove the following static methods when they are no longer
-// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
-// splitted the VideoCaptureDevice into VideoCaptureDevice and
-// VideoCaptureDeviceFactory.
-// static
-void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  NOTIMPLEMENTED();
-}
-
-// static
-void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
-    VideoCaptureFormats* formats) {
-  NOTIMPLEMENTED();
-}
-
-// static
-VideoCaptureDevice* VideoCaptureDevice::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const Name& device_name) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
     : device_name_(device_name),
       state_(kIdle) {

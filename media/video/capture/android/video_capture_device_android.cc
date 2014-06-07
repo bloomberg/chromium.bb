@@ -26,30 +26,6 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-// TODO(mcasas): Remove the following static methods when they are no longer
-// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
-// splitted the VideoCaptureDevice into VideoCaptureDevice and
-// VideoCaptureDeviceFactory.
-
-// static
-VideoCaptureDevice* VideoCaptureDevice::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const Name& device_name) {
-  NOTREACHED();
-  return NULL;
-}
-// static
-void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  NOTREACHED();
-}
-
-// static
-void VideoCaptureDevice::GetDeviceSupportedFormats(
-    const Name& device,
-    VideoCaptureFormats* supported_formats) {
-  NOTREACHED();
-}
-
 const std::string VideoCaptureDevice::Name::GetModel() const {
   // Android cameras are not typically USB devices, and this method is currently
   // only used for USB model identifiers, so this implementation just indicates

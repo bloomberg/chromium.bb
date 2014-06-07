@@ -107,30 +107,6 @@ void VideoCaptureDeviceLinux::GetListOfUsableFourCCs(bool favour_mjpeg,
   fourccs->push_back(V4L2_PIX_FMT_JPEG);
 }
 
-// TODO(mcasas): Remove the following static methods when they are no longer
-// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
-// splitted the VideoCaptureDevice into VideoCaptureDevice and
-// VideoCaptureDeviceFactory.
-
-// static
-VideoCaptureDevice* VideoCaptureDevice::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const Name& device_name) {
-  NOTREACHED();
-  return NULL;
-}
-// static
-void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  NOTREACHED();
-}
-
-// static
-void VideoCaptureDevice::GetDeviceSupportedFormats(
-    const Name& device,
-    VideoCaptureFormats* supported_formats) {
-  NOTREACHED();
-}
-
 const std::string VideoCaptureDevice::Name::GetModel() const {
   // |unique_id| is of the form "/dev/video2".  |file_name| is "video2".
   const std::string dev_dir = "/dev/";
