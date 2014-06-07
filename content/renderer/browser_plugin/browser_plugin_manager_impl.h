@@ -25,8 +25,6 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
       bool auto_navigate) OVERRIDE;
-  virtual void AllocateInstanceID(
-      const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -37,13 +35,6 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
 
  private:
   virtual ~BrowserPluginManagerImpl();
-
-  void OnAllocateInstanceIDACK(int request_id,
-                               int guest_instance_id);
-
-  int request_id_counter_;
-  typedef std::map<int, const base::WeakPtr<BrowserPlugin> > InstanceIDMap;
-  InstanceIDMap pending_allocate_guest_instance_id_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

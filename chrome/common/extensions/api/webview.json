@@ -652,6 +652,20 @@
         ]
       },
       {
+        "name": "navigate",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "src"
+          }
+        ]
+      },
+      {
         "name": "showContextMenu",
         "type": "function",
         "parameters": [

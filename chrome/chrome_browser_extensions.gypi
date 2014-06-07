@@ -314,6 +314,8 @@
         'browser/extensions/api/font_settings/font_settings_api.h',
         'browser/extensions/api/gcm/gcm_api.cc',
         'browser/extensions/api/gcm/gcm_api.h',
+        'browser/extensions/api/guest_view/guest_view_internal_api.cc',
+        'browser/extensions/api/guest_view/guest_view_internal_api.h',
         'browser/extensions/api/hid/hid_api.cc',
         'browser/extensions/api/hid/hid_api.h',
         'browser/extensions/api/hid/hid_connection_resource.cc',

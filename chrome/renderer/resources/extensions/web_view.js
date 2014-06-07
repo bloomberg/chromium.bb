@@ -8,6 +8,8 @@
 
 var DocumentNatives = requireNative('document_natives');
 var EventBindings = require('event_bindings');
+var GuestViewInternal =
+    require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
@@ -21,17 +23,62 @@ var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
 var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
 var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
 var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
+var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
+
+var ERROR_MSG_ALREADY_NAVIGATED =
+    'The object has already navigated, so its partition cannot be changed.';
+var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
 
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = [
     'allowtransparency',
     'autosize',
-    'partition',
     WEB_VIEW_ATTRIBUTE_MINHEIGHT,
     WEB_VIEW_ATTRIBUTE_MINWIDTH,
     WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
     WEB_VIEW_ATTRIBUTE_MAXWIDTH
 ];
+
+/** @class representing state of storage partition. */
+function Partition() {
+  this.validPartitionId = true;
+  this.persist_storage_ = false;
+  this.storage_partition_id = '';
+};
+
+Partition.prototype.toAttribute = function() {
+  if (!this.validPartitionId) {
+    return '';
+  }
+  return (this.persist_storage_ ? 'persist:' : '') + this.storage_partition_id;
+};
+
+Partition.prototype.fromAttribute = function(value, hasNavigated) {
+  var result = {};
+  if (hasNavigated) {
+    result.error = ERROR_MSG_ALREADY_NAVIGATED;
+    return result;
+  }
+  if (!value) {
+    value = '';
+  }
+
+  var LEN = 'persist:'.length;
+  if (value.substr(0, LEN) == 'persist:') {
+    value = value.substr(LEN);
+    if (!value) {
+      this.validPartitionId = false;
+      result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
+      return result;
+    }
+    this.persist_storage_ = true;
+  } else {
+    this.persist_storage_ = false;
+  }
+
+  this.storage_partition_id = value;
+  return result;
+};
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
@@ -176,6 +223,10 @@ function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
   this.attached = false;
+
+  this.beforeFirstNavigation = true;
+  this.validPartitionId = true;
+
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.webviewNode.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode);
@@ -183,6 +234,12 @@ function WebViewInternal(webviewNode) {
   this.setupWebviewNodeAttributes();
   this.setupFocusPropagation();
   this.setupWebviewNodeProperties();
+
+  this.viewInstanceId = IdGenerator.GetNextId();
+
+  this.partition = new Partition();
+  this.parseAttributes();
+
   this.setupWebviewNodeEvents();
 }
 
@@ -195,8 +252,7 @@ WebViewInternal.prototype.createBrowserPluginNode = function() {
   var browserPluginNode = new WebViewInternal.BrowserPlugin();
   privates(browserPluginNode).internal = this;
 
-  var ALL_ATTRIBUTES = WEB_VIEW_ATTRIBUTES.concat(['src']);
-  $Array.forEach(ALL_ATTRIBUTES, function(attributeName) {
+  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
     // Only copy attributes that have been assigned values, rather than copying
     // a series of undefined attributes to BrowserPlugin.
     if (this.webviewNode.hasAttribute(attributeName)) {
@@ -213,6 +269,17 @@ WebViewInternal.prototype.createBrowserPluginNode = function() {
   }, this);
 
   return browserPluginNode;
+};
+
+/**
+ * @private
+ * Resets some state upon reattaching <webview> element to the DOM.
+ */
+WebViewInternal.prototype.resetUponReattachment = function() {
+  this.instanceId = undefined;
+  this.beforeFirstNavigation = true;
+  this.validPartitionId = true;
+  this.partition.validPartitionId = true;
 };
 
 /**
@@ -399,6 +466,20 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
     enumerable: true
   });
 
+  Object.defineProperty(this.webviewNode, 'partition', {
+    get: function() {
+      return self.partition.toAttribute();
+    },
+    set: function(value) {
+      var result = self.partition.fromAttribute(value, self.hasNavigated());
+      if (result.error) {
+        throw result.error;
+      }
+      self.webviewNode.setAttribute('partition', value);
+    },
+    enumerable: true
+  });
+
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
   Object.defineProperty(this.webviewNode, 'contentWindow', {
@@ -429,7 +510,7 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver =
   // where the webview guest has crashed and navigating to the same address
   // spawns off a new process.
   var self = this;
-  this.srcObserver = new MutationObserver(function(mutations) {
+  this.srcAndPartitionObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
       var oldValue = mutation.oldValue;
       var newValue = self.webviewNode.getAttribute(mutation.attributeName);
@@ -443,9 +524,9 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver =
   var params = {
     attributes: true,
     attributeOldValue: true,
-    attributeFilter: ['src']
+    attributeFilter: ['src', 'partition']
   };
-  this.srcObserver.observe(this.webviewNode, params);
+  this.srcAndPartitionObserver.observe(this.webviewNode, params);
 };
 
 /**
@@ -492,11 +573,26 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
     this.src = newValue;
     if (this.ignoreNextSrcAttributeChange) {
       // Don't allow the src mutation observer to see this change.
-      this.srcObserver.takeRecords();
+      this.srcAndPartitionObserver.takeRecords();
       this.ignoreNextSrcAttributeChange = false;
       return;
     }
+    var result = {};
+    this.parseSrcAttribute(result);
+
+    if (result.error) {
+      throw result.error;
+    }
+  } else if (name == 'partition') {
+    // Note that throwing error here won't synchronously propagate.
+    this.partition.fromAttribute(newValue, this.hasNavigated());
   }
+
+  // No <webview> -> <object> mutation propagation for these attributes.
+  if (name == 'src' || name == 'partition') {
+    return;
+  }
+
   if (this.browserPluginNode.hasOwnProperty(name)) {
     this.browserPluginNode[name] = newValue;
   } else {
@@ -597,23 +693,68 @@ WebViewInternal.prototype.handleSizeChangedEvent =
   node.dispatchEvent(webViewEvent);
 };
 
+WebViewInternal.prototype.hasNavigated = function() {
+  return !this.beforeFirstNavigation;
+};
+
+/** @return {boolean} */
+WebViewInternal.prototype.parseSrcAttribute = function(result) {
+  if (!this.partition.validPartitionId) {
+    result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
+    return false;
+  }
+  this.src = this.webviewNode.getAttribute('src');
+
+  if (!this.src) {
+    return true;
+  }
+
+  if (!this.hasGuestInstanceID()) {
+    if (this.beforeFirstNavigation) {
+      this.beforeFirstNavigation = false;
+      this.allocateInstanceId();
+    }
+    return true;
+  }
+
+  // Navigate to this.src.
+  WebView.navigate(this.instanceId, this.src);
+  return true;
+};
+
+/** @return {boolean} */
+WebViewInternal.prototype.parseAttributes = function() {
+  var hasNavigated = this.hasNavigated();
+  var attributeValue = this.webviewNode.getAttribute('partition');
+  var result = this.partition.fromAttribute(attributeValue, hasNavigated);
+  return this.parseSrcAttribute(result);
+};
+
+WebViewInternal.prototype.hasGuestInstanceID = function() {
+  return this.instanceId != undefined;
+};
+
+WebViewInternal.prototype.allocateInstanceId = function() {
+  // Parse .src and .partition.
+  var self = this;
+  GuestViewInternal.allocateInstanceId(
+      function(instanceId) {
+        self.instanceId = instanceId;
+        // TODO(lazyboy): Make sure this.autoNavigate_ stuff correctly updated
+        // |self.src| at this point.
+        self.attachWindowAndSetUpEvents(self.instanceId, self.src);
+      });
+};
+
 /**
  * @private
  */
 WebViewInternal.prototype.setupWebviewNodeEvents = function() {
-  var self = this;
-  this.viewInstanceId = IdGenerator.GetNextId();
-  var onInstanceIdAllocated = function(e) {
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    self.attachWindowAndSetUpEvents(detail.windowId);
-  };
-  this.browserPluginNode.addEventListener('-internal-instanceid-allocated',
-                                          onInstanceIdAllocated);
   this.setupWebRequestEvents();
   this.setupExperimentalContextMenus_();
 
   this.on = {};
-  var events = self.getEvents();
+  var events = this.getEvents();
   for (var eventName in events) {
     this.setupEventProperty(eventName);
   }
@@ -845,8 +986,18 @@ WebViewInternal.prototype.handleNewWindowEvent =
       // asynchronously.
       setTimeout(function() {
         var webViewInternal = privates(webview).internal;
+        if (event.storagePartitionId) {
+          webViewInternal.webviewNode.setAttribute('partition',
+                                                   event.storagePartitionId);
+          var partition = new Partition();
+          partition.fromAttribute(event.storagePartitionId,
+                                  webViewInternal.hasNavigated());
+          webViewInternal.partition = partition;
+        }
+
         var attached =
-            webViewInternal.attachWindowAndSetUpEvents(event.windowId);
+            webViewInternal.attachWindowAndSetUpEvents(
+                event.windowId, undefined, event.storagePartitionId);
 
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
@@ -1100,16 +1251,22 @@ WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
 };
 
 /** @private */
-WebViewInternal.prototype.attachWindowAndSetUpEvents = function(instanceId) {
+WebViewInternal.prototype.attachWindowAndSetUpEvents = function(
+    instanceId, opt_src, opt_partitionId) {
   this.instanceId = instanceId;
+  // If we have a partition from the opener, use that instead.
+  var storagePartitionId =
+      opt_partitionId ||
+      this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
+      this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
   var params = {
     'api': 'webview',
     'instanceId': this.viewInstanceId,
-    'name': this.name
+    'name': this.name,
+    'src': opt_src,
+    'storagePartitionId': storagePartitionId,
+    'userAgentOverride': this.userAgentOverride
   };
-  if (this.userAgentOverride) {
-    params['userAgentOverride'] = this.userAgentOverride;
-  }
   this.setupNameAttribute();
   var events = this.getEvents();
   for (var eventName in events) {
@@ -1161,12 +1318,27 @@ function registerWebViewElement() {
     new WebViewInternal(this);
   };
 
+  proto.customElementDetached = false;
+
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
     var internal = privates(this).internal;
     if (!internal) {
       return;
     }
     internal.handleWebviewAttributeMutation(name, oldValue, newValue);
+  };
+
+  proto.detachedCallback = function() {
+    this.customElementDetached = true;
+  };
+
+  proto.attachedCallback = function() {
+    if (this.customElementDetached) {
+      var webViewInternal = privates(this).internal;
+      webViewInternal.resetUponReattachment();
+      webViewInternal.allocateInstanceId();
+    }
+    this.customElementDetached = false;
   };
 
   proto.back = function() {

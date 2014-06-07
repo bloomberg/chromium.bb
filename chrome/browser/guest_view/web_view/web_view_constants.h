@@ -93,6 +93,8 @@ extern const char kParameterUserAgentOverride[];
 // Miscellaneous.
 extern const char kMenuItemCommandId[];
 extern const char kMenuItemLabel[];
+extern const char kPersistPrefix[];
+extern const char kStoragePartitionId[];
 extern const unsigned int kMaxOutstandingPermissionRequests;
 extern const int kInvalidPermissionRequestID;
 

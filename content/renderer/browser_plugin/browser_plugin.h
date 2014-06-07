@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/values.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
@@ -20,7 +19,6 @@
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct BrowserPluginMsg_Attach_ACK_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 struct FrameMsg_BuffersSwapped_Params;
 
@@ -60,10 +58,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Parse the allowtransparency attribute and adjust transparency of
   // BrowserPlugin accordingly.
   void ParseAllowTransparencyAttribute();
-  // Get the src attribute value of the BrowserPlugin instance.
-  std::string GetSrcAttribute() const;
-  // Parse the src attribute value of the BrowserPlugin instance.
-  bool ParseSrcAttribute(std::string* error_message);
   // Get the autosize attribute value.
   bool GetAutoSizeAttribute() const;
   // Parses the autosize attribute value.
@@ -78,14 +72,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int GetMinWidthAttribute() const;
   // Parse the minwidth, maxwidth, minheight, and maxheight attribute values.
   void ParseSizeContraintsChanged();
-  // The partition identifier string is stored as UTF-8.
-  std::string GetPartitionAttribute() const;
-  // This method can be successfully called only before the first navigation for
-  // this instance of BrowserPlugin. If an error occurs, the |error_message| is
-  // set appropriately to indicate the failure reason.
-  bool ParsePartitionAttribute(std::string* error_message);
-  // True if the partition attribute can be removed.
-  bool CanRemovePartitionAttribute(std::string* error_message);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
@@ -94,8 +80,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
-  // Returns whether this BrowserPlugin has requested an instance ID.
-  bool HasNavigated() const;
   // Returns whether this BrowserPlugin has allocated an instance ID.
   bool HasGuestInstanceID() const;
 
@@ -111,8 +95,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
 
-  // Called when a guest instance ID has been allocated by the browser process.
-  void OnInstanceIDAllocated(int guest_instance_id);
   // Provided that a guest instance ID has been allocated, this method attaches
   // this BrowserPlugin instance to that guest. |extra_params| are parameters
   // passed in by the content embedder to the browser process.
@@ -223,10 +205,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   void ShowSadGraphic();
 
-  // Parses the attributes of the browser plugin from the element's attributes
-  // and sets them appropriately.
-  void ParseAttributes();
-
   // Triggers the event-listeners for |event_name|. Note that the function
   // frees all the values in |props|.
   void TriggerEvent(const std::string& event_name,
@@ -256,8 +234,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnAttachACK(int instance_id,
-                   const BrowserPluginMsg_Attach_ACK_Params& ack_params);
+  void OnAttachACK(int instance_id);
   void OnBuffersSwapped(int instance_id,
                         const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
@@ -297,9 +274,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool is_auto_size_state_dirty_;
   // Maximum size constraint for autosize.
   gfx::Size max_auto_size_;
-  std::string storage_partition_id_;
-  bool persist_storage_;
-  bool valid_partition_id_;
   int content_window_routing_id_;
   bool plugin_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole
@@ -312,7 +286,6 @@ class CONTENT_EXPORT BrowserPlugin :
   WebCursor cursor_;
 
   gfx::Size last_view_size_;
-  bool before_first_navigation_;
   bool mouse_locked_;
 
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to

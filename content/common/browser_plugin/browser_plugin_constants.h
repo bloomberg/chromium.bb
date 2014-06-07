@@ -12,9 +12,6 @@ namespace browser_plugin {
 // Internal method bindings.
 extern const char kMethodInternalAttach[];
 
-// Internal events
-extern const char kEventInternalInstanceIDAllocated[];
-
 // Attributes.
 extern const char kAttributeAllowTransparency[];
 extern const char kAttributeAutoSize[];
@@ -28,12 +25,9 @@ extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
 // Parameters/properties on events.
-extern const char kPersistPrefix[];
 extern const char kWindowID[];
 
 // Error messages.
-extern const char kErrorAlreadyNavigated[];
-extern const char kErrorInvalidPartition[];
 extern const char kErrorCannotRemovePartition[];
 
 // Other.

@@ -13,6 +13,8 @@
 
 namespace content {
 
+class MockBrowserPlugin;
+
 class MockBrowserPluginManager : public BrowserPluginManager {
  public:
   MockBrowserPluginManager(RenderViewImpl* render_view);
@@ -22,15 +24,20 @@ class MockBrowserPluginManager : public BrowserPluginManager {
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
       bool auto_navigate) OVERRIDE;
-  virtual void AllocateInstanceID(
-      const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 
+  // Allocates instance ID for the browser plugin.
+  void AllocateInstanceID(BrowserPlugin* browser_plugin);
+
   // RenderViewObserver override.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual bool Send(IPC::Message* msg) OVERRIDE;
+
+  // Returns the latest browser plugin that was created by this manager.
+  MockBrowserPlugin* last_plugin() { return last_plugin_; }
+
  protected:
   virtual ~MockBrowserPluginManager();
   void AllocateInstanceIDACK(BrowserPlugin* browser_plugin,
@@ -42,6 +49,7 @@ class MockBrowserPluginManager : public BrowserPluginManager {
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
 
   int guest_instance_id_counter_;
+  MockBrowserPlugin* last_plugin_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowserPluginManager);
 };

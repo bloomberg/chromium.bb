@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -59,9 +60,13 @@ int GuestViewManager::GetNextInstanceID() {
 content::WebContents* GuestViewManager::CreateGuest(
     content::SiteInstance* embedder_site_instance,
     int instance_id,
-    const std::string& storage_partition_id,
-    bool persist_storage,
     scoped_ptr<base::DictionaryValue> extra_params) {
+  std::string storage_partition_id;
+  bool persist_storage = false;
+  std::string storage_partition_string;
+  WebViewGuest::ParsePartitionParam(
+      extra_params.get(), &storage_partition_id, &persist_storage);
+
   content::RenderProcessHost* embedder_process_host =
       embedder_site_instance->GetProcess();
   // Validate that the partition id coming from the renderer is valid UTF-8,

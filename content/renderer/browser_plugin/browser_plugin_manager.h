@@ -49,12 +49,6 @@ class CONTENT_EXPORT BrowserPluginManager
       blink::WebFrame* frame,
       bool auto_navigate) = 0;
 
-  // Asynchronously requests a new browser-process-allocated instance ID.
-  // After the browser process allocates an ID, it calls back into the
-  // |browser_plugin| if it's still alive.
-  virtual void AllocateInstanceID(
-      const base::WeakPtr<BrowserPlugin>& browser_plugin) = 0;
-
   void AddBrowserPlugin(int guest_instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int guest_instance_id);
   BrowserPlugin* GetBrowserPlugin(int guest_instance_id) const;

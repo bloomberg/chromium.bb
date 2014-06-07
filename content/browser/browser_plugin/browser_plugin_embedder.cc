@@ -83,8 +83,6 @@ void BrowserPluginEmbedder::DidSendScreenRects() {
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
-                        OnAllocateInstanceID)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
     IPC_MESSAGE_HANDLER_GENERIC(DragHostMsg_UpdateDragCursor,
                                 OnUpdateDragCursor(&handled));
@@ -117,12 +115,6 @@ void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
   *handled = (guest_dragging_over_.get() != NULL);
 }
 
-void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
-  int instance_id = GetBrowserPluginGuestManager()->GetNextInstanceID();
-  Send(new BrowserPluginMsg_AllocateInstanceID_ACK(
-      routing_id(), request_id, instance_id));
-}
-
 void BrowserPluginEmbedder::OnGuestCallback(
     int instance_id,
     const BrowserPluginHostMsg_Attach_Params& params,
@@ -131,6 +123,19 @@ void BrowserPluginEmbedder::OnGuestCallback(
   BrowserPluginGuest* guest = guest_web_contents ?
       static_cast<WebContentsImpl*>(guest_web_contents)->
           GetBrowserPluginGuest() : NULL;
+  if (!guest) {
+    scoped_ptr<base::DictionaryValue> copy_extra_params(
+        extra_params->DeepCopy());
+    guest_web_contents = GetBrowserPluginGuestManager()->CreateGuest(
+        GetWebContents()->GetSiteInstance(),
+        instance_id,
+        copy_extra_params.Pass());
+    guest = guest_web_contents
+                ? static_cast<WebContentsImpl*>(guest_web_contents)
+                      ->GetBrowserPluginGuest()
+                : NULL;
+  }
+
   if (guest) {
     // There is an implicit order expectation here:
     // 1. The content embedder is made aware of the attachment.
@@ -142,25 +147,6 @@ void BrowserPluginEmbedder::OnGuestCallback(
         GetWebContents(),
         *extra_params);
     guest->Attach(GetWebContents(), params, *extra_params);
-    return;
-  }
-
-  scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params->DeepCopy());
-  guest_web_contents = GetBrowserPluginGuestManager()->CreateGuest(
-      GetWebContents()->GetSiteInstance(),
-      instance_id,
-      params.storage_partition_id,
-      params.persist_storage,
-      copy_extra_params.Pass());
-  guest = guest_web_contents ?
-      static_cast<WebContentsImpl*>(guest_web_contents)->
-          GetBrowserPluginGuest() : NULL;
-  if (guest) {
-    GetContentClient()->browser()->GuestWebContentsAttached(
-        guest->GetWebContents(),
-        GetWebContents(),
-        *extra_params);
-    guest->Initialize(params, GetWebContents());
   }
 }
 

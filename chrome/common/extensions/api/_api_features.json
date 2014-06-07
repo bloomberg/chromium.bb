@@ -437,6 +437,11 @@
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]
   },
+  "guestViewInternal": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["blessed_extension", "unblessed_extension"]
+  },
   "hangoutsPrivate": {
     "channel": "stable",
     "contexts": ["blessed_extension"],

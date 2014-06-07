@@ -14,7 +14,8 @@ namespace content {
 MockBrowserPluginManager::MockBrowserPluginManager(
     RenderViewImpl* render_view)
     : BrowserPluginManager(render_view),
-      guest_instance_id_counter_(0) {
+      guest_instance_id_counter_(0),
+      last_plugin_(NULL) {
 }
 
 MockBrowserPluginManager::~MockBrowserPluginManager() {
@@ -24,18 +25,13 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     blink::WebFrame* frame,
     bool auto_navigate) {
-  return new MockBrowserPlugin(render_view, frame, auto_navigate);
+  last_plugin_ = new MockBrowserPlugin(render_view, frame, auto_navigate);
+  return last_plugin_;
 }
 
 void MockBrowserPluginManager::AllocateInstanceID(
-    const base::WeakPtr<BrowserPlugin>& browser_plugin) {
-  int guest_instance_id = ++guest_instance_id_counter_;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockBrowserPluginManager::AllocateInstanceIDACK,
-                 this,
-                 browser_plugin.get(),
-                 guest_instance_id));
+    BrowserPlugin* browser_plugin) {
+  AllocateInstanceIDACK(browser_plugin, ++guest_instance_id_counter_);
 }
 
 void MockBrowserPluginManager::AllocateInstanceIDACK(

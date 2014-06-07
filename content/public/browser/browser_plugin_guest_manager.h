@@ -31,8 +31,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
   virtual content::WebContents* CreateGuest(
       content::SiteInstance* embedder_site_instance,
       int instance_id,
-      const std::string& storage_partition_id,
-      bool persist_storage,
       scoped_ptr<base::DictionaryValue> extra_params);
 
   // Return a new instance ID.

@@ -13,10 +13,8 @@
 
 namespace content {
 
-BrowserPluginManagerImpl::BrowserPluginManagerImpl(
-    RenderViewImpl* render_view)
-    : BrowserPluginManager(render_view),
-      request_id_counter_(0) {
+BrowserPluginManagerImpl::BrowserPluginManagerImpl(RenderViewImpl* render_view)
+    : BrowserPluginManager(render_view) {
 }
 
 BrowserPluginManagerImpl::~BrowserPluginManagerImpl() {
@@ -27,15 +25,6 @@ BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     blink::WebFrame* frame,
     bool auto_navigate) {
   return new BrowserPlugin(render_view, frame, auto_navigate);
-}
-
-void BrowserPluginManagerImpl::AllocateInstanceID(
-    const base::WeakPtr<BrowserPlugin>& browser_plugin) {
-  int request_id = ++request_id_counter_;
-  pending_allocate_guest_instance_id_requests_.insert(
-      std::make_pair(request_id, browser_plugin));
-  Send(new BrowserPluginHostMsg_AllocateInstanceID(
-      browser_plugin->render_view_routing_id(), request_id));
 }
 
 bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
@@ -56,13 +45,7 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
       return true;
   }
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AllocateInstanceID_ACK,
-                        OnAllocateInstanceIDACK)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
 }
 
 void BrowserPluginManagerImpl::DidCommitCompositorFrame() {
@@ -71,21 +54,6 @@ void BrowserPluginManagerImpl::DidCommitCompositorFrame() {
     iter.GetCurrentValue()->DidCommitCompositorFrame();
     iter.Advance();
   }
-}
-
-void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
-    int request_id,
-    int guest_instance_id) {
-  InstanceIDMap::iterator it =
-      pending_allocate_guest_instance_id_requests_.find(request_id);
-  if (it == pending_allocate_guest_instance_id_requests_.end())
-    return;
-
-  const base::WeakPtr<BrowserPlugin> plugin(it->second);
-  if (!plugin)
-    return;
-  pending_allocate_guest_instance_id_requests_.erase(request_id);
-  plugin->OnInstanceIDAllocated(guest_instance_id);
 }
 
 }  // namespace content

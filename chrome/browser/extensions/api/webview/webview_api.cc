@@ -89,6 +89,15 @@ bool WebviewContextMenusCreateFunction::RunAsync() {
   return success;
 }
 
+bool WebviewNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::Navigate::Params> params(
+      webview::Navigate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  std::string src = params->src;
+  guest->NavigateGuest(src);
+  return true;
+}
+
 bool WebviewContextMenusUpdateFunction::RunAsync() {
   scoped_ptr<webview::ContextMenusUpdate::Params> params(
       webview::ContextMenusUpdate::Params::Create(*args_));

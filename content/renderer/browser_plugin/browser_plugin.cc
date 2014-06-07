@@ -5,10 +5,8 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 
 #include "base/command_line.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -23,24 +21,16 @@
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
-#include "content/renderer/v8_value_converter_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "third_party/WebKit/public/web/WebDOMCustomEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-
-#if defined (OS_WIN)
-#include "base/sys_info.h"
-#endif
 
 using blink::WebCanvas;
 using blink::WebPluginContainer;
@@ -51,16 +41,6 @@ using blink::WebURL;
 using blink::WebVector;
 
 namespace content {
-
-namespace {
-
-const char* kCustomPersistPartition = "persist:custom_plugin";
-
-static std::string GetInternalEventName(const char* event_name) {
-  return base::StringPrintf("-internal-%s", event_name);
-}
-
-}  // namespace
 
 BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
                              blink::WebFrame* frame,
@@ -75,13 +55,10 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       sad_guest_(NULL),
       guest_crashed_(false),
       is_auto_size_state_dirty_(false),
-      persist_storage_(false),
-      valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
       auto_navigate_(auto_navigate),
-      before_first_navigation_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       embedder_frame_url_(frame->document().url()),
@@ -168,10 +145,6 @@ bool BrowserPlugin::GetAllowTransparencyAttribute() const {
   return HasDOMAttribute(browser_plugin::kAttributeAllowTransparency);
 }
 
-std::string BrowserPlugin::GetSrcAttribute() const {
-  return GetDOMAttributeValue(browser_plugin::kAttributeSrc);
-}
-
 bool BrowserPlugin::GetAutoSizeAttribute() const {
   return HasDOMAttribute(browser_plugin::kAttributeAutoSize);
 }
@@ -232,10 +205,6 @@ int BrowserPlugin::GetAdjustedMinWidth() const {
   return std::min(min_width, GetAdjustedMaxWidth());
 }
 
-std::string BrowserPlugin::GetPartitionAttribute() const {
-  return GetDOMAttributeValue(browser_plugin::kAttributePartition);
-}
-
 void BrowserPlugin::ParseAllowTransparencyAttribute() {
   if (!HasGuestInstanceID())
     return;
@@ -249,43 +218,6 @@ void BrowserPlugin::ParseAllowTransparencyAttribute() {
         render_view_routing_id_,
         guest_instance_id_,
         opaque));
-}
-
-bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
-  if (!valid_partition_id_) {
-    *error_message = browser_plugin::kErrorInvalidPartition;
-    return false;
-  }
-  std::string src = GetSrcAttribute();
-  if (src.empty())
-    return true;
-
-  // If we haven't created the guest yet, do so now. We will navigate it right
-  // after creation. If |src| is empty, we can delay the creation until we
-  // actually need it.
-  if (!HasGuestInstanceID()) {
-    // On initial navigation, we request an instance ID from the browser
-    // process. We essentially ignore all subsequent calls to SetSrcAttribute
-    // until we receive an instance ID. |before_first_navigation_|
-    // prevents BrowserPlugin from allocating more than one instance ID.
-    // Upon receiving an instance ID from the browser process, we continue
-    // the process of navigation by populating the
-    // BrowserPluginHostMsg_Attach_Params with the current state of
-    // BrowserPlugin and sending a BrowserPluginHostMsg_CreateGuest to the
-    // browser process in order to create a new guest.
-    if (before_first_navigation_) {
-      browser_plugin_manager()->AllocateInstanceID(
-          weak_ptr_factory_.GetWeakPtr());
-      before_first_navigation_ = false;
-    }
-    return true;
-  }
-
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_NavigateGuest(render_view_routing_id_,
-                                             guest_instance_id_,
-                                             src));
-  return true;
 }
 
 void BrowserPlugin::ParseAutoSizeAttribute() {
@@ -333,21 +265,6 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool auto_size_enabled) {
                                            resize_guest_params));
 }
 
-void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
-  CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
-
-  if (auto_navigate_) {
-    scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-    Attach(guest_instance_id, params.Pass());
-    return;
-  }
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kWindowID] =
-      new base::FundamentalValue(guest_instance_id);
-  TriggerEvent(browser_plugin::kEventInternalInstanceIDAllocated, &props);
-}
-
 void BrowserPlugin::Attach(int guest_instance_id,
                            scoped_ptr<base::DictionaryValue> extra_params) {
   CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
@@ -358,7 +275,6 @@ void BrowserPlugin::Attach(int guest_instance_id,
 
   // This API may be called directly without setting the src attribute.
   // In that case, we need to make sure we don't allocate another instance ID.
-  before_first_navigation_ = false;
   guest_instance_id_ = guest_instance_id;
   browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
 
@@ -366,9 +282,6 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
-  attach_params.storage_partition_id = storage_partition_id_;
-  attach_params.persist_storage = persist_storage_;
-  attach_params.src = GetSrcAttribute();
   attach_params.embedder_frame_url = embedder_frame_url_;
   GetSizeParams(&attach_params.auto_size_params,
                 &attach_params.resize_guest_params,
@@ -390,15 +303,7 @@ void BrowserPlugin::OnAdvanceFocus(int guest_instance_id, bool reverse) {
   render_view_->GetWebView()->advanceFocus(reverse);
 }
 
-void BrowserPlugin::OnAttachACK(
-    int guest_instance_id,
-    const BrowserPluginMsg_Attach_ACK_Params& params) {
-  if (!params.storage_partition_id.empty()) {
-    std::string partition_name =
-        (params.persist_storage ? browser_plugin::kPersistPrefix : "") +
-            params.storage_partition_id;
-    UpdateDOMAttribute(browser_plugin::kAttributePartition, partition_name);
-  }
+void BrowserPlugin::OnAttachACK(int guest_instance_id) {
   attached_ = true;
 }
 
@@ -565,54 +470,8 @@ NPObject* BrowserPlugin::GetContentWindow() const {
   return guest_frame->windowObject();
 }
 
-bool BrowserPlugin::HasNavigated() const {
-  return !before_first_navigation_;
-}
-
 bool BrowserPlugin::HasGuestInstanceID() const {
   return guest_instance_id_ != browser_plugin::kInstanceIDNone;
-}
-
-bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
-  if (HasNavigated()) {
-    *error_message = browser_plugin::kErrorAlreadyNavigated;
-    return false;
-  }
-
-  std::string input;
-  if (auto_navigate_)
-    input = kCustomPersistPartition;
-  else
-    input = GetPartitionAttribute();
-
-  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
-  // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
-  // remove the prefix without splicing in the middle of a multi-byte codepoint.
-  // We can use the rest of the string as UTF-8 encoded one.
-  if (StartsWithASCII(input, browser_plugin::kPersistPrefix, true)) {
-    size_t index = input.find(":");
-    CHECK(index != std::string::npos);
-    // It is safe to do index + 1, since we tested for the full prefix above.
-    input = input.substr(index + 1);
-    if (input.empty()) {
-      valid_partition_id_ = false;
-      *error_message = browser_plugin::kErrorInvalidPartition;
-      return false;
-    }
-    persist_storage_ = true;
-  } else {
-    persist_storage_ = false;
-  }
-
-  valid_partition_id_ = true;
-  storage_partition_id_ = input;
-  return true;
-}
-
-bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
-  if (HasGuestInstanceID())
-    *error_message = browser_plugin::kErrorCannotRemovePartition;
-  return !HasGuestInstanceID();
 }
 
 void BrowserPlugin::ShowSadGraphic() {
@@ -620,16 +479,6 @@ void BrowserPlugin::ShowSadGraphic() {
   // NULL so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
-}
-
-void BrowserPlugin::ParseAttributes() {
-  // TODO(mthiesse): Handle errors here?
-  std::string error;
-  ParsePartitionAttribute(&error);
-
-  // Parse the 'src' attribute last, as it will set the has_navigated_ flag to
-  // true, which prevents changing the 'partition' attribute.
-  ParseSrcAttribute(&error);
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
@@ -648,51 +497,6 @@ void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
       render_view_routing_id_,
       guest_instance_id_,
       params));
-}
-
-void BrowserPlugin::TriggerEvent(const std::string& event_name,
-                                 std::map<std::string, base::Value*>* props) {
-  if (!container())
-    return;
-
-  blink::WebLocalFrame* frame = container()->element().document().frame();
-  if (!frame)
-    return;
-
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  v8::Context::Scope context_scope(context);
-
-  std::string json_string;
-  if (props) {
-    base::DictionaryValue dict;
-    for (std::map<std::string, base::Value*>::iterator iter = props->begin(),
-             end = props->end(); iter != end; ++iter) {
-      dict.Set(iter->first, iter->second);
-    }
-
-    JSONStringValueSerializer serializer(&json_string);
-    if (!serializer.Serialize(dict))
-      return;
-  }
-
-  blink::WebDOMEvent dom_event = frame->document().createEvent("CustomEvent");
-  blink::WebDOMCustomEvent event = dom_event.to<blink::WebDOMCustomEvent>();
-
-  // The events triggered directly from the plugin <object> are internal events
-  // whose implementation details can (and likely will) change over time. The
-  // wrapper/shim (e.g. <webview> tag) should receive these events, and expose a
-  // more appropriate (and stable) event to the consumers as part of the API.
-  event.initCustomEvent(
-      blink::WebString::fromUTF8(GetInternalEventName(event_name.c_str())),
-      false,
-      false,
-      blink::WebSerializedScriptValue::serialize(
-          v8::String::NewFromUtf8(context->GetIsolate(),
-                                  json_string.c_str(),
-                                  v8::String::kNormalString,
-                                  json_string.size())));
-  container()->element().dispatchEvent(event);
 }
 
 void BrowserPlugin::UpdateGuestFocusState() {
@@ -731,7 +535,6 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   bindings_.reset(new BrowserPluginBindings(this));
   container_ = container;
   container_->setWantsWheelEvents(true);
-  ParseAttributes();
   return true;
 }
 
@@ -1048,8 +851,8 @@ void BrowserPlugin::didReceiveData(const char* data, int data_length) {
 
 void BrowserPlugin::didFinishLoading() {
   if (auto_navigate_) {
+    // TODO(lazyboy): Make |auto_navigate_| stuff work.
     UpdateDOMAttribute(content::browser_plugin::kAttributeSrc, html_string_);
-    ParseAttributes();
   }
 }
 

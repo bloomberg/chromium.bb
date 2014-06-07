@@ -11,9 +11,6 @@ namespace browser_plugin {
 // Internal method bindings.
 const char kMethodInternalAttach[] = "-internal-attach";
 
-// Internal events.
-const char kEventInternalInstanceIDAllocated[] = "instanceid-allocated";
-
 // Attributes.
 const char kAttributeAllowTransparency[] = "allowtransparency";
 const char kAttributeAutoSize[] = "autosize";
@@ -27,14 +24,9 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Parameters/properties on events.
-const char kPersistPrefix[] = "persist:";
 const char kWindowID[] = "windowId";
 
 // Error messages.
-const char kErrorAlreadyNavigated[] =
-    "The object has already navigated, so its partition cannot be changed.";
-const char kErrorInvalidPartition[] =
-    "Invalid partition attribute.";
 const char kErrorCannotRemovePartition[] =
     "Cannot remove partition attribute after navigating.";
 

@@ -11,8 +11,6 @@ namespace content {
 content::WebContents* BrowserPluginGuestManager::CreateGuest(
     SiteInstance* embedder_site_instance,
     int instance_id,
-    const std::string& storage_partition_id,
-    bool persist_storage,
     scoped_ptr<base::DictionaryValue> extra_params) {
   return NULL;
 }

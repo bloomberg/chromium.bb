@@ -924,6 +924,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
   TestHelper("testPartitionRaisesException", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestPartitionRemovalAfterNavigationFails) {
+  TestHelper("testPartitionRemovalAfterNavigationFails",
+             "web_view/shim",
+             NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/266185

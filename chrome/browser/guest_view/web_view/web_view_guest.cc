@@ -142,6 +142,12 @@ static std::string PermissionTypeToString(WebViewPermissionType type) {
   }
 }
 
+std::string GetStoragePartitionIdFromSiteURL(const GURL& site_url) {
+  const std::string& partition_id = site_url.query();
+  bool persist_storage = site_url.path().find("persist") != std::string::npos;
+  return (persist_storage ? webview::kPersistPrefix : "") + partition_id;
+}
+
 void RemoveWebViewEventListenersOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -243,6 +249,37 @@ int WebViewGuest::GetViewInstanceId(WebContents* contents) {
     return guestview::kInstanceIDNone;
 
   return guest->view_instance_id();
+}
+
+// static
+void WebViewGuest::ParsePartitionParam(
+    const base::DictionaryValue* extra_params,
+    std::string* storage_partition_id,
+    bool* persist_storage) {
+  std::string partition_str;
+  if (!extra_params->GetString(webview::kStoragePartitionId, &partition_str)) {
+    return;
+  }
+
+  // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
+  // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
+  // remove the prefix without splicing in the middle of a multi-byte codepoint.
+  // We can use the rest of the string as UTF-8 encoded one.
+  if (StartsWithASCII(partition_str, "persist:", true)) {
+    size_t index = partition_str.find(":");
+    CHECK(index != std::string::npos);
+    // It is safe to do index + 1, since we tested for the full prefix above.
+    *storage_partition_id = partition_str.substr(index + 1);
+
+    if (storage_partition_id->empty()) {
+      // TODO(lazyboy): Better way to deal with this error.
+      return;
+    }
+    *persist_storage = true;
+  } else {
+    *storage_partition_id = partition_str;
+    *persist_storage = false;
+  }
 }
 
 // static
@@ -424,7 +461,11 @@ void WebViewGuest::CloseContents(WebContents* source) {
   DispatchEvent(new GuestViewBase::Event(webview::kEventClose, args.Pass()));
 }
 
-void WebViewGuest::DidAttach() {
+void WebViewGuest::DidAttach(const base::DictionaryValue& extra_params) {
+  std::string src;
+  if (extra_params.GetString("src", &src) && !src.empty())
+    NavigateGuest(src);
+
   if (GetOpener()) {
     // We need to do a navigation here if the target URL has changed between
     // the time the WebContents was created and the time it was attached.
@@ -541,16 +582,14 @@ WebViewGuest* WebViewGuest::CreateNewGuestWindow(
   // We pull the partition information from the site's URL, which is of the
   // form guest://site/{persist}?{partition_name}.
   const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
-
   scoped_ptr<base::DictionaryValue> create_params(extra_params()->DeepCopy());
-  const std::string& storage_partition_id = site_url.query();
-  bool persist_storage =
-      site_url.path().find("persist") != std::string::npos;
+  const std::string storage_partition_id =
+      GetStoragePartitionIdFromSiteURL(site_url);
+  create_params->SetString(webview::kStoragePartitionId, storage_partition_id);
+
   WebContents* new_guest_web_contents =
       guest_manager->CreateGuest(guest_web_contents()->GetSiteInstance(),
                                  instance_id,
-                                 storage_partition_id,
-                                 persist_storage,
                                  create_params.Pass());
   WebViewGuest* new_guest =
       WebViewGuest::FromWebContents(new_guest_web_contents);
@@ -1382,6 +1421,10 @@ void WebViewGuest::RequestNewWindowPermission(
     return;
   const NewWindowInfo& new_window_info = it->second;
 
+  // Retrieve the opener partition info if we have it.
+  const GURL& site_url = new_contents->GetSiteInstance()->GetSiteURL();
+  std::string storage_partition_id = GetStoragePartitionIdFromSiteURL(site_url);
+
   base::DictionaryValue request_info;
   request_info.Set(webview::kInitialHeight,
                    base::Value::CreateIntegerValue(initial_bounds.height()));
@@ -1393,6 +1436,10 @@ void WebViewGuest::RequestNewWindowPermission(
                    base::Value::CreateStringValue(new_window_info.name));
   request_info.Set(webview::kWindowID,
                    base::Value::CreateIntegerValue(guest->guest_instance_id()));
+  // We pass in partition info so that window-s created through newwindow
+  // API can use it to set their partition attribute.
+  request_info.Set(webview::kStoragePartitionId,
+                   base::Value::CreateStringValue(storage_partition_id));
   request_info.Set(webview::kWindowOpenDisposition,
                    base::Value::CreateStringValue(
                        WindowOpenDispositionToString(disposition)));

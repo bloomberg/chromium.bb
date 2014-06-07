@@ -88,7 +88,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   // Message handlers.
 
-  void OnAllocateInstanceID(int request_id);
   void OnAttach(int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params,
                 const base::DictionaryValue& extra_params);

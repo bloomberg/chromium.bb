@@ -136,7 +136,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeSetComposition,
                         OnImeSetComposition)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest, OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
@@ -157,7 +156,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
 
 void BrowserPluginGuest::Initialize(
     const BrowserPluginHostMsg_Attach_Params& params,
-    WebContentsImpl* embedder_web_contents) {
+    WebContentsImpl* embedder_web_contents,
+    const base::DictionaryValue& extra_params) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
   guest_opaque_ = params.opaque;
@@ -210,12 +210,6 @@ void BrowserPluginGuest::Initialize(
       new BrowserPluginMsg_GuestContentWindowReady(instance_id_,
                                                    guest_routing_id));
 
-  if (!params.src.empty()) {
-    // params.src will be validated in BrowserPluginGuest::OnNavigateGuest.
-    OnNavigateGuest(instance_id_, params.src);
-    has_render_view_ = true;
-  }
-
   WebPreferences prefs = GetWebContents()->GetWebkitPrefs();
   prefs.navigate_on_drag_drop = false;
   GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
@@ -228,26 +222,16 @@ void BrowserPluginGuest::Initialize(
     guest_rvh->SetInputMethodActive(true);
   }
 
-  // Inform the embedder of the guest's information.
-  // We pull the partition information from the site's URL, which is of the form
-  // guest://site/{persist}?{partition_name}.
-  const GURL& site_url = GetWebContents()->GetSiteInstance()->GetSiteURL();
-  BrowserPluginMsg_Attach_ACK_Params ack_params;
-  ack_params.storage_partition_id = site_url.query();
-  ack_params.persist_storage =
-      site_url.path().find("persist") != std::string::npos;
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
+  // Inform the embedder of the guest's attachment.
+  SendMessageToEmbedder(new BrowserPluginMsg_Attach_ACK(instance_id_));
 
-  if (delegate_)
-    delegate_->DidAttach();
+  if (delegate_) {
+    delegate_->DidAttach(extra_params);
+    has_render_view_ = true;
+  }
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
-  while (!pending_messages_.empty()) {
-    delete pending_messages_.front();
-    pending_messages_.pop();
-  }
 }
 
 // static
@@ -360,7 +344,7 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
     // As a result, we must save all these IPCs until attachment and then
     // forward them so that the embedder gets a chance to see and process
     // the load events.
-    pending_messages_.push(msg);
+    pending_messages_.push_back(linked_ptr<IPC::Message>(msg));
     return;
   }
   msg->set_routing_id(embedder_web_contents_->GetRoutingID());
@@ -384,9 +368,9 @@ void BrowserPluginGuest::SendQueuedMessages() {
     return;
 
   while (!pending_messages_.empty()) {
-    IPC::Message* message = pending_messages_.front();
-    pending_messages_.pop();
-    SendMessageToEmbedder(message);
+    linked_ptr<IPC::Message> message_ptr = pending_messages_.front();
+    pending_messages_.pop_front();
+    SendMessageToEmbedder(message_ptr.release());
   }
 }
 
@@ -448,7 +432,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ImeConfirmComposition::ID:
     case BrowserPluginHostMsg_ImeSetComposition::ID:
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
-    case BrowserPluginHostMsg_NavigateGuest::ID:
     case BrowserPluginHostMsg_PluginDestroyed::ID:
     case BrowserPluginHostMsg_ReclaimCompositorResources::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
@@ -497,15 +480,10 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPluginGuest::Attach(
     WebContentsImpl* embedder_web_contents,
-    BrowserPluginHostMsg_Attach_Params params,
+    const BrowserPluginHostMsg_Attach_Params& params,
     const base::DictionaryValue& extra_params) {
   if (attached())
     return;
-
-  // Clear parameters that get inherited from the opener.
-  params.storage_partition_id.clear();
-  params.persist_storage = false;
-  params.src.clear();
 
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
@@ -518,7 +496,7 @@ void BrowserPluginGuest::Attach(
     new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
   }
 
-  Initialize(params, embedder_web_contents);
+  Initialize(params, embedder_web_contents, extra_params);
 
   SendQueuedMessages();
 
@@ -689,13 +667,6 @@ void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
-}
-
-void BrowserPluginGuest::OnNavigateGuest(int instance_id,
-                                         const std::string& src) {
-  if (!delegate_)
-    return;
-  delegate_->NavigateGuest(src);
 }
 
 void BrowserPluginGuest::OnPluginDestroyed(int instance_id) {

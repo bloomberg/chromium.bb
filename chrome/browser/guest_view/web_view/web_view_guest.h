@@ -63,7 +63,16 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
   // WebViewGuest.
   static int GetViewInstanceId(content::WebContents* contents);
+  // Parses partition related parameters from |extra_params|.
+  // |storage_partition_id| is the parsed partition ID and |persist_storage|
+  // specifies whether or not the partition is in memory.
+  static void ParsePartitionParam(const base::DictionaryValue* extra_params,
+                                  std::string* storage_partition_id,
+                                  bool* persist_storage);
   static const char Type[];
+
+  // Request navigating the guest to the provided |src| URL.
+  void NavigateGuest(const std::string& src);
 
   typedef std::vector<linked_ptr<webview_api::ContextMenuItem> > MenuItemVector;
   // Shows the context menu for the guest.
@@ -142,14 +151,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                   content::WebContents* new_contents) OVERRIDE;
 
   // BrowserPluginGuestDelegate implementation.
-  virtual void DidAttach() OVERRIDE;
+  virtual void DidAttach(const base::DictionaryValue& extra_params) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
   virtual void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void NavigateGuest(const std::string& src) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

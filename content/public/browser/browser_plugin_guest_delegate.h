@@ -9,6 +9,10 @@
 #include "base/process/kill.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace gfx {
 class Size;
 }  // namespace gfx
@@ -24,7 +28,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual ~BrowserPluginGuestDelegate() {}
 
   // Notification that the embedder has completed attachment.
-  virtual void DidAttach() {}
+  virtual void DidAttach(const base::DictionaryValue& extra_params) {}
 
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,
@@ -36,9 +40,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) {}
-
-  // Request navigating the guest to the provided |src| URL.
-  virtual void NavigateGuest(const std::string& src) {}
 
   // Requests that the delegate destroy itself along with its associated
   // WebContents.
