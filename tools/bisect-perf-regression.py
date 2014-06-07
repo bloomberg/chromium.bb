@@ -54,7 +54,7 @@ import zipfile
 sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
 import bisect_utils
-import post_perf_builder_job
+import post_perf_builder_job as bisect_builder
 from telemetry.page import cloud_storage
 
 # The additional repositories that might need to be bisected.
@@ -1584,7 +1584,7 @@ class BisectPerformanceMetrics(object):
 
     if not fetch_build_func():
       if not self.PostBuildRequestAndWait(revision,
-                                          condition=fetch_build_func,
+                                          fetch_build=fetch_build_func,
                                           patch=patch):
         raise RuntimeError('Somewthing went wrong while processing build'
                            'request for: %s' % revision)
@@ -1616,7 +1616,59 @@ class BisectPerformanceMetrics(object):
         os.remove(downloaded_file)
     return False
 
-  def PostBuildRequestAndWait(self, revision, condition, patch=None):
+  def WaitUntilBuildIsReady(self, fetch_build, bot_name, builder_host,
+                            builder_port, build_request_id, max_timeout):
+    """Waits until build is produced by bisect builder on tryserver.
+
+    Args:
+      fetch_build: Function to check and download build from cloud storage.
+      bot_name: Builder bot name on tryserver.
+      builder_host Tryserver hostname.
+      builder_port: Tryserver port.
+      build_request_id: A unique ID of the build request posted to tryserver.
+      max_timeout: Maximum time to wait for the build.
+
+    Returns:
+      True if build exists and download is successful, otherwise throws
+      RuntimeError exception when time elapse.
+    """
+    # Build number on the tryserver.
+    build_num = None
+    # Interval to check build on cloud storage.
+    poll_interval = 60
+    # Interval to check build status on tryserver.
+    status_check_interval = 600
+    last_status_check = time.time()
+    start_time = time.time()
+    while True:
+      # Checks for build on gs://chrome-perf and download if exists.
+      res = fetch_build()
+      if res:
+        return (res, 'Build successfully found')
+      elapsed_status_check = time.time() - last_status_check
+      # To avoid overloading tryserver with status check requests, we check
+      # build status for every 10 mins.
+      if elapsed_status_check > status_check_interval:
+        last_status_check = time.time()
+        if not build_num:
+          # Get the build number on tryserver for the current build.
+          build_num = bisect_builder.GetBuildNumFromBuilder(
+              build_request_id, bot_name, builder_host, builder_port)
+        # Check the status of build using the build number.
+        # Note: Build is treated as PENDING if build number is not found
+        # on the the tryserver.
+        build_status, status_link = bisect_builder.GetBuildStatus(
+            build_num, bot_name, builder_host, builder_port)
+        if build_status == bisect_builder.FAILED:
+          return (False, 'Failed to produce build, log: %s' % status_link)
+      elapsed_time = time.time() - start_time
+      if elapsed_time > max_timeout:
+        return (False, 'Timed out: %ss without build' % max_timeout)
+
+      print 'Time elapsed: %ss without build.' % elapsed_time
+      time.sleep(poll_interval)
+
+  def PostBuildRequestAndWait(self, revision, fetch_build, patch=None):
     """POSTs the build request job to the tryserver instance."""
 
     def GetBuilderNameAndBuildTime(target_arch='ia32'):
@@ -1632,19 +1684,20 @@ class BisectPerformanceMetrics(object):
       if IsMac():
         return ('mac_perf_bisect_builder', MAX_MAC_BUILD_TIME)
       raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
-    if not condition:
+    if not fetch_build:
       return False
 
     bot_name, build_timeout = GetBuilderNameAndBuildTime(self.opts.target_arch)
-
-    # Create a unique ID for each build request posted to try server builders.
+    builder_host = self.opts.builder_host
+    builder_port = self.opts.builder_port
+    # Create a unique ID for each build request posted to tryserver builders.
     # This ID is added to "Reason" property in build's json.
-    # TODO: Use this id to track the build status.
-    build_request_id = GetSHA1HexDigest('%s-%s' % (revision, patch))
+    build_request_id = GetSHA1HexDigest(
+        '%s-%s-%s' % (revision, patch, time.time()))
 
     # Creates a try job description.
-    job_args = {'host': self.opts.builder_host,
-                'port': self.opts.builder_port,
+    job_args = {'host': builder_host,
+                'port': builder_port,
                 'revision': 'src@%s' % revision,
                 'bot': bot_name,
                 'name': build_request_id
@@ -1653,20 +1706,16 @@ class BisectPerformanceMetrics(object):
     if patch:
       job_args['patch'] = patch
     # Posts job to build the revision on the server.
-    if post_perf_builder_job.PostTryJob(job_args):
-      poll_interval = 60
-      start_time = time.time()
-      while True:
-        res = condition()
-        if res:
-          return res
-        elapsed_time = time.time() - start_time
-        if elapsed_time > build_timeout:
-          raise RuntimeError('Timed out while waiting %ds for %s build.' %
-                             (build_timeout, revision))
-        print ('Time elapsed: %ss, still waiting for %s build' %
-               (elapsed_time, revision))
-        time.sleep(poll_interval)
+    if bisect_builder.PostTryJob(job_args):
+      status, error_msg = self.WaitUntilBuildIsReady(fetch_build,
+                                                     bot_name,
+                                                     builder_host,
+                                                     builder_port,
+                                                     build_request_id,
+                                                     build_timeout)
+      if not status:
+        raise RuntimeError('%s [revision: %s]' % (error_msg, revision))
+      return True
     return False
 
   def IsDownloadable(self, depot):

@@ -26,7 +26,7 @@ TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium'
 # for posting build request to tryserver.
 BISECT_BUILDER_HOST = 'master4.golo.chromium.org'
 # 'try_job_port' on tryserver to post build request.
-BISECT_BUILDER_PORT = '8328'
+BISECT_BUILDER_PORT = 8328
 
 
 # From buildbot.status.builder.
@@ -234,25 +234,26 @@ def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
     A tuple consists of build status (SUCCESS, FAILED or PENDING) and a link
     to build status page on the waterfall.
   """
-  # Gets the buildbot url for the given host and port.
-  server_url = _GetBuildBotUrl(builder_host, builder_port)
-  buildbot_url = BUILDER_JSON_URL % {'server_url': server_url,
-                                     'bot_name': bot_name,
-                                     'build_num': build_num
-                                    }
-  build_data = _GetBuildData(buildbot_url)
   results_url = None
-  if build_data:
-    # Link to build on the buildbot showing status of build steps.
-    results_url = BUILDER_HTML_URL % {'server_url': server_url,
-                                      'bot_name': bot_name,
-                                      'build_num': build_num
-                                     }
-    if _IsBuildFailed(build_data):
-      return (FAILED, results_url)
+  if build_num:
+    # Gets the buildbot url for the given host and port.
+    server_url = _GetBuildBotUrl(builder_host, builder_port)
+    buildbot_url = BUILDER_JSON_URL % {'server_url': server_url,
+                                       'bot_name': bot_name,
+                                       'build_num': build_num
+                                      }
+    build_data = _GetBuildData(buildbot_url)
+    if build_data:
+      # Link to build on the buildbot showing status of build steps.
+      results_url = BUILDER_HTML_URL % {'server_url': server_url,
+                                        'bot_name': bot_name,
+                                        'build_num': build_num
+                                       }
+      if _IsBuildFailed(build_data):
+        return (FAILED, results_url)
 
-    elif _IsBuildSuccessful(build_data):
-      return (OK, results_url)
+      elif _IsBuildSuccessful(build_data):
+        return (OK, results_url)
   return (PENDING, results_url)
 
 
