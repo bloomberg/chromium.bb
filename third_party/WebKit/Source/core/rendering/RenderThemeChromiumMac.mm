@@ -49,7 +49,6 @@
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/graphics/Image.h"
 #import "platform/graphics/ImageBuffer.h"
-#import "platform/graphics/cg/GraphicsContextCG.h"
 #import "platform/mac/ColorMac.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
 #import "platform/mac/ThemeMac.h"

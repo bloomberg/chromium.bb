@@ -52,10 +52,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
-#if OS(MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
 using namespace std;
 using blink::WebBlendMode;
 
@@ -1726,13 +1722,7 @@ PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(C
     return nullptr;
 }
 
-#if OS(MACOSX)
-CGColorSpaceRef PLATFORM_EXPORT deviceRGBColorSpaceRef()
-{
-    static CGColorSpaceRef deviceSpace = CGColorSpaceCreateDeviceRGB();
-    return deviceSpace;
-}
-#else
+#if !OS(MACOSX)
 void GraphicsContext::draw2xMarker(SkBitmap* bitmap, int index)
 {
     const SkPMColor lineColor = lineColors(index);

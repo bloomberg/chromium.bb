@@ -43,7 +43,6 @@
 #include "qcms.h"
 #if OS(MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
-#include "platform/graphics/cg/GraphicsContextCG.h"
 #include "wtf/RetainPtr.h"
 #endif
 #endif

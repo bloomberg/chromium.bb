@@ -457,7 +457,6 @@
       'geometry/mac/IntPointMac.mm',
       'geometry/mac/IntRectMac.mm',
       'geometry/mac/IntSizeMac.mm',
-      'graphics/cg/GraphicsContextCG.h',
       'graphics/cpu/arm/WebGLImageConversionNEON.h',
       'graphics/cpu/arm/filters/FEBlendNEON.h',
       'graphics/cpu/arm/filters/FECompositeArithmeticNEON.h',
