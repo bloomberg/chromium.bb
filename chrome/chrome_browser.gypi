@@ -990,6 +990,8 @@
         'browser/local_discovery/privet_local_printer_lister.cc',
         'browser/local_discovery/privet_url_fetcher.cc',
         'browser/local_discovery/privet_url_fetcher.h',
+        'browser/local_discovery/privetv3_crypto_provider.cc',
+        'browser/local_discovery/privetv3_crypto_provider.h',
         'browser/local_discovery/privetv3_session.cc',
         'browser/local_discovery/privetv3_session.h',
         'browser/local_discovery/privetv3_setup_flow.cc',
