@@ -179,6 +179,14 @@
           'dependencies': [
             'mojo_jni_headers',
           ],
+          'ldflags!': [
+            # Remove default export list because this lib has different exports.
+            '-Wl,--version-script=<(android_linker_script)',
+          ],
+          'ldflags': [
+            # Don't export symbols from statically linked libraries.
+            '-Wl,--exclude-libs=ALL',
+          ],
         }],
       ],
     },

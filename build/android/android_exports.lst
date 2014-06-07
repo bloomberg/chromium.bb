@@ -1,0 +1,14 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Default exports specification for chromium shared libraries on android.
+# Check ld version script manual:
+# https://sourceware.org/binutils/docs-2.24/ld/VERSION.html#VERSION
+
+{
+  global: 
+    Java_*_native*;
+    JNI_OnLoad;
+  local: *;
+};

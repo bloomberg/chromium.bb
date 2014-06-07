@@ -61,6 +61,7 @@
         '<(jni_generator_jarjar_file)',
         '--ptr_type',
         '<(jni_generator_ptr_type)',
+        '--native_exports',
       ],
       'message': 'Generating JNI bindings from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,

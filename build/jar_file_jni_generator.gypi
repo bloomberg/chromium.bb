@@ -54,6 +54,7 @@
         '<(jni_generator_includes)',
         '--optimize_generation',
         '<(optimize_jni_generation)',
+        '--native_exports',
       ],
       'message': 'Generating JNI bindings from  <(input_jar_file)/<(input_java_class)',
       'process_outputs_as_sources': 1,

@@ -1731,6 +1731,9 @@
 
         # Copy it out one scope.
         'android_webview_build%': '<(android_webview_build)',
+
+        # Default android linker script for shared library exports.
+        'android_linker_script%': '<!(cd <(DEPTH) && pwd -P)/build/android/android_exports.lst',
       }],  # OS=="android"
       ['android_webview_build==1', {
         # When building the WebView in the Android tree, jarjar will remap all
@@ -4150,7 +4153,13 @@
         },
         'target_conditions': [
           ['_type=="shared_library"', {
-           'product_extension': '<(android_product_extension)',
+            'product_extension': '<(android_product_extension)',
+          }],
+          ['_toolset=="target" and component=="static_library" and _type=="shared_library"', {
+            'ldflags': [
+              # Only export symbols that are specified in version script.
+              '-Wl,--version-script=<(android_linker_script)',
+            ],
           }],
 
           # Settings for building device targets using Android's toolchain.
@@ -4216,8 +4225,7 @@
             'ldflags': [
               '-nostdlib',
               '-Wl,--no-undefined',
-              # Don't export symbols from statically linked libraries.
-              '-Wl,--exclude-libs=ALL',
+
             ],
             'libraries': [
               '-l<(android_stlport_library)',
@@ -4228,11 +4236,6 @@
               '-lm',
             ],
             'conditions': [
-              ['component=="shared_library"', {
-                'ldflags!': [
-                  '-Wl,--exclude-libs=ALL',
-                ],
-              }],
               ['clang==1', {
                 'cflags': [
                   # Work around incompatibilities between bionic and clang
