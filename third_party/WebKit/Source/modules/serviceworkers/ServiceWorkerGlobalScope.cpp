@@ -30,6 +30,7 @@
 #include "config.h"
 #include "ServiceWorkerGlobalScope.h"
 
+#include "CachePolyfill.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
@@ -47,6 +48,9 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
     RefPtrWillBeRawPtr<ServiceWorkerGlobalScope> context = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_workerClients.release()));
 
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
+
+    context->script()->evaluate(String(cachePolyfillJs));
+
     return context.release();
 }
 
