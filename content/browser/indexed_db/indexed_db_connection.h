@@ -34,6 +34,8 @@ class CONTENT_EXPORT IndexedDBConnection {
   // The callbacks_ member is cleared when the connection is closed.
   // May be NULL in unit tests.
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBConnection);
 };
 
 }  // namespace content

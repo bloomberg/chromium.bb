@@ -69,6 +69,8 @@ class CONTENT_EXPORT IndexedDBCursor
   scoped_ptr<IndexedDBBackingStore::Cursor> saved_cursor_;
 
   bool closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBCursor);
 };
 
 }  // namespace content

@@ -144,11 +144,15 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
 
    private:
     leveldb::Status result_;
+
+    DISALLOW_COPY_AND_ASSIGN(FakeTransaction);
   };
 
  protected:
   friend class base::RefCounted<IndexedDBFakeBackingStore>;
   virtual ~IndexedDBFakeBackingStore();
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBFakeBackingStore);
 };
 
 }  // namespace content

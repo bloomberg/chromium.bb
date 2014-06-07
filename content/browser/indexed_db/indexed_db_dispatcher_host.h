@@ -149,6 +149,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
    private:
     IDMap<scoped_refptr<RefCountedType>, IDMapOwnPointer> map_;
+
+    DISALLOW_COPY_AND_ASSIGN(RefIDMap);
   };
 
   // Helper templates.
@@ -223,6 +225,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;
     TransactionIDToDatabaseIDMap transaction_database_map_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DatabaseDispatcherHost);
   };
 
   class CursorDispatcherHost {
@@ -252,6 +257,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     IndexedDBDispatcherHost* parent_;
     RefIDMap<IndexedDBCursor> map_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CursorDispatcherHost);
   };
 
   // The getter holds the context until OnChannelConnected() can be called from

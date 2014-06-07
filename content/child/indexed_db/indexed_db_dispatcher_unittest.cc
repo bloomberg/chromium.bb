@@ -39,6 +39,8 @@ class MockCallbacks : public WebIDBCallbacks {
 
  private:
   bool error_seen_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCallbacks);
 };
 
 class MockDispatcher : public IndexedDBDispatcher {
@@ -49,6 +51,9 @@ class MockDispatcher : public IndexedDBDispatcher {
     delete msg;
     return true;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDispatcher);
 };
 
 }  // namespace
@@ -142,6 +147,8 @@ class CursorCallbacks : public WebIDBCallbacks {
 
  private:
   scoped_ptr<WebIDBCursor>* cursor_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorCallbacks);
 };
 
 }  // namespace
@@ -248,6 +255,8 @@ class MockCursor : public WebIDBCursorImpl {
 
  private:
   int reset_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCursor);
 };
 
 }  // namespace

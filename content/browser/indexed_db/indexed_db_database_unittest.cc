@@ -170,6 +170,8 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
 
   bool blocked_called_;
   bool success_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDeleteCallbacks);
 };
 
 TEST(IndexedDBDatabaseTest, PendingDelete) {
@@ -324,6 +326,9 @@ class IndexedDBDatabaseOperationAbortTest
   IndexedDBDatabaseOperationAbortTest() {
     commit_success_ = leveldb::Status::NotFound("Bummer.");
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationAbortTest);
 };
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {

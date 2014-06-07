@@ -22,26 +22,41 @@ namespace content {
 class CONTENT_EXPORT IndexedDBKeyBuilder {
  public:
   static IndexedDBKey Build(const blink::WebIDBKey& key);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyBuilder);
 };
 
 class CONTENT_EXPORT WebIDBKeyBuilder {
  public:
   static blink::WebIDBKey Build(const content::IndexedDBKey& key);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyBuilder);
 };
 
 class CONTENT_EXPORT IndexedDBKeyRangeBuilder {
  public:
   static IndexedDBKeyRange Build(const blink::WebIDBKeyRange& key_range);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyRangeBuilder);
 };
 
 class CONTENT_EXPORT IndexedDBKeyPathBuilder {
  public:
   static IndexedDBKeyPath Build(const blink::WebIDBKeyPath& key_path);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyPathBuilder);
 };
 
 class CONTENT_EXPORT WebIDBKeyPathBuilder {
  public:
   static blink::WebIDBKeyPath Build(const IndexedDBKeyPath& key_path);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyPathBuilder);
 };
 
 }  // namespace content

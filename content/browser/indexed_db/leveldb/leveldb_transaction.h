@@ -80,6 +80,8 @@ class CONTENT_EXPORT LevelDBTransaction
     explicit DataIterator(LevelDBTransaction* transaction);
     DataType* data_;
     DataType::iterator iterator_;
+
+    DISALLOW_COPY_AND_ASSIGN(DataIterator);
   };
 
   class TransactionIterator : public LevelDBIterator {
@@ -118,6 +120,8 @@ class CONTENT_EXPORT LevelDBTransaction
     };
     Direction direction_;
     mutable bool data_changed_;
+
+    DISALLOW_COPY_AND_ASSIGN(TransactionIterator);
   };
 
   void Set(const base::StringPiece& key, std::string* value, bool deleted);
@@ -133,6 +137,8 @@ class CONTENT_EXPORT LevelDBTransaction
   DataType data_;
   bool finished_;
   std::set<TransactionIterator*> iterators_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBTransaction);
 };
 
 // Reads go straight to the database, ignoring any writes cached in
@@ -155,6 +161,8 @@ class LevelDBDirectTransaction {
   LevelDBDatabase* db_;
   scoped_ptr<LevelDBWriteBatch> write_batch_;
   bool finished_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBDirectTransaction);
 };
 
 }  // namespace content

@@ -290,6 +290,8 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   typedef list_set<IndexedDBConnection*> ConnectionSet;
   ConnectionSet connections_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabase);
 };
 
 }  // namespace content

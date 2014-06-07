@@ -132,6 +132,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // Stored in OnDataLoss, merged with OnUpgradeNeeded response.
   blink::WebIDBDataLoss data_loss_;
   std::string data_loss_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);
 };
 
 }  // namespace content

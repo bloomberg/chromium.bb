@@ -40,6 +40,7 @@ class Comparator : public LevelDBComparator {
 
 class DefaultLevelDBFactory : public LevelDBFactory {
  public:
+  DefaultLevelDBFactory() {}
   virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
                                       scoped_ptr<LevelDBDatabase>* db,
@@ -50,6 +51,9 @@ class DefaultLevelDBFactory : public LevelDBFactory {
       const base::FilePath& file_name) OVERRIDE {
     return LevelDBDatabase::Destroy(file_name);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultLevelDBFactory);
 };
 
 class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
@@ -160,6 +164,8 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   int64 database_id_;
   std::vector<Transaction::WriteDescriptor> writes_;
   std::vector<int64> removals_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
 
 class TestIDBFactory : public IndexedDBFactory {
@@ -204,6 +210,9 @@ class TestIDBFactory : public IndexedDBFactory {
                                                &leveldb_factory,
                                                context()->TaskRunner());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestIDBFactory);
 };
 
 class IndexedDBBackingStoreTest : public testing::Test {
@@ -343,6 +352,9 @@ class TestCallback : public IndexedDBBackingStore::BlobWriteCallback {
 
  protected:
   virtual ~TestCallback() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestCallback);
 };
 
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {

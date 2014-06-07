@@ -37,6 +37,7 @@ namespace {
 
 class BustedLevelDBDatabase : public LevelDBDatabase {
  public:
+  BustedLevelDBDatabase() {}
   static scoped_ptr<LevelDBDatabase> Open(
       const base::FilePath& file_name,
       const LevelDBComparator* /*comparator*/) {
@@ -48,6 +49,9 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
                               const LevelDBSnapshot* = 0) OVERRIDE {
     return leveldb::Status::IOError("It's busted!");
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BustedLevelDBDatabase);
 };
 
 class MockLevelDBFactory : public LevelDBFactory {
@@ -71,6 +75,9 @@ class MockLevelDBFactory : public LevelDBFactory {
 
  private:
   bool destroy_called_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLevelDBFactory);
 };
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
@@ -131,6 +138,8 @@ class MockErrorLevelDBFactory : public LevelDBFactory {
   T error_;
   bool expect_destroy_;
   bool destroy_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockErrorLevelDBFactory);
 };
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {

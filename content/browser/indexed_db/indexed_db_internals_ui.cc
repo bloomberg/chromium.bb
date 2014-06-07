@@ -310,6 +310,8 @@ class FileDeleter : public DownloadItem::Observer {
 
  private:
   const base::FilePath temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileDeleter);
 };
 
 void FileDeleter::OnDownloadUpdated(DownloadItem* item) {

@@ -36,6 +36,8 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int ipc_thread_id_;
   int ipc_database_callbacks_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);
 };
 
 }  // namespace content

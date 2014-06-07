@@ -56,6 +56,8 @@ class IndexWriter {
 
   const IndexedDBIndexMetadata index_metadata_;
   IndexedDBDatabase::IndexKeys index_keys_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexWriter);
 };
 
 bool MakeIndexWriters(

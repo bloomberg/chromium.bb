@@ -47,6 +47,8 @@ class IndexedDBTransactionCoordinator {
   typedef list_set<scoped_refptr<IndexedDBTransaction> > TransactionSet;
   TransactionSet queued_transactions_;
   TransactionSet started_transactions_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionCoordinator);
 };
 
 }  // namespace content

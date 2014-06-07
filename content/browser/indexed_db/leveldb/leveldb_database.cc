@@ -124,6 +124,8 @@ class LockImpl : public LevelDBLock {
  private:
   leveldb::Env* env_;
   leveldb::FileLock* lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };
 }
 
@@ -391,6 +393,8 @@ class IteratorImpl : public LevelDBIterator {
   void CheckStatus();
 
   scoped_ptr<leveldb::Iterator> iterator_;
+
+  DISALLOW_COPY_AND_ASSIGN(IteratorImpl);
 };
 }
 

@@ -27,6 +27,8 @@ class IndexedDBDatabaseError {
  private:
   const uint16 code_;
   const base::string16 message_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseError);
 };
 
 }  // namespace content

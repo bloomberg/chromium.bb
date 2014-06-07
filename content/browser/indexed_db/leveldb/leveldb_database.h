@@ -39,11 +39,17 @@ class LevelDBSnapshot {
 
   leveldb::DB* db_;
   const leveldb::Snapshot* snapshot_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBSnapshot);
 };
 
 class CONTENT_EXPORT LevelDBLock {
-public:
+ public:
+  LevelDBLock() {}
   virtual ~LevelDBLock() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
 };
 
 class CONTENT_EXPORT LevelDBDatabase {

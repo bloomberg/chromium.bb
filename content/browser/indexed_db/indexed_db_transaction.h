@@ -132,6 +132,8 @@ class CONTENT_EXPORT IndexedDBTransaction
 
    private:
     std::queue<Operation> queue_;
+
+    DISALLOW_COPY_AND_ASSIGN(TaskQueue);
   };
 
   class TaskStack {
@@ -145,6 +147,8 @@ class CONTENT_EXPORT IndexedDBTransaction
 
    private:
     std::stack<Operation> stack_;
+
+    DISALLOW_COPY_AND_ASSIGN(TaskStack);
   };
 
   TaskQueue task_queue_;

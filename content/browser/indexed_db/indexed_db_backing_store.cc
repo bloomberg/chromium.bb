@@ -485,6 +485,7 @@ WARN_UNUSED_RESULT static leveldb::Status GetMaxObjectStoreId(
 
 class DefaultLevelDBFactory : public LevelDBFactory {
  public:
+  DefaultLevelDBFactory() {}
   virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
                                       scoped_ptr<LevelDBDatabase>* db,
@@ -495,6 +496,9 @@ class DefaultLevelDBFactory : public LevelDBFactory {
       OVERRIDE {
     return LevelDBDatabase::Destroy(file_name);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultLevelDBFactory);
 };
 
 static bool GetBlobKeyGeneratorCurrentNumber(
@@ -2224,6 +2228,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback_;
   scoped_ptr<FileWriterDelegate> delegate_;
   bool aborted_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChainedBlobWriterImpl);
 };
 
 class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
@@ -2289,6 +2295,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
   IndexedDBBackingStore::Transaction::ChainedBlobWriter* chained_blob_writer_;
   base::TaskRunner* task_runner_;
   int64 bytes_written_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalWriteClosure);
 };
 
 bool IndexedDBBackingStore::WriteBlobFile(
@@ -3213,6 +3221,8 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
  private:
   explicit ObjectStoreKeyCursorImpl(const ObjectStoreKeyCursorImpl* other)
       : IndexedDBBackingStore::Cursor(other) {}
+
+  DISALLOW_COPY_AND_ASSIGN(ObjectStoreKeyCursorImpl);
 };
 
 bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
@@ -3275,6 +3285,8 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
         current_value_(other->current_value_) {}
 
   IndexedDBValue current_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObjectStoreCursorImpl);
 };
 
 bool ObjectStoreCursorImpl::LoadCurrentRow() {
@@ -3359,6 +3371,8 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
         primary_key_(new IndexedDBKey(*other->primary_key_)) {}
 
   scoped_ptr<IndexedDBKey> primary_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexKeyCursorImpl);
 };
 
 bool IndexKeyCursorImpl::LoadCurrentRow() {
@@ -3473,6 +3487,8 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   scoped_ptr<IndexedDBKey> primary_key_;
   IndexedDBValue current_value_;
   std::string primary_leveldb_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexCursorImpl);
 };
 
 bool IndexCursorImpl::LoadCurrentRow() {
@@ -4053,6 +4069,8 @@ class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
 
   IndexedDBBackingStore::Transaction* transaction_;
   scoped_refptr<BlobWriteCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobWriteCallbackWrapper);
 };
 
 void IndexedDBBackingStore::Transaction::WriteNewBlobs(

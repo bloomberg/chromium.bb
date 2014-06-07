@@ -49,6 +49,8 @@ class MockIDBFactory : public IndexedDBFactory {
  private:
   std::set<GURL> origins_;
   bool duplicate_calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockIDBFactory);
 };
 
 class MockIDBBackingStore : public IndexedDBFakeBackingStore {
@@ -79,6 +81,8 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
  private:
   KeyPairSet unused_blobs_;
   bool duplicate_calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockIDBBackingStore);
 };
 
 // Base class for our test fixtures.
