@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
 
 #include <set>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
@@ -276,6 +276,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // calculating the preferred height.
   void Init();
 
+  BookmarkModel* model() { return client_->model(); }
+
   // NOTE: unless otherwise stated all methods that take an int for an index are
   // in terms of the bookmark bar view. Typically the view index and model index
   // are the same, but they may differ during animations or drag and drop.
@@ -385,11 +387,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // Used for opening urls.
   content::PageNavigator* page_navigator_;
 
-  // Model providing details as to the starred entries/folders that should be
-  // shown. This is owned by the Profile.
-  BookmarkModel* model_;
-
-  // The ChromeBookmarkClient that owns the |model_|.
+  // ChromeBookmarkClient that owns the model whose entries and folders are
+  // shown in this view. This is owned by the Profile.
   ChromeBookmarkClient* client_;
 
   // Used to manage showing a Menu, either for the most recently bookmarked
