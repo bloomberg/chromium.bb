@@ -3854,7 +3854,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
     if (!active) {
         m_isAcceleratedCompositingActive = false;
-        m_client->didDeactivateCompositor();
         if (!m_layerTreeViewCommitsDeferred
             && blink::Platform::current()->isThreadedCompositingEnabled()) {
             ASSERT(m_layerTreeView);
@@ -3869,8 +3868,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         updateLayerTreeViewport();
         if (m_pageOverlays)
             m_pageOverlays->update();
-
-        m_client->didActivateCompositor();
     } else {
         TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
@@ -3891,7 +3888,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
                 m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
 #endif
             updateLayerTreeViewport();
-            m_client->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
             if (m_pageOverlays)
                 m_pageOverlays->update();
@@ -3908,7 +3904,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             // crbug.com/322276 and crbug.com/364716.
             ASSERT(m_client->allowsBrokenNullLayerTreeView());
             m_isAcceleratedCompositingActive = false;
-            m_client->didDeactivateCompositor();
             m_page->settings().setAcceleratedCompositingEnabled(false);
             m_page->updateAcceleratedCompositingSettings();
         }

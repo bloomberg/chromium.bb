@@ -105,13 +105,10 @@ void WebPopupMenuImpl::initialize(FramelessScrollView* widget, const WebRect& bo
     m_layerTreeView = m_client->layerTreeView();
     if (m_layerTreeView) {
         m_layerTreeView->setVisible(true);
-        m_client->didActivateCompositor();
         m_layerTreeView->setDeviceScaleFactor(m_client->deviceScaleFactor());
         m_rootLayer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(this));
         m_rootLayer->layer()->setBounds(m_size);
         m_layerTreeView->setRootLayer(*m_rootLayer->layer());
-    } else {
-        m_client->didDeactivateCompositor();
     }
 }
 

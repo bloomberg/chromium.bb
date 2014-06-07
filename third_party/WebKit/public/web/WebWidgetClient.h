@@ -58,10 +58,6 @@ public:
     // Called when the Widget has changed size as a result of an auto-resize.
     virtual void didAutoResize(const WebSize& newSize) { }
 
-    // Called when the compositor is enabled or disabled.
-    virtual void didActivateCompositor() { }
-    virtual void didDeactivateCompositor() { }
-
     // Attempt to initialize compositing for this widget. If this is successful,
     // layerTreeView() will return a valid WebLayerTreeView.
     virtual void initializeLayerTreeView() { }
