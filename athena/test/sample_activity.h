@@ -17,7 +17,7 @@ class SampleActivity : public Activity,
  public:
   SampleActivity(SkColor color,
                  SkColor contents_color,
-                 const std::string& title);
+                 const base::string16& title);
   virtual ~SampleActivity();
 
  private:
@@ -26,12 +26,12 @@ class SampleActivity : public Activity,
 
   // athena::ActivityViewModel:
   virtual SkColor GetRepresentativeColor() OVERRIDE;
-  virtual std::string GetTitle() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   SkColor color_;
   SkColor contents_color_;
-  std::string title_;
+  base::string16 title_;
   views::View* contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleActivity);

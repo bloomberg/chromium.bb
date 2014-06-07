@@ -7,6 +7,7 @@
 #include <string>
 
 #include "athena/test/sample_activity.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -26,7 +27,7 @@ Activity* SampleActivityFactory::CreateWebActivity(
     content::BrowserContext* browser_context,
     const GURL& url) {
   return new SampleActivity(
-      kDefaultColor, kDefaultContentColor, url.spec());
+      kDefaultColor, kDefaultContentColor, base::UTF8ToUTF16(url.spec()));
 }
 
 }  // namespace test

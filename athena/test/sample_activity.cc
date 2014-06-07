@@ -12,7 +12,7 @@ namespace test {
 
 SampleActivity::SampleActivity(SkColor color,
                                SkColor contents_color,
-                               const std::string& title)
+                               const base::string16& title)
     : color_(color),
       contents_color_(contents_color),
       title_(title),
@@ -30,7 +30,7 @@ SkColor SampleActivity::GetRepresentativeColor() {
   return color_;
 }
 
-std::string SampleActivity::GetTitle() {
+base::string16 SampleActivity::GetTitle() {
   return title_;
 }
 

@@ -5,9 +5,8 @@
 #ifndef ATHENA_ACTIVITY_PUBLIC_ACTIVITY_VIEW_MODEL_H_
 #define ATHENA_ACTIVITY_PUBLIC_ACTIVITY_VIEW_MODEL_H_
 
-#include <string>
-
 #include "athena/athena_export.h"
+#include "base/strings/string16.h"
 
 typedef unsigned int SkColor;
 
@@ -25,7 +24,7 @@ class ATHENA_EXPORT ActivityViewModel {
   virtual SkColor GetRepresentativeColor() = 0;
 
   // Returns a title for the activity.
-  virtual std::string GetTitle() = 0;
+  virtual base::string16 GetTitle() = 0;
 
   // Returns the contents view.
   virtual views::View* GetContentsView() = 0;

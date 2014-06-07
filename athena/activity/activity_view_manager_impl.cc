@@ -10,7 +10,6 @@
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/screen/public/screen_manager.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -59,8 +58,7 @@ class ActivityWidget : public views::LayoutManager {
   }
 
   void Update() {
-    title_->SetText(
-        base::UTF8ToUTF16(activity_->GetActivityViewModel()->GetTitle()));
+    title_->SetText(activity_->GetActivityViewModel()->GetTitle());
     SkColor bgcolor =
         activity_->GetActivityViewModel()->GetRepresentativeColor();
     title_->set_background(views::Background::CreateSolidBackground(bgcolor));

@@ -32,7 +32,7 @@ class WebActivity : public Activity,
 
   // ActivityViewModel:
   virtual SkColor GetRepresentativeColor() OVERRIDE;
-  virtual std::string GetTitle() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   // content::WebContentsObserver:
