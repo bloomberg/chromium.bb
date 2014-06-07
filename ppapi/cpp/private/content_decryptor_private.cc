@@ -39,16 +39,17 @@ void Initialize(PP_Instance instance,
 }
 
 void CreateSession(PP_Instance instance,
-                   uint32_t session_id,
-                   PP_Var type_arg,
-                   PP_Var init_data_arg) {
+                   uint32_t promise_id,
+                   PP_Var init_data_type_arg,
+                   PP_Var init_data_arg,
+                   PP_SessionType session_type) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  pp::Var type_var(pp::PASS_REF, type_arg);
-  if (!type_var.is_string())
+  pp::Var init_data_type_var(pp::PASS_REF, init_data_type_arg);
+  if (!init_data_type_var.is_string())
     return;
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
@@ -57,51 +58,65 @@ void CreateSession(PP_Instance instance,
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->CreateSession(session_id, type_var.AsString(), init_data_array_buffer);
+      ->CreateSession(promise_id,
+                      init_data_type_var.AsString(),
+                      init_data_array_buffer,
+                      session_type);
 }
 
 void LoadSession(PP_Instance instance,
-                 uint32_t session_id,
+                 uint32_t promise_id,
                  PP_Var web_session_id_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  pp::Var web_session_id_var(pp::PASS_REF, web_session_id_arg);
+  pp::Var web_session_id_var(web_session_id_arg);
   if (!web_session_id_var.is_string())
     return;
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->LoadSession(session_id, web_session_id_var.AsString());
+      ->LoadSession(promise_id, web_session_id_var.AsString());
 }
 
 void UpdateSession(PP_Instance instance,
-                   uint32_t session_id,
+                   uint32_t promise_id,
+                   PP_Var web_session_id_arg,
                    PP_Var response_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  pp::Var response_var(pp::PASS_REF, response_arg);
+  pp::Var web_session_id_var(web_session_id_arg);
+  if (!web_session_id_var.is_string())
+    return;
+
+  pp::Var response_var(response_arg);
   if (!response_var.is_array_buffer())
     return;
   pp::VarArrayBuffer response(response_var);
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->UpdateSession(session_id, response);
+      ->UpdateSession(promise_id, web_session_id_var.AsString(), response);
 }
 
-void ReleaseSession(PP_Instance instance, uint32_t session_id) {
+void ReleaseSession(PP_Instance instance,
+                    uint32_t promise_id,
+                    PP_Var web_session_id_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  static_cast<ContentDecryptor_Private*>(object)->ReleaseSession(session_id);
-}
+  pp::Var web_session_id_var(web_session_id_arg);
+  if (!web_session_id_var.is_string())
+    return;
 
+  static_cast<ContentDecryptor_Private*>(object)
+      ->ReleaseSession(promise_id, web_session_id_var.AsString());
+}
 
 void Decrypt(PP_Instance instance,
              PP_Resource encrypted_resource,
@@ -223,55 +238,87 @@ ContentDecryptor_Private::~ContentDecryptor_Private() {
                                     this);
 }
 
-void ContentDecryptor_Private::SessionCreated(
-    uint32_t session_id,
+void ContentDecryptor_Private::PromiseResolved(uint32_t promise_id) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    get_interface<PPB_ContentDecryptor_Private>()->PromiseResolved(
+        associated_instance_.pp_instance(), promise_id);
+  }
+}
+
+void ContentDecryptor_Private::PromiseResolvedWithSession(
+    uint32_t promise_id,
     const std::string& web_session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var web_session_id_var(web_session_id);
-    get_interface<PPB_ContentDecryptor_Private>()->SessionCreated(
+    get_interface<PPB_ContentDecryptor_Private>()->PromiseResolvedWithSession(
         associated_instance_.pp_instance(),
-        session_id,
+        promise_id,
         web_session_id_var.pp_var());
   }
 }
 
+void ContentDecryptor_Private::PromiseRejected(
+    uint32_t promise_id,
+    PP_CdmExceptionCode exception_code,
+    uint32_t system_code,
+    const std::string& error_description) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    pp::Var error_description_var(error_description);
+    get_interface<PPB_ContentDecryptor_Private>()->PromiseRejected(
+        associated_instance_.pp_instance(),
+        promise_id,
+        exception_code,
+        system_code,
+        error_description_var.pp_var());
+  }
+}
+
 void ContentDecryptor_Private::SessionMessage(
-    uint32_t session_id,
+    const std::string& web_session_id,
     pp::VarArrayBuffer message,
     const std::string& destination_url) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
+    pp::Var web_session_id_var(web_session_id);
     pp::Var destination_url_var(destination_url);
     get_interface<PPB_ContentDecryptor_Private>()->SessionMessage(
         associated_instance_.pp_instance(),
-        session_id,
+        web_session_id_var.pp_var(),
         message.pp_var(),
         destination_url_var.pp_var());
   }
 }
 
-void ContentDecryptor_Private::SessionReady(uint32_t session_id) {
+void ContentDecryptor_Private::SessionReady(const std::string& web_session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
+    pp::Var web_session_id_var(web_session_id);
     get_interface<PPB_ContentDecryptor_Private>()->SessionReady(
-        associated_instance_.pp_instance(), session_id);
+        associated_instance_.pp_instance(), web_session_id_var.pp_var());
   }
 }
 
-void ContentDecryptor_Private::SessionClosed(uint32_t session_id) {
+void ContentDecryptor_Private::SessionClosed(
+    const std::string& web_session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
+    pp::Var web_session_id_var(web_session_id);
     get_interface<PPB_ContentDecryptor_Private>()->SessionClosed(
-        associated_instance_.pp_instance(), session_id);
+        associated_instance_.pp_instance(), web_session_id_var.pp_var());
   }
 }
 
-void ContentDecryptor_Private::SessionError(uint32_t session_id,
-                                            int32_t media_error,
-                                            uint32_t system_code) {
+void ContentDecryptor_Private::SessionError(
+    const std::string& web_session_id,
+    PP_CdmExceptionCode exception_code,
+    uint32_t system_code,
+    const std::string& error_description) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
+    pp::Var web_session_id_var(web_session_id);
+    pp::Var error_description_var(error_description);
     get_interface<PPB_ContentDecryptor_Private>()->SessionError(
         associated_instance_.pp_instance(),
-        session_id,
-        media_error,
-        system_code);
+        web_session_id_var.pp_var(),
+        exception_code,
+        system_code,
+        error_description_var.pp_var());
   }
 }
 

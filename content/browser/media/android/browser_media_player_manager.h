@@ -22,6 +22,7 @@
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
+#include "media/base/media_keys.h"
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
 

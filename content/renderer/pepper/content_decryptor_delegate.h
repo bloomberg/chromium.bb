@@ -5,14 +5,17 @@
 #ifndef CONTENT_RENDERER_PEPPER_CONTENT_DECRYPTOR_DELEGATE_H_
 #define CONTENT_RENDERER_PEPPER_CONTENT_DECRYPTOR_DELEGATE_H_
 
+#include <map>
 #include <queue>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
@@ -43,7 +46,6 @@ class ContentDecryptorDelegate {
 
   // This object should not be accessed after |fatal_plugin_error_cb| is called.
   void Initialize(const std::string& key_system,
-                  const media::SessionCreatedCB& session_created_cb,
                   const media::SessionMessageCB& session_message_cb,
                   const media::SessionReadyCB& session_ready_cb,
                   const media::SessionClosedCB& session_closed_cb,
@@ -53,15 +55,19 @@ class ContentDecryptorDelegate {
   void InstanceCrashed();
 
   // Provides access to PPP_ContentDecryptor_Private.
-  bool CreateSession(uint32 session_id,
-                     const std::string& content_type,
+  void CreateSession(const std::string& init_data_type,
                      const uint8* init_data,
-                     int init_data_length);
-  void LoadSession(uint32 session_id, const std::string& web_session_id);
-  bool UpdateSession(uint32 session_id,
+                     int init_data_length,
+                     media::MediaKeys::SessionType session_type,
+                     scoped_ptr<media::NewSessionCdmPromise> promise);
+  void LoadSession(const std::string& web_session_id,
+                   scoped_ptr<media::NewSessionCdmPromise> promise);
+  void UpdateSession(const std::string& web_session_id,
                      const uint8* response,
-                     int response_length);
-  bool ReleaseSession(uint32 session_id);
+                     int response_length,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
+  void ReleaseSession(const std::string& web_session_id,
+                      scoped_ptr<media::SimpleCdmPromise> promise);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
@@ -85,15 +91,21 @@ class ContentDecryptorDelegate {
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // PPB_ContentDecryptor_Private dispatching methods.
-  void OnSessionCreated(uint32 session_id, PP_Var web_session_id_var);
-  void OnSessionMessage(uint32 session_id,
+  void OnPromiseResolved(uint32 promise_id);
+  void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var web_session_id);
+  void OnPromiseRejected(uint32 promise_id,
+                         PP_CdmExceptionCode exception_code,
+                         uint32 system_code,
+                         PP_Var error_description);
+  void OnSessionMessage(PP_Var web_session_id,
                         PP_Var message,
-                        PP_Var destination_url_var);
-  void OnSessionReady(uint32 session_id);
-  void OnSessionClosed(uint32 session_id);
-  void OnSessionError(uint32 session_id,
-                      int32_t media_error,
-                      uint32_t system_code);
+                        PP_Var destination_url);
+  void OnSessionReady(PP_Var web_session_id);
+  void OnSessionClosed(PP_Var web_session_id);
+  void OnSessionError(PP_Var web_session_id,
+                      PP_CdmExceptionCode exception_code,
+                      uint32 system_code,
+                      PP_Var error_description);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
   void DecoderInitializeDone(PP_DecryptorStreamType decoder_type,
@@ -109,6 +121,10 @@ class ContentDecryptorDelegate {
                       const PP_DecryptedSampleInfo* sample_info);
 
  private:
+  // The following types keep track of Promises. The index is the promise_id,
+  // so that returning results can be matched to the corresponding promise.
+  typedef base::ScopedPtrHashMap<uint32_t, media::CdmPromise> PromiseMap;
+
   template <typename Callback>
   class TrackableCallback {
    public:
@@ -171,6 +187,14 @@ class ContentDecryptorDelegate {
 
   void SatisfyAllPendingCallbacksOnError();
 
+  // Takes ownership of |promise| and returns an identifier to be passed via
+  // Pepper.
+  uint32_t SavePromise(scoped_ptr<media::CdmPromise> promise);
+
+  // Find the promise for a specified |promise_id|. Caller is responsible to
+  // delete the CdmPromise<> once done with it.
+  scoped_ptr<media::CdmPromise> TakePromise(uint32_t promise_id);
+
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -178,7 +202,6 @@ class ContentDecryptorDelegate {
   std::string key_system_;
 
   // Callbacks for firing session events.
-  media::SessionCreatedCB session_created_cb_;
   media::SessionMessageCB session_message_cb_;
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
@@ -213,6 +236,10 @@ class ContentDecryptorDelegate {
   int audio_samples_per_second_;
   int audio_channel_count_;
   media::ChannelLayout audio_channel_layout_;
+
+  // Keep track of outstanding promises. Maps have ownership of the promises.
+  uint32_t next_promise_id_;
+  PromiseMap promises_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

@@ -113,20 +113,29 @@ class PluginInstance : public ppapi::thunk::PPB_Instance_API {
                                  double maximum_factor) OVERRIDE;
   virtual PP_Var GetDocumentURL(PP_Instance instance,
                                 PP_URLComponents_Dev* components) OVERRIDE;
-  virtual void SessionCreated(PP_Instance instance,
-                              uint32_t session_id,
-                              PP_Var web_session_id) OVERRIDE;
+  virtual void PromiseResolved(PP_Instance instance,
+                               uint32 promise_id) OVERRIDE;
+  virtual void PromiseResolvedWithSession(PP_Instance instance,
+                                          uint32 promise_id,
+                                          PP_Var web_session_id_var) OVERRIDE;
+  virtual void PromiseRejected(PP_Instance instance,
+                               uint32 promise_id,
+                               PP_CdmExceptionCode exception_code,
+                               uint32 system_code,
+                               PP_Var error_description_var) OVERRIDE;
   virtual void SessionMessage(PP_Instance instance,
-                              uint32_t session_id,
-                              PP_Var message,
-                              PP_Var destination_url) OVERRIDE;
-  virtual void SessionReady(PP_Instance instance, uint32_t session_id) OVERRIDE;
+                              PP_Var web_session_id_var,
+                              PP_Var message_var,
+                              PP_Var destination_url_var) OVERRIDE;
+  virtual void SessionReady(PP_Instance instance,
+                            PP_Var web_session_id_var) OVERRIDE;
   virtual void SessionClosed(PP_Instance instance,
-                             uint32_t session_id) OVERRIDE;
+                             PP_Var web_session_id_var) OVERRIDE;
   virtual void SessionError(PP_Instance instance,
-                            uint32_t session_id,
-                            int32_t media_error,
-                            uint32_t system_code) OVERRIDE;
+                            PP_Var web_session_id_var,
+                            PP_CdmExceptionCode exception_code,
+                            uint32 system_code,
+                            PP_Var error_description_var) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;

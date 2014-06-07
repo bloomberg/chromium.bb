@@ -5,6 +5,7 @@
 #include "media/base/android/media_player_android.h"
 
 #include "base/logging.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 
 namespace media {

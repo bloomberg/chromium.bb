@@ -27,7 +27,6 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     RendererCdmManager* manager,
     int* cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-    const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -43,18 +42,13 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 
   if (CanUseAesDecryptor(key_system)) {
     return scoped_ptr<media::MediaKeys>(
-        new media::AesDecryptor(session_created_cb,
-                                session_message_cb,
-                                session_ready_cb,
-                                session_closed_cb,
-                                session_error_cb));
+        new media::AesDecryptor(session_message_cb));
   }
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(
       PpapiDecryptor::Create(key_system,
                              security_origin,
                              create_pepper_cdm_cb,
-                             session_created_cb,
                              session_message_cb,
                              session_ready_cb,
                              session_closed_cb,
@@ -64,7 +58,6 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
       ProxyMediaKeys::Create(key_system,
                              security_origin,
                              manager,
-                             session_created_cb,
                              session_message_cb,
                              session_ready_cb,
                              session_closed_cb,

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Wed Feb 26 16:37:47 2014.
+ *   modified Thu Jun  5 13:39:15 2014.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_11 \
-    "PPB_ContentDecryptor_Private;0.11"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_12 \
+    "PPB_ContentDecryptor_Private;0.12"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_11
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_12
 
 /**
  * @file
@@ -42,21 +42,42 @@
  * browser side support for the Content Decryption Module (CDM) for Encrypted
  * Media Extensions: http://www.w3.org/TR/encrypted-media/
  */
-struct PPB_ContentDecryptor_Private_0_11 {
+struct PPB_ContentDecryptor_Private_0_12 {
   /**
-   * A session has been created by the CDM.
+   * A promise has been resolved by the CDM.
    *
-   * @param[in] session_id Identifies the session for which the CDM
-   * created a session.
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
+   */
+  void (*PromiseResolved)(PP_Instance instance, uint32_t promise_id);
+  /**
+   * A promise has been resolved by the CDM.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the string for the
-   * MediaKeySession's sessionId attribute.
-   *
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute.
    */
-  void (*SessionCreated)(PP_Instance instance,
-                         uint32_t session_id,
-                         struct PP_Var web_session_id);
+  void (*PromiseResolvedWithSession)(PP_Instance instance,
+                                     uint32_t promise_id,
+                                     struct PP_Var web_session_id);
+  /**
+   * A promise has been rejected by the CDM due to an error.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM rejected.
+   *
+   * @param[in] exception_code A <code>PP_CdmExceptionCode</code> containing
+   * the exception code.
+   *
+   * @param[in] system_code A system error code.
+   *
+   * @param[in] error_description A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the error description.
+   */
+  void (*PromiseRejected)(PP_Instance instance,
+                          uint32_t promise_id,
+                          PP_CdmExceptionCode exception_code,
+                          uint32_t system_code,
+                          struct PP_Var error_description);
   /**
    * A message or request has been generated for key_system in the CDM, and
    * must be sent to the web application.
@@ -71,8 +92,9 @@ struct PPB_ContentDecryptor_Private_0_11 {
    * of <code>UpdateSession()</code> and <code>SessionMessage()</code> calls
    * required to prepare for decryption.
    *
-   * @param[in] session_id Identifies the session for which the message
-   * is intended.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute for
+   * which the message is intended.
    *
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
@@ -82,7 +104,7 @@ struct PPB_ContentDecryptor_Private_0_11 {
    * message.
    */
   void (*SessionMessage)(PP_Instance instance,
-                         uint32_t session_id,
+                         struct PP_Var web_session_id,
                          struct PP_Var message,
                          struct PP_Var destination_url);
   /**
@@ -97,33 +119,43 @@ struct PPB_ContentDecryptor_Private_0_11 {
    * The CDM must call <code>SessionReady()</code> when the sequence is
    * completed, and, in response, the browser must notify the web application.
    *
-   * @param[in] session_id Identifies the session that is ready.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that is now ready.
    */
-  void (*SessionReady)(PP_Instance instance, uint32_t session_id);
+  void (*SessionReady)(PP_Instance instance, struct PP_Var web_session_id);
   /**
    * The session has been closed as the result of a call to the
    * <code>ReleaseSession()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface, or due to other
    * factors as determined by the CDM.
    *
-   * @param[in] session_id Identifies the session that is closed.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that is now closed.
    */
-  void (*SessionClosed)(PP_Instance instance, uint32_t session_id);
+  void (*SessionClosed)(PP_Instance instance, struct PP_Var web_session_id);
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,
    * or within the plugin implementing the interface.
    *
-   * @param[in] session_id Identifies the session for which the error
-   * is intended.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that caused the error.
    *
-   * @param[in] media_error A MediaKeyError.
+   * @param[in] exception_code A <code>PP_CdmExceptionCode</code> containing
+   * the exception code.
    *
-   * @param[in] system_error A system error code.
+   * @param[in] system_code A system error code.
+   *
+   * @param[in] error_description A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the error description.
    */
   void (*SessionError)(PP_Instance instance,
-                       uint32_t session_id,
-                       int32_t media_error,
-                       uint32_t system_code);
+                       struct PP_Var web_session_id,
+                       PP_CdmExceptionCode exception_code,
+                       uint32_t system_code,
+                       struct PP_Var error_description);
   /**
    * Called after the <code>Decrypt()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
@@ -253,7 +285,7 @@ struct PPB_ContentDecryptor_Private_0_11 {
       const struct PP_DecryptedSampleInfo* decrypted_sample_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_11 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_12 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

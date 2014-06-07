@@ -125,20 +125,29 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var GetPluginReferrerURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
-  virtual void SessionCreated(PP_Instance instance,
-                              uint32_t session_id,
-                              PP_Var web_session_id) OVERRIDE;
+  virtual void PromiseResolved(PP_Instance instance,
+                               uint32 promise_id) OVERRIDE;
+  virtual void PromiseResolvedWithSession(PP_Instance instance,
+                                          uint32 promise_id,
+                                          PP_Var web_session_id_var) OVERRIDE;
+  virtual void PromiseRejected(PP_Instance instance,
+                               uint32 promise_id,
+                               PP_CdmExceptionCode exception_code,
+                               uint32 system_code,
+                               PP_Var error_description_var) OVERRIDE;
   virtual void SessionMessage(PP_Instance instance,
-                              uint32_t session_id,
-                              PP_Var message,
-                              PP_Var destination_url) OVERRIDE;
-  virtual void SessionReady(PP_Instance instance, uint32_t session_id) OVERRIDE;
+                              PP_Var web_session_id_var,
+                              PP_Var message_var,
+                              PP_Var destination_url_var) OVERRIDE;
+  virtual void SessionReady(PP_Instance instance,
+                            PP_Var web_session_id_var) OVERRIDE;
   virtual void SessionClosed(PP_Instance instance,
-                             uint32_t session_id) OVERRIDE;
+                             PP_Var web_session_id_var) OVERRIDE;
   virtual void SessionError(PP_Instance instance,
-                            uint32_t session_id,
-                            int32_t media_error,
-                            uint32_t system_code) OVERRIDE;
+                            PP_Var web_session_id_var,
+                            PP_CdmExceptionCode exception_code,
+                            uint32 system_code,
+                            PP_Var error_description_var) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
@@ -238,22 +247,34 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                      SerializedVarReturnValue result);
   void OnHostMsgGetPluginReferrerURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
-  virtual void OnHostMsgSessionCreated(
+
+  virtual void OnHostMsgPromiseResolved(PP_Instance instance,
+                                        uint32_t promise_id);
+  virtual void OnHostMsgPromiseResolvedWithSession(
       PP_Instance instance,
-      uint32_t session_id,
+      uint32_t promise_id,
       SerializedVarReceiveInput web_session_id);
+  virtual void OnHostMsgPromiseRejected(
+      PP_Instance instance,
+      uint32_t promise_id,
+      PP_CdmExceptionCode exception_code,
+      uint32_t system_code,
+      SerializedVarReceiveInput error_description);
   virtual void OnHostMsgSessionMessage(
       PP_Instance instance,
-      uint32_t session_id,
+      SerializedVarReceiveInput web_session_id,
       SerializedVarReceiveInput message,
       SerializedVarReceiveInput destination_url);
-  virtual void OnHostMsgSessionReady(PP_Instance instance, uint32_t session_id);
+  virtual void OnHostMsgSessionReady(PP_Instance instance,
+                                     SerializedVarReceiveInput web_session_id);
   virtual void OnHostMsgSessionClosed(PP_Instance instance,
-                                      uint32_t session_id);
-  virtual void OnHostMsgSessionError(PP_Instance instance,
-                                     uint32_t session_id,
-                                     int32_t media_error,
-                                     uint32_t system_code);
+                                      SerializedVarReceiveInput web_session_id);
+  virtual void OnHostMsgSessionError(
+      PP_Instance instance,
+      SerializedVarReceiveInput web_session_id,
+      PP_CdmExceptionCode exception_code,
+      uint32_t system_code,
+      SerializedVarReceiveInput error_description);
   virtual void OnHostMsgDecoderInitializeDone(
       PP_Instance instance,
       PP_DecryptorStreamType decoder_type,

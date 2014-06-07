@@ -7,17 +7,14 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
 namespace content {
-
-const uint32 kStartingSessionId = 1;
-uint32 CdmSessionAdapter::next_session_id_ = kStartingSessionId;
-COMPILE_ASSERT(kStartingSessionId > media::MediaKeys::kInvalidSessionId,
-               invalid_starting_value);
 
 CdmSessionAdapter::CdmSessionAdapter() :
 #if defined(OS_ANDROID)
@@ -45,7 +42,6 @@ bool CdmSessionAdapter::Initialize(
       manager,
       &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      base::Bind(&CdmSessionAdapter::OnSessionCreated, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionReady, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
@@ -57,39 +53,47 @@ bool CdmSessionAdapter::Initialize(
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession(
     blink::WebContentDecryptionModuleSession::Client* client) {
-  // Generate a unique internal session id for the new session.
-  uint32 session_id = next_session_id_++;
-  DCHECK(sessions_.find(session_id) == sessions_.end());
-  WebContentDecryptionModuleSessionImpl* session =
-      new WebContentDecryptionModuleSessionImpl(session_id, client, this);
-  sessions_[session_id] = session;
-  return session;
+  return new WebContentDecryptionModuleSessionImpl(client, this);
 }
 
-void CdmSessionAdapter::RemoveSession(uint32 session_id) {
-  DCHECK(sessions_.find(session_id) != sessions_.end());
-  sessions_.erase(session_id);
+void CdmSessionAdapter::RegisterSession(
+    const std::string& web_session_id,
+    base::WeakPtr<WebContentDecryptionModuleSessionImpl> session) {
+  DCHECK(!ContainsKey(sessions_, web_session_id));
+  sessions_[web_session_id] = session;
 }
 
-void CdmSessionAdapter::InitializeNewSession(uint32 session_id,
-                                             const std::string& content_type,
-                                             const uint8* init_data,
-                                             int init_data_length) {
-  DCHECK(sessions_.find(session_id) != sessions_.end());
-  media_keys_->CreateSession(
-      session_id, content_type, init_data, init_data_length);
+void CdmSessionAdapter::RemoveSession(const std::string& web_session_id) {
+  DCHECK(ContainsKey(sessions_, web_session_id));
+  sessions_.erase(web_session_id);
 }
 
-void CdmSessionAdapter::UpdateSession(uint32 session_id,
-                                      const uint8* response,
-                                      int response_length) {
-  DCHECK(sessions_.find(session_id) != sessions_.end());
-  media_keys_->UpdateSession(session_id, response, response_length);
+void CdmSessionAdapter::InitializeNewSession(
+    const std::string& init_data_type,
+    const uint8* init_data,
+    int init_data_length,
+    media::MediaKeys::SessionType session_type,
+    scoped_ptr<media::NewSessionCdmPromise> promise) {
+  media_keys_->CreateSession(init_data_type,
+                             init_data,
+                             init_data_length,
+                             session_type,
+                             promise.Pass());
 }
 
-void CdmSessionAdapter::ReleaseSession(uint32 session_id) {
-  DCHECK(sessions_.find(session_id) != sessions_.end());
-  media_keys_->ReleaseSession(session_id);
+void CdmSessionAdapter::UpdateSession(
+    const std::string& web_session_id,
+    const uint8* response,
+    int response_length,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  media_keys_->UpdateSession(
+      web_session_id, response, response_length, promise.Pass());
+}
+
+void CdmSessionAdapter::ReleaseSession(
+    const std::string& web_session_id,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  media_keys_->ReleaseSession(web_session_id, promise.Pass());
 }
 
 media::Decryptor* CdmSessionAdapter::GetDecryptor() {
@@ -102,58 +106,51 @@ int CdmSessionAdapter::GetCdmId() const {
 }
 #endif  // defined(OS_ANDROID)
 
-void CdmSessionAdapter::OnSessionCreated(uint32 session_id,
-                                         const std::string& web_session_id) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << session_id;
-  if (session)
-    session->OnSessionCreated(web_session_id);
-}
-
-void CdmSessionAdapter::OnSessionMessage(uint32 session_id,
+void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
                                          const std::vector<uint8>& message,
                                          const GURL& destination_url) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << session_id;
+                             << web_session_id;
   if (session)
     session->OnSessionMessage(message, destination_url);
 }
 
-void CdmSessionAdapter::OnSessionReady(uint32 session_id) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
+void CdmSessionAdapter::OnSessionReady(const std::string& web_session_id) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << session_id;
+                             << web_session_id;
   if (session)
     session->OnSessionReady();
 }
 
-void CdmSessionAdapter::OnSessionClosed(uint32 session_id) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
+void CdmSessionAdapter::OnSessionClosed(const std::string& web_session_id) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << session_id;
+                             << web_session_id;
   if (session)
     session->OnSessionClosed();
 }
 
-void CdmSessionAdapter::OnSessionError(uint32 session_id,
-                                       media::MediaKeys::KeyError error_code,
-                                       uint32 system_code) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
+void CdmSessionAdapter::OnSessionError(
+    const std::string& web_session_id,
+    media::MediaKeys::Exception exception_code,
+    uint32 system_code,
+    const std::string& error_message) {
+  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << session_id;
+                             << web_session_id;
   if (session)
-    session->OnSessionError(error_code, system_code);
+    session->OnSessionError(exception_code, system_code, error_message);
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(
-    uint32 session_id) {
+    const std::string& web_session_id) {
   // Since session objects may get garbage collected, it is possible that there
   // are events coming back from the CDM and the session has been unregistered.
   // We can not tell if the CDM is firing events at sessions that never existed.
-  SessionMap::iterator session = sessions_.find(session_id);
-  return (session != sessions_.end()) ? session->second : NULL;
+  SessionMap::iterator session = sessions_.find(web_session_id);
+  return (session != sessions_.end()) ? session->second.get() : NULL;
 }
 
 }  // namespace content

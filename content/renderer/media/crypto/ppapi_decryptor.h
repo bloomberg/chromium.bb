@@ -35,7 +35,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const std::string& key_system,
       const GURL& security_origin,
       const CreatePepperCdmCB& create_pepper_cdm_cb,
-      const media::SessionCreatedCB& session_created_cb,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
@@ -44,16 +43,23 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   virtual ~PpapiDecryptor();
 
   // media::MediaKeys implementation.
-  virtual bool CreateSession(uint32 session_id,
-                             const std::string& content_type,
-                             const uint8* init_data,
-                             int init_data_length) OVERRIDE;
-  virtual void LoadSession(uint32 session_id,
-                           const std::string& web_session_id) OVERRIDE;
-  virtual void UpdateSession(uint32 session_id,
-                             const uint8* response,
-                             int response_length) OVERRIDE;
-  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
+  virtual void CreateSession(
+      const std::string& init_data_type,
+      const uint8* init_data,
+      int init_data_length,
+      SessionType session_type,
+      scoped_ptr<media::NewSessionCdmPromise> promise) OVERRIDE;
+  virtual void LoadSession(
+      const std::string& web_session_id,
+      scoped_ptr<media::NewSessionCdmPromise> promise) OVERRIDE;
+  virtual void UpdateSession(
+      const std::string& web_session_id,
+      const uint8* response,
+      int response_length,
+      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
+  virtual void ReleaseSession(
+      const std::string& web_session_id,
+      scoped_ptr<media::SimpleCdmPromise> promise) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // media::Decryptor implementation.
@@ -79,26 +85,26 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
  private:
   PpapiDecryptor(const std::string& key_system,
                  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
-                 const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
                  const media::SessionReadyCB& session_ready_cb,
                  const media::SessionClosedCB& session_closed_cb,
                  const media::SessionErrorCB& session_error_cb);
 
-  void ReportFailureToCallPlugin(uint32 session_id);
-
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
   // Callbacks for |plugin_cdm_delegate_| to fire session events.
-  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
-  void OnSessionMessage(uint32 session_id,
+  void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
-  void OnSessionReady(uint32 session_id);
-  void OnSessionClosed(uint32 session_id);
-  void OnSessionError(uint32 session_id,
-                      media::MediaKeys::KeyError error_code,
-                      uint32 system_code);
+  void OnSessionReady(const std::string& web_session_id);
+  void OnSessionClosed(const std::string& web_session_id);
+  void OnSessionError(const std::string& web_session_id,
+                      MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_description);
+
+  // On a successful Update() or SessionReady event, trigger playback to resume.
+  void ResumePlayback();
 
   // Callback to notify that a fatal error happened in |plugin_cdm_delegate_|.
   // The error is terminal and |plugin_cdm_delegate_| should not be used after
@@ -112,7 +118,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper_;
 
   // Callbacks for firing session events.
-  media::SessionCreatedCB session_created_cb_;
   media::SessionMessageCB session_message_cb_;
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;

@@ -13,6 +13,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_decoder_config.h"
@@ -28,7 +29,7 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   // Use a std::list to actually hold the data. Insertion is always done
   // at the front, so the "latest" decryption key is always the first one
   // in the list.
-  typedef std::list<std::pair<uint32, DecryptionKey*> > KeyList;
+  typedef std::list<std::pair<std::string, DecryptionKey*> > KeyList;
 
  public:
   SessionIdDecryptionKeyMap() {}
@@ -37,10 +38,11 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   // Replaces value if |session_id| is already present, or adds it if not.
   // This |decryption_key| becomes the latest until another insertion or
   // |session_id| is erased.
-  void Insert(uint32 session_id, scoped_ptr<DecryptionKey> decryption_key);
+  void Insert(const std::string& web_session_id,
+              scoped_ptr<DecryptionKey> decryption_key);
 
   // Deletes the entry for |session_id| if present.
-  void Erase(const uint32 session_id);
+  void Erase(const std::string& web_session_id);
 
   // Returns whether the list is empty
   bool Empty() const { return key_list_.empty(); }
@@ -52,8 +54,8 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   }
 
  private:
-  // Searches the list for an element with |session_id|.
-  KeyList::iterator Find(const uint32 session_id);
+  // Searches the list for an element with |web_session_id|.
+  KeyList::iterator Find(const std::string& web_session_id);
 
   // Deletes the entry pointed to by |position|.
   void Erase(KeyList::iterator position);
@@ -64,26 +66,28 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
 };
 
 void AesDecryptor::SessionIdDecryptionKeyMap::Insert(
-    uint32 session_id,
+    const std::string& web_session_id,
     scoped_ptr<DecryptionKey> decryption_key) {
-  KeyList::iterator it = Find(session_id);
+  KeyList::iterator it = Find(web_session_id);
   if (it != key_list_.end())
     Erase(it);
   DecryptionKey* raw_ptr = decryption_key.release();
-  key_list_.push_front(std::make_pair(session_id, raw_ptr));
+  key_list_.push_front(std::make_pair(web_session_id, raw_ptr));
 }
 
-void AesDecryptor::SessionIdDecryptionKeyMap::Erase(const uint32 session_id) {
-  KeyList::iterator it = Find(session_id);
+void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
+    const std::string& web_session_id) {
+  KeyList::iterator it = Find(web_session_id);
   if (it == key_list_.end())
     return;
   Erase(it);
 }
 
 AesDecryptor::SessionIdDecryptionKeyMap::KeyList::iterator
-AesDecryptor::SessionIdDecryptionKeyMap::Find(const uint32 session_id) {
+AesDecryptor::SessionIdDecryptionKeyMap::Find(
+    const std::string& web_session_id) {
   for (KeyList::iterator it = key_list_.begin(); it != key_list_.end(); ++it) {
-    if (it->first == session_id)
+    if (it->first == web_session_id)
       return it;
   }
   return key_list_.end();
@@ -215,67 +219,70 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(const SessionCreatedCB& session_created_cb,
-                           const SessionMessageCB& session_message_cb,
-                           const SessionReadyCB& session_ready_cb,
-                           const SessionClosedCB& session_closed_cb,
-                           const SessionErrorCB& session_error_cb)
-    : session_created_cb_(session_created_cb),
-      session_message_cb_(session_message_cb),
-      session_ready_cb_(session_ready_cb),
-      session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb) {}
+AesDecryptor::AesDecryptor(const SessionMessageCB& session_message_cb)
+    : session_message_cb_(session_message_cb) {
+  DCHECK(!session_message_cb_.is_null());
+}
 
 AesDecryptor::~AesDecryptor() {
   key_map_.clear();
 }
 
-bool AesDecryptor::CreateSession(uint32 session_id,
-                                 const std::string& content_type,
+void AesDecryptor::CreateSession(const std::string& init_data_type,
                                  const uint8* init_data,
-                                 int init_data_length) {
-  // Validate that this is a new session.
-  DCHECK(valid_sessions_.find(session_id) == valid_sessions_.end());
-  valid_sessions_.insert(session_id);
+                                 int init_data_length,
+                                 SessionType session_type,
+                                 scoped_ptr<NewSessionCdmPromise> promise) {
+  std::string web_session_id(base::UintToString(next_web_session_id_++));
+  valid_sessions_.insert(web_session_id);
 
-  std::string web_session_id_string(base::UintToString(next_web_session_id_++));
-
-  // For now, the AesDecryptor does not care about |content_type|;
-  // just fire the event with the |init_data| as the request.
+  // For now, the AesDecryptor does not care about |init_data_type| or
+  // |session_type|; just resolve the promise and then fire a message event
+  // with the |init_data| as the request.
+  // TODO(jrummell): Validate |init_data_type| and |session_type|.
   std::vector<uint8> message;
   if (init_data && init_data_length)
     message.assign(init_data, init_data + init_data_length);
 
-  session_created_cb_.Run(session_id, web_session_id_string);
-  session_message_cb_.Run(session_id, message, GURL());
-  return true;
+  promise->resolve(web_session_id);
+
+  session_message_cb_.Run(web_session_id, message, GURL());
 }
 
-void AesDecryptor::LoadSession(uint32 session_id,
-                               const std::string& web_session_id) {
+void AesDecryptor::LoadSession(const std::string& web_session_id,
+                               scoped_ptr<NewSessionCdmPromise> promise) {
   // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
   // that do not support loadSession. See http://crbug.com/342481
-  session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+  promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
 }
 
-void AesDecryptor::UpdateSession(uint32 session_id,
+void AesDecryptor::UpdateSession(const std::string& web_session_id,
                                  const uint8* response,
-                                 int response_length) {
+                                 int response_length,
+                                 scoped_ptr<SimpleCdmPromise> promise) {
   CHECK(response);
   CHECK_GT(response_length, 0);
-  DCHECK(valid_sessions_.find(session_id) != valid_sessions_.end());
+
+  // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
+  if (valid_sessions_.find(web_session_id) == valid_sessions_.end()) {
+    promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
+    return;
+  }
 
   std::string key_string(reinterpret_cast<const char*>(response),
                          response_length);
+
   KeyIdAndKeyPairs keys;
   if (!ExtractKeysFromJWKSet(key_string, &keys)) {
-    session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+    promise->reject(
+        INVALID_ACCESS_ERROR, 0, "response is not a valid JSON Web Key Set.");
     return;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
-    session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+    promise->reject(
+        INVALID_ACCESS_ERROR, 0, "response does not contain any keys.");
     return;
   }
 
@@ -283,11 +290,11 @@ void AesDecryptor::UpdateSession(uint32 session_id,
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();
-      session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+      promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid key length.");
       return;
     }
-    if (!AddDecryptionKey(session_id, it->first, it->second)) {
-      session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+    if (!AddDecryptionKey(web_session_id, it->first, it->second)) {
+      promise->reject(INVALID_ACCESS_ERROR, 0, "Unable to add key.");
       return;
     }
   }
@@ -302,17 +309,24 @@ void AesDecryptor::UpdateSession(uint32 session_id,
       new_video_key_cb_.Run();
   }
 
-  session_ready_cb_.Run(session_id);
+  promise->resolve();
 }
 
-void AesDecryptor::ReleaseSession(uint32 session_id) {
+void AesDecryptor::ReleaseSession(const std::string& web_session_id,
+                                  scoped_ptr<SimpleCdmPromise> promise) {
   // Validate that this is a reference to an active session and then forget it.
-  std::set<uint32>::iterator it = valid_sessions_.find(session_id);
-  DCHECK(it != valid_sessions_.end());
+  std::set<std::string>::iterator it = valid_sessions_.find(web_session_id);
+  // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
+  if (it == valid_sessions_.end()) {
+    promise->reject(INVALID_ACCESS_ERROR, 0, "Session does not exist.");
+    return;
+  }
+
   valid_sessions_.erase(it);
 
-  DeleteKeysForSession(session_id);
-  session_closed_cb_.Run(session_id);
+  // Close the session.
+  DeleteKeysForSession(web_session_id);
+  promise->resolve();
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {
@@ -404,15 +418,10 @@ void AesDecryptor::DeinitializeDecoder(StreamType stream_type) {
   NOTREACHED() << "AesDecryptor does not support audio/video decoding";
 }
 
-bool AesDecryptor::AddDecryptionKey(const uint32 session_id,
+bool AesDecryptor::AddDecryptionKey(const std::string& web_session_id,
                                     const std::string& key_id,
                                     const std::string& key_string) {
   scoped_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
-  if (!decryption_key) {
-    DVLOG(1) << "Could not create key.";
-    return false;
-  }
-
   if (!decryption_key->Init()) {
     DVLOG(1) << "Could not initialize decryption key.";
     return false;
@@ -421,14 +430,14 @@ bool AesDecryptor::AddDecryptionKey(const uint32 session_id,
   base::AutoLock auto_lock(key_map_lock_);
   KeyIdToSessionKeysMap::iterator key_id_entry = key_map_.find(key_id);
   if (key_id_entry != key_map_.end()) {
-    key_id_entry->second->Insert(session_id, decryption_key.Pass());
+    key_id_entry->second->Insert(web_session_id, decryption_key.Pass());
     return true;
   }
 
   // |key_id| not found, so need to create new entry.
   scoped_ptr<SessionIdDecryptionKeyMap> inner_map(
       new SessionIdDecryptionKeyMap());
-  inner_map->Insert(session_id, decryption_key.Pass());
+  inner_map->Insert(web_session_id, decryption_key.Pass());
   key_map_.add(key_id, inner_map.Pass());
   return true;
 }
@@ -444,14 +453,15 @@ AesDecryptor::DecryptionKey* AesDecryptor::GetKey(
   return key_id_found->second->LatestDecryptionKey();
 }
 
-void AesDecryptor::DeleteKeysForSession(const uint32 session_id) {
+void AesDecryptor::DeleteKeysForSession(const std::string& web_session_id) {
   base::AutoLock auto_lock(key_map_lock_);
 
-  // Remove all keys associated with |session_id|. Since the data is optimized
-  // for access in GetKey(), we need to look at each entry in |key_map_|.
+  // Remove all keys associated with |web_session_id|. Since the data is
+  // optimized for access in GetKey(), we need to look at each entry in
+  // |key_map_|.
   KeyIdToSessionKeysMap::iterator it = key_map_.begin();
   while (it != key_map_.end()) {
-    it->second->Erase(session_id);
+    it->second->Erase(web_session_id);
     if (it->second->Empty()) {
       // Need to get rid of the entry for this key_id. This will mess up the
       // iterator, so we need to increment it first.

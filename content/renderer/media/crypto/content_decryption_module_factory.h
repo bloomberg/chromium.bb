@@ -33,7 +33,6 @@ class ContentDecryptionModuleFactory {
       RendererCdmManager* manager,
       int* cdm_id,  // Output parameter indicating the CDM ID of the MediaKeys.
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      const media::SessionCreatedCB& session_created_cb,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,

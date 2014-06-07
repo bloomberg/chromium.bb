@@ -28,6 +28,11 @@
 #include "ppapi/cpp/private/platform_verification.h"
 #endif
 
+#if defined(GetCurrentTime)
+// winbase.h defines this which messes up calls to Host_5::GetCurrentTime.
+#undef GetCurrentTime
+#endif
+
 namespace media {
 
 // GetCdmHostFunc implementation.
@@ -37,7 +42,8 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 // Content Decryption Module (CDM).
 class CdmAdapter : public pp::Instance,
                    public pp::ContentDecryptor_Private,
-                   public cdm::Host_4 {
+                   public cdm::Host_4,
+                   public cdm::Host_5 {
  public:
   CdmAdapter(PP_Instance instance, pp::Module* module);
   virtual ~CdmAdapter();
@@ -51,14 +57,17 @@ class CdmAdapter : public pp::Instance,
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
   virtual void Initialize(const std::string& key_system) OVERRIDE;
-  virtual void CreateSession(uint32_t session_id,
-                             const std::string& content_type,
-                             pp::VarArrayBuffer init_data) OVERRIDE;
-  virtual void LoadSession(uint32_t session_id,
+  virtual void CreateSession(uint32_t promise_id,
+                             const std::string& init_data_type,
+                             pp::VarArrayBuffer init_data,
+                             PP_SessionType session_type) OVERRIDE;
+  virtual void LoadSession(uint32_t promise_id,
                            const std::string& web_session_id) OVERRIDE;
-  virtual void UpdateSession(uint32_t session_id,
+  virtual void UpdateSession(uint32_t promise_id,
+                             const std::string& web_session_id,
                              pp::VarArrayBuffer response) OVERRIDE;
-  virtual void ReleaseSession(uint32_t session_id) OVERRIDE;
+  virtual void ReleaseSession(uint32_t promise_id,
+                              const std::string& web_session_id) OVERRIDE;
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
@@ -77,9 +86,11 @@ class CdmAdapter : public pp::Instance,
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
-  // cdm::Host implementation.
+  // cdm::Host_4 and cdm::Host_5 implementation.
   virtual cdm::Buffer* Allocate(uint32_t capacity) OVERRIDE;
   virtual void SetTimer(int64_t delay_ms, void* context) OVERRIDE;
+
+  // cdm::Host_4 implementation.
   virtual double GetCurrentWallTimeInSeconds() OVERRIDE;
   virtual void OnSessionCreated(uint32_t session_id,
                                 const char* web_session_id,
@@ -94,9 +105,47 @@ class CdmAdapter : public pp::Instance,
   virtual void OnSessionError(uint32_t session_id,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) OVERRIDE;
-  virtual void SendPlatformChallenge(
-      const char* service_id, uint32_t service_id_length,
-      const char* challenge, uint32_t challenge_length) OVERRIDE;
+
+  // cdm::Host_5 implementation.
+  virtual cdm::Time GetCurrentTime() OVERRIDE;
+  virtual void OnResolveNewSessionPromise(
+      uint32_t promise_id,
+      const char* web_session_id,
+      uint32_t web_session_id_length) OVERRIDE;
+  virtual void OnResolvePromise(uint32_t promise_id) OVERRIDE;
+  virtual void OnRejectPromise(uint32_t promise_id,
+                               cdm::Error error,
+                               uint32_t system_code,
+                               const char* error_message,
+                               uint32_t error_message_length) OVERRIDE;
+  virtual void OnSessionMessage(const char* web_session_id,
+                                uint32_t web_session_id_length,
+                                const char* message,
+                                uint32_t message_length,
+                                const char* destination_url,
+                                uint32_t destination_url_length) OVERRIDE;
+  virtual void OnSessionKeysChange(const char* web_session_id,
+                                   uint32_t web_session_id_length,
+                                   bool has_additional_usable_key);
+  virtual void OnExpirationChange(const char* web_session_id,
+                                  uint32_t web_session_id_length,
+                                  cdm::Time new_expiry_time);
+  virtual void OnSessionReady(const char* web_session_id,
+                              uint32_t web_session_id_length) OVERRIDE;
+  virtual void OnSessionClosed(const char* web_session_id,
+                               uint32_t web_session_id_length) OVERRIDE;
+  virtual void OnSessionError(const char* web_session_id,
+                              uint32_t web_session_id_length,
+                              cdm::Error error,
+                              uint32_t system_code,
+                              const char* error_message,
+                              uint32_t error_message_length) OVERRIDE;
+
+  // cdm::Host_4 and cdm::Host_5 implementation.
+  virtual void SendPlatformChallenge(const char* service_id,
+                                     uint32_t service_id_length,
+                                     const char* challenge,
+                                     uint32_t challenge_length) OVERRIDE;
   virtual void EnableOutputProtection(
       uint32_t desired_protection_mask) OVERRIDE;
   virtual void QueryOutputProtectionStatus() OVERRIDE;
@@ -118,24 +167,43 @@ class CdmAdapter : public pp::Instance,
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
+  struct SessionError {
+    SessionError(cdm::Error error,
+                 uint32_t system_code,
+                 std::string error_description);
+    cdm::Error error;
+    uint32_t system_code;
+    std::string error_description;
+  };
+
   bool CreateCdmInstance(const std::string& key_system);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
-  void SendSessionCreatedInternal(int32_t result,
-                                  uint32_t session_id,
-                                  const std::string& web_session_id);
+  void SendPromiseResolvedInternal(int32_t result, uint32_t promise_id);
+  void SendPromiseResolvedWithSessionInternal(
+      int32_t result,
+      uint32_t promise_id,
+      const std::string& web_session_id);
+  void SendPromiseRejectedInternal(int32_t result,
+                                   uint32_t promise_id,
+                                   const SessionError& error);
   void SendSessionMessageInternal(int32_t result,
-                                  uint32_t session_id,
+                                  const std::string& web_session_id,
                                   const std::vector<uint8>& message,
                                   const std::string& destination_url);
-  void SendSessionReadyInternal(int32_t result, uint32_t session_id);
-  void SendSessionClosedInternal(int32_t result, uint32_t session_id);
+  void SendSessionReadyInternal(int32_t result,
+                                const std::string& web_session_id);
+  void SendSessionClosedInternal(int32_t result,
+                                 const std::string& web_session_id);
   void SendSessionErrorInternal(int32_t result,
-                                uint32_t session_id,
-                                cdm::MediaKeyError error_code,
-                                uint32_t system_code);
+                                const std::string& web_session_id,
+                                const SessionError& error);
+  void RejectPromise(uint32_t promise_id,
+                     cdm::Error error,
+                     uint32_t system_code,
+                     const std::string& error_message);
 
   void DeliverBlock(int32_t result,
                     const cdm::Status& status,

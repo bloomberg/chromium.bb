@@ -14,11 +14,11 @@ namespace media {
 
 scoped_ptr<BrowserCdm> CreateBrowserCdm(
     const std::string& key_system,
-    const SessionCreatedCB& session_created_cb,
-    const SessionMessageCB& session_message_cb,
-    const SessionReadyCB& session_ready_cb,
-    const SessionClosedCB& session_closed_cb,
-    const SessionErrorCB& session_error_cb) {
+    const BrowserCdm::SessionCreatedCB& session_created_cb,
+    const BrowserCdm::SessionMessageCB& session_message_cb,
+    const BrowserCdm::SessionReadyCB& session_ready_cb,
+    const BrowserCdm::SessionClosedCB& session_closed_cb,
+    const BrowserCdm::SessionErrorCB& session_error_cb) {
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
     NOTREACHED() << "Unsupported key system: " << key_system;
     return scoped_ptr<BrowserCdm>();

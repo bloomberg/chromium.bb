@@ -12,7 +12,7 @@
 [generate_thunk]
 
 label Chrome {
-  M35 = 0.11
+  M36 = 0.12
 };
 
 /**
@@ -24,20 +24,46 @@ label Chrome {
  */
 interface PPB_ContentDecryptor_Private {
   /**
-   * A session has been created by the CDM.
+   * A promise has been resolved by the CDM.
    *
-   * @param[in] session_id Identifies the session for which the CDM
-   * created a session.
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
+   */
+  void PromiseResolved(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id);
+
+  /**
+   * A promise has been resolved by the CDM.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the string for the
-   * MediaKeySession's sessionId attribute.
-   *
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute.
    */
-  void SessionCreated(
+  void PromiseResolvedWithSession(
       [in] PP_Instance instance,
-      [in] uint32_t session_id,
+      [in] uint32_t promise_id,
       [in] PP_Var web_session_id);
+
+  /**
+   * A promise has been rejected by the CDM due to an error.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM rejected.
+   *
+   * @param[in] exception_code A <code>PP_CdmExceptionCode</code> containing
+   * the exception code.
+   *
+   * @param[in] system_code A system error code.
+   *
+   * @param[in] error_description A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the error description.
+   */
+  void PromiseRejected(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_CdmExceptionCode exception_code,
+      [in] uint32_t system_code,
+      [in] PP_Var error_description);
 
   /**
    * A message or request has been generated for key_system in the CDM, and
@@ -53,8 +79,9 @@ interface PPB_ContentDecryptor_Private {
    * of <code>UpdateSession()</code> and <code>SessionMessage()</code> calls
    * required to prepare for decryption.
    *
-   * @param[in] session_id Identifies the session for which the message
-   * is intended.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute for
+   * which the message is intended.
    *
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
@@ -65,7 +92,7 @@ interface PPB_ContentDecryptor_Private {
    */
   void SessionMessage(
       [in] PP_Instance instance,
-      [in] uint32_t session_id,
+      [in] PP_Var web_session_id,
       [in] PP_Var message,
       [in] PP_Var destination_url);
 
@@ -81,11 +108,13 @@ interface PPB_ContentDecryptor_Private {
    * The CDM must call <code>SessionReady()</code> when the sequence is
    * completed, and, in response, the browser must notify the web application.
    *
-   * @param[in] session_id Identifies the session that is ready.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that is now ready.
    */
   void SessionReady(
       [in] PP_Instance instance,
-      [in] uint32_t session_id);
+      [in] PP_Var web_session_id);
 
   /**
    * The session has been closed as the result of a call to the
@@ -93,28 +122,36 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPP_ContentDecryptor_Private</code> interface, or due to other
    * factors as determined by the CDM.
    *
-   * @param[in] session_id Identifies the session that is closed.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that is now closed.
    */
   void SessionClosed(
       [in] PP_Instance instance,
-      [in] uint32_t session_id);
+      [in] PP_Var web_session_id);
 
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,
    * or within the plugin implementing the interface.
    *
-   * @param[in] session_id Identifies the session for which the error
-   * is intended.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute of
+   * the session that caused the error.
    *
-   * @param[in] media_error A MediaKeyError.
+   * @param[in] exception_code A <code>PP_CdmExceptionCode</code> containing
+   * the exception code.
    *
-   * @param[in] system_error A system error code.
+   * @param[in] system_code A system error code.
+   *
+   * @param[in] error_description A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the error description.
    */
   void SessionError(
       [in] PP_Instance instance,
-      [in] uint32_t session_id,
-      [in] int32_t media_error,
-      [in] uint32_t system_code);
+      [in] PP_Var web_session_id,
+      [in] PP_CdmExceptionCode exception_code,
+      [in] uint32_t system_code,
+      [in] PP_Var error_description);
 
   /**
    * Called after the <code>Decrypt()</code> method on the

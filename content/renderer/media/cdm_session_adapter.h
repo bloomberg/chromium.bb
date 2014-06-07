@@ -6,8 +6,10 @@
 #define CONTENT_RENDERER_MEDIA_CDM_SESSION_ADAPTER_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
@@ -27,7 +29,7 @@ class RendererCdmManager;
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.
-// Forwards the session ID-based callbacks of the MediaKeys interface to the
+// Forwards the web session ID-based callbacks of the MediaKeys interface to the
 // appropriate session object. Callers should hold references to this class
 // as long as they need the CDM instance.
 class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
@@ -45,27 +47,39 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
       const GURL& security_origin);
 
   // Creates a new session and adds it to the internal map. The caller owns the
-  // created session. RemoveSession() must be called when destroying it.
+  // created session. RemoveSession() must be called when destroying it, if
+  // RegisterSession() was called.
   WebContentDecryptionModuleSessionImpl* CreateSession(
       blink::WebContentDecryptionModuleSession::Client* client);
 
+  // Adds a session to the internal map. Called once the session is successfully
+  // initialized.
+  void RegisterSession(
+      const std::string& web_session_id,
+      base::WeakPtr<WebContentDecryptionModuleSessionImpl> session);
+
   // Removes a session from the internal map.
-  void RemoveSession(uint32 session_id);
+  void RemoveSession(const std::string& web_session_id);
 
-  // Initializes the session specified by |session_id| with the |content_type|
-  // and |init_data| provided.
-  void InitializeNewSession(uint32 session_id,
-                            const std::string& content_type,
+  // Initializes a session with the |init_data_type|, |init_data| and
+  // |session_type| provided. Takes ownership of |promise|.
+  void InitializeNewSession(const std::string& init_data_type,
                             const uint8* init_data,
-                            int init_data_length);
+                            int init_data_length,
+                            media::MediaKeys::SessionType session_type,
+                            scoped_ptr<media::NewSessionCdmPromise> promise);
 
-  // Updates the session specified by |session_id| with |response|.
-  void UpdateSession(uint32 session_id,
+  // Updates the session specified by |web_session_id| with |response|.
+  // Takes ownership of |promise|.
+  void UpdateSession(const std::string& web_session_id,
                      const uint8* response,
-                     int response_length);
+                     int response_length,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
 
-  // Releases the session specified by |session_id|.
-  void ReleaseSession(uint32 session_id);
+  // Releases the session specified by |web_session_id|.
+  // Takes ownership of |promise|.
+  void ReleaseSession(const std::string& web_session_id,
+                      scoped_ptr<media::SimpleCdmPromise> promise);
 
   // Returns the Decryptor associated with this CDM. May be NULL if no
   // Decryptor is associated with the MediaKeys object.
@@ -81,26 +95,26 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
  private:
   friend class base::RefCounted<CdmSessionAdapter>;
-  typedef std::map<uint32, WebContentDecryptionModuleSessionImpl*> SessionMap;
+  typedef base::hash_map<std::string,
+                         base::WeakPtr<WebContentDecryptionModuleSessionImpl> >
+      SessionMap;
 
   ~CdmSessionAdapter();
 
   // Callbacks for firing session events.
-  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
-  void OnSessionMessage(uint32 session_id,
+  void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
-  void OnSessionReady(uint32 session_id);
-  void OnSessionClosed(uint32 session_id);
-  void OnSessionError(uint32 session_id,
-                      media::MediaKeys::KeyError error_code,
-                      uint32 system_code);
+  void OnSessionReady(const std::string& web_session_id);
+  void OnSessionClosed(const std::string& web_session_id);
+  void OnSessionError(const std::string& web_session_id,
+                      media::MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_message);
 
   // Helper function of the callbacks.
-  WebContentDecryptionModuleSessionImpl* GetSession(uint32 session_id);
-
-  // Session ID should be unique per renderer process for debugging purposes.
-  static uint32 next_session_id_;
+  WebContentDecryptionModuleSessionImpl* GetSession(
+      const std::string& web_session_id);
 
   scoped_ptr<media::MediaKeys> media_keys_;
 

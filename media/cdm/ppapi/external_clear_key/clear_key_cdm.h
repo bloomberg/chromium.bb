@@ -35,17 +35,27 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
-  virtual void CreateSession(
-      uint32 session_id,
-      const char* type, uint32 type_size,
-      const uint8* init_data, uint32 init_data_size) OVERRIDE;
-  virtual void LoadSession(
-      uint32_t session_id,
-      const char* web_session_id, uint32_t web_session_id_length) OVERRIDE;
-  virtual void UpdateSession(
-      uint32 session_id,
-      const uint8* response, uint32 response_size) OVERRIDE;
-  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
+  virtual void CreateSession(uint32 promise_id,
+                             const char* init_data_type,
+                             uint32 init_data_type_size,
+                             const uint8* init_data,
+                             uint32 init_data_size,
+                             cdm::SessionType session_type) OVERRIDE;
+  virtual void LoadSession(uint32 promise_id,
+                           const char* web_session_id,
+                           uint32_t web_session_id_length) OVERRIDE;
+  virtual void UpdateSession(uint32 promise_id,
+                             const char* web_session_id,
+                             uint32_t web_session_id_length,
+                             const uint8* response,
+                             uint32 response_size) OVERRIDE;
+  virtual void ReleaseSession(uint32 promise_id,
+                              const char* web_session_id,
+                              uint32_t web_session_id_length) OVERRIDE;
+  virtual void SetServerCertificate(
+      uint32 promise_id,
+      const uint8_t* server_certificate_data,
+      uint32_t server_certificate_data_size) OVERRIDE;
   virtual void TimerExpired(void* context) OVERRIDE;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
@@ -73,15 +83,20 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void LoadLoadableSession();
 
   // ContentDecryptionModule callbacks.
-  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
-  void OnSessionMessage(uint32 session_id,
+  void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
-  void OnSessionReady(uint32 session_id);
-  void OnSessionClosed(uint32 session_id);
-  void OnSessionError(uint32 session_id,
-                      MediaKeys::KeyError error_code,
-                      uint32 system_code);
+
+  // Handle the success/failure of a promise. These methods are responsible for
+  // calling |host_| to resolve or reject the promise.
+  void OnSessionCreated(uint32 promise_id, const std::string& web_session_id);
+  void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
+  void OnSessionUpdated(uint32 promise_id, const std::string& web_session_id);
+  void OnSessionReleased(uint32 promise_id, const std::string& web_session_id);
+  void OnPromiseFailed(uint32 promise_id,
+                       MediaKeys::Exception exception_code,
+                       uint32 system_code,
+                       const std::string& error_message);
 
   // Prepares next heartbeat message and sets a timer for it.
   void ScheduleNextHeartBeat();
@@ -117,18 +132,22 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Callback for CDM File IO test.
   void OnFileIOTestComplete(bool success);
 
+  // Keep track of the last session created.
+  void SetSessionId(const std::string& web_session_id);
+
   AesDecryptor decryptor_;
 
   ClearKeyCdmHost* host_;
 
   const std::string key_system_;
 
-  uint32 last_session_id_;
+  std::string last_session_id_;
   std::string next_heartbeat_message_;
 
   // TODO(xhwang): Extract testing code from main implementation.
   // See http://crbug.com/341751
-  uint32 session_id_for_emulated_loadsession_;
+  std::string session_id_for_emulated_loadsession_;
+  uint32_t promise_id_for_emulated_loadsession_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;

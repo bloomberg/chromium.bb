@@ -252,6 +252,8 @@
         'base/buffers.h',
         'base/byte_queue.cc',
         'base/byte_queue.h',
+        'base/cdm_promise.cc',
+        'base/cdm_promise.h',
         'base/channel_mixer.cc',
         'base/channel_mixer.h',
         'base/clock.cc',

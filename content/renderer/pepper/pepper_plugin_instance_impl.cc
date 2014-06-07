@@ -2365,36 +2365,54 @@ PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
 // PPP_ContentDecryptor_Private calls made on |content_decryptor_delegate_|.
 // Therefore, |content_decryptor_delegate_| must have been initialized when
 // the following methods are called.
-void PepperPluginInstanceImpl::SessionCreated(PP_Instance instance,
-                                              uint32_t session_id,
-                                              PP_Var web_session_id_var) {
-  content_decryptor_delegate_->OnSessionCreated(session_id, web_session_id_var);
+void PepperPluginInstanceImpl::PromiseResolved(PP_Instance instance,
+                                               uint32 promise_id) {
+  content_decryptor_delegate_->OnPromiseResolved(promise_id);
+}
+
+void PepperPluginInstanceImpl::PromiseResolvedWithSession(
+    PP_Instance instance,
+    uint32 promise_id,
+    PP_Var web_session_id_var) {
+  content_decryptor_delegate_->OnPromiseResolvedWithSession(promise_id,
+                                                            web_session_id_var);
+}
+
+void PepperPluginInstanceImpl::PromiseRejected(
+    PP_Instance instance,
+    uint32 promise_id,
+    PP_CdmExceptionCode exception_code,
+    uint32 system_code,
+    PP_Var error_description_var) {
+  content_decryptor_delegate_->OnPromiseRejected(
+      promise_id, exception_code, system_code, error_description_var);
 }
 
 void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
-                                              uint32_t session_id,
+                                              PP_Var web_session_id_var,
                                               PP_Var message_var,
-                                              PP_Var destination_url) {
+                                              PP_Var destination_url_var) {
   content_decryptor_delegate_->OnSessionMessage(
-      session_id, message_var, destination_url);
+      web_session_id_var, message_var, destination_url_var);
 }
 
 void PepperPluginInstanceImpl::SessionReady(PP_Instance instance,
-                                            uint32_t session_id) {
-  content_decryptor_delegate_->OnSessionReady(session_id);
+                                            PP_Var web_session_id_var) {
+  content_decryptor_delegate_->OnSessionReady(web_session_id_var);
 }
 
 void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,
-                                             uint32_t session_id) {
-  content_decryptor_delegate_->OnSessionClosed(session_id);
+                                             PP_Var web_session_id_var) {
+  content_decryptor_delegate_->OnSessionClosed(web_session_id_var);
 }
 
 void PepperPluginInstanceImpl::SessionError(PP_Instance instance,
-                                            uint32_t session_id,
-                                            int32_t media_error,
-                                            uint32_t system_code) {
+                                            PP_Var web_session_id_var,
+                                            PP_CdmExceptionCode exception_code,
+                                            uint32 system_code,
+                                            PP_Var error_description_var) {
   content_decryptor_delegate_->OnSessionError(
-      session_id, media_error, system_code);
+      web_session_id_var, exception_code, system_code, error_description_var);
 }
 
 void PepperPluginInstanceImpl::DeliverBlock(

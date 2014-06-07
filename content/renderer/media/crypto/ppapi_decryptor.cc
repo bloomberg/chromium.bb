@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
@@ -23,11 +25,40 @@
 
 namespace content {
 
+// This class is needed so that resolving an Update() promise triggers playback
+// of the stream. It intercepts the resolve() call to invoke an additional
+// callback.
+class SessionUpdatedPromise : public media::SimpleCdmPromise {
+ public:
+  SessionUpdatedPromise(scoped_ptr<media::SimpleCdmPromise> caller_promise,
+                        base::Closure additional_resolve_cb)
+      : caller_promise_(caller_promise.Pass()),
+        additional_resolve_cb_(additional_resolve_cb) {}
+
+  virtual void resolve() OVERRIDE {
+    DCHECK(is_pending_);
+    is_pending_ = false;
+    additional_resolve_cb_.Run();
+    caller_promise_->resolve();
+  }
+
+  virtual void reject(media::MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_message) OVERRIDE {
+    DCHECK(is_pending_);
+    is_pending_ = false;
+    caller_promise_->reject(exception_code, system_code, error_message);
+  }
+
+ protected:
+  scoped_ptr<media::SimpleCdmPromise> caller_promise_;
+  base::Closure additional_resolve_cb_;
+};
+
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
     const GURL& security_origin,
     const CreatePepperCdmCB& create_pepper_cdm_cb,
-    const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -44,7 +75,6 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
   return scoped_ptr<PpapiDecryptor>(
       new PpapiDecryptor(key_system,
                          pepper_cdm_wrapper.Pass(),
-                         session_created_cb,
                          session_message_cb,
                          session_ready_cb,
                          session_closed_cb,
@@ -54,13 +84,11 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
 PpapiDecryptor::PpapiDecryptor(
     const std::string& key_system,
     scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
-    const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb)
     : pepper_cdm_wrapper_(pepper_cdm_wrapper.Pass()),
-      session_created_cb_(session_created_cb),
       session_message_cb_(session_message_cb),
       session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
@@ -68,7 +96,6 @@ PpapiDecryptor::PpapiDecryptor(
       render_loop_proxy_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this) {
   DCHECK(pepper_cdm_wrapper_.get());
-  DCHECK(!session_created_cb_.is_null());
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_ready_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
@@ -77,7 +104,6 @@ PpapiDecryptor::PpapiDecryptor(
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
       key_system,
-      base::Bind(&PpapiDecryptor::OnSessionCreated, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionReady, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
@@ -89,57 +115,75 @@ PpapiDecryptor::~PpapiDecryptor() {
   pepper_cdm_wrapper_.reset();
 }
 
-bool PpapiDecryptor::CreateSession(uint32 session_id,
-                                   const std::string& content_type,
-                                   const uint8* init_data,
-                                   int init_data_length) {
-  DVLOG(2) << __FUNCTION__;
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-
-  if (!CdmDelegate() ||
-      !CdmDelegate()->CreateSession(
-          session_id, content_type, init_data, init_data_length)) {
-    ReportFailureToCallPlugin(session_id);
-    return false;
-  }
-
-  return true;
-}
-
-void PpapiDecryptor::LoadSession(uint32 session_id,
-                                 const std::string& web_session_id) {
+void PpapiDecryptor::CreateSession(
+    const std::string& init_data_type,
+    const uint8* init_data,
+    int init_data_length,
+    SessionType session_type,
+    scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    ReportFailureToCallPlugin(session_id);
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
 
-  CdmDelegate()->LoadSession(session_id, web_session_id);
+  CdmDelegate()->CreateSession(init_data_type,
+                               init_data,
+                               init_data_length,
+                               session_type,
+                               promise.Pass());
 }
 
-void PpapiDecryptor::UpdateSession(uint32 session_id,
-                                   const uint8* response,
-                                   int response_length) {
+void PpapiDecryptor::LoadSession(
+    const std::string& web_session_id,
+    scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
-  if (!CdmDelegate() ||
-      !CdmDelegate()->UpdateSession(session_id, response, response_length)) {
-    ReportFailureToCallPlugin(session_id);
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
+
+  CdmDelegate()->LoadSession(web_session_id, promise.Pass());
 }
 
-void PpapiDecryptor::ReleaseSession(uint32 session_id) {
-  DVLOG(2) << __FUNCTION__;
+void PpapiDecryptor::UpdateSession(
+    const std::string& web_session_id,
+    const uint8* response,
+    int response_length,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
-  if (!CdmDelegate() || !CdmDelegate()->ReleaseSession(session_id)) {
-    ReportFailureToCallPlugin(session_id);
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
+
+  scoped_ptr<SessionUpdatedPromise> session_updated_promise(
+      new SessionUpdatedPromise(promise.Pass(),
+                                base::Bind(&PpapiDecryptor::ResumePlayback,
+                                           weak_ptr_factory_.GetWeakPtr())));
+  CdmDelegate()->UpdateSession(
+      web_session_id,
+      response,
+      response_length,
+      session_updated_promise.PassAs<media::SimpleCdmPromise>());
+}
+
+void PpapiDecryptor::ReleaseSession(
+    const std::string& web_session_id,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+
+  if (!CdmDelegate()) {
+    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    return;
+  }
+
+  CdmDelegate()->ReleaseSession(web_session_id, promise.Pass());
 }
 
 media::Decryptor* PpapiDecryptor::GetDecryptor() {
@@ -330,12 +374,6 @@ void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
     CdmDelegate()->DeinitializeDecoder(stream_type);
 }
 
-void PpapiDecryptor::ReportFailureToCallPlugin(uint32 session_id) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  DVLOG(1) << "Failed to call plugin.";
-  session_error_cb_.Run(session_id, kUnknownError, 0);
-}
-
 void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
                                           bool success) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
@@ -353,47 +391,43 @@ void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
   }
 }
 
-void PpapiDecryptor::OnSessionCreated(uint32 session_id,
-                                      const std::string& web_session_id) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_created_cb_.Run(session_id, web_session_id);
-}
-
-void PpapiDecryptor::OnSessionMessage(uint32 session_id,
+void PpapiDecryptor::OnSessionMessage(const std::string& web_session_id,
                                       const std::vector<uint8>& message,
                                       const GURL& destination_url) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_message_cb_.Run(session_id, message, destination_url);
+  session_message_cb_.Run(web_session_id, message, destination_url);
 }
 
-void PpapiDecryptor::OnSessionReady(uint32 session_id) {
+void PpapiDecryptor::OnSessionReady(const std::string& web_session_id) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
+  ResumePlayback();
+  session_ready_cb_.Run(web_session_id);
+}
+
+void PpapiDecryptor::OnSessionClosed(const std::string& web_session_id) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  session_closed_cb_.Run(web_session_id);
+}
+
+void PpapiDecryptor::OnSessionError(const std::string& web_session_id,
+                                    MediaKeys::Exception exception_code,
+                                    uint32 system_code,
+                                    const std::string& error_description) {
+  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  session_error_cb_.Run(
+      web_session_id, exception_code, system_code, error_description);
+}
+
+void PpapiDecryptor::ResumePlayback() {
   // Based on the spec, we need to resume playback when update() completes
-  // successfully, or when a session is successfully loaded. In both cases,
-  // the CDM fires OnSessionReady() event. So we choose to call the NewKeyCBs
-  // here.
-  // TODO(xhwang): Rename OnSessionReady to indicate that the playback may
-  // resume successfully (e.g. a new key is available or available again).
+  // successfully, or when a session is successfully loaded (triggered by
+  // OnSessionReady()). So we choose to call the NewKeyCBs here.
   if (!new_audio_key_cb_.is_null())
     new_audio_key_cb_.Run();
 
   if (!new_video_key_cb_.is_null())
     new_video_key_cb_.Run();
-
-  session_ready_cb_.Run(session_id);
-}
-
-void PpapiDecryptor::OnSessionClosed(uint32 session_id) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_closed_cb_.Run(session_id);
-}
-
-void PpapiDecryptor::OnSessionError(uint32 session_id,
-                                    media::MediaKeys::KeyError error_code,
-                                    uint32 system_code) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_error_cb_.Run(session_id, error_code, system_code);
 }
 
 void PpapiDecryptor::OnFatalPluginError() {

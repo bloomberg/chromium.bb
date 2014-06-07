@@ -300,31 +300,46 @@ PP_Var PluginInstance::GetDocumentURL(PP_Instance instance,
   return PP_MakeUndefined();
 }
 
-void PluginInstance::SessionCreated(PP_Instance instance,
-                                    uint32_t session_id,
-                                    PP_Var web_session_id) {
+void PluginInstance::PromiseResolved(PP_Instance instance, uint32 promise_id) {
+  NOTIMPLEMENTED();
+}
+
+void PluginInstance::PromiseResolvedWithSession(PP_Instance instance,
+                                                uint32 promise_id,
+                                                PP_Var web_session_id_var) {
+  NOTIMPLEMENTED();
+}
+
+void PluginInstance::PromiseRejected(PP_Instance instance,
+                                     uint32 promise_id,
+                                     PP_CdmExceptionCode exception_code,
+                                     uint32 system_code,
+                                     PP_Var error_description_var) {
   NOTIMPLEMENTED();
 }
 
 void PluginInstance::SessionMessage(PP_Instance instance,
-                                    uint32_t session_id,
-                                    PP_Var message,
-                                    PP_Var destination_url) {
+                                    PP_Var web_session_id_var,
+                                    PP_Var message_var,
+                                    PP_Var destination_url_var) {
   NOTIMPLEMENTED();
 }
 
-void PluginInstance::SessionReady(PP_Instance instance, uint32_t session_id) {
+void PluginInstance::SessionReady(PP_Instance instance,
+                                  PP_Var web_session_id_var) {
   NOTIMPLEMENTED();
 }
 
-void PluginInstance::SessionClosed(PP_Instance instance, uint32_t session_id) {
+void PluginInstance::SessionClosed(PP_Instance instance,
+                                   PP_Var web_session_id_var) {
   NOTIMPLEMENTED();
 }
 
 void PluginInstance::SessionError(PP_Instance instance,
-                                  uint32_t session_id,
-                                  int32_t media_error,
-                                  uint32_t system_code) {
+                                  PP_Var web_session_id_var,
+                                  PP_CdmExceptionCode exception_code,
+                                  uint32 system_code,
+                                  PP_Var error_description_var) {
   NOTIMPLEMENTED();
 }
 

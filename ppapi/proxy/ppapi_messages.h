@@ -88,6 +88,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ppapi::TCPSocketVersion,
 IPC_ENUM_TRAITS(PP_AudioSampleRate)
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
 IPC_ENUM_TRAITS(PP_DecryptorStreamType)
+IPC_ENUM_TRAITS(PP_SessionType)
+IPC_ENUM_TRAITS(PP_CdmExceptionCode)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_FileSystemType, PP_FILESYSTEMTYPE_ISOLATED)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_FileType, PP_FILETYPE_OTHER)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
@@ -699,22 +701,25 @@ IPC_MESSAGE_ROUTED3(
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_Initialize,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_CreateSession,
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPPContentDecryptor_CreateSession,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
-                    ppapi::proxy::SerializedVar /* content_type, String */,
-                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
+                    uint32_t /* promise_id */,
+                    ppapi::proxy::SerializedVar /* init_data_type, String */,
+                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */,
+                    PP_SessionType /* session_type */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_LoadSession,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
+                    uint32_t /* promise_id */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_UpdateSession,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_UpdateSession,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
+                    uint32_t /* promise_id */,
+                    ppapi::proxy::SerializedVar /* web_session_id, String */,
                     ppapi::proxy::SerializedVar /* response, ArrayBuffer */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_ReleaseSession,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_ReleaseSession,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */)
+                    uint32_t /* promise_id */,
+                    ppapi::proxy::SerializedVar /* web_session_id, String */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
@@ -1019,26 +1024,36 @@ IPC_SYNC_MESSAGE_ROUTED2_2(
     ppapi::proxy::SerializedHandle /* result_shm_handle */)
 
 // PPB_ContentDecryptor_Dev messages handled in PPB_Instance_Proxy.
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionCreated,
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PromiseResolved,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
+                    uint32_t /* promise_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_PromiseResolvedWithSession,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */)
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_PromiseRejected,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
+                    PP_CdmExceptionCode /* exception_code */,
+                    int32_t /* system_code */,
+                    ppapi::proxy::SerializedVar /* error_description, String */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionMessage,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
+                    ppapi::proxy::SerializedVar /* web_session_id, String */,
                     ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
                     ppapi::proxy::SerializedVar /* destination_url, String */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionReady,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */)
+                    ppapi::proxy::SerializedVar /* web_session_id, String */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionClosed,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionError,
+                    ppapi::proxy::SerializedVar /* web_session_id, String */)
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_SessionError,
                     PP_Instance /* instance */,
-                    uint32_t /* session_id */,
-                    int32_t /* media_error */,
-                    int32_t /* system_code */)
+                    ppapi::proxy::SerializedVar /* web_session_id, String */,
+                    PP_CdmExceptionCode /* exception_code */,
+                    int32_t /* system_code */,
+                    ppapi::proxy::SerializedVar /* error_description, String */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_block, PPB_Buffer_Dev */,

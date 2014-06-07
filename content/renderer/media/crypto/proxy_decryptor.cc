@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
+#include "media/base/cdm_promise.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
@@ -23,14 +24,6 @@
 #endif  // defined(OS_ANDROID)
 
 namespace content {
-
-// Since these reference IDs may conflict with the ones generated in
-// WebContentDecryptionModuleSessionImpl for the short time both paths are
-// active, start with 100000 and generate the IDs from there.
-// TODO(jrummell): Only allow one path http://crbug.com/306680.
-uint32 ProxyDecryptor::next_session_id_ = 100000;
-
-const uint32 kInvalidSessionId = 0;
 
 // Special system code to signal a closed persistent session in a SessionError()
 // call. This is needed because there is no SessionClosed() call in the prefixed
@@ -105,28 +98,39 @@ bool HasHeader(const uint8* data, int data_length, const std::string& header) {
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& content_type,
                                         const uint8* init_data,
                                         int init_data_length) {
-  // Use a unique reference id for this request.
-  uint32 session_id = next_session_id_++;
-
+  DVLOG(1) << "GenerateKeyRequest()";
   const char kPrefixedApiPersistentSessionHeader[] = "PERSISTENT|";
   const char kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
 
-  if (HasHeader(init_data, init_data_length, kPrefixedApiLoadSessionHeader)) {
-    persistent_sessions_.insert(session_id);
+  bool loadSession =
+      HasHeader(init_data, init_data_length, kPrefixedApiLoadSessionHeader);
+  bool persistent = HasHeader(
+      init_data, init_data_length, kPrefixedApiPersistentSessionHeader);
+
+  scoped_ptr<media::NewSessionCdmPromise> promise(
+      new media::NewSessionCdmPromise(
+          base::Bind(&ProxyDecryptor::SetSessionId,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     persistent || loadSession),
+          base::Bind(&ProxyDecryptor::OnSessionError,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::string())));  // No session id until created.
+
+  if (loadSession) {
     media_keys_->LoadSession(
-        session_id,
         std::string(reinterpret_cast<const char*>(
                         init_data + strlen(kPrefixedApiLoadSessionHeader)),
-                    init_data_length - strlen(kPrefixedApiLoadSessionHeader)));
+                    init_data_length - strlen(kPrefixedApiLoadSessionHeader)),
+        promise.Pass());
     return true;
   }
 
-  if (HasHeader(
-          init_data, init_data_length, kPrefixedApiPersistentSessionHeader))
-    persistent_sessions_.insert(session_id);
-
-  return media_keys_->CreateSession(
-      session_id, content_type, init_data, init_data_length);
+  media::MediaKeys::SessionType session_type =
+      persistent ? media::MediaKeys::PERSISTENT_SESSION
+                 : media::MediaKeys::TEMPORARY_SESSION;
+  media_keys_->CreateSession(
+      content_type, init_data, init_data_length, session_type, promise.Pass());
+  return true;
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,
@@ -136,17 +140,30 @@ void ProxyDecryptor::AddKey(const uint8* key,
                             const std::string& web_session_id) {
   DVLOG(1) << "AddKey()";
 
-  // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  uint32 session_id = LookupSessionId(web_session_id);
-  if (session_id == kInvalidSessionId) {
-    // Session hasn't been referenced before, so it is an error.
-    // Note that the specification says "If sessionId is not null and is
-    // unrecognized, throw an INVALID_ACCESS_ERR." However, for backwards
-    // compatibility the error is not thrown, but rather reported as a
-    // KeyError.
-    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
-    return;
+  // In the prefixed API, the session parameter provided to addKey() is
+  // optional, so use the single existing session if it exists.
+  // TODO(jrummell): remove when the prefixed API is removed.
+  std::string session_id(web_session_id);
+  if (session_id.empty()) {
+    if (active_sessions_.size() == 1) {
+      base::hash_map<std::string, bool>::iterator it = active_sessions_.begin();
+      session_id = it->first;
+    } else {
+      OnSessionError(std::string(),
+                     media::MediaKeys::NOT_SUPPORTED_ERROR,
+                     0,
+                     "SessionId not specified.");
+      return;
+    }
   }
+
+  scoped_ptr<media::SimpleCdmPromise> promise(
+      new media::SimpleCdmPromise(base::Bind(&ProxyDecryptor::OnSessionReady,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             web_session_id),
+                                  base::Bind(&ProxyDecryptor::OnSessionError,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             web_session_id)));
 
   // EME WD spec only supports a single array passed to the CDM. For
   // Clear Key using v0.1b, both arrays are used (|init_data| is key_id).
@@ -164,27 +181,27 @@ void ProxyDecryptor::AddKey(const uint8* key,
     std::string jwk =
         media::GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
-    media_keys_->UpdateSession(
-        session_id, reinterpret_cast<const uint8*>(jwk.data()), jwk.size());
+    media_keys_->UpdateSession(session_id,
+                               reinterpret_cast<const uint8*>(jwk.data()),
+                               jwk.size(),
+                               promise.Pass());
     return;
   }
 
-  media_keys_->UpdateSession(session_id, key, key_length);
+  media_keys_->UpdateSession(session_id, key, key_length, promise.Pass());
 }
 
-void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
+void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
-  // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  uint32 session_reference_id = LookupSessionId(session_id);
-  if (session_reference_id == kInvalidSessionId) {
-    // Session hasn't been created, so it is an error.
-    key_error_cb_.Run(
-        std::string(), media::MediaKeys::kUnknownError, 0);
-  }
-  else {
-    media_keys_->ReleaseSession(session_reference_id);
-  }
+  scoped_ptr<media::SimpleCdmPromise> promise(
+      new media::SimpleCdmPromise(base::Bind(&ProxyDecryptor::OnSessionClosed,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             web_session_id),
+                                  base::Bind(&ProxyDecryptor::OnSessionError,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             web_session_id)));
+  media_keys_->ReleaseSession(web_session_id, promise.Pass());
 }
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
@@ -199,8 +216,6 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       manager_,
       &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      base::Bind(&ProxyDecryptor::OnSessionCreated,
-                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::OnSessionMessage,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::OnSessionReady,
@@ -211,68 +226,56 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ProxyDecryptor::OnSessionCreated(uint32 session_id,
-                                      const std::string& web_session_id) {
-  // Due to heartbeat messages, OnSessionCreated() can get called multiple
-  // times.
-  SessionIdMap::iterator it = sessions_.find(session_id);
-  DCHECK(it == sessions_.end() || it->second == web_session_id);
-  if (it == sessions_.end())
-    sessions_[session_id] = web_session_id;
-}
-
-void ProxyDecryptor::OnSessionMessage(uint32 session_id,
+void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
                                       const std::vector<uint8>& message,
                                       const GURL& destination_url) {
   // Assumes that OnSessionCreated() has been called before this.
-  key_message_cb_.Run(
-      LookupWebSessionId(session_id), message, destination_url);
+  key_message_cb_.Run(web_session_id, message, destination_url);
 }
 
-void ProxyDecryptor::OnSessionReady(uint32 session_id) {
-  // Assumes that OnSessionCreated() has been called before this.
-  key_added_cb_.Run(LookupWebSessionId(session_id));
+void ProxyDecryptor::OnSessionReady(const std::string& web_session_id) {
+  key_added_cb_.Run(web_session_id);
 }
 
-void ProxyDecryptor::OnSessionClosed(uint32 session_id) {
-  std::set<uint32>::iterator it = persistent_sessions_.find(session_id);
-  if (it != persistent_sessions_.end()) {
-    persistent_sessions_.erase(it);
-    OnSessionError(
-        session_id, media::MediaKeys::kUnknownError, kSessionClosedSystemCode);
+void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
+  base::hash_map<std::string, bool>::iterator it =
+      active_sessions_.find(web_session_id);
+  if (it->second) {
+    OnSessionError(web_session_id,
+                   media::MediaKeys::NOT_SUPPORTED_ERROR,
+                   kSessionClosedSystemCode,
+                   "Do not close persistent sessions.");
   }
-
-  sessions_.erase(session_id);
+  active_sessions_.erase(it);
 }
 
-void ProxyDecryptor::OnSessionError(uint32 session_id,
-                                    media::MediaKeys::KeyError error_code,
-                                    uint32 system_code) {
-  // Assumes that OnSessionCreated() has been called before this.
-  key_error_cb_.Run(LookupWebSessionId(session_id), error_code, system_code);
-}
-
-uint32 ProxyDecryptor::LookupSessionId(const std::string& session_id) const {
-  for (SessionIdMap::const_iterator it = sessions_.begin();
-       it != sessions_.end();
-       ++it) {
-    if (it->second == session_id)
-      return it->first;
+void ProxyDecryptor::OnSessionError(const std::string& web_session_id,
+                                    media::MediaKeys::Exception exception_code,
+                                    uint32 system_code,
+                                    const std::string& error_message) {
+  // Convert |error_name| back to MediaKeys::KeyError if possible. Prefixed
+  // EME has different error message, so all the specific error events will
+  // get lost.
+  media::MediaKeys::KeyError error_code;
+  switch (exception_code) {
+    case media::MediaKeys::CLIENT_ERROR:
+      error_code = media::MediaKeys::kClientError;
+      break;
+    case media::MediaKeys::OUTPUT_ERROR:
+      error_code = media::MediaKeys::kOutputError;
+      break;
+    default:
+      // This will include all other CDM4 errors and any error generated
+      // by CDM5 or later.
+      error_code = media::MediaKeys::kUnknownError;
+      break;
   }
-
-  // If |session_id| is null, then use the single reference id.
-  if (session_id.empty() && sessions_.size() == 1)
-    return sessions_.begin()->first;
-
-  return kInvalidSessionId;
+  key_error_cb_.Run(web_session_id, error_code, system_code);
 }
 
-const std::string& ProxyDecryptor::LookupWebSessionId(uint32 session_id) const {
-  DCHECK_NE(session_id, kInvalidSessionId);
-
-  // Session may not exist if error happens during GenerateKeyRequest().
-  SessionIdMap::const_iterator it = sessions_.find(session_id);
-  return (it != sessions_.end()) ? it->second : base::EmptyString();
+void ProxyDecryptor::SetSessionId(bool persistent,
+                                  const std::string& web_session_id) {
+  active_sessions_.insert(std::make_pair(web_session_id, persistent));
 }
 
 }  // namespace content
