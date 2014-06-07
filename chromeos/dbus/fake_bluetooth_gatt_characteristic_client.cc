@@ -69,14 +69,28 @@ void FakeBluetoothGattCharacteristicClient::Properties::Set(
     callback.Run(false);
     return;
   }
+
   // Allow writing to only certain characteristics that are defined with the
   // write permission.
-  // TODO(armansito): Actually check against the permissions property instead of
-  // UUID, once that property is fully defined in the API.
-  if (uuid.value() != kHeartRateControlPointUUID) {
+  bool write = false;
+  for (std::vector<std::string>::const_iterator iter = flags.value().begin();
+       iter != flags.value().end();
+       ++iter) {
+    if (*iter == bluetooth_gatt_characteristic::kFlagWrite ||
+        *iter == bluetooth_gatt_characteristic::kFlagWriteWithoutResponse ||
+        *iter ==
+            bluetooth_gatt_characteristic::kFlagAuthenticatedSignedWrites ||
+        *iter == bluetooth_gatt_characteristic::kFlagReliableWrite) {
+      write = true;
+      break;
+    }
+  }
+
+  if (!write) {
     callback.Run(false);
     return;
   }
+
   callback.Run(true);
   property->ReplaceValueWithSetValue();
 }
@@ -140,6 +154,8 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
 
   VLOG(2) << "Exposing fake Heart Rate characteristics.";
 
+  std::vector<std::string> flags;
+
   // ==== Heart Rate Measurement Characteristic ====
   heart_rate_measurement_path_ =
       service_path.value() + "/" + kHeartRateMeasurementPathComponent;
@@ -150,9 +166,8 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   heart_rate_measurement_properties_->uuid.ReplaceValue(
       kHeartRateMeasurementUUID);
   heart_rate_measurement_properties_->service.ReplaceValue(service_path);
-
-  // TODO(armansito): Fill out the flags field once bindings for the values have
-  // been added. For now, leave it empty.
+  flags.push_back(bluetooth_gatt_characteristic::kFlagNotify);
+  heart_rate_measurement_properties_->flags.ReplaceValue(flags);
 
   std::vector<uint8> measurement_value = GetHeartRateMeasurementValue();
   heart_rate_measurement_properties_->value.ReplaceValue(measurement_value);
@@ -166,9 +181,9 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
       dbus::ObjectPath(body_sensor_location_path_))));
   body_sensor_location_properties_->uuid.ReplaceValue(kBodySensorLocationUUID);
   body_sensor_location_properties_->service.ReplaceValue(service_path);
-
-  // TODO(armansito): Fill out the flags field once bindings for the values have
-  // been added. For now, leave it empty.
+  flags.clear();
+  flags.push_back(bluetooth_gatt_characteristic::kFlagRead);
+  body_sensor_location_properties_->flags.ReplaceValue(flags);
 
   // The sensor is in the "Other" location.
   std::vector<uint8> body_sensor_location_value;
@@ -186,9 +201,9 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   heart_rate_control_point_properties_->uuid.ReplaceValue(
       kHeartRateControlPointUUID);
   heart_rate_control_point_properties_->service.ReplaceValue(service_path);
-
-  // TODO(armansito): Fill out the flags field once bindings for the values have
-  // been added. For now, leave it empty.
+  flags.clear();
+  flags.push_back(bluetooth_gatt_characteristic::kFlagWrite);
+  heart_rate_control_point_properties_->flags.ReplaceValue(flags);
 
   // Set the initial value to 0. Whenever this gets set to 1, we will reset the
   // total calories burned and change the value back to 0.

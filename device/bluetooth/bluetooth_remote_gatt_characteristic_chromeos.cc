@@ -10,6 +10,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -93,9 +94,39 @@ BluetoothRemoteGattCharacteristicChromeOS::GetService() const {
 
 device::BluetoothGattCharacteristic::Properties
 BluetoothRemoteGattCharacteristicChromeOS::GetProperties() const {
-  // TODO(armansito): Once BlueZ implements properties properly, return those
-  // values here.
-  return kPropertyNone;
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
+          GetProperties(object_path_);
+  DCHECK(properties);
+
+  Properties props = kPropertyNone;
+  const std::vector<std::string>& flags = properties->flags.value();
+  for (std::vector<std::string>::const_iterator iter = flags.begin();
+       iter != flags.end();
+       ++iter) {
+    if (*iter == bluetooth_gatt_characteristic::kFlagBroadcast)
+      props |= kPropertyBroadcast;
+    if (*iter == bluetooth_gatt_characteristic::kFlagRead)
+      props |= kPropertyRead;
+    if (*iter == bluetooth_gatt_characteristic::kFlagWriteWithoutResponse)
+      props |= kPropertyWriteWithoutResponse;
+    if (*iter == bluetooth_gatt_characteristic::kFlagWrite)
+      props |= kPropertyWrite;
+    if (*iter == bluetooth_gatt_characteristic::kFlagNotify)
+      props |= kPropertyNotify;
+    if (*iter == bluetooth_gatt_characteristic::kFlagIndicate)
+      props |= kPropertyIndicate;
+    if (*iter == bluetooth_gatt_characteristic::kFlagAuthenticatedSignedWrites)
+      props |= kPropertyAuthenticatedSignedWrites;
+    if (*iter == bluetooth_gatt_characteristic::kFlagExtendedProperties)
+      props |= kPropertyExtendedProperties;
+    if (*iter == bluetooth_gatt_characteristic::kFlagReliableWrite)
+      props |= kPropertyReliableWrite;
+    if (*iter == bluetooth_gatt_characteristic::kFlagWritableAuxiliaries)
+      props |= kPropertyWritableAuxiliaries;
+  }
+
+  return props;
 }
 
 device::BluetoothGattCharacteristic::Permissions

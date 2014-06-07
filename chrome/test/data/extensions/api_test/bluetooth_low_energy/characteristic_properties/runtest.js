@@ -26,10 +26,10 @@ var expectedProperties = [
   ['authenticatedSignedWrites'],
   ['extendedProperties'],
   ['reliableWrite'],
-  ['writeableAuxiliaries'],
+  ['writableAuxiliaries'],
   ['broadcast', 'read', 'writeWithoutResponse', 'write', 'notify', 'indicate',
    'authenticatedSignedWrites', 'extendedProperties', 'reliableWrite',
-   'writeableAuxiliaries']
+   'writableAuxiliaries']
 ];
 
 function compareProperties(a, b) {

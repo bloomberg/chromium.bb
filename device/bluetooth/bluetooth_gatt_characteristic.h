@@ -51,7 +51,7 @@ class BluetoothGattCharacteristic {
     kPropertyAuthenticatedSignedWrites = 1 << 6,
     kPropertyExtendedProperties = 1 << 7,
     kPropertyReliableWrite = 1 << 8,
-    kPropertyWriteableAuxiliaries = 1 << 9
+    kPropertyWritableAuxiliaries = 1 << 9
   };
   typedef uint32 Properties;
 

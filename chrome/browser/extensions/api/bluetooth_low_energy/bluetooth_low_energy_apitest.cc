@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
            Return(BluetoothGattCharacteristic::kPropertyExtendedProperties))
       .WillOnce(Return(BluetoothGattCharacteristic::kPropertyReliableWrite))
       .WillOnce(
-           Return(BluetoothGattCharacteristic::kPropertyWriteableAuxiliaries))
+           Return(BluetoothGattCharacteristic::kPropertyWritableAuxiliaries))
       .WillOnce(Return(
           BluetoothGattCharacteristic::kPropertyBroadcast |
           BluetoothGattCharacteristic::kPropertyRead |
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
           BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites |
           BluetoothGattCharacteristic::kPropertyExtendedProperties |
           BluetoothGattCharacteristic::kPropertyReliableWrite |
-          BluetoothGattCharacteristic::kPropertyWriteableAuxiliaries));
+          BluetoothGattCharacteristic::kPropertyWritableAuxiliaries));
 
   ExtensionTestMessageListener listener("ready", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(

@@ -860,6 +860,49 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
             service_observer.last_gatt_characteristic_id_);
 }
 
+TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  TestDeviceObserver observer(adapter_, device);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  BluetoothGattService* service =
+      device->GetGattService(observer.last_gatt_service_id_);
+
+  TestGattServiceObserver service_observer(adapter_, device, service);
+  EXPECT_TRUE(service->GetCharacteristics().empty());
+
+  // Run the message loop so that the characteristics appear.
+  base::MessageLoop::current()->Run();
+
+  BluetoothGattCharacteristic *characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->
+          GetBodySensorLocationPath().value());
+  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyRead,
+            characteristic->GetProperties());
+
+  characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->
+          GetHeartRateControlPointPath().value());
+  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyWrite,
+            characteristic->GetProperties());
+
+  characteristic = service->GetCharacteristic(
+      fake_bluetooth_gatt_characteristic_client_->
+          GetHeartRateMeasurementPath().value());
+  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyNotify,
+            characteristic->GetProperties());
+}
+
 TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),

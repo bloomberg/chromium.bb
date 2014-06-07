@@ -76,9 +76,9 @@ void PopulateCharacteristicProperties(
   }
   if (properties & BluetoothGattCharacteristic::kPropertyReliableWrite)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_RELIABLEWRITE);
-  if (properties & BluetoothGattCharacteristic::kPropertyWriteableAuxiliaries) {
+  if (properties & BluetoothGattCharacteristic::kPropertyWritableAuxiliaries) {
     api_properties->push_back(
-        apibtle::CHARACTERISTIC_PROPERTY_WRITEABLEAUXILIARIES);
+        apibtle::CHARACTERISTIC_PROPERTY_WRITABLEAUXILIARIES);
   }
 }
 
