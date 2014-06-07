@@ -170,8 +170,7 @@ void CommandLinePrefStore::ApplySSLSwitches() {
 }
 
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
-  if (command_line_->HasSwitch(switches::kDisableBackgroundMode) ||
-      command_line_->HasSwitch(switches::kDisableExtensions)) {
+  if (command_line_->HasSwitch(switches::kDisableExtensions)) {
     base::Value* value = base::Value::CreateBooleanValue(false);
     SetValue(prefs::kBackgroundModeEnabled, value);
   }

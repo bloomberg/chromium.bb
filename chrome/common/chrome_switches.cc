@@ -215,10 +215,6 @@ const char kDisableAsyncDns[]               = "disable-async-dns";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
-// Disables background mode (background apps will not keep chrome running in
-// the background).
-const char kDisableBackgroundMode[]         = "disable-background-mode";
-
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
@@ -351,11 +347,6 @@ const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicTimeBasedLossDetection[] =
     "disable-quic-time-based-loss-detection";
-
-// Prevents the URLs of BackgroundContents from being remembered and
-// re-launched when the browser restarts.
-const char kDisableRestoreBackgroundContents[] =
-    "disable-restore-background-contents";
 
 // Prevents the save password bubble from being enabled.
 const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";

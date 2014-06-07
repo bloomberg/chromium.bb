@@ -263,10 +263,8 @@ int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
     : prefs_(NULL) {
-  // Don't load/store preferences if the proper switch is not enabled, or if
-  // the parent profile is incognito.
-  if (!profile->IsOffTheRecord() &&
-      !command_line->HasSwitch(switches::kDisableRestoreBackgroundContents))
+  // Don't load/store preferences if the parent profile is incognito.
+  if (!profile->IsOffTheRecord())
     prefs_ = profile->GetPrefs();
 
   // Listen for events to tell us when to load/unload persisted background

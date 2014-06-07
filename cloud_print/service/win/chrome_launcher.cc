@@ -209,7 +209,6 @@ void ChromeLauncher::Run() {
 
       // Optional.
       cmd.AppendSwitch(switches::kAutoLaunchAtStartup);
-      cmd.AppendSwitch(switches::kDisableBackgroundMode);
       cmd.AppendSwitch(switches::kDisableDefaultApps);
       cmd.AppendSwitch(switches::kDisableExtensions);
       cmd.AppendSwitch(switches::kDisableGpu);
@@ -284,7 +283,6 @@ std::string ChromeLauncher::CreateServiceStateFile(
   cmd.AppendSwitch(switches::kNoServiceAutorun);
 
   // Optional.
-  cmd.AppendSwitch(switches::kDisableBackgroundMode);
   cmd.AppendSwitch(switches::kDisableDefaultApps);
   cmd.AppendSwitch(switches::kDisableExtensions);
   cmd.AppendSwitch(switches::kDisableSync);
@@ -320,4 +318,3 @@ std::string ChromeLauncher::CreateServiceStateFile(
     }
   }
 }
-
