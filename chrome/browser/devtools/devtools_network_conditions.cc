@@ -7,8 +7,10 @@
 #include "url/gurl.h"
 
 DevToolsNetworkConditions::DevToolsNetworkConditions(
-    const std::vector<std::string>& domains)
-    : domains_(domains){
+    const std::vector<std::string>& domains,
+    double maximal_throughput)
+    : domains_(domains),
+      maximal_throughput_(maximal_throughput) {
 }
 
 DevToolsNetworkConditions::~DevToolsNetworkConditions() {
@@ -26,5 +28,9 @@ bool DevToolsNetworkConditions::HasMatchingDomain(const GURL& url) const {
 }
 
 bool DevToolsNetworkConditions::IsOffline() const {
-  return true;
+  return maximal_throughput_ == 0.0;
+}
+
+bool DevToolsNetworkConditions::IsThrottling() const {
+  return maximal_throughput_ != 0.0;
 }

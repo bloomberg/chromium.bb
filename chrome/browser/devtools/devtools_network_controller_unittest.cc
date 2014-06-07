@@ -68,7 +68,7 @@ class DevToolsNetworkControllerHelper {
     domains.push_back(kCom);
     scoped_refptr<DevToolsNetworkConditions> conditions;
     if (offline)
-      conditions = new DevToolsNetworkConditions(domains);
+      conditions = new DevToolsNetworkConditions(domains, 0.0);
     controller_.SetNetworkStateOnIO(client_id, conditions);
   }
 

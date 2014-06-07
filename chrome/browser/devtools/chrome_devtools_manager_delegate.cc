@@ -81,16 +81,39 @@ ChromeDevToolsManagerDelegate::EmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
+
+  std::vector<std::string> domains;
+  base::ListValue* domain_list = NULL;
+  const char* domains_param =
+      chrome::devtools::Network::emulateNetworkConditions::kParamDomains;
+  if (!params || !params->GetList(domains_param, &domain_list))
+    return command->InvalidParamResponse(domains_param);
+  size_t size = domain_list->GetSize();
+  for (size_t i = 0; i < size; ++i) {
+    std::string domain;
+    if (!domain_list->GetString(i, &domain))
+      return command->InvalidParamResponse(domains_param);
+    domains.push_back(domain);
+  }
+
   bool offline = false;
   const char* offline_param =
       chrome::devtools::Network::emulateNetworkConditions::kParamOffline;
-  if (!params || !params->GetBoolean(offline_param, &offline))
+  if (!params->GetBoolean(offline_param, &offline))
     return command->InvalidParamResponse(offline_param);
+
+  double maximal_throughput = 0.0;
+  const char* maximal_throughput_param =
+chrome::devtools::Network::emulateNetworkConditions::kParamMaximalThroughput;
+  if (!params->GetDouble(maximal_throughput_param, &maximal_throughput))
+    return command->InvalidParamResponse(maximal_throughput_param);
+  if (maximal_throughput < 0.0)
+    maximal_throughput = 0.0;
 
   EnsureDevtoolsCallbackRegistered();
   scoped_refptr<DevToolsNetworkConditions> conditions;
-  if (offline)
-    conditions = new DevToolsNetworkConditions(std::vector<std::string>());
+  if (offline || maximal_throughput)
+    conditions = new DevToolsNetworkConditions(domains, maximal_throughput);
   UpdateNetworkState(agent_host, conditions);
   return command->SuccessResponse(NULL);
 }
