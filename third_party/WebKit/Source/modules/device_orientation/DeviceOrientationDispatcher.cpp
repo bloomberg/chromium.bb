@@ -34,6 +34,7 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "public/platform/Platform.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -51,6 +52,16 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
 {
 }
 
+void DeviceOrientationDispatcher::addDeviceOrientationController(DeviceOrientationController* controller)
+{
+    addController(controller);
+}
+
+void DeviceOrientationDispatcher::removeDeviceOrientationController(DeviceOrientationController* controller)
+{
+    removeController(controller);
+}
+
 void DeviceOrientationDispatcher::startListening()
 {
     blink::Platform::current()->setDeviceOrientationListener(this);
@@ -65,7 +76,19 @@ void DeviceOrientationDispatcher::stopListening()
 void DeviceOrientationDispatcher::didChangeDeviceOrientation(const blink::WebDeviceOrientationData& motion)
 {
     m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
-    notifyControllers();
+
+    {
+        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
+        // Don't fire controllers removed or added during event dispatch.
+        size_t size = m_controllers.size();
+        for (size_t i = 0; i < size; ++i) {
+            if (m_controllers[i])
+                static_cast<DeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
+        }
+    }
+
+    if (m_needsPurge)
+        purgeControllers();
 }
 
 DeviceOrientationData* DeviceOrientationDispatcher::latestDeviceOrientationData()
