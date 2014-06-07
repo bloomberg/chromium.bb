@@ -13,11 +13,13 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #include "native_client/src/trusted/cpu_features/arch/mips/cpu_mips.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator_mips/model.h"
 #include "native_client/src/trusted/validator_mips/validator.h"
 
 using nacl_mips_val::SfiValidator;
 using nacl_mips_val::CodeSegment;
+using nacl_mips_dec::Register;
 using nacl_mips_dec::RegisterList;
 using std::vector;
 
@@ -82,7 +84,7 @@ class StuboutProblemSink : public nacl_mips_val::ProblemSink {
 EXTERN_C_BEGIN
 
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size,
-                      bool stubout_mode) {
+                      bool *is_position_independent, bool stubout_mode) {
   SfiValidator validator(
       16,                              // 64,  // bytes per bundle
       1U * NACL_DATA_SEGMENT_START,    // bytes of code space
@@ -102,6 +104,9 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size,
     EarlyExitProblemSink sink;
     success = validator.Validate(segments, &sink);
   }
+
+  *is_position_independent = validator.is_position_independent();
+
   if (!success) return 2;
 
   return 0;
@@ -116,22 +121,52 @@ static NaClValidationStatus ApplyValidatorMips(
     const NaClCPUFeatures *cpu_features,
     const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
+  void *query = NULL;
+  const NaClCPUFeaturesMips *features =
+      (const NaClCPUFeaturesMips *) cpu_features;
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  UNREFERENCED_PARAMETER(cpu_features);
-  UNREFERENCED_PARAMETER(metadata);
-  UNREFERENCED_PARAMETER(cache);
+
+  /* Don't cache in stubout mode. */
+  if (stubout_mode)
+    cache = NULL;
+
+  /* If the validation caching interface is available, perform a query. */
+  if (cache != NULL && NaClCachingIsInexpensive(cache, metadata))
+    query = cache->CreateQuery(cache->handle);
+  if (query != NULL) {
+    const char validator_id[] = "mips";
+    cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
+    cache->AddData(query, (uint8_t *) features, sizeof(*features));
+    NaClAddCodeIdentity(data, size, metadata, cache, query);
+    if (cache->QueryKnownToValidate(query)) {
+      cache->DestroyQuery(query);
+      return NaClValidationSucceeded;
+    }
+  }
+
+  bool is_position_independent = false;
   if (stubout_mode) {
     if (!readonly_text) {
-      NCValidateSegment(data, guest_addr, size, true);
+      NCValidateSegment(data, guest_addr, size, &is_position_independent, true);
       status = NaClValidationSucceeded;
     } else {
       /* stubout_mode and readonly_text are in conflict. */
       status = NaClValidationFailed;
     }
   } else {
-    status = ((0 == NCValidateSegment(data, guest_addr, size, false))
+    status = ((0 == NCValidateSegment(data, guest_addr, size,
+                                      &is_position_independent, false))
                   ? NaClValidationSucceeded : NaClValidationFailed);
   }
+
+  /* Cache the result if validation succeded. */
+  if (query != NULL) {
+    if (status == NaClValidationSucceeded && is_position_independent) {
+      cache->SetKnownToValidate(query);
+    }
+    cache->DestroyQuery(query);
+  }
+
   return status;
 }
 

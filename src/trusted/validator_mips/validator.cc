@@ -266,7 +266,7 @@ static PatternMatch CheckJumpToPseudo(const SfiValidator &sfi,
   uint32_t target_va = pseudoinstr.addr();
   if (branch_targets.Contains(target_va)) {
     std::vector<DecodedInstruction> instrs;
-    if (sfi.FindBranch(segms, branches, target_va, instrs)) {
+    if (sfi.FindBranch(segms, branches, target_va, &instrs)) {
       for (uint32_t i = 0; i < instrs.size(); i++) {
         out->ReportProblem(instrs[i].addr(), instrs[i].safety(),
                            kProblemBranchSplitsPattern);
@@ -296,7 +296,8 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
       code_address_mask_((code_region_bytes - 1) & kInstrAlign),  // 0x0FFFFFFC
       read_only_registers_(read_only_registers),
       data_address_registers_(data_address_registers),
-      decode_state_(nacl_mips_dec::init_decode()) {}
+      decode_state_(nacl_mips_dec::init_decode()),
+      is_position_independent_(false) {}
 
 bool SfiValidator::Validate(const vector<CodeSegment> &segments,
                             ProblemSink *out) {
@@ -316,6 +317,18 @@ bool SfiValidator::Validate(const vector<CodeSegment> &segments,
     if (!out->ShouldContinue()) {
       return false;
     }
+  }
+
+  if (segments.size() == 1) {
+    bool external_target_addr = false;
+    for (AddressSet::Iterator it = branch_targets.Begin();
+         !it.Equals(branch_targets.End()); it.Next()) {
+        if (!segments[0].ContainsAddress(it.GetAddress())) {
+          external_target_addr = true;
+          break;
+        }
+    }
+    is_position_independent_ = !external_target_addr;
   }
 
   complete_success &= ValidatePseudos(*this, segments,
@@ -481,7 +494,7 @@ const Bundle SfiValidator::BundleForAddress(uint32_t address) const {
 bool SfiValidator::FindBranch(const std::vector<CodeSegment> &segments,
                               const AddressSet &branches,
                               uint32_t dest_address,
-                              std::vector<DecodedInstruction> &instrs) const {
+                              std::vector<DecodedInstruction> *instrs) const {
   vector<CodeSegment>::const_iterator seg_it = segments.begin();
 
   for (AddressSet::Iterator it = branches.Begin(); !it.Equals(branches.End());
@@ -496,10 +509,10 @@ bool SfiValidator::FindBranch(const std::vector<CodeSegment> &segments,
     DecodedInstruction instr = DecodedInstruction(va, segment[va],
                              nacl_mips_dec::decode(segment[va], decode_state_));
     if (instr.DestAddr() == dest_address) {
-      instrs.push_back(instr);
+      instrs->push_back(instr);
     }
   }
-  if (!instrs.empty()) return true;
+  if (!instrs->empty()) return true;
   return false;
 }
 /*

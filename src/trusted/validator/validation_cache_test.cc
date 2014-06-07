@@ -26,10 +26,24 @@
 
 #define CODE_SIZE 32
 
+#if defined(__mips__)
+# define NOP 0x00
+#else  // x86
+# define NOP 0x90
+#endif
+
+
+#if defined(__mips__)
+// jr ra
+const char ret[CODE_SIZE + 1] =
+    "\x08\x00\xe0\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+#else  // x86
 // ret
 const char ret[CODE_SIZE + 1] =
     "\xc3\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
+#endif
 
 // pblendw $0xc0,%xmm0,%xmm2
 const char sse41[CODE_SIZE + 1] =
@@ -148,7 +162,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
     EXPECT_NE(cpu_features, (NaClCPUFeatures *) NULL);
     validator->SetAllCPUFeatures(cpu_features);
 
-    memset(code_buffer, 0x90, sizeof(code_buffer));
+    memset(code_buffer, NOP, sizeof(code_buffer));
   }
 
   NaClValidationStatus Validate() {
@@ -201,6 +215,7 @@ TEST_F(ValidationCachingInterfaceTests, CacheMiss) {
   EXPECT_EQ(true, context.query_destroyed);
 }
 
+#if defined(__x86_64__) || defined(__i386__)
 TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
   memcpy(code_buffer, sse41, CODE_SIZE);
   context.query_result = 0;
@@ -220,6 +235,7 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);
 }
+#endif
 
 TEST_F(ValidationCachingInterfaceTests, IllegalInst) {
   memcpy(code_buffer, ret, CODE_SIZE);

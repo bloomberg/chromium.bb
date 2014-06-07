@@ -97,6 +97,11 @@ class SfiValidator {
    */
   bool Validate(const std::vector<CodeSegment> &, ProblemSink *out);
 
+  // Returns true if validation did not depend on the code's base address.
+  bool is_position_independent() {
+    return is_position_independent_;
+  }
+
   /*
    * Checks whether the given Register always holds a valid data region address.
    * This implies that the register is safe to use in unguarded stores.
@@ -135,7 +140,7 @@ class SfiValidator {
   bool FindBranch(const std::vector<CodeSegment> &segments,
                   const AddressSet &branches,
                   uint32_t dest_address,
-                  std::vector<DecodedInstruction> &instrs) const;
+                  std::vector<DecodedInstruction> *instrs) const;
 
  private:
   bool IsBundleHead(uint32_t address) const;
@@ -204,6 +209,8 @@ class SfiValidator {
   // Registers which must always contain a valid data region address.
   nacl_mips_dec::RegisterList data_address_registers_;
   const nacl_mips_dec::DecoderState *decode_state_;
+  // True if validation did not depend on the code's base address.
+  bool is_position_independent_;
 };
 
 

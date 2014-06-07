@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_NCVALIDATE_H
@@ -26,10 +26,13 @@ EXTERN_C_BEGIN
  *   mbase               location of the code in memory right now.
  *   vbase               virtual address where the code will appear at runtime.
  *   size                number of bytes of code provided.
+ *   is_position_independent set to true if validation did not depend on the
+ *                       code's base address
  *   stubout_mode        info if the validator should stub-out functions.
  * Result: 0 if validation succeeded, non-zero if we found problems.
  */
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size,
+                      bool *is_position_independent,
                       bool stubout_mode = false);
 
 EXTERN_C_END
