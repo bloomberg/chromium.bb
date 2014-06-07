@@ -159,7 +159,7 @@ class PrivetLocalPrintOperation {
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
 
-// Privet HTTP client. Must not outlive the operations it creates.
+// Privet HTTP client. Must outlive the operations it creates.
 class PrivetHTTPClient {
  public:
   virtual ~PrivetHTTPClient() {}

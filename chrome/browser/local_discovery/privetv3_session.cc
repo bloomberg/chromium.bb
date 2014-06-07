@@ -5,12 +5,24 @@
 #include "chrome/browser/local_discovery/privetv3_session.h"
 
 #include "base/logging.h"
+#include "chrome/browser/local_discovery/privet_http.h"
 
 namespace local_discovery {
 
-scoped_ptr<PrivetV3Session> PrivetV3Session::Create(PrivetHTTPClient* client) {
-  NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV3Session>();
+PrivetV3Session::Delegate::~Delegate() {
+}
+
+PrivetV3Session::Request::~Request() {
+}
+
+PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client,
+                                 Delegate* delegate) {
+}
+
+PrivetV3Session::~PrivetV3Session() {
+}
+
+void PrivetV3Session::Start() {
 }
 
 }  // namespace local_discovery

@@ -9,53 +9,64 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/values.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace local_discovery {
 
 class PrivetHTTPClient;
 
+// Manages secure communication between browser and local Privet device.
 class PrivetV3Session {
  public:
   typedef base::Callback<
       void(bool success, const base::DictionaryValue& response)>
       RequestCallback;
 
+  // Delegate to be implemented by client code.
   class Delegate {
    public:
     typedef base::Callback<void(bool confirm)> ConfirmationCallback;
 
-    virtual ~Delegate() {}
+    virtual ~Delegate();
 
+    // Called when client code should prompt user to check |confirmation_code|.
     virtual void OnSetupConfirmationNeeded(
         const std::string& confirmation_code,
         const ConfirmationCallback& callback) = 0;
 
+    // Called when session successfully establish and client code my call
+    // |CreateRequest| method.
     virtual void OnSessionEstablished() = 0;
 
+    // Called when session setup fails.
     virtual void OnCannotEstablishSession() = 0;
   };
 
+  // Represents request in progress using secure session.
   class Request {
    public:
-    virtual ~Request() {}
-
+    virtual ~Request();
     virtual void Start() = 0;
   };
 
-  virtual ~PrivetV3Session() {}
+  PrivetV3Session(scoped_ptr<PrivetHTTPClient> client, Delegate* delegate);
+  ~PrivetV3Session();
 
-  static scoped_ptr<PrivetV3Session> Create(PrivetHTTPClient* client);
-
-  // Establish a session, will call |OnSetupConfirmationNeeded| and then
+  // Establishes a session, will call |OnSetupConfirmationNeeded| and then
   // |OnSessionEstablished|.
-  virtual void Start() = 0;
+  void Start();
 
-  // Create a single /privet/v2/session/call request.
-  virtual scoped_ptr<Request> CreateRequest(
-      const char* api_name,
-      const base::DictionaryValue& request,
-      const RequestCallback& callback);
+  // Create a single /privet/v3/session/call request.
+  // Must be called only after receiving |OnSessionEstablished|.
+  scoped_ptr<Request> CreateRequest(const std::string& api_name,
+                                    const base::DictionaryValue& request,
+                                    const RequestCallback& callback);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrivetV3Session);
 };
 
 }  // namespace local_discovery
