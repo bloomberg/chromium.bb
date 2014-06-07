@@ -69,8 +69,7 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
         scalar.ScalarValue(None, 'Score', 'score', total))
 
 
-@test.Disabled('android')  # Crashes on GN.
-@test.Disabled('xp')  # Crashes on Win XP. See crbug.com/381742 for an example.
+@test.Disabled('android', 'xp')  # crbug.com/381742
 class Jetstream(test.Test):
   test = _JetstreamMeasurement
 
