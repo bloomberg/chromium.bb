@@ -314,7 +314,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
 #endif
 }
 
-// Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage
+// Base class for testing the CanAccessPage and CanCaptureVisiblePage
 // methods of Extension for extensions with various permissions.
 class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
  protected:
@@ -348,14 +348,14 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
 
   bool AllowedScript(const Extension* extension, const GURL& url,
                      const GURL& top_url, int tab_id) {
-    return extension->permissions_data()->CanExecuteScriptOnPage(
-        extension, url, top_url, tab_id, NULL, -1, NULL);
+    return extension->permissions_data()->CanAccessPage(
+        extension, url, top_url, tab_id, -1, NULL);
   }
 
   bool BlockedScript(const Extension* extension, const GURL& url,
                      const GURL& top_url) {
-    return !extension->permissions_data()->CanExecuteScriptOnPage(
-        extension, url, top_url, -1, NULL, -1, NULL);
+    return !extension->permissions_data()->CanAccessPage(
+        extension, url, top_url, -1, -1, NULL);
   }
 
   bool Allowed(const Extension* extension, const GURL& url) {
@@ -363,8 +363,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool Allowed(const Extension* extension, const GURL& url, int tab_id) {
-    return (extension->permissions_data()->CanExecuteScriptOnPage(
-                extension, url, url, tab_id, NULL, -1, NULL) &&
+    return (extension->permissions_data()->CanAccessPage(
+                extension, url, url, tab_id, -1, NULL) &&
             extension->permissions_data()->CanCaptureVisiblePage(tab_id, NULL));
   }
 
@@ -373,8 +373,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool CaptureOnly(const Extension* extension, const GURL& url, int tab_id) {
-    return !extension->permissions_data()->CanExecuteScriptOnPage(
-               extension, url, url, tab_id, NULL, -1, NULL) &&
+    return !extension->permissions_data()->CanAccessPage(
+               extension, url, url, tab_id, -1, NULL) &&
            extension->permissions_data()->CanCaptureVisiblePage(tab_id, NULL);
   }
 
@@ -394,8 +394,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool Blocked(const Extension* extension, const GURL& url, int tab_id) {
-    return !(extension->permissions_data()->CanExecuteScriptOnPage(
-                 extension, url, url, tab_id, NULL, -1, NULL) ||
+    return !(extension->permissions_data()->CanAccessPage(
+                 extension, url, url, tab_id, -1, NULL) ||
              extension->permissions_data()->CanCaptureVisiblePage(tab_id,
                                                                   NULL));
   }

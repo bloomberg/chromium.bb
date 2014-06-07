@@ -161,69 +161,34 @@ PermissionsData::GetPermissionMessageDetailsStrings() const {
       active_permissions(), manifest_type_);
 }
 
-bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
-                                             const GURL& document_url,
-                                             const GURL& top_frame_url,
-                                             int tab_id,
-                                             const UserScript* script,
-                                             int process_id,
-                                             std::string* error) const {
-  if (g_policy_delegate &&
-      !g_policy_delegate->CanExecuteScriptOnPage(extension,
-                                                 document_url,
-                                                 top_frame_url,
-                                                 tab_id,
-                                                 script,
-                                                 process_id,
-                                                 error)) {
-    return false;
-  }
+bool PermissionsData::CanAccessPage(const Extension* extension,
+                                    const GURL& document_url,
+                                    const GURL& top_frame_url,
+                                    int tab_id,
+                                    int process_id,
+                                    std::string* error) const {
+  return CanRunOnPage(extension,
+                      document_url,
+                      top_frame_url,
+                      tab_id,
+                      process_id,
+                      active_permissions()->explicit_hosts(),
+                      error);
+}
 
-  bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
-  if (!can_execute_everywhere &&
-      !ExtensionsClient::Get()->IsScriptableURL(document_url, error)) {
-    return false;
-  }
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExtensionsOnChromeURLs)) {
-    if (document_url.SchemeIs(content::kChromeUIScheme) &&
-        !can_execute_everywhere) {
-      if (error)
-        *error = manifest_errors::kCannotAccessChromeUrl;
-      return false;
-    }
-  }
-
-  if (top_frame_url.SchemeIs(kExtensionScheme) &&
-      top_frame_url.GetOrigin() !=
-          Extension::GetBaseURLFromExtensionId(extension->id()).GetOrigin() &&
-      !can_execute_everywhere) {
-    if (error)
-      *error = manifest_errors::kCannotAccessExtensionUrl;
-    return false;
-  }
-
-  if (HasTabSpecificPermissionToExecuteScript(tab_id, top_frame_url))
-    return true;
-
-  bool can_access = false;
-
-  if (script) {
-    // If a script is specified, use its matches.
-    can_access = script->MatchesURL(document_url);
-  } else {
-    // Otherwise, see if this extension has permission to execute script
-    // programmatically on pages.
-    can_access = active_permissions()->HasExplicitAccessToOrigin(document_url);
-  }
-
-  if (!can_access && error) {
-    *error = ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
-                                            document_url.spec());
-  }
-
-  return can_access;
+bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
+                                                const GURL& document_url,
+                                                const GURL& top_frame_url,
+                                                int tab_id,
+                                                int process_id,
+                                                std::string* error) const {
+  return CanRunOnPage(extension,
+                      document_url,
+                      top_frame_url,
+                      tab_id,
+                      process_id,
+                      active_permissions()->scriptable_hosts(),
+                      error);
 }
 
 bool PermissionsData::CanCaptureVisiblePage(int tab_id,
@@ -303,6 +268,57 @@ bool PermissionsData::HasTabSpecificPermissionToExecuteScript(
     }
   }
   return false;
+}
+
+bool PermissionsData::CanRunOnPage(const Extension* extension,
+                                   const GURL& document_url,
+                                   const GURL& top_frame_url,
+                                   int tab_id,
+                                   int process_id,
+                                   const URLPatternSet& permitted_url_patterns,
+                                   std::string* error) const {
+  if (g_policy_delegate &&
+      !g_policy_delegate->CanExecuteScriptOnPage(
+          extension, document_url, top_frame_url, tab_id, process_id, error)) {
+    return false;
+  }
+
+  bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
+  if (!can_execute_everywhere &&
+      !ExtensionsClient::Get()->IsScriptableURL(document_url, error)) {
+    return false;
+  }
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExtensionsOnChromeURLs)) {
+    if (document_url.SchemeIs(content::kChromeUIScheme) &&
+        !can_execute_everywhere) {
+      if (error)
+        *error = manifest_errors::kCannotAccessChromeUrl;
+      return false;
+    }
+  }
+
+  if (top_frame_url.SchemeIs(kExtensionScheme) &&
+      top_frame_url.GetOrigin() !=
+          Extension::GetBaseURLFromExtensionId(extension->id()).GetOrigin() &&
+      !can_execute_everywhere) {
+    if (error)
+      *error = manifest_errors::kCannotAccessExtensionUrl;
+    return false;
+  }
+
+  if (HasTabSpecificPermissionToExecuteScript(tab_id, top_frame_url))
+    return true;
+
+  bool can_access = permitted_url_patterns.MatchesURL(document_url);
+
+  if (!can_access && error) {
+    *error = ErrorUtils::FormatErrorMessage(manifest_errors::kCannotAccessPage,
+                                            document_url.spec());
+  }
+
+  return can_access;
 }
 
 }  // namespace extensions

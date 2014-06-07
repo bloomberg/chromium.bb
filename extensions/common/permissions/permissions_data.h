@@ -47,7 +47,6 @@ class PermissionsData {
                                         const GURL& document_url,
                                         const GURL& top_document_url,
                                         int tab_id,
-                                        const UserScript* script,
                                         int process_id,
                                         std::string* error) = 0;
   };
@@ -125,20 +124,30 @@ class PermissionsData {
   // display at install time as strings.
   std::vector<base::string16> GetPermissionMessageDetailsStrings() const;
 
-  // Returns true if the given |extension| can execute script on a page. If a
-  // UserScript object is passed, permission to run that specific script is
-  // checked (using its matches list). Otherwise, permission to execute script
-  // programmatically is checked (using the extension's host permission).
-  //
-  // This method is also aware of certain special pages that extensions are
-  // usually not allowed to run script on.
-  bool CanExecuteScriptOnPage(const Extension* extension,
-                              const GURL& document_url,
-                              const GURL& top_document_url,
-                              int tab_id,
-                              const UserScript* script,
-                              int process_id,
-                              std::string* error) const;
+  // Returns true if the |extension| has permission to access and interact with
+  // the specified page, in order to do things like inject scripts or modify
+  // the content.
+  // If this returns false and |error| is non-NULL, |error| will be popualted
+  // with the reason the extension cannot access the page.
+  bool CanAccessPage(const Extension* extension,
+                     const GURL& document_url,
+                     const GURL& top_document_url,
+                     int tab_id,
+                     int process_id,
+                     std::string* error) const;
+
+  // Returns true if the |extension| has permission to inject a content script
+  // on the page.
+  // If this returns false and |error| is non-NULL, |error| will be popualted
+  // with the reason the extension cannot script the page.
+  // NOTE: You almost certainly want to use CanAccessPage() instead of this
+  // method.
+  bool CanRunContentScriptOnPage(const Extension* extension,
+                                 const GURL& document_url,
+                                 const GURL& top_document_url,
+                                 int tab_id,
+                                 int process_id,
+                                 std::string* error) const;
 
   // Returns true if extension is allowed to obtain the contents of a page as
   // an image. Since a page may contain sensitive information, this is
@@ -180,6 +189,17 @@ class PermissionsData {
   // the given tab, only that it does not have tab-specific permission to do so.
   bool HasTabSpecificPermissionToExecuteScript(int tab_id,
                                                const GURL& url) const;
+
+  // Returns true if the extension is permitted to run on the given page,
+  // checking against |permitted_url_patterns| in addition to blocking special
+  // sites (like the webstore or chrome:// urls).
+  bool CanRunOnPage(const Extension* extension,
+                    const GURL& document_url,
+                    const GURL& top_document_url,
+                    int tab_id,
+                    int process_id,
+                    const URLPatternSet& permitted_url_patterns,
+                    std::string* error) const;
 
   // The associated extension's id.
   std::string extension_id_;

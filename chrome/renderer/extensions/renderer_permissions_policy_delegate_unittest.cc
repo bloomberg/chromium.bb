@@ -60,7 +60,7 @@ scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
 
 }  // namespace
 
-// Tests that CanExecuteScriptOnPage returns false for the signin process,
+// Tests that CanAccessPage returns false for the signin process,
 // all else being equal.
 TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptSigninProcess) {
   GURL kSigninUrl(
@@ -68,26 +68,26 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptSigninProcess) {
   scoped_refptr<const Extension> extension(CreateTestExtension("a"));
   std::string error;
 
-  EXPECT_TRUE(extension->permissions_data()->CanExecuteScriptOnPage(
-      extension, kSigninUrl, kSigninUrl, -1, NULL, -1, &error))
+  EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
+      extension, kSigninUrl, kSigninUrl, -1, -1, &error))
       << error;
   // Pretend we are in the signin process. We should not be able to execute
   // script.
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSigninProcess);
-  EXPECT_FALSE(extension->permissions_data()->CanExecuteScriptOnPage(
-      extension, kSigninUrl, kSigninUrl, -1, NULL, -1, &error))
+  EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
+      extension, kSigninUrl, kSigninUrl, -1, -1, &error))
       << error;
 }
 
-// Tests that CanExecuteScriptOnPage returns false for the any process
+// Tests that CanAccessPage returns false for the any process
 // which hosts the webstore.
 TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   GURL kAnyUrl("http://example.com/");
   scoped_refptr<const Extension> extension(CreateTestExtension("a"));
   std::string error;
 
-  EXPECT_TRUE(extension->permissions_data()->CanExecuteScriptOnPage(
-      extension, kAnyUrl, kAnyUrl, -1, NULL, -1, &error))
+  EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
+      extension, kAnyUrl, kAnyUrl, -1, -1, &error))
       << error;
 
   // Pretend we are in the webstore process. We should not be able to execute
@@ -96,8 +96,8 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
       CreateTestExtension(extension_misc::kWebStoreAppId));
   extension_dispatcher_->OnLoadedInternal(webstore_extension);
   extension_dispatcher_->OnActivateExtension(extension_misc::kWebStoreAppId);
-  EXPECT_FALSE(extension->permissions_data()->CanExecuteScriptOnPage(
-      extension, kAnyUrl, kAnyUrl, -1, NULL, -1, &error))
+  EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
+      extension, kAnyUrl, kAnyUrl, -1, -1, &error))
       << error;
 }
 

@@ -108,8 +108,8 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  PermittedFeature feature,
                  int tab_id) {
     const PermissionsData* permissions_data = extension->permissions_data();
-    bool script = permissions_data->CanExecuteScriptOnPage(
-        extension, url, url, tab_id, NULL, -1, NULL);
+    bool script =
+        permissions_data->CanAccessPage(extension, url, url, tab_id, -1, NULL);
     bool capture = HasTabsPermission(extension, tab_id) &&
                    permissions_data->CanCaptureVisiblePage(tab_id, NULL);
     switch (feature) {

@@ -26,7 +26,7 @@ namespace {
 // to check for updates, extension blacklisting, etc.
 bool IsSensitiveURL(const GURL& url) {
   // TODO(battre) Merge this, CanExtensionAccessURL and
-  // PermissionsData::CanExecuteScriptOnPage into one function.
+  // PermissionsData::CanAccessPage into one function.
   bool sensitive_chrome_url = false;
   const std::string host = url.host();
   const char kGoogleCom[] = ".google.com";

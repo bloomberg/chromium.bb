@@ -1178,12 +1178,11 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
-    if (!GetExtension()->permissions_data()->CanExecuteScriptOnPage(
+    if (!GetExtension()->permissions_data()->CanAccessPage(
             GetExtension(),
             web_contents_->GetURL(),
             web_contents_->GetURL(),
             tab_id,
-            NULL,
             process ? process->GetID() : -1,
             &error_)) {
       return false;
@@ -1656,12 +1655,11 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
   content::RenderProcessHost* process = contents->GetRenderProcessHost();
-  if (!GetExtension()->permissions_data()->CanExecuteScriptOnPage(
+  if (!GetExtension()->permissions_data()->CanAccessPage(
           GetExtension(),
           contents->GetURL(),
           contents->GetURL(),
           execute_tab_id_,
-          NULL,
           process ? process->GetID() : -1,
           &error_)) {
     return false;

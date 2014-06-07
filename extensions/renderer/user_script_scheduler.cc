@@ -192,14 +192,12 @@ void UserScriptScheduler::ExecuteCodeImpl(
     GURL document_url = ScriptContext::GetEffectiveDocumentURL(
         child_frame, child_frame->document().url(), params.match_about_blank);
     bool can_execute_script =
-        extension->permissions_data()->CanExecuteScriptOnPage(
-            extension,
-            document_url,
-            top_url,
-            extension_helper->tab_id(),
-            NULL,
-            -1,
-            NULL);
+        extension->permissions_data()->CanAccessPage(extension,
+                                                     document_url,
+                                                     top_url,
+                                                     extension_helper->tab_id(),
+                                                     -1,     // no process ID.
+                                                     NULL);  // ignore error.
     if ((!params.is_web_view && !can_execute_script) ||
         (params.is_web_view && document_url != params.webview_src)) {
       if (child_frame->parent()) {

@@ -22,7 +22,6 @@ class RendererPermissionsPolicyDelegate
                                       const GURL& document_url,
                                       const GURL& top_document_url,
                                       int tab_id,
-                                      const UserScript* script,
                                       int process_id,
                                       std::string* error) OVERRIDE;
 

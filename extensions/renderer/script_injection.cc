@@ -254,12 +254,14 @@ bool ScriptInjection::WantsToRun(blink::WebFrame* frame,
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, document_url, script_->match_about_blank());
 
-  if (!extension->permissions_data()->CanExecuteScriptOnPage(
+  if (!script_->MatchesURL(effective_document_url))
+    return false;
+
+  if (!extension->permissions_data()->CanRunContentScriptOnPage(
           extension,
           effective_document_url,
           frame->top()->document().url(),
           kNoTabId,
-          script_.get(),
           kNoProcessId,
           NULL /* ignore error */)) {
     return false;
