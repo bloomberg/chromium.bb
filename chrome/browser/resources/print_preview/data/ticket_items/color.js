@@ -23,6 +23,18 @@ cr.define('print_preview.ticket_items', function() {
         destinationStore);
   };
 
+  /*
+   * @private {!Array.<string>} List of capability types considered color.
+   * @const
+   */
+  Color.COLOR_TYPES_ = ['STANDARD_COLOR', 'CUSTOM_COLOR'];
+
+  /*
+   * @private {!Array.<string>} List of capability types considered monochrome.
+   * @const
+   */
+  Color.MONOCHROME_TYPES_ = ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'];
+
   Color.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,
 
@@ -33,56 +45,72 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      var colorCap = this.getColorCapability_();
-      if (!colorCap) {
+      var capability = this.capability;
+      if (!capability) {
         return false;
       }
       var hasColor = false;
       var hasMonochrome = false;
-      colorCap.option.forEach(function(option) {
-        hasColor = hasColor || option.type == 'STANDARD_COLOR';
-        hasMonochrome = hasMonochrome || option.type == 'STANDARD_MONOCHROME';
+      capability.option.forEach(function(option) {
+        hasColor = hasColor || (Color.COLOR_TYPES_.indexOf(option.type) >= 0);
+        hasMonochrome = hasMonochrome ||
+            (Color.MONOCHROME_TYPES_.indexOf(option.type) >= 0);
       });
       return hasColor && hasMonochrome;
     },
 
-    /** @override */
-    getDefaultValueInternal: function() {
-      var colorCap = this.getColorCapability_();
-      var defaultOption = this.getDefaultColorOption_(colorCap.option);
-      return defaultOption && defaultOption.type == 'STANDARD_COLOR';
-    },
-
-    /** @override */
-    getCapabilityNotAvailableValueInternal: function() {
-      var colorCap = this.getColorCapability_();
-      var defaultOption = colorCap ?
-          this.getDefaultColorOption_(colorCap.option) : null;
-
-      // TODO(rltoscano): Get rid of this check based on destination ID. These
-      // destinations should really update their CDDs to have only one color
-      // option that has type 'STANDARD_COLOR'.
-      var dest = this.getSelectedDestInternal();
-      if (!dest) {
-        return false;
-      }
-      return dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
-          dest.id == print_preview.Destination.GooglePromotedId.FEDEX ||
-          dest.type == print_preview.Destination.Type.MOBILE ||
-          defaultOption && defaultOption.type == 'STANDARD_COLOR';
-    },
-
-    /**
-     * @return {Object} Color capability of the selected destination.
-     * @private
-     */
-    getColorCapability_: function() {
+    /** @return {Object} Color capability of the selected destination. */
+    get capability() {
       var dest = this.getSelectedDestInternal();
       return (dest &&
               dest.capabilities &&
               dest.capabilities.printer &&
               dest.capabilities.printer.color) ||
              null;
+    },
+
+    /** @return {Object} Color option corresponding to the current value. */
+    getSelectedOption: function() {
+      var capability = this.capability;
+      var options = capability ? capability.option : null;
+      if (options) {
+        var typesToLookFor =
+            this.getValue() ? Color.COLOR_TYPES_ : Color.MONOCHROME_TYPES_;
+        for (var i = 0; i < typesToLookFor.length; i++) {
+          var matchingOptions = options.filter(function(option) {
+            return option.type == typesToLookFor[i];
+          });
+          if (matchingOptions.length > 0) {
+            return matchingOptions[0];
+          }
+        }
+      }
+      return null;
+    },
+
+    /** @override */
+    getDefaultValueInternal: function() {
+      var capability = this.capability;
+      var defaultOption = capability ?
+          this.getDefaultColorOption_(capability.option) : null;
+      return defaultOption &&
+          (Color.COLOR_TYPES_.indexOf(defaultOption.type) >= 0);
+    },
+
+    /** @override */
+    getCapabilityNotAvailableValueInternal: function() {
+      // TODO(rltoscano): Get rid of this check based on destination ID. These
+      // destinations should really update their CDDs to have only one color
+      // option that has type 'STANDARD_COLOR'.
+      var dest = this.getSelectedDestInternal();
+      if (dest) {
+        if (dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
+            dest.id == print_preview.Destination.GooglePromotedId.FEDEX ||
+            dest.type == print_preview.Destination.Type.MOBILE) {
+          return true;
+        }
+      }
+      return this.getDefaultValueInternal();
     },
 
     /**

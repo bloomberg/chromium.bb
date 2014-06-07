@@ -19,12 +19,9 @@ PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
       duplex_capable(false),
       duplex_default(UNKNOWN_DUPLEX_MODE),
       color_changeable(false),
-      color_default(false)
-#if defined (OS_POSIX)
-      ,
+      color_default(false),
       color_model(UNKNOWN_COLOR_MODEL),
       bw_model(UNKNOWN_COLOR_MODEL)
-#endif
 {}
 
 PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() {}

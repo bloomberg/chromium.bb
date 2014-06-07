@@ -99,7 +99,6 @@ class PrintPreviewHandler
 
  private:
   class AccessTokenService;
-  struct CUPSPrinterColorModels;
 
   static bool PrivetPrintingEnabled();
 
@@ -295,11 +294,6 @@ class PrintPreviewHandler
 
   // Holds token service to get OAuth2 access tokens.
   scoped_ptr<AccessTokenService> token_service_;
-
-#if defined(USE_CUPS)
-  // The color capabilities from the last printer queried.
-  scoped_ptr<CUPSPrinterColorModels> cups_printer_color_models_;
-#endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
