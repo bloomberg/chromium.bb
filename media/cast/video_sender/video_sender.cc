@@ -256,9 +256,8 @@ void VideoSender::ResendCheck() {
     if (latest_acked_frame_id_ == last_sent_frame_id_) {
       // Last frame acked, no point in doing anything
     } else {
-      const uint32 kickstart_frame_id = latest_acked_frame_id_ + 1;
-      VLOG(1) << "ACK timeout, re-sending frame " << kickstart_frame_id;
-      ResendFrame(kickstart_frame_id);
+      VLOG(1) << "ACK timeout; last acked frame: " << latest_acked_frame_id_;
+      ResendForKickstart();
     }
   }
   ScheduleNextResendCheck();
@@ -310,13 +309,13 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     }
     // TODO(miu): The values "2" and "3" should be derived from configuration.
     if (duplicate_ack_counter_ >= 2 && duplicate_ack_counter_ % 3 == 2) {
-      // Resend last ACK + 1 frame.
-      const uint32 frame_to_resend = latest_acked_frame_id_ + 1;
-      VLOG(1) << "Received duplicate ACK for frame " << latest_acked_frame_id_
-              << ", will re-send frame " << frame_to_resend;
-      ResendFrame(frame_to_resend);
+      VLOG(1) << "Received duplicate ACK for frame " << latest_acked_frame_id_;
+      ResendForKickstart();
     }
   } else {
+    // Only count duplicated ACKs if there is no NACK request in between.
+    // This is to avoid aggresive resend.
+    duplicate_ack_counter_ = 0;
     transport_sender_->ResendPackets(
         false, cast_feedback.missing_frames_and_packets_);
     uint32 new_bitrate = 0;
@@ -354,12 +353,19 @@ bool VideoSender::AreTooManyFramesInFlight() const {
   return frames_in_flight >= max_unacked_frames_;
 }
 
-void VideoSender::ResendFrame(uint32 resend_frame_id) {
+void VideoSender::ResendForKickstart() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!last_send_time_.is_null());
+  VLOG(1) << "Resending first packet of frame " << last_sent_frame_id_
+          << " to kick-start.";
+  // Send the first packet of the last encoded frame to kick start
+  // retransmission. This gives enough information to the receiver what
+  // packets and frames are missing.
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
-  missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));
+  missing.insert(0);
+  missing_frames_and_packets.insert(
+      std::make_pair(last_sent_frame_id_, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   transport_sender_->ResendPackets(false, missing_frames_and_packets);
 }

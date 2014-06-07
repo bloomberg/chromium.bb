@@ -16,47 +16,97 @@ namespace media {
 namespace cast {
 namespace transport {
 
-static int kStoredFrames = 10;
+static size_t kStoredFrames = 10;
 
-class PacketStorageTest : public ::testing::Test {
- protected:
-  PacketStorageTest() : packet_storage_(kStoredFrames) {
+// Generate |number_of_frames| and store into |*storage|.
+// First frame has 1 packet, second frame has 2 packets, etc.
+static void StoreFrames(size_t number_of_frames,
+                        uint32 first_frame_id,
+                        PacketStorage* storage) {
+  const base::TimeTicks kTicks;
+  const int kSsrc = 1;
+  for (size_t i = 0; i < number_of_frames; ++i) {
+    SendPacketVector packets;
+    // First frame has 1 packet, second frame has 2 packets, etc.
+    const size_t kNumberOfPackets = i + 1;
+    for (size_t j = 0; j < kNumberOfPackets; ++j) {
+      Packet test_packet(1, 0);
+      packets.push_back(
+          std::make_pair(
+              PacedPacketSender::MakePacketKey(kTicks, kSsrc, j),
+              new base::RefCountedData<Packet>(test_packet)));
+    }
+    storage->StoreFrame(first_frame_id, packets);
+    ++first_frame_id;
   }
+}
 
-  PacketStorage packet_storage_;
+TEST(PacketStorageTest, NumberOfStoredFrames) {
+  PacketStorage storage(kStoredFrames);
 
-  DISALLOW_COPY_AND_ASSIGN(PacketStorageTest);
-};
+  uint32 frame_id = 0;
+  frame_id = ~frame_id; // The maximum value of uint32.
+  StoreFrames(200, frame_id, &storage);
+  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+}
 
-TEST_F(PacketStorageTest, PacketContent) {
-  base::TimeTicks frame_tick;
-  for (uint32 frame_id = 0; frame_id < 200; ++frame_id) {
-    for (uint16 packet_id = 0; packet_id < 5; ++packet_id) {
-      Packet test_packet(frame_id + 1, packet_id);
-      packet_storage_.StorePacket(
-          frame_id,
-          packet_id,
-          PacedPacketSender::MakePacketKey(frame_tick,
-                                           1, // ssrc
-                                           packet_id),
-          new base::RefCountedData<Packet>(test_packet));
-    }
+TEST(PacketStorageTest, GetFrameWrapAround8bits) {
+  PacketStorage storage(kStoredFrames);
 
-    for (uint32 f = 0; f <= frame_id; f++) {
-      for (uint16 packet_id = 0; packet_id < 5; ++packet_id) {
-        SendPacketVector packets;
-        if (packet_storage_.GetPacket32(f, packet_id, &packets)) {
-          EXPECT_GT(f + kStoredFrames, frame_id);
-          EXPECT_EQ(f + 1, packets.back().second->data.size());
-          EXPECT_EQ(packet_id, packets.back().second->data[0]);
-          EXPECT_TRUE(packet_storage_.GetPacket(f & 0xff, packet_id, &packets));
-          EXPECT_TRUE(packets.back().second->data ==
-                      packets.front().second->data);
-        } else {
-          EXPECT_LE(f + kStoredFrames, frame_id);
-        }
-      }
-    }
+  const uint32 kFirstFrameId = 250;
+  StoreFrames(kStoredFrames, kFirstFrameId, &storage);
+  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+
+  // Expect we get the correct frames by looking at the number of
+  // packets.
+  uint32 frame_id = kFirstFrameId;
+  for (size_t i = 0; i < kStoredFrames; ++i) {
+    ASSERT_TRUE(storage.GetFrame8(frame_id));
+    EXPECT_EQ(i + 1, storage.GetFrame8(frame_id)->size());
+    ++frame_id;
+  }
+}
+
+TEST(PacketStorageTest, GetFrameWrapAround32bits) {
+  PacketStorage storage(kStoredFrames);
+
+  // First frame ID is close to the maximum value of uint32.
+  uint32 first_frame_id = 0xffffffff - 5;
+  StoreFrames(kStoredFrames, first_frame_id, &storage);
+  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+
+  // Expect we get the correct frames by looking at the number of
+  // packets.
+  uint32 frame_id = first_frame_id;
+  for (size_t i = 0; i < kStoredFrames; ++i) {
+    ASSERT_TRUE(storage.GetFrame8(frame_id));
+    EXPECT_EQ(i + 1, storage.GetFrame8(frame_id)->size());
+    ++frame_id;
+  }
+}
+
+TEST(PacketStorageTest, GetFrameTooOld) {
+  PacketStorage storage(kStoredFrames);
+
+  // First frame ID is close to the maximum value of uint32.
+  uint32 first_frame_id = 0xffffffff - 5;
+
+  // Store two times the capacity.
+  StoreFrames(2 * kStoredFrames, first_frame_id, &storage);
+  EXPECT_EQ(kStoredFrames, storage.GetNumberOfStoredFrames());
+
+  uint32 frame_id = first_frame_id;
+  // Old frames are evicted.
+  for (size_t i = 0; i < kStoredFrames; ++i) {
+    EXPECT_FALSE(storage.GetFrame8(frame_id));
+    ++frame_id;
+  }
+  // Check recent frames are there.
+  for (size_t i = 0; i < kStoredFrames; ++i) {
+    ASSERT_TRUE(storage.GetFrame8(frame_id));
+    EXPECT_EQ(kStoredFrames + i + 1,
+              storage.GetFrame8(frame_id)->size());
+    ++frame_id;
   }
 }
 

@@ -84,8 +84,8 @@ class VideoSender : public RtcpSenderFeedback,
   void ScheduleNextResendCheck();
   void ResendCheck();
 
-  // Asks |transport_sender_| to resend all the packets for a particular frame.
-  void ResendFrame(uint32 resend_frame_id);
+  // Resend certain packets of an unacked frame to kick start re-transmission.
+  void ResendForKickstart();
 
   // Returns true if there are too many frames in flight, as defined by the
   // configured target playout delay plus simple logic.  When this is true,

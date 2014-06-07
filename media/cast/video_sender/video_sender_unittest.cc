@@ -111,6 +111,7 @@ class VideoSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_);
+    last_pixel_value_ = kPixelValue;
     net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
@@ -179,7 +180,7 @@ class VideoSenderTest : public ::testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
-    PopulateVideoFrame(video_frame, kPixelValue);
+    PopulateVideoFrame(video_frame, last_pixel_value_++);
     return video_frame;
   }
 
@@ -197,6 +198,7 @@ class VideoSenderTest : public ::testing::Test {
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
+  int last_pixel_value_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSenderTest);
 };
@@ -317,28 +319,29 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   InitEncoder(false);
   // Send a stream of frames and don't ACK; by default we shouldn't have more
   // than 4 frames in flight.
-  // Store size in packets of frame 0, as it should be resent sue to timeout.
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
   video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
   RunTasks(33);
-  const int size_of_frame0 = transport_.number_of_rtp_packets();
 
-  for (int i = 1; i < 4; ++i) {
+  // Send 3 more frames and record the number of packets sent.
+  for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
     RunTasks(33);
   }
-
   const int number_of_packets_sent = transport_.number_of_rtp_packets();
-  // Send 4 more frames - they should not be sent to the transport, as we have
-  // received any acks.
+
+  // Send 3 more frames - they should not be encoded, as we have not received
+  // any acks.
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
     RunTasks(33);
   }
 
-  EXPECT_EQ(number_of_packets_sent + size_of_frame0,
+  // We expect a frame to be retransmitted because of duplicated ACKs.
+  // Only one packet of the frame is re-transmitted.
+  EXPECT_EQ(number_of_packets_sent + 1,
             transport_.number_of_rtp_packets());
 
   // Start acking and make sure we're back to steady-state.
@@ -356,6 +359,46 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   EXPECT_LE(
       7,
       transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets());
+}
+
+TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
+  InitEncoder(false);
+  scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  RunTasks(33);
+  RtcpCastMessage cast_feedback(1);
+  cast_feedback.media_ssrc_ = 2;
+  cast_feedback.ack_frame_id_ = 0;
+
+  // Send 3 more frames but don't ACK.
+  for (int i = 0; i < 3; ++i) {
+    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    RunTasks(33);
+  }
+  const int number_of_packets_sent = transport_.number_of_rtp_packets();
+
+  // Send duplicated ACKs and mix some invalid NACKs.
+  for (int i = 0; i < 10; ++i) {
+    RtcpCastMessage ack_feedback(1);
+    ack_feedback.media_ssrc_ = 2;
+    ack_feedback.ack_frame_id_ = 0;
+    RtcpCastMessage nack_feedback(1);
+    nack_feedback.media_ssrc_ = 2;
+    nack_feedback.missing_frames_and_packets_[255] = PacketIdSet();
+    video_sender_->OnReceivedCastFeedback(ack_feedback);
+    video_sender_->OnReceivedCastFeedback(nack_feedback);
+  }
+  EXPECT_EQ(number_of_packets_sent, transport_.number_of_rtp_packets());
+
+  // Re-transmit one packet because of duplicated ACKs.
+  for (int i = 0; i < 3; ++i) {
+    RtcpCastMessage ack_feedback(1);
+    ack_feedback.media_ssrc_ = 2;
+    ack_feedback.ack_frame_id_ = 0;
+    video_sender_->OnReceivedCastFeedback(ack_feedback);
+  }
+  EXPECT_EQ(number_of_packets_sent + 1, transport_.number_of_rtp_packets());
 }
 
 }  // namespace cast

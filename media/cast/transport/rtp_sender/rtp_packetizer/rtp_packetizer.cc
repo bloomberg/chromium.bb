@@ -93,22 +93,21 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     packet->data.insert(packet->data.end(),
                         data_iter,
                         data_iter + payload_length);
-
-    PacketKey key = PacedPacketSender::MakePacketKey(frame.reference_time,
-                                                     config_.ssrc,
-                                                     packet_id_);
-
-    // Store packet.
-    packet_storage_->StorePacket(frame.frame_id, packet_id_, key, packet);
-    ++packet_id_;
     data_iter += payload_length;
+
+    const PacketKey key =
+        PacedPacketSender::MakePacketKey(frame.reference_time,
+                                         config_.ssrc,
+                                         packet_id_++);
+    packets.push_back(make_pair(key, packet));
 
     // Update stats.
     ++send_packet_count_;
     send_octet_count_ += payload_length;
-    packets.push_back(make_pair(key, packet));
   }
   DCHECK(packet_id_ == num_packets) << "Invalid state";
+
+  packet_storage_->StoreFrame(frame.frame_id, packets);
 
   // Send to network.
   transport_->SendPackets(packets);

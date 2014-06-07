@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_TRANSPORT_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_
 #define MEDIA_CAST_TRANSPORT_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_
 
+#include <deque>
 #include <list>
 #include <map>
 #include <vector>
@@ -22,51 +23,34 @@ namespace media {
 namespace cast {
 namespace transport {
 
-class StoredPacket;
-
-// StorageIndex contains {frame_id, packet_id}.
-typedef std::pair<uint32, uint16> StorageIndex;
-typedef std::map<StorageIndex, std::pair<PacketKey, PacketRef> > PacketMap;
-
-// Frame IDs are generally stored as 8-bit values when sent over the
-// wire. This means that having a history longer than 255 frames makes
-// no sense.
-const int kMaxStoredFrames = 255;
+// Stores a list of frames. Each frame consists a list of packets.
+typedef std::deque<SendPacketVector> FrameQueue;
 
 class PacketStorage {
  public:
-  PacketStorage(int stored_frames);
+  explicit PacketStorage(size_t stored_frames);
   virtual ~PacketStorage();
 
   // Returns true if this class is configured correctly.
   // (stored frames > 0 && stored_frames < kMaxStoredFrames)
   bool IsValid() const;
 
-  void StorePacket(uint32 frame_id,
-                   uint16 packet_id,
-                   const PacketKey& key,
-                   PacketRef packet);
+  // Store all of the packets for a frame.
+  void StoreFrame(uint32 frame_id, const SendPacketVector& packets);
 
-  // Copies all missing packets into the packet list.
-  void GetPackets(
-      const MissingFramesAndPacketsMap& missing_frames_and_packets,
-      SendPacketVector* packets_to_resend);
+  // Returns a list of packets for a frame indexed by a 8-bits ID.
+  // It is the lowest 8 bits of a frame ID.
+  // Returns NULL if the frame cannot be found.
+  const SendPacketVector* GetFrame8(uint8 frame_id_8bits) const;
 
-  // Copies packet into the packet list.
-  bool GetPacket(uint8 frame_id_8bit,
-                 uint16 packet_id,
-                 SendPacketVector* packets);
+  // Get the number of stored frames.
+  size_t GetNumberOfStoredFrames() const;
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(PacketStorageTest, PacketContent);
-
-  // Same as GetPacket, but takes a 32-bit frame id.
-  bool GetPacket32(uint32 frame_id,
-                   uint16 packet_id,
-                   SendPacketVector* packets);
-  void CleanupOldPackets(uint32 current_frame_id);
-
-  PacketMap stored_packets_;
-  int stored_frames_;
+  const size_t max_stored_frames_;
+  FrameQueue frames_;
+  uint32 first_frame_id_in_list_;
+  uint32 last_frame_id_in_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketStorage);
 };
