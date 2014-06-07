@@ -23,22 +23,14 @@ using mojo::view_manager::ViewTreeNodeObserver;
 
 namespace mojo {
 namespace examples {
-namespace {
 
-const SkColor kColors[] = { SK_ColorYELLOW,
-                            SK_ColorRED,
-                            SK_ColorGREEN,
-                            SK_ColorMAGENTA };
-
-}  // namespace
-
-class EmbeddedApp : public Application,
-                    public ViewManagerDelegate,
-                    public ViewObserver,
-                    public ViewTreeNodeObserver {
+// An app that embeds another app.
+class NestingApp : public Application,
+                   public ViewManagerDelegate,
+                   public ViewObserver {
  public:
-  EmbeddedApp() {}
-  virtual ~EmbeddedApp() {}
+  NestingApp() {}
+  virtual ~NestingApp() {}
 
  private:
   // Overridden from Application:
@@ -51,18 +43,18 @@ class EmbeddedApp : public Application,
   virtual void OnRootAdded(ViewManager* view_manager,
                            ViewTreeNode* root) OVERRIDE {
     View* view = View::Create(view_manager);
-    view->AddObserver(this);
     root->SetActiveView(view);
-    root->AddObserver(this);
-    size_t index = view_manager->roots().size() - 1;
-    view->SetColor(kColors[index % arraysize(kColors)]);
+    view->SetColor(SK_ColorCYAN);
+    view->AddObserver(this);
+
+    ViewTreeNode* nested = ViewTreeNode::Create(view_manager);
+    root->AddChild(nested);
+    nested->SetBounds(gfx::Rect(20, 20, 50, 50));
+    nested->Embed("mojo:mojo_embedded_app");
   }
   virtual void OnRootRemoved(ViewManager* view_manager,
                              ViewTreeNode* root) OVERRIDE {
-    std::map<ViewTreeNode*, View*>::const_iterator it =
-        views_to_reap_.find(root);
-    if (it != views_to_reap_.end())
-      it->second->Destroy();
+    // TODO(beng): reap views & child nodes.
   }
 
   // Overridden from ViewObserver:
@@ -71,27 +63,16 @@ class EmbeddedApp : public Application,
       window_manager_->CloseWindow(view->node()->id());
   }
 
-  // Overridden from ViewTreeNodeObserver:
-  virtual void OnNodeActiveViewChange(
-      ViewTreeNode* node,
-      View* old_view,
-      View* new_view,
-      ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (new_view == 0)
-      views_to_reap_[node] = old_view;
-  }
-
   IWindowManagerPtr window_manager_;
-  std::map<ViewTreeNode*, View*> views_to_reap_;
 
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedApp);
+  DISALLOW_COPY_AND_ASSIGN(NestingApp);
 };
 
 }  // namespace examples
 
 // static
 Application* Application::Create() {
-  return new examples::EmbeddedApp;
+  return new examples::NestingApp;
 }
 
 }  // namespace mojo

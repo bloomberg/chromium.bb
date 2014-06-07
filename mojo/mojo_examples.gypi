@@ -323,6 +323,28 @@
             'public/cpp/application/lib/mojo_main_chromium.cc',
           ],
         },
+        {
+          'target_name': 'mojo_nesting_app',
+          'type': 'shared_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gl/gl.gyp:gl',
+            'mojo_application',
+            'mojo_cpp_bindings',
+            'mojo_environment_chromium',
+            'mojo_geometry_bindings',
+            'mojo_gles2',
+            'mojo_view_manager_lib',
+            'mojo_window_manager_bindings',
+            'mojo_system_impl',
+            'mojo_utility',
+          ],
+          'sources': [
+            'examples/nesting_app/nesting_app.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
       ],
     }],
     ['OS=="linux"', {

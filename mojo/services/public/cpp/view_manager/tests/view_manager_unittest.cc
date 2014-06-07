@@ -14,6 +14,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -50,10 +51,14 @@ void WaitForAllChangesToBeAcked(ViewManager* manager) {
   ViewManagerPrivate(manager).synchronizer()->ClearChangesAckedCallback();
 }
 
-class ConnectServiceLoader : public ServiceLoader {
+class ConnectServiceLoader : public ServiceLoader,
+                             public ViewManagerDelegate {
  public:
-  explicit ConnectServiceLoader(const ViewManager::RootCallback& callback)
-      : callback_(callback) {}
+  typedef base::Callback<void(ViewManager*, ViewTreeNode*)> LoadedCallback;
+
+  explicit ConnectServiceLoader(const LoadedCallback& callback)
+      : callback_(callback) {
+  }
   virtual ~ConnectServiceLoader() {}
 
  private:
@@ -62,16 +67,21 @@ class ConnectServiceLoader : public ServiceLoader {
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
     scoped_ptr<Application> app(new Application(shell_handle.Pass()));
-    // TODO(beng): test removed callback.
-    ViewManager::Create(app.get(), callback_, ViewManager::RootCallback());
+    ViewManager::Create(app.get(), this);
     apps_.push_back(app.release());
   }
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE {
   }
 
+  // Overridden from ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager,
+                           ViewTreeNode* root) OVERRIDE {
+    callback_.Run(view_manager, root);
+  }
+
   ScopedVector<Application> apps_;
-  ViewManager::RootCallback callback_;
+  LoadedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
 };
@@ -328,7 +338,7 @@ class ViewManagerTest : public testing::Test {
  private:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    ViewManager::RootCallback ready_callback =
+    ConnectServiceLoader::LoadedCallback ready_callback =
         base::Bind(&ViewManagerTest::OnViewManagerLoaded,
                    base::Unretained(this));
     test_helper_.Init();

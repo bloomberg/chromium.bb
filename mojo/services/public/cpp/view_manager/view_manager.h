@@ -18,28 +18,19 @@ class Application;
 namespace view_manager {
 
 class View;
+class ViewManagerDelegate;
 class ViewManagerSynchronizer;
 class ViewTreeNode;
 
 // Approximately encapsulates the View Manager service.
 // Has a synchronizer that keeps a client model in sync with the service.
 // Owned by the connection.
-//
-// TODO: displays
 class ViewManager {
  public:
-  typedef base::Callback<void(ViewManager*, ViewTreeNode*)> RootCallback;
-
   ~ViewManager();
 
-  // |ready_callback| is run when the ViewManager connection is established
-  // and ready to use.
-  static void Create(
-      Application* application,
-      const RootCallback& root_added_callback,
-      const RootCallback& root_removed_callback);
-  // Blocks until ViewManager is ready to use.
-  static ViewManager* CreateBlocking(Application* application);
+  // Delegate is owned by the caller.
+  static void Create(Application* application, ViewManagerDelegate* delegate);
 
   const std::vector<ViewTreeNode*>& roots() { return roots_; }
 
@@ -48,16 +39,17 @@ class ViewManager {
 
  private:
   friend class ViewManagerPrivate;
+  friend class ViewManagerSynchronizer;
+
   typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
   typedef std::map<TransportViewId, View*> IdToViewMap;
+  typedef std::map<TransportConnectionId,
+                   ViewManagerSynchronizer*> SynchronizerMap;
 
-  ViewManager(Application* application,
-              const RootCallback& root_added_callback,
-              const RootCallback& root_removed_callback);
+  ViewManager(ViewManagerSynchronizer* synchronizer,
+              ViewManagerDelegate* delegate);
 
-  RootCallback root_added_callback_;
-  RootCallback root_removed_callback_;
-
+  ViewManagerDelegate* delegate_;
   ViewManagerSynchronizer* synchronizer_;
 
   std::vector<ViewTreeNode*> roots_;

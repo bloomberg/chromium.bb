@@ -437,18 +437,16 @@ class EmbedTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(EmbedTransaction);
 };
 
-ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
-    : view_manager_(view_manager),
+ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManagerDelegate* delegate)
+    : view_manager_(new ViewManager(this, delegate)),
       connected_(false),
       connection_id_(0),
       next_id_(1),
       next_server_change_id_(0),
       sync_factory_(this) {
-  ViewManagerPrivate(view_manager).set_synchronizer(this);
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
-  view_manager_.reset();
 }
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
@@ -651,7 +649,6 @@ void ViewManagerSynchronizer::OnViewInputEvent(
   }
   ack_callback.Run();
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, private:

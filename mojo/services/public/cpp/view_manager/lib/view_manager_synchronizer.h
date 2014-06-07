@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
@@ -24,10 +25,11 @@ class ViewManagerTransaction;
 // Manages the connection with the View Manager service.
 class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
  public:
-  explicit ViewManagerSynchronizer(ViewManager* view_manager);
+  explicit ViewManagerSynchronizer(ViewManagerDelegate* delegate);
   virtual ~ViewManagerSynchronizer();
 
   bool connected() const { return connected_; }
+  TransportConnectionId connection_id() const { return connection_id_; }
 
   // API exposed to the node/view implementations that pushes local changes to
   // the service.

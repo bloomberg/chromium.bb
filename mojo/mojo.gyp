@@ -68,6 +68,7 @@
             'mojo_aura_demo_init',
             'mojo_demo_launcher',
             'mojo_embedded_app',
+            'mojo_nesting_app',
             'mojo_window_manager',
             'mojo_view_manager',
             'mojo_view_manager_unittests',

@@ -5,6 +5,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 
 namespace mojo {
@@ -50,8 +51,7 @@ void ViewManagerPrivate::AddRoot(ViewTreeNode* root) {
   }
   manager_->roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
-  if (!manager_->root_added_callback_.is_null())
-    manager_->root_added_callback_.Run(manager_, root);
+  manager_->delegate_->OnRootAdded(manager_, root);
 }
 
 void ViewManagerPrivate::RemoveRoot(ViewTreeNode* root) {
@@ -59,8 +59,7 @@ void ViewManagerPrivate::RemoveRoot(ViewTreeNode* root) {
       std::find(manager_->roots_.begin(), manager_->roots_.end(), root);
   if (it != manager_->roots_.end()) {
     manager_->roots_.erase(it);
-    if (!manager_->root_removed_callback_.is_null())
-      manager_->root_removed_callback_.Run(manager_, root);
+    manager_->delegate_->OnRootRemoved(manager_, root);
   }
 }
 

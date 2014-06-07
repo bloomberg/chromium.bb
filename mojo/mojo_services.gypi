@@ -278,6 +278,7 @@
         'services/public/cpp/view_manager/lib/view_tree_node_private.h',
         'services/public/cpp/view_manager/view.h',
         'services/public/cpp/view_manager/view_manager.h',
+        'services/public/cpp/view_manager/view_manager_delegate.h',
         'services/public/cpp/view_manager/view_manager_types.h',
         'services/public/cpp/view_manager/view_observer.h',
         'services/public/cpp/view_manager/view_tree_host.h',
