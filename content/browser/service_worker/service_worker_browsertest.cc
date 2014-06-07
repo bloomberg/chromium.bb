@@ -39,6 +39,7 @@ struct FetchResult {
   ServiceWorkerStatusCode status;
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
+  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle;
 };
 
 void RunAndQuit(const base::Closure& closure,
@@ -76,6 +77,7 @@ void RunOnIOThread(
 // to pass to DispatchFetchEvent.
 void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
                         const base::Closure& quit,
+                        ChromeBlobStorageContext* blob_context,
                         FetchResult* out_result,
                         ServiceWorkerStatusCode actual_status,
                         ServiceWorkerFetchEventResult actual_result,
@@ -83,6 +85,11 @@ void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
   out_result->status = actual_status;
   out_result->result = actual_result;
   out_result->response = actual_response;
+  if (!actual_response.blob_uuid.empty()) {
+    out_result->blob_data_handle =
+        blob_context->context()->GetBlobDataFromUUID(
+            actual_response.blob_uuid);
+  }
   if (!quit.is_null())
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
 }
@@ -90,15 +97,16 @@ void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
 ServiceWorkerVersion::FetchCallback CreateResponseReceiver(
     BrowserThread::ID run_quit_thread,
     const base::Closure& quit,
+    ChromeBlobStorageContext* blob_context,
     FetchResult* result) {
-  return base::Bind(&ReceiveFetchResult, run_quit_thread, quit, result);
+  return base::Bind(&ReceiveFetchResult, run_quit_thread, quit,
+                    make_scoped_refptr<ChromeBlobStorageContext>(blob_context),
+                    result);
 }
 
 void ReadResponseBody(std::string* body,
-                      scoped_refptr<ChromeBlobStorageContext> context,
-                      std::string blob_uuid) {
-  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle =
-      context->context()->GetBlobDataFromUUID(blob_uuid);
+                      webkit_blob::BlobDataHandle* blob_data_handle) {
+  ASSERT_TRUE(blob_data_handle);
   ASSERT_EQ(1U, blob_data_handle->data()->items().size());
   *body = std::string(blob_data_handle->data()->items()[0].bytes(),
                       blob_data_handle->data()->items()[0].length());
@@ -300,8 +308,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(expected_status, status);
   }
 
-  void FetchOnRegisteredWorker(ServiceWorkerFetchEventResult* result,
-                               ServiceWorkerResponse* response) {
+  void FetchOnRegisteredWorker(
+      ServiceWorkerFetchEventResult* result,
+      ServiceWorkerResponse* response,
+      scoped_ptr<webkit_blob::BlobDataHandle>* blob_data_handle) {
+    blob_context_ = ChromeBlobStorageContext::GetFor(
+        shell()->web_contents()->GetBrowserContext());
     FetchResult fetch_result;
     fetch_result.status = SERVICE_WORKER_ERROR_FAILED;
     base::RunLoop fetch_run_loop;
@@ -314,16 +326,18 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     fetch_run_loop.Run();
     *result = fetch_result.result;
     *response = fetch_result.response;
+    *blob_data_handle = fetch_result.blob_data_handle.Pass();
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
-  void FetchTestHelper(const std::string& worker_url,
-                       ServiceWorkerFetchEventResult* result,
-                       ServiceWorkerResponse* response) {
+  void FetchTestHelper(
+      const std::string& worker_url,
+      ServiceWorkerFetchEventResult* result,
+      ServiceWorkerResponse* response,
+      scoped_ptr<webkit_blob::BlobDataHandle>* blob_data_handle) {
     RunOnIOThread(
         base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
-
-    FetchOnRegisteredWorker(result, response);
+    FetchOnRegisteredWorker(result, response, blob_data_handle);
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
@@ -368,7 +382,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         std::map<std::string, std::string>());
     version_->SetStatus(ServiceWorkerVersion::ACTIVE);
     version_->DispatchFetchEvent(
-        request, CreateResponseReceiver(BrowserThread::UI, done, result));
+        request, CreateResponseReceiver(BrowserThread::UI, done,
+                                        blob_context_, result));
   }
 
   void StopOnIOThread(const base::Closure& done,
@@ -388,6 +403,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
  protected:
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  scoped_refptr<ChromeBlobStorageContext> blob_context_;
 };
 
 IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest, StartAndStop) {
@@ -480,7 +496,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
-  FetchTestHelper("/service_worker/fetch_event.js", &result, &response);
+  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle;
+  FetchTestHelper("/service_worker/fetch_event.js",
+                  &result, &response, &blob_data_handle);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   EXPECT_EQ(301, response.status_code);
   EXPECT_EQ("Moved Permanently", response.status_text);
@@ -489,12 +507,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   expected_headers["Content-Type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response.headers);
 
-  scoped_refptr<ChromeBlobStorageContext> context =
-      ChromeBlobStorageContext::GetFor(
-          shell()->web_contents()->GetBrowserContext());
   std::string body;
   RunOnIOThread(
-      base::Bind(&ReadResponseBody, &body, context, response.blob_uuid));
+      base::Bind(&ReadResponseBody,
+                 &body, base::Owned(blob_data_handle.release())));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.", body);
 }
 
@@ -524,9 +540,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
       &self::SetUpRegistrationOnIOThread, this, "/service_worker/sync.js"));
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
-
+  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle;
   // Should 404 before sync event.
-  FetchOnRegisteredWorker(&result, &response);
+  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   EXPECT_EQ(404, response.status_code);
 
   // Run the sync event.
@@ -542,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
   // Should 200 after sync event.
-  FetchOnRegisteredWorker(&result, &response);
+  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   EXPECT_EQ(200, response.status_code);
 }
 
