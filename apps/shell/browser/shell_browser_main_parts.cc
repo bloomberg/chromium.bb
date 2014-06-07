@@ -19,6 +19,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -64,6 +65,9 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
   network_controller_.reset(new ShellNetworkController);
+#else
+  // Non-Chrome OS platforms are for developer convenience, so use a test IME.
+  ui::InitializeInputMethodForTesting();
 #endif
 }
 
