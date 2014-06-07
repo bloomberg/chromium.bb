@@ -112,53 +112,46 @@ void RecordDailyContentLengthHistograms(
       "Net.DailyContentPercent_DataReductionProxyEnabled",
       (100 * received_length_with_data_reduction_enabled) / received_length);
 
-  if (https_length_with_data_reduction_enabled > 0) {
-    UMA_HISTOGRAM_COUNTS(
-        "Net.DailyContentLength_DataReductionProxyEnabled_Https",
-        https_length_with_data_reduction_enabled >> 10);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyContentPercent_DataReductionProxyEnabled_Https",
-        (100 * https_length_with_data_reduction_enabled) / received_length);
-  }
+  DCHECK_GE(https_length_with_data_reduction_enabled, 0);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.DailyContentLength_DataReductionProxyEnabled_Https",
+      https_length_with_data_reduction_enabled >> 10);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.DailyContentPercent_DataReductionProxyEnabled_Https",
+      (100 * https_length_with_data_reduction_enabled) / received_length);
 
-  if (short_bypass_length_with_data_reduction_enabled > 0) {
-    UMA_HISTOGRAM_COUNTS(
-        "Net.DailyContentLength_DataReductionProxyEnabled_ShortBypass",
-        short_bypass_length_with_data_reduction_enabled >> 10);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyContentPercent_DataReductionProxyEnabled_ShortBypass",
-        ((100 * short_bypass_length_with_data_reduction_enabled) /
-         received_length));
-  }
+  DCHECK_GE(short_bypass_length_with_data_reduction_enabled, 0);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.DailyContentLength_DataReductionProxyEnabled_ShortBypass",
+      short_bypass_length_with_data_reduction_enabled >> 10);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.DailyContentPercent_DataReductionProxyEnabled_ShortBypass",
+      ((100 * short_bypass_length_with_data_reduction_enabled) /
+       received_length));
 
-  if (long_bypass_length_with_data_reduction_enabled > 0) {
-    UMA_HISTOGRAM_COUNTS(
-        "Net.DailyContentLength_DataReductionProxyEnabled_LongBypass",
-        long_bypass_length_with_data_reduction_enabled >> 10);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyContentPercent_DataReductionProxyEnabled_LongBypass",
-        ((100 * long_bypass_length_with_data_reduction_enabled) /
-         received_length));
-  }
+  DCHECK_GE(long_bypass_length_with_data_reduction_enabled, 0);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.DailyContentLength_DataReductionProxyEnabled_LongBypass",
+      long_bypass_length_with_data_reduction_enabled >> 10);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.DailyContentPercent_DataReductionProxyEnabled_LongBypass",
+      ((100 * long_bypass_length_with_data_reduction_enabled) /
+       received_length));
 
-  if (unknown_length_with_data_reduction_enabled > 0) {
-    UMA_HISTOGRAM_COUNTS(
-        "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
-        unknown_length_with_data_reduction_enabled >> 10);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyContentPercent_DataReductionProxyEnabled_Unknown",
-        ((100 * unknown_length_with_data_reduction_enabled) /
-         received_length));
-  }
+  DCHECK_GE(unknown_length_with_data_reduction_enabled, 0);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
+      unknown_length_with_data_reduction_enabled >> 10);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.DailyContentPercent_DataReductionProxyEnabled_Unknown",
+      ((100 * unknown_length_with_data_reduction_enabled) /
+       received_length));
 
-  if (original_length_via_data_reduction_proxy <= 0 ||
-      received_length_via_data_reduction_proxy <= 0) {
-    return;
-  }
-
+  DCHECK_GE(original_length_via_data_reduction_proxy, 0);
   UMA_HISTOGRAM_COUNTS(
       "Net.DailyOriginalContentLength_ViaDataReductionProxy",
       original_length_via_data_reduction_proxy >> 10);
+  DCHECK_GE(received_length_via_data_reduction_proxy, 0);
   UMA_HISTOGRAM_COUNTS(
       "Net.DailyContentLength_ViaDataReductionProxy",
       received_length_via_data_reduction_proxy >> 10);
