@@ -78,6 +78,7 @@ group("root") {
     "//third_party/zlib",
     "//third_party:jpeg",
     "//tools/gn",
+    "//ui/aura",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",
@@ -123,11 +124,12 @@ group("root") {
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
+      "//sandbox",
       "//third_party/libusb",
       # "//third_party/WebKit/Source/platform",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.
-      "//sandbox",
       "//tools/gn",
+      "//ui/aura",
 
       # Not tested on Android yet:
       "//webkit/browser:storage",

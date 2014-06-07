@@ -77,6 +77,10 @@ config("xext") {
   libs = [ "Xext" ]
 }
 
+config("xrandr") {
+  libs = [ "xrandr" ]
+}
+
 config("libcap") {
   libs = [ "cap" ]
 }
