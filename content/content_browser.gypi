@@ -1182,6 +1182,8 @@
       'browser/service_worker/service_worker_fetch_dispatcher.h',
       'browser/service_worker/service_worker_handle.cc',
       'browser/service_worker/service_worker_handle.h',
+      'browser/service_worker/service_worker_histograms.cc',
+      'browser/service_worker/service_worker_histograms.h',
       'browser/service_worker/service_worker_info.cc',
       'browser/service_worker/service_worker_info.h',
       'browser/service_worker/service_worker_internals_ui.cc',

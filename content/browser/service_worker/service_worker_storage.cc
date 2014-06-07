@@ -12,6 +12,7 @@
 #include "base/task_runner_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_histograms.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
@@ -759,6 +760,7 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
     disk_cache_->Disable();
     state_ = DISABLED;
   }
+  ServiceWorkerHistograms::CountInitDiskCacheResult(rv == net::OK);
 }
 
 void ServiceWorkerStorage::StartPurgingResources(

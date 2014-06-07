@@ -24613,6 +24613,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.DiskCache.InitResult">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of opening a disk cache for ServiceWorkerDiskCache.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.DiskCache.ReadResponseResult"
+    enum="ServiceWorkerReadResponseResult">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of reading response from ServiceWorkerDiskCache.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.DiskCache.WriteResponseResult"
+    enum="ServiceWorkerWriteResponseResult">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records result of writing response into ServiceWorkerDiskCache.
+  </summary>
+</histogram>
+
 <histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Use Search.DefaultSearchProviderType instead.
@@ -42921,6 +42944,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="IO Error"/>
   <int value="3" label="Corruption Error"/>
   <int value="4" label="Operation Error"/>
+</enum>
+
+<enum name="ServiceWorkerReadResponseResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Read headers error"/>
+  <int value="2" label="Read data error"/>
+</enum>
+
+<enum name="ServiceWorkerWriteResponseResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Write headers error"/>
+  <int value="2" label="Write data error"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">
