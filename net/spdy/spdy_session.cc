@@ -51,10 +51,6 @@ const int kReadBufferSize = 8 * 1024;
 const int kDefaultConnectionAtRiskOfLossSeconds = 10;
 const int kHungIntervalSeconds = 10;
 
-// As we always act as the client, start at 1 for the first stream id.
-const SpdyStreamId kFirstStreamId = 1;
-const SpdyStreamId kLastStreamId = 0x7fffffff;
-
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
 

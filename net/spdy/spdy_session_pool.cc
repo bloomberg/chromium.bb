@@ -278,11 +278,14 @@ void SpdySessionPool::OnIPAddressChanged() {
     if (!*it)
       continue;
 
-    // For OSs that terminate TCP connections upon relevant network changes
-    // there is no need to explicitly close SpdySessions, instead simply mark
-    // the sessions as deprecated so they aren't reused.
+// For OSs that terminate TCP connections upon relevant network changes,
+// attempt to preserve active streams by marking all sessions as going
+// away, rather than explicitly closing them. Streams may still fail due
+// to a generated TCP reset.
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
     (*it)->MakeUnavailable();
+    (*it)->StartGoingAway(kLastStreamId, OK);
+    (*it)->MaybeFinishGoingAway();
 #else
     (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
                                "Closing current sessions.");

@@ -510,12 +510,17 @@ TEST_P(SpdySessionPoolTest, IPPoolingCloseIdleSessions) {
 // for crbug.com/379469.
 TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   MockConnect connect_data(SYNCHRONOUS, OK);
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  SpdyTestUtil spdy_util(GetParam());
+
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  session_deps_.host_resolver->set_synchronous_mode(true);
+  scoped_ptr<SpdyFrame> req(
+      spdy_util.ConstructSpdyGet("http://www.a.com", false, 1, MEDIUM));
+  MockWrite writes[] = {CreateMockWrite(*req, 1)};
 
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  DelayedSocketData data(1, reads, arraysize(reads), writes, arraysize(writes));
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -524,71 +529,75 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
 
   CreateNetworkSession();
 
-  // Set up session 1: Available, but idle.
-  const std::string kTestHost1("http://www.a.com");
-  HostPortPair test_host_port_pair1(kTestHost1, 80);
-  SpdySessionKey key1(
-      test_host_port_pair1, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session1 =
-      CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
-  EXPECT_TRUE(session1->IsAvailable());
-
-  // Set up session 2: Going away, but with an active stream.
+  // Set up session A: Going away, but with an active stream.
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  const std::string kTestHost2("http://www.b.com");
-  HostPortPair test_host_port_pair2(kTestHost2, 80);
-  SpdySessionKey key2(
-      test_host_port_pair2, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session2 =
-      CreateInsecureSpdySession(http_session_, key2, BoundNetLog());
-  GURL url2(kTestHost2);
-  base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session2, url2, MEDIUM, BoundNetLog());
-  test::StreamDelegateDoNothing delegate2(spdy_stream2);
-  spdy_stream2->SetDelegate(&delegate2);
+  const std::string kTestHostA("http://www.a.com");
+  HostPortPair test_host_port_pairA(kTestHostA, 80);
+  SpdySessionKey keyA(
+      test_host_port_pairA, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> sessionA =
+      CreateInsecureSpdySession(http_session_, keyA, BoundNetLog());
+  GURL urlA(kTestHostA);
+  base::WeakPtr<SpdyStream> spdy_streamA = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, sessionA, urlA, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegateA(spdy_streamA);
+  spdy_streamA->SetDelegate(&delegateA);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      SpdyTestUtil(GetParam()).ConstructGetHeaderBlock(url2.spec()));
-  spdy_stream2->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
-  EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
+      spdy_util.ConstructGetHeaderBlock(urlA.spec()));
+  spdy_streamA->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_streamA->HasUrlFromHeaders());
 
-  session2->MakeUnavailable();
-  EXPECT_TRUE(session2->IsGoingAway());
+  base::MessageLoop::current()->RunUntilIdle();  // Allow headers to write.
+  EXPECT_TRUE(delegateA.send_headers_completed());
 
-  // Set up session 3: Draining.
+  sessionA->MakeUnavailable();
+  EXPECT_TRUE(sessionA->IsGoingAway());
+  EXPECT_FALSE(delegateA.StreamIsClosed());
+
+  // Set up session B: Available, but idle.
+  const std::string kTestHostB("http://www.b.com");
+  HostPortPair test_host_port_pairB(kTestHostB, 80);
+  SpdySessionKey keyB(
+      test_host_port_pairB, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> sessionB =
+      CreateInsecureSpdySession(http_session_, keyB, BoundNetLog());
+  EXPECT_TRUE(sessionB->IsAvailable());
+
+  // Set up session C: Draining.
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  const std::string kTestHost3("http://www.c.com");
-  HostPortPair test_host_port_pair3(kTestHost3, 80);
-  SpdySessionKey key3(
-      test_host_port_pair3, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session3 =
-      CreateInsecureSpdySession(http_session_, key3, BoundNetLog());
+  const std::string kTestHostC("http://www.c.com");
+  HostPortPair test_host_port_pairC(kTestHostC, 80);
+  SpdySessionKey keyC(
+      test_host_port_pairC, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> sessionC =
+      CreateInsecureSpdySession(http_session_, keyC, BoundNetLog());
 
-  session3->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error!");
-  EXPECT_TRUE(session3->IsDraining());
+  sessionC->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error!");
+  EXPECT_TRUE(sessionC->IsDraining());
 
   spdy_session_pool_->OnIPAddressChanged();
 
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
-  // TODO(jgraettinger): This should be draining when crbug.com/324653 is fixed.
-  EXPECT_TRUE(session1->IsGoingAway());
-  EXPECT_TRUE(session2->IsGoingAway());
-  EXPECT_TRUE(session3->IsDraining());
+  EXPECT_TRUE(sessionA->IsGoingAway());
+  EXPECT_TRUE(sessionB->IsDraining());
+  EXPECT_TRUE(sessionC->IsDraining());
 
-  EXPECT_FALSE(delegate2.StreamIsClosed());
+  EXPECT_EQ(1u, sessionA->num_active_streams());  // Stream is still active.
+  EXPECT_FALSE(delegateA.StreamIsClosed());
 
-  session1->CloseSessionOnError(ERR_ABORTED, "Closing");
-  session2->CloseSessionOnError(ERR_ABORTED, "Closing");
+  sessionA->CloseSessionOnError(ERR_ABORTED, "Closing");
+  sessionB->CloseSessionOnError(ERR_ABORTED, "Closing");
 
-  EXPECT_TRUE(delegate2.StreamIsClosed());
-  EXPECT_EQ(ERR_ABORTED, delegate2.WaitForClose());
+  EXPECT_TRUE(delegateA.StreamIsClosed());
+  EXPECT_EQ(ERR_ABORTED, delegateA.WaitForClose());
 #else
-  EXPECT_TRUE(session1->IsDraining());
-  EXPECT_TRUE(session2->IsDraining());
-  EXPECT_TRUE(session3->IsDraining());
+  EXPECT_TRUE(sessionA->IsDraining());
+  EXPECT_TRUE(sessionB->IsDraining());
+  EXPECT_TRUE(sessionC->IsDraining());
 
-  EXPECT_TRUE(delegate2.StreamIsClosed());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, delegate2.WaitForClose());
+  EXPECT_TRUE(delegateA.StreamIsClosed());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateA.WaitForClose());
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
 }
 

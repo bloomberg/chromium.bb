@@ -61,6 +61,11 @@ const int kMaxReadBytesWithoutYielding = 32 * 1024;
 // The initial receive window size for both streams and sessions.
 const int32 kDefaultInitialRecvWindowSize = 10 * 1024 * 1024;  // 10MB
 
+// First and last valid stream IDs. As we always act as the client,
+// start at 1 for the first stream id.
+const SpdyStreamId kFirstStreamId = 1;
+const SpdyStreamId kLastStreamId = 0x7fffffff;
+
 class BoundNetLog;
 struct LoadTimingInfo;
 class SpdyStream;
@@ -364,6 +369,18 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // service new streams. Unlike when a GOAWAY frame is received, this function
   // will not close any streams.
   void MakeUnavailable();
+
+  // Closes all active streams with stream id's greater than
+  // |last_good_stream_id|, as well as any created or pending
+  // streams. Must be called only when |availability_state_| >=
+  // STATE_GOING_AWAY. After this function, DcheckGoingAway() will
+  // pass. May be called multiple times.
+  void StartGoingAway(SpdyStreamId last_good_stream_id, Error status);
+
+  // Must be called only when going away (i.e., DcheckGoingAway()
+  // passes). If there are no more active streams and the session
+  // isn't closed yet, close it.
+  void MaybeFinishGoingAway();
 
   // Retrieves information on the current state of the SPDY session as a
   // Value.  Caller takes possession of the returned value.
@@ -737,18 +754,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // == STATE_DRAINING, |error_on_close_| has a valid value, and that there
   // are no active streams or unclaimed pushed streams.
   void DcheckDraining() const;
-
-  // Closes all active streams with stream id's greater than
-  // |last_good_stream_id|, as well as any created or pending
-  // streams. Must be called only when |availability_state_| >=
-  // STATE_GOING_AWAY. After this function, DcheckGoingAway() will
-  // pass. May be called multiple times.
-  void StartGoingAway(SpdyStreamId last_good_stream_id, Error status);
-
-  // Must be called only when going away (i.e., DcheckGoingAway()
-  // passes). If there are no more active streams and the session
-  // isn't closed yet, close it.
-  void MaybeFinishGoingAway();
 
   // If the session is already draining, does nothing. Otherwise, moves
   // the session to the draining state.
