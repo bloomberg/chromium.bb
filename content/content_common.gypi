@@ -284,8 +284,6 @@
       'common/gpu/media/gpu_video_decode_accelerator.h',
       'common/gpu/media/gpu_video_encode_accelerator.cc',
       'common/gpu/media/gpu_video_encode_accelerator.h',
-      'common/gpu/media/video_decode_accelerator_impl.cc',
-      'common/gpu/media/video_decode_accelerator_impl.h',
       'common/gpu/stream_texture_android.cc',
       'common/gpu/stream_texture_android.h',
       'common/gpu/sync_point_manager.cc',

@@ -13,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
-#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -98,7 +97,7 @@ class GpuVideoDecodeAccelerator
   GpuCommandBufferStub* stub_;
 
   // The underlying VideoDecodeAccelerator.
-  scoped_ptr<VideoDecodeAcceleratorImpl> video_decode_accelerator_;
+  scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
   // Callback for making the relevant context current for GL calls.
   // Returns false if failed.

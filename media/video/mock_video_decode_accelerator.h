@@ -32,6 +32,7 @@ class MockVideoDecodeAccelerator : public VideoDecodeAccelerator {
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Destroy, void());
+  MOCK_METHOD0(CanDecodeOnIOThread, bool());
 
  private:
   void DeleteThis();

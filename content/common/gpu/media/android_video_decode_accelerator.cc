@@ -514,6 +514,10 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
+bool AndroidVideoDecodeAccelerator::CanDecodeOnIOThread() {
+  return false;
+}
+
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
   client_->ProvidePictureBuffers(kNumPictureBuffers, size_, GL_TEXTURE_2D);
 }
