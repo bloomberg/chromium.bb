@@ -18,15 +18,19 @@
 
 namespace content {
 
-ShellContentClient::~ShellContentClient() {
-}
-
-std::string ShellContentClient::GetUserAgent() const {
+std::string GetShellUserAgent() {
   std::string product = "Chrome/" CONTENT_SHELL_VERSION;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";
   return BuildUserAgentFromProduct(product);
+}
+
+ShellContentClient::~ShellContentClient() {
+}
+
+std::string ShellContentClient::GetUserAgent() const {
+  return GetShellUserAgent();
 }
 
 base::string16 ShellContentClient::GetLocalizedString(int message_id) const {

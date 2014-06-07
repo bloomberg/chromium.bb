@@ -15,6 +15,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
@@ -109,7 +110,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         new net::DefaultServerBoundCertStore(NULL),
         base::WorkerPool::GetTaskRunner(true)));
     storage_->set_http_user_agent_settings(
-        new net::StaticHttpUserAgentSettings("en-us,en", std::string()));
+        new net::StaticHttpUserAgentSettings(
+            "en-us,en", GetShellUserAgent()));
 
     scoped_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(

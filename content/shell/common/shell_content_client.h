@@ -13,6 +13,8 @@
 
 namespace content {
 
+std::string GetShellUserAgent();
+
 class ShellContentClient : public ContentClient {
  public:
   virtual ~ShellContentClient();
