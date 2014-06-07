@@ -1128,7 +1128,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     cloneParagraphUnderNewElement(start, end, outerNode, blockElement);
 
     setEndingSelection(VisibleSelection(start, end, DOWNSTREAM));
-    deleteSelection(false, false, false, false);
+    deleteSelection(false, false, false);
 
     // There are bugs in deletion when it removes a fully selected table/list.
     // It expands and removes the entire table/list, but will let content
@@ -1227,7 +1227,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     setEndingSelection(VisibleSelection(start, end, DOWNSTREAM));
     document().frame()->spellChecker().clearMisspellingsAndBadGrammar(endingSelection());
-    deleteSelection(false, false, false, false);
+    deleteSelection(false, false, false);
 
     ASSERT(destination.deepEquivalent().inDocument());
     cleanupAfterDeletion(destination);
