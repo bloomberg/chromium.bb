@@ -280,7 +280,7 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
 
     RefPtrWillBeRawPtr<Node> protect(this);
 
-    if (nextChild.previousSibling() == newChild || nextChild == newChild) // nothing to do
+    if (nextChild.previousSibling() == newChild || &nextChild == newChild) // nothing to do
         return;
 
     if (document() != newChild->document())
