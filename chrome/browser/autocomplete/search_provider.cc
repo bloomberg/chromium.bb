@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -177,7 +176,7 @@ int SearchProvider::CalculateRelevanceForKeywordVerbatim(
   // describe it, so it's clear why the functions diverge.
   if (prefer_keyword)
     return 1500;
-  return (type == metrics::OmniboxInputType::QUERY) ? 1450 : 1100;
+  return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
@@ -192,7 +191,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   field_trial_triggered_ = false;
 
   // Can't return search/suggest results for bogus input or without a profile.
-  if (!profile_ || (input.type() == metrics::OmniboxInputType::INVALID)) {
+  if (!profile_ || (input.type() == AutocompleteInput::INVALID)) {
     Stop(true);
     return;
   }
@@ -550,7 +549,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
 
   // FORCED_QUERY means the user is explicitly asking us to search for this, so
   // we assume it isn't a URL and/or there isn't private data.
-  if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY)
+  if (input_.type() == AutocompleteInput::FORCED_QUERY)
     return true;
 
   // Next we check the scheme.  If this is UNKNOWN/URL with a scheme that isn't
@@ -566,7 +565,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   if (!LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), url::kFtpScheme))
-    return (input_.type() == metrics::OmniboxInputType::QUERY);
+    return (input_.type() == AutocompleteInput::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are
   // private, and the Suggest server is unlikely to have any useful results
@@ -580,8 +579,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   const url::Parsed& parts = input_.parts();
   if (parts.username.is_nonempty() || parts.port.is_nonempty() ||
       parts.query.is_nonempty() ||
-      (parts.ref.is_nonempty() &&
-       (input_.type() == metrics::OmniboxInputType::URL)))
+      (parts.ref.is_nonempty() && (input_.type() == AutocompleteInput::URL)))
     return false;
 
   // Don't send anything for https except the hostname.  Hostnames are OK
@@ -814,7 +812,7 @@ bool SearchProvider::HasKeywordDefaultMatchInKeywordMode() const {
 
 bool SearchProvider::IsTopMatchSearchWithURLInput() const {
   ACMatches::const_iterator first_match = FindTopMatch();
-  return (input_.type() == metrics::OmniboxInputType::URL) &&
+  return (input_.type() == AutocompleteInput::URL) &&
       (first_match != matches_.end()) &&
       (first_match->relevance > CalculateRelevanceForVerbatim()) &&
       (first_match->type != AutocompleteMatchType::NAVSUGGEST) &&
@@ -843,7 +841,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
 
   base::TimeTicks start_time(base::TimeTicks::Now());
   bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
-      (input_.type() == metrics::OmniboxInputType::URL);
+      (input_.type() == AutocompleteInput::URL);
   const base::string16& input_text =
       is_keyword ? keyword_input_.text() : input_.text();
   bool input_multiple_words = HasMultipleWords(input_text);
@@ -989,12 +987,12 @@ int SearchProvider::CalculateRelevanceForVerbatim() const {
 int SearchProvider::
     CalculateRelevanceForVerbatimIgnoringKeywordModeState() const {
   switch (input_.type()) {
-    case metrics::OmniboxInputType::UNKNOWN:
-    case metrics::OmniboxInputType::QUERY:
-    case metrics::OmniboxInputType::FORCED_QUERY:
+    case AutocompleteInput::UNKNOWN:
+    case AutocompleteInput::QUERY:
+    case AutocompleteInput::FORCED_QUERY:
       return kNonURLVerbatimRelevance;
 
-    case metrics::OmniboxInputType::URL:
+    case AutocompleteInput::URL:
       return 850;
 
     default:
@@ -1061,7 +1059,7 @@ int SearchProvider::CalculateRelevanceForHistory(
   // a different way.
   int base_score;
   if (is_primary_provider)
-    base_score = (input_.type() == metrics::OmniboxInputType::URL) ? 750 : 1050;
+    base_score = (input_.type() == AutocompleteInput::URL) ? 750 : 1050;
   else
     base_score = 200;
   return std::max(0, base_score - score_discount);
@@ -1101,7 +1099,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
                          &inline_autocomplete_offset));
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
-  if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY) {
+  if (input_.type() == AutocompleteInput::FORCED_QUERY) {
     match.fill_into_edit.insert(0, base::ASCIIToUTF16("?"));
     if (inline_autocomplete_offset != base::string16::npos)
       ++inline_autocomplete_offset;

@@ -18,7 +18,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
@@ -341,8 +340,8 @@ KeywordProvider::~KeywordProvider() {}
 bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
                                               base::string16* keyword,
                                               base::string16* remaining_input) {
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  if ((input.type() == AutocompleteInput::INVALID) ||
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return false;
 
   *keyword = TemplateURLService::CleanUserInputKeyword(
@@ -351,7 +350,7 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
 }
 
 // static
-int KeywordProvider::CalculateRelevance(metrics::OmniboxInputType::Type type,
+int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
                                         bool complete,
                                         bool supports_replacement,
                                         bool prefer_keyword,
@@ -366,11 +365,10 @@ int KeywordProvider::CalculateRelevance(metrics::OmniboxInputType::Type type,
   // make such a change, however, you should update this comment to
   // describe it, so it's clear why the functions diverge.
   if (!complete)
-    return (type == metrics::OmniboxInputType::URL) ? 700 : 450;
+    return (type == AutocompleteInput::URL) ? 700 : 450;
   if (!supports_replacement || (allow_exact_keyword_match && prefer_keyword))
     return 1500;
-  return (allow_exact_keyword_match &&
-          (type == metrics::OmniboxInputType::QUERY)) ?
+  return (allow_exact_keyword_match && (type == AutocompleteInput::QUERY)) ?
       1450 : 1100;
 }
 

@@ -19,7 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "net/base/net_util.h"
 
 typedef std::vector<BookmarkMatch> BookmarkMatches;
@@ -46,7 +45,7 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.text().empty() ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   DoAutocomplete(input);

@@ -17,13 +17,29 @@
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "components/metrics/metrics_log.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;
 
 namespace {
+
+OmniboxEventProto::InputType AsOmniboxEventInputType(
+    AutocompleteInput::Type type) {
+  switch (type) {
+    case AutocompleteInput::INVALID:
+      return OmniboxEventProto::INVALID;
+    case AutocompleteInput::UNKNOWN:
+      return OmniboxEventProto::UNKNOWN;
+    case AutocompleteInput::URL:
+      return OmniboxEventProto::URL;
+    case AutocompleteInput::QUERY:
+      return OmniboxEventProto::QUERY;
+    case AutocompleteInput::FORCED_QUERY:
+      return OmniboxEventProto::FORCED_QUERY;
+  }
+  NOTREACHED();
+  return OmniboxEventProto::INVALID;
+}
 
 OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
     AutocompleteMatch::Type type) {
@@ -166,7 +182,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   }
   omnibox_event->set_current_page_classification(
       AsOmniboxEventPageClassification(log.current_page_classification));
-  omnibox_event->set_input_type(log.input_type);
+  omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
   // We consider a paste-and-search/paste-and-go action to have a closed popup
   // (as explained in omnibox_event.proto) even if it was not, because such
   // actions ignore the contents of the popup so it doesn't matter that it was

@@ -34,7 +34,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -337,7 +336,7 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
   // and because the history backend strips auth creds, we'll get a bogus exact
   // match below if the user has visited "site".
   if (!url.is_valid() ||
-      ((input.type() == metrics::OmniboxInputType::UNKNOWN) &&
+      ((input.type() == AutocompleteInput::UNKNOWN) &&
        input.parts().username.is_nonempty() &&
        !input.parts().password.is_nonempty() &&
        !input.parts().path.is_nonempty()))
@@ -411,8 +410,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   matches_.clear();
 
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  if ((input.type() == AutocompleteInput::INVALID) ||
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   // Create a match for exactly what the user typed.  This will only be used as
@@ -421,7 +420,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
   // Don't do this for queries -- while we can sometimes mark up a match for
   // this, it's not what the user wants, and just adds noise.
-  if (input.type() != metrics::OmniboxInputType::QUERY) {
+  if (input.type() != AutocompleteInput::QUERY) {
     AutocompleteMatch what_you_typed(SuggestExactInput(
         input.text(), input.canonicalized_url(), trim_http));
     what_you_typed.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
@@ -597,8 +596,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // Otherwise, this is just low-quality noise.  In the cases where we've parsed
   // as UNKNOWN, we'll still show an accidental search infobar if need be.
   bool have_what_you_typed_match =
-      (params->input.type() != metrics::OmniboxInputType::QUERY) &&
-      ((params->input.type() != metrics::OmniboxInputType::UNKNOWN) ||
+      (params->input.type() != AutocompleteInput::QUERY) &&
+      ((params->input.type() != AutocompleteInput::UNKNOWN) ||
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
        !params->trim_http ||
        (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0));
@@ -828,9 +827,9 @@ bool HistoryURLProvider::FixupExactSuggestion(
   // between the input "c" and the input "c#", both of which will have empty
   // reference fragments.)
   if ((type == UNVISITED_INTRANET) &&
-      (input.type() != metrics::OmniboxInputType::URL) &&
-      url.username().empty() && url.password().empty() && url.port().empty() &&
-      (url.path() == "/") && url.query().empty() &&
+      (input.type() != AutocompleteInput::URL) && url.username().empty() &&
+      url.password().empty() && url.port().empty() && (url.path() == "/") &&
+      url.query().empty() &&
       (parsed.CountCharactersBefore(url::Parsed::REF, true) !=
        parsed.CountCharactersBefore(url::Parsed::REF, false))) {
     return false;
@@ -859,7 +858,7 @@ bool HistoryURLProvider::CanFindIntranetURL(
   // third condition, but because FixupUserInput() can run and modify the
   // input's text and parts between Parse() and here, it seems better to be
   // paranoid and check.
-  if ((input.type() != metrics::OmniboxInputType::UNKNOWN) ||
+  if ((input.type() != AutocompleteInput::UNKNOWN) ||
       !LowerCaseEqualsASCII(input.scheme(), url::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return false;

@@ -10,14 +10,23 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
 // The user input for an autocomplete query.  Allows copying.
 class AutocompleteInput {
  public:
-  typedef metrics::OmniboxInputType::Type Type;
+  // Note that the type below may be misleading.  For example, "http:/" alone
+  // cannot be opened as a URL, so it is marked as a QUERY; yet the user
+  // probably intends to type more and have it eventually become a URL, so we
+  // need to make sure we still run it through inline autocomplete.
+  enum Type {
+    INVALID,        // Empty input
+    UNKNOWN,        // Valid input whose type cannot be determined
+    URL,            // Input autodetected as a URL
+    QUERY,          // Input autodetected as a query
+    FORCED_QUERY,   // Input forced to be a query by an initial '?'
+  };
 
   // The type of page currently displayed.
   // Note: when adding an element to this enum, please add it at the end

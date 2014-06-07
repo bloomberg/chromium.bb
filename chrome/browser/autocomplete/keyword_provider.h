@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 
 class KeywordExtensionsDelegate;
 class Profile;
@@ -115,7 +114,7 @@ class KeywordProvider : public AutocompleteProvider {
   // matches" mode, and whether the keyword supports replacement.
   // If |allow_exact_keyword_match| is false, the relevance for complete
   // keywords that support replacements is degraded.
-  static int CalculateRelevance(metrics::OmniboxInputType::Type type,
+  static int CalculateRelevance(AutocompleteInput::Type type,
                                 bool complete,
                                 bool support_replacement,
                                 bool prefer_keyword,

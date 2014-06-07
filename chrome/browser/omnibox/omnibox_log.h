@@ -12,7 +12,6 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 
 class AutocompleteResult;
 
@@ -22,7 +21,7 @@ struct OmniboxLog {
   OmniboxLog(
       const base::string16& text,
       bool just_deleted_text,
-      metrics::OmniboxInputType::Type input_type,
+      AutocompleteInput::Type input_type,
       bool is_popup_open,
       size_t selected_index,
       bool is_paste_and_go,
@@ -42,7 +41,7 @@ struct OmniboxLog {
   bool just_deleted_text;
 
   // The detected type of the user's input.
-  metrics::OmniboxInputType::Type input_type;
+  AutocompleteInput::Type input_type;
 
   // True if the popup is open.
   bool is_popup_open;

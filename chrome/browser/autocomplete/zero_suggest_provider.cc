@@ -32,7 +32,6 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
@@ -94,7 +93,7 @@ void ZeroSuggestProvider::RegisterProfilePrefs(
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool minimal_changes) {
   matches_.clear();
-  if (input.type() == metrics::OmniboxInputType::INVALID)
+  if (input.type() == AutocompleteInput::INVALID)
     return;
 
   Stop(true);

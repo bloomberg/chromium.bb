@@ -154,7 +154,7 @@ AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
   // for hostname beginning with numbers (e.g. input of "17173" will be matched
   // against "0.0.67.21" instead of the original "17173", failing to find
   // "17173.com"), swap the original hostname in for the fixed-up one.
-  if ((input.type() != metrics::OmniboxInputType::URL) &&
+  if ((input.type() != AutocompleteInput::URL) &&
       canonical_gurl.HostIsIPAddress()) {
     std::string original_hostname =
         base::UTF16ToUTF8(input_text.substr(input.parts().host.begin,

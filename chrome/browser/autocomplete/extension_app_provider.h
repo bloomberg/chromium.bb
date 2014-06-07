@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/window_open_disposition.h"
@@ -72,7 +71,7 @@ class ExtensionAppProvider : public AutocompleteProvider,
   void RefreshAppList();
 
   // Calculate the relevance of the match.
-  int CalculateRelevance(metrics::OmniboxInputType::Type type,
+  int CalculateRelevance(AutocompleteInput::Type type,
                          int input_length,
                          int target_length,
                          const GURL& url);

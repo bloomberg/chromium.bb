@@ -83,7 +83,6 @@
         'metrics/proto/chrome_user_metrics_extension.proto',
         'metrics/proto/histogram_event.proto',
         'metrics/proto/omnibox_event.proto',
-        'metrics/proto/omnibox_input_type.proto',
         'metrics/proto/perf_data.proto',
         'metrics/proto/profiler_event.proto',
         'metrics/proto/sampled_profile.proto',

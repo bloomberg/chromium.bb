@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -107,8 +106,8 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
 
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  if ((input.type() == AutocompleteInput::INVALID) ||
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   if (input.text().empty())
@@ -134,8 +133,8 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
           std::search(url.begin(), url.end(),
                       input.text().begin(), input.text().end(),
                       base::CaseInsensitiveCompare<base::char16>());
-      matches_url = (url_iter != url.end()) &&
-          (input.type() != metrics::OmniboxInputType::FORCED_QUERY);
+      matches_url = url_iter != url.end() &&
+          input.type() != AutocompleteInput::FORCED_QUERY;
       url_match_index = matches_url ?
           static_cast<size_t>(url_iter - url.begin()) : base::string16::npos;
     }
@@ -192,11 +191,10 @@ void ExtensionAppProvider::Observe(int type,
   RefreshAppList();
 }
 
-int ExtensionAppProvider::CalculateRelevance(
-    metrics::OmniboxInputType::Type type,
-    int input_length,
-    int target_length,
-    const GURL& url) {
+int ExtensionAppProvider::CalculateRelevance(AutocompleteInput::Type type,
+                                             int input_length,
+                                             int target_length,
+                                             const GURL& url) {
   // If you update the algorithm here, please remember to update the tables in
   // autocomplete.h also.
   const int kMaxRelevance = 1425;
