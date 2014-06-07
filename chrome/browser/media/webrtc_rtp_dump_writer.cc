@@ -447,5 +447,6 @@ void WebRtcRtpDumpWriter::OnDumpEnded(EndDumpContext context,
     return;
   }
 
+  // This object might be deleted after running the callback.
   context.callback.Run(context.incoming_succeeded, context.outgoing_succeeded);
 }

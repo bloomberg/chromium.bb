@@ -79,6 +79,8 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
     handler_->SetDumpWriterForTesting(writer.Pass());
   }
 
+  void DeleteDumpHandler() { handler_.reset(); }
+
   void WriteFakeDumpFiles(const base::FilePath& dir,
                           base::FilePath* incoming_dump,
                           base::FilePath* outgoing_dump) {
@@ -390,4 +392,20 @@ TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhileStoppingOneDump) {
   WebRtcRtpDumpHandler::ReleasedDumps dumps(handler_->ReleaseDumps());
   EXPECT_FALSE(dumps.incoming_dump_path.empty());
   EXPECT_FALSE(dumps.outgoing_dump_path.empty());
+}
+
+TEST_F(WebRtcRtpDumpHandlerTest, DeleteHandlerBeforeStopCallback) {
+  std::string error;
+
+  EXPECT_CALL(*this, OnStopOngoingDumpsFinished())
+      .WillOnce(testing::InvokeWithoutArgs(
+          this, &WebRtcRtpDumpHandlerTest::DeleteDumpHandler));
+
+  EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
+
+  handler_->StopOngoingDumps(
+      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
 }

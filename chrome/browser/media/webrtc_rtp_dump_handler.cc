@@ -330,13 +330,14 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     }
   }
 
-  if (!callback.is_null())
-    callback.Run();
-
   // Release the writer when it's no longer needed.
   if (incoming_state_ != STATE_STOPPING && outgoing_state_ != STATE_STOPPING &&
       incoming_state_ != STATE_STARTED && outgoing_state_ != STATE_STARTED) {
     dump_writer_.reset();
     --g_ongoing_rtp_dumps;
   }
+
+  // This object might be deleted after running the callback.
+  if (!callback.is_null())
+    callback.Run();
 }
