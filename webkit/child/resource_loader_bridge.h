@@ -21,6 +21,10 @@
 #include "net/base/request_priority.h"
 #include "webkit/child/webkit_child_export.h"
 
+namespace blink {
+class WebThreadedDataReceiver;
+}
+
 // TODO(pilgrim) remove this once resource loader is moved to content
 // http://crbug.com/338338
 namespace content {
@@ -60,6 +64,11 @@ class ResourceLoaderBridge {
   // call to the Start method.
   virtual void DidChangePriority(net::RequestPriority new_priority,
                                  int intra_priority_value) = 0;
+
+  // Call this method to attach a data receiver which will receive resource data
+  // on its own thread.
+  virtual bool AttachThreadedDataReceiver(
+      blink::WebThreadedDataReceiver* threaded_data_receiver) = 0;
 
   // Call this method to load the resource synchronously (i.e., in one shot).
   // This is an alternative to the Start method.  Be warned that this method

@@ -23,6 +23,10 @@
 
 struct ResourceMsg_RequestCompleteData;
 
+namespace blink {
+class WebThreadedDataReceiver;
+}
+
 namespace webkit_glue {
 class ResourceLoaderBridge;
 }
@@ -30,6 +34,7 @@ class ResourceLoaderBridge;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
+class ThreadedDataProvider;
 struct ResourceResponseInfo;
 struct RequestInfo;
 struct ResourceResponseHead;
@@ -76,6 +81,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                          net::RequestPriority new_priority,
                          int intra_priority_value);
 
+  // The provided data receiver will receive incoming resource data rather
+  // than the resource bridge.
+  bool AttachThreadedDataReceiver(
+      int request_id, blink::WebThreadedDataReceiver* threaded_data_receiver);
+
   IPC::Sender* message_sender() const { return message_sender_; }
 
   // This does not take ownership of the delegate. It is expected that the
@@ -106,6 +116,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     ~PendingRequestInfo();
 
     RequestPeer* peer;
+    ThreadedDataProvider* threaded_data_provider;
     ResourceType::Type resource_type;
     // The PID of the original process which issued this request. This gets
     // non-zero only for a request proxied by another renderer, particularly
