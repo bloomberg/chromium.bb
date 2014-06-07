@@ -496,10 +496,14 @@ void SetJobLevel(const CommandLine& cmd_line,
                  sandbox::JobLevel job_level,
                  uint32 ui_exceptions,
                  sandbox::TargetPolicy* policy) {
-  if (ShouldSetJobLevel(cmd_line))
+  if (ShouldSetJobLevel(cmd_line)) {
+#ifdef _WIN64
+    policy->SetJobMemoryLimit(4ULL * 1024 * 1024 * 1024);
+#endif
     policy->SetJobLevel(job_level, ui_exceptions);
-  else
+  } else {
     policy->SetJobLevel(sandbox::JOB_NONE, 0);
+  }
 }
 
 // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.

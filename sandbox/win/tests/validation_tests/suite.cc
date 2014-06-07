@@ -217,4 +217,25 @@ TEST(ValidationSuite, TestThread) {
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 }
 
+// Tests if an over-limit allocation will be denied.
+TEST(ValidationSuite, TestMemoryLimit) {
+  TestRunner runner;
+  wchar_t command[1024] = {0};
+  const int kAllocationSize = 256 * 1024 * 1024;
+
+  wsprintf(command, L"AllocateCmd %d", kAllocationSize);
+  runner.GetPolicy()->SetJobMemoryLimit(kAllocationSize);
+  EXPECT_EQ(SBOX_FATAL_MEMORY_EXCEEDED, runner.RunTest(command));
+}
+
+// Tests a large allocation will succeed absent limits.
+TEST(ValidationSuite, TestMemoryNoLimit) {
+  TestRunner runner;
+  wchar_t command[1024] = {0};
+  const int kAllocationSize = 256 * 1024 * 1024;
+
+  wsprintf(command, L"AllocateCmd %d", kAllocationSize);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command));
+}
+
 }  // namespace sandbox

@@ -45,6 +45,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual TokenLevel GetLockdownTokenLevel() const OVERRIDE;
   virtual ResultCode SetJobLevel(JobLevel job_level,
                                  uint32 ui_exceptions) OVERRIDE;
+  virtual ResultCode SetJobMemoryLimit(size_t memory_limit) OVERRIDE;
   virtual ResultCode SetAlternateDesktop(bool alternate_winstation) OVERRIDE;
   virtual base::string16 GetAlternateDesktop() const OVERRIDE;
   virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) OVERRIDE;
@@ -127,6 +128,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   TokenLevel initial_level_;
   JobLevel job_level_;
   uint32 ui_exceptions_;
+  size_t memory_limit_;
   bool use_alternate_desktop_;
   bool use_alternate_winstation_;
   // Helps the file system policy initialization.

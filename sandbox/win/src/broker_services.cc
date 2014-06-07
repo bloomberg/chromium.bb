@@ -278,6 +278,13 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
           break;
         }
 
+        case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT: {
+          BOOL res = ::TerminateJobObject(tracker->job,
+                                          SBOX_FATAL_MEMORY_EXCEEDED);
+          DCHECK(res);
+          break;
+        }
+
         default: {
           NOTREACHED();
           break;

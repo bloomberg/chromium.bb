@@ -16,7 +16,8 @@ Job::~Job() {
 
 DWORD Job::Init(JobLevel security_level,
                 const wchar_t* job_name,
-                DWORD ui_exceptions) {
+                DWORD ui_exceptions,
+                size_t memory_limit) {
   if (job_handle_)
     return ERROR_ALREADY_INITIALIZED;
 
@@ -52,11 +53,11 @@ DWORD Job::Init(JobLevel security_level,
       jbur.UIRestrictionsClass |= JOB_OBJECT_UILIMIT_EXITWINDOWS;
     }
     case JOB_UNPROTECTED: {
-      // The JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE flag is not supported on
-      // Windows 2000. We need a mechanism on Windows 2000 to ensure
-      // that processes in the job are terminated when the job is closed
-      if (base::win::GetVersion() == base::win::VERSION_PRE_XP)
-        break;
+      if (memory_limit) {
+        jeli.BasicLimitInformation.LimitFlags |=
+            JOB_OBJECT_LIMIT_PROCESS_MEMORY;
+        jeli.ProcessMemoryLimit = memory_limit;
+      }
 
       jeli.BasicLimitInformation.LimitFlags |=
           JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;

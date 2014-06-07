@@ -146,7 +146,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
                                   JobLevel job_level,
                                   HANDLE *const job_handle_ret) {
   Job job;
-  DWORD err_code = job.Init(job_level, NULL, 0);
+  DWORD err_code = job.Init(job_level, NULL, 0, 0);
   if (ERROR_SUCCESS != err_code)
     return err_code;
 

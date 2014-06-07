@@ -310,5 +310,24 @@ SBOX_TESTS_COMMAND int SleepCmd(int argc, wchar_t **argv) {
   return SBOX_TEST_SUCCEEDED;
 }
 
+SBOX_TESTS_COMMAND int AllocateCmd(int argc, wchar_t **argv) {
+  if (argc != 1)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  size_t mem_size = static_cast<size_t>(_wtoll(argv[0]));
+  void* memory = ::VirtualAlloc(NULL, mem_size, MEM_COMMIT | MEM_RESERVE,
+                                PAGE_READWRITE);
+  if (!memory) {
+    // We need to give the broker a chance to kill our process on failure.
+    ::Sleep(5000);
+    return SBOX_TEST_DENIED;
+  }
+
+  if (!::VirtualFree(memory, 0, MEM_RELEASE))
+    return SBOX_TEST_FAILED;
+
+  return SBOX_TEST_SUCCEEDED;
+}
+
 
 }  // namespace sandbox

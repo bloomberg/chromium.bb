@@ -128,6 +128,11 @@ class TargetPolicy {
   // Note: the recommended level is JOB_RESTRICTED or JOB_LOCKDOWN.
   virtual ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) = 0;
 
+  // Sets a hard limit on the size of the commit set for the sandboxed process.
+  // If the limit is reached, the process will be terminated with
+  // SBOX_FATAL_MEMORY_EXCEEDED (7012).
+  virtual ResultCode SetJobMemoryLimit(size_t memory_limit) = 0;
+
   // Specifies the desktop on which the application is going to run. If the
   // desktop does not exist, it will be created. If alternate_winstation is
   // set to true, the desktop will be created on an alternate window station.

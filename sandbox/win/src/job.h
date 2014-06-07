@@ -31,7 +31,8 @@ class Job {
   // the error.
   DWORD Init(JobLevel security_level,
              const wchar_t* job_name,
-             DWORD ui_exceptions);
+             DWORD ui_exceptions,
+             size_t memory_limit);
 
   // Assigns the process referenced by process_handle to the job.
   // If the function succeeds, the return value is ERROR_SUCCESS. If the

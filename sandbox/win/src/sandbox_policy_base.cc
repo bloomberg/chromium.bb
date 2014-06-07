@@ -80,6 +80,7 @@ PolicyBase::PolicyBase()
       initial_level_(USER_LOCKDOWN),
       job_level_(JOB_LOCKDOWN),
       ui_exceptions_(0),
+      memory_limit_(0),
       use_alternate_desktop_(false),
       use_alternate_winstation_(false),
       file_system_init_(false),
@@ -170,8 +171,19 @@ TokenLevel PolicyBase::GetLockdownTokenLevel() const{
 }
 
 ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32 ui_exceptions) {
+  if (memory_limit_ && job_level == JOB_NONE) {
+    return SBOX_ERROR_BAD_PARAMS;
+  }
   job_level_ = job_level;
   ui_exceptions_ = ui_exceptions;
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetJobMemoryLimit(size_t memory_limit) {
+  if (memory_limit && job_level_ == JOB_NONE) {
+    return SBOX_ERROR_BAD_PARAMS;
+  }
+  memory_limit_ = memory_limit;
   return SBOX_ALL_OK;
 }
 
@@ -471,7 +483,8 @@ ResultCode PolicyBase::MakeJobObject(HANDLE* job) {
   if (job_level_ != JOB_NONE) {
     // Create the windows job object.
     Job job_obj;
-    DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_);
+    DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_,
+                                memory_limit_);
     if (ERROR_SUCCESS != result) {
       return SBOX_ERROR_GENERIC;
     }
