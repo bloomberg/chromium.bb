@@ -19,6 +19,9 @@
 #define LOG_ERROR(format, ...) \
   nacl_io_log(LOG_PREFIX "error: " format "\n", ##__VA_ARGS__)
 
+#define LOG_WARN(format, ...) \
+  nacl_io_log(LOG_PREFIX "warning: " format "\n", ##__VA_ARGS__)
+
 EXTERN_C_BEGIN
 
 /*

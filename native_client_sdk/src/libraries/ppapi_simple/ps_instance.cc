@@ -409,12 +409,8 @@ void PSInstance::MessageHandlerInput(const pp::Var& key,
                                      const pp::Var& message) {
   std::string key_string = key.AsString();
 
-  // Legacy support for passing TTY data as a string, rather than a array
-  // buffer. TODO(sbc): remove this in a future release.
   if (message.is_string() && key_string == tty_prefix_) {
     std::string buffer = message.AsString();
-    Warn("Passing TTY input as a string is deprected.  Please use a "
-         "JavaScript ArrayBuffer instead");
 
     // Since our message may contain null characters, we can't send it as a
     // naked C string, so we package it up in this struct before sending it
@@ -422,11 +418,11 @@ void PSInstance::MessageHandlerInput(const pp::Var& key,
     struct tioc_nacl_input_string ioctl_message;
     ioctl_message.length = buffer.size();
     ioctl_message.buffer = buffer.c_str();
-    int ret =
-      ioctl(tty_fd_, TIOCNACLINPUT, &ioctl_message);
+    int ret = ioctl(tty_fd_, TIOCNACLINPUT, &ioctl_message);
     if (ret != 0 && errno != ENOTTY) {
       Error("ioctl returned unexpected error: %d.\n", ret);
     }
+    return;
   }
 
   if (!message.is_array_buffer()) {
@@ -532,12 +528,12 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   // Legacy support for passing TTY input as a string <prefix>:<payload>
   // TODO(sbc): remove this in a future release.
   if (tty_fd_ >= 0 && event.is_string()) {
-    Warn("passing TTY data using a string prefix is deprected."
-         " Use a JavaScript dictionary instead.");
     std::string message = event.AsString();
     size_t prefix_len = strlen(tty_prefix_);
     if (message.size() > prefix_len) {
       if (!strncmp(message.c_str(), tty_prefix_, prefix_len)) {
+        LOG_WARN("Passing TTY data using a string prefix is deprecated. "
+                 "Use a JavaScript dictionary instead.");
         MessageHandlerInput(pp::Var(message.substr(0, prefix_len)),
                             pp::Var(message.substr(prefix_len)));
         return;
