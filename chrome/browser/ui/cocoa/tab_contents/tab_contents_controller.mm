@@ -88,6 +88,8 @@ class FullscreenObserver : public WebContentsObserver {
     delegate_ = delegate;
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableCoreAnimation)) {
+      // TODO(ccameron): Remove the -drawRect: method once the
+      // kDisableCoreAnimation switch is removed.
       ScopedCAActionDisabler disabler;
       base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
       [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
@@ -118,7 +120,7 @@ class FullscreenObserver : public WebContentsObserver {
   if (theme)
     bgColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   if (!bgColor)
-    bgColor = [[self window] backgroundColor];
+    bgColor = [NSColor whiteColor];
   const float kDarknessFraction = 0.80f;
   return [bgColor blendedColorWithFraction:kDarknessFraction
                                    ofColor:[NSColor blackColor]];
@@ -126,6 +128,8 @@ class FullscreenObserver : public WebContentsObserver {
 
 // Override -drawRect to fill the view with a solid color outside of the
 // subview's frame.
+//
+// Note: This method is never called when CoreAnimation is enabled.
 - (void)drawRect:(NSRect)dirtyRect {
   NSView* const contentsView =
       [[self subviews] count] > 0 ? [[self subviews] objectAtIndex:0] : nil;
@@ -233,8 +237,6 @@ class FullscreenObserver : public WebContentsObserver {
   [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
                                           NSViewHeightSizable];
 
-  // TODO(miu): The following can be removed once we use a CALayer in
-  // TabContentsContainerView.  http://crbug.com/354598
   [contentsContainer setNeedsDisplay:YES];
 
   // The rendering path with overlapping views disabled causes bugs when
