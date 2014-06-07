@@ -280,15 +280,12 @@ def ParseArgs():
   build_utils.CheckOptions(options, parser, required=required_options)
   return options
 
+def GenerateV14Resources(res_dir, res_v14_dir, verify_only):
+  build_utils.DeleteDirectory(res_v14_dir)
+  build_utils.MakeDirectory(res_v14_dir)
 
-def main():
-  options = ParseArgs()
-
-  build_utils.DeleteDirectory(options.res_v14_compatibility_dir)
-  build_utils.MakeDirectory(options.res_v14_compatibility_dir)
-
-  for name in os.listdir(options.res_dir):
-    if not os.path.isdir(os.path.join(options.res_dir, name)):
+  for name in os.listdir(res_dir):
+    if not os.path.isdir(os.path.join(res_dir, name)):
       continue
 
     dir_pieces = name.split('-')
@@ -307,9 +304,9 @@ def main():
     if 'ldrtl' in qualifiers:
       continue
 
-    input_dir = os.path.abspath(os.path.join(options.res_dir, name))
+    input_dir = os.path.abspath(os.path.join(res_dir, name))
 
-    if options.verify_only:
+    if verify_only:
       if not api_level_qualifier or int(api_level_qualifier[1:]) < 17:
         VerifyV14ResourcesInDir(input_dir, resource_type)
       else:
@@ -317,9 +314,8 @@ def main():
     else:
       # We also need to copy the original v17 resource to *-v17 directory
       # because the generated v14 resource will hide the original resource.
-      output_v14_dir = os.path.join(options.res_v14_compatibility_dir, name)
-      output_v17_dir = os.path.join(options.res_v14_compatibility_dir, name +
-                                                                       '-v17')
+      output_v14_dir = os.path.join(res_v14_dir, name)
+      output_v17_dir = os.path.join(res_v14_dir, name + '-v17')
 
       # We only convert layout resources under layout*/, xml*/,
       # and style resources under values*/.
@@ -331,12 +327,18 @@ def main():
         if api_level_qualifier == 'v17':
           output_qualifiers = qualifiers[:]
           del output_qualifiers[api_level_qualifier_index]
-          output_v14_dir = os.path.join(options.res_v14_compatibility_dir,
+          output_v14_dir = os.path.join(res_v14_dir,
                                         '-'.join([resource_type] +
                                                  output_qualifiers))
           GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
         elif not api_level_qualifier:
           ErrorIfStyleResourceExistsInDir(input_dir)
+
+def main():
+  options = ParseArgs()
+
+  GenerateV14Resources(
+      options.res_dir, options.res_v14_compatibility_dir, options.verify_only)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

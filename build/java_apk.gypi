@@ -65,6 +65,7 @@
     'proguard_flags_paths': ['<(generated_proguard_file)'],
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
+    'res_v14_compatibility_dir': '<(intermediate_dir)/res_v14_compatibility',
     'R_package%':'',
     'additional_R_text_files': [],
     'additional_res_dirs': [],
@@ -115,6 +116,7 @@
     'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
     'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
     'create_standalone_apk%': 1,
+    'res_v14_verify_only%': 0,
     'variables': {
       'variables': {
         'native_lib_target%': '',
@@ -444,15 +446,17 @@
         # Write the inputs list to a file, so that its mtime is updated when
         # the list of inputs changes.
         'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(additional_input_paths) >@(resource_input_paths))',
-      },
-      'conditions': [
-        ['is_test_apk == 1', {
-          'variables': {
+        'process_resources_options': [],
+        'conditions': [
+          ['is_test_apk == 1', {
             'additional_res_dirs=': [],
             'additional_res_packages=': [],
-          }
-        }],
-      ],
+          }],
+          ['res_v14_verify_only == 1', {
+            'process_resources_options': ['--v14-verify-only']
+          }],
+        ],
+      },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/process_resources.py',
@@ -479,11 +483,14 @@
         '--proguard-file', '<(generated_proguard_file)',
 
         '--resource-dir', '<(resource_dir)',
+        '--res-v14-compatibility-dir', '<(res_v14_compatibility_dir)',
         '--crunch-output-dir', '<(crunch_output_dir)',
 
         '--R-dir', '<(intermediate_dir)/gen',
 
         '--stamp', '<(codegen_stamp)',
+
+        '<@(process_resources_options)',
       ],
     },
     {
