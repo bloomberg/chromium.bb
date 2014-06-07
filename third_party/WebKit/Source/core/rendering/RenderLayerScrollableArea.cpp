@@ -778,13 +778,6 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
     updateScrollCornerStyle();
     updateResizerAreaSet();
     updateResizerStyle();
-
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
-    RenderLayer* layer = this->layer();
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate))
-        layer->compositor()->setCompositingLayersNeedRebuild();
 }
 
 void RenderLayerScrollableArea::updateAfterCompositingChange()
