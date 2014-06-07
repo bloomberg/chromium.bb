@@ -200,7 +200,6 @@ void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
 
-  bool handled = true;
   switch (event->key_code()) {
     case ui::VKEY_ESCAPE:
       CancelSelection();
@@ -218,17 +217,17 @@ void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
       Move(WindowSelector::LEFT);
       break;
     case ui::VKEY_RETURN:
-      wm::GetWindowState(
-          grid_list_[selected_grid_index_]->
-              SelectedWindow()->SelectionWindow())->Activate();
+      // Ignore if no item is selected.
+      if (!grid_list_[selected_grid_index_]->is_selecting())
+        return;
+      wm::GetWindowState(grid_list_[selected_grid_index_]->
+                         SelectedWindow()->SelectionWindow())->Activate();
       break;
     default:
       // Not a key we are interested in.
-      handled = false;
-      break;
+      return;
   }
-  if (handled)
-    event->SetHandled();
+  event->StopPropagation();
 }
 
 void WindowSelector::OnDisplayAdded(const gfx::Display& display) {

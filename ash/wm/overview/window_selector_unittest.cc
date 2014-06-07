@@ -861,4 +861,30 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
   EXPECT_EQ(GetSelectedWindow(), window4.get());
 }
 
+// Tests selecting a window in overview mode with the return key.
+TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  ToggleOverview();
+
+  // Pressing the return key without a selection widget should not do anything.
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_TRUE(IsSelecting());
+
+  // Select the first window.
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RETURN);
+  ASSERT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  // Select the second window.
+  ToggleOverview();
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
 }  // namespace ash
