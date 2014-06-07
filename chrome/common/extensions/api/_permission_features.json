@@ -21,11 +21,11 @@
 
 {
   "accessibilityFeatures.modify": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
   "accessibilityFeatures.read": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
   "accessibilityPrivate": {
