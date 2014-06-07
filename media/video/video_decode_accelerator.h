@@ -132,17 +132,6 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // unconditionally, so make sure to drop all pointers to it!
   virtual void Destroy() = 0;
 
-  // GPU PROCESS ONLY.  Implementations of this interface in the
-  // content/common/gpu/media should implement this, and implementations in
-  // other processes should not override the default implementation.
-  // Returns true if VDA::Decode and VDA::Client callbacks can run on the IO
-  // thread. Otherwise they will run on the GPU child thread. The purpose of
-  // running Decode on the IO thread is to reduce decode latency. Note Decode
-  // should return as soon as possible and not block on the IO thread. Also,
-  // PictureReady should be run on the child thread if a picture is delivered
-  // the first time so it can be cleared.
-  virtual bool CanDecodeOnIOThread();
-
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which
   // will Destroy() it properly by default.

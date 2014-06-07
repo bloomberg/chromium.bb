@@ -622,10 +622,6 @@ void DXVAVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool DXVAVideoDecodeAccelerator::CanDecodeOnIOThread() {
-  return false;
-}
-
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
   if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
     return false;

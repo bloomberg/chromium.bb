@@ -25,6 +25,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -41,7 +42,7 @@ namespace content {
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class CONTENT_EXPORT VaapiVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAcceleratorImpl {
  public:
   VaapiVideoDecodeAccelerator(
       Display* x_display,
@@ -58,7 +59,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual bool CanDecodeOnIOThread() OVERRIDE;
 
 private:
   // Notify the client that an error has occurred and decoding cannot continue.

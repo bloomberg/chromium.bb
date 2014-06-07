@@ -19,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
+#include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -72,7 +73,7 @@ namespace content {
 // subtle races (esp. if we get Reset() in the meantime), we block the decoder
 // thread while we wait for AssignPictureBuffers from the client.
 class CONTENT_EXPORT V4L2VideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator {
+    : public VideoDecodeAcceleratorImpl {
  public:
   V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
@@ -94,6 +95,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+
+  // VideoDecodeAcceleratorImpl implementation.
   virtual bool CanDecodeOnIOThread() OVERRIDE;
 
  private:
