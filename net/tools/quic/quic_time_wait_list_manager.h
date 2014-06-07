@@ -19,10 +19,12 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_epoll_clock.h"
 
 namespace net {
+
+class EpollServer;
+
 namespace tools {
 
 class ConnectionIdCleanUpAlarm;
