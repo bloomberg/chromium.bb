@@ -126,7 +126,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMultipleArticles) {
 
   // Store second article.
   const ArticleEntry second_entry =
-      CreateEntry("second", "url1", "url2", "url3");
+      CreateEntry("second", "url4", "url5", "url6");
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
   store_->SaveContent(second_entry,
@@ -181,7 +181,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
 
   // Store second article.
   const ArticleEntry second_entry =
-      CreateEntry("second", "url1", "url2", "url3");
+      CreateEntry("second", "url4", "url5", "url6");
   const DistilledArticleProto second_stored_proto =
       CreateDistilledArticleForEntry(second_entry);
   store_->SaveContent(second_entry,
@@ -193,7 +193,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   save_success_ = false;
 
   // Store third article.
-  const ArticleEntry third_entry = CreateEntry("third", "url1", "url2", "url3");
+  const ArticleEntry third_entry = CreateEntry("third", "url7", "url8", "url9");
   const DistilledArticleProto third_stored_proto =
       CreateDistilledArticleForEntry(third_entry);
   store_->SaveContent(third_entry,
@@ -218,7 +218,7 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
 
   // Store fourth article.
   const ArticleEntry fourth_entry =
-      CreateEntry("fourth", "url1", "url2", "url3");
+      CreateEntry("fourth", "url10", "url11", "url12");
   const DistilledArticleProto fourth_stored_proto =
       CreateDistilledArticleForEntry(fourth_entry);
   store_->SaveContent(fourth_entry,
@@ -237,6 +237,96 @@ TEST_F(InMemoryContentStoreTest, SaveAndLoadMoreThanMaxArticles) {
   base::MessageLoop::current()->RunUntilIdle();
   // Since the store can only contain |kMaxNumArticles| entries, this load
   // should fail.
+  EXPECT_FALSE(load_success_);
+}
+
+// Tests whether saving and then loading a single article works as expected.
+TEST_F(InMemoryContentStoreTest, LookupArticleByURL) {
+  base::MessageLoop loop;
+  const ArticleEntry entry = CreateEntry("test-id", "url1", "url2", "url3");
+  const DistilledArticleProto stored_proto =
+      CreateDistilledArticleForEntry(entry);
+  store_->SaveContent(entry,
+                      stored_proto,
+                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(save_success_);
+  save_success_ = false;
+
+  // Create an entry where the entry ID does not match, but the first URL does.
+  const ArticleEntry lookup_entry1 = CreateEntry("lookup-id", "url1", "", "");
+  store_->LoadContent(lookup_entry1,
+                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(load_success_);
+  EXPECT_EQ(stored_proto.SerializeAsString(),
+            loaded_proto_->SerializeAsString());
+
+  // Create an entry where the entry ID does not match, but the second URL does.
+  const ArticleEntry lookup_entry2 =
+      CreateEntry("lookup-id", "bogus", "url2", "");
+  store_->LoadContent(lookup_entry2,
+                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(load_success_);
+  EXPECT_EQ(stored_proto.SerializeAsString(),
+            loaded_proto_->SerializeAsString());
+}
+
+// Verifies that the content store does not store unlimited number of articles,
+// but expires the oldest ones when the limit for number of articles is reached.
+TEST_F(InMemoryContentStoreTest, LoadArticleByURLAfterExpungedFromCache) {
+  base::MessageLoop loop;
+
+  // Create a new store with only |kMaxNumArticles| articles as the limit.
+  const int kMaxNumArticles = 1;
+  store_.reset(new InMemoryContentStore(kMaxNumArticles));
+
+  // Store an article.
+  const ArticleEntry first_entry = CreateEntry("first", "url1", "url2", "url3");
+  const DistilledArticleProto first_stored_proto =
+      CreateDistilledArticleForEntry(first_entry);
+  store_->SaveContent(first_entry,
+                      first_stored_proto,
+                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(save_success_);
+  save_success_ = false;
+
+  // Looking up the first entry by URL should succeed when it is still in the
+  // cache.
+  const ArticleEntry first_entry_lookup =
+      CreateEntry("lookup-id", "url1", "", "");
+  store_->LoadContent(first_entry_lookup,
+                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(load_success_);
+  EXPECT_EQ(first_stored_proto.SerializeAsString(),
+            loaded_proto_->SerializeAsString());
+
+  // Store second article. This will remove the first article from the cache.
+  const ArticleEntry second_entry =
+      CreateEntry("second", "url4", "url5", "url6");
+  const DistilledArticleProto second_stored_proto =
+      CreateDistilledArticleForEntry(second_entry);
+  store_->SaveContent(second_entry,
+                      second_stored_proto,
+                      base::Bind(&InMemoryContentStoreTest::OnSaveCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(save_success_);
+  save_success_ = false;
+
+  // Looking up the first entry by URL should fail when it is not in the cache.
+  store_->LoadContent(first_entry_lookup,
+                      base::Bind(&InMemoryContentStoreTest::OnLoadCallback,
+                                 base::Unretained(this)));
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(load_success_);
 }
 

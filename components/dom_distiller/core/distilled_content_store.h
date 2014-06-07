@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
@@ -40,6 +41,7 @@ class DistilledContentStore {
 
 // This content store keeps up to |max_num_entries| of the last accessed items
 // in its cache. Both loading and saving content is counted as access.
+// Lookup can be done based on entry ID or URL.
 class InMemoryContentStore : public DistilledContentStore {
  public:
   explicit InMemoryContentStore(const int max_num_entries);
@@ -57,9 +59,31 @@ class InMemoryContentStore : public DistilledContentStore {
                      const DistilledArticleProto& proto);
 
  private:
-  typedef base::MRUCache<std::string, DistilledArticleProto> ContentMap;
+  // The CacheDeletor gets called when anything is removed from the ContentMap.
+  class CacheDeletor {
+   public:
+    explicit CacheDeletor(InMemoryContentStore* store);
+    ~CacheDeletor();
+    void operator()(const DistilledArticleProto& proto);
+
+   private:
+    InMemoryContentStore* store_;
+  };
+
+  void AddUrlToIdMapping(const ArticleEntry& entry,
+                         const DistilledArticleProto& proto);
+
+  void EraseUrlToIdMapping(const DistilledArticleProto& proto);
+
+  typedef base::MRUCacheBase<std::string,
+                             DistilledArticleProto,
+                             InMemoryContentStore::CacheDeletor> ContentMap;
+  typedef base::hash_map<std::string, std::string> UrlMap;
+
   ContentMap cache_;
+  UrlMap url_to_id_;
 };
+
 }  // dom_distiller
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_CACHE_H_
