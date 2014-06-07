@@ -38,6 +38,7 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
              'pageset_repeat': 5}
 
 
+@test.Disabled('android')  # crbug.com/325479
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
   test = session_restore.SessionRestore
@@ -46,6 +47,7 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
              'pageset_repeat': 20}
 
 
+@test.Disabled('android')  # crbug.com/325479
 class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
@@ -55,6 +57,7 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
              'pageset_repeat': 5}
 
 
+@test.Disabled('android')  # crbug.com/325479
 class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
