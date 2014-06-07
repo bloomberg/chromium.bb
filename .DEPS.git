@@ -184,10 +184,6 @@ deps_os = {
             Var('git_url') + '/chromium/deps/jarjar.git@2e1ead4c68c450e0b77fe49e3f9137842b8b6920',
         'src/third_party/jsr-305/src':
             Var('git_url') + '/external/jsr-305.git@642c508235471f7220af6d5df2d3210e3bfc0919',
-        'src/third_party/libaddressinput/src/cpp':
-            None,
-        'src/third_party/libaddressinput/src/testdata':
-            None,
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@2f724fced658cd6182096c615efdf3767b7c57fe',
     },
@@ -228,10 +224,6 @@ deps_os = {
         'src/third_party/hunspell':
             None,
         'src/third_party/hunspell_dictionaries':
-            None,
-        'src/third_party/libaddressinput/src/cpp':
-            None,
-        'src/third_party/libaddressinput/src/testdata':
             None,
         'src/third_party/libc++/trunk':
             None,
