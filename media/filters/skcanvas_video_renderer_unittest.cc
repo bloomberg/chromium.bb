@@ -79,6 +79,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
 static SkBitmap AllocBitmap(int width, int height) {
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
+  bitmap.eraseColor(0);
   return bitmap;
 }
 
