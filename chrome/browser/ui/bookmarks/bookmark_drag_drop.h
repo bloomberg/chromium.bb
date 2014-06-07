@@ -23,11 +23,14 @@ void DragBookmarks(Profile* profile,
                    ui::DragDropTypes::DragEventSource source);
 
 // Drops the bookmark nodes that are in |data| onto |parent_node| at |index|.
+// |copy| indicates the source operation: if true then the bookmarks in |data|
+// are copied, otherwise they are moved if they belong to the same |profile|.
 // Returns the drop type used.
 int DropBookmarks(Profile* profile,
                   const BookmarkNodeData& data,
                   const BookmarkNode* parent_node,
-                  int index);
+                  int index,
+                  bool copy);
 
 }  // namespace chrome
 

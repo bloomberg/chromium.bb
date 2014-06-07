@@ -17,6 +17,7 @@
 
 class BookmarkNode;
 class Browser;
+class ChromeBookmarkClient;
 class Profile;
 
 namespace content {
@@ -76,6 +77,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   void SetActiveMenu(const BookmarkNode* node, int start_index);
 
   BookmarkModel* GetBookmarkModel();
+  ChromeBookmarkClient* GetChromeBookmarkClient();
 
   // Returns the menu.
   views::MenuItemView* menu() { return menu_; }
@@ -151,6 +153,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
                                  views::MenuItemView* menu,
                                  int* next_menu_id,
                                  bool* added_separator);
+
+  void BuildMenuForManagedNode(views::MenuItemView* menu,
+                               int* next_menu_id);
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.

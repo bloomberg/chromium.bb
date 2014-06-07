@@ -174,19 +174,22 @@ void BookmarkCurrentPageInternal(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   GetURLAndTitleToBookmark(web_contents, &url, &title);
-  bool was_bookmarked = model->IsBookmarked(url);
-  if (!was_bookmarked && web_contents->GetBrowserContext()->IsOffTheRecord()) {
+  bool is_bookmarked_by_any = model->IsBookmarked(url);
+  if (!is_bookmarked_by_any &&
+      web_contents->GetBrowserContext()->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
     FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
   }
+  bool was_bookmarked_by_user = bookmark_utils::IsBookmarkedByUser(model, url);
   bookmark_utils::AddIfNotBookmarked(model, url, title);
+  bool is_bookmarked_by_user = bookmark_utils::IsBookmarkedByUser(model, url);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
-  if (browser->window()->IsActive() && model->IsBookmarked(url)) {
+  if (browser->window()->IsActive() && is_bookmarked_by_user) {
     // Only show the bubble if the window is active, otherwise we may get into
     // weird situations where the bubble is deleted as soon as it is shown.
-    browser->window()->ShowBookmarkBubble(url, was_bookmarked);
+    browser->window()->ShowBookmarkBubble(url, was_bookmarked_by_user);
   }
 }
 

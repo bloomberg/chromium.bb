@@ -31,6 +31,7 @@
 class BookmarkContextMenu;
 class Browser;
 class BrowserView;
+class ChromeBookmarkClient;
 class Profile;
 
 namespace content {
@@ -301,6 +302,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // Creates the button showing the other bookmarked items.
   views::MenuButton* CreateOtherBookmarkedButton();
 
+  // Creates the button showing the managed bookmarks items.
+  views::MenuButton* CreateManagedBookmarksButton();
+
   // Creates the button used when not all bookmark buttons fit.
   views::MenuButton* CreateOverflowButton();
 
@@ -362,9 +366,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
 
-  // Updates the visibility of |other_bookmarked_button_|. Also shows or hide
-  // the separator if required.
-  void UpdateOtherBookmarksVisibility();
+  // Updates the visibility of |other_bookmarked_button_| and
+  // |managed_bookmarks_button_|. Also shows or hides the separator if required.
+  void UpdateButtonsVisibility();
 
   // Updates the visibility of |bookmarks_separator_view_|.
   void UpdateBookmarksSeparatorVisibility();
@@ -385,6 +389,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // shown. This is owned by the Profile.
   BookmarkModel* model_;
 
+  // The ChromeBookmarkClient that owns the |model_|.
+  ChromeBookmarkClient* client_;
+
   // Used to manage showing a Menu, either for the most recently bookmarked
   // entries, or for the starred folder.
   BookmarkMenuController* bookmark_menu_;
@@ -400,6 +407,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Shows the other bookmark entries.
   views::MenuButton* other_bookmarked_button_;
+
+  // Shows the managed bookmarks entries.
+  views::MenuButton* managed_bookmarks_button_;
 
   // Shows the Apps page shortcut.
   views::TextButton* apps_page_shortcut_;
