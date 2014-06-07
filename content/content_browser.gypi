@@ -781,6 +781,8 @@
       'browser/loader/upload_data_stream_builder.h',
       'browser/mach_broker_mac.h',
       'browser/mach_broker_mac.mm',
+      'browser/media/android/browser_cdm_manager.cc',
+      'browser/media/android/browser_cdm_manager.h',
       'browser/media/android/browser_demuxer_android.cc',
       'browser/media/android/browser_demuxer_android.h',
       'browser/media/android/browser_media_player_manager.cc',

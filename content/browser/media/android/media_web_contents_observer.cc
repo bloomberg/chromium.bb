@@ -4,15 +4,21 @@
 
 #include "content/browser/media/android/media_web_contents_observer.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "content/browser/media/android/browser_cdm_manager.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/common/media/cdm_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/android/media_player_android.h"
 
 namespace content {
+
+using media::BrowserCdm;
+using media::MediaPlayerAndroid;
 
 MediaWebContentsObserver::MediaWebContentsObserver(
     RenderViewHost* render_view_host)
@@ -26,76 +32,128 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
   media_player_managers_.erase(key);
+  cdm_managers_.erase(key);
 }
 
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
-  BrowserMediaPlayerManager* player_manager =
-      GetMediaPlayerManager(render_frame_host);
-  DCHECK(player_manager);
+  if (OnMediaPlayerMessageReceived(msg, render_frame_host))
+    return true;
 
+  if (OnCdmMessageReceived(msg, render_frame_host))
+    return true;
+
+  if (OnMediaPlayerSetCdmMessageReceived(msg, render_frame_host))
+    return true;
+
+  return false;
+}
+
+bool MediaWebContentsObserver::OnMediaPlayerMessageReceived(
+    const IPC::Message& msg,
+    RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserver, msg)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_EnterFullscreen,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnEnterFullscreen)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_ExitFullscreen,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnExitFullscreen)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Initialize,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnInitialize)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Start,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnStart)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Seek,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnSeek)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Pause,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnPause)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetVolume,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnSetVolume)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetPoster,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnSetPoster)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Release,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnReleaseResources)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyMediaPlayer,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnDestroyPlayer)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyAllMediaPlayers,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::DestroyAllMediaPlayers)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetCdm,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnSetCdm)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_InitializeCdm,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnInitializeCdm)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_CreateSession,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnCreateSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_UpdateSession,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnUpdateSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_ReleaseSession,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnReleaseSession)
-    IPC_MESSAGE_FORWARD(CdmHostMsg_DestroyCdm,
-                        player_manager,
-                        BrowserMediaPlayerManager::OnDestroyCdm)
 #if defined(VIDEO_HOLE)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_NotifyExternalSurface,
-                        player_manager,
+                        GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnNotifyExternalSurface)
 #endif  // defined(VIDEO_HOLE)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+bool MediaWebContentsObserver::OnCdmMessageReceived(
+    const IPC::Message& msg,
+    RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserver, msg)
+    IPC_MESSAGE_FORWARD(CdmHostMsg_InitializeCdm,
+                        GetCdmManager(render_frame_host),
+                        BrowserCdmManager::OnInitializeCdm)
+    IPC_MESSAGE_FORWARD(CdmHostMsg_CreateSession,
+                        GetCdmManager(render_frame_host),
+                        BrowserCdmManager::OnCreateSession)
+    IPC_MESSAGE_FORWARD(CdmHostMsg_UpdateSession,
+                        GetCdmManager(render_frame_host),
+                        BrowserCdmManager::OnUpdateSession)
+    IPC_MESSAGE_FORWARD(CdmHostMsg_ReleaseSession,
+                        GetCdmManager(render_frame_host),
+                        BrowserCdmManager::OnReleaseSession)
+    IPC_MESSAGE_FORWARD(CdmHostMsg_DestroyCdm,
+                        GetCdmManager(render_frame_host),
+                        BrowserCdmManager::OnDestroyCdm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+bool MediaWebContentsObserver::OnMediaPlayerSetCdmMessageReceived(
+    const IPC::Message& msg,
+    RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(
+      MediaWebContentsObserver, msg, render_frame_host)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetCdm, OnSetCdm)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void MediaWebContentsObserver::OnSetCdm(RenderFrameHost* render_frame_host,
+                                        int player_id,
+                                        int cdm_id) {
+  MediaPlayerAndroid* media_player =
+      GetMediaPlayerManager(render_frame_host)->GetPlayer(player_id);
+  if (!media_player) {
+    NOTREACHED() << "OnSetCdm: MediaPlayer not found for " << player_id;
+    return;
+  }
+
+  BrowserCdm* cdm = GetCdmManager(render_frame_host)->GetCdm(cdm_id);
+  if (!cdm) {
+    NOTREACHED() << "OnSetCdm: CDM not found for " << cdm_id;
+    return;
+  }
+
+  // TODO(xhwang): This could possibly fail. In that case we should reject the
+  // promise.
+  media_player->SetCdm(cdm);
 }
 
 BrowserMediaPlayerManager* MediaWebContentsObserver::GetMediaPlayerManager(
@@ -104,10 +162,19 @@ BrowserMediaPlayerManager* MediaWebContentsObserver::GetMediaPlayerManager(
   if (!media_player_managers_.contains(key)) {
     media_player_managers_.set(
         key,
-        scoped_ptr<BrowserMediaPlayerManager>(
-            BrowserMediaPlayerManager::Create(render_frame_host)));
+        make_scoped_ptr(BrowserMediaPlayerManager::Create(render_frame_host)));
   }
   return media_player_managers_.get(key);
+}
+
+BrowserCdmManager* MediaWebContentsObserver::GetCdmManager(
+    RenderFrameHost* render_frame_host) {
+  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
+  if (!cdm_managers_.contains(key)) {
+    cdm_managers_.set(
+        key, make_scoped_ptr(BrowserCdmManager::Create(render_frame_host)));
+  }
+  return cdm_managers_.get(key);
 }
 
 void MediaWebContentsObserver::PauseVideo() {

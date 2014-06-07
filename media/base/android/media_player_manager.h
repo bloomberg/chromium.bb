@@ -5,21 +5,13 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
-#include "media/base/media_keys.h"
-#include "url/gurl.h"
-
-class GURL;
 
 namespace media {
 
-class BrowserCdm;
 class MediaPlayerAndroid;
 class MediaResourceGetter;
 
@@ -74,39 +66,8 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Release all the players managed by this object.
   virtual void DestroyAllMediaPlayers() = 0;
 
-  // Get the CDM for the given CDM ID.
-  virtual BrowserCdm* GetCdm(int cdm_id) = 0;
-
   // Called by the player to get a hardware protected surface.
   virtual void RequestFullScreen(int player_id) = 0;
-
-  // The following five methods are related to EME.
-  // TODO(xhwang): These methods needs to be decoupled from MediaPlayerManager
-  // to support the W3C Working Draft version of the EME spec.
-  // http://crbug.com/315312
-
-  // Called when CDM creates a session.
-  virtual void OnSessionCreated(int cdm_id,
-                                uint32 session_id,
-                                const std::string& web_session_id) = 0;
-
-  // Called when CDM wants to send a Message event.
-  virtual void OnSessionMessage(int cdm_id,
-                                uint32 session_id,
-                                const std::vector<uint8>& message,
-                                const GURL& destination_url) = 0;
-
-  // Called when CDM wants to send a Ready event.
-  virtual void OnSessionReady(int cdm_id, uint32 session_id) = 0;
-
-  // Called when CDM wants to send a Closed event.
-  virtual void OnSessionClosed(int cdm_id, uint32 session_id) = 0;
-
-  // Called when CDM wants to send an Error event.
-  virtual void OnSessionError(int cdm_id,
-                              uint32 session_id,
-                              MediaKeys::KeyError error_code,
-                              uint32 system_code) = 0;
 };
 
 }  // namespace media

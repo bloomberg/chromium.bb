@@ -5,11 +5,6 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,17 +12,14 @@
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/common/content_export.h"
-#include "content/common/media/cdm_messages_enums.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
-#include "media/base/media_keys.h"
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
 
 namespace media {
-class BrowserCdm;
 class DemuxerAndroid;
 }
 
@@ -38,11 +30,11 @@ class ExternalVideoSurfaceContainer;
 class RenderFrameHost;
 class WebContents;
 
-// This class manages all the MediaPlayerAndroid and CDM objects.
+// This class manages all the MediaPlayerAndroid objects.
 // It receives control operations from the the render process, and forwards
-// them to corresponding MediaPlayerAndroid or CDM object. Callbacks from
-// MediaPlayerAndroid and CDM objects are converted to IPCs and then sent to
-// the render process.
+// them to corresponding MediaPlayerAndroid object. Callbacks from
+// MediaPlayerAndroid objects are converted to IPCs and then sent to the render
+// process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
     : public media::MediaPlayerManager {
  public:
@@ -92,22 +84,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
-  virtual media::BrowserCdm* GetCdm(int cdm_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void RequestFullScreen(int player_id) OVERRIDE;
-  virtual void OnSessionCreated(int cdm_id,
-                                uint32 session_id,
-                                const std::string& web_session_id) OVERRIDE;
-  virtual void OnSessionMessage(int cdm_id,
-                                uint32 session_id,
-                                const std::vector<uint8>& message,
-                                const GURL& destination_url) OVERRIDE;
-  virtual void OnSessionReady(int cdm_id, uint32 session_id) OVERRIDE;
-  virtual void OnSessionClosed(int cdm_id, uint32 session_id) OVERRIDE;
-  virtual void OnSessionError(int cdm_id,
-                              uint32 session_id,
-                              media::MediaKeys::KeyError error_code,
-                              uint32 system_code) OVERRIDE;
 
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
@@ -132,19 +110,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
   virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
-  void OnInitializeCdm(int cdm_id,
-                       const std::string& key_system,
-                       const GURL& frame_url);
-  void OnCreateSession(int cdm_id,
-                       uint32 session_id,
-                       CdmHostMsg_CreateSession_ContentType content_type,
-                       const std::vector<uint8>& init_data);
-  void OnUpdateSession(int cdm_id,
-                       uint32 session_id,
-                       const std::vector<uint8>& response);
-  void OnReleaseSession(int cdm_id, uint32 session_id);
-  void OnSetCdm(int player_id, int cdm_id);
-  void OnDestroyCdm(int cdm_id);
 #if defined(VIDEO_HOLE)
   void OnNotifyExternalSurface(
       int player_id, bool is_request, const gfx::RectF& rect);
@@ -155,9 +120,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   explicit BrowserMediaPlayerManager(RenderFrameHost* render_frame_host);
 
   WebContents* web_contents() const { return web_contents_; }
-
-  // Cancels all pending session creations associated with |cdm_id|.
-  void CancelAllPendingSessionCreations(int cdm_id);
 
   // Adds a given player to the list.
   void AddPlayer(media::MediaPlayerAndroid* player);
@@ -172,32 +134,12 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Adds a new CDM identified by |cdm_id| for the given |key_system| and
-  // |security_origin|.
-  void AddCdm(int cdm_id,
-              const std::string& key_system,
-              const GURL& security_origin);
-
-  // Removes the CDM with the specified id.
-  void RemoveCdm(int cdm_id);
-
   int RoutingID();
 
   // Helper function to send messages to RenderFrameObserver.
   bool Send(IPC::Message* msg);
 
  private:
-  // If |permitted| is false, it does nothing but send
-  // |CdmMsg_SessionError| IPC message.
-  // The primary use case is infobar permission callback, i.e., when infobar
-  // can decide user's intention either from interacting with the actual info
-  // bar or from the saved preference.
-  void CreateSessionIfPermitted(int cdm_id,
-                                uint32 session_id,
-                                const std::string& content_type,
-                                const std::vector<uint8>& init_data,
-                                bool permitted);
-
   // Constructs a MediaPlayerAndroid object.
   media::MediaPlayerAndroid* CreateMediaPlayer(
       MediaPlayerHostMsg_Initialize_Type type,
@@ -228,13 +170,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
-
-  // A map from CDM IDs to managed CDMs.
-  typedef std::map<int, media::BrowserCdm*> CdmMap;
-  CdmMap cdm_map_;
-
-  // Map from CDM ID to CDM's security origin.
-  std::map<int, GURL> cdm_security_origin_map_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.

@@ -74,21 +74,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE { return NULL; }
   virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
   virtual void DestroyAllMediaPlayers() OVERRIDE {}
-  virtual BrowserCdm* GetCdm(int cdm_id) OVERRIDE { return NULL; }
   virtual void RequestFullScreen(int player_id) OVERRIDE {}
-  virtual void OnSessionCreated(int cdm_id,
-                                uint32 session_id,
-                                const std::string& web_session_id) OVERRIDE {}
-  virtual void OnSessionMessage(int cdm_id,
-                                uint32 session_id,
-                                const std::vector<uint8>& message,
-                                const GURL& destination_url) OVERRIDE {}
-  virtual void OnSessionReady(int cdm_id, uint32 session_id) OVERRIDE {}
-  virtual void OnSessionClosed(int cdm_id, uint32 session_id) OVERRIDE {}
-  virtual void OnSessionError(int cdm_id,
-                              uint32 session_id,
-                              MediaKeys::KeyError error_code,
-                              uint32 system_code) OVERRIDE {}
 
   bool playback_completed() const {
     return playback_completed_;

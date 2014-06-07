@@ -12,6 +12,7 @@
 
 namespace content {
 
+class BrowserCdmManager;
 class BrowserMediaPlayerManager;
 class RenderViewHost;
 
@@ -29,10 +30,25 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
 
+  // Helper functions to handle various IPC messages. Returns whether the
+  // |message| is handled in the function.
+  bool OnMediaPlayerMessageReceived(const IPC::Message& message,
+                                    RenderFrameHost* render_frame_host);
+  bool OnCdmMessageReceived(const IPC::Message& message,
+                            RenderFrameHost* render_frame_host);
+  bool OnMediaPlayerSetCdmMessageReceived(const IPC::Message& message,
+                                          RenderFrameHost* render_frame_host);
+
   // Gets the media player manager associated with |render_frame_host|. Creates
   // a new one if it doesn't exist. The caller doesn't own the returned pointer.
   BrowserMediaPlayerManager* GetMediaPlayerManager(
       RenderFrameHost* render_frame_host);
+
+  // Gets the CDM manager associated with |render_frame_host|. Creates
+  // a new one if it doesn't exist. The caller doesn't own the returned pointer.
+  BrowserCdmManager* GetCdmManager(RenderFrameHost* render_frame_host);
+
+  void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
 
   // Pauses all media player.
   void PauseVideo();
@@ -46,6 +62,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   typedef base::ScopedPtrHashMap<uintptr_t, BrowserMediaPlayerManager>
       MediaPlayerManagerMap;
   MediaPlayerManagerMap media_player_managers_;
+
+  // Map from RenderFrameHost* to BrowserCdmManager.
+  typedef base::ScopedPtrHashMap<uintptr_t, BrowserCdmManager> CdmManagerMap;
+  CdmManagerMap cdm_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);
 };
