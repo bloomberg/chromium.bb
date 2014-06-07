@@ -6,48 +6,12 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 #include "content/public/browser/download_item.h"
 #include "url/gurl.h"
-
-// NSProgress is public API in 10.9, but a version of it exists and is usable
-// in 10.8.
-
-#if !defined(MAC_OS_X_VERSION_10_9) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_9
-
-@interface NSProgress : NSObject
-
-- (instancetype)initWithParent:(NSProgress*)parentProgressOrNil
-                      userInfo:(NSDictionary*)userInfoOrNil;
-@property (copy) NSString* kind;
-
-@property int64_t totalUnitCount;
-@property int64_t completedUnitCount;
-
-@property (getter=isCancellable) BOOL cancellable;
-@property (getter=isPausable) BOOL pausable;
-@property (readonly, getter=isCancelled) BOOL cancelled;
-@property (readonly, getter=isPaused) BOOL paused;
-@property (copy) void (^cancellationHandler)(void);
-@property (copy) void (^pausingHandler)(void);
-- (void)cancel;
-- (void)pause;
-
-- (void)setUserInfoObject:(id)objectOrNil forKey:(NSString*)key;
-- (NSDictionary*)userInfo;
-
-@property (readonly, getter=isIndeterminate) BOOL indeterminate;
-@property (readonly) double fractionCompleted;
-
-- (void)publish;
-- (void)unpublish;
-
-@end
-
-#endif  // MAC_OS_X_VERSION_10_9
 
 namespace {
 

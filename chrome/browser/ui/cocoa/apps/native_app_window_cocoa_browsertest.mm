@@ -8,6 +8,7 @@
 
 #include "apps/app_window_registry.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -118,15 +119,6 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSWindow (LionSDKDeclarations)
-- (void)toggleFullScreen:(id)sender;
-@end
-
-enum {
-  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-  NSFullScreenWindowMask = 1 << 14
-};
 
 NSString* const NSWindowDidEnterFullScreenNotification =
     @"NSWindowDidEnterFullScreenNotification";

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "components/storage_monitor/image_capture_device.h"
@@ -17,19 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSObject (ICCameraDeviceDelegateLionAPI)
-- (void)deviceDidBecomeReadyWithCompleteContentCatalog:(ICDevice*)device;
-- (void)didDownloadFile:(ICCameraFile*)file
-                  error:(NSError*)error
-                options:(NSDictionary*)options
-            contextInfo:(void*)contextInfo;
-@end
-
-#endif  // 10.6
 
 namespace {
 

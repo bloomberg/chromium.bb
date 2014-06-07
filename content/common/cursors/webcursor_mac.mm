@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "content/public/common/content_client.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -21,16 +22,6 @@
 
 using blink::WebCursorInfo;
 using blink::WebSize;
-
-// Declare symbols that are part of the 10.7 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSCursor (LionSDKDeclarations)
-+ (NSCursor*)IBeamCursorForVerticalLayout;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
 
 // Private interface to CoreCursor, as of Mac OS X 10.7. This is essentially the
 // implementation of WKCursor in WebKitSystemInterface.

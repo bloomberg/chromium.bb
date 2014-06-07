@@ -103,28 +103,11 @@ using blink::WebGestureEvent;
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-@interface NSView (NSOpenGLSurfaceResolutionLionAPI)
-- (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
-@end
 
 static NSString* const NSWindowDidChangeBackingPropertiesNotification =
     @"NSWindowDidChangeBackingPropertiesNotification";
 
 #endif  // 10.7
-
-// Declare things that are part of the 10.9 SDK.
-#if !defined(MAC_OS_X_VERSION_10_9) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_9
-enum {
-   NSWindowOcclusionStateVisible = 1UL << 1,
-};
-typedef NSUInteger NSWindowOcclusionState;
-
-@interface NSWindow (MavericksAPI)
-- (NSWindowOcclusionState)occlusionState;
-@end
-
-#endif  // 10.9
 
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.

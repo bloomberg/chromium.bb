@@ -7,28 +7,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-enum {
-   NSEventPhaseNone       = 0,
-   NSEventPhaseBegan      = 0x1 << 0,
-   NSEventPhaseStationary = 0x1 << 1,
-   NSEventPhaseChanged    = 0x1 << 2,
-   NSEventPhaseEnded      = 0x1 << 3,
-   NSEventPhaseCancelled  = 0x1 << 4,
-};
-typedef NSUInteger NSEventPhase;
-
-@interface NSEvent (LionAPI)
-
-- (NSEventPhase)momentumPhase;
-- (NSEventPhase)phase;
-
-@end
-
-#endif  // 10.7
+#include "base/mac/sdk_forward_declarations.h"
 
 @interface InvisibleScroller : NSScroller;
 @end

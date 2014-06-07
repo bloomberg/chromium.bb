@@ -186,25 +186,6 @@ using web_modal::WebContentsModalDialogManager;
 
 @end
 
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-enum {
-  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-  NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
-};
-
-enum {
-  NSFullScreenWindowMask = 1 << 14
-};
-
-@interface NSWindow (LionSDKDeclarations)
-- (void)setRestorable:(BOOL)flag;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 @implementation BrowserWindowController
 
 + (BrowserWindowController*)browserWindowControllerForWindow:(NSWindow*)window {
@@ -1047,7 +1028,7 @@ enum {
   // does not display the bookmark bar itself.
   if (tag == IDC_SHOW_BOOKMARK_BAR) {
     bool toggled = windowShim_->IsBookmarkBarVisible();
-    NSInteger oldState = [item state];
+    NSInteger oldState = [(NSMenuItem*)item state];
     NSInteger newState = toggled ? NSOnState : NSOffState;
     if (oldState != newState)
       [item setState:newState];
@@ -1069,7 +1050,7 @@ enum {
     const std::string encoding = current_tab->GetEncoding();
 
     bool toggled = encoding_controller.IsItemChecked(profile, encoding, tag);
-    NSInteger oldState = [item state];
+    NSInteger oldState = [(NSMenuItem*)item state];
     NSInteger newState = toggled ? NSOnState : NSOffState;
     if (oldState != newState)
       [item setState:newState];

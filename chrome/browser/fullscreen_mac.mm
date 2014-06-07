@@ -8,17 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/common/chrome_switches.h"
-
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-enum {
-  NSApplicationPresentationFullScreen = 1 << 10
-};
-
-#endif  // MAC_OS_X_VERSION_10_7
 
 bool IsFullScreenMode() {
   // Check if the main display has been captured (by games in particular).

@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 #import "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -37,14 +38,6 @@
 #import "testing/gtest_mac.h"
 
 namespace {
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-  NSWindowDocumentVersionsButton = 6,
-  NSWindowFullScreenButton
-};
-#endif  // MAC_OS_X_VERSION_10_7
 
 void CreateProfileCallback(const base::Closure& quit_closure,
                            Profile* profile,

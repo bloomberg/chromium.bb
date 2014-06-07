@@ -12,39 +12,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/onc/onc_constants.h"
 #include "components/wifi/network_properties.h"
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-// Local definitions of API added in Mac OS X 10.7
-
-@interface CWInterface (LionAPI)
-- (BOOL)associateToNetwork:(CWNetwork*)network
-                  password:(NSString*)password
-                     error:(NSError**)error;
-- (NSSet*)scanForNetworksWithName:(NSString*)networkName
-                            error:(NSError**)error;
-@end
-
-enum CWChannelBand {
-  kCWChannelBandUnknown = 0,
-  kCWChannelBand2GHz = 1,
-  kCWChannelBand5GHz = 2,
-};
-
-@interface CWChannel : NSObject
-@property(readonly) CWChannelBand channelBand;
-@end
-
-@interface CWNetwork (LionAPI)
-@property(readonly) CWChannel* wlanChannel;
-@end
-
-#endif  // 10.7
 
 namespace wifi {
 

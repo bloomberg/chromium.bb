@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -17,12 +18,10 @@
 // Declare notification names from the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
 NSString* NSPreferredScrollerStyleDidChangeNotification =
     @"NSPreferredScrollerStyleDidChangeNotification";
 
-@interface NSScroller (LionSDK)
-+ (NSInteger)preferredScrollerStyle;
-@end
 #endif
 
 @interface ScrollbarPrefsObserver : NSObject

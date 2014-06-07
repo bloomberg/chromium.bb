@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -16,20 +17,6 @@
 #include "device/bluetooth/bluetooth_profile_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface IOBluetoothDevice (LionSDKDeclarations)
-- (NSString*)addressString;
-- (unsigned int)classOfDevice;
-- (BluetoothConnectionHandle)connectionHandle;
-- (BluetoothHCIRSSIValue)rawRSSI;
-- (NSArray*)services;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
 
 // Undocumented API for accessing the Bluetooth transmit power level.
 // Similar to the API defined here [ http://goo.gl/20Q5vE ].

@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 
 #include "base/logging.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -17,22 +18,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
-
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSWindow (LionSDKDeclarations)
-- (void)toggleFullScreen:(id)sender;
-@end
-
-enum {
-  NSWindowDocumentVersionsButton = 6,
-  NSWindowFullScreenButton
-};
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 
 // Implementer's note: Moving the window controls is tricky. When altering the
 // code, ensure that:
