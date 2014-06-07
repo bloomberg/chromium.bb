@@ -401,8 +401,6 @@ deps_os = {
     "src/third_party/ffmpeg": None,
     "src/third_party/hunspell_dictionaries": None,
     "src/third_party/hunspell": None,
-    "src/third_party/libaddressinput/src/cpp": None,
-    "src/third_party/libaddressinput/src/testdata": None,
     "src/third_party/libc++/trunk": None,
     "src/third_party/libc++abi/trunk": None,
     "src/third_party/libexif/sources": None,
@@ -547,10 +545,6 @@ deps_os = {
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
-
-    # Android shouldn't use this address validation library.
-    "src/third_party/libaddressinput/src/cpp": None,
-    "src/third_party/libaddressinput/src/testdata": None,
   },
 }
 
@@ -764,7 +758,6 @@ hooks = [
     ],
   },
   # Pull libaddressinput strings to work better with translation tools.
-  # This is a no-op on android and ios platforms.
   {
     "name": "libaddressinput-strings",
     "pattern": ".",
