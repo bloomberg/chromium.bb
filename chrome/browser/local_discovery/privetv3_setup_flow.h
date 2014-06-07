@@ -9,57 +9,72 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
+#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 
 namespace local_discovery {
 
-class ServiceDiscoveryClient;
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-namespace wifi {
-class WifiManager;
-};
-#endif
-
+// Provides complete flow for Privet v3 device setup.
 class PrivetV3SetupFlow {
  public:
+  // Delegate to be implemented by client code.
   class Delegate {
    public:
-    typedef base::Callback<void(bool confirm)> ConfirmationCallback;
-    typedef base::Callback<void(const std::string& key)> CredentialsCallback;
+    typedef base::Callback<void(bool success)> ResultCallback;
+    // If |ssid| is empty, call failed to get credentials.
+    // If |key| is empty, network is open.
+    typedef base::Callback<void(const std::string& ssid,
+                                const std::string& key)> CredentialsCallback;
 
-    virtual ~Delegate() {}
+    virtual ~Delegate();
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-    virtual void OnSetupCredentialsNeeded(const std::string& ssid,
-                                          const CredentialsCallback& callback);
-#endif
+    // Creates |GCDApiFlow| for making requests to GCD server.
+    virtual scoped_ptr<GCDApiFlow> CreateApiFlow(
+        scoped_ptr<GCDApiFlow::Request> request) = 0;
 
-    virtual void OnSetupConfirmationNeeded(
-        const std::string& confirmation_code,
-        const ConfirmationCallback& callback) = 0;
+    // Requests WiFi credentials.
+    virtual void GetWiFiCredentials(const CredentialsCallback& callback) = 0;
 
+    // Switches to setup WiFi network.
+    // If switch was successfully |RestoreWifi| should be called later.
+    virtual void SwitchToSetupWiFi(const ResultCallback& callback) = 0;
+
+    // Starts device resolution that should callback with ready
+    // |PrivetHTTPClient|.
+    virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
+        const std::string& service_name,
+        const PrivetHTTPAsynchronousFactory::ResultCallback& callback) = 0;
+
+    // Requests client to prompt user to check |confirmation_code|.
+    virtual void ConfirmSecurityCode(const std::string& confirmation_code,
+                                     const ResultCallback& callback) = 0;
+
+    // Restores WiFi network.
+    virtual void RestoreWifi(const ResultCallback& callback) = 0;
+
+    // Notifies client that device is set up.
     virtual void OnSetupDone() = 0;
 
+    // Notifies client setup failed.
     virtual void OnSetupError() = 0;
   };
 
-  virtual ~PrivetV3SetupFlow() {}
+  explicit PrivetV3SetupFlow(Delegate* delegate);
+  ~PrivetV3SetupFlow();
 
-  static scoped_ptr<PrivetV3SetupFlow> CreateMDnsOnlyFlow(
-      ServiceDiscoveryClient* service_discovery_client,
-      const std::string& service_name);
+  // Starts registration.
+  void Register(const std::string& service_name);
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  static scoped_ptr<PrivetV3SetupFlow> CreateWifiFlow(
-      ServiceDiscoveryClient* service_discovery_client,
-      wifi::WifiManager* wifi_manager,
-      // The SSID of the network whose credentials we will be provisioning.
-      const std::string& credentials_ssid,
-      // The SSID of the device we will be provisioning.
-      const std::string& device_ssid);
-#endif
+  void SetupWifiAndRegister(const std::string& device_ssid);
+#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
-  virtual void Start() = 0;
+ private:
+  Delegate* delegate_;
+  std::string service_name_;
+  base::WeakPtrFactory<PrivetV3SetupFlow> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivetV3SetupFlow);
 };
 
 }  // namespace local_discovery

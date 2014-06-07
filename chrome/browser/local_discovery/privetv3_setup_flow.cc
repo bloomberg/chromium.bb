@@ -8,24 +8,24 @@
 
 namespace local_discovery {
 
-scoped_ptr<PrivetV3SetupFlow> PrivetV3SetupFlow::CreateMDnsOnlyFlow(
-    ServiceDiscoveryClient* service_discovery_client,
-    const std::string& service_name) {
+PrivetV3SetupFlow::Delegate::~Delegate() {
+}
+
+PrivetV3SetupFlow::PrivetV3SetupFlow(Delegate* delegate)
+    : delegate_(delegate), weak_ptr_factory_(this) {
+}
+
+PrivetV3SetupFlow::~PrivetV3SetupFlow() {
+}
+
+void PrivetV3SetupFlow::Register(const std::string& service_name) {
   NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV3SetupFlow>();
 }
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-scoped_ptr<PrivetV3SetupFlow> PrivetV3SetupFlow::CreateWifiFlow(
-    ServiceDiscoveryClient* service_discovery_client,
-    wifi::WifiManager* wifi_manager,
-    // The SSID of the network whose credentials we will be provisioning.
-    const std::string& credentials_ssid,
-    // The SSID of the device we will be provisioning.
-    const std::string& device_ssid) {
+void PrivetV3SetupFlow::SetupWifiAndRegister(const std::string& device_ssid) {
   NOTIMPLEMENTED();
-  return scoped_ptr<PrivetV3SetupFlow>();
 }
-#endif
+#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace local_discovery
