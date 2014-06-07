@@ -44,8 +44,6 @@
 
     'webcore_include_dirs': [
       '..',  # WebKit/Source
-      # Needed to include the generated binding headers.
-      '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
       # FIXME: Remove these once core scripts generate qualified
       # includes correctly: http://crbug.com/380054
       '<(blink_core_output_dir)',
@@ -53,6 +51,8 @@
       '<(blink_platform_output_dir)',
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
+      # Needed to include the generated binding headers.
+      '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
     ],
 
     'conditions': [
