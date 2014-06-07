@@ -325,7 +325,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 
   std::string account_key = GetPrimaryAccountId(GetProfile());
 
-  if (params->details->account.get()) {
+  if (params->details.get() && params->details->account.get()) {
     std::string detail_key =
         extensions::IdentityAPI::GetFactoryInstance()
             ->Get(GetProfile())

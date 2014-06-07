@@ -837,6 +837,32 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       NoOptionsSuccess) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func.get(), "[]", browser()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            GetCachedToken(std::string()).status());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NonInteractiveSuccess) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
