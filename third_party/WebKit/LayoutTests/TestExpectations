@@ -1066,6 +1066,10 @@ crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Fa
 
 crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
 
+# We only want to run one of the web-animations-api tests in stable mode.
+crbug.com/368946 virtual/stable/web-animations-api [ Skip ]
+crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
+
 # Temporarily skipped until Chromium side change lands.
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Skip ]
 crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Skip ]

@@ -1734,7 +1734,7 @@ class Port(object):
                              ['--stable-release-mode',
                               '--force-compositing-mode']),
             VirtualTestSuite('stable',
-                             'web-animations-api/eased-keyframes.html',
+                             'web-animations-api',
                              ['--stable-release-mode',
                               '--force-compositing-mode']),
             VirtualTestSuite('linux-subpixel',
