@@ -41,7 +41,6 @@ class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
 class QuotaMessageFilter;
 class RendererClipboardClient;
-class RenderView;
 class ScreenOrientationDispatcher;
 class ThreadSafeSender;
 class WebClipboardImpl;
@@ -184,7 +183,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const blink::WebDeviceOrientationData& data);
   // Forces the screen orientation for testing purposes.
   static void SetMockScreenOrientationForTesting(
-      RenderView* render_view,
       blink::WebScreenOrientationType);
   // Resets the mock screen orientation data used for testing.
   static void ResetMockScreenOrientationForTesting();

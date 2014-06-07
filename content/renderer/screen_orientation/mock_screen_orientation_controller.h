@@ -8,7 +8,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
@@ -17,12 +16,9 @@ class WebScreenOrientationListener;
 }
 
 namespace content {
-class RenderView;
-class RenderViewImpl;
 
 class MockScreenOrientationController
-    : public base::RefCountedThreadSafe<MockScreenOrientationController>,
-      public RenderViewObserver {
+    : public base::RefCountedThreadSafe<MockScreenOrientationController> {
  public:
   MockScreenOrientationController();
 
@@ -30,9 +26,7 @@ class MockScreenOrientationController
   void ResetData();
   void UpdateLock(blink::WebScreenOrientationLockType);
   void ResetLock();
-  void UpdateDeviceOrientation(
-      RenderView* render_view,
-      blink::WebScreenOrientationType);
+  void UpdateDeviceOrientation(blink::WebScreenOrientationType);
 
  private:
   virtual ~MockScreenOrientationController();
@@ -42,10 +36,6 @@ class MockScreenOrientationController
   void UpdateScreenOrientation(blink::WebScreenOrientationType);
   bool IsOrientationAllowedByCurrentLock(blink::WebScreenOrientationType);
   blink::WebScreenOrientationType SuitableOrientationForCurrentLock();
-  RenderViewImpl* render_view_impl() const;
-
-  // RenderViewObserver
-  virtual void OnDestruct() OVERRIDE;
 
   blink::WebScreenOrientationLockType current_lock_;
   blink::WebScreenOrientationType device_orientation_;
