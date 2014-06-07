@@ -48,13 +48,14 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(defaults_mime_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(printing::ColorModel, printing::PROCESSCOLORMODEL_RGB)
-IPC_ENUM_TRAITS_MAX_VALUE(printing::DuplexMode, printing::SHORT_EDGE)
+IPC_ENUM_TRAITS(printing::DuplexMode)
 
+#if defined(OS_WIN)
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(size_um)
 IPC_STRUCT_TRAITS_END()
+#endif
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(collate_capable)
@@ -64,12 +65,16 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(duplex_default)
   IPC_STRUCT_TRAITS_MEMBER(color_changeable)
   IPC_STRUCT_TRAITS_MEMBER(color_default)
+#if defined(USE_CUPS)
   IPC_STRUCT_TRAITS_MEMBER(color_model)
   IPC_STRUCT_TRAITS_MEMBER(bw_model)
+#endif
+#if defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(papers)
   IPC_STRUCT_TRAITS_MEMBER(default_paper)
   IPC_STRUCT_TRAITS_MEMBER(dpis)
   IPC_STRUCT_TRAITS_MEMBER(default_dpi)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(printing::PwgRasterTransformType);
