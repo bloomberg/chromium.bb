@@ -46,7 +46,7 @@ def main():
     if not start_dir:
         start_dir = os.path.join(root_dir, 'Source')
 
-    check_deps = os.path.realpath(os.path.join(root_dir, os.pardir, os.pardir, 'tools', 'checkdeps', 'checkdeps.py'))
+    check_deps = os.path.realpath(os.path.join(root_dir, os.pardir, os.pardir, 'buildtools', 'checkdeps', 'checkdeps.py'))
     subprocess.call([sys.executable, check_deps, '--root', root_dir, start_dir])
 
 if '__main__' == __name__:
