@@ -756,7 +756,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       -1,  // don't yet know tab ID; set later if appropriate
       ClassifyPage(),
       elapsed_time_since_user_first_modified_omnibox,
-      match.inline_autocompletion.length(),
+      match.allowed_to_be_default_match ? match.inline_autocompletion.length() :
+          base::string16::npos,
       elapsed_time_since_last_change_to_default_match,
       (!popup_model()->IsOpen() || !pasted_text.empty()) ?
           fake_single_entry_result : result());

@@ -55,8 +55,10 @@ message OmniboxEventProto {
   // The length of the inline autocomplete text in the omnibox.
   // The sum |typed_length| + |completed_length| gives the full length of the
   // user-visible text in the omnibox.
-  // This field is only set for inlineable suggestions selected at position 0
-  // (|selected_index| = 0) and will be omitted otherwise.
+  // This field is only set for suggestions that are allowed to be the default
+  // match and omitted otherwise.  The first suggestion is always allowed to
+  // be the default match.  (This is an enforced constraint.)  Hence, if
+  // |selected_index| == 0, then this field will always be set.
   optional int32 completed_length = 6;
 
   // The amount of time, in milliseconds, since the user first began modifying

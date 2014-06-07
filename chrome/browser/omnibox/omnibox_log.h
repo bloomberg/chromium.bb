@@ -73,8 +73,10 @@ struct OmniboxLog {
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox;
 
   // The number of extra characters the user would have to manually type
-  // if she/he were not given the opportunity to select this match.  Set to
-  // base::string16::npos if not available.
+  // if she/he were not given the opportunity to select this match.  Only
+  // set for matches that are allowed to be the default match (i.e., are
+  // inlineable).  Set to base::string16::npos if the match is not allowed
+  // to be the default match.
   size_t completed_length;
 
   // The amount of time since the last time the default (i.e., inline)
