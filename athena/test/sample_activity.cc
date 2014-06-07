@@ -4,15 +4,19 @@
 
 #include "athena/test/sample_activity.h"
 
-#include "ui/aura/window.h"
+#include "ui/views/background.h"
+#include "ui/views/view.h"
 
 namespace athena {
 namespace test {
 
 SampleActivity::SampleActivity(SkColor color,
-                               SkColor content_color,
+                               SkColor contents_color,
                                const std::string& title)
-    : color_(color), content_color_(content_color), title_(title) {
+    : color_(color),
+      contents_color_(contents_color),
+      title_(title),
+      contents_view_(NULL) {
 }
 
 SampleActivity::~SampleActivity() {
@@ -30,13 +34,13 @@ std::string SampleActivity::GetTitle() {
   return title_;
 }
 
-aura::Window* SampleActivity::GetNativeWindow() {
-  if (!window_) {
-    window_.reset(new aura::Window(NULL));
-    window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
-    window_->layer()->SetColor(content_color_);
+views::View* SampleActivity::GetContentsView() {
+  if (!contents_view_) {
+    contents_view_ = new views::View;
+    contents_view_->set_background(
+        views::Background::CreateSolidBackground(contents_color_));
   }
-  return window_.get();
+  return contents_view_;
 }
 
 }  // namespace test

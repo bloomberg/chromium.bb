@@ -10,7 +10,11 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-class WebContents;
+class BrowserContext;
+}
+
+namespace views {
+class WebView;
 }
 
 namespace athena {
@@ -19,7 +23,7 @@ class WebActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  explicit WebActivity(content::WebContents* contents);
+  WebActivity(content::BrowserContext* context, const GURL& gurl);
   virtual ~WebActivity();
 
  protected:
@@ -29,7 +33,7 @@ class WebActivity : public Activity,
   // ActivityViewModel:
   virtual SkColor GetRepresentativeColor() OVERRIDE;
   virtual std::string GetTitle() OVERRIDE;
-  virtual aura::Window* GetNativeWindow() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void TitleWasSet(content::NavigationEntry* entry,
@@ -38,6 +42,10 @@ class WebActivity : public Activity,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
  private:
+  content::BrowserContext* browser_context_;
+  const GURL url_;
+  views::WebView* web_view_;
+
   DISALLOW_COPY_AND_ASSIGN(WebActivity);
 };
 

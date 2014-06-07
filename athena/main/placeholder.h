@@ -5,8 +5,12 @@
 #ifndef ATHENA_MAIN_PLACEHOLDER_H_
 #define ATHENA_MAIN_PLACEHOLDER_H_
 
-// This is to create a dummy windows until we have a real app / web windows.
-void CreateTestWindows();
+namespace content {
+class BrowserContext;
+}
+
+// Creates WebContents with a pre-defined set of windows.
+void CreateTestPages(content::BrowserContext* browser_context);
 
 // Set up a placeholder image to the screen background.
 void SetupBackgroundImage();

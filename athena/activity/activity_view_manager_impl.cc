@@ -14,7 +14,6 @@
 #include "ui/aura/window.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -28,7 +27,7 @@ class ActivityWidget : public views::LayoutManager {
       : activity_(activity),
         container_(NULL),
         title_(NULL),
-        host_(NULL),
+        content_(NULL),
         widget_(NULL) {
     container_ = new views::View;
 
@@ -39,9 +38,8 @@ class ActivityWidget : public views::LayoutManager {
     title_->SetEnabledColor(SK_ColorBLACK);
     container_->AddChildView(title_);
     container_->SetLayoutManager(this);
-
-    host_ = new views::NativeViewHost();
-    container_->AddChildView(host_);
+    content_ = activity->GetActivityViewModel()->GetContentsView();
+    container_->AddChildView(content_);
 
     widget_ = new views::Widget;
     views::Widget::InitParams params(
@@ -51,8 +49,6 @@ class ActivityWidget : public views::LayoutManager {
     params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
     widget_->Init(params);
     widget_->SetContentsView(container_);
-
-    host_->Attach(activity_->GetActivityViewModel()->GetNativeWindow());
   }
 
   virtual ~ActivityWidget() {}
@@ -75,30 +71,30 @@ class ActivityWidget : public views::LayoutManager {
   // views::LayoutManager:
   virtual void Layout(views::View* host) OVERRIDE {
     CHECK_EQ(container_, host);
-    const gfx::Rect& host_bounds = host->bounds();
+    const gfx::Rect& content_bounds = host->bounds();
     const int kTitleHeight = 25;
-    title_->SetBounds(0, 0, host_bounds.width(), kTitleHeight);
-    host_->SetBounds(0,
-                     kTitleHeight,
-                     host_bounds.width(),
-                     host_bounds.height() - kTitleHeight);
+    title_->SetBounds(0, 0, content_bounds.width(), kTitleHeight);
+    content_->SetBounds(0,
+                        kTitleHeight,
+                        content_bounds.width(),
+                        content_bounds.height() - kTitleHeight);
   }
 
   virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE {
     CHECK_EQ(container_, host);
     gfx::Size size;
     gfx::Size label_size = title_->GetPreferredSize();
-    gfx::Size host_size = host_->GetPreferredSize();
+    gfx::Size content_size = content_->GetPreferredSize();
 
-    size.set_width(std::max(label_size.width(), host_size.width()));
-    size.set_height(label_size.height() + host_size.height());
+    size.set_width(std::max(label_size.width(), content_size.width()));
+    size.set_height(label_size.height() + content_size.height());
     return size;
   }
 
   Activity* activity_;
   views::View* container_;
   views::Label* title_;
-  views::NativeViewHost* host_;
+  views::View* content_;
   views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityWidget);

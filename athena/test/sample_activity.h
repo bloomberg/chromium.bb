@@ -15,7 +15,9 @@ namespace test {
 class SampleActivity : public Activity,
                        public ActivityViewModel {
  public:
-  SampleActivity(SkColor color, SkColor content, const std::string& title);
+  SampleActivity(SkColor color,
+                 SkColor contents_color,
+                 const std::string& title);
   virtual ~SampleActivity();
 
  private:
@@ -25,12 +27,12 @@ class SampleActivity : public Activity,
   // athena::ActivityViewModel:
   virtual SkColor GetRepresentativeColor() OVERRIDE;
   virtual std::string GetTitle() OVERRIDE;
-  virtual aura::Window* GetNativeWindow() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   SkColor color_;
-  SkColor content_color_;
+  SkColor contents_color_;
   std::string title_;
-  scoped_ptr<aura::Window> window_;
+  views::View* contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleActivity);
 };

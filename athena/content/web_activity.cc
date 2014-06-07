@@ -7,11 +7,13 @@
 #include "athena/activity/public/activity_manager.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace athena {
 
-WebActivity::WebActivity(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {
+WebActivity::WebActivity(content::BrowserContext* browser_context,
+                         const GURL& url)
+    : browser_context_(browser_context), url_(url), web_view_(NULL) {
 }
 
 WebActivity::~WebActivity() {
@@ -27,11 +29,16 @@ SkColor WebActivity::GetRepresentativeColor() {
 }
 
 std::string WebActivity::GetTitle() {
-  return base::UTF16ToUTF8(web_contents()->GetTitle());
+  return base::UTF16ToUTF8(web_view_->GetWebContents()->GetTitle());
 }
 
-aura::Window* WebActivity::GetNativeWindow() {
-  return web_contents()->GetNativeView();
+views::View* WebActivity::GetContentsView() {
+  if (!web_view_) {
+    web_view_ = new views::WebView(browser_context_);
+    web_view_->LoadInitialURL(url_);
+    Observe(web_view_->GetWebContents());
+  }
+  return web_view_;
 }
 
 void WebActivity::TitleWasSet(content::NavigationEntry* entry,

@@ -11,8 +11,8 @@
 
 typedef unsigned int SkColor;
 
-namespace aura {
-class Window;
+namespace views {
+class View;
 }
 
 namespace athena {
@@ -27,8 +27,8 @@ class ATHENA_EXPORT ActivityViewModel {
   // Returns a title for the activity.
   virtual std::string GetTitle() = 0;
 
-  // Returns the native window containing the activity.
-  virtual aura::Window* GetNativeWindow() = 0;
+  // Returns the contents view.
+  virtual views::View* GetContentsView() = 0;
 };
 
 }  // namespace athena

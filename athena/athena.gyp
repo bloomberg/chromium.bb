@@ -57,6 +57,8 @@
       'dependencies': [
         'athena_lib',
         '../content/content.gyp:content_browser',
+        '../ui/views/controls/webview/webview.gyp:webview',
+        '../skia/skia.gyp:skia',
       ],
       'defines': [
         'ATHENA_IMPLEMENTATION',
@@ -109,6 +111,7 @@
       ],
       'sources': [
         'test/athena_unittests.cc',
+        'activity/activity_manager_unittest.cc',
         'input/accelerator_manager_unittest.cc',
         'wm/window_manager_unittest.cc',
       ],

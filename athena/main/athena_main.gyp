@@ -17,6 +17,7 @@
         '../../skia/skia.gyp:skia',
         '../../ui/accessibility/accessibility.gyp:ax_gen',
         '../../ui/views/views.gyp:views',
+        '../../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '../..',
@@ -27,8 +28,6 @@
         'athena_main.cc',
         'placeholder.cc',
         'placeholder.h',
-        'placeholder_content.cc',
-        'placeholder_content.h',
       ],
     },
     {

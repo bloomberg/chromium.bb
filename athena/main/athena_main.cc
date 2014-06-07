@@ -8,7 +8,6 @@
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
-#include "athena/main/placeholder_content.h"
 #include "content/public/app/content_main.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -23,7 +22,6 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
     athena::StartAthena(
         apps::ShellDesktopController::instance()->host()->window(),
         new athena::ContentActivityFactory());
-    CreateTestWindows();
     CreateTestPages(context);
   }
 
