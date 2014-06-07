@@ -295,21 +295,19 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
     , m_options(options)
 {
     ASSERT(isMainThread());
-    // FIXME: This assertion will become invalid if <http://webkit.org/b/60316> is fixed.
     ASSERT(contextElement);
-    if (contextElement) {
-        // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
-        // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
-        // For efficiency, we skip step 4.2 ("Let root be a new html element with no attributes")
-        // and instead use the DocumentFragment as a root node.
-        m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
 
-        if (isHTMLTemplateElement(*contextElement))
-            m_templateInsertionModes.append(TemplateContentsMode);
+    // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
+    // For efficiency, we skip step 4.2 ("Let root be a new html element with no attributes")
+    // and instead use the DocumentFragment as a root node.
+    m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
 
-        resetInsertionModeAppropriately();
-        m_tree.setForm(closestFormAncestor(*contextElement));
-    }
+    if (isHTMLTemplateElement(*contextElement))
+        m_templateInsertionModes.append(TemplateContentsMode);
+
+    resetInsertionModeAppropriately();
+    m_tree.setForm(closestFormAncestor(*contextElement));
 }
 
 HTMLTreeBuilder::~HTMLTreeBuilder()
