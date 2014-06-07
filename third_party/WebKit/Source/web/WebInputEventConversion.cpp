@@ -424,17 +424,18 @@ inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
 
 PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTouchPoint& point)
 {
-    float scale = widgetInputEventsScaleFactor(widget);
+    float scale = 1.0f / widgetInputEventsScaleFactor(widget);
     IntSize offset = widgetInputEventsOffset(widget);
     IntPoint pinchViewport = pinchViewportOffset(widget);
     m_id = point.id;
     m_state = toPlatformTouchPointState(point.state);
-    m_pos = widget->convertFromContainingWindow(IntPoint(
-        (point.position.x - offset.width()) / scale + pinchViewport.x(),
-        (point.position.y - offset.height()) / scale + pinchViewport.y()));
-    m_screenPos = IntPoint(point.screenPosition.x, point.screenPosition.y);
-    m_radiusY = point.radiusY / scale;
-    m_radiusX = point.radiusX / scale;
+    FloatPoint pos = (point.position - offset).scaledBy(scale);
+    pos.moveBy(pinchViewport);
+    IntPoint flooredPoint = flooredIntPoint(pos);
+    // This assumes convertFromContainingWindow does only translations, not scales.
+    m_pos = widget->convertFromContainingWindow(flooredPoint) + (pos - flooredPoint);
+    m_screenPos = FloatPoint(point.screenPosition.x, point.screenPosition.y);
+    m_radius = FloatSize(point.radiusX, point.radiusY).scaledBy(scale);
     m_rotationAngle = point.rotationAngle;
     m_force = point.force;
 }
@@ -475,9 +476,14 @@ static int getWebInputModifiers(const UIEventWithKeyState& event)
     return modifiers;
 }
 
+static FloatPoint convertAbsoluteLocationForRenderObjectFloat(const LayoutPoint& location, const WebCore::RenderObject& renderObject)
+{
+    return renderObject.absoluteToLocal(location, UseTransforms);
+}
+
 static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& location, const WebCore::RenderObject& renderObject)
 {
-    return roundedIntPoint(renderObject.absoluteToLocal(location, UseTransforms));
+    return roundedIntPoint(convertAbsoluteLocationForRenderObjectFloat(location, renderObject));
 }
 
 static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const WebCore::RenderObject& renderObject, WebMouseEvent& webEvent)
@@ -576,11 +582,12 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
 
     // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
     ScrollView* view =  toScrollView(widget->parent());
-    IntPoint windowPoint = IntPoint(touch->absoluteLocation().x(), touch->absoluteLocation().y());
+    IntPoint windowPoint = roundedIntPoint(touch->absoluteLocation());
     if (view)
         windowPoint = view->contentsToWindow(windowPoint);
-    globalX = touch->screenX();
-    globalY = touch->screenY();
+    IntPoint screenPoint = roundedIntPoint(touch->screenLocation());
+    globalX = screenPoint.x();
+    globalY = screenPoint.y();
     windowX = windowPoint.x();
     windowY = windowPoint.y();
 
@@ -744,8 +751,8 @@ static void addTouchPoints(const Widget* widget, const AtomicString& touchType, 
 
         WebTouchPoint point;
         point.id = touch->identifier();
-        point.screenPosition = WebFloatPoint(touch->screenX(), touch->screenY());
-        point.position = convertAbsoluteLocationForRenderObject(touch->absoluteLocation(), *renderObject);
+        point.screenPosition = touch->screenLocation();
+        point.position = convertAbsoluteLocationForRenderObjectFloat(touch->absoluteLocation(), *renderObject);
         point.radiusX = touch->webkitRadiusX();
         point.radiusY = touch->webkitRadiusY();
         point.rotationAngle = touch->webkitRotationAngle();

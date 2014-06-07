@@ -29,61 +29,43 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 
-static int contentsX(LocalFrame* frame)
+static FloatPoint contentsOffset(LocalFrame* frame)
 {
     if (!frame)
-        return 0;
+        return FloatPoint();
     FrameView* frameView = frame->view();
     if (!frameView)
-        return 0;
-    return frameView->scrollX() / frame->pageZoomFactor();
+        return FloatPoint();
+    float scale = 1.0f / frame->pageZoomFactor();
+    return FloatPoint(frameView->scrollPosition()).scaledBy(scale);
 }
 
-static int contentsY(LocalFrame* frame)
-{
-    if (!frame)
-        return 0;
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return 0;
-    return frameView->scrollY() / frame->pageZoomFactor();
-}
-
-Touch::Touch(LocalFrame* frame, EventTarget* target, unsigned identifier, int screenX, int screenY, int pageX, int pageY, int radiusX, int radiusY, float rotationAngle, float force)
+Touch::Touch(LocalFrame* frame, EventTarget* target, unsigned identifier, const FloatPoint& screenPos, const FloatPoint& pagePos, const FloatSize& radius, float rotationAngle, float force)
     : m_target(target)
     , m_identifier(identifier)
-    , m_clientX(pageX - contentsX(frame))
-    , m_clientY(pageY - contentsY(frame))
-    , m_screenX(screenX)
-    , m_screenY(screenY)
-    , m_pageX(pageX)
-    , m_pageY(pageY)
-    , m_radiusX(radiusX)
-    , m_radiusY(radiusY)
+    , m_clientPos(pagePos - contentsOffset(frame))
+    , m_screenPos(screenPos)
+    , m_pagePos(pagePos)
+    , m_radius(radius)
     , m_rotationAngle(rotationAngle)
     , m_force(force)
 {
     ScriptWrappable::init(this);
     float scaleFactor = frame->pageZoomFactor();
-    float x = pageX * scaleFactor;
-    float y = pageY * scaleFactor;
-    m_absoluteLocation = roundedLayoutPoint(FloatPoint(x, y));
+    m_absoluteLocation = roundedLayoutPoint(pagePos.scaledBy(scaleFactor));
 }
 
-Touch::Touch(EventTarget* target, unsigned identifier, int clientX, int clientY, int screenX, int screenY, int pageX, int pageY, int radiusX, int radiusY, float rotationAngle, float force, LayoutPoint absoluteLocation)
+Touch::Touch(EventTarget* target, unsigned identifier, const FloatPoint& clientPos, const FloatPoint& screenPos, const FloatPoint& pagePos, const FloatSize& radius, float rotationAngle, float force, LayoutPoint absoluteLocation)
     : m_target(target)
     , m_identifier(identifier)
-    , m_clientX(clientX)
-    , m_clientY(clientY)
-    , m_screenX(screenX)
-    , m_screenY(screenY)
-    , m_pageX(pageX)
-    , m_pageY(pageY)
-    , m_radiusX(radiusX)
-    , m_radiusY(radiusY)
+    , m_clientPos(clientPos)
+    , m_screenPos(screenPos)
+    , m_pagePos(pagePos)
+    , m_radius(radius)
     , m_rotationAngle(rotationAngle)
     , m_force(force)
     , m_absoluteLocation(absoluteLocation)
@@ -93,7 +75,7 @@ Touch::Touch(EventTarget* target, unsigned identifier, int clientX, int clientY,
 
 PassRefPtrWillBeRawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
 {
-    return adoptRefWillBeNoop(new Touch(eventTarget, m_identifier, m_clientX, m_clientY, m_screenX, m_screenY, m_pageX, m_pageY, m_radiusX, m_radiusY, m_rotationAngle, m_force, m_absoluteLocation));
+    return adoptRefWillBeNoop(new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_absoluteLocation));
 }
 
 void Touch::trace(Visitor* visitor)

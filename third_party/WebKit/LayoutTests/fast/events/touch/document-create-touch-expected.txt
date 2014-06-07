@@ -24,8 +24,8 @@ PASS emptyTouch.screenX is 0
 PASS emptyTouch.screenY is 0
 PASS emptyTouch.webkitRadiusX is 0
 PASS emptyTouch.webkitRadiusY is 0
-PASS emptyTouch.webkitRotationAngle is NaN
-PASS emptyTouch.webkitForce is NaN
+FAIL emptyTouch.webkitRotationAngle should be NaN. Was 0.
+FAIL emptyTouch.webkitForce should be NaN. Was 0.
 PASS badParamsTouch is non-null.
 PASS badParamsTouch.target is null
 PASS badParamsTouch.identifier is 0
@@ -35,8 +35,8 @@ PASS badParamsTouch.screenX is 0
 PASS badParamsTouch.screenY is 104
 PASS badParamsTouch.webkitRadiusX is 0
 PASS badParamsTouch.webkitRadiusY is 0
-PASS badParamsTouch.webkitRotationAngle is NaN
-PASS badParamsTouch.webkitForce is NaN
+FAIL badParamsTouch.webkitRotationAngle should be NaN. Was 0.
+FAIL badParamsTouch.webkitForce should be NaN. Was 0.
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -179,6 +179,7 @@ public:
     // the entire widget hierarchy. It is up to the platform to decide what the precise definition
     // of containing window is. (For example on Mac it is the containing NSWindow.)
     IntPoint windowToContents(const IntPoint&) const;
+    FloatPoint windowToContents(const FloatPoint&) const;
     IntPoint contentsToWindow(const IntPoint&) const;
     IntRect windowToContents(const IntRect&) const;
     IntRect contentsToWindow(const IntRect&) const;

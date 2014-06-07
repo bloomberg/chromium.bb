@@ -194,12 +194,12 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,
                                                [Default=Undefined] optional long identifier,
-                                               [Default=Undefined] optional long pageX,
-                                               [Default=Undefined] optional long pageY,
-                                               [Default=Undefined] optional long screenX,
-                                               [Default=Undefined] optional long screenY,
-                                               [Default=Undefined] optional long webkitRadiusX,
-                                               [Default=Undefined] optional long webkitRadiusY,
+                                               [Default=Undefined] optional double pageX,
+                                               [Default=Undefined] optional double pageY,
+                                               [Default=Undefined] optional double screenX,
+                                               [Default=Undefined] optional double screenY,
+                                               [Default=Undefined] optional double webkitRadiusX,
+                                               [Default=Undefined] optional double webkitRadiusY,
                                                [Default=Undefined] optional float webkitRotationAngle,
                                                [Default=Undefined] optional float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);

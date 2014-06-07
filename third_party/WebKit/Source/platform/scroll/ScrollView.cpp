@@ -601,6 +601,12 @@ IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
     return viewPoint + scrollOffset();
 }
 
+FloatPoint ScrollView::windowToContents(const FloatPoint& windowPoint) const
+{
+    FloatPoint viewPoint = convertFromContainingWindow(windowPoint);
+    return viewPoint + scrollOffset();
+}
+
 IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
 {
     IntPoint viewPoint = contentsPoint - scrollOffset();

@@ -42,6 +42,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformTouchPoint.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
@@ -57,8 +58,7 @@ public:
         m_screenPos = screenPos;
         m_pos = pos;
         m_state = state;
-        m_radiusY = radiusY;
-        m_radiusX = radiusX;
+        m_radius = WebCore::FloatSize(radiusX, radiusY);
         m_rotationAngle = rotationAngle;
         m_force = force;
     }

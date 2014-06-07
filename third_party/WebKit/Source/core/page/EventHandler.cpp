@@ -3425,22 +3425,29 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         m_touchSequenceDocument.clear();
     }
 
+    ASSERT(m_frame->view());
+    if (m_touchSequenceDocument && (!m_touchSequenceDocument->frame() || !m_touchSequenceDocument->frame()->view())) {
+        // If the active touch document has no frame or view, it's probably being destroyed
+        // so we can't dispatch events.
+        return false;
+    }
+
     // First do hit tests for any new touch points.
     for (i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
-        LayoutPoint pagePoint = documentPointForWindowPoint(m_frame, point.pos());
 
         // Touch events implicitly capture to the touched node, and don't change
         // active/hover states themselves (Gesture events do). So we only need
         // to hit-test on touchstart, and it can be read-only.
         if (point.state() == PlatformTouchPoint::TouchPressed) {
             HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent | HitTestRequest::ReadOnly | HitTestRequest::Active;
+            LayoutPoint pagePoint = roundedLayoutPoint(m_frame->view()->windowToContents(point.pos()));
             HitTestResult result;
             if (!m_touchSequenceDocument) {
                 result = hitTestResultAtPoint(pagePoint, hitType);
             } else if (m_touchSequenceDocument->frame()) {
-                LayoutPoint pagePointInOriginatingDocument = documentPointForWindowPoint(m_touchSequenceDocument->frame(), point.pos());
-                result = hitTestResultInFrame(m_touchSequenceDocument->frame(), pagePointInOriginatingDocument, hitType);
+                LayoutPoint framePoint = roundedLayoutPoint(m_touchSequenceDocument->frame()->view()->windowToContents(point.pos()));
+                result = hitTestResultInFrame(m_touchSequenceDocument->frame(), framePoint, hitType);
             } else
                 continue;
 
@@ -3457,6 +3464,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 // in the active sequence. This must be a single document to
                 // ensure we don't leak Nodes between documents.
                 m_touchSequenceDocument = &(result.innerNode()->document());
+                ASSERT(m_touchSequenceDocument->frame()->view());
             }
 
             // Ideally we'd ASSERT(!m_targetForTouchID.contains(point.id())
@@ -3509,7 +3517,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     for (i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
-        LayoutPoint pagePoint = documentPointForWindowPoint(m_frame, point.pos());
         PlatformTouchPoint::State pointState = point.state();
         RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
 
@@ -3553,24 +3560,17 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         }
         ASSERT(targetFrame);
 
-        if (m_frame != targetFrame) {
-            // pagePoint should always be relative to the target elements
-            // containing frame.
-            pagePoint = documentPointForWindowPoint(targetFrame, point.pos());
-        }
+        // pagePoint should always be relative to the target elements
+        // containing frame.
+        FloatPoint pagePoint = targetFrame->view()->windowToContents(point.pos());
 
-        float scaleFactor = targetFrame->pageZoomFactor();
+        float scaleFactor = 1.0f / targetFrame->pageZoomFactor();
 
-        int adjustedPageX = lroundf(pagePoint.x() / scaleFactor);
-        int adjustedPageY = lroundf(pagePoint.y() / scaleFactor);
-        int adjustedRadiusX = lroundf(point.radiusX() / scaleFactor);
-        int adjustedRadiusY = lroundf(point.radiusY() / scaleFactor);
+        FloatPoint adjustedPagePoint = pagePoint.scaledBy(scaleFactor);
+        FloatSize adjustedRadius = point.radius().scaledBy(scaleFactor);
 
-        RefPtrWillBeRawPtr<Touch> touch = Touch::create(targetFrame, touchTarget.get(), point.id(),
-                                            point.screenPos().x(), point.screenPos().y(),
-                                            adjustedPageX, adjustedPageY,
-                                            adjustedRadiusX, adjustedRadiusY,
-                                            point.rotationAngle(), point.force());
+        RefPtrWillBeRawPtr<Touch> touch = Touch::create(
+            targetFrame, touchTarget.get(), point.id(), point.screenPos(), adjustedPagePoint, adjustedRadius, point.rotationAngle(), point.force());
 
         // Ensure this target's touch list exists, even if it ends up empty, so
         // it can always be passed to TouchEvent::Create below.

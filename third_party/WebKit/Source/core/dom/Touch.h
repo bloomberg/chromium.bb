@@ -28,6 +28,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -41,51 +43,58 @@ class LocalFrame;
 class Touch FINAL : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
-            unsigned identifier, int screenX, int screenY, int pageX, int pageY,
-            int radiusX, int radiusY, float rotationAngle, float force)
+        unsigned identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
+        const FloatSize& radius, float rotationAngle, float force)
     {
-        return adoptRefWillBeNoop(new Touch(frame, target, identifier, screenX,
-                screenY, pageX, pageY, radiusX, radiusY, rotationAngle, force));
+        return adoptRefWillBeNoop(
+            new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force));
     }
 
+    // DOM Touch implementation
     EventTarget* target() const { return m_target.get(); }
     unsigned identifier() const { return m_identifier; }
-    int clientX() const { return m_clientX; }
-    int clientY() const { return m_clientY; }
-    int screenX() const { return m_screenX; }
-    int screenY() const { return m_screenY; }
-    int pageX() const { return m_pageX; }
-    int pageY() const { return m_pageY; }
-    int webkitRadiusX() const { return m_radiusX; }
-    int webkitRadiusY() const { return m_radiusY; }
+    double clientX() const { return m_clientPos.x(); }
+    double clientY() const { return m_clientPos.y(); }
+    double screenX() const { return m_screenPos.x(); }
+    double screenY() const { return m_screenPos.y(); }
+    double pageX() const { return m_pagePos.x(); }
+    double pageY() const { return m_pagePos.y(); }
+    double webkitRadiusX() const { return m_radius.width(); }
+    double webkitRadiusY() const { return m_radius.height(); }
     float webkitRotationAngle() const { return m_rotationAngle; }
     float webkitForce() const { return m_force; }
+
+    // Blink-internal methods
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
+    const FloatPoint& screenLocation() const { return m_screenPos; }
     PassRefPtrWillBeRawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
 
     void trace(Visitor*);
 
 private:
     Touch(LocalFrame* frame, EventTarget* target, unsigned identifier,
-            int screenX, int screenY, int pageX, int pageY,
-            int radiusX, int radiusY, float rotationAngle, float force);
+        const FloatPoint& screenPos, const FloatPoint& pagePos,
+        const FloatSize& radius, float rotationAngle, float force);
 
-    Touch(EventTarget*, unsigned identifier, int clientX, int clientY,
-        int screenX, int screenY, int pageX, int pageY,
-        int radiusX, int radiusY, float rotationAngle, float force, LayoutPoint absoluteLocation);
+    Touch(EventTarget*, unsigned identifier, const FloatPoint& clientPos,
+        const FloatPoint& screenPos, const FloatPoint& pagePos,
+        const FloatSize& radius, float rotationAngle, float force, LayoutPoint absoluteLocation);
 
     RefPtrWillBeMember<EventTarget> m_target;
     unsigned m_identifier;
-    int m_clientX;
-    int m_clientY;
-    int m_screenX;
-    int m_screenY;
-    int m_pageX;
-    int m_pageY;
-    int m_radiusX;
-    int m_radiusY;
+    // Position relative to the viewport in CSS px.
+    FloatPoint m_clientPos;
+    // Position relative to the screen in DIPs.
+    FloatPoint m_screenPos;
+    // Position relative to the page in CSS px.
+    FloatPoint m_pagePos;
+    // Radius in CSS px.
+    FloatSize m_radius;
     float m_rotationAngle;
     float m_force;
+    // FIXME(rbyers): Shouldn't we be able to migrate callers to relying on screenPos, pagePos
+    // or clientPos? absoluteLocation appears to be the same as pagePos but without browser
+    // scale applied.
     LayoutPoint m_absoluteLocation;
 };
 

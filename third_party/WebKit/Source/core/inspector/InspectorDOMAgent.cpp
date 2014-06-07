@@ -177,7 +177,7 @@ static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& ev
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
     if (!points.size())
         return 0;
-    return hoveredNodeForPoint(frame, points[0].pos(), ignorePointerEventsNone);
+    return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
 }
 
 class RevalidateStyleAttributeTask {

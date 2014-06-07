@@ -102,6 +102,16 @@ public:
         return FloatSize(m_height, m_width);
     }
 
+    FloatSize scaledBy(float scale) const
+    {
+        return scaledBy(scale, scale);
+    }
+
+    FloatSize scaledBy(float scaleX, float scaleY) const
+    {
+        return FloatSize(m_width * scaleX, m_height * scaleY);
+    }
+
 #if OS(MACOSX)
     explicit FloatSize(const CGSize&); // don't do this implicitly since it's lossy
     operator CGSize() const;

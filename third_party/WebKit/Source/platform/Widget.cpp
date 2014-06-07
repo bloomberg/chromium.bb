@@ -127,6 +127,25 @@ IntPoint Widget::convertFromContainingWindow(const IntPoint& windowPoint) const
     return windowPoint;
 }
 
+FloatPoint Widget::convertFromContainingWindow(const FloatPoint& windowPoint) const
+{
+    // Widgets / windows are required to be IntPoint aligned, but we may need to convert
+    // FloatPoint values within them (eg. for event co-ordinates).
+    IntPoint flooredPoint = flooredIntPoint(windowPoint);
+    FloatPoint parentPoint = this->convertFromContainingWindow(flooredPoint);
+    FloatSize windowFraction = windowPoint - flooredPoint;
+    // Use linear interpolation handle any fractional value (eg. for iframes subject to a transform
+    // beyond just a simple translation).
+    // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
+    if (!windowFraction.isEmpty()) {
+        const int kFactor = 1000;
+        IntPoint parentLineEnd = this->convertFromContainingWindow(flooredPoint + roundedIntSize(windowFraction.scaledBy(kFactor)));
+        FloatSize parentFraction = (parentLineEnd - parentPoint).scaledBy(1.0f / kFactor);
+        parentPoint.move(parentFraction);
+    }
+    return parentPoint;
+}
+
 IntPoint Widget::convertToContainingWindow(const IntPoint& localPoint) const
 {
     if (const Widget* parentWidget = parent()) {

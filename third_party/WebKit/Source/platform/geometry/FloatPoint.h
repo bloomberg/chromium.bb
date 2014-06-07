@@ -133,6 +133,11 @@ public:
         return FloatPoint(m_y, m_x);
     }
 
+    FloatPoint scaledBy(float scale) const
+    {
+        return FloatPoint(m_x * scale, m_y * scale);
+    }
+
 #if OS(MACOSX)
     FloatPoint(const CGPoint&);
     operator CGPoint() const;
