@@ -12,7 +12,6 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "chrome/common/service_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/tts_messages.h"
 
@@ -22,6 +21,10 @@
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/print_messages.h"
+#endif
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/common/service_messages.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)

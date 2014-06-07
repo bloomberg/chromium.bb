@@ -2279,6 +2279,7 @@
           'sources/': [
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+            ['exclude', '^service/'],
           ],
         }],
         ['enable_captive_portal_detection!=1', {

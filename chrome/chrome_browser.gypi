@@ -3145,12 +3145,14 @@
         ['enable_printing==2', {
           'sources/': [
             ['exclude', '^browser/printing/background_printing_manager.*'],
+            ['exclude', '^browser/printing/cloud_print/'],
             ['exclude', '^browser/printing/print_view_manager.cc'],
             ['exclude', '^browser/printing/print_error_dialog.*'],
             ['exclude', '^browser/printing/print_preview.*'],
             ['exclude', '^browser/printing/print_view_manager.cc'],
             ['exclude', '^browser/printing/print_view_manager.h'],
             ['exclude', '^browser/printing/printer_manager_dialog.*'],
+            ['exclude', '^browser/service_process/'],
             ['exclude', '^browser/task_manager/printing_information.cc'],
           ],
         }],
