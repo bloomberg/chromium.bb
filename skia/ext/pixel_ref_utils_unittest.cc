@@ -67,8 +67,7 @@ void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
     size.width(), size.height(), kPMColor_SkColorType, kPremul_SkAlphaType
   };
 
-  bitmap->setConfig(info);
-  bitmap->allocPixels();
+  bitmap->allocPixels(info);
   bitmap->pixelRef()->setImmutable();
   bitmap->pixelRef()->setURI(uri);
 }
