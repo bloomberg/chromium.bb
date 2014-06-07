@@ -9,16 +9,30 @@
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mojo {
-namespace examples {
+class SkBitmap;
 
-class WindowTreeHostViewManager : public aura::WindowTreeHost,
-                                  public ui::EventSource {
+namespace ui {
+class Compositor;
+}
+
+namespace mojo {
+
+class WindowTreeHostMojoDelegate;
+
+class WindowTreeHostMojo : public aura::WindowTreeHost, public ui::EventSource {
  public:
-  explicit WindowTreeHostViewManager(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostViewManager();
+  WindowTreeHostMojo(const gfx::Rect& bounds,
+                     WindowTreeHostMojoDelegate* delegate);
+  virtual ~WindowTreeHostMojo();
+
+  // Returns the WindowTreeHostMojo for the specified compositor.
+  static WindowTreeHostMojo* ForCompositor(ui::Compositor* compositor);
 
   const gfx::Rect& bounds() const { return bounds_; }
+
+  // Sets the contents to show in this WindowTreeHost. This forwards to the
+  // delegate.
+  void SetContents(const SkBitmap& contents);
 
  private:
   // WindowTreeHost:
@@ -42,10 +56,11 @@ class WindowTreeHostViewManager : public aura::WindowTreeHost,
 
   gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostViewManager);
+  WindowTreeHostMojoDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
 #endif  // MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_VIEW_MANAGER_H_

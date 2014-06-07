@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
@@ -28,7 +29,7 @@ class Window;
 class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
-class AURA_EXPORT Env : public ui::EventTarget {
+class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
  public:
   // Creates the single Env instance (if it hasn't been created yet). If
   // |create_event_source| is true a PlatformEventSource is created.

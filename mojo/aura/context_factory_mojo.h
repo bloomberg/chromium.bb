@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_AURA_DEMO_CONTEXT_FACTORY_VIEW_MANAGER_H_
-#define MOJO_EXAMPLES_AURA_DEMO_CONTEXT_FACTORY_VIEW_MANAGER_H_
+#ifndef MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
+#define MOJO_AURA_CONTEXT_FACTORY_MOJO_H_
 
 #include "ui/compositor/compositor.h"
 
 namespace mojo {
-namespace view_manager {
-class IViewManager;
-}
-namespace examples {
 
-class ContextFactoryViewManager : public ui::ContextFactory {
+class ContextFactoryMojo : public ui::ContextFactory {
  public:
-  ContextFactoryViewManager(view_manager::IViewManager* view_manager,
-                            uint32_t view_id);
-  virtual ~ContextFactoryViewManager();
+  ContextFactoryMojo();
+  virtual ~ContextFactoryMojo();
 
  private:
   // ContextFactory:
@@ -35,14 +30,11 @@ class ContextFactoryViewManager : public ui::ContextFactory {
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
 
-  view_manager::IViewManager* view_manager_;
-  const uint32_t view_id_;
   scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextFactoryViewManager);
+  DISALLOW_COPY_AND_ASSIGN(ContextFactoryMojo);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_AURA_DEMO_CONTEXT_FACTORY_VIEW_MANAGER_H_
+#endif  // MOJO_AURA_CONTEXT_FACTORY_MOJO_H_

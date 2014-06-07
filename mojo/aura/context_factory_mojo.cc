@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/aura_demo/context_factory_view_manager.h"
+#include "mojo/aura/context_factory_mojo.h"
 
 #include "base/bind.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/aura/window_tree_host_mojo.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/compositor/reflector.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 void FreeSharedBitmap(cc::SharedBitmap* shared_bitmap) {
@@ -23,77 +21,26 @@ void FreeSharedBitmap(cc::SharedBitmap* shared_bitmap) {
 
 void IgnoreSharedBitmap(cc::SharedBitmap* shared_bitmap) {}
 
-bool CreateMapAndDupSharedBuffer(size_t size,
-                                 void** memory,
-                                 ScopedSharedBufferHandle* handle,
-                                 ScopedSharedBufferHandle* duped) {
-  MojoResult result = CreateSharedBuffer(NULL, size, handle);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(handle->is_valid());
-
-  result = DuplicateBuffer(handle->get(), NULL, duped);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(duped->is_valid());
-
-  result = MapBuffer(
-      handle->get(), 0, size, memory, MOJO_MAP_BUFFER_FLAG_NONE);
-  if (result != MOJO_RESULT_OK)
-    return false;
-  DCHECK(*memory);
-
-  return true;
-}
-
 class SoftwareOutputDeviceViewManager : public cc::SoftwareOutputDevice {
  public:
-  explicit SoftwareOutputDeviceViewManager(
-      view_manager::IViewManager* view_manager,
-      uint32_t view_id)
-      : view_manager_(view_manager),
-        view_id_(view_id) {
+  explicit SoftwareOutputDeviceViewManager(ui::Compositor* compositor)
+      : compositor_(compositor) {
   }
   virtual ~SoftwareOutputDeviceViewManager() {}
 
   // cc::SoftwareOutputDevice:
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE {
-    SetViewContents();
+    WindowTreeHostMojo* window_tree_host =
+        WindowTreeHostMojo::ForCompositor(compositor_);
+    DCHECK(window_tree_host);
+    window_tree_host->SetContents(
+        skia::GetTopDevice(*canvas_)->accessBitmap(true));
 
     SoftwareOutputDevice::EndPaint(frame_data);
   }
 
  private:
-  void OnSetViewContentsDone(bool value) {
-    VLOG(1) << "SoftwareOutputDeviceManager::OnSetViewContentsDone " << value;
-    DCHECK(value);
-  }
-
-  void SetViewContents() {
-    std::vector<unsigned char> data;
-    gfx::PNGCodec::EncodeBGRASkBitmap(
-        skia::GetTopDevice(*canvas_)->accessBitmap(true), false, &data);
-
-    void* memory = NULL;
-    ScopedSharedBufferHandle duped;
-    bool result = CreateMapAndDupSharedBuffer(data.size(),
-                                              &memory,
-                                              &shared_state_handle_,
-                                              &duped);
-    if (!result)
-      return;
-
-    memcpy(memory, &data[0], data.size());
-
-    view_manager_->SetViewContents(
-        view_id_, duped.Pass(), static_cast<uint32_t>(data.size()),
-        base::Bind(&SoftwareOutputDeviceViewManager::OnSetViewContentsDone,
-                   base::Unretained(this)));
-  }
-
-  view_manager::IViewManager* view_manager_;
-  const uint32_t view_id_;
-  ScopedSharedBufferHandle shared_state_handle_;
+  ui::Compositor* compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceViewManager);
 };
@@ -145,50 +92,45 @@ class TestSharedBitmapManager : public cc::SharedBitmapManager {
 
 }  // namespace
 
-ContextFactoryViewManager::ContextFactoryViewManager(
-    view_manager::IViewManager* view_manager,
-    uint32_t view_id)
-    : view_manager_(view_manager),
-      view_id_(view_id),
-      shared_bitmap_manager_(new TestSharedBitmapManager()) {
+ContextFactoryMojo::ContextFactoryMojo()
+    : shared_bitmap_manager_(new TestSharedBitmapManager()) {
 }
 
-ContextFactoryViewManager::~ContextFactoryViewManager() {}
+ContextFactoryMojo::~ContextFactoryMojo() {}
 
-scoped_ptr<cc::OutputSurface> ContextFactoryViewManager::CreateOutputSurface(
+scoped_ptr<cc::OutputSurface> ContextFactoryMojo::CreateOutputSurface(
     ui::Compositor* compositor,
     bool software_fallback) {
   scoped_ptr<cc::SoftwareOutputDevice> output_device(
-      new SoftwareOutputDeviceViewManager(view_manager_, view_id_));
+      new SoftwareOutputDeviceViewManager(compositor));
   return make_scoped_ptr(new cc::OutputSurface(output_device.Pass()));
 }
 
-scoped_refptr<ui::Reflector> ContextFactoryViewManager::CreateReflector(
+scoped_refptr<ui::Reflector> ContextFactoryMojo::CreateReflector(
     ui::Compositor* mirroed_compositor,
     ui::Layer* mirroring_layer) {
   return new ui::Reflector();
 }
 
-void ContextFactoryViewManager::RemoveReflector(
+void ContextFactoryMojo::RemoveReflector(
     scoped_refptr<ui::Reflector> reflector) {
 }
 
 scoped_refptr<cc::ContextProvider>
-ContextFactoryViewManager::SharedMainThreadContextProvider() {
+ContextFactoryMojo::SharedMainThreadContextProvider() {
   return scoped_refptr<cc::ContextProvider>(NULL);
 }
 
-void ContextFactoryViewManager::RemoveCompositor(ui::Compositor* compositor) {}
+void ContextFactoryMojo::RemoveCompositor(ui::Compositor* compositor) {}
 
-bool ContextFactoryViewManager::DoesCreateTestContexts() { return false; }
+bool ContextFactoryMojo::DoesCreateTestContexts() { return false; }
 
-cc::SharedBitmapManager* ContextFactoryViewManager::GetSharedBitmapManager() {
+cc::SharedBitmapManager* ContextFactoryMojo::GetSharedBitmapManager() {
   return shared_bitmap_manager_.get();
 }
 
-base::MessageLoopProxy* ContextFactoryViewManager::GetCompositorMessageLoop() {
+base::MessageLoopProxy* ContextFactoryMojo::GetCompositorMessageLoop() {
   return NULL;
 }
 
-}  // namespace examples
 }  // namespace mojo

@@ -898,8 +898,13 @@
             'mojo_native_viewport_bindings',
           ],
           'sources': [
+            'aura/context_factory_mojo.cc',
+            'aura/context_factory_mojo.h',
             'aura/screen_mojo.cc',
             'aura/screen_mojo.h',
+            'aura/window_tree_host_mojo.cc',
+            'aura/window_tree_host_mojo.h',
+            'aura/window_tree_host_mojo_delegate.h',
           ],
         },
       ],

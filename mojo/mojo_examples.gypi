@@ -212,10 +212,6 @@
             'mojo_view_manager_bindings',
           ],
           'sources': [
-            'examples/aura_demo/context_factory_view_manager.cc',
-            'examples/aura_demo/context_factory_view_manager.h',
-            'examples/aura_demo/window_tree_host_view_manager.cc',
-            'examples/aura_demo/window_tree_host_view_manager.h',
             'examples/aura_demo/aura_demo.cc',
             'public/cpp/application/lib/mojo_main_chromium.cc',
           ],
