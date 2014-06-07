@@ -51,8 +51,8 @@ class AudioRendererMixerTest
         std::tr1::get<1>(GetParam()), 16, kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
-    EXPECT_CALL(*sink_.get(), Start());
-    EXPECT_CALL(*sink_.get(), Stop());
+    EXPECT_CALL(*sink_, Start());
+    EXPECT_CALL(*sink_, Stop());
 
     mixer_.reset(new AudioRendererMixer(
         input_parameters_, output_parameters_, sink_));
@@ -389,6 +389,20 @@ TEST_P(AudioRendererMixerBehavioralTest, OnRenderError) {
   }
 
   mixer_callback_->OnRenderError();
+  for (size_t i = 0; i < mixer_inputs_.size(); ++i)
+    mixer_inputs_[i]->Stop();
+}
+
+TEST_P(AudioRendererMixerBehavioralTest, OnRenderErrorPausedInput) {
+  InitializeInputs(kMixerInputs);
+
+  for (size_t i = 0; i < mixer_inputs_.size(); ++i)
+    EXPECT_CALL(*fake_callbacks_[i], OnRenderError()).Times(1);
+
+  // Fire the error before attaching any inputs.  Ensure an error is recieved
+  // even if the input is not connected.
+  mixer_callback_->OnRenderError();
+
   for (size_t i = 0; i < mixer_inputs_.size(); ++i)
     mixer_inputs_[i]->Stop();
 }

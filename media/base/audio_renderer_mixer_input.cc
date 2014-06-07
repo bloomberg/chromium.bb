@@ -25,8 +25,10 @@ AudioRendererMixerInput::AudioRendererMixerInput(
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
   // Mixer is no longer safe to use after |remove_mixer_cb_| has been called.
-  if (initialized_)
+  if (initialized_) {
+    mixer_->RemoveErrorCallback(error_cb_);
     remove_mixer_cb_.Run(params_);
+  }
 }
 
 void AudioRendererMixerInput::Initialize(
@@ -35,6 +37,7 @@ void AudioRendererMixerInput::Initialize(
   DCHECK(!initialized_);
   params_ = params;
   mixer_ = get_mixer_cb_.Run(params_);
+  mixer_->AddErrorCallback(error_cb_);
   callback_ = callback;
   initialized_ = true;
 }
@@ -60,7 +63,7 @@ void AudioRendererMixerInput::Play() {
   if (playing_)
     return;
 
-  mixer_->AddMixerInput(this, error_cb_);
+  mixer_->AddMixerInput(this);
   playing_ = true;
 }
 

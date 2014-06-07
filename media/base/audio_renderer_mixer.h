@@ -26,9 +26,14 @@ class MEDIA_EXPORT AudioRendererMixer
   virtual ~AudioRendererMixer();
 
   // Add or remove a mixer input from mixing; called by AudioRendererMixerInput.
-  void AddMixerInput(AudioConverter::InputCallback* input,
-                     const base::Closure& error_cb);
+  void AddMixerInput(AudioConverter::InputCallback* input);
   void RemoveMixerInput(AudioConverter::InputCallback* input);
+
+  // Since errors may occur even when no inputs are playing, an error callback
+  // must be registered separately from adding a mixer input.  The same callback
+  // must be given to both the functions.
+  void AddErrorCallback(const base::Closure& error_cb);
+  void RemoveErrorCallback(const base::Closure& error_cb);
 
   void set_pause_delay_for_testing(base::TimeDelta delay) {
     pause_delay_ = delay;
@@ -43,12 +48,12 @@ class MEDIA_EXPORT AudioRendererMixer
   // Output sink for this mixer.
   scoped_refptr<AudioRendererSink> audio_sink_;
 
-  // Set of mixer inputs to be mixed by this mixer.  Access is thread-safe
-  // through |mixer_inputs_lock_|.
-  typedef std::map<AudioConverter::InputCallback*, base::Closure>
-      AudioRendererMixerInputSet;
-  AudioRendererMixerInputSet mixer_inputs_;
-  base::Lock mixer_inputs_lock_;
+  // ---------------[ All variables below protected by |lock_| ]---------------
+  base::Lock lock_;
+
+  // List of error callbacks used by this mixer.
+  typedef std::list<base::Closure> ErrorCallbackList;
+  ErrorCallbackList error_callbacks_;
 
   // Handles mixing and resampling between input and output parameters.
   AudioConverter audio_converter_;

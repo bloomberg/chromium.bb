@@ -29,44 +29,57 @@ AudioRendererMixer::~AudioRendererMixer() {
   // AudioRendererSinks must be stopped before being destructed.
   audio_sink_->Stop();
 
-  // Ensures that all mixer inputs have stopped themselves prior to destruction
-  // and have called RemoveMixerInput().
-  DCHECK_EQ(mixer_inputs_.size(), 0U);
+  // Ensure that all mixer inputs have removed themselves prior to destruction.
+  DCHECK(audio_converter_.empty());
+  DCHECK_EQ(error_callbacks_.size(), 0U);
 }
 
-void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input,
-                                       const base::Closure& error_cb) {
-  base::AutoLock auto_lock(mixer_inputs_lock_);
-
+void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input) {
+  base::AutoLock auto_lock(lock_);
   if (!playing_) {
     playing_ = true;
     last_play_time_ = base::TimeTicks::Now();
     audio_sink_->Play();
   }
 
-  DCHECK(mixer_inputs_.find(input) == mixer_inputs_.end());
-  mixer_inputs_[input] = error_cb;
   audio_converter_.AddInput(input);
 }
 
 void AudioRendererMixer::RemoveMixerInput(
     AudioConverter::InputCallback* input) {
-  base::AutoLock auto_lock(mixer_inputs_lock_);
+  base::AutoLock auto_lock(lock_);
   audio_converter_.RemoveInput(input);
+}
 
-  DCHECK(mixer_inputs_.find(input) != mixer_inputs_.end());
-  mixer_inputs_.erase(input);
+void AudioRendererMixer::AddErrorCallback(const base::Closure& error_cb) {
+  base::AutoLock auto_lock(lock_);
+  error_callbacks_.push_back(error_cb);
+}
+
+void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
+  base::AutoLock auto_lock(lock_);
+  for (ErrorCallbackList::iterator it = error_callbacks_.begin();
+       it != error_callbacks_.end();
+       ++it) {
+    if (it->Equals(error_cb)) {
+      error_callbacks_.erase(it);
+      return;
+    }
+  }
+
+  // An error callback should always exist when called.
+  NOTREACHED();
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                int audio_delay_milliseconds) {
-  base::AutoLock auto_lock(mixer_inputs_lock_);
+  base::AutoLock auto_lock(lock_);
 
   // If there are no mixer inputs and we haven't seen one for a while, pause the
   // sink to avoid wasting resources when media elements are present but remain
   // in the pause state.
   const base::TimeTicks now = base::TimeTicks::Now();
-  if (!mixer_inputs_.empty()) {
+  if (!audio_converter_.empty()) {
     last_play_time_ = now;
   } else if (now - last_play_time_ >= pause_delay_ && playing_) {
     audio_sink_->Pause();
@@ -79,12 +92,12 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
 }
 
 void AudioRendererMixer::OnRenderError() {
-  base::AutoLock auto_lock(mixer_inputs_lock_);
-
   // Call each mixer input and signal an error.
-  for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
-       it != mixer_inputs_.end(); ++it) {
-    it->second.Run();
+  base::AutoLock auto_lock(lock_);
+  for (ErrorCallbackList::const_iterator it = error_callbacks_.begin();
+       it != error_callbacks_.end();
+       ++it) {
+    it->Run();
   }
 }
 

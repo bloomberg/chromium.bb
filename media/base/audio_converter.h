@@ -90,6 +90,8 @@ class MEDIA_EXPORT AudioConverter {
   // to each input's ProvideInput for more data.
   int ChunkSize() const;
 
+  bool empty() const { return transform_inputs_.empty(); }
+
  private:
   // Provides input to the MultiChannelResampler.  Called by the resampler when
   // more data is necessary.
