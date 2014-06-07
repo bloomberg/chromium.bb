@@ -61,23 +61,23 @@ bool IsTheHotNewBubbleUIEnabled() {
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 // static
-void
-ChromePasswordManagerClient::CreateForWebContentsWithAutofillManagerDelegate(
+void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
     content::WebContents* contents,
-    autofill::AutofillManagerDelegate* delegate) {
+    autofill::AutofillClient* autofill_client) {
   if (FromWebContents(contents))
     return;
 
-  contents->SetUserData(UserDataKey(),
-                        new ChromePasswordManagerClient(contents, delegate));
+  contents->SetUserData(
+      UserDataKey(),
+      new ChromePasswordManagerClient(contents, autofill_client));
 }
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents,
-    autofill::AutofillManagerDelegate* autofill_manager_delegate)
+    autofill::AutofillClient* autofill_client)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      driver_(web_contents, this, autofill_manager_delegate),
+      driver_(web_contents, this, autofill_client),
       observer_(NULL),
       weak_factory_(this),
       can_use_log_router_(false) {

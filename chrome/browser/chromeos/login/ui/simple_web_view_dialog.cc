@@ -14,7 +14,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
@@ -154,9 +154,9 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
   DCHECK(web_contents);
 
   // Create the password manager that is needed for the proxy.
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillManagerDelegate(
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents));
+      autofill::ChromeAutofillClient::FromWebContents(web_contents));
 }
 
 void SimpleWebViewDialog::Init() {

@@ -9,9 +9,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -36,14 +36,14 @@ bool IsTextField(const FormFieldData& field) {
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     AutofillDriver* driver,
-    AutofillManagerDelegate* manager_delegate)
+    AutofillClient* autofill_client)
     : driver_(driver),
-      database_(manager_delegate->GetDatabase()),
+      database_(autofill_client->GetDatabase()),
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL),
-      manager_delegate_(manager_delegate) {
-  DCHECK(manager_delegate_);
+      autofill_client_(autofill_client) {
+  DCHECK(autofill_client_);
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
@@ -56,7 +56,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   DCHECK(pending_query_handle_);
   pending_query_handle_ = 0;
 
-  if (!manager_delegate_->IsAutocompleteEnabled()) {
+  if (!autofill_client_->IsAutocompleteEnabled()) {
     SendSuggestions(NULL);
     return;
   }
@@ -93,7 +93,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   autofill_labels_ = autofill_labels;
   autofill_icons_ = autofill_icons;
   autofill_unique_ids_ = autofill_unique_ids;
-  if (!manager_delegate_->IsAutocompleteEnabled() ||
+  if (!autofill_client_->IsAutocompleteEnabled() ||
       form_control_type == "textarea") {
     SendSuggestions(NULL);
     return;
@@ -106,7 +106,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 }
 
 void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
-  if (!manager_delegate_->IsAutocompleteEnabled())
+  if (!autofill_client_->IsAutocompleteEnabled())
     return;
 
   if (driver_->IsOffTheRecord())

@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 
@@ -23,9 +23,8 @@ class PasswordManagerClient;
 // This class is responsible for filling password forms.
 class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
  public:
-  PasswordAutofillManager(
-      PasswordManagerClient* password_manager_client,
-      autofill::AutofillManagerDelegate* autofill_manager_delegate);
+  PasswordAutofillManager(PasswordManagerClient* password_manager_client,
+                          autofill::AutofillClient* autofill_client);
   virtual ~PasswordAutofillManager();
 
   // AutofillPopupDelegate implementation.
@@ -95,7 +94,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Provides embedder-level operations on passwords. Must outlive |this|.
   PasswordManagerClient* const password_manager_client_;  // weak
 
-  autofill::AutofillManagerDelegate* const autofill_manager_delegate_;  // weak
+  autofill::AutofillClient* const autofill_client_;  // weak
 
   // The form field on which the autofill popup is shown.
   autofill::FormFieldData form_field_;

@@ -17,9 +17,9 @@ namespace password_manager {
 
 PasswordAutofillManager::PasswordAutofillManager(
     PasswordManagerClient* password_manager_client,
-    autofill::AutofillManagerDelegate* autofill_manager_delegate)
+    autofill::AutofillClient* autofill_client)
     : password_manager_client_(password_manager_client),
-      autofill_manager_delegate_(autofill_manager_delegate),
+      autofill_client_(autofill_client),
       weak_ptr_factory_(this) {
 }
 
@@ -77,21 +77,20 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   form_field_ = field;
 
   if (suggestions.empty()) {
-    autofill_manager_delegate_->HideAutofillPopup();
+    autofill_client_->HideAutofillPopup();
     return;
   }
 
   std::vector<base::string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
-  autofill_manager_delegate_->ShowAutofillPopup(
-      bounds,
-      field.text_direction,
-      suggestions,
-      realms,
-      empty,
-      password_ids,
-      weak_ptr_factory_.GetWeakPtr());
+  autofill_client_->ShowAutofillPopup(bounds,
+                                      field.text_direction,
+                                      suggestions,
+                                      realms,
+                                      empty,
+                                      password_ids,
+                                      weak_ptr_factory_.GetWeakPtr());
 }
 
 void PasswordAutofillManager::Reset() {
@@ -127,7 +126,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier) {
   bool success = FillSuggestion(form_field_, value);
   DCHECK(success);
-  autofill_manager_delegate_->HideAutofillPopup();
+  autofill_client_->HideAutofillPopup();
 }
 
 void PasswordAutofillManager::RemoveSuggestion(const base::string16& value,

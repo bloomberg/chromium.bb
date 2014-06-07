@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/browser_context.h"
@@ -38,8 +38,8 @@ const AutofillManager::AutofillDownloadManagerState kDownloadState =
 
 class MockAutofillManager : public AutofillManager {
  public:
-  MockAutofillManager(AutofillDriver* driver, AutofillManagerDelegate* delegate)
-      : AutofillManager(driver, delegate, kAppLocale, kDownloadState) {}
+  MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
+      : AutofillManager(driver, client, kAppLocale, kDownloadState) {}
   virtual ~MockAutofillManager() {}
 
   MOCK_METHOD0(Reset, void());
@@ -48,10 +48,10 @@ class MockAutofillManager : public AutofillManager {
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::WebContents* contents,
-                            AutofillManagerDelegate* delegate)
-      : ContentAutofillDriver(contents, delegate, kAppLocale, kDownloadState) {
+                            AutofillClient* client)
+      : ContentAutofillDriver(contents, client, kAppLocale, kDownloadState) {
     scoped_ptr<AutofillManager> autofill_manager(
-        new MockAutofillManager(this, delegate));
+        new MockAutofillManager(this, client));
     SetAutofillManager(autofill_manager.Pass());
   }
   virtual ~TestContentAutofillDriver() {}
@@ -68,9 +68,9 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     content::RenderViewHostTestHarness::SetUp();
 
-    test_manager_delegate_.reset(new TestAutofillManagerDelegate());
+    test_autofill_client_.reset(new TestAutofillClient());
     driver_.reset(new TestContentAutofillDriver(web_contents(),
-                                                test_manager_delegate_.get()));
+                                                test_autofill_client_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -191,7 +191,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     return true;
   }
 
-  scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
+  scoped_ptr<TestAutofillClient> test_autofill_client_;
   scoped_ptr<TestContentAutofillDriver> driver_;
 };
 

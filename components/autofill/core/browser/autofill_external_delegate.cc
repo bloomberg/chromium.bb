@@ -133,20 +133,19 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
-    manager_->delegate()->HideAutofillPopup();
+    manager_->client()->HideAutofillPopup();
     return;
   }
 
   // Send to display.
   if (query_field_.is_focusable) {
-    manager_->delegate()->ShowAutofillPopup(
-        element_bounds_,
-        query_field_.text_direction,
-        values,
-        labels,
-        icons,
-        ids,
-        GetWeakPtr());
+    manager_->client()->ShowAutofillPopup(element_bounds_,
+                                          query_field_.text_direction,
+                                          values,
+                                          labels,
+                                          icons,
+                                          ids,
+                                          GetWeakPtr());
   }
 }
 
@@ -156,9 +155,8 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
 
-  manager_->delegate()->UpdateAutofillPopupDataListValues(
-      data_list_values,
-      data_list_labels);
+  manager_->client()->UpdateAutofillPopupDataListValues(data_list_values,
+                                                        data_list_labels);
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
@@ -235,7 +233,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     FillAutofillFormData(identifier, false);
   }
 
-  manager_->delegate()->HideAutofillPopup();
+  manager_->client()->HideAutofillPopup();
 }
 
 void AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
@@ -247,7 +245,7 @@ void AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  manager_->delegate()->HideAutofillPopup();
+  manager_->client()->HideAutofillPopup();
 
   has_shown_popup_for_current_edit_ = false;
 }
@@ -257,7 +255,7 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 }
 
 void AutofillExternalDelegate::Reset() {
-  manager_->delegate()->HideAutofillPopup();
+  manager_->client()->HideAutofillPopup();
 }
 
 void AutofillExternalDelegate::OnPingAck() {

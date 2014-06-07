@@ -27,9 +27,9 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -359,9 +359,8 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 
 class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
  public:
-  MockAutocompleteHistoryManager(AutofillDriver* driver,
-                                 AutofillManagerDelegate* delegate)
-      : AutocompleteHistoryManager(driver, delegate) {}
+  MockAutocompleteHistoryManager(AutofillDriver* driver, AutofillClient* client)
+      : AutocompleteHistoryManager(driver, client) {}
 
   MOCK_METHOD1(OnFormSubmitted, void(const FormData& form));
 
@@ -385,9 +384,9 @@ class MockAutofillDriver : public TestAutofillDriver {
 class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(AutofillDriver* driver,
-                      autofill::AutofillManagerDelegate* delegate,
+                      autofill::AutofillClient* client,
                       TestPersonalDataManager* personal_data)
-      : AutofillManager(driver, delegate, personal_data),
+      : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
@@ -587,12 +586,12 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 class AutofillManagerTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    autofill_delegate_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_.set_database(autofill_delegate_.GetDatabase());
-    personal_data_.SetPrefService(autofill_delegate_.GetPrefs());
+    autofill_client_.SetPrefs(test::PrefServiceForTesting());
+    personal_data_.set_database(autofill_client_.GetDatabase());
+    personal_data_.SetPrefService(autofill_client_.GetPrefs());
     autofill_driver_.reset(new MockAutofillDriver());
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_delegate_, &personal_data_));
+        autofill_driver_.get(), &autofill_client_, &personal_data_));
 
     external_delegate_.reset(new TestAutofillExternalDelegate(
         autofill_manager_.get(),
@@ -674,7 +673,7 @@ class AutofillManagerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  TestAutofillManagerDelegate autofill_delegate_;
+  TestAutofillClient autofill_client_;
   scoped_ptr<MockAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
@@ -1553,10 +1552,10 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   personal_data_.ClearAutofillProfiles();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  autofill_delegate_.GetPrefs()->SetBoolean(
+  autofill_client_.GetPrefs()->SetBoolean(
       ::autofill::prefs::kAutofillUseMacAddressBook, true);
 #else
-  autofill_delegate_.GetPrefs()->SetBoolean(
+  autofill_client_.GetPrefs()->SetBoolean(
       ::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
@@ -2314,15 +2313,13 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
 // Test that when Autocomplete is enabled and Autofill is disabled,
 // form submissions are still received by AutocompleteHistoryManager.
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
-  TestAutofillManagerDelegate delegate;
-  autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(),
-      &delegate,
-      NULL));
+  TestAutofillClient client;
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
   autofill_manager_->set_autofill_enabled(false);
   scoped_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager;
   autocomplete_history_manager.reset(
-      new MockAutocompleteHistoryManager(autofill_driver_.get(), &delegate));
+      new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
   autofill_manager_->autocomplete_history_manager_ =
       autocomplete_history_manager.Pass();
 
@@ -2341,11 +2338,9 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 // Test that when Autocomplete is enabled and Autofill is disabled,
 // Autocomplete suggestions are still received.
 TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
-  TestAutofillManagerDelegate delegate;
-  autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(),
-      &delegate,
-      NULL));
+  TestAutofillClient client;
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -2482,7 +2477,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // Checks that resetting the auxiliary profile enabled preference does the right
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
-  PrefService* prefs = autofill_delegate_.GetPrefs();
+  PrefService* prefs = autofill_client_.GetPrefs();
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Auxiliary profiles is implemented on Mac and Android only.
   // OSX: This preference exists for legacy reasons. It is no longer used.
@@ -2842,11 +2837,11 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
 
 namespace {
 
-class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
+class MockAutofillClient : public TestAutofillClient {
  public:
-  MockAutofillManagerDelegate() {}
+  MockAutofillClient() {}
 
-  virtual ~MockAutofillManagerDelegate() {}
+  virtual ~MockAutofillClient() {}
 
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
@@ -2865,7 +2860,7 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  private:
   scoped_ptr<FormStructure> user_supplied_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
 }  // namespace

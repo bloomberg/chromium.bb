@@ -220,7 +220,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     content::WebContents* web_contents = GetWebContents();
     AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(
                                             web_contents)->autofill_manager();
-    autofill_manager->delegate()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup();
   }
 
   PersonalDataManager* GetPersonalDataManager() {

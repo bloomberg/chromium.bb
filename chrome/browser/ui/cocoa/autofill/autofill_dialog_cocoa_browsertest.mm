@@ -22,9 +22,10 @@ namespace autofill {
 
 namespace {
 
-void MockCallback(AutofillManagerDelegate::RequestAutocompleteResult result,
+void MockCallback(AutofillClient::RequestAutocompleteResult result,
                   const base::string16&,
-                  const FormStructure*) {}
+                  const FormStructure*) {
+}
 
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:

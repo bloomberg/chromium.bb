@@ -182,7 +182,7 @@ base::WeakPtr<AutofillDialogController> AutofillDialogControllerAndroid::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const AutofillManagerDelegate::ResultCallback& callback) {
+    const AutofillClient::ResultCallback& callback) {
   // AutofillDialogControllerAndroid owns itself.
   AutofillDialogControllerAndroid* autofill_dialog_controller =
       new AutofillDialogControllerAndroid(contents,
@@ -199,7 +199,7 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const AutofillManagerDelegate::ResultCallback& callback) {
+    const AutofillClient::ResultCallback& callback) {
   return AutofillDialogControllerAndroid::Create(contents,
                                                  form_structure,
                                                  source_url,
@@ -244,7 +244,7 @@ void AutofillDialogControllerAndroid::Show() {
           env,
           invoked_from_same_origin_)) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+        AutofillClient::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Cross-origin form invocations are not supported."),
         NULL);
     delete this;
@@ -261,7 +261,7 @@ void AutofillDialogControllerAndroid::Show() {
   // if the dialog shouldn't be shown in a given circumstances.
   if (!has_types) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+        AutofillClient::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is missing autocomplete attributes."),
         NULL);
     delete this;
@@ -281,7 +281,7 @@ void AutofillDialogControllerAndroid::Show() {
 
   if (!has_credit_card_field) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+        AutofillClient::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is not a payment form (must contain "
                            "some autocomplete=\"cc-*\" fields). "),
         NULL);
@@ -432,7 +432,7 @@ bool AutofillDialogControllerAndroid::
 void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
                                                    jobject obj) {
   LogOnCancelMetrics();
-  callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorCancel,
+  callback_.Run(AutofillClient::AutocompleteResultErrorCancel,
                 base::string16(),
                 NULL);
 }
@@ -490,7 +490,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
   LogOnFinishSubmitMetrics();
 
   // Callback should be called as late as possible.
-  callback_.Run(AutofillManagerDelegate::AutocompleteResultSuccess,
+  callback_.Run(AutofillClient::AutocompleteResultSuccess,
                 base::string16(),
                 &form_structure_);
 
@@ -502,7 +502,7 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const AutofillManagerDelegate::ResultCallback& callback)
+    const AutofillClient::ResultCallback& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),

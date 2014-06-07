@@ -24,7 +24,7 @@
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -87,7 +87,7 @@ class AutofillDialogControllerImpl
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const AutofillManagerDelegate::ResultCallback& callback);
+      const AutofillClient::ResultCallback& callback);
 
   // AutofillDialogController implementation.
   virtual void Show() OVERRIDE;
@@ -233,11 +233,10 @@ class AutofillDialogControllerImpl
   };
 
   // Exposed for testing.
-  AutofillDialogControllerImpl(
-      content::WebContents* contents,
-      const FormData& form_structure,
-      const GURL& source_url,
-      const AutofillManagerDelegate::ResultCallback& callback);
+  AutofillDialogControllerImpl(content::WebContents* contents,
+                               const FormData& form_structure,
+                               const GURL& source_url,
+                               const AutofillClient::ResultCallback& callback);
 
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
@@ -640,7 +639,7 @@ class AutofillDialogControllerImpl
   GURL source_url_;
 
   // The callback via which we return the collected data.
-  AutofillManagerDelegate::ResultCallback callback_;
+  AutofillClient::ResultCallback callback_;
 
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.

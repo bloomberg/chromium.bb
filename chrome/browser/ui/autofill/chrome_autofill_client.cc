@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -30,18 +30,16 @@
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::TabAutofillManagerDelegate);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 
 namespace autofill {
 
-TabAutofillManagerDelegate::TabAutofillManagerDelegate(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents) {
+ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents), web_contents_(web_contents) {
   DCHECK(web_contents);
 }
 
-TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
+ChromeAutofillClient::~ChromeAutofillClient() {
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
   // requires that the WebContents instance still be valid and it is not at
   // this point (in particular, the WebContentsImpl destructor has already
@@ -49,32 +47,31 @@ TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
   DCHECK(!popup_controller_);
 }
 
-void TabAutofillManagerDelegate::TabActivated() {
+void ChromeAutofillClient::TabActivated() {
   if (dialog_controller_.get())
     dialog_controller_->TabActivated();
 }
 
-PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
+PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   return PersonalDataManagerFactory::GetForProfile(
       profile->GetOriginalProfile());
 }
 
-scoped_refptr<AutofillWebDataService>
-    TabAutofillManagerDelegate::GetDatabase() {
+scoped_refptr<AutofillWebDataService> ChromeAutofillClient::GetDatabase() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, Profile::EXPLICIT_ACCESS);
 }
 
-PrefService* TabAutofillManagerDelegate::GetPrefs() {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
-      GetPrefs();
+PrefService* ChromeAutofillClient::GetPrefs() {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+      ->GetPrefs();
 }
 
-void TabAutofillManagerDelegate::ShowAutofillSettings() {
+void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
@@ -84,7 +81,7 @@ void TabAutofillManagerDelegate::ShowAutofillSettings() {
 #endif  // #if defined(OS_ANDROID)
 }
 
-void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
+void ChromeAutofillClient::ConfirmSaveCreditCard(
     const AutofillMetrics& metric_logger,
     const base::Closure& save_card_callback) {
   InfoBarService* infobar_service =
@@ -93,27 +90,25 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
       infobar_service, &metric_logger, save_card_callback);
 }
 
-void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
+void ChromeAutofillClient::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
     const ResultCallback& callback) {
   HideRequestAutocompleteDialog();
 
-  dialog_controller_ = AutofillDialogController::Create(web_contents_,
-                                                        form,
-                                                        source_url,
-                                                        callback);
+  dialog_controller_ = AutofillDialogController::Create(
+      web_contents_, form, source_url, callback);
   if (dialog_controller_) {
     dialog_controller_->Show();
   } else {
-    callback.Run(AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+    callback.Run(AutofillClient::AutocompleteResultErrorDisabled,
                  base::string16(),
                  NULL);
     NOTIMPLEMENTED();
   }
 }
 
-void TabAutofillManagerDelegate::ShowAutofillPopup(
+void ChromeAutofillClient::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
     const std::vector<base::string16>& values,
@@ -127,25 +122,25 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
       element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
-  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
-      popup_controller_,
-      delegate,
-      web_contents(),
-      web_contents()->GetNativeView(),
-      element_bounds_in_screen_space,
-      text_direction);
+  popup_controller_ =
+      AutofillPopupControllerImpl::GetOrCreate(popup_controller_,
+                                               delegate,
+                                               web_contents(),
+                                               web_contents()->GetNativeView(),
+                                               element_bounds_in_screen_space,
+                                               text_direction);
 
   popup_controller_->Show(values, labels, icons, identifiers);
 }
 
-void TabAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
+void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
   if (popup_controller_.get())
     popup_controller_->UpdateDataListValues(values, labels);
 }
 
-void TabAutofillManagerDelegate::HideAutofillPopup() {
+void ChromeAutofillClient::HideAutofillPopup() {
   if (popup_controller_.get())
     popup_controller_->Hide();
 
@@ -157,21 +152,21 @@ void TabAutofillManagerDelegate::HideAutofillPopup() {
     password_client->HidePasswordGenerationPopup();
 }
 
-bool TabAutofillManagerDelegate::IsAutocompleteEnabled() {
+bool ChromeAutofillClient::IsAutocompleteEnabled() {
   // For browser, Autocomplete is always enabled as part of Autofill.
   return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
-void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
+void ChromeAutofillClient::HideRequestAutocompleteDialog() {
   if (dialog_controller_.get())
     dialog_controller_->Hide();
 }
 
-void TabAutofillManagerDelegate::WebContentsDestroyed() {
+void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup();
 }
 
-void TabAutofillManagerDelegate::DetectAccountCreationForms(
+void ChromeAutofillClient::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
   password_manager::PasswordGenerationManager* manager =
       ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
@@ -180,12 +175,12 @@ void TabAutofillManagerDelegate::DetectAccountCreationForms(
     manager->DetectAccountCreationForms(forms);
 }
 
-void TabAutofillManagerDelegate::DidFillOrPreviewField(
+void ChromeAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {
 #if defined(OS_ANDROID)
-  AutofillLoggerAndroid::DidFillOrPreviewField(
-      autofilled_value, profile_full_name);
+  AutofillLoggerAndroid::DidFillOrPreviewField(autofilled_value,
+                                               profile_full_name);
 #endif  // defined(OS_ANDROID)
 }
 

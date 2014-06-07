@@ -21,10 +21,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -140,7 +140,7 @@ void DeterminePossibleFieldTypesForUpload(
 
     // If it's a password field, set the type directly.
     if (field->form_control_type == "password") {
-      matching_types.insert(autofill::PASSWORD);
+      matching_types.insert(PASSWORD);
     } else {
       base::string16 value;
       base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
@@ -165,15 +165,15 @@ void DeterminePossibleFieldTypesForUpload(
 
 AutofillManager::AutofillManager(
     AutofillDriver* driver,
-    autofill::AutofillManagerDelegate* delegate,
+    AutofillClient* client,
     const std::string& app_locale,
     AutofillDownloadManagerState enable_download_manager)
     : driver_(driver),
-      manager_delegate_(delegate),
+      client_(client),
       app_locale_(app_locale),
-      personal_data_(delegate->GetPersonalDataManager()),
+      personal_data_(client->GetPersonalDataManager()),
       autocomplete_history_manager_(
-          new AutocompleteHistoryManager(driver, delegate)),
+          new AutocompleteHistoryManager(driver, client)),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
@@ -186,9 +186,7 @@ AutofillManager::AutofillManager(
       weak_ptr_factory_(this) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(
-        new AutofillDownloadManager(driver,
-                                    manager_delegate_->GetPrefs(),
-                                    this));
+        new AutofillDownloadManager(driver, client_->GetPrefs(), this));
   }
 }
 
@@ -280,7 +278,7 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
 }
 
 void AutofillManager::ShowAutofillSettings() {
-  manager_delegate_->ShowAutofillSettings();
+  client_->ShowAutofillSettings();
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -572,7 +570,7 @@ void AutofillManager::FillOrPreviewForm(
           autofill_field->is_autofilled = true;
 
           if (!is_credit_card && !value.empty())
-            manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+            client_->DidFillOrPreviewField(value, profile_full_name);
         }
         break;
       }
@@ -629,7 +627,7 @@ void AutofillManager::FillOrPreviewForm(
         result.fields[i].is_autofilled = true;
 
         if (should_notify)
-          manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
+          client_->DidFillOrPreviewField(value, profile_full_name);
       }
     }
   }
@@ -681,7 +679,7 @@ void AutofillManager::OnHidePopup() {
   if (!IsAutofillEnabled())
     return;
 
-  manager_delegate_->HideAutofillPopup();
+  client_->HideAutofillPopup();
 }
 
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
@@ -712,8 +710,7 @@ const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
   return form_structures_.get();
 }
 
-void AutofillManager::SetTestDelegate(
-    autofill::AutofillManagerTestDelegate* delegate) {
+void AutofillManager::SetTestDelegate(AutofillManagerTestDelegate* delegate) {
   test_delegate_ = delegate;
 }
 
@@ -736,7 +733,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
-  manager_delegate_->DetectAccountCreationForms(form_structures_.get());
+  client_->DetectAccountCreationForms(form_structures_.get());
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
@@ -747,7 +744,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return manager_delegate_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return client_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
@@ -758,11 +755,12 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // If credit card information was submitted, we need to confirm whether to
   // save it.
   if (imported_credit_card) {
-    manager_delegate_->ConfirmSaveCreditCard(
+    client_->ConfirmSaveCreditCard(
         *metric_logger_,
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-            base::Unretained(personal_data_), *imported_credit_card));
+            base::Unretained(personal_data_),
+            *imported_credit_card));
   }
 }
 
@@ -805,7 +803,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
   // contains a password field it will be uploaded to the server. If
   // |submitted_form| doesn't contain a password field, there is no side
   // effect from adding PASSWORD to |non_empty_types|.
-  non_empty_types.insert(autofill::PASSWORD);
+  non_empty_types.insert(PASSWORD);
 
   download_manager_->StartUploadRequest(submitted_form, was_autofilled,
                                         non_empty_types);
@@ -870,14 +868,14 @@ void AutofillManager::Reset() {
 }
 
 AutofillManager::AutofillManager(AutofillDriver* driver,
-                                 autofill::AutofillManagerDelegate* delegate,
+                                 AutofillClient* client,
                                  PersonalDataManager* personal_data)
     : driver_(driver),
-      manager_delegate_(delegate),
+      client_(client),
       app_locale_("en-US"),
       personal_data_(personal_data),
       autocomplete_history_manager_(
-          new AutocompleteHistoryManager(driver, delegate)),
+          new AutocompleteHistoryManager(driver, client)),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
@@ -889,7 +887,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       test_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(driver_);
-  DCHECK(manager_delegate_);
+  DCHECK(client_);
 }
 
 void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {

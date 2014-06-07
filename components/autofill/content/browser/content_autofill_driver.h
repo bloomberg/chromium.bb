@@ -26,7 +26,7 @@ class Message;
 namespace autofill {
 
 class AutofillContext;
-class AutofillManagerDelegate;
+class AutofillClient;
 
 // Class that drives autofill flow in the browser process based on
 // communication from the renderer and from the external world. There is one
@@ -37,7 +37,7 @@ class ContentAutofillDriver : public AutofillDriver,
  public:
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
-      autofill::AutofillManagerDelegate* delegate,
+      AutofillClient* client,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   static ContentAutofillDriver* FromWebContents(content::WebContents* contents);
@@ -74,7 +74,7 @@ class ContentAutofillDriver : public AutofillDriver,
  protected:
   ContentAutofillDriver(
       content::WebContents* web_contents,
-      autofill::AutofillManagerDelegate* delegate,
+      AutofillClient* client,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   virtual ~ContentAutofillDriver();

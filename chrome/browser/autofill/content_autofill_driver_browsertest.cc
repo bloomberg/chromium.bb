@@ -12,7 +12,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -26,11 +26,10 @@
 namespace autofill {
 namespace {
 
-class MockAutofillManagerDelegate
-    : public autofill::TestAutofillManagerDelegate {
+class MockAutofillClient : public TestAutofillClient {
  public:
-  MockAutofillManagerDelegate() {}
-  virtual ~MockAutofillManagerDelegate() {}
+  MockAutofillClient() {}
+  virtual ~MockAutofillClient() {}
 
   virtual PrefService* GetPrefs() { return &prefs_; }
 
@@ -52,7 +51,7 @@ class MockAutofillManagerDelegate
  private:
   TestingPrefServiceSyncable prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
 // Subclass ContentAutofillDriver so we can create an ContentAutofillDriver
@@ -60,10 +59,10 @@ class MockAutofillManagerDelegate
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::WebContents* web_contents,
-                            AutofillManagerDelegate* delegate)
+                            AutofillClient* client)
       : ContentAutofillDriver(
             web_contents,
-            delegate,
+            client,
             g_browser_process->GetApplicationLocale(),
             AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
   virtual ~TestContentAutofillDriver() {}
@@ -85,10 +84,10 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents != NULL);
     Observe(web_contents);
-    AutofillManager::RegisterProfilePrefs(manager_delegate_.GetPrefRegistry());
+    AutofillManager::RegisterProfilePrefs(autofill_client_.GetPrefRegistry());
 
     autofill_driver_.reset(
-        new TestContentAutofillDriver(web_contents, &manager_delegate_));
+        new TestContentAutofillDriver(web_contents, &autofill_client_));
   }
 
   // Normally the WebContents will automatically delete the driver, but here
@@ -114,7 +113,7 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   base::Closure web_contents_hidden_callback_;
   base::Closure nav_entry_committed_callback_;
 
-  testing::NiceMock<MockAutofillManagerDelegate> manager_delegate_;
+  testing::NiceMock<MockAutofillClient> autofill_client_;
   scoped_ptr<TestContentAutofillDriver> autofill_driver_;
 };
 
@@ -122,8 +121,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
-  EXPECT_CALL(manager_delegate_, HideAutofillPopup())
-      .Times(testing::AtLeast(1));
+  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(testing::AtLeast(1));
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
@@ -139,8 +137,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
-  EXPECT_CALL(manager_delegate_, HideAutofillPopup())
-      .Times(testing::AtLeast(1));
+  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(testing::AtLeast(1));
 
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;

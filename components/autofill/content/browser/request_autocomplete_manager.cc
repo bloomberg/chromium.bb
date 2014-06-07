@@ -19,15 +19,15 @@ namespace autofill {
 namespace {
 
 blink::WebFormElement::AutocompleteResult ToWebkitAutocompleteResult(
-    AutofillManagerDelegate::RequestAutocompleteResult result) {
+    AutofillClient::RequestAutocompleteResult result) {
   switch(result) {
-    case AutofillManagerDelegate::AutocompleteResultSuccess:
+    case AutofillClient::AutocompleteResultSuccess:
       return blink::WebFormElement::AutocompleteResultSuccess;
-    case AutofillManagerDelegate::AutocompleteResultErrorDisabled:
+    case AutofillClient::AutocompleteResultErrorDisabled:
       return blink::WebFormElement::AutocompleteResultErrorDisabled;
-    case AutofillManagerDelegate::AutocompleteResultErrorCancel:
+    case AutofillClient::AutocompleteResultErrorCancel:
       return blink::WebFormElement::AutocompleteResultErrorCancel;
-    case AutofillManagerDelegate::AutocompleteResultErrorInvalid:
+    case AutofillClient::AutocompleteResultErrorInvalid:
       return blink::WebFormElement::AutocompleteResultErrorInvalid;
   }
 
@@ -51,19 +51,19 @@ void RequestAutocompleteManager::OnRequestAutocomplete(
   if (!IsValidFormData(form))
     return;
 
-  AutofillManagerDelegate::ResultCallback callback =
+  AutofillClient::ResultCallback callback =
       base::Bind(&RequestAutocompleteManager::ReturnAutocompleteResult,
                  weak_ptr_factory_.GetWeakPtr());
   ShowRequestAutocompleteDialog(form, frame_url, callback);
 }
 
 void RequestAutocompleteManager::OnCancelRequestAutocomplete() {
-  autofill_driver_->autofill_manager()->delegate()->
-      HideRequestAutocompleteDialog();
+  autofill_driver_->autofill_manager()->client()
+      ->HideRequestAutocompleteDialog();
 }
 
 void RequestAutocompleteManager::ReturnAutocompleteResult(
-    AutofillManagerDelegate::RequestAutocompleteResult result,
+    AutofillClient::RequestAutocompleteResult result,
     const base::string16& debug_message,
     const FormStructure* form_structure) {
   // autofill_driver_->GetWebContents() will be NULL when the interactive
@@ -95,10 +95,9 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
 void RequestAutocompleteManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    const AutofillManagerDelegate::ResultCallback& callback) {
-  AutofillManagerDelegate* delegate =
-      autofill_driver_->autofill_manager()->delegate();
-  delegate->ShowRequestAutocompleteDialog(form, source_url, callback);
+    const AutofillClient::ResultCallback& callback) {
+  AutofillClient* client = autofill_driver_->autofill_manager()->client();
+  client->ShowRequestAutocompleteDialog(form, source_url, callback);
 }
 
 }  // namespace autofill

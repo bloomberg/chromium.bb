@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_AUTOFILL_MANAGER_DELEGATE_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_AUTOFILL_MANAGER_DELEGATE_H_
+#ifndef ANDROID_WEBVIEW_NATIVE_AW_AUTOFILL_CLIENT_H_
+#define ANDROID_WEBVIEW_NATIVE_AW_AUTOFILL_CLIENT_H_
 
 #include <jni.h>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_factory.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -46,20 +46,18 @@ namespace android_webview {
 // context, we cannot enable this feature via UserPrefs. Rather, we always
 // keep the feature enabled at the pref service, and control it via
 // the delegates.
-class AwAutofillManagerDelegate
-    : public autofill::AutofillManagerDelegate,
-      public content::WebContentsUserData<AwAutofillManagerDelegate> {
-
+class AwAutofillClient : public autofill::AutofillClient,
+                         public content::WebContentsUserData<AwAutofillClient> {
  public:
-  virtual ~AwAutofillManagerDelegate();
+  virtual ~AwAutofillClient();
 
   void SetSaveFormData(bool enabled);
   bool GetSaveFormData();
 
-  // AutofillManagerDelegate implementation.
+  // AutofillClient:
   virtual autofill::PersonalDataManager* GetPersonalDataManager() OVERRIDE;
-  virtual scoped_refptr<autofill::AutofillWebDataService>
-      GetDatabase() OVERRIDE;
+  virtual scoped_refptr<autofill::AutofillWebDataService> GetDatabase()
+      OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
@@ -69,8 +67,7 @@ class AwAutofillManagerDelegate
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
       const GURL& source_url,
-      const ResultCallback& callback)
-      OVERRIDE;
+      const ResultCallback& callback) OVERRIDE;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -90,12 +87,11 @@ class AwAutofillManagerDelegate
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) OVERRIDE;
 
-  void SuggestionSelected(JNIEnv* env,
-                          jobject obj,
-                          jint position);
+  void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
+
  private:
-  AwAutofillManagerDelegate(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<AwAutofillManagerDelegate>;
+  AwAutofillClient(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<AwAutofillClient>;
 
   void ShowAutofillPopupImpl(const gfx::RectF& element_bounds,
                              const std::vector<base::string16>& values,
@@ -112,11 +108,11 @@ class AwAutofillManagerDelegate
   std::vector<int> identifiers_;
   base::WeakPtr<autofill::AutofillPopupDelegate> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AwAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);
 };
 
-bool RegisterAwAutofillManagerDelegate(JNIEnv* env);
+bool RegisterAwAutofillClient(JNIEnv* env);
 
 }  // namespace android_webview
 
-#endif // ANDROID_WEBVIEW_BROWSER_AW_AUTOFILL_MANAGER_DELEGATE_H_
+#endif  // ANDROID_WEBVIEW_NATIVE_AW_AUTOFILL_CLIENT_H_

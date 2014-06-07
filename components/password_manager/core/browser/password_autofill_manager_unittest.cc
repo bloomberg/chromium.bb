@@ -6,8 +6,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -51,8 +51,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordManagerDriver driver_;
 };
 
-class MockAutofillManagerDelegate
-    : public autofill::TestAutofillManagerDelegate {
+class MockAutofillClient : public autofill::TestAutofillClient {
  public:
   MOCK_METHOD7(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
@@ -87,9 +86,9 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   void InitializePasswordAutofillManager(
       PasswordManagerClient* client,
-      autofill::AutofillManagerDelegate* autofill_manager_delegate) {
+      autofill::AutofillClient* autofill_client) {
     password_autofill_manager_.reset(
-        new PasswordAutofillManager(client, autofill_manager_delegate));
+        new PasswordAutofillManager(client, autofill_client));
     password_autofill_manager_->OnAddPasswordFormMapping(username_field_,
                                                          fill_data_);
   }
@@ -164,9 +163,8 @@ TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
 // suggestions.
 TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
-  scoped_ptr<MockAutofillManagerDelegate> delegate(
-      new MockAutofillManagerDelegate);
-  InitializePasswordAutofillManager(client.get(), delegate.get());
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
   gfx::RectF element_bounds;
   std::vector<base::string16> suggestions;
@@ -175,17 +173,20 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   realms.push_back(base::ASCIIToUTF16("http://foo.com/"));
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
-  EXPECT_CALL(
-      *delegate,
-      ShowAutofillPopup(_, _, _, _, _,
-                        testing::ElementsAre(
-                            autofill::POPUP_ITEM_ID_PASSWORD_ENTRY),
-                        _));
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(
+                  _,
+                  _,
+                  _,
+                  _,
+                  _,
+                  testing::ElementsAre(autofill::POPUP_ITEM_ID_PASSWORD_ENTRY),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       username_field_, element_bounds, suggestions, realms);
 
   // Accepting a suggestion should trigger a call to hide the popup.
-  EXPECT_CALL(*delegate, HideAutofillPopup());
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       suggestions[0], autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
 }

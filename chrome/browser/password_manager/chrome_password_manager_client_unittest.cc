@@ -59,7 +59,7 @@ ChromePasswordManagerClientTest::ChromePasswordManagerClientTest()
 
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillManagerDelegate(
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), NULL);
   service_ = password_manager::PasswordManagerInternalsServiceFactory::
       GetForBrowserContext(profile());

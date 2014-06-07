@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
+#define CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -25,21 +25,20 @@ class AutofillDialogController;
 class AutofillPopupControllerImpl;
 struct FormData;
 
-// Chrome implementation of AutofillManagerDelegate.
-class TabAutofillManagerDelegate
-    : public AutofillManagerDelegate,
-      public content::WebContentsUserData<TabAutofillManagerDelegate>,
+// Chrome implementation of AutofillClient.
+class ChromeAutofillClient
+    : public AutofillClient,
+      public content::WebContentsUserData<ChromeAutofillClient>,
       public content::WebContentsObserver {
  public:
-  virtual ~TabAutofillManagerDelegate();
+  virtual ~ChromeAutofillClient();
 
   // Called when the tab corresponding to |this| instance is activated.
   void TabActivated();
 
-  // AutofillManagerDelegate implementation.
+  // AutofillClient:
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
-  virtual scoped_refptr<AutofillWebDataService>
-      GetDatabase() OVERRIDE;
+  virtual scoped_refptr<AutofillWebDataService> GetDatabase() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
@@ -82,16 +81,16 @@ class TabAutofillManagerDelegate
   }
 
  private:
-  explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
+  explicit ChromeAutofillClient(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<ChromeAutofillClient>;
 
   content::WebContents* const web_contents_;
   base::WeakPtr<AutofillDialogController> dialog_controller_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_

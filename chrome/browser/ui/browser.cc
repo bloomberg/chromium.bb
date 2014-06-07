@@ -85,7 +85,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
-#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -1034,8 +1034,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   if (instant_controller_)
     instant_controller_->ActiveTabChanged();
 
-  autofill::TabAutofillManagerDelegate::FromWebContents(new_contents)->
-      TabActivated();
+  autofill::ChromeAutofillClient::FromWebContents(new_contents)->TabActivated();
   SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
 }
 

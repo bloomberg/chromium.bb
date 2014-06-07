@@ -16,7 +16,7 @@ namespace autofill {
 
 class AutofillDriver;
 class AutofillExternalDelegate;
-class AutofillManagerDelegate;
+class AutofillClient;
 struct FormData;
 
 // Per-tab Autocomplete history manager. Handles receiving form data
@@ -25,7 +25,7 @@ struct FormData;
 class AutocompleteHistoryManager : public WebDataServiceConsumer {
  public:
   AutocompleteHistoryManager(AutofillDriver* driver,
-                             AutofillManagerDelegate* delegate);
+                             AutofillClient* autofill_client);
   virtual ~AutocompleteHistoryManager();
 
   // WebDataServiceConsumer implementation.
@@ -82,7 +82,7 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   AutofillExternalDelegate* external_delegate_;
 
   // Delegate to provide whether or not autocomplete functionality is enabled.
-  AutofillManagerDelegate* const manager_delegate_;
+  AutofillClient* const autofill_client_;
 
   // Whether IPC is sent.
   bool send_ipc_;

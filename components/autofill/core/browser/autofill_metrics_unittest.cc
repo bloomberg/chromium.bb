@@ -17,8 +17,8 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -165,9 +165,9 @@ class TestFormStructure : public FormStructure {
 class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(AutofillDriver* driver,
-                      AutofillManagerDelegate* manager_delegate,
+                      AutofillClient* autofill_client,
                       TestPersonalDataManager* personal_manager)
-      : AutofillManager(driver, manager_delegate, personal_manager),
+      : AutofillManager(driver, autofill_client, personal_manager),
         autofill_enabled_(true) {
     set_metric_logger(new testing::NiceMock<MockAutofillMetrics>);
   }
@@ -238,7 +238,7 @@ class AutofillMetricsTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  TestAutofillManagerDelegate manager_delegate_;
+  TestAutofillClient autofill_client_;
   scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
@@ -252,17 +252,17 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 }
 
 void AutofillMetricsTest::SetUp() {
-  manager_delegate_.SetPrefs(test::PrefServiceForTesting());
+  autofill_client_.SetPrefs(test::PrefServiceForTesting());
 
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-  test::DisableSystemServices(manager_delegate_.GetPrefs());
+  test::DisableSystemServices(autofill_client_.GetPrefs());
 
   personal_data_.reset(new TestPersonalDataManager());
-  personal_data_->set_database(manager_delegate_.GetDatabase());
-  personal_data_->SetPrefService(manager_delegate_.GetPrefs());
+  personal_data_->set_database(autofill_client_.GetDatabase());
+  personal_data_->SetPrefService(autofill_client_.GetPrefs());
   autofill_driver_.reset(new TestAutofillDriver());
   autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(), &manager_delegate_, personal_data_.get()));
+      autofill_driver_.get(), &autofill_client_, personal_data_.get()));
 
   external_delegate_.reset(new AutofillExternalDelegate(
       autofill_manager_.get(),
@@ -585,7 +585,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
   personal_data_->Init(
-      manager_delegate_.GetDatabase(), manager_delegate_.GetPrefs(), false);
+      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(), false);
 }
 
 // Test that we correctly log when Autofill is disabled.
@@ -594,7 +594,7 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);
   personal_data_->Init(
-      manager_delegate_.GetDatabase(), manager_delegate_.GetPrefs(), false);
+      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(), false);
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.

@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -70,16 +70,16 @@ void AutofillCCInfobarDelegateTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-  autofill::test::DisableSystemServices(profile()->GetPrefs());
+  test::DisableSystemServices(profile()->GetPrefs());
 
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
 
-  TabAutofillManagerDelegate::CreateForWebContents(web_contents());
-  autofill::TabAutofillManagerDelegate* manager_delegate =
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
+  ChromeAutofillClient::CreateForWebContents(web_contents());
+  ChromeAutofillClient* autofill_client =
+      ChromeAutofillClient::FromWebContents(web_contents());
 
   personal_data_.reset(new TestPersonalDataManager());
-  personal_data_->set_database(manager_delegate->GetDatabase());
+  personal_data_->set_database(autofill_client->GetDatabase());
   personal_data_->SetPrefService(profile()->GetPrefs());
 }
 

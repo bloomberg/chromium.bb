@@ -126,7 +126,7 @@ class AutofillTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(
                                             web_contents)->autofill_manager();
-    autofill_manager->delegate()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup();
   }
 
   PersonalDataManager* personal_data_manager() {

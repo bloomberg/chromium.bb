@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 
 class GURL;
 
@@ -36,7 +36,7 @@ class RequestAutocompleteManager {
   // |form_structure| containing the filled form data. |debug_message| will
   // be printed to the developer console.
   void ReturnAutocompleteResult(
-      AutofillManagerDelegate::RequestAutocompleteResult result,
+      AutofillClient::RequestAutocompleteResult result,
       const base::string16& debug_message,
       const FormStructure* form_structure);
 
@@ -45,7 +45,7 @@ class RequestAutocompleteManager {
   void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const AutofillManagerDelegate::ResultCallback& callback);
+      const AutofillClient::ResultCallback& callback);
 
   // The autofill driver owns and outlives |this|.
   ContentAutofillDriver* const autofill_driver_;  // weak.

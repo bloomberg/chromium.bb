@@ -24,11 +24,11 @@ namespace password_manager {
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::WebContents* web_contents,
     PasswordManagerClient* client,
-    autofill::AutofillManagerDelegate* autofill_manager_delegate)
+    autofill::AutofillClient* autofill_client)
     : WebContentsObserver(web_contents),
       password_manager_(client),
       password_generation_manager_(client),
-      password_autofill_manager_(client, autofill_manager_delegate) {
+      password_autofill_manager_(client, autofill_client) {
   DCHECK(web_contents);
 }
 

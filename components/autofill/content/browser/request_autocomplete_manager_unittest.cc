@@ -5,7 +5,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/common/autofill_messages.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,11 +20,9 @@ const AutofillManager::AutofillDownloadManagerState kDownloadState =
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillManagerDelegate* delegate)
-      : AutofillManager(driver, delegate, kAppLocale, kDownloadState),
-        autofill_enabled_(true) {
-  }
+  TestAutofillManager(AutofillDriver* driver, AutofillClient* client)
+      : AutofillManager(driver, client, kAppLocale, kDownloadState),
+        autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
 
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
@@ -39,47 +37,46 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
-class CustomTestAutofillManagerDelegate : public TestAutofillManagerDelegate {
-  public:
-    CustomTestAutofillManagerDelegate() : should_simulate_success_(true) {}
+class CustomTestAutofillClient : public TestAutofillClient {
+ public:
+  CustomTestAutofillClient() : should_simulate_success_(true) {}
 
-    virtual ~CustomTestAutofillManagerDelegate() {}
+  virtual ~CustomTestAutofillClient() {}
 
-    virtual void ShowRequestAutocompleteDialog(
-        const FormData& form,
-        const GURL& source_url,
-        const ResultCallback& callback) OVERRIDE {
-      if (should_simulate_success_) {
-        FormStructure form_structure(form);
-        callback.Run(AutocompleteResultSuccess,
-                     base::string16(),
-                     &form_structure);
-      } else {
-        callback.Run(AutofillManagerDelegate::AutocompleteResultErrorDisabled,
-                     base::string16(),
-                     NULL);
-      }
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const ResultCallback& callback) OVERRIDE {
+    if (should_simulate_success_) {
+      FormStructure form_structure(form);
+      callback.Run(
+          AutocompleteResultSuccess, base::string16(), &form_structure);
+    } else {
+      callback.Run(AutofillClient::AutocompleteResultErrorDisabled,
+                   base::string16(),
+                   NULL);
     }
+  }
 
-    void set_should_simulate_success(bool should_simulate_success) {
-      should_simulate_success_ = should_simulate_success;
-    }
+  void set_should_simulate_success(bool should_simulate_success) {
+    should_simulate_success_ = should_simulate_success;
+  }
 
-  private:
-    // Enable testing the path where a callback is called without a
-    // valid FormStructure.
-    bool should_simulate_success_;
+ private:
+  // Enable testing the path where a callback is called without a
+  // valid FormStructure.
+  bool should_simulate_success_;
 
-    DISALLOW_COPY_AND_ASSIGN(CustomTestAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CustomTestAutofillClient);
 };
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::WebContents* contents,
-                            AutofillManagerDelegate* delegate)
-      : ContentAutofillDriver(contents, delegate, kAppLocale, kDownloadState) {
+                            AutofillClient* client)
+      : ContentAutofillDriver(contents, client, kAppLocale, kDownloadState) {
     SetAutofillManager(make_scoped_ptr<AutofillManager>(
-        new TestAutofillManager(this, delegate)));
+        new TestAutofillManager(this, client)));
   }
   virtual ~TestContentAutofillDriver() {}
 
@@ -103,7 +100,7 @@ class RequestAutocompleteManagerTest :
     content::RenderViewHostTestHarness::SetUp();
 
     driver_.reset(
-        new TestContentAutofillDriver(web_contents(), &manager_delegate_));
+        new TestContentAutofillDriver(web_contents(), &autofill_client_));
     request_autocomplete_manager_.reset(
         new RequestAutocompleteManager(driver_.get()));
   }
@@ -136,7 +133,7 @@ class RequestAutocompleteManagerTest :
   }
 
  protected:
-  CustomTestAutofillManagerDelegate manager_delegate_;
+  CustomTestAutofillClient autofill_client_;
   scoped_ptr<TestContentAutofillDriver> driver_;
   scoped_ptr<RequestAutocompleteManager> request_autocomplete_manager_;
 
@@ -152,7 +149,7 @@ TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteSuccess) {
 
 TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteCancel) {
   blink::WebFormElement::AutocompleteResult result;
-  manager_delegate_.set_should_simulate_success(false);
+  autofill_client_.set_should_simulate_success(false);
   request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
   EXPECT_EQ(blink::WebFormElement::AutocompleteResultErrorDisabled, result);

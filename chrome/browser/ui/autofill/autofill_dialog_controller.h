@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/form_structure.h"
 
 class GURL;
@@ -37,7 +37,7 @@ class AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const AutofillManagerDelegate::ResultCallback& callback);
+      const AutofillClient::ResultCallback& callback);
 
   // Registers device preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);

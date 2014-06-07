@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_MANAGER_DELEGATE_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
 
 #include <vector>
 
@@ -33,38 +33,36 @@ class PersonalDataManager;
 struct FormData;
 struct PasswordForm;
 
-// A delegate interface that needs to be supplied to AutofillManager
-// by the embedder.
+// A client interface that needs to be supplied to the Autofill component by the
+// embedder.
 //
-// Each delegate instance is associated with a given context within
-// which an AutofillManager is used (e.g. a single tab), so when we
-// say "for the delegate" below, we mean "in the execution context the
-// delegate is associated with" (e.g. for the tab the AutofillManager is
-// attached to).
-class AutofillManagerDelegate {
+// Each client instance is associated with a given context within which an
+// AutofillManager is used (e.g. a single tab), so when we say "for the client"
+// below, we mean "in the execution context the client is associated with" (e.g.
+// for the tab the AutofillManager is attached to).
+class AutofillClient {
  public:
   // Copy of blink::WebFormElement::AutocompleteResult.
   enum RequestAutocompleteResult {
-      AutocompleteResultSuccess,
-      AutocompleteResultErrorDisabled,
-      AutocompleteResultErrorCancel,
-      AutocompleteResultErrorInvalid,
+    AutocompleteResultSuccess,
+    AutocompleteResultErrorDisabled,
+    AutocompleteResultErrorCancel,
+    AutocompleteResultErrorInvalid,
   };
 
-  typedef base::Callback<
-      void(RequestAutocompleteResult,
-           const base::string16&,
-           const FormStructure*)> ResultCallback;
+  typedef base::Callback<void(RequestAutocompleteResult,
+                              const base::string16&,
+                              const FormStructure*)> ResultCallback;
 
-  virtual ~AutofillManagerDelegate() {}
+  virtual ~AutofillClient() {}
 
-  // Gets the PersonalDataManager instance associated with the delegate.
+  // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
-  // Gets the AutofillWebDataService instance associated with the delegate.
+  // Gets the AutofillWebDataService instance associated with the client.
   virtual scoped_refptr<AutofillWebDataService> GetDatabase() = 0;
 
-  // Gets the preferences associated with the delegate.
+  // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
 
   // Hides the associated request autocomplete dialog (if it exists).
@@ -113,13 +111,12 @@ class AutofillManagerDelegate {
   virtual void DetectAccountCreationForms(
       const std::vector<autofill::FormStructure*>& forms) = 0;
 
-  // Inform the delegate that the field has been filled.
+  // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) = 0;
-
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_

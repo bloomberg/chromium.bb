@@ -17,8 +17,8 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
-#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "grit/component_scaled_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,20 +53,17 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   }
 };
 
-class MockAutofillManagerDelegate
-    : public autofill::TestAutofillManagerDelegate {
+class MockAutofillClient : public autofill::TestAutofillClient {
  public:
-  MockAutofillManagerDelegate()
-      : prefs_(autofill::test::PrefServiceForTesting()) {
-  }
-  virtual ~MockAutofillManagerDelegate() {}
+  MockAutofillClient() : prefs_(autofill::test::PrefServiceForTesting()) {}
+  virtual ~MockAutofillClient() {}
 
   virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
 
  private:
   scoped_ptr<PrefService> prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
@@ -126,7 +123,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
  public:
   AutofillPopupControllerUnitTest()
-      : manager_delegate_(new MockAutofillManagerDelegate()),
+      : autofill_client_(new MockAutofillClient()),
         autofill_popup_controller_(NULL) {}
   virtual ~AutofillPopupControllerUnitTest() {}
 
@@ -135,7 +132,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
     ContentAutofillDriver::CreateForWebContentsAndDelegate(
         web_contents(),
-        manager_delegate_.get(),
+        autofill_client_.get(),
         "en-US",
         AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
     ContentAutofillDriver* driver =
@@ -169,7 +166,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  scoped_ptr<MockAutofillManagerDelegate> manager_delegate_;
+  scoped_ptr<MockAutofillClient> autofill_client_;
   scoped_ptr<NiceMock<MockAutofillExternalDelegate> > external_delegate_;
   testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };

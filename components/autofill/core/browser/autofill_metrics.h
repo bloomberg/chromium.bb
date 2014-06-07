@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace base {

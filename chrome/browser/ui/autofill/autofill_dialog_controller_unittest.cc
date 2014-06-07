@@ -255,7 +255,7 @@ class TestAutofillDialogController
       const FormData& form_structure,
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
-      const AutofillManagerDelegate::ResultCallback& callback,
+      const AutofillClient::ResultCallback& callback,
       MockNewCreditCardBubbleController* mock_new_card_bubble_controller)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
@@ -263,8 +263,10 @@ class TestAutofillDialogController
                                      callback),
         metric_logger_(metric_logger),
         mock_wallet_client_(
-            Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this, source_url),
+            Profile::FromBrowserContext(contents->GetBrowserContext())
+                ->GetRequestContext(),
+            this,
+            source_url),
         mock_new_card_bubble_controller_(mock_new_card_bubble_controller),
         submit_button_delay_count_(0) {}
 
@@ -445,7 +447,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     if (controller_)
       controller_->ViewClosed();
 
-    AutofillManagerDelegate::ResultCallback callback =
+    AutofillClient::ResultCallback callback =
         base::Bind(&AutofillDialogControllerTest::FinishedCallback,
                    base::Unretained(this));
     controller_ = (new testing::NiceMock<TestAutofillDialogController>(
@@ -644,10 +646,9 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  void FinishedCallback(
-      AutofillManagerDelegate::RequestAutocompleteResult result,
-      const base::string16& debug_message,
-      const FormStructure* form_structure) {
+  void FinishedCallback(AutofillClient::RequestAutocompleteResult result,
+                        const base::string16& debug_message,
+                        const FormStructure* form_structure) {
     form_structure_ = form_structure;
   }
 

@@ -27,10 +27,9 @@ namespace password_manager {
 class ContentPasswordManagerDriver : public PasswordManagerDriver,
                                      public content::WebContentsObserver {
  public:
-  ContentPasswordManagerDriver(
-      content::WebContents* web_contents,
-      PasswordManagerClient* client,
-      autofill::AutofillManagerDelegate* autofill_manager_delegate);
+  ContentPasswordManagerDriver(content::WebContents* web_contents,
+                               PasswordManagerClient* client,
+                               autofill::AutofillClient* autofill_client);
   virtual ~ContentPasswordManagerDriver();
 
   // PasswordManagerDriver implementation.

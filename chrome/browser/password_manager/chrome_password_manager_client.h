@@ -60,9 +60,9 @@ class ChromePasswordManagerClient
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();
 
-  static void CreateForWebContentsWithAutofillManagerDelegate(
+  static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
-      autofill::AutofillManagerDelegate* delegate);
+      autofill::AutofillClient* autofill_client);
 
   // Convenience method to allow //chrome code easy access to a PasswordManager
   // from a WebContents instance.
@@ -78,9 +78,8 @@ class ChromePasswordManagerClient
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
  private:
-  ChromePasswordManagerClient(
-      content::WebContents* web_contents,
-      autofill::AutofillManagerDelegate* autofill_manager_delegate);
+  ChromePasswordManagerClient(content::WebContents* web_contents,
+                              autofill::AutofillClient* autofill_client);
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
 
   // content::WebContentsObserver overrides.

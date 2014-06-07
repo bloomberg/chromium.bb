@@ -215,7 +215,7 @@ public class AwContents {
     private float mContentWidthDip;
     private float mContentHeightDip;
 
-    private AwAutofillManagerDelegate mAwAutofillManagerDelegate;
+    private AwAutofillClient mAwAutofillClient;
 
     private ComponentCallbacks2 mComponentCallbacks;
 
@@ -1796,8 +1796,8 @@ public class AwContents {
      * @see android.webkit.WebView#clearFormData()
      */
     public void hideAutofillPopup() {
-        if (mAwAutofillManagerDelegate != null) {
-            mAwAutofillManagerDelegate.hideAutofillPopup();
+        if (mAwAutofillClient != null) {
+            mAwAutofillClient.hideAutofillPopup();
         }
     }
 
@@ -1978,9 +1978,9 @@ public class AwContents {
     }
 
     @CalledByNative
-    private void setAwAutofillManagerDelegate(AwAutofillManagerDelegate delegate) {
-        mAwAutofillManagerDelegate = delegate;
-        delegate.init(mContentViewCore);
+    private void setAwAutofillClient(AwAutofillClient client) {
+        mAwAutofillClient = client;
+        client.init(mContentViewCore);
     }
 
     @CalledByNative

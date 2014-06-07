@@ -208,8 +208,8 @@ class AwContents : public FindHelper::Listener,
                           jint height_dip);
   void SetSaveFormData(bool enabled);
 
-  // Sets the java delegate
-  void SetAwAutofillManagerDelegate(jobject delegate);
+  // Sets the java client
+  void SetAwAutofillClient(jobject client);
 
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
   void TrimMemory(JNIEnv* env, jobject obj, jint level, jboolean visible);
