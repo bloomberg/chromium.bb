@@ -74,6 +74,10 @@ def load_tests(_, _2, _3):
       # benchmarks are usually long-running benchmarks.
       continue
 
+    # TODO(tonyg): Smoke doesn't work with session_restore yet.
+    if benchmark.Name().startswith('session_restore'):
+      continue
+
     if hasattr(benchmark, 'generated_profile_archive'):
       # We'd like to test these, but don't know how yet.
       continue
