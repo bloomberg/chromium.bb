@@ -25,7 +25,8 @@ namespace content {
 class BrowserContext;
 
 // A std::string to StoragePartition map for use with SupportsUserData APIs.
-class StoragePartitionImplMap : public base::SupportsUserData::Data {
+class CONTENT_EXPORT StoragePartitionImplMap
+  : public base::SupportsUserData::Data {
  public:
   explicit StoragePartitionImplMap(BrowserContext* browser_context);
 
@@ -57,6 +58,7 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplMapTest, GarbageCollect);
 
   // Each StoragePartition is uniquely identified by which partition domain
   // it belongs to (such as an app or the browser itself), the user supplied

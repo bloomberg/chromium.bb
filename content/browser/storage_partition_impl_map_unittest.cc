@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 #include "content/browser/storage_partition_impl_map.h"
+
+#include "base/file_util.h"
+#include "base/run_loop.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class StoragePartitionConfigTest : public testing::Test {
-};
-
 // Test that the Less comparison function is implemented properly to uniquely
 // identify storage partitions used as keys in a std::map.
-TEST_F(StoragePartitionConfigTest, OperatorLess) {
+TEST(StoragePartitionConfigTest, OperatorLess) {
   StoragePartitionImplMap::StoragePartitionConfig c1(
       std::string(), std::string(), false);
   StoragePartitionImplMap::StoragePartitionConfig c2(
@@ -58,6 +59,34 @@ TEST_F(StoragePartitionConfigTest, OperatorLess) {
 
   // Let's enforce that two identical elements obey strict weak ordering.
   EXPECT_TRUE(!less(c1, c2) && !less(c2, c1));
+}
+
+TEST(StoragePartitionImplMapTest, GarbageCollect) {
+  base::MessageLoop message_loop;
+  TestBrowserContext browser_context;
+  StoragePartitionImplMap storage_partition_impl_map(&browser_context);
+
+  scoped_ptr<base::hash_set<base::FilePath> > active_paths(
+      new base::hash_set<base::FilePath>);
+
+  base::FilePath active_path = browser_context.GetPath().Append(
+      StoragePartitionImplMap::GetStoragePartitionPath(
+          "active", std::string()));
+  ASSERT_TRUE(base::CreateDirectory(active_path));
+  active_paths->insert(active_path);
+
+  base::FilePath inactive_path = browser_context.GetPath().Append(
+      StoragePartitionImplMap::GetStoragePartitionPath(
+          "inactive", std::string()));
+  ASSERT_TRUE(base::CreateDirectory(inactive_path));
+
+  base::RunLoop run_loop;
+  storage_partition_impl_map.GarbageCollect(
+      active_paths.Pass(), run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(base::PathExists(active_path));
+  EXPECT_FALSE(base::PathExists(inactive_path));
 }
 
 }  // namespace content
