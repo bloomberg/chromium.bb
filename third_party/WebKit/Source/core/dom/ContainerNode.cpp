@@ -278,7 +278,9 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!isHTMLTemplateElement(this));
 
-    if (nextChild.previousSibling() == newChild || &nextChild == newChild) // nothing to do
+    RefPtrWillBeRawPtr<Node> protect(this);
+
+    if (nextChild.previousSibling() == newChild || nextChild == newChild) // nothing to do
         return;
 
     if (document() != newChild->document())
@@ -290,9 +292,7 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
 
     ChildListMutationScope(*this).childAdded(*newChild);
 
-    childrenChanged(true, newChild->previousSibling(), &nextChild, 1);
-
-    notifyNodeInserted(*newChild);
+    notifyNodeInserted(*newChild, InsertedByParser);
 }
 
 void ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
@@ -469,8 +469,8 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
         removeBetween(prev, next, *child);
-        childrenChanged(false, prev, next, -1);
         notifyNodeRemoved(*child);
+        childrenChanged(false, prev, next, -1);
     }
     dispatchSubtreeModifiedEvent();
 }
@@ -505,6 +505,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     ASSERT(oldChild.parentNode() == this);
     ASSERT(!oldChild.isDocumentFragment());
 
+    ScriptForbiddenScope forbidScript;
+
     Node* prev = oldChild.previousSibling();
     Node* next = oldChild.nextSibling();
 
@@ -514,9 +516,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     oldChild.notifyMutationObserversNodeWillDetach();
 
     removeBetween(prev, next, oldChild);
-
-    childrenChanged(true, prev, next, -1);
     notifyNodeRemoved(oldChild);
+    childrenChanged(true, prev, next, -1);
 }
 
 // this differs from other remove functions because it forcibly removes all the children,
@@ -551,23 +552,25 @@ void ContainerNode::removeChildren()
         document().nodeChildrenWillBeRemoved(*this);
     }
 
-
-    NodeVector removedChildren;
     {
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-        {
+        ScriptForbiddenScope forbidScript;
+
+        // FIXME: We can't have a top level NoEventDispatchAssertion since
+        // SVGElement::invalidateInstances() is called inside ::childrenChanged
+        // and will stamp out new <use> shadow trees which mutates the DOM and
+        // hits the event dispatching assert in ::notifyNodeInserted. We should
+        // figure out how to make ths work async.
+
+        int childCount = 0;
+        while (RefPtrWillBeRawPtr<Node> child = m_firstChild) {
             NoEventDispatchAssertion assertNoEventDispatch;
-            removedChildren.reserveInitialCapacity(countChildren());
-            while (m_firstChild) {
-                removedChildren.append(m_firstChild);
-                removeBetween(0, m_firstChild->nextSibling(), *m_firstChild);
-            }
+            ++childCount;
+            removeBetween(0, child->nextSibling(), *child);
+            notifyNodeRemoved(*child);
         }
 
-        childrenChanged(false, 0, 0, -static_cast<int>(removedChildren.size()));
-
-        for (size_t i = 0; i < removedChildren.size(); ++i)
-            notifyNodeRemoved(*removedChildren[i]);
+        childrenChanged(false, 0, 0, -childCount);
     }
 
     dispatchSubtreeModifiedEvent();
@@ -638,10 +641,10 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!isHTMLTemplateElement(this));
 
+    RefPtrWillBeRawPtr<Node> protect(this);
+
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
-
-    Node* last = m_lastChild;
 
     {
         NoEventDispatchAssertion assertNoEventDispatch;
@@ -654,11 +657,10 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
         ChildListMutationScope(*this).childAdded(*newChild);
     }
 
-    childrenChanged(true, last, 0, 1);
-    notifyNodeInserted(*newChild);
+    notifyNodeInserted(*newChild, InsertedByParser);
 }
 
-void ContainerNode::notifyNodeInserted(Node& root)
+void ContainerNode::notifyNodeInserted(Node& root, InsertionSourceType source)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
@@ -669,6 +671,13 @@ void ContainerNode::notifyNodeInserted(Node& root)
 
     NodeVector postInsertionNotificationTargets;
     notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
+
+    // ShadowRoots are not real children, we don't need to tell host that it's
+    // children changed when one is added.
+    // FIXME: We should have a separate code path for ShadowRoot since it only
+    // needs to call insertedInto and the rest of this logic is not needed.
+    if (!root.isShadowRoot())
+        childrenChanged(source == InsertedByParser, root.previousSibling(), root.nextSibling(), 1);
 
     for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = postInsertionNotificationTargets[i].get();
@@ -1080,8 +1089,6 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
 #endif
 
     ChildListMutationScope(*this).childAdded(child);
-
-    childrenChanged(false, child.previousSibling(), child.nextSibling(), 1);
 
     notifyNodeInserted(child);
 
