@@ -184,8 +184,6 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
     if (browser_action_views_[i]->visible())
       ++visible_actions;
   }
-  VLOG(4) << "BAC::VisibleBrowserActions() returns " << visible_actions
-          << " with size=" << browser_action_views_.size();
   return visible_actions;
 }
 
@@ -193,11 +191,7 @@ size_t BrowserActionsContainer::VisibleBrowserActionsAfterAnimation() const {
   if (!animating())
     return VisibleBrowserActions();
 
-  size_t visible_actions = WidthToIconCount(animation_target_size_);
-  VLOG(4) << "BAC::VisibleBrowserActionsAfterAnimation() returns "
-          << visible_actions
-          << " with size=" << browser_action_views_.size();
-  return visible_actions;
+  return WidthToIconCount(animation_target_size_);
 }
 
 void BrowserActionsContainer::ExecuteExtensionCommand(
@@ -685,13 +679,10 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
 #endif
   CloseOverflowMenu();
 
-  if (!ShouldDisplayBrowserAction(extension)) {
-    VLOG(4) << "Should not display: " << extension->name().c_str();
+  if (!ShouldDisplayBrowserAction(extension))
     return;
-  }
 
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
-  VLOG(4) << "Got back " << visible_actions << " visible.";
 
   // Add the new browser action to the vector and the view hierarchy.
   if (profile_->IsOffTheRecord())
@@ -701,21 +692,17 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   AddChildViewAt(view, index);
 
   // If we are still initializing the container, don't bother animating.
-  if (!model_->extensions_initialized()) {
-    VLOG(4) << "Still initializing";
+  if (!model_->extensions_initialized())
     return;
-  }
 
   // Enlarge the container if it was already at maximum size and we're not in
   // the middle of upgrading.
   if ((model_->GetVisibleIconCount() < 0) &&
       !extensions::ExtensionSystem::Get(profile_)->runtime_data()->
           IsBeingUpgraded(extension)) {
-    VLOG(4) << "At max, Save and animate";
     suppress_chevron_ = true;
     SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, visible_actions + 1);
   } else {
-    VLOG(4) << "Not at max";
     // Just redraw the (possibly modified) visible icon set.
     OnBrowserActionVisibilityChanged();
   }
@@ -891,12 +878,8 @@ void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
   // NOTE: Don't save the icon count in incognito because there may be fewer
   // icons in that mode. The result is that the container in a normal window is
   // always at least as wide as in an incognito window.
-  if (!profile_->IsOffTheRecord()) {
+  if (!profile_->IsOffTheRecord())
     model_->SetVisibleIconCount(num_visible_icons);
-    VLOG(4) << "Setting visible count: " << num_visible_icons;
-  } else {
-    VLOG(4) << "|Skipping| setting visible count: " << num_visible_icons;
-  }
   int target_size = IconCountToWidth(num_visible_icons,
       num_visible_icons < browser_action_views_.size());
   if (!disable_animations_during_testing_) {
