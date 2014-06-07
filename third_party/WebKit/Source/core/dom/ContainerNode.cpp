@@ -1116,20 +1116,16 @@ void ContainerNode::checkForChildrenAdjacentRuleChanges()
     bool forceCheckOfAnyElementSibling = false;
     Document& document = this->document();
 
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (!child->isElementNode())
-            continue;
-        Element* element = toElement(child);
-        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
+    for (Element* child = ElementTraversal::firstChild(*this); child; child = ElementTraversal::nextSibling(*child)) {
+        bool childRulesChanged = child->needsStyleRecalc() && child->styleChangeType() >= SubtreeStyleChange;
 
         if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
-            element->setNeedsStyleRecalc(SubtreeStyleChange);
-
-        if (forceCheckOfNextElementCount)
-            forceCheckOfNextElementCount--;
+            child->setNeedsStyleRecalc(SubtreeStyleChange);
 
         if (childRulesChanged && hasDirectAdjacentRules)
             forceCheckOfNextElementCount = document.styleEngine()->maxDirectAdjacentSelectors();
+        else if (forceCheckOfNextElementCount)
+            --forceCheckOfNextElementCount;
 
         forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
