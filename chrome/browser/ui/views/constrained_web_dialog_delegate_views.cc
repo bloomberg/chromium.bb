@@ -11,7 +11,7 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -116,6 +116,10 @@ class ConstrainedWebDialogDelegateViewViews
   }
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
+  }
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE {
+    return views::DialogDelegate::CreateDialogFrameView(widget);
   }
   virtual bool ShouldShowCloseButton() const OVERRIDE {
     // No close button if the dialog doesn't want a title bar.
