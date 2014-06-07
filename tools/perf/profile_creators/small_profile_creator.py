@@ -14,7 +14,7 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
 
   def __init__(self):
     super(SmallProfileCreator, self).__init__()
-    self._page_set = page_sets.Typical25()
+    self._page_set = page_sets.Typical25PageSet()
 
     # Open all links in the same tab save for the last _NUM_TABS links which
     # are each opened in a new tab.
