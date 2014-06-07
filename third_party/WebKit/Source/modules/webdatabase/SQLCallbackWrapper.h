@@ -56,7 +56,8 @@ public:
         clear();
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_executionContext); }
+    // FIXME: Oilpan: Trace m_executionContext.
+    void trace(Visitor* visitor) { }
 
     void clear()
     {
@@ -129,7 +130,7 @@ private:
 
     Mutex m_mutex;
     OwnPtr<T> m_callback;
-    RefPtrWillBeMember<ExecutionContext> m_executionContext;
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 } // namespace WebCore

@@ -74,7 +74,7 @@ protected:
 
     OwnPtr<ErrorCallback> m_errorCallback;
     RefPtrWillBePersistent<DOMFileSystemBase> m_fileSystem;
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    RefPtr<ExecutionContext> m_executionContext;
 };
 
 // Subclasses ----------------------------------------------------------------

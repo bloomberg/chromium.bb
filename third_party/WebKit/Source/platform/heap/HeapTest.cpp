@@ -3978,24 +3978,4 @@ TEST(HeapTest, NeedsAdjustAndMark)
     EXPECT_FALSE(NeedsAdjustAndMark<const UseMixin>::value);
 }
 
-TEST(HeapTest, Bind)
-{
-    Closure closure = bind(&Bar::trace, Bar::create(), static_cast<Visitor*>(0));
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    // The closure should have a persistent handle to the Bar.
-    EXPECT_EQ(1u, Bar::s_live);
-
-    Closure closure2 = bind(&Bar::trace, RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    // The closure should have a persistent handle to the Bar.
-    EXPECT_EQ(2u, Bar::s_live);
-
-    UseMixin::s_traceCount = 0;
-    Mixin* mixin = UseMixin::create();
-    Closure mixinClosure = bind(&Mixin::trace, mixin, static_cast<Visitor*>(0));
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    // The closure should have a persistent handle to the mixin.
-    EXPECT_EQ(1, UseMixin::s_traceCount);
-}
-
 } // WebCore namespace

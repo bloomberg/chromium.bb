@@ -131,7 +131,7 @@ private:
     void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtrWillBePersistent<WebCore::ExecutionContext> m_loadingDocument;
+    RefPtr<WebCore::ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;

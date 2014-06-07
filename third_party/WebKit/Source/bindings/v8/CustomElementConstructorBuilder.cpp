@@ -156,6 +156,8 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 {
     ASSERT(!m_prototype.IsEmpty());
 
+    RefPtr<ExecutionContext> executionContext = m_scriptState->executionContext();
+
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
 

@@ -38,7 +38,6 @@
 #include "core/frame/DOMTimer.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -61,10 +60,7 @@ class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
 
-class ExecutionContext
-    : public WillBeGarbageCollectedMixin
-    , public LifecycleContext<ExecutionContext>
-    , public Supplementable<ExecutionContext> {
+class ExecutionContext : public LifecycleContext<ExecutionContext>, public Supplementable<ExecutionContext> {
 public:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -111,10 +107,9 @@ public:
 
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
-#if !ENABLE(OILPAN)
+
     void ref() { refExecutionContext(); }
     void deref() { derefExecutionContext(); }
-#endif
 
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
@@ -138,10 +133,8 @@ private:
 
     bool dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent>, AccessControlStatus);
 
-#if !ENABLE(OILPAN)
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;
-#endif
     // LifecycleContext implementation.
 
     // Implementation details for DOMTimer. No other classes should call these functions.

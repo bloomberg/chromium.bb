@@ -148,10 +148,8 @@ namespace WebCore {
         void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
     private:
-#if !ENABLE(OILPAN)
         virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
         virtual void derefExecutionContext() OVERRIDE FINAL { deref(); }
-#endif
 
         virtual const KURL& virtualURL() const OVERRIDE FINAL;
         virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;

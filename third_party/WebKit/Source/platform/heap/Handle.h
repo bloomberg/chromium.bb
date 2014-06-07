@@ -34,7 +34,6 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
-#include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
 #include "wtf/RawPtr.h"
@@ -1151,36 +1150,6 @@ struct NeedsTracing<ListHashSetNode<T, WebCore::HeapListHashSetAllocator<T, inli
     // regardless of whether they contain pointers to other heap allocated
     // objects.
     static const bool value = true;
-};
-
-// For wtf/Functional.h
-template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
-
-template<typename T> struct PointerParamStorageTraits<T*, false> {
-    typedef T* StorageType;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value; }
-};
-
-template<typename T> struct PointerParamStorageTraits<T*, true> {
-    typedef WebCore::CrossThreadPersistent<T> StorageType;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value.get(); }
-};
-
-// FIXME: This doesn't support collections and const types. See
-// COMPILE_ASSERT_IS_GARBAGE_COLLECTED.
-template<typename T> struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, WTF::IsSubclassOfTemplate<T, WebCore::GarbageCollected>::value || WebCore::IsGarbageCollectedMixin<T>::value> {
-};
-
-// We assume RawPtr<T> is used only for garbage-collected types.
-template<typename T> struct ParamStorageTraits<RawPtr<T> > {
-    typedef WebCore::CrossThreadPersistent<T> StorageType;
-
-    static StorageType wrap(RawPtr<T> value) { return value.get(); }
-    static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
 } // namespace WTF

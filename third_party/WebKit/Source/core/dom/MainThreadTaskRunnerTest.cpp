@@ -47,17 +47,13 @@ public:
     virtual void close() OVERRIDE { }
 };
 
-class NullExecutionContext : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public ExecutionContext {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
+class NullExecutionContext : public ExecutionContext, public RefCounted<NullExecutionContext> {
 public:
-    void trace(Visitor* visitor) { ExecutionContext::trace(visitor); }
-#if !ENABLE(OILPAN)
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
     virtual void refExecutionContext() OVERRIDE { ref(); }
     virtual void derefExecutionContext() OVERRIDE { deref(); }
-#endif
     virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
     virtual bool tasksNeedSuspension() { return m_tasksNeedSuspension; }
 
@@ -99,7 +95,7 @@ private:
 
 TEST(MainThreadTaskRunnerTest, PostTask)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
+    RefPtr<NullExecutionContext> context = adoptRef(new NullExecutionContext());
     OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
@@ -111,7 +107,7 @@ TEST(MainThreadTaskRunnerTest, PostTask)
 
 TEST(MainThreadTaskRunnerTest, SuspendTask)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
+    RefPtr<NullExecutionContext> context = adoptRef(new NullExecutionContext());
     OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
@@ -129,7 +125,7 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
 
 TEST(MainThreadTaskRunnerTest, RemoveRunner)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
+    RefPtr<NullExecutionContext> context = adoptRef(new NullExecutionContext());
     OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 

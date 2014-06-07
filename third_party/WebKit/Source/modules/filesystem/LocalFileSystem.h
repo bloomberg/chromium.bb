@@ -71,10 +71,10 @@ protected:
 
 private:
     void requestFileSystemAccessInternal(ExecutionContext*, const Closure& allowed, const Closure& denied);
-    void fileSystemNotAllowedInternal(PassRefPtrWillBeRawPtr<ExecutionContext>, PassRefPtr<CallbackWrapper>);
-    void fileSystemAllowedInternal(PassRefPtrWillBeRawPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
+    void fileSystemNotAllowedInternal(PassRefPtr<ExecutionContext>, PassRefPtr<CallbackWrapper>);
+    void fileSystemAllowedInternal(PassRefPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
     void resolveURLInternal(const KURL&, PassRefPtr<CallbackWrapper>);
-    void deleteFileSystemInternal(PassRefPtrWillBeRawPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
+    void deleteFileSystemInternal(PassRefPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
     OwnPtr<FileSystemClient> m_client;
 };
 
