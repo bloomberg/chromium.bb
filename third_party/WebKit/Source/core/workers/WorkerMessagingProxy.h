@@ -86,7 +86,7 @@ namespace WebCore {
     private:
         static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
 
-        RefPtr<ExecutionContext> m_executionContext;
+        RefPtrWillBePersistent<ExecutionContext> m_executionContext;
         OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
         Worker* m_workerObject;
         bool m_mayBeDestroyed;

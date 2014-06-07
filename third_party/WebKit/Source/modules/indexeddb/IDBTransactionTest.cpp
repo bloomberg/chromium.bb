@@ -67,7 +67,7 @@ public:
 
 private:
     V8TestingScope m_scope;
-    RefPtr<ExecutionContext> m_executionContext;
+    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
 class FakeWebIDBDatabase FINAL : public blink::WebIDBDatabase {

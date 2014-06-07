@@ -88,12 +88,12 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
     RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::resolveURLInternal, this, fileSystemURL, wrapper),
-        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, PassRefPtr<ExecutionContext>(context), wrapper));
+        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, PassRefPtrWillBeRawPtr<ExecutionContext>(context), wrapper));
 }
 
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RefPtr<ExecutionContext> contextPtr(context);
+    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
     RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::fileSystemAllowedInternal, this, contextPtr, type, wrapper),
@@ -102,7 +102,7 @@ void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemTyp
 
 void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RefPtr<ExecutionContext> contextPtr(context);
+    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
@@ -130,14 +130,14 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
-    PassRefPtr<ExecutionContext> context,
+    PassRefPtrWillBeRawPtr<ExecutionContext> context,
     PassRefPtr<CallbackWrapper> callbacks)
 {
     context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks->release()));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
-    PassRefPtr<ExecutionContext> context,
+    PassRefPtrWillBeRawPtr<ExecutionContext> context,
     FileSystemType type,
     PassRefPtr<CallbackWrapper> callbacks)
 {
@@ -153,7 +153,7 @@ void LocalFileSystem::resolveURLInternal(
 }
 
 void LocalFileSystem::deleteFileSystemInternal(
-    PassRefPtr<ExecutionContext> context,
+    PassRefPtrWillBeRawPtr<ExecutionContext> context,
     FileSystemType type,
     PassRefPtr<CallbackWrapper> callbacks)
 {
