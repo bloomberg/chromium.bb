@@ -114,8 +114,8 @@
 #include "components/nacl/renderer/nacl_helper.h"
 #endif
 
-#if defined(ENABLE_WEBRTC)
-#include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/renderer/extensions/chrome_extensions_render_frame_observer.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -123,9 +123,13 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome_elf/blacklist/blacklist.h"
-#endif  // OS_WIN
+#endif
 
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
@@ -394,6 +398,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
         chrome_observer_->content_setting_rules());
   }
 
+#if defined(ENABLE_EXTENSIONS)
+  new extensions::ChromeExtensionsRenderFrameObserver(render_frame);
+#endif
   new extensions::ExtensionFrameHelper(render_frame,
                                        extension_dispatcher_.get());
 

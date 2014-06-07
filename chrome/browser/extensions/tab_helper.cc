@@ -318,12 +318,16 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
 
 bool TabHelper::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
+#if defined(ENABLE_EXTENSIONS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DetailedConsoleMessageAdded,
                         OnDetailedConsoleMessageAdded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+#else
+  bool handled = false;
+#endif
   return handled;
 }
 
@@ -472,6 +476,7 @@ void TabHelper::OnDetailedConsoleMessageAdded(
     const base::string16& source,
     const StackTrace& stack_trace,
     int32 severity_level) {
+#if defined(ENABLE_EXTENSIONS)
   if (IsSourceFromAnExtension(source)) {
     content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     ErrorConsole::Get(profile_)->ReportError(
@@ -487,6 +492,7 @@ void TabHelper::OnDetailedConsoleMessageAdded(
             rvh->GetRoutingID(),
             rvh->GetProcess()->GetID())));
   }
+#endif
 }
 
 const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {

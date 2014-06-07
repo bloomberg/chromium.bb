@@ -60,6 +60,8 @@
         'renderer/extensions/chrome_extension_helper.h',
         'renderer/extensions/chrome_extensions_dispatcher_delegate.cc',
         'renderer/extensions/chrome_extensions_dispatcher_delegate.h',
+        'renderer/extensions/chrome_extensions_render_frame_observer.cc',
+        'renderer/extensions/chrome_extensions_render_frame_observer.h',
         'renderer/extensions/chrome_extensions_renderer_client.cc',
         'renderer/extensions/chrome_extensions_renderer_client.h',
         'renderer/extensions/chrome_v8_context.cc',
@@ -313,6 +315,12 @@
         }, {  # safe_browsing==0 || safe_browsing==2
           'sources/': [
             ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
+        ['enable_extensions==0', {
+          'sources!': [
+            'renderer/extensions/chrome_extensions_render_frame_observer.cc',
+            'renderer/extensions/chrome_extensions_render_frame_observer.h',
           ],
         }],
         ['enable_webrtc==0', {

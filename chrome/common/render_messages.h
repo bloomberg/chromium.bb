@@ -707,6 +707,8 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
                      std::vector<GURL> /* search_urls */,
                      GURL /* new_tab_page_url */)
 
+// TODO(thestig) Eventually separate out all the extensions messages.
+#if defined(ENABLE_EXTENSIONS)
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
@@ -714,6 +716,7 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
                     base::string16 /* source */,
                     extensions::StackTrace /* stack trace */,
                     int32 /* severity level */)
+#endif
 
 #if defined(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.
