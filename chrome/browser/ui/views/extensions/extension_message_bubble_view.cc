@@ -11,10 +11,12 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
@@ -62,6 +64,7 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     : BubbleDelegateView(anchor_view, arrow_location),
       weak_factory_(this),
       controller_(controller.Pass()),
+      anchor_view_(anchor_view),
       headline_(NULL),
       learn_more_(NULL),
       dismiss_button_(NULL),
@@ -156,7 +159,8 @@ void ExtensionMessageBubbleView::Init() {
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetText(delegate->GetMessageBody());
+  message->SetText(delegate->GetMessageBody(
+      anchor_view_->id() == VIEW_ID_BROWSER_ACTION));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
       IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
   layout->AddView(message);
@@ -272,6 +276,7 @@ ExtensionMessageBubbleFactory::ExtensionMessageBubbleFactory(
       toolbar_view_(toolbar_view),
       shown_suspicious_extensions_bubble_(false),
       shown_startup_override_extensions_bubble_(false),
+      shown_proxy_override_extensions_bubble_(false),
       shown_dev_mode_extensions_bubble_(false),
       is_observing_(false),
       stage_(STAGE_START),
@@ -302,6 +307,10 @@ void ExtensionMessageBubbleFactory::MaybeShow(views::View* anchor_view) {
   if (!shown_startup_override_extensions_bubble_ &&
       is_initial_check &&
       MaybeShowStartupOverrideExtensionsBubble(anchor_view))
+    return;
+
+  if (!shown_proxy_override_extensions_bubble_ &&
+      MaybeShowProxyOverrideExtensionsBubble(anchor_view))
     return;
 
   if (!shown_dev_mode_extensions_bubble_)
@@ -336,11 +345,11 @@ bool ExtensionMessageBubbleFactory::MaybeShowStartupOverrideExtensionsBubble(
     views::View* anchor_view) {
 #if !defined(OS_WIN)
   return false;
-#endif
-
+#else
   DCHECK(!shown_startup_override_extensions_bubble_);
 
-  const Extension* extension = OverridesStartupPages(profile_, NULL);
+  const Extension* extension =
+      GetExtensionOverridingStartupPages(profile_, NULL);
   if (!extension)
     return false;
 
@@ -351,15 +360,34 @@ bool ExtensionMessageBubbleFactory::MaybeShowStartupOverrideExtensionsBubble(
     return false;
 
   shown_startup_override_extensions_bubble_ = true;
-  SettingsApiBubbleController* weak_controller = settings_api_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
-      anchor_view,
-      views::BubbleBorder::TOP_RIGHT,
-      settings_api_bubble.PassAs<ExtensionMessageBubbleController>());
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
-  weak_controller->Show(bubble_delegate);
-
+  PrepareToHighlightExtensions(
+      settings_api_bubble.PassAs<ExtensionMessageBubbleController>(),
+      anchor_view);
   return true;
+#endif
+}
+
+bool ExtensionMessageBubbleFactory::MaybeShowProxyOverrideExtensionsBubble(
+    views::View* anchor_view) {
+#if !defined(OS_WIN)
+  return false;
+#else
+  DCHECK(!shown_proxy_override_extensions_bubble_);
+
+  const Extension* extension = GetExtensionOverridingProxy(profile_);
+  if (!extension)
+    return false;
+
+  scoped_ptr<ProxyOverriddenBubbleController> proxy_bubble(
+      new ProxyOverriddenBubbleController(profile_));
+  if (!proxy_bubble->ShouldShow(extension->id()))
+    return false;
+
+  shown_proxy_override_extensions_bubble_ = true;
+  PrepareToHighlightExtensions(
+      proxy_bubble.PassAs<ExtensionMessageBubbleController>(), anchor_view);
+  return true;
+#endif
 }
 
 bool ExtensionMessageBubbleFactory::MaybeShowDevModeExtensionsBubble(
@@ -375,23 +403,9 @@ bool ExtensionMessageBubbleFactory::MaybeShowDevModeExtensionsBubble(
     return false;
 
   shown_dev_mode_extensions_bubble_ = true;
-
-  // We should be in the start stage (i.e., should not have a pending attempt to
-  // show a bubble).
-  DCHECK_EQ(stage_, STAGE_START);
-
-  // Prepare to display and highlight the developer mode extensions before
-  // showing the bubble. Since this is an asynchronous process, set member
-  // variables for later use.
-  controller_ = dev_mode_extensions.Pass();
-  anchor_view_ = anchor_view;
-  container_ = toolbar_view_->browser_actions();
-
-  if (container_->animating())
-    MaybeObserve();
-  else
-    HighlightDevModeExtensions();
-
+  PrepareToHighlightExtensions(
+      dev_mode_extensions.PassAs<ExtensionMessageBubbleController>(),
+      anchor_view);
   return true;
 }
 
@@ -420,9 +434,9 @@ bool ExtensionMessageBubbleFactory::IsInitialProfileCheck(Profile* profile) {
 void ExtensionMessageBubbleFactory::OnBrowserActionsContainerAnimationEnded() {
   MaybeStopObserving();
   if (stage_ == STAGE_START) {
-    HighlightDevModeExtensions();
+    HighlightExtensions();
   } else if (stage_ == STAGE_HIGHLIGHTED) {
-    ShowDevModeBubble();
+    ShowHighlightingBubble();
   } else {  // We shouldn't be observing if we've completed the process.
     NOTREACHED();
     Finish();
@@ -435,7 +449,26 @@ void ExtensionMessageBubbleFactory::OnBrowserActionsContainerDestroyed() {
   Finish();
 }
 
-void ExtensionMessageBubbleFactory::HighlightDevModeExtensions() {
+void ExtensionMessageBubbleFactory::PrepareToHighlightExtensions(
+    scoped_ptr<ExtensionMessageBubbleController> controller,
+    views::View* anchor_view) {
+  // We should be in the start stage (i.e., should not have a pending attempt to
+  // show a bubble).
+  DCHECK_EQ(stage_, STAGE_START);
+
+  // Prepare to display and highlight the extensions before showing the bubble.
+  // Since this is an asynchronous process, set member variables for later use.
+  controller_ = controller.Pass();
+  anchor_view_ = anchor_view;
+  container_ = toolbar_view_->browser_actions();
+
+  if (container_->animating())
+    MaybeObserve();
+  else
+    HighlightExtensions();
+}
+
+void ExtensionMessageBubbleFactory::HighlightExtensions() {
   DCHECK_EQ(STAGE_START, stage_);
   stage_ = STAGE_HIGHLIGHTED;
 
@@ -445,10 +478,10 @@ void ExtensionMessageBubbleFactory::HighlightDevModeExtensions() {
   if (container_->animating())
     MaybeObserve();
   else
-    ShowDevModeBubble();
+    ShowHighlightingBubble();
 }
 
-void ExtensionMessageBubbleFactory::ShowDevModeBubble() {
+void ExtensionMessageBubbleFactory::ShowHighlightingBubble() {
   DCHECK_EQ(stage_, STAGE_HIGHLIGHTED);
   stage_ = STAGE_COMPLETE;
 
@@ -458,11 +491,13 @@ void ExtensionMessageBubbleFactory::ShowDevModeBubble() {
   if (reference_view && reference_view->visible())
     anchor_view_ = reference_view;
 
-  DevModeBubbleController* weak_controller = controller_.get();
-  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
-      anchor_view_,
-      views::BubbleBorder::TOP_RIGHT,
-      scoped_ptr<ExtensionMessageBubbleController>(controller_.release()));
+  ExtensionMessageBubbleController* weak_controller = controller_.get();
+  ExtensionMessageBubbleView* bubble_delegate =
+      new ExtensionMessageBubbleView(
+          anchor_view_,
+          views::BubbleBorder::TOP_RIGHT,
+          scoped_ptr<ExtensionMessageBubbleController>(
+              controller_.release()));
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   weak_controller->Show(bubble_delegate);
 

@@ -60,6 +60,11 @@ class ExtensionMessageBubbleFactory : public BrowserActionsContainerObserver {
   // Returns true if we show the view (or start the process).
   bool MaybeShowStartupOverrideExtensionsBubble(views::View* anchor_view);
 
+  // Shows the bubble for when there are extensions overriding the proxy (if we
+  // have not done so already). Returns true if we show the view (or start the
+  // process of doing so).
+  bool MaybeShowProxyOverrideExtensionsBubble(views::View* anchor_view);
+
   // Shows the developer mode extensions bubble, if there are extensions running
   // in developer mode and we have not done so already.
   // Returns true if we show the view (or start the process).
@@ -79,11 +84,17 @@ class ExtensionMessageBubbleFactory : public BrowserActionsContainerObserver {
   virtual void OnBrowserActionsContainerAnimationEnded() OVERRIDE;
   virtual void OnBrowserActionsContainerDestroyed() OVERRIDE;
 
-  // Inform the ExtensionToolbarModel to highlight the appropriate extensions.
-  void HighlightDevModeExtensions();
+  // Sets the stage for highlighting extensions and then showing the bubble
+  // controlled by |controller|, anchored to |anchor_view|.
+  void PrepareToHighlightExtensions(
+      scoped_ptr<ExtensionMessageBubbleController> controller,
+      views::View* anchor_view);
 
-  // Shows the developer mode bubble, after highlighting the extensions.
-  void ShowDevModeBubble();
+  // Inform the ExtensionToolbarModel to highlight the appropriate extensions.
+  void HighlightExtensions();
+
+  // Shows the waiting bubbble, after highlighting the extensions.
+  void ShowHighlightingBubble();
 
   // Finishes the process of showing the developer mode bubble.
   void Finish();
@@ -100,6 +111,10 @@ class ExtensionMessageBubbleFactory : public BrowserActionsContainerObserver {
   // Whether or not we have shown the Settings API extensions bubble notifying
   // the user about the startup pages being overridden.
   bool shown_startup_override_extensions_bubble_;
+
+  // Whether or not we have shown the bubble notifying the user about the proxy
+  // being overridden.
+  bool shown_proxy_override_extensions_bubble_;
 
   // Whether or not we have shown the developer mode extensions bubble.
   bool shown_dev_mode_extensions_bubble_;
@@ -119,9 +134,9 @@ class ExtensionMessageBubbleFactory : public BrowserActionsContainerObserver {
   // is not currently in the process of showing a bubble.
   views::View* anchor_view_;
 
-  // The DevModeBubbleController to use. This will be NULL if the factory is not
-  // currently in the process of showing a bubble.
-  scoped_ptr<DevModeBubbleController> controller_;
+  // The controller to show a bubble for. This will be NULL if the factory is
+  // not currently in the process of showing a bubble.
+  scoped_ptr<ExtensionMessageBubbleController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleFactory);
 };
@@ -171,6 +186,9 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
 
   // The controller for this bubble.
   scoped_ptr<ExtensionMessageBubbleController> controller_;
+
+  // The view this bubble is anchored against.
+  views::View* anchor_view_;
 
   // The headline, labels and buttons on the bubble.
   views::Label* headline_;

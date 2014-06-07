@@ -5170,8 +5170,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Is this the new tab page you were expecting?
         </message>
       </if>
+      <if expr="use_titlecase">
+        <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their proxy setting">
+        Your Internet Connection is Being Controlled
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their proxy setting">
+          Your Internet connection is being controlled
+        </message>
+      </if>
 
-      <message name="IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE" desc="Text displayed in the Settings API bubble as first line when an extension has changed the search engine.">
+      <message name="IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE" desc="Text displayed as the first line in the Settings API bubble when an extension has changed the search engine.">
         An extension has changed what page is shown when you search from the Omnibox.
       </message>
       <message name="IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_HOME_PAGE" desc="Text displayed in the Settings API bubble as first line when an extension has changed the home page.">
@@ -5188,8 +5198,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         ''' It also controls what page is shown when you click the Home button or search from the Omnibox. '''
       </message>
 
-      <message name="IDS_EXTENSIONS_NTP_CONTROLLED_FIRST_LINE" desc="Text displayed in the Settings API bubble as first line when an extension has changed the new tab page.">
+      <message name="IDS_EXTENSIONS_NTP_CONTROLLED_FIRST_LINE" desc="Text displayed as the first line in the NTP bubble when an extension has changed the new tab page.">
         An extension has changed what page is shown when you open a new tab.
+      </message>
+
+      <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE" desc="Text displayed as the first line in the proxy bubble when an extension has changed the proxy but we are not pointing at it's icon (because it doesn't have one).">
+        An extension has taken control of your proxy settings, which means it can change, break, or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.
+      </message>
+      <message name="IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE_EXTENSION_SPECIFIC" desc="Text displayed as the first line in the proxy bubble when an extension has changed the proxy and we are pointing at that extension's icon.">
+        This extension has taken control of your proxy settings, which means it can change, break, or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.
       </message>
 
       <message name="IDS_EXTENSIONS_SETTINGS_API_THIRD_LINE_CONFIRMATION" desc="Third line in the Settings API bubble, always appended after the first (and optional second) line to make one paragraph. See IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE for reason for triple quotes.">
@@ -9643,6 +9660,9 @@ Chrome ran out of memory.
         </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
           Use current pages
+        </message>
+        <message name="IDS_OPTIONS_PROXY_GROUP_NAME" desc="The title of the Proxy group">
+          Proxy
         </message>
         <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
           Manage search engines...

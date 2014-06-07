@@ -45,7 +45,8 @@ class DevModeBubbleDelegate
   virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
   virtual void OnClose() OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
-  virtual base::string16 GetMessageBody() const OVERRIDE;
+  virtual base::string16 GetMessageBody(
+      bool anchored_to_browser_action) const OVERRIDE;
   virtual base::string16 GetOverflowText(
       const base::string16& overflow_count) const OVERRIDE;
   virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
@@ -102,7 +103,8 @@ base::string16 DevModeBubbleDelegate::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE);
 }
 
-base::string16 DevModeBubbleDelegate::GetMessageBody() const {
+base::string16 DevModeBubbleDelegate::GetMessageBody(
+    bool anchored_to_browser_action) const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY);
 }
 

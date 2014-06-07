@@ -24,24 +24,34 @@ const extensions::SettingsOverrides* FindOverridingExtension(
     const Extension** extension);
 
 // Returns which extension is overriding the homepage in a given
-// |browser_context|. |home_page_url|, if non-NULL, will contain the home_page
-// value the extension has set.
-const Extension* OverridesHomepage(content::BrowserContext* browser_context,
-                                   GURL* home_page_url);
+// |browser_context| or NULL if no extension is overriding the homepage.
+// |home_page_url|, if non-NULL, will contain the home_page value the extension
+// has set.
+const Extension* GetExtensionOverridingHomepage(
+    content::BrowserContext* browser_context,
+    GURL* home_page_url);
 
 // Returns which extension is overriding the homepage in a given
-// |browser_context|. |startup_pages|, if non-NULL, will contain the vector of
-// startup page URLs the extension has set.
-const Extension* OverridesStartupPages(content::BrowserContext* browser_context,
-                                       std::vector<GURL>* startup_pages);
+// |browser_context| or NULL if no extension is overriding the startup pages.
+// |startup_pages|, if non-NULL, will contain the vector of startup page URLs
+// the extension has set.
+const Extension* GetExtensionOverridingStartupPages(
+    content::BrowserContext* browser_context,
+    std::vector<GURL>* startup_pages);
 
 // Returns which extension is overriding the search engine in a given
-// |browser_context|. |search_provider|, if non-NULL, will contain the search
-// provider the extension has set.
-const Extension* OverridesSearchEngine(
+// |browser_context| or NULL if no extension is overriding the search engine.
+// |search_provider|, if non-NULL, will contain the search provider the
+// extension has set.
+const Extension* GetExtensionOverridingSearchEngine(
     content::BrowserContext* browser_context,
     api::manifest_types::ChromeSettingsOverrides::Search_provider*
         search_provider);
+
+// Returns which extension is overriding the proxy in a given |browser_context|
+// or NULL if no extension is overriding the proxy.
+const Extension* GetExtensionOverridingProxy(
+    content::BrowserContext* browser_context);
 
 }  // namespace extensions
 
