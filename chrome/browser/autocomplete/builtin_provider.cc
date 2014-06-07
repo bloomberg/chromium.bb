@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 
 namespace {
 
@@ -64,9 +65,9 @@ BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener,
 void BuiltinProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
-  if ((input.type() == AutocompleteInput::INVALID) ||
-      (input.type() == AutocompleteInput::FORCED_QUERY) ||
-      (input.type() == AutocompleteInput::QUERY))
+  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
+      (input.type() == metrics::OmniboxInputType::FORCED_QUERY) ||
+      (input.type() == metrics::OmniboxInputType::QUERY))
     return;
 
   const size_t kAboutSchemeLength = strlen(content::kAboutScheme);

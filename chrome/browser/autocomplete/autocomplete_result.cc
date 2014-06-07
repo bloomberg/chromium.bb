@@ -16,6 +16,7 @@
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/autocomplete_match_type.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 
 namespace {
 
@@ -254,9 +255,10 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
       // We shouldn't get query matches for URL inputs, or non-query matches
       // for query inputs.
       if (AutocompleteMatch::IsSearchType(default_match_->type)) {
-        DCHECK_NE(AutocompleteInput::URL, input.type()) << debug_info;
+        DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
       } else {
-        DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type()) << debug_info;
+        DCHECK_NE(metrics::OmniboxInputType::FORCED_QUERY, input.type())
+            << debug_info;
       }
     }
   }
@@ -354,7 +356,7 @@ void AutocompleteResult::Validate() const {
 GURL AutocompleteResult::ComputeAlternateNavUrl(
     const AutocompleteInput& input,
     const AutocompleteMatch& match) {
-  return ((input.type() == AutocompleteInput::UNKNOWN) &&
+  return ((input.type() == metrics::OmniboxInputType::UNKNOWN) &&
           (AutocompleteMatch::IsSearchType(match.type)) &&
           (match.transition != content::PAGE_TRANSITION_KEYWORD) &&
           (input.canonicalized_url() != match.destination_url)) ?

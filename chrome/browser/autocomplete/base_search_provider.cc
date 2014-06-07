@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
@@ -337,7 +338,7 @@ int BaseSearchProvider::SuggestResult::CalculateRelevance(
     bool keyword_provider_requested) const {
   if (!from_keyword_provider_ && keyword_provider_requested)
     return 100;
-  return ((input.type() == AutocompleteInput::URL) ? 300 : 600);
+  return ((input.type() == metrics::OmniboxInputType::URL) ? 300 : 600);
 }
 
 // BaseSearchProvider::NavigationResult ----------------------------------------
@@ -518,7 +519,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // When the user forced a query, we need to make sure all the fill_into_edit
   // values preserve that property.  Otherwise, if the user starts editing a
   // suggestion, non-Search results will suddenly appear.
-  if (input.type() == AutocompleteInput::FORCED_QUERY)
+  if (input.type() == metrics::OmniboxInputType::FORCED_QUERY)
     match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
@@ -853,7 +854,8 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
   std::string type;
   int relevance = GetDefaultResultRelevance();
   // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
-  const bool allow_navsuggest = input.type() != AutocompleteInput::FORCED_QUERY;
+  const bool allow_navsuggest =
+      input.type() != metrics::OmniboxInputType::FORCED_QUERY;
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   const base::string16& trimmed_input =
