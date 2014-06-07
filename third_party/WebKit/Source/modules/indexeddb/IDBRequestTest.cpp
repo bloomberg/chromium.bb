@@ -53,13 +53,17 @@ public:
     virtual void close() OVERRIDE { }
 };
 
-class NullExecutionContext FINAL : public ExecutionContext, public RefCounted<NullExecutionContext> {
+class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public ExecutionContext {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 public:
+    void trace(Visitor* visitor) { ExecutionContext::trace(visitor); }
+#if !ENABLE(OILPAN)
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
     virtual void refExecutionContext() OVERRIDE { ref(); }
     virtual void derefExecutionContext() OVERRIDE { deref(); }
+#endif
     virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
 
     NullExecutionContext();
@@ -76,7 +80,7 @@ class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
         : m_scope(v8::Isolate::GetCurrent())
-        , m_executionContext(adoptRef(new NullExecutionContext()))
+        , m_executionContext(adoptRefWillBeNoop(new NullExecutionContext()))
     {
         m_scope.scriptState()->setExecutionContext(m_executionContext.get());
     }
@@ -92,7 +96,7 @@ public:
 
 private:
     V8TestingScope m_scope;
-    RefPtr<ExecutionContext> m_executionContext;
+    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
 TEST_F(IDBRequestTest, EventsAfterStopping)

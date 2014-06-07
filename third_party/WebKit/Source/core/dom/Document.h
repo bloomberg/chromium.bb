@@ -1132,8 +1132,10 @@ private:
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
     void cloneDataFromDocument(const Document&);
 
+#if !ENABLE(OILPAN)
     virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
     virtual void derefExecutionContext() OVERRIDE FINAL { deref(); }
+#endif
 
     virtual const KURL& virtualURL() const OVERRIDE FINAL; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL; // Same as completeURL() for the same reason as above.
