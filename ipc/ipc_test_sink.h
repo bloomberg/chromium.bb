@@ -85,10 +85,6 @@ class TestSink : public Channel {
 #if defined(OS_POSIX) && !defined(OS_NACL)
   virtual int GetClientFileDescriptor() const OVERRIDE;
   virtual int TakeClientFileDescriptor() OVERRIDE;
-  virtual bool AcceptsConnections() const OVERRIDE;
-  virtual bool HasAcceptedConnection() const OVERRIDE;
-  virtual bool GetPeerEuid(uid_t* peer_euid) const OVERRIDE;
-  virtual void ResetToAcceptingConnectionState() OVERRIDE;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Used by the source of the messages to send the message to the sink. This

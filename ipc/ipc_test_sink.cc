@@ -101,25 +101,6 @@ int TestSink::TakeClientFileDescriptor() {
   return -1;
 }
 
-bool TestSink::AcceptsConnections() const {
-  NOTREACHED();
-  return false;
-}
-
-bool TestSink::HasAcceptedConnection() const {
-  NOTREACHED();
-  return false;
-}
-
-bool TestSink::GetPeerEuid(uid_t* peer_euid) const {
-  NOTREACHED();
-  return false;
-}
-
-void TestSink::ResetToAcceptingConnectionState() {
-  NOTREACHED();
-}
-
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
 }  // namespace IPC

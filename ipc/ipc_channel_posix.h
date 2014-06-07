@@ -49,11 +49,10 @@
 
 namespace IPC {
 
-class ChannelPosix : public Channel,
-                     public internal::ChannelReader,
-                     public base::MessageLoopForIO::Watcher {
+class IPC_EXPORT ChannelPosix : public Channel,
+                                public internal::ChannelReader,
+                                public base::MessageLoopForIO::Watcher {
  public:
-  // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelPosix(const IPC::ChannelHandle& channel_handle, Mode mode,
                Listener* listener);
   virtual ~ChannelPosix();
@@ -65,10 +64,21 @@ class ChannelPosix : public Channel,
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
   virtual int GetClientFileDescriptor() const OVERRIDE;
   virtual int TakeClientFileDescriptor() OVERRIDE;
-  virtual bool AcceptsConnections() const OVERRIDE;
-  virtual bool HasAcceptedConnection() const OVERRIDE;
-  virtual bool GetPeerEuid(uid_t* peer_euid) const OVERRIDE;
-  virtual void ResetToAcceptingConnectionState() OVERRIDE;
+
+  // Returns true if the channel supports listening for connections.
+  bool AcceptsConnections() const;
+
+  // Returns true if the channel supports listening for connections and is
+  // currently connected.
+  bool HasAcceptedConnection() const;
+
+  // Closes any currently connected socket, and returns to a listening state
+  // for more connections.
+  void ResetToAcceptingConnectionState();
+
+  // Returns true if the peer process' effective user id can be determined, in
+  // which case the supplied peer_euid is updated with it.
+  bool GetPeerEuid(uid_t* peer_euid) const;
 
   void CloseClientFileDescriptor();
 

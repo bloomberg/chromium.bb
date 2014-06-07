@@ -436,15 +436,6 @@ int ChannelProxy::TakeClientFileDescriptor() {
   DCHECK(channel) << context_.get()->channel_id_;
   return channel->TakeClientFileDescriptor();
 }
-
-bool ChannelProxy::GetPeerEuid(uid_t* peer_euid) const {
-  DCHECK(CalledOnValidThread());
-
-  Channel* channel = context_.get()->channel_.get();
-  // Channel must have been created first.
-  DCHECK(channel) << context_.get()->channel_id_;
-  return channel->GetPeerEuid(peer_euid);
-}
 #endif
 
 //-----------------------------------------------------------------------------

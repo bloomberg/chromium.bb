@@ -187,26 +187,6 @@ class IPC_EXPORT Channel : public Sender {
   // file descriptor to the caller.
   // This method can be called on any thread.
   virtual int TakeClientFileDescriptor() = 0;
-
-  // On POSIX an IPC::Channel can either wrap an established socket, or it
-  // can wrap a socket that is listening for connections. Currently an
-  // IPC::Channel that listens for connections can only accept one connection
-  // at a time.
-
-  // Returns true if the channel supports listening for connections.
-  virtual bool AcceptsConnections() const = 0;
-
-  // Returns true if the channel supports listening for connections and is
-  // currently connected.
-  virtual bool HasAcceptedConnection() const = 0;
-
-  // Returns true if the peer process' effective user id can be determined, in
-  // which case the supplied peer_euid is updated with it.
-  virtual bool GetPeerEuid(uid_t* peer_euid) const = 0;
-
-  // Closes any currently connected socket, and returns to a listening state
-  // for more connections.
-  virtual void ResetToAcceptingConnectionState() = 0;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Returns true if a named server channel is initialized on the given channel

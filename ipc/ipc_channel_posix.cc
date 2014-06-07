@@ -1056,8 +1056,8 @@ base::ProcessId ChannelPosix::GetPeerPID() const {
 // static
 scoped_ptr<Channel> Channel::Create(
     const IPC::ChannelHandle &channel_handle, Mode mode, Listener* listener) {
-  return scoped_ptr<Channel>(
-      new ChannelPosix(channel_handle, mode, listener));
+  return make_scoped_ptr(new ChannelPosix(
+      channel_handle, mode, listener)).PassAs<Channel>();
 }
 
 // static

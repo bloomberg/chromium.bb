@@ -116,7 +116,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
   int TakeClientFileDescriptor();
-  bool GetPeerEuid(uid_t* peer_euid) const;
 #endif  // defined(OS_POSIX)
 
  protected:
