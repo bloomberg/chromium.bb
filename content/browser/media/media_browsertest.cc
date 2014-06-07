@@ -224,6 +224,10 @@ IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pVp8)) {
   RunColorFormatTest("yuv420p.webm", "ENDED");
 }
 
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pVp9)) {
+  RunColorFormatTest("yuv444p.webm", "ENDED");
+}
+
 #if defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pH264)) {
   RunColorFormatTest("yuv420p.mp4", "ENDED");
