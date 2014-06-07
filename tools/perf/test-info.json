@@ -156,7 +156,7 @@
     "description":"Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013."
   },
   "page_cycler.typical_25":{
-    "description":"Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013."
+    "description":"Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in June, 2014."
   },
   "robohornet_pro":{
     "description":"Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)"

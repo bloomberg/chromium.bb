@@ -1,10 +1,7 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "typical_25_001.wpr": [
-            "http://www.nationalgeographic.com/"
-        ], 
-        "typical_25_000.wpr": [
+        "typical_25_002.wpr": [
             "http://www.nick.com/games", 
             "http://www.rei.com/", 
             "http://www.fifa.com/", 
@@ -20,6 +17,7 @@
             "http://www.imdb.com/title/tt0910970/", 
             "http://www.flickr.com/search/?q=monkeys&f=hp", 
             "http://money.cnn.com/", 
+            "http://www.nationalgeographic.com/", 
             "http://premierleague.com", 
             "http://www.osubeavers.com/", 
             "http://walgreens.com", 
