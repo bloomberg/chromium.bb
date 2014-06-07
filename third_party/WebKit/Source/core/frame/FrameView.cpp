@@ -1681,14 +1681,12 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     // layout.
     if (!m_nestedLayoutCount) {
         updateWidgetPositions();
-        if (RenderView* renderView = this->renderView())
+        if (RenderView* renderView = this->renderView()) {
             renderView->layer()->updateLayerPositionsAfterDocumentScroll();
+            renderView->layer()->setNeedsToUpdateAncestorDependentProperties();
+            renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
+        }
     }
-
-    // Compositing layers may change after scrolling.
-    // FIXME: Maybe no longer needed after we land squashing and kill overlap testing?
-    if (RenderView* renderView = this->renderView())
-        renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateOnScroll);
 }
 
 void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()

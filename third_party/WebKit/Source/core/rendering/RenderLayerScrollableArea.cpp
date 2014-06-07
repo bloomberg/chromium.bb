@@ -1491,7 +1491,8 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
             box().compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
             compositor->setNeedsCompositingUpdate(CompositingUpdateOnCompositedScroll);
         } else {
-            compositor->setNeedsCompositingUpdate(CompositingUpdateOnScroll);
+            layer()->setNeedsToUpdateAncestorDependentProperties();
+            compositor->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
         }
     }
 }

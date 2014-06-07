@@ -50,7 +50,6 @@ enum CompositingUpdateType {
     CompositingUpdateOnCompositedScroll,
     CompositingUpdateAfterCompositingInputChange,
     CompositingUpdateAfterLayout,
-    CompositingUpdateOnScroll,
 };
 
 enum CompositingStateTransitionType {
