@@ -17,6 +17,7 @@
         '../../../media/cast/cast.gyp:cast_transport',
         '../../../skia/skia.gyp:skia',
         '../../../third_party/libjingle/libjingle.gyp:libjingle',
+        '../../../third_party/WebKit/public/blink.gyp:blink',
         '../../../ui/accessibility/accessibility.gyp:ax_gen',
       ],
       'sources': [
