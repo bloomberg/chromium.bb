@@ -20,11 +20,10 @@
 
 namespace cc {
 
-DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl,
-                                                       int id)
+DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(
+    LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       have_render_passes_to_push_(false),
-      inverse_device_scale_factor_(1.0f),
       child_id_(0),
       own_child_id_(false) {
 }
@@ -142,14 +141,13 @@ void DelegatedRendererLayerImpl::SetFrameData(
   resources_.swap(resources_in_frame);
   resource_provider->DeclareUsedResourcesFromChild(child_id_, resources_);
 
-  inverse_device_scale_factor_ = 1.0f / frame_data->device_scale_factor;
   // Display size is already set so we can compute what the damage rect
   // will be in layer space. The damage may exceed the visible portion of
   // the frame, so intersect the damage to the layer's bounds.
   RenderPass* new_root_pass = render_pass_list.back();
   gfx::Size frame_size = new_root_pass->output_rect.size();
-  gfx::RectF damage_in_layer = damage_in_frame;
-  damage_in_layer.Scale(inverse_device_scale_factor_);
+  gfx::RectF damage_in_layer = MathUtil::MapClippedRect(
+      DelegatedFrameToLayerSpaceTransform(frame_size), damage_in_frame);
   SetUpdateRect(gfx::IntersectRects(
       gfx::UnionRects(update_rect(), damage_in_layer), gfx::Rect(bounds())));
 
@@ -198,6 +196,17 @@ void DelegatedRendererLayerImpl::ReleaseResources() {
   ClearChildId();
 }
 
+gfx::Transform DelegatedRendererLayerImpl::DelegatedFrameToLayerSpaceTransform(
+    const gfx::Size& frame_size) const {
+  gfx::Size display_size = display_size_.IsEmpty() ? bounds() : display_size_;
+
+  gfx::Transform delegated_frame_to_layer_space_transform;
+  delegated_frame_to_layer_space_transform.Scale(
+      static_cast<double>(display_size.width()) / frame_size.width(),
+      static_cast<double>(display_size.height()) / frame_size.height());
+  return delegated_frame_to_layer_space_transform;
+}
+
 static inline int IndexToId(int index) { return index + 1; }
 static inline int IdToIndex(int id) { return id - 1; }
 
@@ -233,9 +242,9 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
   const RenderPass* root_delegated_render_pass =
       render_passes_in_draw_order_.back();
   gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
-  gfx::Transform delegated_frame_to_root_transform = screen_space_transform();
-  delegated_frame_to_root_transform.Scale(inverse_device_scale_factor_,
-                                          inverse_device_scale_factor_);
+  gfx::Transform delegated_frame_to_root_transform =
+      screen_space_transform() *
+      DelegatedFrameToLayerSpaceTransform(frame_size);
 
   for (size_t i = 0; i < render_passes_in_draw_order_.size() - 1; ++i) {
     RenderPass::Id output_render_pass_id(-1, -1);
@@ -407,9 +416,8 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         // Don't allow areas inside the bounds that are empty.
         DCHECK(display_size_.IsEmpty() ||
                gfx::Rect(display_size_).Contains(gfx::Rect(bounds())));
-        gfx::Transform delegated_frame_to_target_transform = draw_transform();
-        delegated_frame_to_target_transform.Scale(inverse_device_scale_factor_,
-                                                  inverse_device_scale_factor_);
+        gfx::Transform delegated_frame_to_target_transform =
+            draw_transform() * DelegatedFrameToLayerSpaceTransform(frame_size);
 
         output_shared_quad_state->content_to_target_transform.ConcatTransform(
             delegated_frame_to_target_transform);
