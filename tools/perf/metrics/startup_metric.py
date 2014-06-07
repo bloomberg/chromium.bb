@@ -1,24 +1,32 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import collections
+
 import json
 import logging
 
-from metrics import Metric
 from metrics import histogram_util
-
+from metrics import Metric
 from telemetry.core import util
 
 
 class StartupMetric(Metric):
-  "A metric for browser startup time."
+  """A metric for browser startup time.
 
-  HISTOGRAMS_TO_RECORD = {
-    'messageloop_start_time' :
-        'Startup.BrowserMessageLoopStartTimeFromMainEntry',
-    'window_display_time' : 'Startup.BrowserWindowDisplay',
-    'open_tabs_time' : 'Startup.BrowserOpenTabs'}
+  User visible metrics:
+    process_creation_to_window_display: Time from browser process creation to
+        the time that the browser window initially becomes visible.
+    process_creation_to_foreground_tab_loaded: Time from browser process
+        creation to the time that the foreground tab is fully loaded.
+    process_creation_to_all_tabs_loaded: Time from the browser process creation
+        to the time that all tabs have fully loaded.
+
+  Critical code progression:
+    process_creation_to_main: Time from process creation to the execution of the
+        browser's main() entry.
+    main_to_messageloop_start: Time from main() entry to the start of the UI
+        thread's message loop.
+  """
 
   def Start(self, page, tab):
     raise NotImplementedError()
@@ -28,86 +36,68 @@ class StartupMetric(Metric):
 
   def _GetBrowserMainEntryTime(self, tab):
     """Returns the main entry time (in ms) of the browser."""
-    histogram_type = histogram_util.BROWSER_HISTOGRAM
     high_bytes = histogram_util.GetHistogramSum(
-        histogram_type,
+        histogram_util.BROWSER_HISTOGRAM,
         'Startup.BrowserMainEntryTimeAbsoluteHighWord',
         tab)
     low_bytes = histogram_util.GetHistogramSum(
-        histogram_type,
+        histogram_util.BROWSER_HISTOGRAM,
         'Startup.BrowserMainEntryTimeAbsoluteLowWord',
         tab)
     if high_bytes == 0 and low_bytes == 0:
       return None
     return (int(high_bytes) << 32) | (int(low_bytes) << 1)
 
-  def _RecordTabLoadTimes(self, tab, browser_main_entry_time_ms, results):
-    """Records the tab load times for the browser. """
-    tab_load_times = []
-    TabLoadTime = collections.namedtuple(
-        'TabLoadTime',
-        ['load_start_ms', 'load_duration_ms'])
-
-    def RecordTabLoadTime(t):
+  def _GetTabLoadTimes(self, browser):
+    """Returns a tuple of (foreground_tab_load_time, all_tabs_load_time)."""
+    foreground_tab_load_time = 0
+    all_tabs_load_time = 0
+    for i in xrange(len(browser.tabs)):
       try:
-        t.WaitForDocumentReadyStateToBeComplete()
-
-        result = t.EvaluateJavaScript(
-            'statsCollectionController.tabLoadTiming()')
-        result = json.loads(result)
-
-        if 'load_start_ms' not in result or 'load_duration_ms' not in result:
-          raise Exception("Outdated Chrome version, "
-              "statsCollectionController.tabLoadTiming() not present")
-        if result['load_duration_ms'] is None:
-          tab_title = t.EvaluateJavaScript('document.title')
-          print "Page: ", tab_title, " didn't finish loading."
-          return
-
-        tab_load_times.append(TabLoadTime(
-            int(result['load_start_ms']),
-            int(result['load_duration_ms'])))
+        tab = browser.tabs[i]
+        tab.WaitForDocumentReadyStateToBeComplete()
+        result = json.loads(tab.EvaluateJavaScript(
+            'statsCollectionController.tabLoadTiming()'))
+        load_time = result['load_start_ms'] + result['load_duration_ms']
+        all_tabs_load_time = max(all_tabs_load_time, load_time)
+        if tab == browser.foreground_tab:
+          foreground_tab_load_time = load_time
       except util.TimeoutException:
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
         # access a background tab. Ignore these tabs.
-        logging.error("Tab timed out on JavaScript access")
-
-    # Only measure the foreground tab. We can't measure all tabs on Android
-    # because on Android the data of the background tabs is loaded on demand,
-    # when the user switches to them, rather than during startup. In view of
-    # this, to get the same measures on all platform, we only measure the
-    # foreground tab on all platforms.
-
-    RecordTabLoadTime(tab.browser.foreground_tab)
-
-    foreground_tab_stats = tab_load_times[0]
-    foreground_tab_load_complete = ((foreground_tab_stats.load_start_ms +
-        foreground_tab_stats.load_duration_ms) - browser_main_entry_time_ms)
-    results.Add(
-        'foreground_tab_load_complete', 'ms', foreground_tab_load_complete)
+        logging.error('Tab timed out on JavaScript access')
+    return foreground_tab_load_time, all_tabs_load_time
 
   def AddResults(self, tab, results):
-    get_histogram_js = 'statsCollectionController.getBrowserHistogram("%s")'
+    absolute_browser_main_entry_ms = self._GetBrowserMainEntryTime(tab)
 
-    for display_name, histogram_name in self.HISTOGRAMS_TO_RECORD.iteritems():
-      result = tab.EvaluateJavaScript(get_histogram_js % histogram_name)
-      result = json.loads(result)
-      measured_time = 0
+    process_creation_to_window_display_ms = histogram_util.GetHistogramSum(
+        histogram_util.BROWSER_HISTOGRAM, 'Startup.BrowserWindowDisplay', tab)
+    absolute_foreground_tab_loaded_ms, absolute_all_tabs_loaded_ms = \
+        self._GetTabLoadTimes(tab.browser)
+    process_creation_to_messageloop_start_ms = histogram_util.GetHistogramSum(
+        histogram_util.BROWSER_HISTOGRAM, 'Startup.BrowserMessageLoopStartTime',
+        tab)
+    main_to_messageloop_start_ms = histogram_util.GetHistogramSum(
+        histogram_util.BROWSER_HISTOGRAM,
+        'Startup.BrowserMessageLoopStartTimeFromMainEntry',
+        tab)
+    process_creation_to_main = (process_creation_to_messageloop_start_ms -
+                                main_to_messageloop_start_ms)
 
-      if 'sum' in result:
-        # For all the histograms logged here, there's a single entry so sum
-        # is the exact value for that entry.
-        measured_time = result['sum']
-      elif 'buckets' in result:
-        measured_time = \
-            (result['buckets'][0]['high'] + result['buckets'][0]['low']) / 2
+    # User visible.
+    results.Add('process_creation_to_window_display', 'ms',
+                process_creation_to_window_display_ms)
+    results.Add('process_creation_to_foreground_tab_loaded', 'ms',
+                absolute_foreground_tab_loaded_ms -
+                absolute_browser_main_entry_ms + process_creation_to_main)
+    results.Add('process_creation_to_all_tabs_loaded', 'ms',
+                absolute_all_tabs_loaded_ms -
+                absolute_browser_main_entry_ms + process_creation_to_main)
 
-      results.Add(display_name, 'ms', measured_time)
-
-    # Get tab load times.
-    browser_main_entry_time_ms = self._GetBrowserMainEntryTime(tab)
-    if (browser_main_entry_time_ms is None):
-      print "Outdated Chrome version, browser main entry time not supported."
-      return
-    self._RecordTabLoadTimes(tab, browser_main_entry_time_ms, results)
+    # Critical code progression.
+    results.Add('process_creation_to_main', 'ms',
+                process_creation_to_main)
+    results.Add('main_to_messageloop_start', 'ms',
+                main_to_messageloop_start_ms)
