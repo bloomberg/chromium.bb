@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -15,6 +16,23 @@
 namespace content {
 
 namespace {
+
+static bool IsGpuRasterizationBlacklisted() {
+  GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+  bool field_trial_enabled =
+      (base::FieldTrialList::FindFullName(
+           "GpuRasterizationExpandedDeviceWhitelist") == "Enabled");
+
+  if (field_trial_enabled) {
+    return manager->IsFeatureBlacklisted(
+               gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION) &&
+           manager->IsFeatureBlacklisted(
+               gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION_FIELD_TRIAL);
+  }
+
+  return manager->IsFeatureBlacklisted(
+        gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
+}
 
 const char* kGpuCompositingFeatureName = "gpu_compositing";
 const char* kWebGLFeatureName = "webgl";
@@ -118,12 +136,10 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 #endif
       {
           kRasterizationFeatureName,
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION) &&
+          IsGpuRasterizationBlacklisted() &&
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
-          !manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
+          !IsGpuRasterizationBlacklisted(),
           "Accelerated rasterization has not been enabled or"
           " is not supported by the current system.",
           true
@@ -222,8 +238,7 @@ bool IsGpuRasterizationEnabled() {
   else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
     return true;
 
-  if (GpuDataManagerImpl::GetInstance()->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION)) {
+  if (IsGpuRasterizationBlacklisted()) {
     return false;
   }
 
