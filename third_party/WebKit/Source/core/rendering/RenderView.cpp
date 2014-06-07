@@ -460,32 +460,31 @@ void RenderView::invalidateTreeAfterLayout(const RenderLayerModelObject& paintIn
     RenderBlock::invalidateTreeAfterLayout(paintInvalidationContainer);
 }
 
-void RenderView::repaintViewRectangle(const LayoutRect& ur) const
+void RenderView::repaintViewRectangle(const LayoutRect& repaintRect) const
 {
-    ASSERT(!ur.isEmpty());
+    ASSERT(!repaintRect.isEmpty());
 
     if (document().printing() || !m_frameView)
         return;
 
     // We always just invalidate the root view, since we could be an iframe that is clipped out
     // or even invisible.
-    Element* elt = document().ownerElement();
-    if (!elt) {
-        if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
-            layer()->repainter().setBackingNeedsRepaintInRect(ur);
-        else
-            m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(ur));
-    } else if (RenderBox* obj = elt->renderBox()) {
-        LayoutRect vr = viewRect();
-        LayoutRect r = intersection(ur, vr);
+    Element* owner = document().ownerElement();
+    if (layer()->compositingState() == PaintsIntoOwnBacking) {
+        layer()->repainter().setBackingNeedsRepaintInRect(repaintRect);
+    } else if (!owner) {
+        m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(repaintRect));
+    } else if (RenderBox* obj = owner->renderBox()) {
+        LayoutRect viewRectangle = viewRect();
+        LayoutRect rectToRepaint = intersection(repaintRect, viewRectangle);
 
         // Subtract out the contentsX and contentsY offsets to get our coords within the viewing
         // rectangle.
-        r.moveBy(-vr.location());
+        rectToRepaint.moveBy(-viewRectangle.location());
 
         // FIXME: Hardcoded offsets here are not good.
-        r.moveBy(obj->contentBoxRect().location());
-        obj->repaintRectangle(r);
+        rectToRepaint.moveBy(obj->contentBoxRect().location());
+        obj->repaintRectangle(rectToRepaint);
     }
 }
 
