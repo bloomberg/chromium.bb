@@ -457,7 +457,7 @@ RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 Size RenderTextHarfBuzz::GetStringSize() {
   EnsureLayout();
-  return Size(lines()[0].size.width(), font_list().GetHeight());
+  return lines()[0].size;
 }
 
 SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
@@ -702,6 +702,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
   if (lines().empty()) {
     std::vector<internal::Line> lines;
     lines.push_back(internal::Line());
+    lines[0].baseline = font_list().GetBaseline();
+    lines[0].size.set_height(font_list().GetHeight());
 
     int current_x = 0;
     SkPaint paint;
