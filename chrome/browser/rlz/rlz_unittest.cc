@@ -237,7 +237,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
   // true to trigger record of the first search. All other fields are passed in
   // with empty or invalid values.
   AutocompleteResult empty_result;
-  OmniboxLog dummy(base::string16(), false, AutocompleteInput::INVALID,
+  OmniboxLog dummy(base::string16(), false, metrics::OmniboxInputType::INVALID,
                    true, 0, false, -1,
                    AutocompleteInput::INVALID_SPEC,
                    base::TimeDelta::FromSeconds(0), 0,
