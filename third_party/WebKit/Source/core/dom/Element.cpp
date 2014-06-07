@@ -3299,8 +3299,6 @@ bool Element::supportsStyleSharing() const
         return false;
     if (!parentOrShadowHostElement()->childrenSupportStyleSharing())
         return false;
-    if (hasScopedHTMLStyleChild())
-        return false;
     if (this == document().cssTarget())
         return false;
     if (isHTMLElement() && toHTMLElement(this)->hasDirectionAuto())

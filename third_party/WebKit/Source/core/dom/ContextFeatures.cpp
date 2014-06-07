@@ -60,13 +60,6 @@ bool ContextFeatures::dialogElementEnabled(Document* document)
     return document->contextFeatures().isEnabled(document, DialogElement, RuntimeEnabledFeatures::dialogElementEnabled());
 }
 
-bool ContextFeatures::styleScopedEnabled(Document* document)
-{
-    if (!document)
-        return RuntimeEnabledFeatures::styleScopedEnabled();
-    return document->contextFeatures().isEnabled(document, StyleScoped, RuntimeEnabledFeatures::styleScopedEnabled());
-}
-
 bool ContextFeatures::pagePopupEnabled(Document* document)
 {
     if (!document)
