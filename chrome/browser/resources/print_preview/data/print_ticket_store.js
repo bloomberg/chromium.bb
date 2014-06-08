@@ -376,13 +376,19 @@ cr.define('print_preview', function() {
         cjt.print.collate = {collate: this.collate.getValue()};
       }
       if (this.color.isCapabilityAvailable() && this.color.isUserEdited()) {
-        var selectedOption = this.color.getSelectedOption();
-        if (!selectedOption) {
+        var colorType = this.color.getValue() ?
+            'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
+        // Find option with this colorType to read its vendor_id.
+        var selectedOptions = destination.capabilities.printer.color.option.
+            filter(function(option) {
+              return option.type == colorType;
+            });
+        if (selectedOptions.length == 0) {
           console.error('Could not find correct color option');
         } else {
-          cjt.print.color = {type: selectedOption.type};
-          if (selectedOption.hasOwnProperty('vendor_id')) {
-            cjt.print.color.vendor_id = selectedOption.vendor_id;
+          cjt.print.color = {type: colorType};
+          if (selectedOptions[0].hasOwnProperty('vendor_id')) {
+            cjt.print.color.vendor_id = selectedOptions[0].vendor_id;
           }
         }
       }

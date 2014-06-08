@@ -168,23 +168,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!print_preview.Destination} destination Destination to print to.
-     * @param {!print_preview.ticket_items.Color} color Color ticket item.
-     * @return {number} Native layer color model.
-     * @private
-     */
-    getNativeColorModel_: function(destination, color) {
-      // For non-local printers native color model is ignored anyway.
-      var option = destination.isLocal ? color.getSelectedOption() : null;
-      var nativeColorModel = parseInt(option ? option.vendor_id : null);
-      if (isNaN(nativeColorModel)) {
-        return color.getValue() ?
-            NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY;
-      }
-      return nativeColorModel;
-    },
-
-    /**
      * Requests that a preview be generated. The following events may be
      * dispatched in response:
      *   - PAGE_COUNT_READY
@@ -207,7 +190,8 @@ cr.define('print_preview', function() {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'mediaSize': printTicketStore.mediaSize.getValue(),
         'landscape': printTicketStore.landscape.getValue(),
-        'color': this.getNativeColorModel_(destination, printTicketStore.color),
+        'color': printTicketStore.color.getValue() ?
+            NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'isFirstRequest': requestId == 0,
@@ -279,7 +263,8 @@ cr.define('print_preview', function() {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
         'landscape': printTicketStore.landscape.getValue(),
-        'color': this.getNativeColorModel_(destination, printTicketStore.color),
+        'color': printTicketStore.color.getValue() ?
+            NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'generateDraftData': true, // TODO(rltoscano): What should this be?
