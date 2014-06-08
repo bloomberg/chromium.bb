@@ -57,21 +57,25 @@ class BluetoothRemoteGattDescriptorChromeOS
       const dbus::ObjectPath& object_path);
   virtual ~BluetoothRemoteGattDescriptorChromeOS();
 
-  // Called by dbus:: on completion of the request to get the descriptor value.
-  void OnGetValue(const ValueCallback& callback,
-                  const ErrorCallback& error_callback,
-                  bool success);
+  // Called by dbus:: on successful completion of a request to read
+  // the descriptor value.
+  void OnValueSuccess(const ValueCallback& callback,
+                      const std::vector<uint8>& value);
 
-  // Called by dbus:: on completion of the request to set the descriptor value.
-  void OnSetValue(const base::Closure& callback,
-                  const ErrorCallback& error_callback,
-                  bool success);
+  // Called by dbus:: on unsuccessful completion of a request to read or write
+  // the descriptor value.
+  void OnError(const ErrorCallback& error_callback,
+               const std::string& error_name,
+               const std::string& error_message);
 
   // Object path of the D-Bus descriptor object.
   dbus::ObjectPath object_path_;
 
   // The GATT characteristic this descriptor belongs to.
   BluetoothRemoteGattCharacteristicChromeOS* characteristic_;
+
+  // The cached characteristic value based on the most recent read request.
+  std::vector<uint8> cached_value_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -268,30 +268,6 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
   service_->NotifyServiceChanged();
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorPropertyChanged(
-    const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
-  DescriptorMap::const_iterator iter = descriptors_.find(object_path);
-  if (iter == descriptors_.end())
-    return;
-
-  // Ignore all property changes except for "Value".
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path);
-  DCHECK(properties);
-  if (property_name != properties->value.name())
-    return;
-
-  VLOG(1) << "GATT descriptor property changed: " << object_path.value()
-          << ", property: " << property_name;
-
-  DCHECK(service_);
-
-  service_->NotifyDescriptorValueChanged(
-      this, iter->second, properties->value.value());
-}
-
 void BluetoothRemoteGattCharacteristicChromeOS::OnValueSuccess(
     const ValueCallback& callback,
     const std::vector<uint8>& value) {

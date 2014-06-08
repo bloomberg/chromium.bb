@@ -46,6 +46,13 @@ class CHROMEOS_EXPORT FakeBluetoothGattDescriptorClient
   virtual std::vector<dbus::ObjectPath> GetDescriptors() OVERRIDE;
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
       OVERRIDE;
+  virtual void ReadValue(const dbus::ObjectPath& object_path,
+                         const ValueCallback& callback,
+                         const ErrorCallback& error_callback) OVERRIDE;
+  virtual void WriteValue(const dbus::ObjectPath& object_path,
+                          const std::vector<uint8>& value,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE;
 
   // Makes the descriptor with the UUID |uuid| visible under the characteristic
   // with object path |characteristic_path|. Descriptor object paths are
@@ -71,7 +78,14 @@ class CHROMEOS_EXPORT FakeBluetoothGattDescriptorClient
   void NotifyDescriptorRemoved(const dbus::ObjectPath& object_path);
 
   // Mapping from object paths to Properties structures.
-  typedef std::map<dbus::ObjectPath, Properties*> PropertiesMap;
+  struct DescriptorData {
+    DescriptorData();
+    ~DescriptorData();
+
+    scoped_ptr<Properties> properties;
+    std::vector<uint8> value;
+  };
+  typedef std::map<dbus::ObjectPath, DescriptorData*> PropertiesMap;
   PropertiesMap properties_;
 
   // List of observers interested in event notifications from us.

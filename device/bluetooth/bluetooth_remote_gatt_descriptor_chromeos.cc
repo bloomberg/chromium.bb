@@ -10,6 +10,7 @@
 #include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 
 namespace chromeos {
 
@@ -59,11 +60,7 @@ bool BluetoothRemoteGattDescriptorChromeOS::IsLocal() const {
 
 const std::vector<uint8>&
 BluetoothRemoteGattDescriptorChromeOS::GetValue() const {
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path_);
-  DCHECK(properties);
-  return properties->value.value();
+  return cached_value_;
 }
 
 device::BluetoothGattCharacteristic*
@@ -84,14 +81,15 @@ void BluetoothRemoteGattDescriptorChromeOS::ReadRemoteDescriptor(
   VLOG(1) << "Sending GATT characteristic descriptor read request to "
           << "descriptor: " << GetIdentifier() << ", UUID: "
           << GetUUID().canonical_value();
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path_);
-  DCHECK(properties);
-  properties->value.Get(
-      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnGetValue,
+
+  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
+      object_path_,
+      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnValueSuccess,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, error_callback));
+                 callback),
+      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
 }
 
 void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
@@ -102,47 +100,38 @@ void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
           << "characteristic: " << GetIdentifier() << ", UUID: "
           << GetUUID().canonical_value() << ", with value: "
           << new_value << ".";
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path_);
-  DCHECK(properties);
-  properties->value.Set(
+
+  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->WriteValue(
+      object_path_,
       new_value,
-      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnSetValue,
+      callback,
+      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, error_callback));
+                 error_callback));
 }
 
-void BluetoothRemoteGattDescriptorChromeOS::OnGetValue(
+void BluetoothRemoteGattDescriptorChromeOS::OnValueSuccess(
     const ValueCallback& callback,
-    const ErrorCallback& error_callback,
-    bool success) {
-  if (!success) {
-    VLOG(1) << "Failed to read the value from the remote descriptor.";
-    error_callback.Run();
-    return;
-  }
+    const std::vector<uint8>& value) {
+  VLOG(1) << "Descriptor value read: " << value;
+  cached_value_ = value;
 
-  VLOG(1) << "Read value of remote descriptor.";
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path_);
-  DCHECK(properties);
-  callback.Run(properties->value.value());
+  DCHECK(characteristic_);
+  BluetoothRemoteGattServiceChromeOS* service =
+      static_cast<BluetoothRemoteGattServiceChromeOS*>(
+          characteristic_->GetService());
+  DCHECK(service);
+  service->NotifyDescriptorValueChanged(characteristic_, this, value);
+  callback.Run(value);
 }
 
-void BluetoothRemoteGattDescriptorChromeOS::OnSetValue(
-    const base::Closure& callback,
+void BluetoothRemoteGattDescriptorChromeOS::OnError(
     const ErrorCallback& error_callback,
-    bool success) {
-  if (!success) {
-    VLOG(1) << "Failed to write the value of remote descriptor.";
-    error_callback.Run();
-    return;
-  }
-
-  VLOG(1) << "Wrote value of remote descriptor.";
-  callback.Run();
+    const std::string& error_name,
+    const std::string& error_message) {
+  VLOG(1) << "Operation failed: " << error_name
+          << ", message: " << error_message;
+  error_callback.Run();
 }
 
 }  // namespace chromeos

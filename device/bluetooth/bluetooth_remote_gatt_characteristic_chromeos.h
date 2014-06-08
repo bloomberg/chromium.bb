@@ -80,9 +80,6 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void GattDescriptorRemoved(
       const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void GattDescriptorPropertyChanged(
-      const dbus::ObjectPath& object_path,
-      const std::string& property_name) OVERRIDE;
 
   // Called by dbus:: on successful completion of a request to read
   // the characteristic value.

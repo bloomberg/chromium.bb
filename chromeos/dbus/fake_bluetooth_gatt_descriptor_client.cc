@@ -42,19 +42,13 @@ void FakeBluetoothGattDescriptorClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
   VLOG(1) << "Set " << property->name();
-  if (property->name() != value.name()) {
-    callback.Run(false);
-    return;
-  }
+  callback.Run(false);
+}
 
-  // TODO(armansito): Setting the "Value" property should be allowed based
-  // on permissions.
-  if (uuid.value() != kClientCharacteristicConfigurationUUID) {
-    callback.Run(false);
-    return;
-  }
-  callback.Run(true);
-  property->ReplaceValueWithSetValue();
+FakeBluetoothGattDescriptorClient::DescriptorData::DescriptorData() {
+}
+
+FakeBluetoothGattDescriptorClient::DescriptorData::~DescriptorData() {
 }
 
 FakeBluetoothGattDescriptorClient::FakeBluetoothGattDescriptorClient()
@@ -91,7 +85,37 @@ FakeBluetoothGattDescriptorClient::GetProperties(
   PropertiesMap::const_iterator iter = properties_.find(object_path);
   if (iter == properties_.end())
     return NULL;
-  return iter->second;
+  return iter->second->properties.get();
+}
+
+void FakeBluetoothGattDescriptorClient::ReadValue(
+    const dbus::ObjectPath& object_path,
+    const ValueCallback& callback,
+    const ErrorCallback& error_callback) {
+  PropertiesMap::iterator iter = properties_.find(object_path);
+  if (iter == properties_.end()) {
+    error_callback.Run(kUnknownDescriptorError, "");
+    return;
+  }
+
+  callback.Run(iter->second->value);
+}
+
+void FakeBluetoothGattDescriptorClient::WriteValue(
+    const dbus::ObjectPath& object_path,
+    const std::vector<uint8>& value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (properties_.find(object_path) == properties_.end()) {
+    error_callback.Run(kUnknownDescriptorError, "");
+    return;
+  }
+
+  // Since the only fake descriptor is "Client Characteristic Configuration"
+  // and BlueZ doesn't allow writing to it, return failure.
+  error_callback.Run("org.bluez.Error.Failed",
+                     "Writing to the Client Characteristic Configuration "
+                     "descriptor not allowed");
 }
 
 dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
@@ -118,14 +142,16 @@ dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
       &FakeBluetoothGattDescriptorClient::OnPropertyChanged,
       weak_ptr_factory_.GetWeakPtr(),
       object_path));
-  properties_[object_path] = properties;
   properties->uuid.ReplaceValue(uuid);
   properties->characteristic.ReplaceValue(characteristic_path);
 
-  std::vector<uint8> value;
-  value.push_back(0);  // Notifications/Indications disabled.
-  value.push_back(0);
-  properties->value.ReplaceValue(value);
+  DescriptorData* data = new DescriptorData();
+  data->properties.reset(properties);
+
+  data->value.push_back(1);  // Notifications enabled.
+  data->value.push_back(0);
+
+  properties_[object_path] = data;
 
   NotifyDescriptorAdded(object_path);
 
@@ -154,9 +180,6 @@ void FakeBluetoothGattDescriptorClient::OnPropertyChanged(
 
   FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
                     GattDescriptorPropertyChanged(object_path, property_name));
-
-  // TODO(armansito): Implement CCC behavior (enable/disable notifications
-  // or indications characteristics).
 }
 
 void FakeBluetoothGattDescriptorClient::NotifyDescriptorAdded(

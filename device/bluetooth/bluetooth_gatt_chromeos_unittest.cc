@@ -944,15 +944,19 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
             descriptor->GetUUID());
 
   std::vector<uint8> desc_value;
+  desc_value.push_back(1);
   desc_value.push_back(0);
-  desc_value.push_back(0);
-  EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
+
+  /* The cached value will be empty until the first read request */
+  EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_TRUE(descriptor->GetValue().empty());
 
   EXPECT_EQ(0, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(last_read_value_.empty());
 
-  // Read value.
+  // Read value. GattDescriptorValueChanged event will be sent after a
+  // successful read.
   descriptor->ReadRemoteDescriptor(
       base::Bind(&BluetoothGattChromeOSTest::ValueCallback,
                  base::Unretained(this)),
@@ -961,10 +965,11 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
+  EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
-  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 
-  // Write value.
+  // Write value. Writes to this descriptor will fail.
   desc_value[0] = 0x03;
   descriptor->WriteRemoteDescriptor(
       desc_value,
@@ -972,10 +977,10 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
                  base::Unretained(this)),
       base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  EXPECT_EQ(2, success_callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
-  EXPECT_FALSE(ValuesEqual(last_read_value_, descriptor->GetValue()));
-  EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
+  EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 
@@ -985,12 +990,12 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
                  base::Unretained(this)),
       base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  EXPECT_EQ(3, success_callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
-  EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
-  EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
+  EXPECT_EQ(2, service_observer.gatt_descriptor_value_changed_count_);
 }
 
 }  // namespace chromeos

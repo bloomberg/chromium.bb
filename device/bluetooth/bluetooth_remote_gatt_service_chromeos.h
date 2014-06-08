@@ -89,8 +89,8 @@ class BluetoothRemoteGattServiceChromeOS
       bool added);
 
   // Notifies its observers that the value of a descriptor has changed. Called
-  // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
-  // observers when the value of one of their descriptors gets updated.
+  // by BluetoothRemoteGattDescriptorChromeOS instances to notify service
+  // observers when their cached value gets updated after a read request.
   void NotifyDescriptorValueChanged(
       BluetoothRemoteGattCharacteristicChromeOS* characteristic,
       BluetoothRemoteGattDescriptorChromeOS* descriptor,
