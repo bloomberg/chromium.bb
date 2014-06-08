@@ -87,8 +87,7 @@ void PrivetFileSystemAsyncOperationUtil::OnGotDeviceDescription(
   }
 
   privet_async_factory_ = PrivetHTTPAsynchronousFactory::CreateInstance(
-      service_discovery_client_.get(),
-      request_context_.get());
+      service_discovery_client_.get(), request_context_.get());
   privet_http_resolution_ = privet_async_factory_->CreatePrivetHTTP(
       parsed_path_.service_name,
       device_description.address,
@@ -100,7 +99,7 @@ void PrivetFileSystemAsyncOperationUtil::OnGotDeviceDescription(
 void PrivetFileSystemAsyncOperationUtil::OnGotPrivetHTTP(
     scoped_ptr<PrivetHTTPClient> privet_http_client) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  privet_client_ = privet_http_client.Pass();
+  privet_client_ = PrivetV1HTTPClient::CreateDefault(privet_http_client.Pass());
   delegate_->PrivetFileSystemResolved(privet_client_.get(),
                                       parsed_path_.path);
 }
@@ -129,7 +128,7 @@ void PrivetFileSystemListOperation::Start() {
 }
 
 void PrivetFileSystemListOperation::PrivetFileSystemResolved(
-    PrivetHTTPClient* http_client,
+    PrivetV1HTTPClient* http_client,
     const std::string& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!http_client) {
@@ -241,7 +240,7 @@ void PrivetFileSystemDetailsOperation::Start() {
 }
 
 void PrivetFileSystemDetailsOperation::PrivetFileSystemResolved(
-    PrivetHTTPClient* http_client,
+    PrivetV1HTTPClient* http_client,
     const std::string& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!http_client) {

@@ -981,6 +981,7 @@
         'browser/local_discovery/privet_device_lister_impl.h',
         'browser/local_discovery/privet_device_resolver.cc',
         'browser/local_discovery/privet_device_resolver.h',
+        'browser/local_discovery/privet_http.cc',
         'browser/local_discovery/privet_http.h',
         'browser/local_discovery/privet_http_asynchronous_factory_mac.cc',
         'browser/local_discovery/privet_http_asynchronous_factory_mac.h',

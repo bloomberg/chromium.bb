@@ -33,6 +33,7 @@ namespace local_discovery {
 class PrivetConfirmApiCallFlow;
 class PrivetHTTPAsynchronousFactory;
 class PrivetHTTPResolution;
+class PrivetV1HTTPClient;
 class ServiceDiscoverySharedClient;
 
 // UI Handler for chrome://devices/
@@ -166,7 +167,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 #endif
 
   // The current HTTP client (used for the current operation).
-  scoped_ptr<PrivetHTTPClient> current_http_client_;
+  scoped_ptr<PrivetV1HTTPClient> current_http_client_;
 
   // The current register operation. Only one allowed at any time.
   scoped_ptr<PrivetRegisterOperation> current_register_operation_;

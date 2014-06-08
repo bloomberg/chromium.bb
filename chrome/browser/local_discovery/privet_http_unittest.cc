@@ -242,10 +242,11 @@ class PrivetHTTPTest : public ::testing::Test {
 
     request_context_= new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
-    privet_client_.reset(new PrivetHTTPClientImpl(
-        "sampleDevice._privet._tcp.local",
-        net::HostPortPair("10.0.0.8", 6006),
-        request_context_.get()));
+    privet_client_ = PrivetV1HTTPClient::CreateDefault(
+        make_scoped_ptr<PrivetHTTPClient>(
+            new PrivetHTTPClientImpl("sampleDevice._privet._tcp.local",
+                                     net::HostPortPair("10.0.0.8", 6006),
+                                     request_context_)));
     fetcher_factory_.SetDelegateForTests(&fetcher_delegate_);
   }
 
@@ -337,7 +338,7 @@ class PrivetHTTPTest : public ::testing::Test {
   base::MessageLoop loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory fetcher_factory_;
-  scoped_ptr<PrivetHTTPClient> privet_client_;
+  scoped_ptr<PrivetV1HTTPClient> privet_client_;
   NiceMock<MockTestURLFetcherFactoryDelegate> fetcher_delegate_;
 };
 

@@ -10,9 +10,11 @@ namespace local_discovery {
 
 PrivetHTTPAsynchronousFactoryMac::PrivetHTTPAsynchronousFactoryMac(
     net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {}
+    : request_context_(request_context) {
+}
 
-PrivetHTTPAsynchronousFactoryMac::~PrivetHTTPAsynchronousFactoryMac() {}
+PrivetHTTPAsynchronousFactoryMac::~PrivetHTTPAsynchronousFactoryMac() {
+}
 
 scoped_ptr<PrivetHTTPResolution>
 PrivetHTTPAsynchronousFactoryMac::CreatePrivetHTTP(
@@ -31,9 +33,11 @@ PrivetHTTPAsynchronousFactoryMac::ResolutionMac::ResolutionMac(
     : request_context_(request_context),
       name_(name),
       host_port_(host_port),
-      callback_(callback) {}
+      callback_(callback) {
+}
 
-PrivetHTTPAsynchronousFactoryMac::ResolutionMac::~ResolutionMac() {}
+PrivetHTTPAsynchronousFactoryMac::ResolutionMac::~ResolutionMac() {
+}
 
 void PrivetHTTPAsynchronousFactoryMac::ResolutionMac::Start() {
   callback_.Run(scoped_ptr<PrivetHTTPClient>(

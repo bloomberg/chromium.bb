@@ -1431,7 +1431,8 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 
   privet_local_print_operation_.reset();
   privet_capabilities_operation_.reset();
-  privet_http_client_ = http_client.Pass();
+  privet_http_client_ =
+      local_discovery::PrivetV1HTTPClient::CreateDefault(http_client.Pass());
 
   privet_http_resolution_.reset();
 
@@ -1536,7 +1537,7 @@ void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
 bool PrintPreviewHandler::CreatePrivetHTTP(
     const std::string& name,
     const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
-    callback) {
+        callback) {
   const local_discovery::DeviceDescription* device_description =
       printer_lister_->GetDeviceDescription(name);
 
@@ -1547,12 +1548,10 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
 
   privet_http_factory_ =
       local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
-      service_discovery_client_,
-      Profile::FromWebUI(web_ui())->GetRequestContext());
+          service_discovery_client_,
+          Profile::FromWebUI(web_ui())->GetRequestContext());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-      name,
-      device_description->address,
-      callback);
+      name, device_description->address, callback);
   privet_http_resolution_->Start();
 
   return true;

@@ -263,7 +263,7 @@ class PrintPreviewHandler
   bool CreatePrivetHTTP(
       const std::string& name,
       const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
-      callback);
+          callback);
   void FillPrinterDescription(
       const std::string& name,
       const local_discovery::DeviceDescription& description,
@@ -303,7 +303,7 @@ class PrintPreviewHandler
   scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory>
       privet_http_factory_;
   scoped_ptr<local_discovery::PrivetHTTPResolution> privet_http_resolution_;
-  scoped_ptr<local_discovery::PrivetHTTPClient> privet_http_client_;
+  scoped_ptr<local_discovery::PrivetV1HTTPClient> privet_http_client_;
   scoped_ptr<local_discovery::PrivetJSONOperation>
       privet_capabilities_operation_;
   scoped_ptr<local_discovery::PrivetLocalPrintOperation>

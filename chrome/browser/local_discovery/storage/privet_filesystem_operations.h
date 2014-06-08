@@ -75,9 +75,8 @@ class PrivetFileSystemAsyncOperationUtil {
     // |http_client| is the client for the resolved service, or NULL if
     // resolution failed. |path| is the canonical path within the privet
     // service.
-    virtual void PrivetFileSystemResolved(
-        PrivetHTTPClient* http_client,
-        const std::string& path) = 0;
+    virtual void PrivetFileSystemResolved(PrivetV1HTTPClient* http_client,
+                                          const std::string& path) = 0;
   };
 
   PrivetFileSystemAsyncOperationUtil(const base::FilePath& full_path,
@@ -101,7 +100,7 @@ class PrivetFileSystemAsyncOperationUtil {
   scoped_ptr<PrivetDeviceResolver> privet_device_resolver_;
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_async_factory_;
   scoped_ptr<PrivetHTTPResolution> privet_http_resolution_;
-  scoped_ptr<PrivetHTTPClient> privet_client_;
+  scoped_ptr<PrivetV1HTTPClient> privet_client_;
 
   base::WeakPtrFactory<PrivetFileSystemAsyncOperationUtil> weak_factory_;
 };
@@ -120,9 +119,8 @@ class PrivetFileSystemListOperation
 
   virtual void Start() OVERRIDE;
 
-  virtual void PrivetFileSystemResolved(
-        PrivetHTTPClient* http_client,
-        const std::string& path) OVERRIDE;
+  virtual void PrivetFileSystemResolved(PrivetV1HTTPClient* http_client,
+                                        const std::string& path) OVERRIDE;
 
  private:
   void OnStorageListResult(const base::DictionaryValue* value);
@@ -155,7 +153,7 @@ class PrivetFileSystemDetailsOperation
 
   virtual void Start() OVERRIDE;
 
-  virtual void PrivetFileSystemResolved(PrivetHTTPClient* http_client,
+  virtual void PrivetFileSystemResolved(PrivetV1HTTPClient* http_client,
                                         const std::string& path) OVERRIDE;
 
  private:

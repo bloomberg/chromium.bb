@@ -180,9 +180,8 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
     privet_lister_.reset(
         new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
-    privet_http_factory_ =
-        PrivetHTTPAsynchronousFactory::CreateInstance(
-            service_discovery_client_.get(), profile->GetRequestContext());
+    privet_http_factory_ = PrivetHTTPAsynchronousFactory::CreateInstance(
+        service_discovery_client_.get(), profile->GetRequestContext());
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetInstance()->GetForProfile(profile);
@@ -286,7 +285,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
     scoped_ptr<PrivetHTTPClient> http_client) {
-  current_http_client_.swap(http_client);
+  current_http_client_ = PrivetV1HTTPClient::CreateDefault(http_client.Pass());
 
   std::string user = GetSyncAccount();
 

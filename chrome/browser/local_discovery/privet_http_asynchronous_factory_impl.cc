@@ -31,9 +31,11 @@ PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
     ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context)
     : service_discovery_client_(service_discovery_client),
-      request_context_(request_context) {}
+      request_context_(request_context) {
+}
 
-PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {}
+PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
+}
 
 scoped_ptr<PrivetHTTPResolution>
 PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
@@ -70,7 +72,8 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
       base::Bind(&ResolutionImpl::ResolveComplete, base::Unretained(this)));
 }
 
-PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {}
+PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {
+}
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start() {
   resolver_->Start();

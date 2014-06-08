@@ -73,7 +73,8 @@ void ReportPrivetUmaEvent(PrivetNotificationsEvent privet_event) {
 
 PrivetNotificationsListener::PrivetNotificationsListener(
     scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory,
-    Delegate* delegate) : delegate_(delegate), devices_active_(0) {
+    Delegate* delegate)
+    : delegate_(delegate), devices_active_(0) {
   privet_http_factory_.swap(privet_http_factory);
 }
 

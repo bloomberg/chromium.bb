@@ -35,8 +35,7 @@ PrivetLocalPrinterLister::PrivetLocalPrinterLister(
   privet_lister_.reset(
       new PrivetDeviceListerImpl(service_discovery_client, this));
   privet_http_factory_ = PrivetHTTPAsynchronousFactory::CreateInstance(
-      service_discovery_client,
-      request_context);
+      service_discovery_client, request_context);
 }
 
 PrivetLocalPrinterLister::~PrivetLocalPrinterLister() {
