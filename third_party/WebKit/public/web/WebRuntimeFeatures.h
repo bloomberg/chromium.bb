@@ -58,6 +58,8 @@ public:
 
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
 
+    BLINK_EXPORT static void enableFastMobileScrolling(bool);
+
     BLINK_EXPORT static void enableFastTextAutosizing(bool);
 
     BLINK_EXPORT static void enableFileSystem(bool);
