@@ -1,0 +1,7 @@
+This text is bold
+
+Dumping matched rules: 
+:host ::content * {    regular
+    font-weight: bold;
+}
+
