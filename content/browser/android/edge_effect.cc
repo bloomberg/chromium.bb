@@ -133,8 +133,11 @@ void UpdateLayer(cc::Layer* layer,
                  float opacity) {
   DCHECK(layer);
   layer->SetIsDrawable(true);
+  gfx::Size bounds = ComputeBounds(edge, window_size, height);
+  layer->SetTransformOrigin(
+      gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
   layer->SetTransform(ComputeTransform(edge, window_size, offset, height));
-  layer->SetBounds(ComputeBounds(edge, window_size, height));
+  layer->SetBounds(bounds);
   layer->SetOpacity(Clamp(opacity, 0.f, 1.f));
 }
 
