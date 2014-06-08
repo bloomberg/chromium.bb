@@ -110,7 +110,7 @@ void RenderLayerStackingNode::dirtyZOrderLists()
     m_zOrderListsDirty = true;
 
     if (!renderer()->documentBeingDestroyed())
-        compositor()->setCompositingLayersNeedRebuild();
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void RenderLayerStackingNode::dirtyStackingContextZOrderLists()
@@ -132,7 +132,7 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
     m_normalFlowListDirty = true;
 
     if (!renderer()->documentBeingDestroyed())
-        compositor()->setCompositingLayersNeedRebuild();
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void RenderLayerStackingNode::rebuildZOrderLists()

@@ -49,6 +49,7 @@ enum CompositingUpdateType {
     CompositingUpdateNone,
     CompositingUpdateOnCompositedScroll,
     CompositingUpdateAfterCompositingInputChange,
+    CompositingUpdateRebuildTree,
 };
 
 enum CompositingStateTransitionType {
@@ -93,10 +94,6 @@ public:
 
     // Copy the accelerated compositing related flags from Settings
     void updateAcceleratedCompositingSettings();
-
-    // Called when the layer hierarchy needs to be updated (compositing layers have been
-    // created, destroyed or re-parented).
-    void setCompositingLayersNeedRebuild();
 
     // Used to indicate that a compositing update will be needed for the next frame that gets drawn.
     void setNeedsCompositingUpdate(CompositingUpdateType);
@@ -234,8 +231,6 @@ private:
     GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
 
-    bool compositingLayersNeedRebuild();
-
     void enableCompositingModeIfNeeded();
 
     bool requiresHorizontalScrollbarLayer() const;
@@ -261,7 +256,6 @@ private:
 
     bool m_hasAcceleratedCompositing;
     bool m_compositing;
-    bool m_compositingLayersNeedRebuild;
 
     // The root layer doesn't composite if it's a non-scrollable frame.
     // So, after a layout we set this dirty bit to know that we need

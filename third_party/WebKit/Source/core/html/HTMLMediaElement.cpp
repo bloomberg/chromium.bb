@@ -3213,7 +3213,7 @@ void HTMLMediaElement::didBecomeFullscreenElement()
     if (hasMediaControls())
         mediaControls()->enteredFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement(*this))
-        document().renderView()->compositor()->setCompositingLayersNeedRebuild();
+        document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void HTMLMediaElement::willStopBeingFullscreenElement()
@@ -3221,7 +3221,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
     if (hasMediaControls())
         mediaControls()->exitedFullscreen();
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement(*this))
-        document().renderView()->compositor()->setCompositingLayersNeedRebuild();
+        document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 blink::WebLayer* HTMLMediaElement::platformLayer() const

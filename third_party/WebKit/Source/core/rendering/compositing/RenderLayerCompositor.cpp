@@ -89,7 +89,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_pendingUpdateType(CompositingUpdateNone)
     , m_hasAcceleratedCompositing(true)
     , m_compositing(false)
-    , m_compositingLayersNeedRebuild(false)
     , m_rootShouldAlwaysCompositeDirty(true)
     , m_needsUpdateFixedBackground(false)
     , m_isTrackingRepaints(false)
@@ -153,16 +152,9 @@ void RenderLayerCompositor::enableCompositingModeIfNeeded()
     if (rootShouldAlwaysComposite()) {
         // FIXME: Is this needed? It was added in https://bugs.webkit.org/show_bug.cgi?id=26651.
         // No tests fail if it's deleted.
-        setCompositingLayersNeedRebuild();
+        setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
         setCompositingModeEnabled(true);
     }
-}
-
-bool RenderLayerCompositor::compositingLayersNeedRebuild()
-{
-    // enableCompositingModeIfNeeded can set the m_compositingLayersNeedRebuild bit.
-    ASSERT(!m_rootShouldAlwaysCompositeDirty);
-    return m_compositingLayersNeedRebuild;
 }
 
 bool RenderLayerCompositor::rootShouldAlwaysComposite() const
@@ -175,15 +167,7 @@ bool RenderLayerCompositor::rootShouldAlwaysComposite() const
 void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 {
     m_compositingReasonFinder.updateTriggers();
-
-    bool hasAcceleratedCompositing = m_renderView.document().settings()->acceleratedCompositingEnabled();
-
-    // FIXME: Is this needed? It was added in https://bugs.webkit.org/show_bug.cgi?id=26651.
-    // No tests fail if it's deleted.
-    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing)
-        setCompositingLayersNeedRebuild();
-
-    m_hasAcceleratedCompositing = hasAcceleratedCompositing;
+    m_hasAcceleratedCompositing = m_renderView.document().settings()->acceleratedCompositingEnabled();
     m_rootShouldAlwaysCompositeDirty = true;
 }
 
@@ -199,14 +183,6 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
 bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() const
 {
     return m_compositingReasonFinder.hasOverflowScrollTrigger();
-}
-
-void RenderLayerCompositor::setCompositingLayersNeedRebuild()
-{
-    // FIXME: crbug.com/332248 ideally this could be merged with setNeedsCompositingUpdate().
-    m_compositingLayersNeedRebuild = true;
-    page()->animator().scheduleVisualUpdate();
-    lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
 static RenderVideo* findFullscreenVideoRenderer(Document& document)
@@ -292,7 +268,6 @@ void RenderLayerCompositor::didLayout()
 
 void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
-    ASSERT(!compositingLayersNeedRebuild());
     ASSERT(m_pendingUpdateType == CompositingUpdateNone);
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
 }
@@ -339,26 +314,20 @@ void RenderLayerCompositor::updateIfNeeded()
         // before moving this function after checking the dirty bits.
         DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
 
-        // FIXME: enableCompositingModeIfNeeded can call setCompositingLayersNeedRebuild,
+        // FIXME: enableCompositingModeIfNeeded can trigger a CompositingUpdateRebuildTree,
         // which asserts that it's not InCompositingUpdate.
         enableCompositingModeIfNeeded();
     }
 
     CompositingUpdateType updateType = m_pendingUpdateType;
-    bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
-
     m_pendingUpdateType = CompositingUpdateNone;
-    m_compositingLayersNeedRebuild = false;
 
     if (!hasAcceleratedCompositing())
         return;
 
     bool needsToUpdateScrollingCoordinator = scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
-    if (updateType == CompositingUpdateNone && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
+    if (updateType == CompositingUpdateNone && !needsToUpdateScrollingCoordinator)
         return;
-
-    GraphicsLayerUpdater::UpdateType graphicsLayerUpdateType = GraphicsLayerUpdater::DoNotForceUpdate;
-    CompositingPropertyUpdater::UpdateType compositingPropertyUpdateType = CompositingPropertyUpdater::DoNotForceUpdate;
 
     RenderLayer* updateRoot = rootRenderLayer();
 
@@ -368,7 +337,7 @@ void RenderLayerCompositor::updateIfNeeded()
         bool layersChanged = false;
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
-            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, compositingPropertyUpdateType);
+            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot);
 #if ASSERT_ENABLED
             CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
 #endif
@@ -390,16 +359,16 @@ void RenderLayerCompositor::updateIfNeeded()
         }
 
         if (layersChanged)
-            needHierarchyAndGeometryUpdate = true;
+            updateType = std::max(updateType, CompositingUpdateRebuildTree);
     }
 
-    if (updateType != CompositingUpdateNone || needHierarchyAndGeometryUpdate) {
+    if (updateType != CompositingUpdateNone) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
-        updater.update(*updateRoot, graphicsLayerUpdateType);
+        updater.update(*updateRoot);
 
         if (updater.needsRebuildTree())
-            needHierarchyAndGeometryUpdate = true;
+            updateType = std::max(updateType, CompositingUpdateRebuildTree);
 
 #if !ASSERT_DISABLED
         // FIXME: Move this check to the end of the compositing update.
@@ -407,8 +376,7 @@ void RenderLayerCompositor::updateIfNeeded()
 #endif
     }
 
-    if (needHierarchyAndGeometryUpdate) {
-        // Update the hierarchy of the compositing layers.
+    if (updateType >= CompositingUpdateRebuildTree) {
         GraphicsLayerVector childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerTreeBuilder::rebuild");
@@ -428,8 +396,6 @@ void RenderLayerCompositor::updateIfNeeded()
         rootFixedBackgroundsChanged();
         m_needsUpdateFixedBackground = false;
     }
-
-    ASSERT(updateRoot || !compositingLayersNeedRebuild());
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
     needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
@@ -555,7 +521,7 @@ void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, Upda
     CompositingStateTransitionType compositedLayerUpdate = CompositingLayerAssigner(this).computeCompositedLayerUpdate(layer);
 
     if (compositedLayerUpdate != NoCompositingStateChange)
-        setCompositingLayersNeedRebuild();
+        setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
     if (options == UseChickenEggHacks)
         applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
@@ -587,7 +553,7 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
 
 void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)
 {
-    setCompositingLayersNeedRebuild();
+    setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer* child)
@@ -602,7 +568,7 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
         repaintInCompositedAncestor(child, child->compositedLayerMapping()->compositedBounds());
     }
 
-    setCompositingLayersNeedRebuild();
+    setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)

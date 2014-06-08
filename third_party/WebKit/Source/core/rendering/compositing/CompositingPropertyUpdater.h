@@ -33,7 +33,7 @@ public:
         ForceUpdate,
     };
 
-    void updateAncestorDependentProperties(RenderLayer*, UpdateType, AncestorInfo = AncestorInfo());
+    void updateAncestorDependentProperties(RenderLayer*, UpdateType = DoNotForceUpdate, AncestorInfo = AncestorInfo());
 
 #if !ASSERT_DISABLED
     static void assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(RenderLayer*);
