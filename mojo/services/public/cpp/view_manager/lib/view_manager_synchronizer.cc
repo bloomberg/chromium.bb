@@ -447,6 +447,9 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManagerDelegate* delegate)
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
+  // Destroying the |view_manager_| may attempt to add transactions to
+  // |pending_transactions_|. So we need to destroy |view_manager_| first.
+  view_manager_.reset();
 }
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
