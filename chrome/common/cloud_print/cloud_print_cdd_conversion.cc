@@ -4,6 +4,7 @@
 
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 
@@ -42,11 +43,14 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
 
   ColorCapability color;
   if (semantic_info.color_default || semantic_info.color_changeable) {
-    color.AddDefaultOption(Color(STANDARD_COLOR), semantic_info.color_default);
+    Color standard_color(STANDARD_COLOR);
+    standard_color.vendor_id = base::IntToString(semantic_info.color_model);
+    color.AddDefaultOption(standard_color, semantic_info.color_default);
   }
   if (!semantic_info.color_default || semantic_info.color_changeable) {
-    color.AddDefaultOption(Color(STANDARD_MONOCHROME),
-                           !semantic_info.color_default);
+    Color standard_monochrome(STANDARD_MONOCHROME);
+    standard_monochrome.vendor_id = base::IntToString(semantic_info.bw_model);
+    color.AddDefaultOption(standard_monochrome, !semantic_info.color_default);
   }
   color.SaveTo(&description);
 

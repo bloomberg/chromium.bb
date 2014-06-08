@@ -48,28 +48,18 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
   bool color_changeable;
   bool color_default;
-
-  // These are CUPS specific data, which soon be removed altogether. They are
-  // not defined under USE_CUPS to do not pull CUPS dependency into common code.
-#if defined(OS_POSIX)
-  // TODO(alekseys): Resolve color model within printing context, do not expose
-  // it outside of the context.
   ColorModel color_model;
   ColorModel bw_model;
-#endif
 
-#if defined(OS_WIN)
   struct Paper {
     std::string name;
     gfx::Size size_um;
   };
-
   std::vector<Paper> papers;
   Paper default_paper;
 
   std::vector<gfx::Size> dpis;
   gfx::Size default_dpi;
-#endif
 };
 
 struct PRINTING_EXPORT PrinterCapsAndDefaults {
