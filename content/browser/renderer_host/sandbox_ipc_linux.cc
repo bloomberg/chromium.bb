@@ -39,7 +39,8 @@ namespace {
 
 // MSCharSetToFontconfig translates a Microsoft charset identifier to a
 // fontconfig language set by appending to |langset|.
-static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
+// Returns true if |langset| is Latin/Greek/Cyrillic.
+bool MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
   // We have need to translate raw fdwCharSet values into terms that
   // fontconfig can understand. (See the description of fdwCharSet in the MSDN
   // documentation for CreateFont:
@@ -58,6 +59,7 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
   // So, for each of the documented fdwCharSet values I've had to take a
   // guess at the set of ISO 639-1 languages intended.
 
+  bool is_lgc = false;
   switch (fdwCharSet) {
     case NPCharsetAnsi:
     // These values I don't really know what to do with, so I'm going to map
@@ -66,23 +68,25 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
     case NPCharsetMac:
     case NPCharsetOEM:
     case NPCharsetSymbol:
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("en"));
       break;
     case NPCharsetBaltic:
       // The three baltic languages.
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("et"));
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("lv"));
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("lt"));
       break;
-    // TODO(jungshik): Would we be better off mapping Big5 to zh-tw
-    // and GB2312 to zh-cn? Fontconfig has 4 separate orthography
-    // files (zh-{cn,tw,hk,mo}.
     case NPCharsetChineseBIG5:
+      FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("zh-tw"));
+      break;
     case NPCharsetGB2312:
-      FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("zh"));
+      FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("zh-cn"));
       break;
     case NPCharsetEastEurope:
       // A scattering of eastern European languages.
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("pl"));
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("cs"));
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("sk"));
@@ -90,6 +94,7 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("hr"));
       break;
     case NPCharsetGreek:
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("el"));
       break;
     case NPCharsetHangul:
@@ -98,6 +103,7 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("ko"));
       break;
     case NPCharsetRussian:
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("ru"));
       break;
     case NPCharsetShiftJIS:
@@ -105,9 +111,11 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("ja"));
       break;
     case NPCharsetTurkish:
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("tr"));
       break;
     case NPCharsetVietnamese:
+      is_lgc = true;
       FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("vi"));
       break;
     case NPCharsetArabic:
@@ -123,6 +131,7 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
       // Don't add any languages in that case that we don't recognise the
       // constant.
   }
+  return is_lgc;
 }
 
 }  // namespace
@@ -437,24 +446,27 @@ void SandboxIPCHandler::HandleMatchWithFallback(
   }
 
   FcLangSet* langset = FcLangSetCreate();
-  MSCharSetToFontconfig(langset, charset);
+  bool is_lgc = MSCharSetToFontconfig(langset, charset);
 
   FcPattern* pattern = FcPatternCreate();
-  // TODO(agl): FC_FAMILy needs to change
   FcPatternAddString(
       pattern, FC_FAMILY, reinterpret_cast<const FcChar8*>(face.c_str()));
 
+  // TODO(thestig) Check if we can access Chrome's per-script font preference
+  // here and select better default fonts for non-LGC case.
   std::string generic_font_name;
-  switch (fallback_family) {
-    case PP_BROWSERFONT_TRUSTED_FAMILY_SERIF:
-      generic_font_name = "Times New Roman";
-      break;
-    case PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF:
-      generic_font_name = "Arial";
-      break;
-    case PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE:
-      generic_font_name = "Courier New";
-      break;
+  if (is_lgc) {
+    switch (fallback_family) {
+      case PP_BROWSERFONT_TRUSTED_FAMILY_SERIF:
+        generic_font_name = "Times New Roman";
+        break;
+      case PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF:
+        generic_font_name = "Arial";
+        break;
+      case PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE:
+        generic_font_name = "Courier New";
+        break;
+    }
   }
   if (!generic_font_name.empty()) {
     const FcChar8* fc_generic_font_name =
