@@ -59,8 +59,8 @@ def main(argv, stdout, stderr):
         host = Host()
 
     if options.lint_test_files:
-        from webkitpy.layout_tests.lint_test_expectations import lint
-        return lint(host, options, stderr)
+        from webkitpy.layout_tests.lint_test_expectations import run_checks
+        return run_checks(host, options, stderr)
 
     try:
         port = host.port_factory.get(options.platform, options)
