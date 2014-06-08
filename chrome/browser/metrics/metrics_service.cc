@@ -181,12 +181,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
-#include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
-#include "chrome/browser/metrics/gpu_metrics_provider.h"
-#include "chrome/browser/metrics/network_metrics_provider.h"
-#include "chrome/browser/metrics/omnibox_metrics_provider.h"
-#include "chrome/browser/metrics/profiler_metrics_provider.h"
-#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -197,20 +191,6 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(ENABLE_PLUGINS)
-// TODO(asvitkine): Move this out of MetricsService.
-#include "chrome/browser/metrics/plugin_metrics_provider.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/metrics/google_update_metrics_provider_win.h"
-#endif
-
-#if defined(OS_ANDROID)
-// TODO(asvitkine): Move this out of MetricsService.
-#include "chrome/browser/metrics/android_metrics_provider.h"
-#endif
 
 using base::Time;
 using metrics::MetricsLogManager;
@@ -326,19 +306,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
-
-  // TODO(asvitkine): Move this out of here.
-  ChromeStabilityMetricsProvider::RegisterPrefs(registry);
-
-#if defined(OS_ANDROID)
-  // TODO(asvitkine): Move this out of here.
-  AndroidMetricsProvider::RegisterPrefs(registry);
-#endif  // defined(OS_ANDROID)
-
-#if defined(ENABLE_PLUGINS)
-  // TODO(asvitkine): Move this out of here.
-  PluginMetricsProvider::RegisterPrefs(registry);
-#endif
 }
 
 MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
@@ -363,39 +330,6 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   DCHECK(state_manager_);
   DCHECK(client_);
   DCHECK(local_state_);
-
-#if defined(OS_ANDROID)
-  // TODO(asvitkine): Move this out of MetricsService.
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new AndroidMetricsProvider(
-          local_state_)));
-#endif  // defined(OS_ANDROID)
-
-  // TODO(asvitkine): Move these out of MetricsService.
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider));
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new GPUMetricsProvider()));
-  profiler_metrics_provider_ = new ProfilerMetricsProvider;
-  RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
-
-#if defined(OS_WIN)
-  google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;
-  RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
-      google_update_metrics_provider_));
-#endif
-
-#if defined(ENABLE_PLUGINS)
-  plugin_metrics_provider_ = new PluginMetricsProvider(local_state_);
-  RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
-      plugin_metrics_provider_));
-#endif
-
 }
 
 MetricsService::~MetricsService() {
@@ -673,43 +607,6 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-void MetricsService::OnInitTaskGotHardwareClass() {
-  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-
-  const base::Closure got_plugin_info_callback =
-      base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
-                 self_ptr_factory_.GetWeakPtr());
-
-#if defined(ENABLE_PLUGINS)
-  plugin_metrics_provider_->GetPluginInformation(got_plugin_info_callback);
-#else
-  got_plugin_info_callback.Run();
-#endif
-}
-
-void MetricsService::OnInitTaskGotPluginInfo() {
-  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-
-  const base::Closure got_metrics_callback =
-      base::Bind(&MetricsService::OnInitTaskGotGoogleUpdateData,
-                 self_ptr_factory_.GetWeakPtr());
-
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  google_update_metrics_provider_->GetGoogleUpdateData(got_metrics_callback);
-#else
-  got_metrics_callback.Run();
-#endif
-}
-
-void MetricsService::OnInitTaskGotGoogleUpdateData() {
-  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-
-  // Start the next part of the init task: fetching performance data.  This will
-  // call into |FinishedReceivingProfilerData()| when the task completes.
-  chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
-      self_ptr_factory_.GetWeakPtr());
-}
-
 void MetricsService::OnUserAction(const std::string& action) {
   if (!ShouldLogEvents())
     return;
@@ -718,15 +615,7 @@ void MetricsService::OnUserAction(const std::string& action) {
   HandleIdleSinceLastTransmission(false);
 }
 
-void MetricsService::ReceivedProfilerData(
-    const tracked_objects::ProcessDataSnapshot& process_data,
-    int process_type) {
-  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-
-  profiler_metrics_provider_->RecordProfilerData(process_data, process_type);
-}
-
-void MetricsService::FinishedReceivingProfilerData() {
+void MetricsService::FinishedGatheringInitialMetrics() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   state_ = INIT_TASK_DONE;
 
@@ -821,10 +710,8 @@ void MetricsService::OpenNewLog() {
 }
 
 void MetricsService::StartGatheringMetrics() {
-  // TODO(blundell): Move all initial metrics gathering to
-  // ChromeMetricsServiceClient.
   client_->StartGatheringMetrics(
-      base::Bind(&MetricsService::OnInitTaskGotHardwareClass,
+      base::Bind(&MetricsService::FinishedGatheringInitialMetrics,
                  self_ptr_factory_.GetWeakPtr()));
 }
 
@@ -1292,12 +1179,6 @@ void MetricsService::LogCleanShutdown() {
   RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
   local_state_->SetInteger(prefs::kStabilityExecutionPhase,
                            MetricsService::SHUTDOWN_COMPLETE);
-}
-
-void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
-#if defined(ENABLE_PLUGINS)
-  plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
-#endif
 }
 
 bool MetricsService::ShouldLogEvents() {

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
-#include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,15 +28,7 @@ MetricsServicesManager::~MetricsServicesManager() {
 
 MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_service_client_) {
-    metrics_service_client_ =
-        ChromeMetricsServiceClient::Create(GetMetricsStateManager(),
-                                           local_state_);
-    metrics_service_client_->metrics_service()->RegisterMetricsProvider(
-        scoped_ptr<metrics::MetricsProvider>(
-            new ExtensionsMetricsProvider(GetMetricsStateManager())));
-  }
-  return metrics_service_client_->metrics_service();
+  return GetChromeMetricsServiceClient()->metrics_service();
 }
 
 rappor::RapporService* MetricsServicesManager::GetRapporService() {
@@ -60,7 +51,17 @@ MetricsServicesManager::GetVariationsService() {
 
 void MetricsServicesManager::OnPluginLoadingError(
     const base::FilePath& plugin_path) {
-  GetMetricsService()->LogPluginLoadingError(plugin_path);
+  GetChromeMetricsServiceClient()->LogPluginLoadingError(plugin_path);
+}
+
+ChromeMetricsServiceClient*
+MetricsServicesManager::GetChromeMetricsServiceClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!metrics_service_client_) {
+    metrics_service_client_ = ChromeMetricsServiceClient::Create(
+        GetMetricsStateManager(), local_state_);
+  }
+  return metrics_service_client_.get();
 }
 
 metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {

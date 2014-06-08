@@ -13,12 +13,21 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/metrics/network_stats_uploader.h"
+#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "components/metrics/metrics_service_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class ChromeOSMetricsProvider;
+class GoogleUpdateMetricsProviderWin;
 class MetricsService;
+class PluginMetricsProvider;
+class PrefRegistrySimple;
+class ProfilerMetricsProvider;
+
+namespace base {
+class FilePath;
+}
 
 namespace metrics {
 class MetricsStateManager;
@@ -26,8 +35,10 @@ class MetricsStateManager;
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.
-class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
-                                   public content::NotificationObserver {
+class ChromeMetricsServiceClient
+    : public metrics::MetricsServiceClient,
+      public chrome_browser_metrics::TrackingSynchronizerObserver,
+      public content::NotificationObserver {
  public:
   virtual ~ChromeMetricsServiceClient();
 
@@ -35,6 +46,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   static scoped_ptr<ChromeMetricsServiceClient> Create(
       metrics::MetricsStateManager* state_manager,
       PrefService* local_state);
+
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // metrics::MetricsServiceClient:
   virtual void SetClientID(const std::string& client_id) OVERRIDE;
@@ -56,12 +70,31 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   MetricsService* metrics_service() { return metrics_service_.get(); }
 
+  void LogPluginLoadingError(const base::FilePath& plugin_path);
+
  private:
   explicit ChromeMetricsServiceClient(
       metrics::MetricsStateManager* state_manager);
 
   // Completes the two-phase initialization of ChromeMetricsServiceClient.
   void Initialize();
+
+  // Callback that continues the init task by loading plugin information.
+  void OnInitTaskGotHardwareClass();
+
+  // Called after the Plugin init task has been completed that continues the
+  // init task by launching a task to gather Google Update statistics.
+  void OnInitTaskGotPluginInfo();
+
+  // Called after GoogleUpdate init task has been completed that continues the
+  // init task by loading profiler data.
+  void OnInitTaskGotGoogleUpdateData();
+
+  // TrackingSynchronizerObserver:
+  virtual void ReceivedProfilerData(
+      const tracked_objects::ProcessDataSnapshot& process_data,
+      int process_type) OVERRIDE;
+  virtual void FinishedReceivingProfilerData() OVERRIDE;
 
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
@@ -112,6 +145,25 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   // Number of async histogram fetch requests in progress.
   int num_async_histogram_fetches_in_progress_;
+
+  // The ProfilerMetricsProvider instance that was registered with
+  // MetricsService. Has the same lifetime as |metrics_service_|.
+  ProfilerMetricsProvider* profiler_metrics_provider_;
+
+#if defined(ENABLE_PLUGINS)
+  // The PluginMetricsProvider instance that was registered with
+  // MetricsService. Has the same lifetime as |metrics_service_|.
+  PluginMetricsProvider* plugin_metrics_provider_;
+#endif
+
+#if defined(OS_WIN)
+  // The GoogleUpdateMetricsProviderWin instance that was registered with
+  // MetricsService. Has the same lifetime as |metrics_service_|.
+  GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
+#endif
+
+  // Callback that is called when initial metrics gathering is complete.
+  base::Closure finished_gathering_initial_metrics_callback_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

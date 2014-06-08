@@ -38,7 +38,8 @@ class MetricsServicesManager {
   explicit MetricsServicesManager(PrefService* local_state);
   virtual ~MetricsServicesManager();
 
-  // Returns the MetricsService, creating it if it hasn't been created yet.
+  // Returns the MetricsService, creating it if it hasn't been created yet (and
+  // additionally creating the ChromeMetricsServiceClient in that case).
   MetricsService* GetMetricsService();
 
   // Returns the GetRapporService, creating it if it hasn't been created yet.
@@ -51,6 +52,10 @@ class MetricsServicesManager {
   void OnPluginLoadingError(const base::FilePath& plugin_path);
 
  private:
+  // Returns the ChromeMetricsServiceClient, creating it if it hasn't been
+  // created yet (and additionally creating the MetricsService in that case).
+  ChromeMetricsServiceClient* GetChromeMetricsServiceClient();
+
   metrics::MetricsStateManager* GetMetricsStateManager();
 
   // Returns true iff metrics reporting is enabled.

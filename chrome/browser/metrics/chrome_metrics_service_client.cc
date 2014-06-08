@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -21,8 +23,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
+#include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/network_metrics_provider.h"
+#include "chrome/browser/metrics/omnibox_metrics_provider.h"
+#include "chrome/browser/metrics/profiler_metrics_provider.h"
+#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,8 +44,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/metrics/android_metrics_provider.h"
+#else
 #include "chrome/browser/service_process/service_process_control.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -128,22 +142,18 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
   return client.Pass();
 }
 
-void ChromeMetricsServiceClient::Initialize() {
-  metrics_service_.reset(new MetricsService(
-      metrics_state_manager_, this, g_browser_process->local_state()));
+// static
+void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
+  MetricsService::RegisterPrefs(registry);
+  ChromeStabilityMetricsProvider::RegisterPrefs(registry);
 
-  // Register metrics providers.
-  metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(
-          new ExtensionsMetricsProvider(metrics_state_manager_)));
+#if defined(OS_ANDROID)
+  AndroidMetricsProvider::RegisterPrefs(registry);
+#endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-  ChromeOSMetricsProvider* chromeos_metrics_provider =
-      new ChromeOSMetricsProvider;
-  chromeos_metrics_provider_ = chromeos_metrics_provider;
-  metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(chromeos_metrics_provider));
-#endif
+#if defined(ENABLE_PLUGINS)
+  PluginMetricsProvider::RegisterPrefs(registry);
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 void ChromeMetricsServiceClient::SetClientID(const std::string& client_id) {
@@ -193,13 +203,16 @@ void ChromeMetricsServiceClient::OnLogUploadComplete() {
 
 void ChromeMetricsServiceClient::StartGatheringMetrics(
     const base::Closure& done_callback) {
-// TODO(blundell): Move all metrics gathering tasks from MetricsService to
-// here.
+  finished_gathering_initial_metrics_callback_ = done_callback;
+  base::Closure got_hardware_class_callback =
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotHardwareClass,
+                 weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_CHROMEOS)
-  chromeos_metrics_provider_->InitTaskGetHardwareClass(done_callback);
+  chromeos_metrics_provider_->InitTaskGetHardwareClass(
+      got_hardware_class_callback);
 #else
-  done_callback.Run();
-#endif
+  got_hardware_class_callback.Run();
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeMetricsServiceClient::CollectFinalMetrics(
@@ -241,6 +254,104 @@ ChromeMetricsServiceClient::CreateUploader(
       new metrics::NetMetricsLogUploader(
           g_browser_process->system_request_context(), server_url, mime_type,
           on_upload_complete));
+}
+
+void ChromeMetricsServiceClient::LogPluginLoadingError(
+    const base::FilePath& plugin_path) {
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
+#else
+  NOTREACHED();
+#endif  // defined(ENABLE_PLUGINS)
+}
+
+void ChromeMetricsServiceClient::Initialize() {
+  metrics_service_.reset(new MetricsService(
+      metrics_state_manager_, this, g_browser_process->local_state()));
+
+  // Register metrics providers.
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new ExtensionsMetricsProvider(metrics_state_manager_)));
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider));
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new GPUMetricsProvider()));
+  profiler_metrics_provider_ = new ProfilerMetricsProvider;
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
+
+#if defined(OS_ANDROID)
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new AndroidMetricsProvider(g_browser_process->local_state())));
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(google_update_metrics_provider_));
+#endif  // defined(OS_WIN)
+
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_ =
+      new PluginMetricsProvider(g_browser_process->local_state());
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
+#endif  // defined(ENABLE_PLUGINS)
+
+#if defined(OS_CHROMEOS)
+  ChromeOSMetricsProvider* chromeos_metrics_provider =
+      new ChromeOSMetricsProvider;
+  chromeos_metrics_provider_ = chromeos_metrics_provider;
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(chromeos_metrics_provider));
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotHardwareClass() {
+  const base::Closure got_plugin_info_callback =
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotPluginInfo,
+                 weak_ptr_factory_.GetWeakPtr());
+
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_->GetPluginInformation(got_plugin_info_callback);
+#else
+  got_plugin_info_callback.Run();
+#endif  // defined(ENABLE_PLUGINS)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotPluginInfo() {
+  const base::Closure got_metrics_callback =
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData,
+                 weak_ptr_factory_.GetWeakPtr());
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  google_update_metrics_provider_->GetGoogleUpdateData(got_metrics_callback);
+#else
+  got_metrics_callback.Run();
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
+  // Start the next part of the init task: fetching performance data.  This will
+  // call into |FinishedReceivingProfilerData()| when the task completes.
+  chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+void ChromeMetricsServiceClient::ReceivedProfilerData(
+    const tracked_objects::ProcessDataSnapshot& process_data,
+    int process_type) {
+  profiler_metrics_provider_->RecordProfilerData(process_data, process_type);
+}
+
+void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
+  finished_gathering_initial_metrics_callback_.Run();
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {

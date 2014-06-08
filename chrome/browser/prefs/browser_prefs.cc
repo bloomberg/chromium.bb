@@ -33,7 +33,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/net_pref_observer.h"
@@ -227,6 +227,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   AppListService::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
+  ChromeMetricsServiceClient::RegisterPrefs(registry);
   chrome_prefs::RegisterPrefs(registry);
   chrome_variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterPrefsForRecoveryComponent(registry);
@@ -238,7 +239,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   IntranetRedirectDetector::RegisterPrefs(registry);
   IOThread::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
-  MetricsService::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -26,19 +25,15 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
 
-class GoogleUpdateMetricsProviderWin;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
-class PluginMetricsProvider;
-class ProfilerMetricsProvider;
 
 namespace base {
 class DictionaryValue;
@@ -88,9 +83,7 @@ struct SyntheticTrialGroup {
   SyntheticTrialGroup(uint32 trial, uint32 group);
 };
 
-class MetricsService
-    : public base::HistogramFlattener,
-      public chrome_browser_metrics::TrackingSynchronizerObserver {
+class MetricsService : public base::HistogramFlattener {
  public:
   // The execution phase of the browser.
   enum ExecutionPhase {
@@ -207,9 +200,6 @@ class MetricsService
   bool recording_active() const;
   bool reporting_active() const;
 
-  // TODO(blundell): Move this to ChromeMetricsServiceClient.
-  void LogPluginLoadingError(const base::FilePath& plugin_path);
-
   // Redundant test to ensure that we are notified of a clean exit.
   // This value should be true when process has completed shutdown.
   static bool UmaMetricsProperlyShutdown();
@@ -262,25 +252,11 @@ class MetricsService
   // Calls into the client to start metrics gathering.
   void StartGatheringMetrics();
 
-  // Callback that continues the init task by loading plugin information.
-  void OnInitTaskGotHardwareClass();
-
-  // Called after the Plugin init task has been completed that continues the
-  // init task by launching a task to gather Google Update statistics.
-  void OnInitTaskGotPluginInfo();
-
-  // Called after GoogleUpdate init task has been completed that continues the
-  // init task by loading profiler data.
-  void OnInitTaskGotGoogleUpdateData();
+  // Callback that moves the state to INIT_TASK_DONE. When this is called, the
+  // state should be INIT_TASK_SCHEDULED.
+  void FinishedGatheringInitialMetrics();
 
   void OnUserAction(const std::string& action);
-
-  // TrackingSynchronizerObserver:
-  virtual void ReceivedProfilerData(
-      const tracked_objects::ProcessDataSnapshot& process_data,
-      int process_type) OVERRIDE;
-  // Callback that moves the state to INIT_TASK_DONE.
-  virtual void FinishedReceivingProfilerData() OVERRIDE;
 
   // Get the amount of uptime since this process started and since the last
   // call to this function.  Also updates the cumulative uptime metric (stored
@@ -434,16 +410,6 @@ class MetricsService
 
   // Whether the initial stability log has been recorded during startup.
   bool has_initial_stability_log_;
-
-  ProfilerMetricsProvider* profiler_metrics_provider_;
-
-#if defined(ENABLE_PLUGINS)
-  PluginMetricsProvider* plugin_metrics_provider_;
-#endif
-
-#if defined(OS_WIN)
-  GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
-#endif
 
   // The initial metrics log, used to record startup metrics (histograms and
   // profiler data). Note that if a crash occurred in the previous session, an
