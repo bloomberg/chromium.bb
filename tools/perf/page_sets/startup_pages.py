@@ -15,7 +15,7 @@ class StartedPage(page_module.Page):
     self.startup_url = startup_url
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(WaitAction({'seconds': 10}))
+    action_runner.Wait(10)
 
 class StartupPagesPageSet(page_set_module.PageSet):
 

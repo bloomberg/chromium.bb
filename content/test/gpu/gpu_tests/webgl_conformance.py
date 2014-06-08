@@ -89,8 +89,8 @@ class WebglConformancePage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {'javascript': 'webglTestHarness._finished', 'timeout': 120}))
+    action_runner.WaitForJavaScriptCondition(
+        'webglTestHarness._finished', timeout=120)
 
 
 class WebglConformance(test_module.Test):

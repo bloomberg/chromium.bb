@@ -27,12 +27,9 @@ class GmailPage(ToughEnergyCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': (
-          'window.gmonkey !== undefined &&'
-          'document.getElementById("gb") !== null')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.gmonkey !== undefined &&'
+        'document.getElementById("gb") !== null')
 
 
 class ToughEnergyCasesPageSet(page_set_module.PageSet):

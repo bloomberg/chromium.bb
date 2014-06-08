@@ -17,7 +17,7 @@ class Top2012Q3Page(Page):
 
   def ReloadAndGc(self, action_runner):
     action_runner.RunAction(ReloadAction())
-    action_runner.RunAction(WaitAction({"seconds": 1}))
+    action_runner.Wait(1)
     action_runner.RunAction(JsCollectGarbageAction())
 
   def RunSmoothness(self, action_runner):

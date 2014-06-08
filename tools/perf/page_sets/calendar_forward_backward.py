@@ -23,15 +23,8 @@ class CalendarForwardBackwardPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.ExecuteJavaScript('''
         (function() {
           var elem = document.createElement('meta');
@@ -45,106 +38,50 @@ class CalendarForwardBackwardPage(page_module.Page):
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
 
 
 class CalendarForwardBackwardPageSet(page_set_module.PageSet):

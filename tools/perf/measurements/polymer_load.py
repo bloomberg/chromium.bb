@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page.actions.all_page_actions import WaitAction
 from telemetry.page import page
 from telemetry.page import page_measurement
 
@@ -25,10 +24,7 @@ class PageForPolymerLoad(page.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': "window.__polymer_ready"
-      }))
+    action_runner.WaitForJavaScriptCondition('window.__polymer_ready')
 
 
 class PolymerLoadMeasurement(page_measurement.PageMeasurement):

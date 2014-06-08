@@ -47,15 +47,9 @@ class Page2(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'Next 35',
-        'condition': 'element'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.body.scrollHeight > 2560'
-      }))
+    action_runner.WaitForElement(text='Next 35')
+    action_runner.WaitForJavaScriptCondition(
+        'document.body.scrollHeight > 2560')
 
 
 class Page3(KeyMobileSitesPage):
@@ -82,14 +76,12 @@ class Page4(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': ('window.Chorus !== undefined &&'
-                       'window.Chorus.Comments !== undefined &&'
-                       'window.Chorus.Comments.Json !== undefined &&'
-                       '(window.Chorus.Comments.loaded ||'
-                       ' window.Chorus.Comments.Json.load_comments())')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.Chorus !== undefined &&'
+        'window.Chorus.Comments !== undefined &&'
+        'window.Chorus.Comments.Json !== undefined &&'
+        '(window.Chorus.Comments.loaded ||'
+        ' window.Chorus.Comments.Json.load_comments())')
 
 
 class Page5(KeyMobileSitesPage):
@@ -104,7 +96,7 @@ class Page5(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds': 8}))
+    action_runner.Wait(8)
 
 
 class Page6(KeyMobileSitesPage):
@@ -132,11 +124,9 @@ class Page7(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': ('document.getElementById("u_0_c") !== null &&'
-                       'document.body.scrollHeight > window.innerHeight')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("u_0_c") !== null &&'
+        'document.body.scrollHeight > window.innerHeight')
 
 
 class Page8(KeyMobileSitesPage):
@@ -150,10 +140,8 @@ class Page8(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.getElementById("paginatortarget") !== null'
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("paginatortarget") !== null')
 
 
 class Page9(KeyMobileSitesPage):
@@ -194,11 +182,8 @@ class Page11(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript':
-          'document.getElementById("profile-view-scroller") !== null'
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("profile-view-scroller") !== null')
 
 
 class Page12(KeyMobileSitesPage):
@@ -259,11 +244,7 @@ class Page16(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'Other Answers (1 - 20 of 149)',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Other Answers (1 - 20 of 149)')
     action_runner.RunAction(ClickElementAction(
       {
         'text': 'Other Answers (1 - 20 of 149)'
@@ -283,14 +264,10 @@ class Page17(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.getElementById("og_user_warning") !== null'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.getElementById("og_user_warning") === null'
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("og_user_warning") !== null')
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("og_user_warning") === null')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -359,17 +336,14 @@ class Page21(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds': 5}))
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': '''
-          document.getElementById("element-19") !== null &&
-          document.getElementById("element-19").contentDocument
-            .getElementById("element-22") !== null &&
-          document.getElementById("element-19").contentDocument
-            .getElementsByClassName(
-              "container list-item gc-list-item stretched").length !== 0'''
-      }))
+    action_runner.Wait(5)
+    action_runner.WaitForJavaScriptCondition('''
+        document.getElementById("element-19") !== null &&
+        document.getElementById("element-19").contentDocument
+          .getElementById("element-22") !== null &&
+        document.getElementById("element-19").contentDocument
+          .getElementsByClassName(
+              "container list-item gc-list-item stretched").length !== 0''')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -396,10 +370,8 @@ class Page22(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.getElementById("element-5") !== null'
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("element-5") !== null')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -436,11 +408,9 @@ class Page24(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': ('typeof NEWS_telemetryReady !== "undefined" && '
-                       'NEWS_telemetryReady == true')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'typeof NEWS_telemetryReady !== "undefined" && '
+        'NEWS_telemetryReady == true')
 
 
 class Page25(KeyMobileSitesPage):
@@ -456,14 +426,9 @@ class Page25(KeyMobileSitesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.getElementById(":h") != null'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 1
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById(":h") != null')
+    action_runner.Wait(1)
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(

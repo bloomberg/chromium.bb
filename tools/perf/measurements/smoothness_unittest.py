@@ -34,7 +34,7 @@ class AnimatedPage(page.Page):
       page_set=page_set, base_dir=page_set.base_dir)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(WaitAction({'seconds': 1}))
+    action_runner.Wait(1)
 
 
 class FakeTab(object):

@@ -291,10 +291,7 @@ class Page19(ToughSchedulingCasesPage):
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(WaitAction(
-      {
-        "seconds": 3
-      }))
+    action_runner.Wait(3)
 
 class Page20(ToughSchedulingCasesPage):
 
@@ -448,4 +445,3 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
       slow_handler=True,
       bounce=True,
       page_set=self))
-

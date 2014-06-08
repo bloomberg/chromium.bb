@@ -14,10 +14,7 @@ class MseCasesPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'window.__testDone == true'
-      }))
+    action_runner.WaitForJavaScriptCondition('window.__testDone == true')
 
 
 class MseCasesPageSet(page_set_module.PageSet):

@@ -15,16 +15,11 @@ class ToughCanvasCasesPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        "javascript": "document.readyState == 'complete'"
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        "document.readyState == 'complete'")
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(WaitAction(
-      {
-        "seconds": 5
-      }))
+    action_runner.Wait(5)
 
 
 class MicrosofFirefliesPage(ToughCanvasCasesPage):

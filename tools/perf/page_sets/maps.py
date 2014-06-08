@@ -18,10 +18,10 @@ class MapsPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds': 3}))
+    action_runner.Wait(3)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(WaitAction({'javascript': 'window.testDone'}))
+    action_runner.WaitForJavaScriptCondition('window.testDone')
 
 
 class MapsPageSet(page_set_module.PageSet):

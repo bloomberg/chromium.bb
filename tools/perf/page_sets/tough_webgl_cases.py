@@ -23,14 +23,12 @@ class ToughWebglCasesPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.readyState == "complete"'
-      }))
-    action_runner.RunAction(WaitAction({'seconds': 2}))
+    action_runner.WaitForJavaScriptCondition(
+        'document.readyState == "complete"')
+    action_runner.Wait(2)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(WaitAction({'seconds': 5}))
+    action_runner.Wait(5)
 
 
 class Page1(ToughWebglCasesPage):
@@ -46,11 +44,9 @@ class Page1(ToughWebglCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.readyState == "complete"'
-      }))
-    action_runner.RunAction(WaitAction({'seconds': 15}))
+    action_runner.WaitForJavaScriptCondition(
+        'document.readyState == "complete"')
+    action_runner.Wait(15)
 
 
 class Page2(ToughWebglCasesPage):
@@ -62,11 +58,9 @@ class Page2(ToughWebglCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': 'document.readyState == "complete"'
-      }))
-    action_runner.RunAction(WaitAction({'seconds': 10}))
+    action_runner.WaitForJavaScriptCondition(
+        'document.readyState == "complete"')
+    action_runner.Wait(10)
 
 
 class ToughWebglCasesPageSet(page_set_module.PageSet):

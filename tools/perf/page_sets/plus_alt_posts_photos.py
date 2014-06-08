@@ -23,44 +23,25 @@ class PlusAltPostsPhotosPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'Barack Obama',
-        'condition': 'element'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]'
-      }))
+    action_runner.WaitForElement(text='Barack Obama')
+    action_runner.WaitForElement(
+        'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]')
 
   def RunEndure(self, action_runner):
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'span[guidedhelpid="posts_tab_profile"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 5
-      }))
+    action_runner.WaitForElement(
+        'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]')
+    action_runner.Wait(5)
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'span[guidedhelpid="photos_tab_profile"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'span[guidedhelpid="photos_tab_profile"][class*="s6U8x"]'
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 5
-      }))
+    action_runner.WaitForElement(
+        'span[guidedhelpid="photos_tab_profile"][class*="s6U8x"]')
+    action_runner.Wait(5)
 
 
 class PlusAltPostsPhotosPageSet(page_set_module.PageSet):

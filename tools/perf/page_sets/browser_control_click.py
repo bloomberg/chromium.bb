@@ -22,29 +22,19 @@ class BrowserControlClickPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'xpath': 'id("attach")',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement('#attach')
 
   def RunEndure(self, action_runner):
     action_runner.RunAction(ClickElementAction(
       {
         'xpath': 'id("attach")'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 0.5
-      }))
+    action_runner.Wait(0.5)
     action_runner.RunAction(ClickElementAction(
       {
         'xpath': 'id("detach")'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 0.5
-      }))
+    action_runner.Wait(0.5)
 
 
 class BrowserControlClickPageSet(page_set_module.PageSet):

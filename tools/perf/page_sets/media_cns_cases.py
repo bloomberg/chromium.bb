@@ -30,10 +30,7 @@ class BasicPlayPage(page_module.Page):
         'wait_for_ended': False
       }))
     # Wait for 1 second so that we know the play-head is at ~1s.
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 1
-      }))
+    action_runner.Wait(1)
     # Seek to before the play-head location.
     action_runner.RunAction(SeekAction(
       {

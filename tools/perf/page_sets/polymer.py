@@ -21,8 +21,8 @@ class PolymerPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      { 'javascript': "window.__polymer_ready" }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.__polymer_ready')
 
 
 class PolymerCalculatorPage(PolymerPage):
@@ -94,10 +94,7 @@ class PolymerShadowPage(PolymerPage):
   def RunSmoothness(self, action_runner):
     action_runner.ExecuteJavaScript(
         "document.getElementById('fab').scrollIntoView()")
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 5
-      }))
+    action_runner.Wait(5)
     self.AnimateShadow(action_runner, 'card')
     self.AnimateShadow(action_runner, 'fab')
 
@@ -105,10 +102,7 @@ class PolymerShadowPage(PolymerPage):
     for i in range(1, 6):
       action_runner.ExecuteJavaScript(
           'document.getElementById("{0}").z = {1}'.format(eid, i))
-      action_runner.RunAction(WaitAction(
-        {
-          'seconds': 1
-        }))
+      action_runner.Wait(1)
 
 
 class PolymerPageSet(page_set_module.PageSet):

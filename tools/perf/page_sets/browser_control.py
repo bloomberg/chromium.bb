@@ -18,7 +18,7 @@ class BrowserControlPage(page_module.Page):
     self.user_agent_type = 'desktop'
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(WaitAction({'seconds': 2}))
+    action_runner.Wait(2)
 
 
 class BrowserControlPageSet(page_set_module.PageSet):

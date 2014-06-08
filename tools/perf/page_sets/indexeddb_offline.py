@@ -1,10 +1,19 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import re
+
 # pylint: disable=W0401,W0614
 from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+
+
+def _CreateXpathFunction(xpath):
+  return ('document.evaluate(%s, document, null, '
+          'XPathResult.FIRST_ORDERED_NODE_TYPE, null)'
+          '.singleNodeEvaluate') % re.escape(xpath)
 
 
 class IndexeddbOfflinePage(page_module.Page):
@@ -20,45 +29,24 @@ class IndexeddbOfflinePage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-        {
-            'text': 'initialized',
-            'condition': 'element'
-        }))
+    action_runner.WaitForElement(text='initialized')
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(WaitAction(
-        {
-            'condition': 'element',
-            'selector': 'button[id="online"]:not(disabled)'
-        }))
+    action_runner.WaitForElement('button[id="online"]:not(disabled)')
     action_runner.RunAction(ClickElementAction(
         {
             'selector': 'button[id="online"]:not(disabled)'
         }))
-    action_runner.RunAction(WaitAction(
-        {
-            'xpath': 'id("state")[text()="online"]',
-            'condition': 'element'
-        }))
-    action_runner.RunAction(WaitAction(
-        {
-            "seconds": 1
-        }))
-    action_runner.RunAction(WaitAction(
-        {
-            'condition': 'element',
-            'selector': 'button[id="offline"]:not(disabled)'
-        }))
+    action_runner.WaitForElement(
+        element_function=_CreateXpathFunction('id("state")[text()="online"]'))
+    action_runner.Wait(1)
+    action_runner.WaitForElement('button[id="offline"]:not(disabled)')
     action_runner.RunAction(ClickElementAction(
         {
             'selector': 'button[id="offline"]:not(disabled)'
         }))
-    action_runner.RunAction(WaitAction(
-        {
-            'xpath': 'id("state")[text()="offline"]',
-            'condition': 'element'
-        }))
+    action_runner.WaitForElement(
+        element_function=_CreateXpathFunction('id("state")[text()="offline"]'))
 
 
 class IndexeddbOfflinePageSet(page_set_module.PageSet):

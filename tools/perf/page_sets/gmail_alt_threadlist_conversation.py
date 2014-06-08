@@ -24,11 +24,9 @@ class GmailAltThreadlistConversationPage(
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript':
-        'window.gmonkey !== undefined && document.getElementById("gb") !== null'
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.gmonkey !== undefined && '
+        'document.getElementById("gb") !== null')
 
   def RunEndure(self, action_runner):
     action_runner.RunAction(ClickElementAction(
@@ -36,13 +34,13 @@ class GmailAltThreadlistConversationPage(
         'xpath': '//span[@email]',
         'wait_until': {'condition': 'href_change'}
       }))
-    action_runner.RunAction(WaitAction({'seconds': 1}))
+    action_runner.Wait(1)
     action_runner.RunAction(ClickElementAction(
       {
         'wait_until': {'condition': 'href_change'},
         'selector': 'a[href="https://mail.google.com/mail/u/0/?shva=1#inbox"]'
       }))
-    action_runner.RunAction(WaitAction({'seconds': 1}))
+    action_runner.Wait(1)
 
 
 class GmailAltThreadlistConversationPageSet(page_set_module.PageSet):

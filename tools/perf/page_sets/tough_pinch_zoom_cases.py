@@ -31,11 +31,7 @@ class GoogleSearchPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'Next',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Next')
 
 
 class GmailPage(ToughPinchZoomCasesPage):
@@ -51,12 +47,9 @@ class GmailPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript' : (
-          'window.gmonkey !== undefined &&'
-          'document.getElementById("gb") !== null')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.gmonkey !== undefined &&'
+        'document.getElementById("gb") !== null')
 
 
 class GoogleCalendarPage(ToughPinchZoomCasesPage):
@@ -72,7 +65,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds':2}))
+    action_runner.Wait(2)
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(PinchAction(
@@ -107,11 +100,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'Home',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Home')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(PinchAction(
@@ -136,7 +125,7 @@ class YoutubePage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds':2}))
+    action_runner.Wait(2)
 
 class BlogSpotPage(ToughPinchZoomCasesPage):
 
@@ -152,11 +141,7 @@ class BlogSpotPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'accessibility',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='accessibility')
 
 
 class FacebookPage(ToughPinchZoomCasesPage):
@@ -171,11 +156,7 @@ class FacebookPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text': 'About',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='About')
 
 
 class LinkedinPage(ToughPinchZoomCasesPage):
@@ -209,7 +190,7 @@ class TwitterPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds':2}))
+    action_runner.Wait(2)
 
 class ESPNPage(ToughPinchZoomCasesPage):
 
@@ -243,7 +224,7 @@ class YahooGamePage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'seconds':2}))
+    action_runner.Wait(2)
 
 
 class YahooAnswersPage(ToughPinchZoomCasesPage):

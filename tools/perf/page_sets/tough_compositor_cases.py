@@ -18,7 +18,7 @@ class ToughCompositorPage(page_module.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     # TODO(epenner): Remove this wait (http://crbug.com/366933)
-    action_runner.RunAction(WaitAction({'seconds': 5}))
+    action_runner.Wait(5)
 
 class ToughCompositorScrollPage(ToughCompositorPage):
 
@@ -39,7 +39,7 @@ class ToughCompositorWaitPage(ToughCompositorPage):
 
   def RunSmoothness(self, action_runner):
     # We scroll back and forth a few times to reduce noise in the tests.
-    action_runner.RunAction(WaitAction({'seconds': 8}))
+    action_runner.Wait(8)
 
 
 class ToughCompositorCasesPageSet(page_set_module.PageSet):

@@ -36,7 +36,7 @@ class MapsPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction({'javascript': 'window.testDone'}))
+    action_runner.WaitForJavaScriptCondition('window.testDone')
 
 
 @test.Disabled

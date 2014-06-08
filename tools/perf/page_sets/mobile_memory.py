@@ -31,10 +31,7 @@ class GmailPage(MobileMemoryPage):
 
   def ReloadAndGc(self, action_runner):
     action_runner.RunAction(ReloadAction())
-    action_runner.RunAction(WaitAction(
-        {
-            'seconds': 15
-        }))
+    action_runner.Wait(15)
     action_runner.RunAction(JsCollectGarbageAction())
 
   def RunStressMemory(self, action_runner):
@@ -53,26 +50,14 @@ class GoogleSearchPage(MobileMemoryPage):
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(WaitAction(
-        {
-            'seconds': 3
-        }))
+    action_runner.Wait(3)
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(WaitAction(
-        {
-            'seconds': 3
-        }))
+    action_runner.Wait(3)
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(WaitAction(
-        {
-            'seconds': 3
-        }))
+    action_runner.Wait(3)
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(WaitAction(
-        {
-            'javascript':
-              'document.getElementById("rg_s").childElementCount > 300'
-        }))
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementById("rg_s").childElementCount > 300')
 
 
 class ScrollPage(MobileMemoryPage):

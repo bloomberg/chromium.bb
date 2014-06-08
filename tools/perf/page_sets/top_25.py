@@ -36,11 +36,7 @@ class GoogleWebSearchPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Next',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Next')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
@@ -51,11 +47,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Next',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Next')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -64,11 +56,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Next',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Next')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -77,11 +65,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Previous',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -90,11 +74,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Previous',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -103,11 +83,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Previous',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -116,11 +92,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Images',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Images')
     action_runner.RunAction(ScrollAction())
     action_runner.RunAction(ClickElementAction(
       {
@@ -129,11 +101,7 @@ class GoogleWebSearchPage(Top25Page):
           'condition': 'href_change'
         }
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Images',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Images')
 
 
 class GmailPage(Top25Page):
@@ -149,11 +117,9 @@ class GmailPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript': ('window.gmonkey !== undefined &&'
-                       'document.getElementById("gb") !== null')
-      }))
+    action_runner.WaitForJavaScriptCondition(
+        'window.gmonkey !== undefined &&'
+        'document.getElementById("gb") !== null')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ClickElementAction(
@@ -196,15 +162,8 @@ class GoogleCalendarPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.ExecuteJavaScript('''
         (function() {
           var elem = document.createElement('meta');
@@ -212,116 +171,57 @@ class GoogleCalendarPage(Top25Page):
           elem.content='initial-scale=1';
           document.body.appendChild(elem);
         })();''')
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 1
-      }))
+    action_runner.Wait(1)
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navForward"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navForward"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
     action_runner.RunAction(ClickElementAction(
       {
         'selector': 'div[class~="navBack"]'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement('div[class~="navBack"]')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -360,15 +260,9 @@ class GoogleDocPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'javascript':
-          'document.getElementsByClassName("kix-appview-editor").length'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForJavaScriptCondition(
+        'document.getElementsByClassName("kix-appview-editor").length')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -393,78 +287,39 @@ class GooglePlusPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Home',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='Home')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Home'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Profile',
-        'condition': 'element'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement(text='Profile')
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Profile'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Explore',
-        'condition': 'element'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement(text='Explore')
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Explore'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Events',
-        'condition': 'element'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement(text='Events')
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Events'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Communities',
-        'condition': 'element'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement(text='Communities')
     action_runner.RunAction(ClickElementAction(
       {
         'text' : 'Communities'
       }))
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'Home',
-        'condition': 'element'
-      }))
+    action_runner.Wait(2)
+    action_runner.WaitForElement(text='Home')
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -486,10 +341,7 @@ class YoutubePage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
+    action_runner.Wait(2)
 
 
 class BlogspotPage(Top25Page):
@@ -505,11 +357,7 @@ class BlogspotPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'accessibility',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='accessibility')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ClickElementAction({'text' : 'accessibility'}))
@@ -538,13 +386,9 @@ class WordpressPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'condition': 'element',
-        'selector':
-          # pylint: disable=C0301
-          'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]'
-      }))
+    action_runner.WaitForElement(
+        # pylint: disable=C0301
+        'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
@@ -576,11 +420,7 @@ class FacebookPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'text' : 'About',
-        'condition': 'element'
-      }))
+    action_runner.WaitForElement(text='About')
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ClickElementAction({'text' : 'About'}))
@@ -652,10 +492,7 @@ class TwitterPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
+    action_runner.Wait(2)
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -721,10 +558,7 @@ class YahooGamesPage(Top25Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.RunAction(WaitAction(
-      {
-        'seconds': 2
-      }))
+    action_runner.Wait(2)
 
 
 class Top25PageSet(page_set_module.PageSet):
