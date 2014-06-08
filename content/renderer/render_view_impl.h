@@ -551,6 +551,8 @@ class CONTENT_EXPORT RenderViewImpl
                                        const gfx::Range& replacement_range,
                                        bool keep_selection) OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
+  virtual bool SetDeviceColorProfile(
+      const std::vector<char>& color_profile) OVERRIDE;
   virtual void OnOrientationChange() OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) OVERRIDE;

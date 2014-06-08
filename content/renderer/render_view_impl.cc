@@ -3483,6 +3483,16 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     browser_plugin_manager_->UpdateDeviceScaleFactor(device_scale_factor_);
 }
 
+bool RenderViewImpl::SetDeviceColorProfile(
+    const std::vector<char>& profile) {
+  bool changed = RenderWidget::SetDeviceColorProfile(profile);
+  if (changed && webview()) {
+    // TODO(noel): notify the webview() of the color profile change so it
+    // can update and repaint all color profiled page elements.
+  }
+  return changed;
+}
+
 ui::TextInputType RenderViewImpl::GetTextInputType() {
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)
@@ -3986,7 +3996,7 @@ void RenderViewImpl::SetScreenOrientationForTesting(
 
 void RenderViewImpl::SetDeviceColorProfileForTesting(
     const std::vector<char>& color_profile) {
-  // TODO(noel): Add RenderViewImpl::SetDeviceColorProfile(color_profile).
+  SetDeviceColorProfile(color_profile);
 }
 
 void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {

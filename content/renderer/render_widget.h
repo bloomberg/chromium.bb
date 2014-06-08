@@ -398,6 +398,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoResizeCompositor();
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
+  virtual bool SetDeviceColorProfile(const std::vector<char>& color_profile);
 
   virtual void OnOrientationChange();
 
@@ -661,6 +662,9 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
+
+  // The device color profile on supported platforms.
+  std::vector<char> device_color_profile_;
 
   // State associated with synthetic gestures. Synthetic gestures are processed
   // in-order, so a queue is sufficient to identify the correct state for a

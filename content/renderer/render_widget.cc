@@ -1565,6 +1565,15 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   scheduleComposite();
 }
 
+bool RenderWidget::SetDeviceColorProfile(
+    const std::vector<char>& color_profile) {
+  if (device_color_profile_ == color_profile)
+    return false;
+
+  device_color_profile_ = color_profile;
+  return true;
+}
+
 void RenderWidget::OnOrientationChange() {
 }
 
