@@ -33,6 +33,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "url/url_parse.h"
 
 namespace {
@@ -70,8 +71,8 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
                               bool minimal_changes) {
   matches_.clear();
 
-  if ((input.type() == AutocompleteInput::INVALID) ||
-      (input.type() == AutocompleteInput::FORCED_QUERY))
+  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
+      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
     return;
 
   if (input.text().empty())

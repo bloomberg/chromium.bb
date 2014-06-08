@@ -7,7 +7,7 @@
 OmniboxLog::OmniboxLog(
     const base::string16& text,
     bool just_deleted_text,
-    AutocompleteInput::Type input_type,
+    metrics::OmniboxInputType::Type input_type,
     bool is_popup_open,
     size_t selected_index,
     bool is_paste_and_go,

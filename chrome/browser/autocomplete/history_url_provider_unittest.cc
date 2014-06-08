@@ -670,14 +670,14 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
     int relevance;
     AutocompleteInput::Type type;
   } test_cases[] = {
-    { "gooey", 1410, AutocompleteInput::UNKNOWN },
-    { "gooey/", 1410, AutocompleteInput::URL },
-    { "gooey#", 1200, AutocompleteInput::UNKNOWN },
-    { "gooey/#", 1200, AutocompleteInput::URL },
-    { "gooey#foo", 1200, AutocompleteInput::UNKNOWN },
-    { "gooey/#foo", 1200, AutocompleteInput::URL },
-    { "gooey# foo", 1200, AutocompleteInput::UNKNOWN },
-    { "gooey/# foo", 1200, AutocompleteInput::URL },
+    { "gooey", 1410, metrics::OmniboxInputType::UNKNOWN },
+    { "gooey/", 1410, metrics::OmniboxInputType::URL },
+    { "gooey#", 1200, metrics::OmniboxInputType::UNKNOWN },
+    { "gooey/#", 1200, metrics::OmniboxInputType::URL },
+    { "gooey#foo", 1200, metrics::OmniboxInputType::UNKNOWN },
+    { "gooey/#foo", 1200, metrics::OmniboxInputType::URL },
+    { "gooey# foo", 1200, metrics::OmniboxInputType::UNKNOWN },
+    { "gooey/# foo", 1200, metrics::OmniboxInputType::URL },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);

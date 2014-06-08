@@ -36,6 +36,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/escape.h"
@@ -65,8 +66,8 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
     return;
 
   // Don't bother with INVALID and FORCED_QUERY.
-  if ((input.type() == AutocompleteInput::INVALID) ||
-      (input.type() == AutocompleteInput::FORCED_QUERY))
+  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
+      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
     return;
 
   autocomplete_input_ = input;
@@ -121,7 +122,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // provider won't promote the URL-what-you-typed match to first
   // for these inputs.
   const bool can_have_url_what_you_typed_match_first =
-      (autocomplete_input_.type() != AutocompleteInput::QUERY) &&
+      (autocomplete_input_.type() != metrics::OmniboxInputType::QUERY) &&
       (!autocomplete_input_.parts().username.is_nonempty() ||
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());
