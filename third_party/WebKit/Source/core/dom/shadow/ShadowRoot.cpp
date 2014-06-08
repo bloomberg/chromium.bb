@@ -219,12 +219,14 @@ void ShadowRoot::childrenChanged(bool changedByParser, Node* beforeChange, Node*
 void ShadowRoot::registerScopedHTMLStyleChild()
 {
     ++m_numberOfStyles;
+    setHasScopedHTMLStyleChild(true);
 }
 
 void ShadowRoot::unregisterScopedHTMLStyleChild()
 {
-    ASSERT(m_numberOfStyles > 0);
+    ASSERT(hasScopedHTMLStyleChild() && m_numberOfStyles > 0);
     --m_numberOfStyles;
+    setHasScopedHTMLStyleChild(m_numberOfStyles > 0);
 }
 
 ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()

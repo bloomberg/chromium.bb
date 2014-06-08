@@ -255,6 +255,8 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
+    // FIXME: When chanking scoped attribute, scopingNode's hasScopedHTMLStyleChild has been already modified.
+    // So we cannot use hasScopedHTMLStyleChild flag here.
     ScopedStyleResolver* resolver = scopingNode ? m_styleTree.lookupScopedStyleResolverFor(scopingNode) : m_styleTree.scopedStyleResolverForDocument();
     if (!resolver)
         return;

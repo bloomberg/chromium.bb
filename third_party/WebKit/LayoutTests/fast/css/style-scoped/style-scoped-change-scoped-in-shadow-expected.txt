@@ -1,0 +1,55 @@
+PASS window.internals is defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+test a scoped style in shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+test a style in shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+test styles in multiple shadow trees.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 255)"
+test a scoped style in nested shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(0, 0, 255)"
+PASS textColor is "rgb(255, 0, 0)"
+test a style in nested shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 255)"
+PASS textColor is "rgb(0, 0, 255)"
+test changing scoped attribute online.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+test removing a scoped style from shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+test removing a style from shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+test inserting a scoped style into shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+test inserting a style into shadow tree.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+test re-inserting a style after changing scoped attribute offline.
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(255, 0, 0)"
+PASS textColor is "rgb(0, 0, 0)"
+

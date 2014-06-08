@@ -92,19 +92,24 @@ static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
     return false;
 }
 
-static Node* determineScopingNodeForStyleInShadow(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
+static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
 {
-    ASSERT(ownerElement && ownerElement->isInShadowTree());
+    ASSERT(ownerElement && ownerElement->isRegisteredAsScoped());
 
-    if (hasDistributedRule(styleSheetContents)) {
-        ContainerNode* scope = ownerElement;
-        do {
-            scope = scope->containingShadowRoot()->shadowHost();
-        } while (scope->isInShadowTree());
-        return scope;
+    if (ownerElement->isInShadowTree()) {
+        if (hasDistributedRule(styleSheetContents)) {
+            ContainerNode* scope = ownerElement;
+            do {
+                scope = scope->containingShadowRoot()->shadowHost();
+            } while (scope->isInShadowTree());
+
+            return scope;
+        }
+        if (ownerElement->isRegisteredAsScoped())
+            return ownerElement->containingShadowRoot()->shadowHost();
     }
 
-    return ownerElement->containingShadowRoot()->shadowHost();
+    return ownerElement->isRegisteredInShadowRoot() ? ownerElement->containingShadowRoot()->shadowHost() : ownerElement->parentNode();
 }
 
 static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
@@ -152,8 +157,8 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
     }
     if (styleSheetContents->hasSingleOwnerNode()) {
         Node* ownerNode = styleSheetContents->singleOwnerNode();
-        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isInShadowTree()) {
-            m_scopingNodes.append(determineScopingNodeForStyleInShadow(toHTMLStyleElement(ownerNode), styleSheetContents));
+        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isRegisteredAsScoped()) {
+            m_scopingNodes.append(determineScopingNodeForStyleScoped(toHTMLStyleElement(ownerNode), styleSheetContents));
             return;
         }
     }

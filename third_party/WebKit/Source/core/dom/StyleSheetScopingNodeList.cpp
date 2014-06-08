@@ -53,7 +53,7 @@ void StyleSheetScopingNodeList::remove(ContainerNode* node)
         return;
 
     // If the node is still working as a scoping node, we cannot remove.
-    if (node->inDocument())
+    if (node->inDocument() && node->numberOfScopedHTMLStyleChildren())
         return;
 
     m_scopingNodes->remove(node);
@@ -63,3 +63,5 @@ void StyleSheetScopingNodeList::remove(ContainerNode* node)
 }
 
 }
+
+

@@ -144,6 +144,8 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
         return defaultValue;
 
     switch (type) {
+    case ContextFeatures::StyleScoped:
+        return frame->permissionClient()->allowWebComponents(defaultValue);
     case ContextFeatures::MutationEvents:
         return frame->permissionClient()->allowMutationEvents(defaultValue);
     case ContextFeatures::PushState:
