@@ -1485,6 +1485,14 @@ TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV24);
 }
 
+// Verify that videos with an odd frame size playback successfully.
+TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("butterfly-853x480.webm"),
+                    PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 // For MediaSource tests, generate two sets of tests: one using FrameProcessor,
 // and one using LegacyFrameProcessor.
 INSTANTIATE_TEST_CASE_P(NewFrameProcessor, PipelineIntegrationTest,
