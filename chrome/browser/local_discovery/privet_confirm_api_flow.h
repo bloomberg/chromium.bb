@@ -16,7 +16,8 @@ namespace local_discovery {
 // API call flow for server-side communication with CloudPrint for registration.
 class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
  public:
-  typedef base::Callback<void(GCDApiFlow::Status /*success*/)> ResponseCallback;
+  typedef base::Callback<void(GCDApiFlowInterface::Status /*success*/)>
+      ResponseCallback;
 
   // Create an OAuth2-based confirmation
   PrivetConfirmApiCallFlow(const std::string& token,
@@ -24,7 +25,7 @@ class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
 
   virtual ~PrivetConfirmApiCallFlow();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() OVERRIDE;

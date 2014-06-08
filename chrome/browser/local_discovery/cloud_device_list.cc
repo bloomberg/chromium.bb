@@ -23,7 +23,7 @@ CloudDeviceList::CloudDeviceList(CloudDeviceListDelegate* delegate)
 CloudDeviceList::~CloudDeviceList() {
 }
 
-void CloudDeviceList::OnGCDAPIFlowError(GCDApiFlow::Status status) {
+void CloudDeviceList::OnGCDAPIFlowError(GCDApiFlowInterface::Status status) {
   delegate_->OnDeviceListUnavailable();
 }
 

@@ -59,11 +59,9 @@ class GCDApiFlowTest : public testing::Test {
     EXPECT_CALL(*mock_delegate_, GetURL())
         .WillRepeatedly(Return(
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
-    gcd_flow_.reset(new GCDApiFlow(request_context_.get(),
-                                   &token_service_,
-                                   account_id_,
-                                   delegate.PassAs<GCDApiFlow::Request>()));
-    gcd_flow_->Start();
+    gcd_flow_.reset(
+        new GCDApiFlow(request_context_.get(), &token_service_, account_id_));
+    gcd_flow_->Start(delegate.PassAs<GCDApiFlow::Request>());
   }
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;

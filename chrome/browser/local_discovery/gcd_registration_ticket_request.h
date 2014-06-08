@@ -26,7 +26,7 @@ class GCDRegistrationTicketRequest : public GCDApiFlowRequest {
   virtual void GetUploadData(std::string* upload_type,
                              std::string* upload_data) OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() OVERRIDE;
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;
   virtual GURL GetURL() OVERRIDE;

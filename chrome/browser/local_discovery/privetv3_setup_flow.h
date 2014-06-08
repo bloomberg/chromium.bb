@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
-#include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 
 namespace local_discovery {
 
@@ -26,11 +25,13 @@ class PrivetV3SetupFlow {
     typedef base::Callback<void(const std::string& ssid,
                                 const std::string& key)> CredentialsCallback;
 
+    typedef base::Callback<void(scoped_ptr<PrivetV3HTTPClient>)>
+        PrivetClientCallback;
+
     virtual ~Delegate();
 
     // Creates |GCDApiFlow| for making requests to GCD server.
-    virtual scoped_ptr<GCDApiFlow> CreateApiFlow(
-        scoped_ptr<GCDApiFlow::Request> request) = 0;
+    virtual scoped_ptr<GCDApiFlowInterface> CreateApiFlow() = 0;
 
     // Requests WiFi credentials.
     virtual void GetWiFiCredentials(const CredentialsCallback& callback) = 0;
@@ -40,10 +41,9 @@ class PrivetV3SetupFlow {
     virtual void SwitchToSetupWiFi(const ResultCallback& callback) = 0;
 
     // Starts device resolution that should callback with ready
-    // |PrivetHTTPClient|.
-    virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
-        const std::string& service_name,
-        const PrivetHTTPAsynchronousFactory::ResultCallback& callback) = 0;
+    // |PrivetV3HTTPClient|.
+    virtual void CreatePrivetV3Client(const std::string& service_name,
+                                      const PrivetClientCallback& callback) = 0;
 
     // Requests client to prompt user to check |confirmation_code|.
     virtual void ConfirmSecurityCode(const std::string& confirmation_code,

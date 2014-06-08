@@ -239,18 +239,21 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
   succeded_list_count_ = 0;
   cloud_devices_.clear();
 
-  cloud_print_printer_list_ = CreateApiFlow(
-      scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
+  cloud_print_printer_list_ = CreateApiFlow();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableCloudDevices)) {
-    cloud_device_list_ = CreateApiFlow(
-        scoped_ptr<GCDApiFlow::Request>(new CloudDeviceList(this)));
+    cloud_device_list_ = CreateApiFlow();
   }
 
-  if (cloud_print_printer_list_)
-    cloud_print_printer_list_->Start();
-  if (cloud_device_list_)
-    cloud_device_list_->Start();
+  if (cloud_print_printer_list_) {
+    cloud_print_printer_list_->Start(
+        make_scoped_ptr<GCDApiFlowInterface::Request>(
+            new CloudPrintPrinterList(this)));
+  }
+  if (cloud_device_list_) {
+    cloud_device_list_->Start(make_scoped_ptr<GCDApiFlowInterface::Request>(
+        new CloudDeviceList(this)));
+  }
   CheckListingDone();
 }
 
@@ -310,16 +313,16 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
-  confirm_api_call_flow_ = CreateApiFlow(
-      scoped_ptr<GCDApiFlow::Request>(new PrivetConfirmApiCallFlow(
-          token,
-          base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
-                     base::Unretained(this)))));
+  confirm_api_call_flow_ = CreateApiFlow();
   if (!confirm_api_call_flow_) {
     SendRegisterError();
     return;
   }
-  confirm_api_call_flow_->Start();
+  confirm_api_call_flow_->Start(make_scoped_ptr<GCDApiFlowInterface::Request>(
+      new PrivetConfirmApiCallFlow(
+          token,
+          base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
+                     base::Unretained(this)))));
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterError(
@@ -480,7 +483,7 @@ std::string LocalDiscoveryUIHandler::GetSyncAccount() {
 
 // TODO(noamsml): Create master object for registration flow.
 void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
-  if (current_register_operation_.get()) {
+  if (current_register_operation_) {
     current_register_operation_->Cancel();
     current_register_operation_.reset();
   }
@@ -528,24 +531,22 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
   cloud_device_list_.reset();
 }
 
-scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow(
-    scoped_ptr<GCDApiFlow::Request> request) {
+scoped_ptr<GCDApiFlowInterface> LocalDiscoveryUIHandler::CreateApiFlow() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
-    return scoped_ptr<GCDApiFlow>();
+    return scoped_ptr<GCDApiFlowInterface>();
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service)
-    return scoped_ptr<GCDApiFlow>();
+    return scoped_ptr<GCDApiFlowInterface>();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
-    return scoped_ptr<GCDApiFlow>();
-  return make_scoped_ptr(
+    return scoped_ptr<GCDApiFlowInterface>();
+  return make_scoped_ptr<GCDApiFlowInterface>(
       new GCDApiFlow(profile->GetRequestContext(),
                      token_service,
-                     signin_manager->GetAuthenticatedAccountId(),
-                     request.Pass()));
+                     signin_manager->GetAuthenticatedAccountId()));
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)

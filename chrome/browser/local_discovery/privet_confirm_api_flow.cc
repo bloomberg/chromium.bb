@@ -33,7 +33,8 @@ PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
 PrivetConfirmApiCallFlow::~PrivetConfirmApiCallFlow() {
 }
 
-void PrivetConfirmApiCallFlow::OnGCDAPIFlowError(GCDApiFlow::Status status) {
+void PrivetConfirmApiCallFlow::OnGCDAPIFlowError(
+    GCDApiFlowInterface::Status status) {
   callback_.Run(status);
 }
 
@@ -42,14 +43,14 @@ void PrivetConfirmApiCallFlow::OnGCDAPIFlowComplete(
   bool success = false;
 
   if (!value.GetBoolean(cloud_print::kSuccessValue, &success)) {
-    callback_.Run(GCDApiFlow::ERROR_MALFORMED_RESPONSE);
+    callback_.Run(GCDApiFlowInterface::ERROR_MALFORMED_RESPONSE);
     return;
   }
 
   if (success) {
-    callback_.Run(GCDApiFlow::SUCCESS);
+    callback_.Run(GCDApiFlowInterface::SUCCESS);
   } else {
-    callback_.Run(GCDApiFlow::ERROR_FROM_SERVER);
+    callback_.Run(GCDApiFlowInterface::ERROR_FROM_SERVER);
   }
 }
 

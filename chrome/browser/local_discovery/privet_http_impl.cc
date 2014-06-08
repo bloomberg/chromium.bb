@@ -949,4 +949,21 @@ PrivetV1HTTPClientImpl::CreateStorageReadOperation(
       info_client(), kPrivetStorageContentPath, url_param, callback));
 }
 
+PrivetV3HTTPClientImpl::PrivetV3HTTPClientImpl(
+    scoped_ptr<PrivetHTTPClient> info_client)
+    : info_client_(info_client.Pass()) {
+}
+
+PrivetV3HTTPClientImpl::~PrivetV3HTTPClientImpl() {
+}
+
+const std::string& PrivetV3HTTPClientImpl::GetName() {
+  return info_client()->GetName();
+}
+
+scoped_ptr<PrivetJSONOperation> PrivetV3HTTPClientImpl::CreateInfoOperation(
+    const PrivetJSONOperation::ResultCallback& callback) {
+  return info_client()->CreateInfoOperation(callback);
+}
+
 }  // namespace local_discovery

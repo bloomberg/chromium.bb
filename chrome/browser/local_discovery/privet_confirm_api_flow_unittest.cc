@@ -38,21 +38,22 @@ TEST(PrivetConfirmApiFlowTest, Params) {
 
 class MockDelegate {
  public:
-  MOCK_METHOD1(Callback, void(GCDApiFlow::Status));
+  MOCK_METHOD1(Callback, void(GCDApiFlowInterface::Status));
 };
 
 TEST(CloudPrintPrinterListTest, Parsing) {
   StrictMock<MockDelegate> delegate;
   PrivetConfirmApiCallFlow confirmation(
       "123", base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
-  EXPECT_CALL(delegate, Callback(GCDApiFlow::SUCCESS)).Times(1);
+  EXPECT_CALL(delegate, Callback(GCDApiFlowInterface::SUCCESS)).Times(1);
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(kSampleConfirmResponse));
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDAPIFlowComplete(*dictionary);
 
-  EXPECT_CALL(delegate, Callback(GCDApiFlow::ERROR_FROM_SERVER)).Times(1);
+  EXPECT_CALL(delegate, Callback(GCDApiFlowInterface::ERROR_FROM_SERVER))
+      .Times(1);
 
   value.reset(base::JSONReader::Read(kFailedConfirmResponse));
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));

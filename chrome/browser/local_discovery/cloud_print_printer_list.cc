@@ -19,7 +19,8 @@ CloudPrintPrinterList::CloudPrintPrinterList(CloudDeviceListDelegate* delegate)
 CloudPrintPrinterList::~CloudPrintPrinterList() {
 }
 
-void CloudPrintPrinterList::OnGCDAPIFlowError(GCDApiFlow::Status status) {
+void CloudPrintPrinterList::OnGCDAPIFlowError(
+    GCDApiFlowInterface::Status status) {
   delegate_->OnDeviceListUnavailable();
 }
 

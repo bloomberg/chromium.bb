@@ -23,37 +23,42 @@ namespace {
 const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
 }
 
-GCDApiFlow::Request::Request() {
+GCDApiFlowInterface::Request::Request() {
 }
 
-GCDApiFlow::Request::~Request() {
+GCDApiFlowInterface::Request::~Request() {
 }
 
-net::URLFetcher::RequestType GCDApiFlow::Request::GetRequestType() {
+net::URLFetcher::RequestType GCDApiFlowInterface::Request::GetRequestType() {
   return net::URLFetcher::GET;
 }
 
-void GCDApiFlow::Request::GetUploadData(std::string* upload_type,
-                                        std::string* upload_data) {
+void GCDApiFlowInterface::Request::GetUploadData(std::string* upload_type,
+                                                 std::string* upload_data) {
   *upload_type = std::string();
   *upload_data = std::string();
 }
 
+GCDApiFlowInterface::GCDApiFlowInterface() {
+}
+
+GCDApiFlowInterface::~GCDApiFlowInterface() {
+}
+
 GCDApiFlow::GCDApiFlow(net::URLRequestContextGetter* request_context,
                        OAuth2TokenService* token_service,
-                       const std::string& account_id,
-                       scoped_ptr<Request> delegate)
+                       const std::string& account_id)
     : OAuth2TokenService::Consumer("cloud_print"),
       request_context_(request_context),
       token_service_(token_service),
-      account_id_(account_id),
-      request_(delegate.Pass()) {
+      account_id_(account_id) {
 }
 
 GCDApiFlow::~GCDApiFlow() {
 }
 
-void GCDApiFlow::Start() {
+void GCDApiFlow::Start(scoped_ptr<Request> request) {
+  request_ = request.Pass();
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
   oauth_request_ =

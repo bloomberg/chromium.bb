@@ -52,20 +52,17 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
-
   // PrivetRegisterOperation::Delegate implementation.
   virtual void OnPrivetRegisterClaimToken(
       PrivetRegisterOperation* operation,
       const std::string& token,
       const GURL& url) OVERRIDE;
-
   virtual void OnPrivetRegisterError(
       PrivetRegisterOperation* operation,
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
       const base::DictionaryValue* json) OVERRIDE;
-
   virtual void OnPrivetRegisterDone(
       PrivetRegisterOperation* operation,
       const std::string& device_id) OVERRIDE;
@@ -74,9 +71,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   virtual void DeviceChanged(bool added,
                              const std::string& name,
                              const DeviceDescription& description) OVERRIDE;
-
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
-
   virtual void DeviceCacheFlushed() OVERRIDE;
 
   // CloudDeviceListDelegate implementation.
@@ -86,7 +81,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // SigninManagerBase::Observer implementation.
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) OVERRIDE;
-
   virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
  private:
@@ -120,7 +114,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
-  void OnConfirmDone(GCDApiFlow::Status status);
+  void OnConfirmDone(GCDApiFlowInterface::Status status);
 
   // Signal to the web interface an error has ocurred while registering.
   void SendRegisterError();
@@ -147,7 +141,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   void CheckListingDone();
 
-  scoped_ptr<GCDApiFlow> CreateApiFlow(scoped_ptr<GCDApiFlow::Request> request);
+  scoped_ptr<GCDApiFlowInterface> CreateApiFlow();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();
@@ -166,17 +160,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       const wifi::BootstrappingDeviceDescription& description);
 #endif
 
-  // The current HTTP client (used for the current operation).
-  scoped_ptr<PrivetV1HTTPClient> current_http_client_;
-
-  // The current register operation. Only one allowed at any time.
-  scoped_ptr<PrivetRegisterOperation> current_register_operation_;
-
-  // The current confirm call used during the registration flow.
-  scoped_ptr<GCDApiFlow> confirm_api_call_flow_;
-
-  // The device lister used to list devices on the local network.
-  scoped_ptr<PrivetDeviceLister> privet_lister_;
+  // A map of current device descriptions provided by the PrivetDeviceLister.
+  DeviceDescriptionMap device_descriptions_;
 
   // The service discovery client used listen for devices on the local network.
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
@@ -187,15 +172,24 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // An object representing the resolution process for the privet_http_factory.
   scoped_ptr<PrivetHTTPResolution> privet_resolution_;
 
-  // A map of current device descriptions provided by the PrivetDeviceLister.
-  DeviceDescriptionMap device_descriptions_;
+  // The current HTTP client (used for the current operation).
+  scoped_ptr<PrivetV1HTTPClient> current_http_client_;
+
+  // The current register operation. Only one allowed at any time.
+  scoped_ptr<PrivetRegisterOperation> current_register_operation_;
+
+  // The current confirm call used during the registration flow.
+  scoped_ptr<GCDApiFlowInterface> confirm_api_call_flow_;
+
+  // The device lister used to list devices on the local network.
+  scoped_ptr<PrivetDeviceLister> privet_lister_;
 
   // Whether or not the page is marked as visible.
   bool is_visible_;
 
   // List of printers from cloud print.
-  scoped_ptr<GCDApiFlow> cloud_print_printer_list_;
-  scoped_ptr<GCDApiFlow> cloud_device_list_;
+  scoped_ptr<GCDApiFlowInterface> cloud_print_printer_list_;
+  scoped_ptr<GCDApiFlowInterface> cloud_device_list_;
   std::vector<Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;

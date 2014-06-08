@@ -185,11 +185,11 @@ class PrivetV1HTTPClient {
  public:
   virtual ~PrivetV1HTTPClient() {}
 
-  // A name for the HTTP client, e.g. the device name for the privet device.
-  virtual const std::string& GetName() = 0;
-
   static scoped_ptr<PrivetV1HTTPClient> CreateDefault(
       scoped_ptr<PrivetHTTPClient> info_client);
+
+  // A name for the HTTP client, e.g. the device name for the privet device.
+  virtual const std::string& GetName() = 0;
 
   // Creates operation to query basic information about local device.
   virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
@@ -217,6 +217,22 @@ class PrivetV1HTTPClient {
   virtual scoped_ptr<PrivetDataReadOperation> CreateStorageReadOperation(
       const std::string& path,
       const PrivetDataReadOperation::ResultCallback& callback) = 0;
+};
+
+// Privet HTTP client. Must outlive the operations it creates.
+class PrivetV3HTTPClient {
+ public:
+  virtual ~PrivetV3HTTPClient() {}
+
+  static scoped_ptr<PrivetV3HTTPClient> CreateDefault(
+      scoped_ptr<PrivetHTTPClient> info_client);
+
+  // A name for the HTTP client, e.g. the device name for the privet device.
+  virtual const std::string& GetName() = 0;
+
+  // Creates operation to query basic information about local device.
+  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+      const PrivetJSONOperation::ResultCallback& callback) = 0;
 };
 
 }  // namespace local_discovery

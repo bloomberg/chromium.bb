@@ -18,7 +18,7 @@ class CloudPrintPrinterList : public CloudPrintApiFlowRequest {
   explicit CloudPrintPrinterList(CloudDeviceListDelegate* delegate);
   virtual ~CloudPrintPrinterList();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
 
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;

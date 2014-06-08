@@ -346,5 +346,22 @@ class PrivetV1HTTPClientImpl : public PrivetV1HTTPClient {
   DISALLOW_COPY_AND_ASSIGN(PrivetV1HTTPClientImpl);
 };
 
+class PrivetV3HTTPClientImpl : public PrivetV3HTTPClient {
+ public:
+  explicit PrivetV3HTTPClientImpl(scoped_ptr<PrivetHTTPClient> info_client);
+  virtual ~PrivetV3HTTPClientImpl();
+
+  virtual const std::string& GetName() OVERRIDE;
+  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+      const PrivetJSONOperation::ResultCallback& callback) OVERRIDE;
+
+ private:
+  PrivetHTTPClient* info_client() { return info_client_.get(); }
+
+  scoped_ptr<PrivetHTTPClient> info_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivetV3HTTPClientImpl);
+};
+
 }  // namespace local_discovery
 #endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_HTTP_IMPL_H_

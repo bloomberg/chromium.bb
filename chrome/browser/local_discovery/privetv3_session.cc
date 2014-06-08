@@ -15,7 +15,7 @@ PrivetV3Session::Delegate::~Delegate() {
 PrivetV3Session::Request::~Request() {
 }
 
-PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetHTTPClient> client,
+PrivetV3Session::PrivetV3Session(scoped_ptr<PrivetV3HTTPClient> client,
                                  Delegate* delegate) {
 }
 

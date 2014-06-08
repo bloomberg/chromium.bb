@@ -38,7 +38,7 @@ net::URLFetcher::RequestType GCDRegistrationTicketRequest::GetRequestType() {
 }
 
 void GCDRegistrationTicketRequest::OnGCDAPIFlowError(
-    GCDApiFlow::Status status) {
+    GCDApiFlowInterface::Status status) {
   callback_.Run(std::string());
 }
 

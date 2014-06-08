@@ -17,8 +17,7 @@
 namespace local_discovery {
 
 // API flow for communicating with cloud print and cloud devices.
-class GCDApiFlow : public net::URLFetcherDelegate,
-                   public OAuth2TokenService::Consumer {
+class GCDApiFlowInterface {
  public:
   // TODO(noamsml): Better error model for this class.
   enum Status {
@@ -57,15 +56,27 @@ class GCDApiFlow : public net::URLFetcherDelegate,
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
+  GCDApiFlowInterface();
+  virtual ~GCDApiFlowInterface();
+
+  virtual void Start(scoped_ptr<Request> request) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GCDApiFlowInterface);
+};
+
+class GCDApiFlow : public GCDApiFlowInterface,
+                   public net::URLFetcherDelegate,
+                   public OAuth2TokenService::Consumer {
+ public:
   // Create an OAuth2-based confirmation.
   GCDApiFlow(net::URLRequestContextGetter* request_context,
              OAuth2TokenService* token_service,
-             const std::string& account_id,
-             scoped_ptr<Request> request);
+             const std::string& account_id);
 
   virtual ~GCDApiFlow();
 
-  void Start();
+  virtual void Start(scoped_ptr<Request> request) OVERRIDE;
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -86,10 +97,11 @@ class GCDApiFlow : public net::URLFetcherDelegate,
   OAuth2TokenService* token_service_;
   std::string account_id_;
   scoped_ptr<Request> request_;
+
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlow);
 };
 
-class GCDApiFlowRequest : public GCDApiFlow::Request {
+class GCDApiFlowRequest : public GCDApiFlowInterface::Request {
  public:
   GCDApiFlowRequest();
   virtual ~GCDApiFlowRequest();
@@ -102,7 +114,7 @@ class GCDApiFlowRequest : public GCDApiFlow::Request {
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowRequest);
 };
 
-class CloudPrintApiFlowRequest : public GCDApiFlow::Request {
+class CloudPrintApiFlowRequest : public GCDApiFlowInterface::Request {
  public:
   CloudPrintApiFlowRequest();
   virtual ~CloudPrintApiFlowRequest();

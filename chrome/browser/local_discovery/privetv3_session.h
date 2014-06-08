@@ -16,7 +16,7 @@ class DictionaryValue;
 
 namespace local_discovery {
 
-class PrivetHTTPClient;
+class PrivetV3HTTPClient;
 
 // Manages secure communication between browser and local Privet device.
 class PrivetV3Session {
@@ -52,7 +52,7 @@ class PrivetV3Session {
     virtual void Start() = 0;
   };
 
-  PrivetV3Session(scoped_ptr<PrivetHTTPClient> client, Delegate* delegate);
+  PrivetV3Session(scoped_ptr<PrivetV3HTTPClient> client, Delegate* delegate);
   ~PrivetV3Session();
 
   // Establishes a session, will call |OnSetupConfirmationNeeded| and then

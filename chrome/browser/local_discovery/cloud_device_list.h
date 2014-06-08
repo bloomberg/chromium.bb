@@ -21,7 +21,7 @@ class CloudDeviceList : public GCDApiFlowRequest {
   explicit CloudDeviceList(CloudDeviceListDelegate* delegate);
   virtual ~CloudDeviceList();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
 
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;
