@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"

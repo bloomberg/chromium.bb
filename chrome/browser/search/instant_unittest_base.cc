@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/search/instant_unittest_base.h"
+
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/browser/google_pref_names.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "components/variations/entropy_provider.h"
 
 InstantUnitTestBase::InstantUnitTestBase() {

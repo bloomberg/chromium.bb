@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_IMPL_H_
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_IMPL_H_
 
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"

@@ -9,6 +9,12 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../ui/base/ui_base.gyp:ui_base',
+        '../url/url.gyp:url_lib',
+        'components_strings.gyp:components_strings',
+        'keyed_service_core',
+        'infobars_core',
       ],
       'include_dirs': [
         '..',
@@ -20,9 +26,19 @@
         'google/core/browser/google_search_metrics.h',
         'google/core/browser/google_switches.cc',
         'google/core/browser/google_switches.h',
+        'google/core/browser/google_url_tracker.cc',
+        'google/core/browser/google_url_tracker.h',
         'google/core/browser/google_url_tracker_client.cc',
         'google/core/browser/google_url_tracker_client.h',
+        'google/core/browser/google_url_tracker_infobar_delegate.cc',
+        'google/core/browser/google_url_tracker_infobar_delegate.h',
+        'google/core/browser/google_url_tracker_map_entry.cc',
+        'google/core/browser/google_url_tracker_map_entry.h',
+        'google/core/browser/google_url_tracker_navigation_helper.cc',
+        'google/core/browser/google_url_tracker_navigation_helper.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
     },
   ],
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google/google_url_tracker.h"
+#include "components/google/core/browser/google_url_tracker.h"
 
 #include <set>
 #include <string>
@@ -11,11 +11,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
+#include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -79,6 +80,8 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
   virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual bool IsGoogleDomainURL(const GURL& url) OVERRIDE;
+  virtual GURL AppendGoogleLocaleParam(const GURL& url) OVERRIDE;
 
  private:
   Profile* profile_;
@@ -114,6 +117,18 @@ PrefService* TestGoogleURLTrackerClient::GetPrefs() {
 net::URLRequestContextGetter* TestGoogleURLTrackerClient::GetRequestContext() {
   return profile_->GetRequestContext();
 }
+
+bool TestGoogleURLTrackerClient::IsGoogleDomainURL(const GURL& url) {
+  return google_util::IsGoogleDomainUrl(
+      url,
+      google_util::DISALLOW_SUBDOMAIN,
+      google_util::DISALLOW_NON_STANDARD_PORTS);
+}
+
+GURL TestGoogleURLTrackerClient::AppendGoogleLocaleParam(const GURL& url) {
+  return google_util::AppendGoogleLocaleParam(url);
+}
+
 
 // TestGoogleURLTrackerNavigationHelper ---------------------------------------
 

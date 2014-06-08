@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
-#define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
+#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_H_
+#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_H_
 
 #include <map>
 #include <string>
@@ -14,14 +14,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/google/google_url_tracker_map_entry.h"
+#include "components/google/core/browser/google_url_tracker_client.h"
+#include "components/google/core/browser/google_url_tracker_map_entry.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class GoogleURLTrackerClient;
 class GoogleURLTrackerNavigationHelper;
 class PrefService;
 
@@ -86,6 +86,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void AcceptGoogleURL(bool redo_searches);
   void CancelGoogleURL();
   const GURL& fetched_google_url() const { return fetched_google_url_; }
+  GoogleURLTrackerClient* client() { return client_.get(); }
 
   // No one but GoogleURLTrackerMapEntry should call this.
   void DeleteMapEntryForManager(
@@ -192,4 +193,4 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
+#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_H_

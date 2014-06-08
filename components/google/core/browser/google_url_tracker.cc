@@ -1,25 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google/google_url_tracker.h"
+#include "components/google/core/browser/google_url_tracker.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
-#include "chrome/browser/google/google_util.h"
-#include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
-#include "components/google/core/browser/google_url_tracker_client.h"
+#include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -54,7 +48,7 @@ GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
   // browser is starting up, and if so, come back later", but there is currently
   // no function to do this.
   //
-  // In UNIT_TEST mode, where we want to explicitly control when the tracker
+  // In UNIT_TEST_MODE, where we want to explicitly control when the tracker
   // "wakes up", we do nothing at all.
   if (mode == NORMAL_MODE) {
     static const int kStartFetchDelayMS = 5000;
@@ -128,8 +122,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   GURL url(url_str);
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
       url.has_ref() ||
-      !google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
-                                      google_util::DISALLOW_NON_STANDARD_PORTS))
+      !client_->IsGoogleDomainURL(url))
     return;
 
   std::swap(url, fetched_google_url_);

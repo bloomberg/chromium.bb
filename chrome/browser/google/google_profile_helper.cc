@@ -4,9 +4,9 @@
 
 #include "chrome/browser/google/google_profile_helper.h"
 
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "url/gurl.h"
 
 namespace google_profile_helper {

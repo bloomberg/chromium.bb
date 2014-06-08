@@ -6,12 +6,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google/google_profile_helper.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "content/public/browser/browser_thread.h"

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+
+  <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE" desc="Message displayed when the user's current Google TLD doesn't match the default for their location.  This can be shortened in other languages (e.g. by removing 'would you like to') as needed to keep the translated strings from being much longer than English, so the infobar can still display all three IDS_GOOGLE_URL_TRACKER_ strings and a 'Learn more' link.">
+    Would you like to search with <ph name="NEW_GOOGLE_HOST">$1<ex>google.de</ex></ph> instead of <ph name="CURRENT_GOOGLE_HOST">$2<ex>google.fr</ex></ph>?
+  </message>
+  <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH" desc="Button text for button that changes user's default Google TLD to a new TLD.">
+    Switch to <ph name="NEW_GOOGLE_HOST">$1<ex>google.de</ex></ph>
+  </message>
+  <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH" desc="Button text for button that leaves user's default Google TLD unchanged.">
+    Keep using <ph name="CURRENT_GOOGLE_HOST">$1<ex>google.fr</ex></ph>
+  </message>
+  <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_LEARN_MORE" desc="Learn more text for the Google URL tracker infobar">
+    Learn more
+  </message>
+
+</grit-part>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 
 GoogleURLTrackerNavigationHelper::GoogleURLTrackerNavigationHelper(
     GoogleURLTracker* google_url_tracker)

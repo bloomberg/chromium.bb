@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_util::IsGoogleDomainUrl;

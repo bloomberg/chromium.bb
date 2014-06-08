@@ -1,15 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
+#include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
 
-#include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
-#include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_url_tracker.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "grit/generated_resources.h"
+#include "grit/components_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -100,13 +99,13 @@ base::string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
 }
 
 base::string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  return l10n_util::GetStringUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_LEARN_MORE);
 }
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   navigation_helper_->OpenURL(
-      google_util::AppendGoogleLocaleParam(GURL(
+      google_url_tracker_->client()->AppendGoogleLocaleParam(GURL(
           "https://www.google.com/support/chrome/bin/answer.py?"
           "answer=1618699")),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,

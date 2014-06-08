@@ -1,13 +1,13 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
-#define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
+#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
+#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper.h"
+#include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
+#include "components/google/core/browser/google_url_tracker_navigation_helper.h"
 #include "components/infobars/core/infobar_manager.h"
 
 class GoogleURLTracker;
@@ -61,4 +61,4 @@ class GoogleURLTrackerMapEntry : public infobars::InfoBarManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerMapEntry);
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
+#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_URL_TRACKER_MAP_ENTRY_H_
