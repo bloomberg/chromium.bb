@@ -5,4 +5,3 @@ yfriedman@chromium.org
 
 per-file *.aidl=set noparent
 per-file *.aidl=palmer@chromium.org
-per-file *.aidl=cdn@chromium.org
