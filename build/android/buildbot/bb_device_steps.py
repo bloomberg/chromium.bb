@@ -181,9 +181,10 @@ def InstallApk(options, test, print_step=False):
   if print_step:
     bb_annotations.PrintNamedStep('install_%s' % test.name.lower())
 
-  args = ['--apk', test.apk, '--apk_package', test.apk_package]
+  args = ['--apk_package', test.apk_package]
   if options.target == 'Release':
     args.append('--release')
+  args.append(test.apk)
 
   RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
 
