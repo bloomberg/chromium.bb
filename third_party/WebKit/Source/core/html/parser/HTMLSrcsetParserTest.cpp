@@ -20,6 +20,15 @@ typedef struct {
     int outputResourceWidth;
 } TestCase;
 
+TEST(ImageCandidateTest, Basic)
+{
+    ImageCandidate candidate;
+    ASSERT_EQ(candidate.density(), 1);
+    ASSERT_EQ(candidate.resourceWidth(), -1);
+    ASSERT_EQ(candidate.srcOrigin(), false);
+
+}
+
 TEST(HTMLSrcsetParserTest, Basic)
 {
     TestCase testCases[] = {

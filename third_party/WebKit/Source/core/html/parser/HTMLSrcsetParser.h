@@ -74,6 +74,8 @@ public:
 
     ImageCandidate()
         : m_density(1.0)
+        , m_resourceWidth(UninitializedDescriptor)
+        , m_originAttribute(SrcsetOrigin)
     {
     }
 
