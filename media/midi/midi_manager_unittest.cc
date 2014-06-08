@@ -224,13 +224,17 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
   scoped_ptr<MidiManager> manager(MidiManager::Create());
   manager->StartSession(client.get(), client->client_id());
 
+  MidiResult result = client->WaitForResult();
   // This #ifdef needs to be identical to the one in media/midi/midi_manager.cc.
   // Do not change the condition for disabling this test.
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
     !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  EXPECT_EQ(MIDI_NOT_SUPPORTED, client->WaitForResult());
+  EXPECT_EQ(MIDI_NOT_SUPPORTED, result);
+#elif defined(USE_ALSA)
+  // Temporary until http://crbug.com/371230 is resolved.
+  EXPECT_TRUE((result == MIDI_OK) || (result == MIDI_INITIALIZATION_ERROR));
 #else
-  EXPECT_EQ(MIDI_OK, client->WaitForResult());
+  EXPECT_EQ(MIDI_OK, result);
 #endif
 }
 

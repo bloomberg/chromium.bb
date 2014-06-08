@@ -5,11 +5,13 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 #define MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 
-#include <poll.h>
+#include <alsa/asoundlib.h>
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "media/midi/midi_manager.h"
 
@@ -28,19 +30,36 @@ class MidiManagerAlsa : public MidiManager {
                                     double timestamp) OVERRIDE;
 
  private:
+  // An internal callback that runs on MidiSendThread.
+  void SendMidiData(uint32 port_index,
+                    const std::vector<uint8>& data);
+
   void EventReset();
   void EventLoop();
 
-  class MidiDeviceInfo;
-  std::vector<scoped_refptr<MidiDeviceInfo> > in_devices_;
-  std::vector<scoped_refptr<MidiDeviceInfo> > out_devices_;
+  // Alsa seq handles.
+  snd_seq_t* in_client_;
+  snd_seq_t* out_client_;
+  int out_client_id_;
+
+  // One input port, many output ports.
+  int in_port_;
+  std::vector<int> out_ports_;
+
+  // Mapping from Alsa client:port to our index.
+  typedef std::map<int, uint32> SourceMap;
+  SourceMap source_map_;
+
+  // Alsa event <-> MIDI coders.
+  snd_midi_event_t* decoder_;
+  typedef std::vector<snd_midi_event_t*> EncoderList;
+  EncoderList encoders_;
+
   base::Thread send_thread_;
   base::Thread event_thread_;
 
-  // Used for shutting down the |event_thread_| safely.
-  int pipe_fd_[2];
-  // Used for polling input MIDI ports and |pipe_fd_| in |event_thread_|.
-  std::vector<struct pollfd> poll_fds_;
+  bool event_thread_shutdown_; // guarded by shutdown_lock_
+  base::Lock shutdown_lock_; // guards event_thread_shutdown_
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };
