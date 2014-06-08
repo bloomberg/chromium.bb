@@ -393,11 +393,11 @@ size_t TextRunHarfBuzz::CharToGlyph(size_t pos) const {
   DCHECK(range.start() <= pos && pos < range.end());
 
   if (!is_rtl) {
-    for (size_t i = 0; i < glyph_count - 1; ++i) {
-      if (pos < glyph_to_char[i + 1])
-        return i;
-    }
-    return glyph_count - 1;
+    size_t cluster_start = 0;
+    for (size_t i = 1; i < glyph_count && pos >= glyph_to_char[i]; ++i)
+      if (glyph_to_char[i] != glyph_to_char[i - 1])
+        cluster_start = i;
+    return cluster_start;
   }
 
   for (size_t i = 0; i < glyph_count; ++i) {
@@ -408,16 +408,34 @@ size_t TextRunHarfBuzz::CharToGlyph(size_t pos) const {
   return 0;
 }
 
-Range TextRunHarfBuzz::CharRangeToGlyphRange(const Range& range) const {
-  DCHECK(range.Contains(range));
-  DCHECK(!range.is_reversed());
-  DCHECK(!range.is_empty());
+Range TextRunHarfBuzz::CharRangeToGlyphRange(const Range& char_range) const {
+  DCHECK(range.Contains(char_range));
+  DCHECK(!char_range.is_reversed());
+  DCHECK(!char_range.is_empty());
 
-  const size_t first = CharToGlyph(range.start());
-  const size_t last = CharToGlyph(range.end() - 1);
-  // TODO(ckocagil): What happens when the character has zero or multiple
-  // glyphs? Is the "+ 1" below correct then?
-  return Range(std::min(first, last), std::max(first, last) + 1);
+  size_t first = 0;
+  size_t last = 0;
+
+  if (is_rtl) {
+    // For RTL runs, we subtract 1 from |char_range| to get the leading edges.
+    last = CharToGlyph(char_range.end() - 1);
+    // Loop until we find a non-empty glyph range. For multi-character clusters,
+    // the loop is needed to find the cluster end. Do the same for LTR below.
+    for (size_t i = char_range.start(); i > range.start(); --i) {
+      first = CharToGlyph(i - 1);
+      if (first != last)
+        return Range(last, first);
+    }
+    return Range(last, glyph_count);
+  }
+
+  first = CharToGlyph(char_range.start());
+  for (size_t i = char_range.end(); i < range.end(); ++i) {
+    last = CharToGlyph(i);
+    if (first != last)
+      return Range(first, last);
+  }
+  return Range(first, glyph_count);
 }
 
 // Returns whether the given shaped run contains any missing glyphs.

@@ -16,7 +16,7 @@ namespace gfx {
 
 namespace internal {
 
-struct TextRunHarfBuzz {
+struct GFX_EXPORT TextRunHarfBuzz {
   TextRunHarfBuzz();
   ~TextRunHarfBuzz();
 

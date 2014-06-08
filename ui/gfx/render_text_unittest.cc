@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/render_text_harfbuzz.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -1923,5 +1924,57 @@ TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {
   EXPECT_EQ(Range(3, 5), render_text->runs_[2]->range);
 }
 #endif  // defined(OS_WIN)
+
+TEST_F(RenderTextTest, HarfBuzz_CharToGlyph) {
+  struct {
+    uint32 glyph_to_char[4];
+    size_t char_to_glyph_expected[4];
+    Range char_range_to_glyph_range_expected[4];
+    bool is_rtl;
+  } cases[] = {
+    { // From string "A B C D" to glyphs "a b c d".
+      { 0, 1, 2, 3 },
+      { 0, 1, 2, 3 },
+      { Range(0, 1), Range(1, 2), Range(2, 3), Range(3, 4) },
+      false
+    },
+    { // From string "A B C D" to glyphs "d b c a".
+      { 3, 2, 1, 0 },
+      { 3, 2, 1, 0 },
+      { Range(3, 4), Range(2, 3), Range(1, 2), Range(0, 1) },
+      true
+    },
+    { // From string "A B C D" to glyphs "ab c c d".
+      { 0, 2, 2, 3 },
+      { 0, 0, 1, 3 },
+      { Range(0, 1), Range(0, 1), Range(1, 3), Range(3, 4) },
+      false
+    },
+    { // From string "A B C D" to glyphs "d c c ba".
+      { 3, 2, 2, 0 },
+      { 3, 3, 1, 0 },
+      { Range(3, 4), Range(3, 4), Range(1, 3), Range(0, 1) },
+      true
+    },
+  };
+
+  internal::TextRunHarfBuzz run;
+  run.range = Range(0, 4);
+  run.glyph_count = 4;
+  run.glyph_to_char.reset(new uint32[4]);
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
+              run.glyph_to_char.get());
+    run.is_rtl = cases[i].is_rtl;
+    for (size_t j = 0; j < 4; ++j) {
+      SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
+      EXPECT_EQ(cases[i].char_to_glyph_expected[j], run.CharToGlyph(j));
+      EXPECT_EQ(cases[i].char_range_to_glyph_range_expected[j],
+                run.CharRangeToGlyphRange(Range(j, j + 1)));
+    }
+  }
+
+}
 
 }  // namespace gfx
