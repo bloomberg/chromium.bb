@@ -215,7 +215,13 @@ def GetGitSyncCmdsCallback(revisions):
   """
   def GetGitSyncCmds(component):
     git_url = GIT_BASE_URL + GIT_REPOS[component]
+
+    # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
+    # the newlib repo on checkout (while silently blowing away any local
+    # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
+    is_newlib = component == 'nacl-newlib'
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[component],
+                                    clean=is_newlib,
                                     known_mirrors=KNOWN_MIRRORS,
                                     git_cache='%(git_cache_dir)s') +
             [command.Runnable(None,
@@ -458,28 +464,6 @@ values.
   return deps
 
 
-# This is to replace build.sh's use of gclient, which will eliminate the issues
-# with msys vs cygwin git checkouts, and make testing easier. Note that the new
-# build scripts will not share source directories with build.sh.
-def GetGitSyncPNaClReposCmdsCallback(revisions):
-  def GetGitSyncCmds(repo):
-    git_url = GIT_BASE_URL + GIT_REPOS[repo]
-
-    # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
-    # the newlib repo on checkout (while silently blowing away any local
-    # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
-    is_newlib = repo == 'nacl-newlib'
-    return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[repo],
-                                    clean=is_newlib,
-                                    known_mirrors=KNOWN_MIRRORS,
-                                    git_cache='%(git_cache_dir)s') +
-            [command.Runnable(None,
-                              pnacl_commands.CmdCheckoutGitBundleForTrybot,
-                              repo, '%(output)s')])
-
-  return GetGitSyncCmds
-
-
 def GetSyncPNaClReposSource(revisions, GetGitSyncCmds):
   sources = {}
   for repo, revision in revisions.iteritems():
@@ -615,8 +599,7 @@ if __name__ == '__main__':
 
   rev = ParseComponentRevisionsFile(GIT_DEPS_FILE)
   if args.legacy_repo_sync:
-    packages = GetSyncPNaClReposSource(rev,
-                                       GetGitSyncPNaClReposCmdsCallback(rev))
+    packages = GetSyncPNaClReposSource(rev, GetGitSyncCmdsCallback(rev))
 
     # Make sure sync is inside of the args to toolchain_main.
     if not set(['-y', '--sync', '--sync-only']).intersection(leftover_args):
