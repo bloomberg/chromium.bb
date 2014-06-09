@@ -37,6 +37,8 @@ group("root") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
+    "//content/browser/service_worker:database_proto",
+    "//content/browser/speech/proto",
     "//crypto",
     "//extensions/common/api:extensions_api",
     "//dbus",

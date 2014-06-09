@@ -4,7 +4,9 @@
 
 {
   'targets': [
-    {'target_name': 'speech_proto',
+    {
+     # GN version: //content/browser/speech/proto:proto
+     'target_name': 'speech_proto',
      'type': 'static_library',
      'sources': [
         'google_streaming_api.proto',

@@ -1,6 +1,7 @@
 {
   'targets': [
     {
+      # GN version: //content/browser/service_worker:database_proto
       'target_name': 'database_proto',
       'type': 'static_library',
       'sources': [

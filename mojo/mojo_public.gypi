@@ -220,6 +220,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/bindings
       'target_name': 'mojo_cpp_bindings',
       'type': 'static_library',
       'include_dirs': [
@@ -278,6 +279,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/js/bindings
       'target_name': 'mojo_js_bindings',
       'type': 'static_library',
       'include_dirs': [
@@ -352,6 +354,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/interfaces/service_provider:service_provider
       'target_name': 'mojo_service_provider_bindings',
       'type': 'static_library',
       'sources': [

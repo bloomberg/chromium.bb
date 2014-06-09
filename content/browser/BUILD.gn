@@ -36,8 +36,14 @@ source_set("browser") {
     "//cc",
     "//content:resources",
     "//content/browser/devtools:resources",
+    "//content/browser/service_worker:database_proto",
+    "//content/browser/speech/proto",
+    "//content/common:mojo_bindings",
     "//crypto",
     "//google_apis",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/interfaces/service_provider:service_provider",
+    "//mojo/public/js/bindings",
     "//net",
     "//net:http_server",
     "//skia",
@@ -63,13 +69,6 @@ source_set("browser") {
     "//webkit/common",
     "//webkit/common:storage",
     # TODO(GYP)
-    #'browser/service_worker/service_worker_proto.gyp:database_proto',
-    #'browser/speech/proto/speech_proto.gyp:speech_proto',
-    #'browser/devtools/devtools_resources.gyp:devtools_resources',
-    #'content_common_mojo_bindings',
-    #'../mojo/mojo.gyp:mojo_cpp_bindings',
-    #'../mojo/mojo.gyp:mojo_js_bindings',
-    #'../mojo/mojo.gyp:mojo_service_provider_bindings',
     #'../third_party/angle/src/build_angle.gyp:commit_id',
   ]
 
