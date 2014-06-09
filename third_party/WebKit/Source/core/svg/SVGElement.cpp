@@ -843,22 +843,7 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, EventListene
         SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
 
-        if (shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture))
-            continue;
-
-        // This case can only be hit for event listeners created from markup
-        ASSERT(listener->wasCreatedFromMarkup());
-
-        // If the event listener 'listener' has been created from markup and has been fired before
-        // then JSLazyEventListener::parseCode() has been called and m_jsFunction of that listener
-        // has been created (read: it's not 0 anymore). During shadow tree creation, the event
-        // listener DOM attribute has been cloned, and another event listener has been setup in
-        // the shadow tree. If that event listener has not been used yet, m_jsFunction is still 0,
-        // and tryRemoveEventListener() above will fail. Work around that very seldom problem.
-        EventTargetData* data = shadowTreeElement->eventTargetData();
-        ASSERT(data);
-
-        data->eventListenerMap.removeFirstEventListenerCreatedFromMarkup(eventType);
+        shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture);
     }
 
     return true;
