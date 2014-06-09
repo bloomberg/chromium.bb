@@ -329,7 +329,7 @@ public class Tab implements NavigationClient {
      * Adds a {@link TabObserver} to be notified on {@link Tab} changes.
      * @param observer The {@link TabObserver} to add.
      */
-    public final void addObserver(TabObserver observer) {
+    public void addObserver(TabObserver observer) {
         mObservers.addObserver(observer);
     }
 
@@ -337,7 +337,7 @@ public class Tab implements NavigationClient {
      * Removes a {@link TabObserver}.
      * @param observer The {@link TabObserver} to remove.
      */
-    public final void removeObserver(TabObserver observer) {
+    public void removeObserver(TabObserver observer) {
         mObservers.removeObserver(observer);
     }
 
