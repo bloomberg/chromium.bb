@@ -28,3 +28,7 @@ URLRequestTest.ResolveShortcutTest
 
 # Crashes, http://crbug.com/369840
 ProxyResolverV8TracingTest.MultipleResolvers
+
+# DrM-i#1561
+Aes128Gcm12DecrypterTest.Decrypt
+Aes128Gcm12EncrypterTest.Encrypt
