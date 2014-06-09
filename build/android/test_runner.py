@@ -453,6 +453,9 @@ def AddPerfTestOptions(option_parser):
       help=('A JSON file containing steps that are flaky '
             'and will have its exit code ignored.'))
   option_parser.add_option(
+      '--output-json-list',
+      help='Write a simple list of names from --steps into the given file.')
+  option_parser.add_option(
       '--print-step',
       help='The name of a previously executed perf step to print.')
   option_parser.add_option(
@@ -489,9 +492,9 @@ def ProcessPerfTestOptions(options, args, error_func):
   if options.single_step:
     single_step = ' '.join(args[2:])
   return perf_test_options.PerfOptions(
-      options.steps, options.flaky_steps, options.print_step,
-      options.no_timeout, options.test_filter, options.dry_run,
-      single_step)
+      options.steps, options.flaky_steps, options.output_json_list,
+      options.print_step, options.no_timeout, options.test_filter,
+      options.dry_run, single_step)
 
 
 def _RunGTests(options, devices):
@@ -636,6 +639,12 @@ def _RunMonkeyTests(options, error_func, devices):
 def _RunPerfTests(options, args, error_func):
   """Subcommand of RunTestsCommands which runs perf tests."""
   perf_options = ProcessPerfTestOptions(options, args, error_func)
+
+  # Just save a simple json with a list of test names.
+  if perf_options.output_json_list:
+    return perf_test_runner.OutputJsonList(
+        perf_options.steps, perf_options.output_json_list)
+
   # Just print the results from a single previously executed step.
   if perf_options.print_step:
     return perf_test_runner.PrintTestOutput(perf_options.print_step)

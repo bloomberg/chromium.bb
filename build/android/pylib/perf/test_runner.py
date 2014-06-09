@@ -57,6 +57,7 @@ option:
 
 import collections
 import datetime
+import json
 import logging
 import os
 import pickle
@@ -69,6 +70,19 @@ from pylib import constants
 from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+
+
+def OutputJsonList(json_input, json_output):
+  with file(json_input, 'r') as i:
+    all_steps = json.load(i)
+  # TODO(bulach): remove once it rolls downstream, crbug.com/378862.
+  if isinstance(all_steps, list):
+    step_names = [t[0] for t in all_steps]
+  else:
+    step_names = all_steps['steps'].keys()
+  with file(json_output, 'w') as o:
+    o.write(json.dumps(step_names))
+  return 0
 
 
 def PrintTestOutput(test_name):

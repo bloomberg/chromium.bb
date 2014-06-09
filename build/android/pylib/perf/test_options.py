@@ -9,6 +9,7 @@ import collections
 PerfOptions = collections.namedtuple('PerfOptions', [
     'steps',
     'flaky_steps',
+    'output_json_list',
     'print_step',
     'no_timeout',
     'test_filter',
