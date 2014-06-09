@@ -126,7 +126,8 @@ void ChromeTranslateClient::GetTranslateLanguages(
   if (!chrome_translate_client)
     return;
 
-  *source = chrome_translate_client->GetLanguageState().original_language();
+  *source = TranslateDownloadManager::GetLanguageCode(
+      chrome_translate_client->GetLanguageState().original_language());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
