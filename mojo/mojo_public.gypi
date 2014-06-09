@@ -143,6 +143,8 @@
         'public/cpp/bindings/tests/string_unittest.cc',
         'public/cpp/bindings/tests/struct_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
+        'public/cpp/bindings/tests/validation_test_input_parser.cc',
+        'public/cpp/bindings/tests/validation_test_input_parser.h',
         'public/cpp/bindings/tests/validation_unittest.cc',
       ],
     },

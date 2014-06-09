@@ -11,6 +11,7 @@
 
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,10 +19,35 @@ namespace mojo {
 namespace test {
 namespace {
 
-std::string ValidationErrorToResultString(internal::ValidationError error) {
-  std::string result = internal::ValidationErrorToString(error);
-  result.push_back('\n');
-  return result;
+template <typename T>
+void Append(std::vector<uint8_t>* data_vector, T data) {
+  size_t pos = data_vector->size();
+  data_vector->resize(pos + sizeof(T));
+  memcpy(&(*data_vector)[pos], &data, sizeof(T));
+}
+
+bool TestInputParser(const std::string& input,
+                     bool expected_result,
+                     const std::vector<uint8_t>& expected_parsed_input) {
+  std::vector<uint8_t> parsed_input;
+  std::string error_message;
+
+  bool result = ParseValidationTestInput(input, &parsed_input, &error_message);
+  if (expected_result) {
+    if (result && error_message.empty() &&
+        expected_parsed_input == parsed_input) {
+      return true;
+    }
+
+    // Compare with an empty string instead of checking |error_message.empty()|,
+    // so that the message will be printed out if the two are not equal.
+    EXPECT_EQ(std::string(), error_message);
+    EXPECT_EQ(expected_parsed_input, parsed_input);
+    return false;
+  }
+
+  EXPECT_FALSE(error_message.empty());
+  return !result && !error_message.empty();
 }
 
 std::vector<std::string> GetMatchingTests(const std::vector<std::string>& names,
@@ -37,44 +63,55 @@ std::vector<std::string> GetMatchingTests(const std::vector<std::string>& names,
   return tests;
 }
 
-bool ReadDataFile(const std::string& path, std::vector<uint8_t>* result) {
+bool ReadFile(const std::string& path, std::string* result) {
   FILE* fp = OpenSourceRootRelativeFile(path.c_str());
   if (!fp) {
     ADD_FAILURE() << "File not found: " << path;
     return false;
   }
-  for (;;) {
-    unsigned int value;
-    int rv = fscanf(fp, "%x", &value);
-    if (rv != 1)
-      break;
-    result->push_back(static_cast<uint8_t>(value & 0xFF));
-  }
-  bool error = ferror(fp);
-  fclose(fp);
-  return !error;
-}
-
-bool ReadResultFile(const std::string& path, std::string* result) {
-  FILE* fp = OpenSourceRootRelativeFile(path.c_str());
-  if (!fp)
-    return false;
   fseek(fp, 0, SEEK_END);
   size_t size = static_cast<size_t>(ftell(fp));
   if (size == 0) {
-    // Result files should never be empty.
+    result->clear();
     fclose(fp);
-    return false;
+    return true;
   }
   fseek(fp, 0, SEEK_SET);
   result->resize(size);
   size_t size_read = fread(&result->at(0), 1, size, fp);
   fclose(fp);
-  if (size != size_read)
+  return size == size_read;
+}
+
+bool ReadAndParseDataFile(const std::string& path, std::vector<uint8_t>* data) {
+  std::string input;
+  if (!ReadFile(path, &input))
     return false;
+
+  std::string error_message;
+  if (!ParseValidationTestInput(input, data, &error_message)) {
+    ADD_FAILURE() << error_message;
+    return false;
+  }
+
+  return true;
+}
+
+bool ReadResultFile(const std::string& path, std::string* result) {
+  if (!ReadFile(path, result))
+    return false;
+
   // Result files are new-line delimited text files. Remove any CRs.
   result->erase(std::remove(result->begin(), result->end(), '\r'),
                 result->end());
+
+  // Remove trailing LFs.
+  size_t pos = result->find_last_not_of('\n');
+  if (pos == std::string::npos)
+    result->clear();
+  else
+    result->resize(pos + 1);
+
   return true;
 }
 
@@ -84,7 +121,7 @@ std::string GetPath(const std::string& root, const std::string& suffix) {
 
 void RunValidationTest(const std::string& root, std::string (*func)(Message*)) {
   std::vector<uint8_t> data;
-  ASSERT_TRUE(ReadDataFile(GetPath(root, ".data"), &data));
+  ASSERT_TRUE(ReadAndParseDataFile(GetPath(root, ".data"), &data));
 
   std::string expected;
   ASSERT_TRUE(ReadResultFile(GetPath(root, ".expected"), &expected));
@@ -112,15 +149,109 @@ std::string DumpMessageHeader(Message* message) {
   bool rv = validator.Accept(message);
   if (!rv) {
     EXPECT_NE(internal::VALIDATION_ERROR_NONE, observer.last_error());
-    return ValidationErrorToResultString(observer.last_error());
+    return internal::ValidationErrorToString(observer.last_error());
   }
 
   std::ostringstream os;
   os << "num_bytes: " << message->header()->num_bytes << "\n"
      << "num_fields: " << message->header()->num_fields << "\n"
      << "name: " << message->header()->name << "\n"
-     << "flags: " << message->header()->flags << "\n";
+     << "flags: " << message->header()->flags;
   return os.str();
+}
+
+TEST(ValidationTest, InputParser) {
+  {
+    // The parser, as well as Append() defined above, assumes that this code is
+    // running on a little-endian platform. Test whether that is true.
+    uint16_t x = 1;
+    ASSERT_EQ(1, *(reinterpret_cast<char*>(&x)));
+  }
+  {
+    // Test empty input.
+    std::string input;
+    std::vector<uint8_t> expected;
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    // Test input that only consists of comments and whitespaces.
+    std::string input = "    \t  // hello world \n\r \t// the answer is 42   ";
+    std::vector<uint8_t> expected;
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    std::string input = "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n"
+                        "[u4]65536 [u8]0xFFFFFFFFFFFFFFFF 0 0Xff";
+    std::vector<uint8_t> expected;
+    Append(&expected, static_cast<uint8_t>(0x10));
+    Append(&expected, static_cast<uint16_t>(65535));
+    Append(&expected, static_cast<uint32_t>(65536));
+    Append(&expected, static_cast<uint64_t>(0xffffffffffffffff));
+    Append(&expected, static_cast<uint8_t>(0));
+    Append(&expected, static_cast<uint8_t>(0xff));
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    std::string input = "[s8]-0x800 [s1]-128\t[s2]+0 [s4]-40";
+    std::vector<uint8_t> expected;
+    Append(&expected, -static_cast<int64_t>(0x800));
+    Append(&expected, static_cast<int8_t>(-128));
+    Append(&expected, static_cast<int16_t>(0));
+    Append(&expected, static_cast<int32_t>(-40));
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    std::string input = "[b]00001011 [b]10000000  // hello world\r [b]00000000";
+    std::vector<uint8_t> expected;
+    Append(&expected, static_cast<uint8_t>(11));
+    Append(&expected, static_cast<uint8_t>(128));
+    Append(&expected, static_cast<uint8_t>(0));
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    std::string input = "[f]+.3e9 [d]-10.03";
+    std::vector<uint8_t> expected;
+    Append(&expected, +.3e9f);
+    Append(&expected, -10.03);
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+  {
+    std::string input = "[dist4]foo 0 [dist8]bar 0 [anchr]foo [anchr]bar";
+    std::vector<uint8_t> expected;
+    Append(&expected, static_cast<uint32_t>(14));
+    Append(&expected, static_cast<uint8_t>(0));
+    Append(&expected, static_cast<uint64_t>(9));
+    Append(&expected, static_cast<uint8_t>(0));
+
+    EXPECT_TRUE(TestInputParser(input, true, expected));
+  }
+
+  // Test some failure cases.
+  {
+    const char* error_inputs[] = {
+      "/ hello world",
+      "[u1]x",
+      "[u1]0x100",
+      "[s2]-0x8001",
+      "[b]1",
+      "[b]1111111k",
+      "[dist4]unmatched",
+      "[anchr]hello [dist8]hello",
+      NULL
+    };
+
+    for (size_t i = 0; error_inputs[i]; ++i) {
+      std::vector<uint8_t> expected;
+      if (!TestInputParser(error_inputs[i], false, expected))
+        ADD_FAILURE() << "Unexpected test result for: " << error_inputs[i];
+    }
+  }
 }
 
 TEST(ValidationTest, TestAll) {
