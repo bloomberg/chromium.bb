@@ -64,7 +64,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     ASSERT(document);
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "evaluate", "Document", info.Holder(), info.GetIsolate());
     TOSTRING_VOID(V8StringResource<>, expression, info[0]);
-    RefPtr<Node> contextNode = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[1]);
+    RefPtrWillBeRawPtr<Node> contextNode = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[1]);
 
     const int resolverArgumentIndex = 2;
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
