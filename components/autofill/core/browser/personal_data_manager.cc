@@ -525,13 +525,9 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() const {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!pref_service_->GetBoolean(prefs::kAutofillUseMacAddressBook))
+  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
-#else
-  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled))
-    return web_profiles();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+  }
 
   profiles_.clear();
 

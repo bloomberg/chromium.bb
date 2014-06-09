@@ -50,7 +50,6 @@ class ContentAutofillDriver : public AutofillDriver,
   virtual void SendFormDataToRenderer(int query_id,
                                       RendererFormDataAction action,
                                       const FormData& data) OVERRIDE;
-  virtual void PingRenderer() OVERRIDE;
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) OVERRIDE;
   virtual void RendererShouldAcceptDataListSuggestion(

@@ -150,7 +150,6 @@ AutofillAgent::~AutofillAgent() {}
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
-    IPC_MESSAGE_HANDLER(AutofillMsg_Ping, OnPing)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillForm, OnFillForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewForm, OnPreviewForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
@@ -454,10 +453,6 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
   FillForm(form, element_);
   Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
                                                    base::TimeTicks::Now()));
-}
-
-void AutofillAgent::OnPing() {
-  Send(new AutofillHostMsg_PingAck(routing_id()));
 }
 
 void AutofillAgent::OnPreviewForm(int query_id, const FormData& form) {

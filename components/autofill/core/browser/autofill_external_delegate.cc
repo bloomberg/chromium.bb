@@ -4,8 +4,6 @@
 
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 
-#include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -14,35 +12,11 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-namespace {
-
-enum AccessAddressBookEventType {
-  // An Autofill entry was shown that prompts the user to give Chrome access to
-  // the user's Address Book.
-  SHOWED_ACCESS_ADDRESS_BOOK_ENTRY = 0,
-
-  // The user selected the Autofill entry which prompts Chrome to access the
-  // user's Address Book.
-  SELECTED_ACCESS_ADDRESS_BOOK_ENTRY = 1,
-
-  // Always keep this at the end.
-  ACCESS_ADDRESS_BOOK_ENTRY_MAX,
-};
-
-// Emits an entry for the histogram.
-void EmitHistogram(AccessAddressBookEventType type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Autofill.MacAddressBook", type, ACCESS_ADDRESS_BOOK_ENTRY_MAX);
-}
-
-}  // namespace
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
 namespace autofill {
 
-AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
-                                                   AutofillDriver* driver)
+AutofillExternalDelegate::AutofillExternalDelegate(
+    AutofillManager* manager,
+    AutofillDriver* driver)
     : manager_(manager),
       driver_(driver),
       query_id_(0),
@@ -117,20 +91,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // updated to match.
   InsertDataListValues(&values, &labels, &icons, &ids);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (values.empty() &&
-      manager_->ShouldShowAccessAddressBookSuggestion(query_form_,
-                                                      query_field_)) {
-    values.push_back(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_ACCESS_MAC_CONTACTS));
-    labels.push_back(base::string16());
-    icons.push_back(base::ASCIIToUTF16("macContactsIcon"));
-    ids.push_back(POPUP_ITEM_ID_MAC_ACCESS_CONTACTS);
-
-    EmitHistogram(SHOWED_ACCESS_ADDRESS_BOOK_ENTRY);
-  }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
     manager_->client()->HideAutofillPopup();
@@ -195,40 +155,6 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
     driver_->RendererShouldFillFieldWithValue(value);
-  } else if (identifier == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    EmitHistogram(SELECTED_ACCESS_ADDRESS_BOOK_ENTRY);
-
-    // User wants to give Chrome access to user's address book.
-    manager_->AccessAddressBook();
-
-    // There is no deterministic method for deciding whether a blocking dialog
-    // was presented. The following comments and code assume that a blocking
-    // dialog was presented, but still behave correctly if no dialog was
-    // presented.
-
-    // A blocking dialog was presented, and the user has already responded to
-    // the dialog. The presentation of the dialog added an NSEvent to the
-    // NSRunLoop which will cause all windows to lose focus. When the NSEvent
-    // is processed, it will be sent to the renderer which will cause the text
-    // field to lose focus. This returns an IPC to Chrome which will dismiss
-    // the Autofill popup. We post a task which we expect to run after the
-    // NSEvent has been processed by the NSRunLoop. It pings the renderer,
-    // which returns an IPC acknowledging the ping.  At that time, redisplay
-    // the popup. FIFO processing of IPCs ensures that all side effects of the
-    // NSEvent will have been processed.
-
-    // 10ms sits nicely under the 16ms threshold for 60 fps, and likely gives
-    // the NSApplication run loop sufficient time to process the NSEvent. In
-    // testing, a delay of 0ms was always sufficient.
-    base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AutofillExternalDelegate::PingRenderer, GetWeakPtr()),
-        delay);
-#else
-    NOTREACHED();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   } else {
     FillAutofillFormData(identifier, false);
   }
@@ -256,15 +182,6 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 
 void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
-}
-
-void AutofillExternalDelegate::OnPingAck() {
-  // Reissue the most recent query, which will reopen the Autofill popup.
-  manager_->OnQueryFormFieldAutofill(query_id_,
-                                     query_form_,
-                                     query_field_,
-                                     element_bounds_,
-                                     display_warning_if_disabled_);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
@@ -300,7 +217,7 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
     // suggestions to show, show a warning instead.  Otherwise, clear out the
     // list of suggestions.
     if (!unique_ids->empty() && (*unique_ids)[0] > 0) {
-      // If Autofill is disabled and we had suggestions, show a warning instead.
+      // If autofill is disabled and we had suggestions, show a warning instead.
       values->assign(
           1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
       labels->assign(1, base::string16());
@@ -314,8 +231,8 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
     }
   } else if (unique_ids->size() > 1 &&
              (*unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE) {
-    // If we received a warning instead of suggestions from Autofill but regular
-    // suggestions from autocomplete, don't show the Autofill warning.
+    // If we received a warning instead of suggestions from autofill but regular
+    // suggestions from autocomplete, don't show the autofill warning.
     values->erase(values->begin());
     labels->erase(labels->begin());
     icons->erase(icons->begin());
@@ -388,11 +305,5 @@ void AutofillExternalDelegate::InsertDataListValues(
                      data_list_values_.size(),
                      POPUP_ITEM_ID_DATALIST_ENTRY);
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillExternalDelegate::PingRenderer() {
-  driver_->PingRenderer();
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace autofill

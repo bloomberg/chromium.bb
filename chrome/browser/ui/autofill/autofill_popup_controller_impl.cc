@@ -59,9 +59,6 @@ const DataResource kDataResources[] = {
   { "jcbCC", IDR_AUTOFILL_CC_JCB },
   { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
   { "visaCC", IDR_AUTOFILL_CC_VISA },
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  { "macContactsIcon", IDR_AUTOFILL_MAC_CONTACTS_ICON },
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 };
 
 }  // namespace

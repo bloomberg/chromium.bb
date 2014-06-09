@@ -333,12 +333,6 @@ void AutofillOptionsHandler::RegisterMessages() {
   personal_data_ = autofill::PersonalDataManagerFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  web_ui()->RegisterMessageCallback(
-      "accessAddressBook",
-      base::Bind(&AutofillOptionsHandler::AccessAddressBook,
-                 base::Unretained(this)));
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   web_ui()->RegisterMessageCallback(
       "removeData",
       base::Bind(&AutofillOptionsHandler::RemoveData,
@@ -442,12 +436,6 @@ void AutofillOptionsHandler::LoadAutofillData() {
   web_ui()->CallJavascriptFunction("AutofillOptions.setCreditCardList",
                                    credit_cards);
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillOptionsHandler::AccessAddressBook(const base::ListValue* args) {
-  personal_data_->AccessAddressBook();
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 void AutofillOptionsHandler::RemoveData(const base::ListValue* args) {
   DCHECK(IsPersonalDataLoaded());
