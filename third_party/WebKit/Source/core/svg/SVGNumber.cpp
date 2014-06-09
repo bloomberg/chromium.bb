@@ -62,7 +62,7 @@ String SVGNumber::valueAsString() const
 template<typename CharType>
 bool SVGNumber::parse(const CharType*& ptr, const CharType* end)
 {
-    if (!parseNumber(ptr, end, m_value, false)) {
+    if (!parseNumber(ptr, end, m_value, AllowLeadingAndTrailingWhitespace)) {
         m_value = 0;
         return false;
     }
@@ -127,21 +127,12 @@ PassRefPtr<SVGNumber> SVGNumberAcceptPercentage::clone() const
 
 void SVGNumberAcceptPercentage::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
-    if (string.isEmpty()) {
+    bool valid = parseNumberOrPercentage(string, m_value);
+
+    if (!valid) {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
         m_value = 0;
-        return;
     }
-
-    if (string.endsWith('%')) {
-        SVGNumber::setValueAsString(string.left(string.length() - 1), exceptionState);
-        if (exceptionState.hadException())
-            return;
-
-        m_value /= 100.0f;
-        return;
-    }
-
-    SVGNumber::setValueAsString(string, exceptionState);
 }
 
 SVGNumberAcceptPercentage::SVGNumberAcceptPercentage(float value)
