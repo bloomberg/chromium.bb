@@ -27,6 +27,7 @@ void InProcessGpuThread::Init() {
 }
 
 void InProcessGpuThread::CleanUp() {
+  SetThreadWasQuitProperly(true);
   delete gpu_process_;
 }
 
