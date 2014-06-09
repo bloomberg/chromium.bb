@@ -162,8 +162,8 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 };
 
 bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAudioTrackProcessing);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioTrackProcessing);
 }
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
