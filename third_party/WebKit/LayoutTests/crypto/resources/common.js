@@ -39,6 +39,11 @@ function bytesToHexString(bytes)
     return hexBytes.join("");
 }
 
+function bytesToASCIIString(bytes)
+{
+    return String.fromCharCode.apply(null, new Uint8Array(bytes));
+}
+
 function hexStringToUint8Array(hexString)
 {
     if (hexString.length % 2 != 0)
@@ -62,6 +67,17 @@ function asciiToUint8Array(str)
         chars.push(str.charCodeAt(i));
     return new Uint8Array(chars);
 }
+
+var Base64URL = {
+    stringify: function (a) {
+        var base64string = btoa(String.fromCharCode.apply(0, a));
+        return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    },
+    parse: function (s) {
+        s = s.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, '');
+        return new Uint8Array(Array.prototype.map.call(atob(s), function (c) { return c.charCodeAt(0) }));
+    }
+};
 
 function failAndFinishJSTest(error)
 {

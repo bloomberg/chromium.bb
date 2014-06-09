@@ -1,0 +1,27 @@
+Test error handling for JWK import.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+error is: DataError: No key data was provided
+error is: DataError: JWK input could not be parsed to a JSON dictionary
+error is: DataError: JWK input could not be parsed to a JSON dictionary
+error is: DataError: JWK input could not be parsed to a JSON dictionary
+error is: DataError: The required JWK property "kty" was missing
+error is: DataError: The JWK "kty" property was unrecognized
+error is: DataError: The JWK "alg" property was not recognized
+error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
+error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
+error is: DataError: The required JWK property "k" was missing
+error is: DataError: The required JWK property "k" was missing
+error is: DataError: The JWK "k" property did not include the right length of key data for the given algorithm.
+error is: DataError: The JWK "k" property did not include the right length of key data for the given algorithm.
+error is: DataError: The JWK property "kty" must be a string
+error is: DataError: The JWK property "alg" must be a string
+error is: DataError: The JWK property "use" must be a string
+error is: DataError: The JWK property "ext" must be a boolean
+error is: DataError: The JWK property "k" must be a string
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
