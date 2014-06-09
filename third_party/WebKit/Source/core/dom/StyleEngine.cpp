@@ -574,6 +574,10 @@ void StyleEngine::clearFontCache()
 
 void StyleEngine::updateGenericFontFamilySettings()
 {
+    // FIXME: we should not update generic font family settings when
+    // document is inactive.
+    ASSERT(document().isActive());
+
     if (!m_fontSelector)
         return;
 

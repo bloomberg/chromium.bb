@@ -159,7 +159,8 @@ void CSSFontSelector::clearDocument()
 
 void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 {
-    ASSERT(document.settings());
+    if (!document.settings())
+        return;
     m_genericFontFamilySettings = document.settings()->genericFontFamilySettings();
 }
 
