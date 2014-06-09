@@ -1403,6 +1403,7 @@
         'browser/sync_file_system/drive_backend/sync_engine_initializer_unittest.cc',
         'browser/sync_file_system/drive_backend/sync_engine_unittest.cc',
         'browser/sync_file_system/drive_backend/sync_task_manager_unittest.cc',
+        'browser/sync_file_system/drive_backend/sync_worker_unittest.cc',
         'browser/sync_file_system/drive_backend/task_dependency_manager_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/api_util_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/drive_file_sync_service_fake_unittest.cc',

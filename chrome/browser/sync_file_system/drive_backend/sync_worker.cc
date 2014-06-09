@@ -521,10 +521,10 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
   if (metadata_database)
     context_->SetMetadataDatabase(metadata_database.Pass());
 
-  UpdateRegisteredApp();
+  UpdateRegisteredApps();
 }
 
-void SyncWorker::UpdateRegisteredApp() {
+void SyncWorker::UpdateRegisteredApps() {
   MetadataDatabase* metadata_db = GetMetadataDatabase();
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(metadata_db);

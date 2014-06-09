@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
@@ -97,12 +98,11 @@ class MockExtensionService : public TestExtensionService {
   DISALLOW_COPY_AND_ASSIGN(MockExtensionService);
 };
 
-class SyncEngineTest
-    : public testing::Test,
-      public base::SupportsWeakPtr<SyncEngineTest> {
+class SyncWorkerTest : public testing::Test,
+                       public base::SupportsWeakPtr<SyncWorkerTest> {
  public:
-  SyncEngineTest() {}
-  virtual ~SyncEngineTest() {}
+  SyncWorkerTest() {}
+  virtual ~SyncWorkerTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
@@ -112,43 +112,56 @@ class SyncEngineTest
     scoped_ptr<drive::DriveServiceInterface>
         fake_drive_service(new drive::FakeDriveService);
 
-    sync_engine_.reset(new drive_backend::SyncEngine(
-        fake_drive_service.Pass(),
-        scoped_ptr<drive::DriveUploaderInterface>(),
-        base::MessageLoopProxy::current(),
-        NULL /* notification_manager */,
-        extension_service_.get(),
-        NULL /* signin_manager */));
-    sync_engine_->Initialize(profile_dir_.path(),
-                             NULL,
-                             base::MessageLoopProxy::current(),
-                             in_memory_env_.get());
-    sync_engine_->SetSyncEnabled(true);
+    scoped_ptr<SyncEngineContext>
+        sync_engine_context(new SyncEngineContext(
+            fake_drive_service.Pass(),
+            scoped_ptr<drive::DriveUploaderInterface>(),
+            NULL /* task_logger */,
+            base::MessageLoopProxy::current() /* ui_task_runner */,
+            base::MessageLoopProxy::current() /* worker_task_runner */,
+            base::MessageLoopProxy::current() /* file_task_runner */));
+
+    sync_worker_.reset(new SyncWorker(
+        profile_dir_.path(),
+        extension_service_->AsWeakPtr(),
+        sync_engine_context.Pass(),
+        in_memory_env_.get()));
+    sync_worker_->Initialize();
+
+    sync_worker_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
-    sync_engine_.reset();
+    sync_worker_.reset();
     extension_service_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
   MockExtensionService* extension_service() { return extension_service_.get(); }
-  SyncEngine* sync_engine() { return sync_engine_.get(); }
+  SyncWorker* sync_worker() { return sync_worker_.get(); }
+
+  void UpdateRegisteredApps() {
+    sync_worker_->UpdateRegisteredApps();
+  }
 
   SyncTaskManager* GetSyncTaskManager() {
-    return sync_engine_->sync_worker_->GetSyncTaskManager();
+    return sync_worker_->GetSyncTaskManager();
   }
 
   void CheckServiceState(SyncStatusCode expected_sync_status,
                          RemoteServiceState expected_service_status,
                          SyncStatusCode sync_status) {
     EXPECT_EQ(expected_sync_status, sync_status);
-    EXPECT_EQ(expected_service_status, sync_engine_->GetCurrentState());
+    EXPECT_EQ(expected_service_status, sync_worker_->GetCurrentState());
   }
 
   MetadataDatabase* metadata_database() {
-    return sync_engine_->sync_worker_->GetMetadataDatabase();
+    return sync_worker_->GetMetadataDatabase();
+  }
+
+  void SetHasRefreshToken(bool has_refresh_token) {
+    sync_worker_->has_refresh_token_ = has_refresh_token;
   }
 
  private:
@@ -157,35 +170,35 @@ class SyncEngineTest
   scoped_ptr<leveldb::Env> in_memory_env_;
 
   scoped_ptr<MockExtensionService> extension_service_;
-  scoped_ptr<drive_backend::SyncEngine> sync_engine_;
+  scoped_ptr<SyncWorker> sync_worker_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncEngineTest);
+  DISALLOW_COPY_AND_ASSIGN(SyncWorkerTest);
 };
 
-TEST_F(SyncEngineTest, EnableOrigin) {
+TEST_F(SyncWorkerTest, EnableOrigin) {
   FileTracker tracker;
   SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
   GURL origin = extensions::Extension::GetBaseURLFromExtensionId(kAppID);
 
-  sync_engine()->RegisterOrigin(origin, CreateResultReceiver(&sync_status));
+  sync_worker()->RegisterOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
   ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
-  sync_engine()->DisableOrigin(origin, CreateResultReceiver(&sync_status));
+  sync_worker()->DisableOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
   ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_DISABLED_APP_ROOT, tracker.tracker_kind());
 
-  sync_engine()->EnableOrigin(origin, CreateResultReceiver(&sync_status));
+  sync_worker()->EnableOrigin(origin, CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
   ASSERT_TRUE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
   EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
 
-  sync_engine()->UninstallOrigin(
+  sync_worker()->UninstallOrigin(
       origin,
       RemoteFileSyncService::UNINSTALL_AND_KEEP_REMOTE,
       CreateResultReceiver(&sync_status));
@@ -194,51 +207,97 @@ TEST_F(SyncEngineTest, EnableOrigin) {
   ASSERT_FALSE(metadata_database()->FindAppRootTracker(kAppID, &tracker));
 }
 
-TEST_F(SyncEngineTest, GetOriginStatusMap) {
+TEST_F(SyncWorkerTest, UpdateRegisteredApps) {
+  SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
+  for (int i = 0; i < 3; i++) {
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::ExtensionBuilder()
+        .SetManifest(extensions::DictionaryBuilder()
+                     .Set("name", "foo")
+                     .Set("version", "1.0")
+                     .Set("manifest_version", 2))
+        .SetID(base::StringPrintf("app_%d", i))
+        .Build();
+    extension_service()->AddExtension(extension.get());
+    GURL origin = extensions::Extension::GetBaseURLFromExtensionId(
+        extension->id());
+    sync_status = SYNC_STATUS_UNKNOWN;
+    sync_worker()->RegisterOrigin(origin, CreateResultReceiver(&sync_status));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SYNC_STATUS_OK, sync_status);
+  }
+
+  FileTracker tracker;
+
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_0", &tracker));
+  EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
+
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_1", &tracker));
+  EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
+
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_2", &tracker));
+  EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
+
+  extension_service()->DisableExtension("app_1");
+  extension_service()->UninstallExtension("app_2");
+  ASSERT_FALSE(extension_service()->GetInstalledExtension("app_2"));
+  UpdateRegisteredApps();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_0", &tracker));
+  EXPECT_EQ(TRACKER_KIND_APP_ROOT, tracker.tracker_kind());
+
+  ASSERT_TRUE(metadata_database()->FindAppRootTracker("app_1", &tracker));
+  EXPECT_EQ(TRACKER_KIND_DISABLED_APP_ROOT, tracker.tracker_kind());
+
+  ASSERT_FALSE(metadata_database()->FindAppRootTracker("app_2", &tracker));
+}
+
+TEST_F(SyncWorkerTest, GetOriginStatusMap) {
   FileTracker tracker;
   SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
   GURL origin = extensions::Extension::GetBaseURLFromExtensionId(kAppID);
 
-  sync_engine()->RegisterOrigin(GURL("chrome-extension://app_0"),
+  sync_worker()->RegisterOrigin(GURL("chrome-extension://app_0"),
                                 CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
 
-  sync_engine()->RegisterOrigin(GURL("chrome-extension://app_1"),
+  sync_worker()->RegisterOrigin(GURL("chrome-extension://app_1"),
                                 CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
 
   scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map;
-  sync_engine()->GetOriginStatusMap(CreateResultReceiver(&status_map));
+  sync_worker()->GetOriginStatusMap(CreateResultReceiver(&status_map));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, status_map->size());
   EXPECT_EQ("Enabled", (*status_map)[GURL("chrome-extension://app_0")]);
   EXPECT_EQ("Enabled", (*status_map)[GURL("chrome-extension://app_1")]);
 
-  sync_engine()->DisableOrigin(GURL("chrome-extension://app_1"),
+  sync_worker()->DisableOrigin(GURL("chrome-extension://app_1"),
                                CreateResultReceiver(&sync_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);
 
-  sync_engine()->GetOriginStatusMap(CreateResultReceiver(&status_map));
+  sync_worker()->GetOriginStatusMap(CreateResultReceiver(&status_map));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, status_map->size());
   EXPECT_EQ("Enabled", (*status_map)[GURL("chrome-extension://app_0")]);
   EXPECT_EQ("Disabled", (*status_map)[GURL("chrome-extension://app_1")]);
 }
 
-TEST_F(SyncEngineTest, UpdateServiceState) {
-  EXPECT_EQ(REMOTE_SERVICE_OK, sync_engine()->GetCurrentState());
+TEST_F(SyncWorkerTest, UpdateServiceState) {
+  EXPECT_EQ(REMOTE_SERVICE_OK, sync_worker()->GetCurrentState());
 
   // Assume an user is in login state.
-  sync_engine()->OnReadyToSendRequests();
+  SetHasRefreshToken(true);
 
   GetSyncTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_AUTHENTICATION_FAILED),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_AUTHENTICATION_FAILED,
                  REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
@@ -247,7 +306,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ACCESS_FORBIDDEN),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_ACCESS_FORBIDDEN,
                  REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
@@ -256,7 +315,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE,
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
@@ -265,7 +324,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_NETWORK_ERROR),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_NETWORK_ERROR,
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
@@ -274,7 +333,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ABORT),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_ABORT,
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
@@ -283,7 +342,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_FAILED),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_FAILED,
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
@@ -292,7 +351,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_CORRUPTION),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_CORRUPTION,
                  REMOTE_SERVICE_DISABLED));
@@ -301,7 +360,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_IO_ERROR),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_IO_ERROR,
                  REMOTE_SERVICE_DISABLED));
@@ -310,7 +369,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_FAILED),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_FAILED,
                  REMOTE_SERVICE_DISABLED));
@@ -319,7 +378,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(false)),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_OK,
                  REMOTE_SERVICE_DISABLED));
@@ -328,7 +387,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
       FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(true)),
       SyncTaskManager::PRIORITY_MED,
-      base::Bind(&SyncEngineTest::CheckServiceState,
+      base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_OK,
                  REMOTE_SERVICE_OK));

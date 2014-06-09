@@ -144,11 +144,6 @@ class SyncEngine : public RemoteFileSyncService,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager);
 
-  // TODO(peria): Migrate this method into test code.
-  // This method is not thread safe, because it requires to access metadata
-  // database which may live in another thread.
-  void UpdateRegisteredAppsForTesting();
-
   SyncStatusCallback TrackCallback(const SyncStatusCallback& callback);
 
   scoped_ptr<drive::DriveServiceInterface> drive_service_;

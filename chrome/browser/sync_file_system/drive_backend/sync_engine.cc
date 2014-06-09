@@ -124,8 +124,6 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
 
 namespace {
 
-void EmptyStatusCallback(SyncStatusCode status) {}
-
 void DidRegisterOrigin(const base::TimeTicks& start_time,
                        const SyncStatusCallback& callback,
                        SyncStatusCode status) {
@@ -533,45 +531,6 @@ void SyncEngine::UpdateServiceState(RemoteServiceState state,
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(state, description));
-}
-
-void SyncEngine::UpdateRegisteredAppsForTesting() {
-  if (!extension_service_)
-    return;
-
-  MetadataDatabase* metadata_db = sync_worker_->GetMetadataDatabase();
-  DCHECK(metadata_db);
-  std::vector<std::string> app_ids;
-  metadata_db->GetRegisteredAppIDs(&app_ids);
-
-  // Update the status of every origin using status from ExtensionService.
-  for (std::vector<std::string>::const_iterator itr = app_ids.begin();
-       itr != app_ids.end(); ++itr) {
-    const std::string& app_id = *itr;
-    GURL origin =
-        extensions::Extension::GetBaseURLFromExtensionId(app_id);
-    if (!extension_service_->GetInstalledExtension(app_id)) {
-      // Extension has been uninstalled.
-      // (At this stage we can't know if it was unpacked extension or not,
-      // so just purge the remote folder.)
-      UninstallOrigin(origin,
-                      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
-                      base::Bind(&EmptyStatusCallback));
-      continue;
-    }
-    FileTracker tracker;
-    if (!metadata_db->FindAppRootTracker(app_id, &tracker)) {
-      // App will register itself on first run.
-      continue;
-    }
-    bool is_app_enabled = extension_service_->IsExtensionEnabled(app_id);
-    bool is_app_root_tracker_enabled =
-        tracker.tracker_kind() == TRACKER_KIND_APP_ROOT;
-    if (is_app_enabled && !is_app_root_tracker_enabled)
-      EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
-    else if (!is_app_enabled && is_app_root_tracker_enabled)
-      DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
-  }
 }
 
 SyncStatusCallback SyncEngine::TrackCallback(

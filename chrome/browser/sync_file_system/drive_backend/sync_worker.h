@@ -140,7 +140,7 @@ class SyncWorker : public SyncTaskManager::Client {
   void DetachFromSequence();
 
  private:
-  friend class SyncEngineTest;
+  friend class SyncWorkerTest;
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
@@ -150,7 +150,7 @@ class SyncWorker : public SyncTaskManager::Client {
   void PostInitializeTask();
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);
-  void UpdateRegisteredApp();
+  void UpdateRegisteredApps();
   void DidQueryAppStatus(const AppStatusMap* app_status);
   void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                               const SyncFileCallback& callback,
@@ -167,7 +167,6 @@ class SyncWorker : public SyncTaskManager::Client {
                                             bool used_network);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
-  void UpdateRegisteredApps();
 
   base::FilePath base_dir_;
 
