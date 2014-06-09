@@ -113,7 +113,7 @@ void WebRtcLocalAudioTrack::OnSetFormat(
 void WebRtcLocalAudioTrack::SetAudioProcessor(
     const scoped_refptr<MediaStreamAudioProcessor>& processor) {
   // if the |processor| does not have audio processing, which can happen if
-  // kEnableAudioTrackProcessing is not set or all the constraints in
+  // kDisableAudioTrackProcessing is set set or all the constraints in
   // the |processor| are turned off. In such case, we pass NULL to the
   // adapter to indicate that no stats can be gotten from the processor.
   adapter_->SetAudioProcessor(processor->has_audio_processing() ?
