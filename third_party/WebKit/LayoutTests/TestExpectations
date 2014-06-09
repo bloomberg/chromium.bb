@@ -526,22 +526,6 @@ crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeou
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/371716 [ Win ] http/tests/local/formdata/send-form-data.html [ Pass Timeout ]
 
-# Rebaseline needed after removing SK_IGNORE_CORRECT_HIGH_QUALITY_IMAGE_SCALE
-crbug.com/380686 svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ NeedsRebaseline ]
-crbug.com/380686 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/380686 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
-crbug.com/380686 svg/dynamic-updates/SVGFEImageElement-dom-preserveAspectRatio-attr.html [ NeedsRebaseline ]
-crbug.com/380686 svg/dynamic-updates/SVGFEImageElement-svgdom-preserveAspectRatio-prop.html [ NeedsRebaseline ]
-crbug.com/380686 svg/filters/feImage-preserveAspectRatio-all.svg [ NeedsRebaseline ]
-crbug.com/380686 svg/filters/filterRes.svg [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/full-screen-stacking-context.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/video-controls-drag.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/video-controls-timeline.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/video-scrolled-iframe.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/android/fullscreen/video-specified-size.html [ NeedsRebaseline ]
-crbug.com/380686 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ NeedsRebaseline ]
-
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
