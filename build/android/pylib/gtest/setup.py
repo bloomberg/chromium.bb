@@ -48,7 +48,7 @@ _ISOLATE_FILE_PATHS = {
 # Paths relative to third_party/webrtc/ (kept separate for readability).
 _WEBRTC_ISOLATE_FILE_PATHS = {
     'audio_decoder_unittests':
-      'modules/audio_coding/neteq4/audio_decoder_unittests.isolate',
+      'modules/audio_coding/neteq/audio_decoder_unittests.isolate',
     'common_audio_unittests': 'common_audio/common_audio_unittests.isolate',
     'common_video_unittests': 'common_video/common_video_unittests.isolate',
     'modules_tests': 'modules/modules_tests.isolate',
