@@ -172,22 +172,22 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
+  bitmap->setInfo(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_EQ(icon, static_cast<HICON>(NULL));
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeN32Premul(0, 0));
+  bitmap->setInfo(SkImageInfo::MakeN32Premul(0, 0));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_EQ(icon, static_cast<HICON>(NULL));
 
   // Valid bitmap configuration but no pixels allocated.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeN32Premul(kSmallIconWidth,
-                                               kSmallIconHeight));
+  bitmap->setInfo(SkImageInfo::MakeN32Premul(kSmallIconWidth,
+                                             kSmallIconHeight));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_TRUE(icon == NULL);
 }
@@ -205,10 +205,9 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
   // Must allocate pixels or else ImageSkia will ignore the bitmap and just
   // return an empty image.
-  bitmap->allocPixels();
+  bitmap->allocPixels(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
   memset(bitmap->getPixels(), 0, bitmap->width() * bitmap->height());
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
@@ -219,8 +218,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.clear();
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeN32Premul(0, 0));
-  bitmap->allocPixels();
+  bitmap->allocPixels(SkImageInfo::MakeN32Premul(0, 0));
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
@@ -230,8 +228,8 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.clear();
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkImageInfo::MakeN32Premul(kSmallIconWidth,
-                                               kSmallIconHeight));
+  bitmap->setInfo(SkImageInfo::MakeN32Premul(kSmallIconWidth,
+                                             kSmallIconHeight));
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
