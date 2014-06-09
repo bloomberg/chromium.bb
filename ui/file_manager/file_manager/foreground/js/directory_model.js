@@ -497,6 +497,7 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
     var leadIndex = this.fileListSelection_.leadIndex;
     var leadEntry = this.getLeadEntry_();
 
+    this.currentDirContents_.dispose();
     this.currentDirContents_ = dirContents;
     dirContents.replaceContextFileList();
 

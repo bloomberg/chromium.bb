@@ -455,6 +455,8 @@ function DirectoryContents(context,
   this.scanner_ = null;
   this.processNewEntriesQueue_ = new AsyncUtil.Queue();
   this.scanCancelled_ = false;
+
+  this.lastSpaceInMetadataCache_ = 0;
 }
 
 /**
@@ -475,6 +477,24 @@ DirectoryContents.prototype.clone = function() {
 };
 
 /**
+ * Disposes the reserved metadata cache.
+ */
+DirectoryContents.prototype.dispose = function() {
+  this.context_.metadataCache.resizeBy(-this.lastSpaceInMetadataCache_);
+};
+
+/**
+ * Make a space for current directory size in the metadata cache.
+ *
+ * @param {number} size The cache size to be set.
+ * @private
+ */
+DirectoryContents.prototype.makeSpaceInMetadataCache_ = function(size) {
+  this.context_.metadataCache.resizeBy(size - this.lastSpaceInMetadataCache_);
+  this.lastSpaceInMetadataCache_ = size;
+};
+
+/**
  * Use a given fileList instead of the fileList from the context.
  * @param {Array|cr.ui.ArrayDataModel} fileList The new file list.
  */
@@ -483,7 +503,7 @@ DirectoryContents.prototype.setFileList = function(fileList) {
     this.fileList_ = fileList;
   else
     this.fileList_ = new cr.ui.ArrayDataModel(fileList);
-  this.context_.metadataCache.setCacheSize(this.fileList_.length);
+  this.makeSpaceInMetadataCache_(this.fileList_.length);
 };
 
 /**
@@ -497,7 +517,7 @@ DirectoryContents.prototype.replaceContextFileList = function() {
     spliceArgs.unshift(0, fileList.length);
     fileList.splice.apply(fileList, spliceArgs);
     this.fileList_ = fileList;
-    this.context_.metadataCache.setCacheSize(this.fileList_.length);
+    this.makeSpaceInMetadataCache_(this.fileList_.length);
   }
 };
 
@@ -650,7 +670,7 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   this.fileList_.push.apply(this.fileList_, entriesFiltered);
   cr.dispatchSimpleEvent(this, 'scan-updated');
 
-  this.context_.metadataCache.setCacheSize(this.fileList_.length);
+  this.makeSpaceInMetadataCache_(this.fileList_.length);
 
   this.processNewEntriesQueue_.run(function(callbackOuter) {
     // Because the prefetchMetadata can be slow, throttling by splitting entries

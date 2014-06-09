@@ -163,12 +163,15 @@ MetadataCache.prototype.isInitialized = function() {
 };
 
 /**
- * Sets the size of cache. The actual cache size may be larger than the given
- * value.
- * @param {number} size The cache size to be set.
+ * Changes the size of cache by delta value. The actual cache size may be larger
+ * than the given value.
+ *
+ * @param {number} delta The delta size to be changed the cache size by.
  */
-MetadataCache.prototype.setCacheSize = function(size) {
-  this.currentCacheSize_ = size;
+MetadataCache.prototype.resizeBy = function(delta) {
+  this.currentCacheSize_ += delta;
+  if (this.currentCacheSize_ < 0)
+    this.currentCacheSize_ = 0;
 
   if (this.totalCount_ > this.currentEvictionThreshold_())
     this.evict_();
