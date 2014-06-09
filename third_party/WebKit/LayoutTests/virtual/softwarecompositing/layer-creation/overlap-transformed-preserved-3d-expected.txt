@@ -15,7 +15,6 @@
               (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [-0.25 -0.25 1.00 -0.01] [0.00 0.00 0.00 1.00])
               (children 1
                 (GraphicsLayer
-                  (anchor 50.00 50.00)
                   (transformOrigin 50.00 50.00)
                   (bounds 1.00 1.00)
                   (shouldFlattenTransform 0)
@@ -92,7 +91,6 @@ After:
               (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [-0.25 -0.25 1.00 -0.01] [0.00 0.00 0.00 1.00])
               (children 1
                 (GraphicsLayer
-                  (anchor 50.00 50.00)
                   (transformOrigin 50.00 50.00)
                   (bounds 1.00 1.00)
                   (shouldFlattenTransform 0)

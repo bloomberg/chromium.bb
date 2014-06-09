@@ -147,12 +147,6 @@ public:
     const FloatPoint& position() const { return m_position; }
     void setPosition(const FloatPoint&);
 
-    // Anchor point: (0, 0) is top left, (1, 1) is bottom right. The anchor point
-    // affects the origin of the transforms.
-    // DEPRECATED, to be removed soon.
-    const FloatPoint3D& anchorPoint() const { return m_anchorPoint; }
-    void setAnchorPoint(const FloatPoint3D&);
-
     const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
     void setTransformOrigin(const FloatPoint3D&);
 
@@ -340,7 +334,6 @@ private:
 
     // Position is relative to the parent GraphicsLayer
     FloatPoint m_position;
-    FloatPoint3D m_anchorPoint;
     FloatSize m_size;
     FloatPoint m_boundsOrigin;
 
@@ -355,6 +348,7 @@ private:
 
     FilterOperations m_filters;
 
+    bool m_hasTransformOrigin : 1;
     bool m_contentsOpaque : 1;
     bool m_shouldFlattenTransform: 1;
     bool m_backfaceVisibility : 1;

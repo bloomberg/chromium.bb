@@ -79,11 +79,11 @@ PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerFactory* factory, G
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : m_client(client)
-    , m_anchorPoint(0.5f, 0.5f, 0)
     , m_backgroundColor(Color::transparent)
     , m_opacity(1)
     , m_zPosition(0)
     , m_blendMode(blink::WebBlendModeNormal)
+    , m_hasTransformOrigin(false)
     , m_contentsOpaque(false)
     , m_shouldFlattenTransform(true)
     , m_backfaceVisibility(true)
@@ -450,7 +450,6 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
 
     m_contentsLayer->setWebLayerClient(this);
     m_contentsLayer->setTransformOrigin(FloatPoint3D());
-    m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
     m_contentsLayer->setUseParentBackfaceVisibility(true);
 
     // It is necessary to call setDrawsContent as soon as we receive the new contentsLayer, for
@@ -564,9 +563,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << "(bounds origin " << m_boundsOrigin.x() << " " << m_boundsOrigin.y() << ")\n";
     }
 
-    if (m_anchorPoint != FloatPoint3D(0.5f, 0.5f, 0)) {
-        writeIndent(ts, indent + 1);
-        ts << "(anchor " << m_anchorPoint.x() << " " << m_anchorPoint.y() << ")\n";
+    if (m_hasTransformOrigin && m_transformOrigin != FloatPoint3D(m_size.width() * 0.5f, m_size.height() * 0.5f, 0)) {
         writeIndent(ts, indent + 1);
         ts << "(transformOrigin " << m_transformOrigin.x() << " " << m_transformOrigin.y() << ")\n";
     }
@@ -807,13 +804,6 @@ void GraphicsLayer::setPosition(const FloatPoint& point)
     platformLayer()->setPosition(m_position);
 }
 
-void GraphicsLayer::setAnchorPoint(const FloatPoint3D& point)
-{
-    m_anchorPoint = point;
-    platformLayer()->setAnchorPoint(FloatPoint(m_anchorPoint.x(), m_anchorPoint.y()));
-    platformLayer()->setAnchorPointZ(m_anchorPoint.z());
-}
-
 void GraphicsLayer::setSize(const FloatSize& size)
 {
     // We are receiving negative sizes here that cause assertions to fail in the compositor. Clamp them to 0 to
@@ -840,6 +830,7 @@ void GraphicsLayer::setTransform(const TransformationMatrix& transform)
 
 void GraphicsLayer::setTransformOrigin(const FloatPoint3D& transformOrigin)
 {
+    m_hasTransformOrigin = true;
     m_transformOrigin = transformOrigin;
     platformLayer()->setTransformOrigin(transformOrigin);
 }

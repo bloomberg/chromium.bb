@@ -1,3 +1,6 @@
+crbug.com/372837 compositing/geometry/bounds-ignores-hidden-composited-descendant.html [ NeedsRebaseline ]
+crbug.com/372837 virtual/softwarecompositing/geometry/bounds-ignores-hidden-composited-descendant.html [ NeedsRebaseline ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 

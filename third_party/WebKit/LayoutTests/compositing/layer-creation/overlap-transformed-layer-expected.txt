@@ -8,7 +8,6 @@
       (children 2
         (GraphicsLayer
           (position 23.00 8.00)
-          (anchor 1.47 0.00)
           (transformOrigin 377.00 0.00)
           (bounds 256.00 256.00)
           (contentsOpaque 1)

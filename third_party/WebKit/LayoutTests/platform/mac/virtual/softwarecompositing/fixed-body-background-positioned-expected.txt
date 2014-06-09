@@ -6,7 +6,6 @@
           (bounds 785.00 600.00)
           (children 2
             (GraphicsLayer
-              (anchor 0.00 0.00)
               (transformOrigin 0.00 0.00)
               (bounds 785.00 600.00)
               (contentsOpaque 1)

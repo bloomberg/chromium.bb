@@ -339,6 +339,7 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
     // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
     // then we need to ensure that the compositing layer has non-zero size so that we can apply
     // the transform-origin via the GraphicsLayer anchorPoint (which is expressed as a fractional value).
+    // FIXME: this code is no longer necessary, remove.
     if (layerBounds.isEmpty() && hasNonZeroTransformOrigin(renderer())) {
         layerBounds.setWidth(1);
         layerBounds.setHeight(1);
@@ -823,21 +824,12 @@ void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffs
             layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y(),
             transformOrigin.z());
         m_graphicsLayer->setTransformOrigin(compositedTransformOrigin);
-
-        // Compute the anchor point, which is in the center of the renderer box unless transform-origin is set.
-        // FIXME: get rid of anchor once transformOrigin is plumbed.
-        FloatPoint3D anchor(
-            relativeCompositingBounds.width() ? compositedTransformOrigin.x() / relativeCompositingBounds.width()  : 0.5f,
-            relativeCompositingBounds.height() ? compositedTransformOrigin.y() / relativeCompositingBounds.height() : 0.5f,
-            transformOrigin.z());
-        m_graphicsLayer->setAnchorPoint(anchor);
     } else {
         FloatPoint3D compositedTransformOrigin(
             relativeCompositingBounds.width() * 0.5f,
             relativeCompositingBounds.height() * 0.5f,
             0.f);
         m_graphicsLayer->setTransformOrigin(compositedTransformOrigin);
-        m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
 }
 
@@ -1368,7 +1360,6 @@ bool CompositedLayerMapping::updateBackgroundLayer(bool needsBackgroundLayer)
         if (!m_backgroundLayer) {
             m_backgroundLayer = createGraphicsLayer(CompositingReasonLayerForBackground);
             m_backgroundLayer->setDrawsContent(true);
-            m_backgroundLayer->setAnchorPoint(FloatPoint3D());
             m_backgroundLayer->setTransformOrigin(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
 #if !OS(ANDROID)

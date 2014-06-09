@@ -119,10 +119,17 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattenedMatrix); ++i)
             transformArray->addItem(flattenedMatrix[i]);
         layerObject->setTransform(transformArray);
-        const FloatPoint3D& anchor = graphicsLayer->anchorPoint();
-        layerObject->setAnchorX(anchor.x());
-        layerObject->setAnchorY(anchor.y());
-        layerObject->setAnchorZ(anchor.z());
+        const FloatPoint3D& transformOrigin = graphicsLayer->transformOrigin();
+        // FIXME: rename these to setTransformOrigin*
+        if (webLayer->bounds().width > 0)
+            layerObject->setAnchorX(transformOrigin.x() / webLayer->bounds().width);
+        else
+            layerObject->setAnchorX(0.0);
+        if (webLayer->bounds().height > 0)
+            layerObject->setAnchorY(transformOrigin.y() / webLayer->bounds().height);
+        else
+            layerObject->setAnchorY(0.0);
+        layerObject->setAnchorZ(transformOrigin.z());
     }
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::ScrollRect> > scrollRects = buildScrollRectsForLayer(graphicsLayer);
     if (scrollRects)
