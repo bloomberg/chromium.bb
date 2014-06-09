@@ -265,9 +265,8 @@ class Mirror(object):
     try:
       tempdir = tempfile.mkdtemp()
       self.print('Downloading %s' % latest_checkout)
-      code, out, err = gsutil.check_call('cp', latest_checkout, tempdir)
+      code = gsutil.call('cp', latest_checkout, tempdir)
       if code:
-        self.print('%s\n%s' % (out, err))
         return False
       filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
 
