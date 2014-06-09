@@ -165,11 +165,11 @@ void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> c
     m_clientMessageLoop = clientMessageLoop;
 }
 
-void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)
+void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<LocalFrame> protect = toDocument(executionContext)->frame();
-    ScriptDebugServer::compileScript(scriptState, expression, sourceURL, scriptId, exceptionMessage);
+    ScriptDebugServer::compileScript(scriptState, expression, sourceURL, scriptId, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
     if (!scriptId->isNull())
         m_compiledScriptURLs.set(*scriptId, sourceURL);
 }
@@ -180,7 +180,7 @@ void PageScriptDebugServer::clearCompiledScripts()
     m_compiledScriptURLs.clear();
 }
 
-void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage)
+void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
 {
     String sourceURL = m_compiledScriptURLs.take(scriptId);
 
@@ -194,7 +194,7 @@ void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& sc
         cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
 
     RefPtr<LocalFrame> protect = frame;
-    ScriptDebugServer::runScript(scriptState, scriptId, result, wasThrown, exceptionMessage);
+    ScriptDebugServer::runScript(scriptState, scriptId, result, wasThrown, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
 
     if (frame)
         InspectorInstrumentation::didEvaluateScript(cookie);

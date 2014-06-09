@@ -11,10 +11,19 @@ Script result: 3
 Running: testRunError
 Compiling script
 Running script
-Script run error: Uncaught ReferenceError: c is not defined
+exceptionDetails:
+   Uncaught ReferenceError: c is not defined
+   line: 1, column: 15
+   exceptionDetails stack trace:
+       url: test.js
+       function: 
+       line: 1
 
 Running: testCompileError
 Compiling script
-Script compile error: Uncaught SyntaxError: Unexpected token }
+exceptionDetails:
+   Uncaught SyntaxError: Unexpected token }
+   line: 1, column: 0
+   no stack trace attached to exceptionDetails
 Debugger was disabled.
 

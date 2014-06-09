@@ -5,6 +5,25 @@
 <script>
 var test = function()
 {
+    function printExceptionDetails(exceptionDetails)
+    {
+        InspectorTest.addResult("exceptionDetails:")
+        InspectorTest.addResult("   " + exceptionDetails.text);
+        InspectorTest.addResult("   line: " + exceptionDetails.line + ", column: " + exceptionDetails.column);
+
+        var stack = exceptionDetails.stackTrace;
+        if (!stack) {
+            InspectorTest.addResult("   no stack trace attached to exceptionDetails");
+        } else {
+            InspectorTest.addResult("   exceptionDetails stack trace:");
+            for (var i = 0; i < stack.length && i < 100; ++i) {
+                InspectorTest.addResult("       url: " + stack[i].url);
+                InspectorTest.addResult("       function: " + stack[i].functionName);
+                InspectorTest.addResult("       line: " + stack[i].lineNumber);            
+            }
+        }
+    }
+
     InspectorTest.runDebuggerTestSuite([
         function testSuccessfulCompileAndRun(next)
         {
@@ -12,18 +31,18 @@ var test = function()
             InspectorTest.addResult("Compiling script");
             DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
 
-            function compileCallback(error, scriptId, syntaxErrorMessage)
+            function compileCallback(error, scriptId, exceptionDetails)
             {
                 InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!syntaxErrorMessage);
+                InspectorTest.assertTrue(!exceptionDetails);
                 InspectorTest.assertTrue(!!scriptId);
-                var contextId = undefined;
                 InspectorTest.addResult("Running script");
-                DebuggerAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
+                DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
             }
 
-            function runCallback(error, result, wasThrown)
+            function runCallback(error, result, exceptionDetails)
             {
+                var wasThrown = !!exceptionDetails;
                 InspectorTest.assertTrue(!error);
                 InspectorTest.assertTrue(!wasThrown);
                 InspectorTest.addResult("Script result: " + result.value);
@@ -37,21 +56,21 @@ var test = function()
             InspectorTest.addResult("Compiling script");
             DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
 
-            function compileCallback(error, scriptId, syntaxErrorMessage)
+            function compileCallback(error, scriptId, exceptionDetails)
             {
                 InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!syntaxErrorMessage);
+                InspectorTest.assertTrue(!exceptionDetails);
                 InspectorTest.assertTrue(!!scriptId);
-                var contextId = undefined;
                 InspectorTest.addResult("Running script");
-                DebuggerAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
+                DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
             }
 
-            function runCallback(error, result, wasThrown)
+            function runCallback(error, result, exceptionDetails)
             {
+                var wasThrown = !!exceptionDetails;
                 InspectorTest.assertTrue(!error);
                 InspectorTest.assertTrue(wasThrown);
-                InspectorTest.addResult("Script run error: " + result.description);
+                printExceptionDetails(exceptionDetails);
                 next();
             }
         },
@@ -60,13 +79,15 @@ var test = function()
         {
             var expression = "}";
             InspectorTest.addResult("Compiling script");
-            DebuggerAgent.compileScript(expression, "test.js", compileCallback.bind(this));
+            var contextId = undefined;
+            DebuggerAgent.compileScript(expression, "test.js", contextId, compileCallback.bind(this));
 
-            function compileCallback(error, scriptId, syntaxErrorMessage)
+            function compileCallback(error, scriptId, exceptionDetails)
             {
                 InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(!!exceptionDetails);
                 InspectorTest.assertTrue(!scriptId);
-                InspectorTest.addResult("Script compile error: " + syntaxErrorMessage);
+                printExceptionDetails(exceptionDetails);
                 next();
             }
         }

@@ -50,6 +50,7 @@
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Debugger::BreakpointId;
 using WebCore::TypeBuilder::Debugger::CallFrame;
+using WebCore::TypeBuilder::Debugger::ExceptionDetails;
 using WebCore::TypeBuilder::Debugger::FunctionDetails;
 using WebCore::TypeBuilder::Debugger::ScriptId;
 using WebCore::TypeBuilder::Debugger::StackTrace;
@@ -888,7 +889,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 }
 
-void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, TypeBuilder::OptOutput<String>* syntaxErrorMessage)
+void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.isEmpty()) {
@@ -897,17 +898,27 @@ void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const Strin
     }
 
     String scriptIdValue;
-    String exceptionMessage;
-    scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, &scriptIdValue, &exceptionMessage);
-    if (!scriptIdValue && !exceptionMessage) {
+    String exceptionDetailsText;
+    int lineNumberValue = 0;
+    int columnNumberValue = 0;
+    RefPtr<ScriptCallStack> stackTraceValue;
+    scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, &scriptIdValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
+    if (!scriptIdValue && !exceptionDetailsText) {
         *errorString = "Script compilation failed";
         return;
     }
-    *syntaxErrorMessage = exceptionMessage;
     *scriptId = scriptIdValue;
+    if (!scriptIdValue.isEmpty())
+        return;
+
+    exceptionDetails = ExceptionDetails::create().setText(exceptionDetailsText);
+    exceptionDetails->setLine(lineNumberValue);
+    exceptionDetails->setColumn(columnNumberValue);
+    if (stackTraceValue && stackTraceValue->size() > 0)
+        exceptionDetails->setStackTrace(stackTraceValue->buildInspectorArray());
 }
 
-void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
+void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.isEmpty()) {
@@ -924,16 +935,23 @@ void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId&
 
     ScriptValue value;
     bool wasThrownValue;
-    String exceptionMessage;
-    scriptDebugServer().runScript(injectedScript.scriptState(), scriptId, &value, &wasThrownValue, &exceptionMessage);
-    *wasThrown = wasThrownValue;
+    String exceptionDetailsText;
+    int lineNumberValue = 0;
+    int columnNumberValue = 0;
+    RefPtr<ScriptCallStack> stackTraceValue;
+    scriptDebugServer().runScript(injectedScript.scriptState(), scriptId, &value, &wasThrownValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
     if (value.isEmpty()) {
         *errorString = "Script execution failed";
         return;
     }
     result = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
-    if (wasThrownValue)
-        result->setDescription(exceptionMessage);
+    if (wasThrownValue) {
+        exceptionDetails = ExceptionDetails::create().setText(exceptionDetailsText);
+        exceptionDetails->setLine(lineNumberValue);
+        exceptionDetails->setColumn(columnNumberValue);
+        if (stackTraceValue && stackTraceValue->size() > 0)
+            exceptionDetails->setStackTrace(stackTraceValue->buildInspectorArray());
+    }
 
     if (doNotPauseOnExceptionsAndMuteConsole && *doNotPauseOnExceptionsAndMuteConsole) {
         unmuteConsole();

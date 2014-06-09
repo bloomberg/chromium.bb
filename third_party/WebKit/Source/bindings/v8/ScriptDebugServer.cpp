@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -568,7 +569,7 @@ bool ScriptDebugServer::isPaused()
     return m_pausedScriptState;
 }
 
-void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)
+void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
 {
     if (scriptState->contextIsEmpty())
         return;
@@ -579,8 +580,12 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
     v8::Local<v8::Script> script = V8ScriptRunner::compileScript(source, sourceURL, TextPosition(), 0, m_isolate);
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty())
-            *exceptionMessage = toCoreStringWithUndefinedOrNullCheck(message->Get());
+        if (!message.IsEmpty()) {
+            *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
+            *lineNumber = message->GetLineNumber();
+            *columnNumber = message->GetStartColumn();
+            *stackTrace = createScriptCallStack(message->GetStackTrace(), message->GetStackTrace()->GetFrameCount(), m_isolate);
+        }
         return;
     }
     if (script.IsEmpty())
@@ -595,7 +600,7 @@ void ScriptDebugServer::clearCompiledScripts()
     m_compiledScripts.clear();
 }
 
-void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage)
+void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
 {
     if (!m_compiledScripts.contains(scriptId))
         return;
@@ -616,8 +621,12 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
         *wasThrown = true;
         *result = ScriptValue(scriptState, tryCatch.Exception());
         v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty())
-            *exceptionMessage = toCoreStringWithUndefinedOrNullCheck(message->Get());
+        if (!message.IsEmpty()) {
+            *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
+            *lineNumber = message->GetLineNumber();
+            *columnNumber = message->GetStartColumn();
+            *stackTrace = createScriptCallStack(message->GetStackTrace(), message->GetStackTrace()->GetFrameCount(), m_isolate);
+        }
     } else {
         *result = ScriptValue(scriptState, value);
     }
