@@ -10,7 +10,7 @@
 
 description("Both .URL and .url attributes should work (for compatibility reasons).");
 
-var url = "ws://127.0.0.1:8880/";
+var url = "ws://127.0.0.1:8880/echo";
 var ws = new WebSocket(url);
 
 shouldBeEqualToString("ws.url", url);
@@ -20,4 +20,3 @@ shouldBeTrue("ws.URL === ws.url");
 </script>
 </body>
 </html>
-
