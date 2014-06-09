@@ -31873,7 +31873,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="WebFont.DiskCacheHit.opensans" enum="WebFontDiskCacheHit">
+<histogram name="WebFont.DiskCacheHit" enum="WebFontDiskCacheHit">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
