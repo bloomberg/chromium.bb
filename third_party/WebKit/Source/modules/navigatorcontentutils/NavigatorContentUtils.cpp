@@ -34,6 +34,7 @@
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "wtf/HashSet.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -97,7 +98,13 @@ static bool isProtocolWhitelisted(const String& scheme)
 {
     if (!protocolWhitelist)
         initProtocolHandlerWhitelist();
-    return protocolWhitelist->contains(scheme);
+
+    StringBuilder builder;
+    unsigned length = scheme.length();
+    for (unsigned i = 0; i < length; ++i)
+        builder.append(toASCIILower(scheme[i]));
+
+    return protocolWhitelist->contains(builder.toString());
 }
 
 static bool verifyProtocolHandlerScheme(const String& scheme, const String& method, ExceptionState& exceptionState)
