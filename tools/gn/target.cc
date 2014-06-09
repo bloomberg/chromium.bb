@@ -102,8 +102,7 @@ void Target::OnResolved() {
   // group's deps. We insert the new deps immediately after the group so that
   // the ordering is preserved. We need to keep the original group so that any
   // flags, etc. that it specifies itself are applied to us.
-  size_t original_deps_size = deps_.size();
-  for (size_t i = 0; i < original_deps_size; i++) {
+  for (size_t i = 0; i < deps_.size(); i++) {
     const Target* dep = deps_[i].ptr;
     if (dep->output_type_ == GROUP) {
       deps_.insert(deps_.begin() + i + 1, dep->deps_.begin(), dep->deps_.end());
