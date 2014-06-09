@@ -162,16 +162,21 @@ IntSize SVGImage::containerSize() const
     // Assure that a container size is always given for a non-identity zoom level.
     ASSERT(renderer->style()->effectiveZoom() == 1);
 
-    FloatSize currentSize;
-    if (rootElement->hasIntrinsicWidth() && rootElement->hasIntrinsicHeight())
-        currentSize = rootElement->currentViewportSize();
-    else
-        currentSize = rootElement->currentViewBoxRect().size();
+    FloatSize intrinsicSize;
+    double intrinsicRatio = 0;
+    renderer->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
-    if (!currentSize.isEmpty())
-        return IntSize(static_cast<int>(ceilf(currentSize.width())), static_cast<int>(ceilf(currentSize.height())));
+    if (intrinsicSize.isEmpty() && intrinsicRatio) {
+        if (!intrinsicSize.width() && intrinsicSize.height())
+            intrinsicSize.setWidth(intrinsicSize.height() * intrinsicRatio);
+        else if (intrinsicSize.width() && !intrinsicSize.height())
+            intrinsicSize.setHeight(intrinsicSize.width() / intrinsicRatio);
+    }
 
-    // As last resort, use CSS default intrinsic size.
+    if (!intrinsicSize.isEmpty())
+        return expandedIntSize(intrinsicSize);
+
+    // As last resort, use CSS replaced element fallback size.
     return IntSize(300, 150);
 }
 
