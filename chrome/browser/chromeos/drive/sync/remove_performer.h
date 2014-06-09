@@ -17,7 +17,7 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
-class ResourceEntry;
+class FileResource;
 }
 
 namespace drive {
@@ -80,12 +80,12 @@ class RemovePerformer {
                         const std::string& local_id);
 
   // Part of UnparentResource().
-  void UnparentResourceAfterGetResourceEntry(
+  void UnparentResourceAfterGetFileResource(
       const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> file_resource);
 
   // Part of UnparentResource().
   void UnparentResourceAfterUpdateRemoteState(

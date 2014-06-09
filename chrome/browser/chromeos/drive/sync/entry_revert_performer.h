@@ -19,7 +19,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace google_apis {
-class ResourceEntry;
+class FileResource;
 }  // namespace google_apis
 
 namespace drive {
@@ -60,12 +60,12 @@ class EntryRevertPerformer {
                                scoped_ptr<ResourceEntry> entry,
                                FileError error);
 
-  // Part of RevertEntry(). Called after GetResourceEntry is completed.
-  void RevertEntryAfterGetResourceEntry(
+  // Part of RevertEntry(). Called after GetFileResource is completed.
+  void RevertEntryAfterGetFileResource(
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Part of RevertEntry(). Called after local metadata is updated.
   void RevertEntryAfterFinishRevert(

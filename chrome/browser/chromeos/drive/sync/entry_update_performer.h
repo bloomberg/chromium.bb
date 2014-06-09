@@ -18,7 +18,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace google_apis {
-class ResourceEntry;
+class FileResource;
 }  // namespace google_apis
 
 namespace drive {
@@ -74,7 +74,7 @@ class EntryUpdatePerformer {
       const std::string& local_id,
       scoped_ptr<base::ScopedClosureRunner> loader_lock,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Part of UpdateEntry(). Called after FinishUpdate is completed.
   void UpdateEntryAfterFinish(const FileOperationCallback& callback,

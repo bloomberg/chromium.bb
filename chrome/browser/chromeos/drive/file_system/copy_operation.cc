@@ -163,13 +163,15 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
 // Stores the entry returned from the server and returns its path.
 FileError UpdateLocalStateForServerSideOperation(
     internal::ResourceMetadata* metadata,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry,
+    scoped_ptr<google_apis::FileResource> file_resource,
     base::FilePath* file_path) {
-  DCHECK(resource_entry);
+  DCHECK(file_resource);
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id) ||
+  if (!ConvertToResourceEntry(
+          *util::ConvertFileResourceToResourceEntry(*file_resource),
+          &entry, &parent_resource_id) ||
       parent_resource_id.empty())
     return FILE_ERROR_NOT_A_FILE;
 
@@ -493,7 +495,7 @@ void CopyOperation::CopyResourceOnServer(
 void CopyOperation::UpdateAfterServerSideOperation(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -510,7 +512,7 @@ void CopyOperation::UpdateAfterServerSideOperation(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForServerSideOperation,
-                 metadata_, base::Passed(&resource_entry), file_path),
+                 metadata_, base::Passed(&entry), file_path),
       base::Bind(&CopyOperation::UpdateAfterLocalStateUpdate,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, base::Owned(file_path)));

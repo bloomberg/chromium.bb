@@ -21,7 +21,7 @@ class Time;
 
 namespace google_apis {
 class AboutResource;
-class ResourceEntry;
+class FileResource;
 }  // namespace google_apis
 
 namespace drive {
@@ -117,7 +117,7 @@ class CopyOperation {
   void UpdateAfterServerSideOperation(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
+      scoped_ptr<google_apis::FileResource> entry);
 
   // Part of CopyResourceOnServer and TransferFileFromLocalToRemote.
   // Called after local state update is done.

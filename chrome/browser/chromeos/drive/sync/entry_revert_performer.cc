@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 
 using content::BrowserThread;
@@ -22,14 +24,16 @@ namespace {
 FileError FinishRevert(ResourceMetadata* metadata,
                        const std::string& local_id,
                        google_apis::GDataErrorCode status,
-                       scoped_ptr<google_apis::ResourceEntry> resource_entry,
+                       scoped_ptr<google_apis::FileResource> file_resource,
                        std::set<base::FilePath>* changed_directories) {
   ResourceEntry entry;
   std::string parent_resource_id;
   FileError error = GDataToFileError(status);
   switch (error) {
     case FILE_ERROR_OK:
-      if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+      if (!ConvertToResourceEntry(
+              *util::ConvertFileResourceToResourceEntry(*file_resource),
+              &entry, &parent_resource_id))
         return FILE_ERROR_NOT_A_FILE;
       break;
 
@@ -126,18 +130,18 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
     return;
   }
 
-  scheduler_->GetResourceEntry(
+  scheduler_->GetFileResource(
       entry->resource_id(),
       context,
-      base::Bind(&EntryRevertPerformer::RevertEntryAfterGetResourceEntry,
+      base::Bind(&EntryRevertPerformer::RevertEntryAfterGetFileResource,
                  weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
 }
 
-void EntryRevertPerformer::RevertEntryAfterGetResourceEntry(
+void EntryRevertPerformer::RevertEntryAfterGetFileResource(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+    scoped_ptr<google_apis::FileResource> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -146,7 +150,7 @@ void EntryRevertPerformer::RevertEntryAfterGetResourceEntry(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FinishRevert, metadata_, local_id, status,
-                 base::Passed(&resource_entry), changed_directories),
+                 base::Passed(&entry), changed_directories),
       base::Bind(&EntryRevertPerformer::RevertEntryAfterFinishRevert,
                  weak_ptr_factory_.GetWeakPtr(), callback,
                  base::Owned(changed_directories)));
