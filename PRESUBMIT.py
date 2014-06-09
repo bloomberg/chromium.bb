@@ -1497,70 +1497,17 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_clang_dbg': ['defaulttests'],
       'linux_gpu': ['defaulttests'],
       'linux_nacl_sdk_build': ['compile'],
-      'linux_rel': [
-          'telemetry_perf_unittests',
-          'telemetry_unittests',
-      ],
       'mac_chromium_compile_dbg': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
       'mac_gpu': ['defaulttests'],
       'mac_nacl_sdk_build': ['compile'],
-      'mac_rel': [
-          'telemetry_perf_unittests',
-          'telemetry_unittests',
-      ],
-      'win': ['compile'],
       'win_chromium_compile_dbg': ['defaulttests'],
       'win_chromium_dbg': ['defaulttests'],
       'win_chromium_rel': ['defaulttests'],
       'win_chromium_x64_rel': ['defaulttests'],
       'win_gpu': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
-      'win_rel': standard_tests + [
-          'app_list_unittests',
-          'ash_unittests',
-          'aura_unittests',
-          'cc_unittests',
-          'chrome_elf_unittests',
-          'chromedriver_unittests',
-          'components_unittests',
-          'compositor_unittests',
-          'events_unittests',
-          'gfx_unittests',
-          'google_apis_unittests',
-          'installer_util_unittests',
-          'test_mini_installer',
-          'nacl_integration',
-          'remoting_unittests',
-          'sync_integration_tests',
-          'telemetry_perf_unittests',
-          'telemetry_unittests',
-          'views_unittests',
-      ],
-      'win_x64_rel': [
-          'base_unittests',
-      ],
   }
-
-  swarm_enabled_builders = (
-  # http://crbug.com/354263
-  #    'linux_rel',
-  #    'mac_rel',
-  #    'win_rel',
-  )
-
-  swarm_enabled_tests = (
-      'base_unittests',
-      'browser_tests',
-      'interactive_ui_tests',
-      'net_unittests',
-      'unit_tests',
-  )
-
-  for bot in builders_and_tests:
-    if bot in swarm_enabled_builders:
-      builders_and_tests[bot] = [x + '_swarm' if x in swarm_enabled_tests else x
-                                 for x in builders_and_tests[bot]]
 
   if bots:
     filtered_builders_and_tests = dict((bot, set(builders_and_tests[bot]))
