@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -162,8 +163,10 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 };
 
 bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAudioTrackProcessing);
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("MediaStreamAudioTrackProcessing");
+  return group_name == "Enabled" || CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioTrackProcessing);
 }
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(

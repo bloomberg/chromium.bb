@@ -1230,7 +1230,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePepperTesting,
 #endif
 #if defined(ENABLE_WEBRTC)
-    switches::kDisableAudioTrackProcessing,
+    switches::kEnableAudioTrackProcessing,
     switches::kDisableDeviceEnumeration,
     switches::kDisableWebRtcHWDecoding,
     switches::kDisableWebRtcHWEncoding,

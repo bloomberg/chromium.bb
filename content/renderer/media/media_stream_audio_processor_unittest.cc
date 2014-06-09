@@ -154,9 +154,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
-  // Setup the audio processor with disabled flag on.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioTrackProcessing);
+  // Setup the audio processor without enabling the flag.
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
@@ -177,6 +175,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
 }
 
 TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
+  // Setup the audio processor with the flag enabled.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioTrackProcessing);
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
@@ -198,6 +199,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
 }
 
 TEST_F(MediaStreamAudioProcessorTest, VerifyTabCaptureWithoutAudioProcessing) {
+  // Setup the audio processor with enabling the flag.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioTrackProcessing);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
   // Create MediaStreamAudioProcessor instance for kMediaStreamSourceTab source.
@@ -234,6 +238,10 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyTabCaptureWithoutAudioProcessing) {
 }
 
 TEST_F(MediaStreamAudioProcessorTest, TurnOffDefaultConstraints) {
+  // Setup the audio processor with enabling the flag.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioTrackProcessing);
+
   // Turn off the default constraints and pass it to MediaStreamAudioProcessor.
   MockMediaConstraintFactory constraint_factory;
   constraint_factory.DisableDefaultAudioConstraints();
@@ -256,6 +264,10 @@ TEST_F(MediaStreamAudioProcessorTest, TurnOffDefaultConstraints) {
 }
 
 TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
+  // Setup the audio processor with enabling the flag.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioTrackProcessing);
+
   static const char* kDefaultAudioConstraints[] = {
     MediaAudioConstraints::kEchoCancellation,
     MediaAudioConstraints::kGoogAudioMirroring,
