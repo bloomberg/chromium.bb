@@ -318,6 +318,39 @@
         }]
       ],
     },
+    {
+      'target_name': 'mojo_test_service_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/test_service/test_service.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_test_service',
+      'type': 'shared_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_application',
+        'mojo_common_lib',
+        'mojo_environment_standalone',
+        'mojo_test_service_bindings',
+        'mojo_system_impl',
+        'mojo_utility',
+      ],
+      'sources': [
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+        'services/test_service/test_service_application.cc',
+        'services/test_service/test_service_impl.cc',
+        'services/test_service/test_service_impl.h',
+      ],
+    },
   ],
   'conditions': [
     ['use_aura==1', {
