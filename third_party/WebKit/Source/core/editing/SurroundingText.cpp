@@ -32,38 +32,46 @@
 #include "core/editing/SurroundingText.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Position.h"
 #include "core/dom/Range.h"
 #include "core/editing/TextIterator.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
 
 namespace WebCore {
 
-SurroundingText::SurroundingText(const VisiblePosition& visiblePosition, unsigned maxLength)
+SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
     : m_positionOffsetInContent(0)
 {
-    if (visiblePosition.isNull())
+    const unsigned halfMaxLength = maxLength / 2;
+
+    Document* document = position.document();
+    // The |position| will have no document if it is null (as in no position).
+    if (!document)
         return;
 
-    const unsigned halfMaxLength = maxLength / 2;
-    CharacterIterator forwardIterator(makeRange(visiblePosition, endOfDocument(visiblePosition)).get(), TextIteratorStopsOnFormControls);
+    // The forward range starts at the selection end and ends at the document's
+    // end. It will then be updated to only contain the text in the text in the
+    // right range around the selection.
+    RefPtrWillBeRawPtr<Range> forwardRange = Range::create(*document, position, lastPositionInNode(document->documentElement()).parentAnchoredEquivalent());
+    CharacterIterator forwardIterator(forwardRange.get(), TextIteratorStopsOnFormControls);
     if (!forwardIterator.atEnd())
         forwardIterator.advance(maxLength - halfMaxLength);
 
-    Position position = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
-    Document* document = position.document();
-    ASSERT(document);
-    RefPtrWillBeRawPtr<Range> forwardRange = forwardIterator.range();
+    forwardRange = forwardIterator.range();
     if (!forwardRange || !Range::create(*document, position, forwardRange->startPosition())->text().length()) {
         ASSERT(forwardRange);
         return;
     }
 
-    BackwardsCharacterIterator backwardsIterator(makeRange(startOfDocument(visiblePosition), visiblePosition).get(), TextIteratorStopsOnFormControls);
+    // Same as with the forward range but with the backward range. The range
+    // starts at the document's start and ends at the selection start and will
+    // be updated.
+    RefPtrWillBeRawPtr<Range> backwardsRange = Range::create(*document, firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), position);
+    BackwardsCharacterIterator backwardsIterator(backwardsRange.get(), TextIteratorStopsOnFormControls);
     if (!backwardsIterator.atEnd())
         backwardsIterator.advance(halfMaxLength);
 
-    RefPtrWillBeRawPtr<Range> backwardsRange = backwardsIterator.range();
+    backwardsRange = backwardsIterator.range();
     if (!backwardsRange) {
         ASSERT(backwardsRange);
         return;

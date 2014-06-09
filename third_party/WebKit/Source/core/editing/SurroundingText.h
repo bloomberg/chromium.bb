@@ -36,13 +36,13 @@
 
 namespace WebCore {
 
+class Position;
 class Range;
-class VisiblePosition;
 
 class SurroundingText {
     WTF_MAKE_NONCOPYABLE(SurroundingText);
 public:
-    SurroundingText(const VisiblePosition&, unsigned maxLength);
+    SurroundingText(const Position&, unsigned maxLength);
 
     String content() const;
     unsigned positionOffsetInContent() const;

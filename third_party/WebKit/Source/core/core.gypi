@@ -3387,6 +3387,7 @@
             'dom/MainThreadTaskRunnerTest.cpp',
             'dom/RangeTest.cpp',
             'dom/TreeScopeTest.cpp',
+            'editing/SurroundingTextTest.cpp',
             'editing/TextIteratorTest.cpp',
             'editing/VisibleSelectionTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
