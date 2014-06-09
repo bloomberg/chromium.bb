@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
   if (elf_update(elf, ELF_C_WRITE) < 0)
     error(2, 0, "elf_update: %s", elf_errmsg(-1));
 
+  elf_end(elf);
   close(fd);
 
   return 0;
