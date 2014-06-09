@@ -66,16 +66,6 @@
         'public/gles2/gles2_private.h',
       ],
       'conditions': [
-        ['OS=="android"', {
-          'ldflags!': [
-            # Remove default export list because this lib has different exports.
-            '-Wl,--version-script=<(android_linker_script)',
-          ],
-          'ldflags': [
-            # Don't export symbols from statically linked libraries.
-            '-Wl,--exclude-libs=ALL',
-          ],
-        }],
         ['OS=="mac"', {
           'xcode_settings': {
             # Make it a run-path dependent library.
@@ -105,16 +95,6 @@
         'public/tests/test_support_private.h',
       ],
       'conditions': [
-        ['OS=="android"', {
-          'ldflags!': [
-            # Remove default export list because this lib has different exports.
-            '-Wl,--version-script=<(android_linker_script)',
-          ],
-          'ldflags': [
-            # Don't export symbols from statically linked libraries.
-            '-Wl,--exclude-libs=ALL',
-          ],
-        }],
         ['OS=="mac"', {
           'xcode_settings': {
             # Make it a run-path dependent library.
