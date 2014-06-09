@@ -83,6 +83,7 @@ class MockExecutive(object):
         return running_pids
 
     def run_and_throw_if_fail(self, args, quiet=False, cwd=None, env=None):
+        self.calls.append(args)
         if self._should_log:
             env_string = ""
             if env:
