@@ -329,10 +329,6 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, MAYBE_Loading) {
     if (filename == "sample.pdf")
       continue;  // Crashes on Mac and Linux.  http://crbug.com/63549
 #endif
-#if defined(OS_MACOSX)
-    if (filename == "MVGD_sample_form.pdf")  // http://crbug.com/373619
-      continue;
-#endif
 
     // Split the test into smaller sub-tests. Each one only loads
     // every k-th file.
