@@ -259,6 +259,7 @@ PopStateEvent
 ProcessingInstruction
 ProgressEvent
 Promise
+PushEvent
 RGBColor
 RTCIceCandidate
 RTCSessionDescription
