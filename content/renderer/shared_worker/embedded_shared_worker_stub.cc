@@ -12,7 +12,9 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/shared_worker/embedded_shared_worker_permission_client_proxy.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 
@@ -153,8 +155,11 @@ EmbeddedSharedWorkerStub::createApplicationCacheHost(
 blink::WebWorkerPermissionClientProxy*
     EmbeddedSharedWorkerStub::createWorkerPermissionClientProxy(
     const blink::WebSecurityOrigin& origin) {
-  // TODO(horo): implement this.
-  return NULL;
+  return new EmbeddedSharedWorkerPermissionClientProxy(
+      GURL(origin.toString()),
+      origin.isUnique(),
+      route_id_,
+      ChildThread::current()->thread_safe_sender());
 }
 
 void EmbeddedSharedWorkerStub::dispatchDevToolsMessage(

@@ -396,6 +396,8 @@
       'renderer/shared_memory_seqlock_reader.h',
       'renderer/shared_worker_repository.cc',
       'renderer/shared_worker_repository.h',
+      'renderer/shared_worker/embedded_shared_worker_permission_client_proxy.cc',
+      'renderer/shared_worker/embedded_shared_worker_permission_client_proxy.h',
       'renderer/shared_worker/embedded_shared_worker_stub.cc',
       'renderer/shared_worker/embedded_shared_worker_stub.h',
       'renderer/skia_benchmarking_extension.cc',
