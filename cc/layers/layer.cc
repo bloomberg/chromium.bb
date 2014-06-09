@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/atomic_sequence_num.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -28,7 +29,7 @@
 
 namespace cc {
 
-static int s_next_layer_id = 1;
+base::StaticAtomicSequenceNumber g_next_layer_id;
 
 scoped_refptr<Layer> Layer::Create() {
   return make_scoped_refptr(new Layer());
@@ -38,7 +39,8 @@ Layer::Layer()
     : needs_push_properties_(false),
       num_dependents_need_push_properties_(false),
       stacking_order_changed_(false),
-      layer_id_(s_next_layer_id++),
+      // Layer IDs start from 1.
+      layer_id_(g_next_layer_id.GetNext() + 1),
       ignore_set_needs_commit_(false),
       parent_(NULL),
       layer_tree_host_(NULL),
@@ -69,10 +71,6 @@ Layer::Layer()
       replica_layer_(NULL),
       raster_scale_(0.f),
       client_(NULL) {
-  if (layer_id_ == INT_MAX) {
-    s_next_layer_id = 1;
-  }
-
   layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
   layer_animation_controller_->AddValueObserver(this);
   layer_animation_controller_->set_value_provider(this);
