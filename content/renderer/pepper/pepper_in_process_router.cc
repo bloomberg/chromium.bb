@@ -103,42 +103,14 @@ bool PepperInProcessRouter::OnPluginMsgReceived(const IPC::Message& msg) {
 bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
   scoped_ptr<IPC::Message> message(msg);
 
-  // Unpack the message so we can peek at its nested type.
-  uint32 call_type = 0;
-  if (message->type() == PpapiHostMsg_ResourceCall::ID) {
-    ppapi::proxy::ResourceMessageCallParams call_params;
-    IPC::Message nested_msg;
-    if (!UnpackMessage<PpapiHostMsg_ResourceCall>(*msg, &call_params,
-                                                  &nested_msg)) {
-      NOTREACHED();
-      return false;
-    }
-    call_type = nested_msg.type();
-    // Repack the message.
-    message.reset(new PpapiHostMsg_ResourceCall(call_params, nested_msg));
-  }
-
   if (!message->is_sync()) {
+    // If this is a resource destroyed message, post a task to dispatch it.
+    // Dispatching it synchronously can cause the host to re-enter the proxy
+    // code while we're still in the resource destructor, leading to a crash.
+    // http://crbug.com/276368.
+    // This won't cause message reordering problems because the resource
+    // destroyed message is always the last one sent for a resource.
     if (message->type() == PpapiHostMsg_ResourceDestroyed::ID) {
-      // If this is a resource destroyed message, post a task to dispatch it.
-      // Dispatching it synchronously can cause the host to re-enter the proxy
-      // code while we're still in the resource destructor, leading to a crash.
-      // http://crbug.com/276368.
-      // This won't cause message reordering problems because the resource
-      // destroyed message is always the last one sent for a resource.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&PepperInProcessRouter::DispatchHostMsg,
-                     weak_factory_.GetWeakPtr(),
-                     base::Owned(message.release())));
-      return true;
-    } else if (call_type == PpapiHostMsg_URLLoader_Close::ID) {
-      // If this is a PpapiHostMsg_URLLoader_Close, it could trigger the
-      // destruction of the instance (crbug.com/372548) so post a task to
-      // dispatch it as well. Because PpapiHostMsg_ResourceDestroyed messages
-      // are also posted above, ordering with respect to those messages will
-      // still be correct. Ordering with respect to other messages should not
-      // be important.
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&PepperInProcessRouter::DispatchHostMsg,

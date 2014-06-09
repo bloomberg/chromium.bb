@@ -361,11 +361,8 @@ void PepperURLLoaderHost::SendOrderedUpdateToPlugin(IPC::Message* message) {
 void PepperURLLoaderHost::Close() {
   if (loader_.get())
     loader_->cancel();
-  else if (main_document_loader_) {
-    blink::WebFrame* frame = GetFrame();
-    if (frame)
-      frame->stopLoading();
-  }
+  else if (main_document_loader_)
+    GetFrame()->stopLoading();
 }
 
 blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {
