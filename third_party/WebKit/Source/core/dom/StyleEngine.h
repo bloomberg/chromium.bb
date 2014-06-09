@@ -109,6 +109,8 @@ public:
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
     void enableExitTransitionStylesheets();
+    void addXSLStyleSheet(ProcessingInstruction*, bool createdByParser);
+    void removeXSLStyleSheet(ProcessingInstruction*);
 
     void invalidateInjectedStyleSheetCache();
     void updateInjectedStyleSheetCache() const;
@@ -200,6 +202,7 @@ private:
     TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
     TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
+    bool shouldApplyXSLTransform() const;
 
     void markTreeScopeDirty(TreeScope&);
 
@@ -278,6 +281,8 @@ private:
 
     WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents> > m_textToSheetCache;
     WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
+
+    RefPtr<ProcessingInstruction> m_xslStyleSheet;
 };
 
 }

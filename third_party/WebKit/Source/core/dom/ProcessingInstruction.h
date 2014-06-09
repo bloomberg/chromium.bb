@@ -86,6 +86,11 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
 
+inline bool isXSLStyleSheet(const Node& node)
+{
+    return node.nodeType() == Node::PROCESSING_INSTRUCTION_NODE && toProcessingInstruction(node).isXSL();
+}
+
 } // namespace WebCore
 
 #endif

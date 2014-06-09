@@ -75,6 +75,7 @@ StyleEngine::StyleEngine(Document& document)
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
     , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
+    , m_xslStyleSheet(nullptr)
 {
     if (m_fontSelector)
         m_fontSelector->registerForInvalidationCallbacks(this);
@@ -286,7 +287,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 
     TreeScope& treeScope = isHTMLStyleElement(*node) ? node->treeScope() : *m_document;
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
-
+    ASSERT(!isXSLStyleSheet(*node));
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->addStyleSheetCandidateNode(node, createdByParser);
@@ -304,6 +305,7 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node)
 void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode, TreeScope& treeScope)
 {
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    ASSERT(!isXSLStyleSheet(*node));
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
@@ -311,6 +313,37 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopi
 
     markTreeScopeDirty(treeScope);
     m_activeTreeScopes.remove(&treeScope);
+}
+
+void StyleEngine::addXSLStyleSheet(ProcessingInstruction* node, bool createdByParser)
+{
+    if (!node->inDocument())
+        return;
+
+    ASSERT(isXSLStyleSheet(*node));
+    bool needToUpdate = false;
+    if (createdByParser || !m_xslStyleSheet) {
+        needToUpdate = !m_xslStyleSheet;
+    } else {
+        unsigned position = m_xslStyleSheet->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsDisconnected);
+        needToUpdate = position & Node::DOCUMENT_POSITION_FOLLOWING;
+    }
+
+    if (!needToUpdate)
+        return;
+
+    markTreeScopeDirty(*m_document);
+    m_xslStyleSheet = node;
+}
+
+void StyleEngine::removeXSLStyleSheet(ProcessingInstruction* node)
+{
+    ASSERT(isXSLStyleSheet(*node));
+    if (m_xslStyleSheet != node)
+        return;
+
+    markTreeScopeDirty(*m_document);
+    m_xslStyleSheet = nullptr;
 }
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
@@ -487,6 +520,13 @@ bool StyleEngine::shouldClearResolver() const
     return !m_didCalculateResolver && !haveStylesheetsLoaded();
 }
 
+bool StyleEngine::shouldApplyXSLTransform() const
+{
+    if (!RuntimeEnabledFeatures::xsltEnabled())
+        return false;
+    return m_xslStyleSheet && !m_document->transformSourceDocument();
+}
+
 StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
     StyleResolverChange change;
@@ -501,6 +541,15 @@ StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
     // and haven't calculated the style selector for the first time.
     if (!document().isActive() || shouldClearResolver()) {
         clearResolver();
+        return change;
+    }
+
+    if (shouldApplyXSLTransform()) {
+        // Processing instruction (XML documents only).
+        // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
+        // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
+        if (!m_document->parsing() && !m_xslStyleSheet->isLoading())
+            m_document->applyXSLTransform(m_xslStyleSheet.get());
         return change;
     }
 
