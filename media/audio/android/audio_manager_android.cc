@@ -90,6 +90,11 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
   ScopedJavaLocalRef<jobjectArray> j_device_array =
       Java_AudioManagerAndroid_getAudioInputDeviceNames(
           env, j_audio_manager_.obj());
+  if (j_device_array.is_null()) {
+    // Most probable reason for a NULL result here is that the process lacks
+    // MODIFY_AUDIO_SETTINGS or RECORD_AUDIO permissions.
+    return;
+  }
   jsize len = env->GetArrayLength(j_device_array.obj());
   AudioDeviceName device;
   for (jsize i = 0; i < len; ++i) {
