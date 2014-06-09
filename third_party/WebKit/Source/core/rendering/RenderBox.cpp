@@ -1631,7 +1631,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     }
 
     // FIXME: LayoutState should be enabled for other paint invalidation containers than the RenderView. crbug.com/363834
-    if (establishesNewPaintInvalidationContainer) {
+    if (establishesNewPaintInvalidationContainer && !isRenderView()) {
         LayoutStateDisabler disabler(*this);
         RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
     } else {
