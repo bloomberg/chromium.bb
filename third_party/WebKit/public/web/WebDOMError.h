@@ -66,10 +66,6 @@ public:
     BLINK_EXPORT WebString name() const;
     BLINK_EXPORT WebString message() const;
 
-    // FIXME: toV8Value() will be removed after modifying
-    // //src/extensions/renderer/file_system_natives.cc to use
-    // toV8Value(v8::Handle<v8::Obejct>, v8::Isolate*).
-    BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
     BLINK_EXPORT v8::Handle<v8::Value> toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION

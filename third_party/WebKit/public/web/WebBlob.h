@@ -75,8 +75,6 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
     BLINK_EXPORT v8::Handle<v8::Value>  toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    // FIXME: remove the following toV8Value after fixing chromium code.
-    BLINK_EXPORT v8::Handle<v8::Value>  toV8Value();
 
 #if BLINK_IMPLEMENTATION
     explicit WebBlob(const PassRefPtrWillBeRawPtr<WebCore::Blob>&);

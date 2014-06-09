@@ -90,11 +90,6 @@ v8::Handle<v8::Value> WebBlob::toV8Value(v8::Handle<v8::Object> creationContext,
     return toV8(m_private.get(), creationContext, isolate);
 }
 
-v8::Handle<v8::Value> WebBlob::toV8Value()
-{
-    return toV8Value(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
-}
-
 WebBlob::WebBlob(const PassRefPtrWillBeRawPtr<WebCore::Blob>& blob)
     : m_private(blob)
 {

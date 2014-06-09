@@ -118,29 +118,11 @@ WebURL WebDOMFileSystem::rootURL() const
     return m_private->rootURL();
 }
 
-// FIXME: should be removed after fixing chrome side code.
-v8::Handle<v8::Value> WebDOMFileSystem::toV8Value()
-{
-    if (!m_private.get())
-        return v8::Handle<v8::Value>();
-    return toV8Value(v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
-}
-
 v8::Handle<v8::Value> WebDOMFileSystem::toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!m_private.get())
         return v8::Handle<v8::Value>();
     return toV8(m_private.get(), creationContext, isolate);
-}
-
-// FIXME: should be removed after fixing chrome side code.
-v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
-    const WebString& path,
-    EntryType entryType)
-{
-    if (!m_private.get())
-        return v8::Handle<v8::Value>();
-    return createV8Entry(path, entryType, v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
 }
 
 v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
