@@ -43,6 +43,15 @@
 
 namespace base {
 
+// Launches a child process using |command_line|. If the child process is still
+// running after |timeout|, it is terminated and |*was_timeout| is set to true.
+// Returns exit code of the process.
+int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
+                                      const LaunchOptions& options,
+                                      bool use_job_objects,
+                                      base::TimeDelta timeout,
+                                      bool* was_timeout);
+
 // See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ .
 using ::operator<<;
 
@@ -209,6 +218,7 @@ void RunCallback(
 void DoLaunchChildTestProcess(
     const CommandLine& command_line,
     base::TimeDelta timeout,
+    bool use_job_objects,
     bool redirect_stdio,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const TestLauncher::LaunchChildGTestProcessCallback& callback) {
@@ -260,7 +270,7 @@ void DoLaunchChildTestProcess(
 
   bool was_timeout = false;
   int exit_code = LaunchChildTestProcessWithOptions(
-      command_line, options, timeout, &was_timeout);
+      command_line, options, use_job_objects, timeout, &was_timeout);
 
   if (redirect_stdio) {
 #if defined(OS_WIN)
@@ -342,7 +352,7 @@ TestLauncher::~TestLauncher() {
     worker_pool_owner_->pool()->Shutdown();
 }
 
-bool TestLauncher::Run(int argc, char** argv) {
+bool TestLauncher::Run() {
   if (!Init())
     return false;
 
@@ -394,6 +404,7 @@ void TestLauncher::LaunchChildGTestProcess(
     const CommandLine& command_line,
     const std::string& wrapper,
     base::TimeDelta timeout,
+    bool use_job_objects,
     const LaunchChildGTestProcessCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -411,6 +422,7 @@ void TestLauncher::LaunchChildGTestProcess(
       Bind(&DoLaunchChildTestProcess,
            new_command_line,
            timeout,
+           use_job_objects,
            redirect_stdio,
            MessageLoopProxy::current(),
            Bind(&TestLauncher::OnLaunchTestProcessFinished,
@@ -944,27 +956,6 @@ std::string GetTestOutputSnippet(const TestResult& result,
   return snippet;
 }
 
-int LaunchChildGTestProcess(const CommandLine& command_line,
-                            const std::string& wrapper,
-                            base::TimeDelta timeout,
-                            bool* was_timeout) {
-  LaunchOptions options;
-
-#if defined(OS_POSIX)
-  // On POSIX, we launch the test in a new process group with pgid equal to
-  // its pid. Any child processes that the test may create will inherit the
-  // same pgid. This way, if the test is abruptly terminated, we can clean up
-  // any orphaned child processes it may have left behind.
-  options.new_process_group = true;
-#endif
-
-  return LaunchChildTestProcessWithOptions(
-      PrepareCommandLineForGTest(command_line, wrapper),
-      options,
-      timeout,
-      was_timeout);
-}
-
 CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
                                        const std::string& wrapper) {
   CommandLine new_command_line(command_line.GetProgram());
@@ -994,8 +985,10 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   return new_command_line;
 }
 
+// TODO(phajdan.jr): Move to anonymous namespace.
 int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
                                       const LaunchOptions& options,
+                                      bool use_job_objects,
                                       base::TimeDelta timeout,
                                       bool* was_timeout) {
 #if defined(OS_POSIX)
@@ -1008,23 +1001,26 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #if defined(OS_WIN)
   DCHECK(!new_options.job_handle);
 
-  win::ScopedHandle job_handle(CreateJobObject(NULL, NULL));
-  if (!job_handle.IsValid()) {
-    LOG(ERROR) << "Could not create JobObject.";
-    return -1;
-  }
+  win::ScopedHandle job_handle;
+  if (use_job_objects) {
+    job_handle.Set(CreateJobObject(NULL, NULL));
+    if (!job_handle.IsValid()) {
+      LOG(ERROR) << "Could not create JobObject.";
+      return -1;
+    }
 
-  // Allow break-away from job since sandbox and few other places rely on it
-  // on Windows versions prior to Windows 8 (which supports nested jobs).
-  // TODO(phajdan.jr): Do not allow break-away on Windows 8.
-  if (!SetJobObjectLimitFlags(job_handle.Get(),
-                              JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
-                              JOB_OBJECT_LIMIT_BREAKAWAY_OK)) {
-    LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
-    return -1;
-  }
+    // Allow break-away from job since sandbox and few other places rely on it
+    // on Windows versions prior to Windows 8 (which supports nested jobs).
+    // TODO(phajdan.jr): Do not allow break-away on Windows 8.
+    if (!SetJobObjectLimitFlags(job_handle.Get(),
+                                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
+                                JOB_OBJECT_LIMIT_BREAKAWAY_OK)) {
+      LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
+      return -1;
+    }
 
-  new_options.job_handle = job_handle.Get();
+    new_options.job_handle = job_handle.Get();
+  }
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX)

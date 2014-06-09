@@ -102,8 +102,9 @@ CommandLine GetCommandLineForChildGTestProcess(
 
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
  public:
-  explicit UnitTestLauncherDelegate(size_t batch_limit)
-      : batch_limit_(batch_limit) {
+  explicit UnitTestLauncherDelegate(size_t batch_limit, bool use_job_objects)
+      : batch_limit_(batch_limit),
+        use_job_objects_(use_job_objects) {
   }
 
   virtual ~UnitTestLauncherDelegate() {
@@ -186,6 +187,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         cmd_line,
         std::string(),
         TestTimeouts::test_launcher_timeout(),
+        use_job_objects_,
         Bind(&UnitTestLauncherDelegate::SerialGTestCallback,
              Unretained(this),
              callback_state,
@@ -227,6 +229,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         cmd_line,
         std::string(),
         timeout,
+        use_job_objects_,
         Bind(&UnitTestLauncherDelegate::GTestCallback,
              Unretained(this),
              callback_state));
@@ -436,6 +439,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
+
+  // Determines whether we use job objects on Windows.
+  bool use_job_objects_;
 };
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
@@ -452,12 +458,10 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
   return true;
 }
 
-int LaunchUnitTestsInternal(int argc,
-                            char** argv,
-                            const RunTestSuiteCallback& run_test_suite,
-                            int default_jobs) {
-  CommandLine::Init(argc, argv);
-
+int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
+                            int default_jobs,
+                            bool use_job_objects,
+                            const Closure& gtest_init) {
 #if defined(OS_ANDROID)
   // We can't easily fork on Android, just run the test suite directly.
   return run_test_suite.Run();
@@ -502,7 +506,7 @@ int LaunchUnitTestsInternal(int argc,
 
   base::TimeTicks start_time(base::TimeTicks::Now());
 
-  testing::InitGoogleTest(&argc, argv);
+  gtest_init.Run();
   TestTimeouts::Initialize();
 
   int batch_limit = kDefaultTestBatchLimit;
@@ -518,9 +522,9 @@ int LaunchUnitTestsInternal(int argc,
 
   MessageLoopForIO message_loop;
 
-  UnitTestLauncherDelegate delegate(batch_limit);
+  UnitTestLauncherDelegate delegate(batch_limit, use_job_objects);
   base::TestLauncher launcher(&delegate, default_jobs);
-  bool success = launcher.Run(argc, argv);
+  bool success = launcher.Run();
 
   fprintf(stdout,
           "Tests took %" PRId64 " seconds.\n",
@@ -530,19 +534,53 @@ int LaunchUnitTestsInternal(int argc,
   return (success ? 0 : 1);
 }
 
+void InitGoogleTestChar(int* argc, char** argv) {
+  testing::InitGoogleTest(argc, argv);
+}
+
+#if defined(OS_WIN)
+void InitGoogleTestWChar(int* argc, wchar_t** argv) {
+  testing::InitGoogleTest(argc, argv);
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace
 
 int LaunchUnitTests(int argc,
                     char** argv,
                     const RunTestSuiteCallback& run_test_suite) {
+  CommandLine::Init(argc, argv);
   return LaunchUnitTestsInternal(
-      argc, argv, run_test_suite, SysInfo::NumberOfProcessors());
+      run_test_suite,
+      SysInfo::NumberOfProcessors(),
+      true,
+      Bind(&InitGoogleTestChar, &argc, argv));
 }
 
 int LaunchUnitTestsSerially(int argc,
                             char** argv,
                             const RunTestSuiteCallback& run_test_suite) {
-  return LaunchUnitTestsInternal(argc, argv, run_test_suite, 1);
+  CommandLine::Init(argc, argv);
+  return LaunchUnitTestsInternal(
+      run_test_suite,
+      1,
+      true,
+      Bind(&InitGoogleTestChar, &argc, argv));
 }
+
+#if defined(OS_WIN)
+int LaunchUnitTests(int argc,
+                    wchar_t** argv,
+                    bool use_job_objects,
+                    const RunTestSuiteCallback& run_test_suite) {
+  // Windows CommandLine::Init ignores argv anyway.
+  CommandLine::Init(argc, NULL);
+  return LaunchUnitTestsInternal(
+      run_test_suite,
+      SysInfo::NumberOfProcessors(),
+      use_job_objects,
+      Bind(&InitGoogleTestWChar, &argc, argv));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace base

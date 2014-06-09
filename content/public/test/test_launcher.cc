@@ -345,6 +345,7 @@ void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
       new_cmd_line,
       browser_wrapper ? browser_wrapper : std::string(),
       TestTimeouts::action_max_timeout(),
+      true,
       base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
                  base::Unretained(this),
                  test_launcher,
@@ -493,8 +494,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
   base::TestLauncher launcher(&delegate, default_jobs);
-  bool success = launcher.Run(argc, argv);
-  return (success ? 0 : 1);
+  return (launcher.Run() ? 0 : 1);
 }
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
