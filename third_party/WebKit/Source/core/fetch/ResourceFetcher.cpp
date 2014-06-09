@@ -701,10 +701,10 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         memoryCache()->remove(resource.get());
         // Fall through
     case Load:
-        resource = loadResource(type, request, request.charset());
+        resource = createResourceForLoading(type, request, request.charset());
         break;
     case Revalidate:
-        resource = revalidateResource(request, resource.get());
+        resource = createResourceForRevalidation(request, resource.get());
         break;
     case Use:
         memoryCache()->updateForAccess(resource.get());
@@ -839,7 +839,7 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
     context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
-ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& request, Resource* resource)
+ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const FetchRequest& request, Resource* resource)
 {
     ASSERT(resource);
     ASSERT(memoryCache()->contains(resource));
@@ -857,15 +857,15 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
         ASSERT(context().cachePolicy(document()) != CachePolicyReload);
         if (context().cachePolicy(document()) == CachePolicyRevalidate)
             revalidatingRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
-        if (!lastModified.isEmpty())
-            revalidatingRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
-        if (!eTag.isEmpty())
-            revalidatingRequest.setHTTPHeaderField("If-None-Match", eTag);
     }
+    if (!lastModified.isEmpty())
+        revalidatingRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
+    if (!eTag.isEmpty())
+        revalidatingRequest.setHTTPHeaderField("If-None-Match", eTag);
 
     ResourcePtr<Resource> newResource = createResource(resource->type(), revalidatingRequest, resource->encoding());
-
     WTF_LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
+
     newResource->setResourceToRevalidate(resource);
 
     memoryCache()->remove(resource);
@@ -873,14 +873,14 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
     return newResource;
 }
 
-ResourcePtr<Resource> ResourceFetcher::loadResource(Resource::Type type, FetchRequest& request, const String& charset)
+ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(Resource::Type type, FetchRequest& request, const String& charset)
 {
     ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url()));
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
     addAdditionalRequestHeaders(request.mutableResourceRequest(), type);
-    ResourcePtr<Resource> resource = createResource(type, request.mutableResourceRequest(), charset);
+    ResourcePtr<Resource> resource = createResource(type, request.resourceRequest(), charset);
 
     memoryCache()->add(resource.get());
     return resource;

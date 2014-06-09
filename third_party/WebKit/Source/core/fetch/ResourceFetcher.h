@@ -174,8 +174,8 @@ private:
     bool shouldLoadNewResource(Resource::Type) const;
 
     ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
-    ResourcePtr<Resource> revalidateResource(const FetchRequest&, Resource*);
-    ResourcePtr<Resource> loadResource(Resource::Type, FetchRequest&, const String& charset);
+    ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*);
+    ResourcePtr<Resource> createResourceForLoading(Resource::Type, FetchRequest&, const String& charset);
     void preCacheDataURIImage(const FetchRequest&);
     void preCacheSubstituteDataForMainResource(const FetchRequest&, const SubstituteData&);
     void storeResourceTimingInitiatorInformation(Resource*);
