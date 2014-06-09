@@ -110,26 +110,39 @@ class BotTestExpectationsFactory(object):
 
     def _results_json_for_port(self, port_name, builder_category):
         if builder_category == 'deps':
-            builder_name = builders.deps_builder_name_for_port_name(port_name)
+            builder = builders.deps_builder_name_for_port_name(port_name)
         else:
-            builder_name = builders.builder_name_for_port_name(port_name)
+            builder = builders.builder_name_for_port_name(port_name)
 
-        if not builder_name:
+        if not builder:
             return None
-        results_url = self.RESULTS_URL_PREFIX + urllib.quote(builder_name)
+        return self._results_json_for_builder(builder)
+
+    def _results_json_for_builder(self, builder):
+        results_url = self.RESULTS_URL_PREFIX + urllib.quote(builder)
         try:
             _log.debug('Fetching flakiness data from appengine.')
-            return ResultsJSON(builder_name, json.load(urllib2.urlopen(results_url)))
+            return ResultsJSON(builder, json.load(urllib2.urlopen(results_url)))
         except urllib2.URLError as error:
             _log.warning('Could not retrieve flakiness data from the bot.  url: %s', results_url)
             _log.warning(error)
 
     def expectations_for_port(self, port_name, builder_category='layout'):
+        # FIXME: This only grabs release builder's flakiness data. If we're running debug,
+        # when we should grab the debug builder's data.
+        # FIXME: What should this do if there is no debug builder for a port, e.g. we have
+        # no debug XP builder? Should it use the release bot or another Windows debug bot?
+        # At the very least, it should log an error.
         results_json = self._results_json_for_port(port_name, builder_category)
         if not results_json:
             return None
         return BotTestExpectations(results_json)
 
+    def expectations_for_builder(self, builder):
+        results_json = self._results_json_for_builder(builder)
+        if not results_json:
+            return None
+        return BotTestExpectations(results_json)
 
 class BotTestExpectations(object):
     # FIXME: Get this from the json instead of hard-coding it.

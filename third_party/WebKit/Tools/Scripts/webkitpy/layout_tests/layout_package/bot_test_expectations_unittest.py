@@ -30,6 +30,40 @@ import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.layout_tests.layout_package import bot_test_expectations
 from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.port import builders
+
+
+class BotTestExpectationsFactoryTest(unittest.TestCase):
+    def fake_results_json_for_builder(self, builder):
+        return bot_test_expectations.ResultsJSON(builder, 'Dummy content')
+
+    def test_expectations_for_builder(self):
+        factory = bot_test_expectations.BotTestExpectationsFactory()
+        factory._results_json_for_builder = self.fake_results_json_for_builder
+
+        old_builders = builders._exact_matches
+        builders._exact_matches = {
+            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
+        }
+
+        try:
+            self.assertIsNotNone(factory.expectations_for_builder('Dummy builder name'))
+        finally:
+            builders._exact_matches = old_builders
+
+    def test_expectations_for_port(self):
+        factory = bot_test_expectations.BotTestExpectationsFactory()
+        factory._results_json_for_builder = self.fake_results_json_for_builder
+
+        old_builders = builders._exact_matches
+        builders._exact_matches = {
+            "Dummy builder name": {"port_name": "dummy-port", "specifiers": []},
+        }
+
+        try:
+            self.assertIsNotNone(factory.expectations_for_port('dummy-port'))
+        finally:
+            builders._exact_matches = old_builders
 
 
 class BotTestExpectationsTest(unittest.TestCase):

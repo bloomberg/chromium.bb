@@ -31,6 +31,7 @@ import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
+from webkitpy.layout_tests.port import builders
 from webkitpy.common.net import sheriff_calendar
 
 
@@ -56,10 +57,10 @@ class FlakyTests(AbstractDeclarativeCommand):
         # This is sorta silly, but allows for unit testing:
         self.expectations_factory = BotTestExpectationsFactory
 
-    def _collect_expectation_lines(self, port_names, factory):
+    def _collect_expectation_lines(self, builder_names, factory):
         model = TestExpectationsModel()
-        for port_name in port_names:
-            expectations = factory.expectations_for_port(port_name)
+        for builder_name in builder_names:
+            expectations = factory.expectations_for_builder(builder_name)
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):
                 model.add_expectation_line(line)
         # FIXME: We need an official API to get all the test names or all test lines.
@@ -102,11 +103,11 @@ R=%s
         tool.executive.run_and_throw_if_fail(git_cmd)
 
     def execute(self, options, args, tool):
-        port = tool.port_factory.get()
-        port_names = tool.port_factory.all_port_names()
         factory = self.expectations_factory()
-        lines = self._collect_expectation_lines(port_names, factory)
+        lines = self._collect_expectation_lines(builders.all_builder_names(), factory)
         lines.sort(key=lambda line: line.path)
+
+        port = tool.port_factory.get()
         # Skip any tests which are mentioned in the dashboard but not in our checkout:
         fs = tool.filesystem
         lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)

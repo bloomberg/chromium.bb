@@ -14,7 +14,7 @@ class FakeBotTestExpectations(object):
 
 
 class FakeBotTestExpectationsFactory(object):
-    def expectations_for_port(self, port_name):
+    def expectations_for_builder(self, builder):
         return FakeBotTestExpectations()
 
 
