@@ -20,6 +20,7 @@ import logging
 import optparse
 import os
 import pipes
+import platform
 import psutil
 import platform
 import signal
@@ -253,6 +254,14 @@ class Desktop:
         LOG_FILE_ENV_VAR]:
       if os.environ.has_key(key):
         self.child_env[key] = os.environ[key]
+
+    # Ensure that the software-rendering GL drivers are loaded by the desktop
+    # session, instead of any hardware GL drivers installed on the system.
+    self.child_env["LD_LIBRARY_PATH"] = (
+        "/usr/lib/%(arch)s-linux-gnu/mesa:"
+        "/usr/lib/%(arch)s-linux-gnu/dri:"
+        "/usr/lib/%(arch)s-linux-gnu/gallium-pipe" %
+        { "arch": platform.machine() })
 
     # Read from /etc/environment if it exists, as it is a standard place to
     # store system-wide environment settings. During a normal login, this would
