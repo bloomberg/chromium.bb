@@ -1034,8 +1034,7 @@ void FrameView::invalidateTree(RenderObject* root)
     // we continue to track paint invalidation rects until this function is called.
     ASSERT(!m_nestedLayoutCount);
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "FrameView::invalidateTree",
-        "root", TRACE_STR_COPY(root->debugName().ascii().data()));
+    TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", TRACE_STR_COPY(root->debugName().ascii().data()));
 
     // FIXME: really, we're in the paint invalidation phase here, and the compositing queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
