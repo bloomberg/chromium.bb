@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '034ebed9f16ce0cafb7e8746884cc910b6e097d0'
+BIONIC_VERSION = '3630361c9dae328dd9f17cb11dabdacb11ad241f'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -235,7 +235,7 @@ def CreateBasicToolchain():
     # Replace items in the spec file
     text = ReplaceText(text, [{
       '-lgcc': '-lgcc --as-needed %{!static: -lgcc_s} --no-as-needed %{!shared: -lgcc_eh}',
-      '--hash-style=gnu': '--hash-style=sysv',
+      '--hash-style=gnu': '--hash-style=sysv %{!static: %{!shared: -Ttext-segment=0x100000}} ',
     }])
     open(specs, 'w').write(text)
 
