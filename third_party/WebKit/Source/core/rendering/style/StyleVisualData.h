@@ -43,7 +43,6 @@ public:
         return clip == o.clip
             && hasClip == o.hasClip
             && textDecoration == o.textDecoration
-            && m_textAutosizingMultiplier == o.m_textAutosizingMultiplier
             && m_zoom == o.m_zoom;
     }
     bool operator!=(const StyleVisualData& o) const { return !(*this == o); }
@@ -52,7 +51,6 @@ public:
     bool hasClip : 1;
     unsigned textDecoration : TextDecorationBits; // Text decorations defined *only* by this element.
 
-    float m_textAutosizingMultiplier;
     float m_zoom;
 
 private:

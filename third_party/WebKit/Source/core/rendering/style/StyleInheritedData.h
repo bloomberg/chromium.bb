@@ -56,6 +56,7 @@ public:
     Font font;
     Color color;
     Color visitedLinkColor;
+    float textAutosizingMultiplier;
 
 private:
     StyleInheritedData();

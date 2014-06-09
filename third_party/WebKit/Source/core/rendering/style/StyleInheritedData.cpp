@@ -32,6 +32,7 @@ StyleInheritedData::StyleInheritedData()
     , line_height(RenderStyle::initialLineHeight())
     , color(RenderStyle::initialColor())
     , visitedLinkColor(RenderStyle::initialColor())
+    , textAutosizingMultiplier(1)
 {
 }
 
@@ -47,6 +48,7 @@ StyleInheritedData::StyleInheritedData(const StyleInheritedData& o)
     , font(o.font)
     , color(o.color)
     , visitedLinkColor(o.visitedLinkColor)
+    , textAutosizingMultiplier(o.textAutosizingMultiplier)
 {
 }
 
@@ -57,6 +59,7 @@ bool StyleInheritedData::operator==(const StyleInheritedData& o) const
         && color == o.color
         && visitedLinkColor == o.visitedLinkColor
         && horizontal_border_spacing == o.horizontal_border_spacing
+        && textAutosizingMultiplier == o.textAutosizingMultiplier
         && vertical_border_spacing == o.vertical_border_spacing;
 }
 

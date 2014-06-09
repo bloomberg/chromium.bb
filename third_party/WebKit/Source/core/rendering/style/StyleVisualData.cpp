@@ -29,7 +29,6 @@ namespace WebCore {
 StyleVisualData::StyleVisualData()
     : hasClip(false)
     , textDecoration(RenderStyle::initialTextDecoration())
-    , m_textAutosizingMultiplier(1)
     , m_zoom(RenderStyle::initialZoom())
 {
 }
@@ -43,7 +42,6 @@ StyleVisualData::StyleVisualData(const StyleVisualData& o)
     , clip(o.clip)
     , hasClip(o.hasClip)
     , textDecoration(o.textDecoration)
-    , m_textAutosizingMultiplier(o.m_textAutosizingMultiplier)
     , m_zoom(RenderStyle::initialZoom())
 {
 }

@@ -546,7 +546,7 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
             return true;
     }
 
-    if (visual->m_textAutosizingMultiplier != other.visual->m_textAutosizingMultiplier)
+    if (inherited->textAutosizingMultiplier != other.inherited->textAutosizingMultiplier)
         return true;
 
     if (inherited.get() != other.inherited.get()) {

@@ -47,6 +47,7 @@
 #include "core/rendering/style/StyleFlexibleBoxData.h"
 #include "core/rendering/style/StyleGridData.h"
 #include "core/rendering/style/StyleGridItemData.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include "core/rendering/style/StyleMarqueeData.h"
 #include "core/rendering/style/StyleMultiColData.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
@@ -573,7 +574,7 @@ public:
     int fontSize() const;
     FontWeight fontWeight() const;
 
-    float textAutosizingMultiplier() const { return visual->m_textAutosizingMultiplier; }
+    float textAutosizingMultiplier() const { return inherited->textAutosizingMultiplier; }
 
     const Length& textIndent() const { return rareInheritedData->indent; }
     TextIndentLine textIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
@@ -1102,7 +1103,7 @@ public:
 
     void setTextAutosizingMultiplier(float v)
     {
-        SET_VAR(visual, m_textAutosizingMultiplier, v);
+        SET_VAR(inherited, textAutosizingMultiplier, v);
         setFontSize(fontDescription().specifiedSize());
     }
 

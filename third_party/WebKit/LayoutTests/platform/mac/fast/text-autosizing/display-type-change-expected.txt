@@ -1,0 +1,35 @@
+layer at (0,0) size 800x813
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x810
+  RenderBlock {HTML} at (0,0) size 800x810
+    RenderBody {BODY} at (0,0) size 800x810
+      RenderBlock {SPAN} at (0,0) size 200x810
+        RenderBlock {DIV} at (0,0) size 200x810
+          RenderText {#text} at (0,-3) size 200x816
+            text run at (0,-3) width 199: "This test verifies"
+            text run at (0,27) width 138: "that display"
+            text run at (0,57) width 96: "changes"
+            text run at (0,87) width 101: "properly"
+            text run at (0,117) width 160: "invalidate the"
+            text run at (0,147) width 167: "text autosizer."
+            text run at (0,177) width 187: "This test passes"
+            text run at (0,207) width 195: "if this text is not"
+            text run at (0,237) width 142: "overlapping"
+            text run at (0,267) width 128: "with itself."
+            text run at (0,297) width 160: "Lorem ipsum"
+            text run at (0,327) width 172: "dolor sit amet,"
+            text run at (0,357) width 135: "consectetur"
+            text run at (0,387) width 183: "adipisicing elit,"
+            text run at (0,417) width 187: "sed do eiusmod"
+            text run at (0,447) width 84: "tempor"
+            text run at (0,477) width 151: "incididunt ut"
+            text run at (0,507) width 187: "labore et dolore"
+            text run at (0,537) width 167: "magna aliqua."
+            text run at (0,567) width 133: "Ut enim ad"
+            text run at (0,597) width 180: "minim veniam,"
+            text run at (0,627) width 148: "quis nostrud"
+            text run at (0,657) width 139: "exercitation"
+            text run at (0,687) width 184: "ullamco laboris"
+            text run at (0,717) width 200: "nisi ut aliquip ex"
+            text run at (0,747) width 153: "ea commodo"
+            text run at (0,777) width 127: "consequat."
