@@ -29,6 +29,9 @@ class TestSuite {
   typedef bool (*TestMatch)(const testing::TestInfo&);
 
   TestSuite(int argc, char** argv);
+#if defined(OS_WIN)
+  TestSuite(int argc, wchar_t** argv);
+#endif  // defined(OS_WIN)
   virtual ~TestSuite();
 
   // Returns true if the test is marked as "MAYBE_".
@@ -69,8 +72,13 @@ class TestSuite {
   scoped_ptr<base::AtExitManager> at_exit_manager_;
 
  private:
+  void InitializeFromCommandLine(int argc, char** argv);
+#if defined(OS_WIN)
+  void InitializeFromCommandLine(int argc, wchar_t** argv);
+#endif  // defined(OS_WIN)
+
   // Basic initialization for the test suite happens here.
-  void PreInitialize(int argc, char** argv, bool create_at_exit_manager);
+  void PreInitialize(bool create_at_exit_manager);
 
   bool initialized_command_line_;
 
