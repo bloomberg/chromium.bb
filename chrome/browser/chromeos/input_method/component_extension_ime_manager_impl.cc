@@ -36,11 +36,6 @@ struct WhitelistedComponentExtensionIME {
     extension_ime_util::kHangulExtensionId,
     "/usr/share/chromeos-assets/input_methods/hangul",
   },
-  {
-    // Official Google Japanese Input.
-    extension_ime_util::kMozcExtensionId,
-    "/usr/share/chromeos-assets/input_methods/nacl_mozc",
-  },
 #if defined(OFFICIAL_BUILD)
   {
     // Official Google XKB Input.
@@ -82,6 +77,11 @@ struct WhitelistedComponentExtensionIME {
     // Open-sourced Cangjie Chinese Input Method.
     extension_ime_util::kChineseCangjieExtensionId,
     "/usr/share/chromeos-assets/input_methods/cangjie",
+  },
+  {
+    // Japanese Mozc Input.
+    extension_ime_util::kMozcExtensionId,
+    "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
 #endif
   {
