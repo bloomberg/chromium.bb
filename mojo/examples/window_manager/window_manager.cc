@@ -17,7 +17,7 @@
 #undef CreateWindow
 #endif
 
-using mojo::view_manager::TransportNodeId;
+using mojo::view_manager::Id;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
@@ -38,7 +38,7 @@ class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
 
  private:
   // Overridden from IWindowManager:
-  virtual void CloseWindow(TransportNodeId node_id) OVERRIDE;
+  virtual void CloseWindow(Id node_id) OVERRIDE;
 
   WindowManager* window_manager_;
 
@@ -52,7 +52,7 @@ class WindowManager : public Application,
   WindowManager() : view_manager_(NULL) {}
   virtual ~WindowManager() {}
 
-  void CloseWindow(TransportNodeId node_id) {
+  void CloseWindow(Id node_id) {
     ViewTreeNode* node = view_manager_->GetNodeById(node_id);
     DCHECK(node);
     node->Destroy();
@@ -109,12 +109,12 @@ class WindowManager : public Application,
   }
 
   ViewManager* view_manager_;
-  TransportNodeId parent_node_id_;
+  Id parent_node_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
 
-void WindowManagerConnection::CloseWindow(TransportNodeId node_id) {
+void WindowManagerConnection::CloseWindow(Id node_id) {
   window_manager_->CloseWindow(node_id);
 }
 

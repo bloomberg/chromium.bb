@@ -56,8 +56,8 @@ RootNodeManager::~RootNodeManager() {
   DCHECK(connection_map_.empty());
 }
 
-TransportConnectionId RootNodeManager::GetAndAdvanceNextConnectionId() {
-  const TransportConnectionId id = next_connection_id_++;
+ConnectionSpecificId RootNodeManager::GetAndAdvanceNextConnectionId() {
+  const ConnectionSpecificId id = next_connection_id_++;
   DCHECK_LT(id, next_connection_id_);
   return id;
 }
@@ -80,19 +80,19 @@ void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
 
 void RootNodeManager::InitialConnect(const std::string& url) {
   CHECK(connection_map_.empty());
-  Array<TransportNodeId> roots(0);
+  Array<Id> roots(0);
   ConnectImpl(kRootConnection, String::From(url), roots);
 }
 
-void RootNodeManager::Connect(TransportConnectionId creator_id,
+void RootNodeManager::Connect(ConnectionSpecificId creator_id,
                               const String& url,
-                              const Array<TransportNodeId>& node_ids) {
+                              const Array<Id>& node_ids) {
   CHECK_GT(node_ids.size(), 0u);
   ConnectImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
 }
 
 ViewManagerConnection* RootNodeManager::GetConnection(
-    TransportConnectionId connection_id) {
+    ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
   return i == connection_map_.end() ? NULL : i->second;
 }
@@ -109,18 +109,18 @@ View* RootNodeManager::GetView(const ViewId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
 
-void RootNodeManager::OnConnectionMessagedClient(TransportConnectionId id) {
+void RootNodeManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
   if (current_change_)
     current_change_->MarkConnectionAsMessaged(id);
 }
 
 bool RootNodeManager::DidConnectionMessageClient(
-    TransportConnectionId id) const {
+    ConnectionSpecificId id) const {
   return current_change_ && current_change_->DidMessageConnection(id);
 }
 
 ViewManagerConnection* RootNodeManager::GetConnectionByCreator(
-    TransportConnectionId creator_id,
+    ConnectionSpecificId creator_id,
     const std::string& url) const {
   for (ConnectionMap::const_iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
@@ -191,9 +191,9 @@ void RootNodeManager::FinishChange() {
 }
 
 ViewManagerConnection* RootNodeManager::ConnectImpl(
-    const TransportConnectionId creator_id,
+    const ConnectionSpecificId creator_id,
     const String& url,
-    const Array<TransportNodeId>& node_ids) {
+    const Array<Id>& node_ids) {
   MessagePipe pipe;
   service_provider_->ConnectToService(
       url,

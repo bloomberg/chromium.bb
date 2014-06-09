@@ -34,7 +34,7 @@ class ViewTreeNode {
   void Destroy();
 
   // Configuration.
-  TransportNodeId id() const { return id_; }
+  Id id() const { return id_; }
 
   // Geometric disposition.
   const gfx::Rect& bounds() { return bounds_; }
@@ -54,7 +54,7 @@ class ViewTreeNode {
 
   bool Contains(ViewTreeNode* child) const;
 
-  ViewTreeNode* GetChildById(TransportNodeId id);
+  ViewTreeNode* GetChildById(Id id);
 
   // View.
   void SetActiveView(View* view);
@@ -80,7 +80,7 @@ class ViewTreeNode {
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
 
   ViewManager* manager_;
-  TransportNodeId id_;
+  Id id_;
   ViewTreeNode* parent_;
   Children children_;
 

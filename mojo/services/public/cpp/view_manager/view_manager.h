@@ -34,16 +34,16 @@ class ViewManager {
 
   const std::vector<ViewTreeNode*>& roots() { return roots_; }
 
-  ViewTreeNode* GetNodeById(TransportNodeId id);
-  View* GetViewById(TransportViewId id);
+  ViewTreeNode* GetNodeById(Id id);
+  View* GetViewById(Id id);
 
  private:
   friend class ViewManagerPrivate;
   friend class ViewManagerSynchronizer;
 
-  typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
-  typedef std::map<TransportViewId, View*> IdToViewMap;
-  typedef std::map<TransportConnectionId,
+  typedef std::map<Id, ViewTreeNode*> IdToNodeMap;
+  typedef std::map<Id, View*> IdToViewMap;
+  typedef std::map<ConnectionSpecificId,
                    ViewManagerSynchronizer*> SynchronizerMap;
 
   ViewManager(ViewManagerSynchronizer* synchronizer,

@@ -29,30 +29,30 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
   virtual ~ViewManagerSynchronizer();
 
   bool connected() const { return connected_; }
-  TransportConnectionId connection_id() const { return connection_id_; }
+  ConnectionSpecificId connection_id() const { return connection_id_; }
 
   // API exposed to the node/view implementations that pushes local changes to
   // the service.
-  TransportNodeId CreateViewTreeNode();
-  void DestroyViewTreeNode(TransportNodeId node_id);
+  Id CreateViewTreeNode();
+  void DestroyViewTreeNode(Id node_id);
 
-  TransportViewId CreateView();
-  void DestroyView(TransportViewId view_id);
+  Id CreateView();
+  void DestroyView(Id view_id);
 
   // These methods take TransportIds. For views owned by the current connection,
   // the connection id high word can be zero. In all cases, the TransportId 0x1
   // refers to the root node.
-  void AddChild(TransportNodeId child_id, TransportNodeId parent_id);
-  void RemoveChild(TransportNodeId child_id, TransportNodeId parent_id);
+  void AddChild(Id child_id, Id parent_id);
+  void RemoveChild(Id child_id, Id parent_id);
 
-  bool OwnsNode(TransportNodeId id) const;
-  bool OwnsView(TransportViewId id) const;
+  bool OwnsNode(Id id) const;
+  bool OwnsView(Id id) const;
 
-  void SetActiveView(TransportNodeId node_id, TransportViewId view_id);
-  void SetBounds(TransportNodeId node_id, const gfx::Rect& bounds);
-  void SetViewContents(TransportViewId view_id, const SkBitmap& contents);
+  void SetActiveView(Id node_id, Id view_id);
+  void SetBounds(Id node_id, const gfx::Rect& bounds);
+  void SetViewContents(Id view_id, const SkBitmap& contents);
 
-  void Embed(const String& url, TransportNodeId node_id);
+  void Embed(const String& url, Id node_id);
 
   void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
     changes_acked_callback_ = callback;
@@ -70,28 +70,25 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
 
   // Overridden from IViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
-      TransportConnectionId connection_id,
-      TransportChangeId next_server_change_id,
+      ConnectionSpecificId connection_id,
+      Id next_server_change_id,
       mojo::Array<INodePtr> nodes) OVERRIDE;
   virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE;
-  virtual void OnServerChangeIdAdvanced(
-      uint32_t next_server_change_id) OVERRIDE;
-  virtual void OnNodeBoundsChanged(uint32 node_id,
+  virtual void OnServerChangeIdAdvanced(Id next_server_change_id) OVERRIDE;
+  virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE;
-  virtual void OnNodeHierarchyChanged(
-      uint32 node_id,
-      uint32 new_parent_id,
-      uint32 old_parent_id,
-      TransportChangeId server_change_id,
-      mojo::Array<INodePtr> nodes) OVERRIDE;
-  virtual void OnNodeDeleted(TransportNodeId node_id,
-                             TransportChangeId server_change_id) OVERRIDE;
-  virtual void OnNodeViewReplaced(uint32_t node,
-                                  uint32_t new_view_id,
-                                  uint32_t old_view_id) OVERRIDE;
-  virtual void OnViewDeleted(uint32_t view_id) OVERRIDE;
-  virtual void OnViewInputEvent(uint32_t view,
+  virtual void OnNodeHierarchyChanged(Id node_id,
+                                      Id new_parent_id,
+                                      Id old_parent_id,
+                                      Id server_change_id,
+                                      mojo::Array<INodePtr> nodes) OVERRIDE;
+  virtual void OnNodeDeleted(Id node_id, Id server_change_id) OVERRIDE;
+  virtual void OnNodeViewReplaced(Id node,
+                                  Id new_view_id,
+                                  Id old_view_id) OVERRIDE;
+  virtual void OnViewDeleted(Id view_id) OVERRIDE;
+  virtual void OnViewInputEvent(Id view,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
 
@@ -107,9 +104,9 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
 
   scoped_ptr<ViewManager> view_manager_;
   bool connected_;
-  TransportConnectionId connection_id_;
-  uint16_t next_id_;
-  TransportChangeId next_server_change_id_;
+  ConnectionSpecificId connection_id_;
+  ConnectionSpecificId next_id_;
+  Id next_server_change_id_;
 
   Transactions pending_transactions_;
 

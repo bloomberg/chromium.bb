@@ -26,7 +26,7 @@ class View {
 
   void Destroy();
 
-  TransportViewId id() const { return id_; }
+  Id id() const { return id_; }
   ViewTreeNode* node() { return node_; }
 
   void AddObserver(ViewObserver* observer);
@@ -45,7 +45,7 @@ class View {
 
   void LocalDestroy();
 
-  TransportViewId id_;
+  Id id_;
   ViewTreeNode* node_;
   ViewManager* manager_;
 

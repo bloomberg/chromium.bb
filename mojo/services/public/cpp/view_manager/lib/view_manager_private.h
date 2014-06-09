@@ -29,11 +29,11 @@ class ViewManagerPrivate {
   void AddRoot(ViewTreeNode* root);
   void RemoveRoot(ViewTreeNode* root);
 
-  void AddNode(TransportNodeId node_id, ViewTreeNode* node);
-  void RemoveNode(TransportNodeId node_id);
+  void AddNode(Id node_id, ViewTreeNode* node);
+  void RemoveNode(Id node_id);
 
-  void AddView(TransportViewId view_id, View* view);
-  void RemoveView(TransportViewId view_id);
+  void AddView(Id view_id, View* view);
+  void RemoveView(Id view_id);
 
   // Returns true if the ViewManager's synchronizer is connected to the service.
   bool connected() { return manager_->synchronizer_->connected(); }

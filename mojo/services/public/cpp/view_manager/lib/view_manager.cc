@@ -41,12 +41,12 @@ void ViewManager::Create(Application* application,
   application->AddService<ViewManagerSynchronizer>(delegate);
 }
 
-ViewTreeNode* ViewManager::GetNodeById(TransportNodeId id) {
+ViewTreeNode* ViewManager::GetNodeById(Id id) {
   IdToNodeMap::const_iterator it = nodes_.find(id);
   return it != nodes_.end() ? it->second : NULL;
 }
 
-View* ViewManager::GetViewById(TransportViewId id) {
+View* ViewManager::GetViewById(Id id) {
   IdToViewMap::const_iterator it = views_.find(id);
   return it != views_.end() ? it->second : NULL;
 }

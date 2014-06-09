@@ -63,23 +63,23 @@ void ViewManagerPrivate::RemoveRoot(ViewTreeNode* root) {
   }
 }
 
-void ViewManagerPrivate::AddNode(TransportNodeId node_id, ViewTreeNode* node) {
+void ViewManagerPrivate::AddNode(Id node_id, ViewTreeNode* node) {
   DCHECK(!manager_->nodes_[node_id]);
   manager_->nodes_[node_id] = node;
 }
 
-void ViewManagerPrivate::RemoveNode(TransportNodeId node_id) {
+void ViewManagerPrivate::RemoveNode(Id node_id) {
   ViewManager::IdToNodeMap::iterator it = manager_->nodes_.find(node_id);
   if (it != manager_->nodes_.end())
     manager_->nodes_.erase(it);
 }
 
-void ViewManagerPrivate::AddView(TransportViewId view_id, View* view) {
+void ViewManagerPrivate::AddView(Id view_id, View* view) {
   DCHECK(!manager_->views_[view_id]);
   manager_->views_[view_id] = view;
 }
 
-void ViewManagerPrivate::RemoveView(TransportViewId view_id) {
+void ViewManagerPrivate::RemoveView(Id view_id) {
   ViewManager::IdToViewMap::iterator it = manager_->views_.find(view_id);
   if (it != manager_->views_.end())
     manager_->views_.erase(it);

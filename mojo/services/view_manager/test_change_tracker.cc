@@ -14,7 +14,7 @@ namespace mojo {
 namespace view_manager {
 namespace service {
 
-std::string NodeIdToString(TransportNodeId id) {
+std::string NodeIdToString(Id id) {
   return (id == 0) ? "null" :
       base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }
@@ -131,8 +131,8 @@ TestChangeTracker::~TestChangeTracker() {
 }
 
 void TestChangeTracker::OnViewManagerConnectionEstablished(
-    TransportConnectionId connection_id,
-    TransportChangeId next_server_change_id,
+    ConnectionSpecificId connection_id,
+    Id next_server_change_id,
     Array<INodePtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
@@ -149,15 +149,14 @@ void TestChangeTracker::OnRootsAdded(Array<INodePtr> nodes) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnServerChangeIdAdvanced(
-    TransportChangeId change_id) {
+void TestChangeTracker::OnServerChangeIdAdvanced(Id change_id) {
   Change change;
   change.type = CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED;
   change.change_id = change_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnNodeBoundsChanged(TransportNodeId node_id,
+void TestChangeTracker::OnNodeBoundsChanged(Id node_id,
                                             RectPtr old_bounds,
                                             RectPtr new_bounds) {
   Change change;
@@ -168,12 +167,11 @@ void TestChangeTracker::OnNodeBoundsChanged(TransportNodeId node_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnNodeHierarchyChanged(
-    TransportNodeId node_id,
-    TransportNodeId new_parent_id,
-    TransportNodeId old_parent_id,
-    TransportChangeId server_change_id,
-    Array<INodePtr> nodes) {
+void TestChangeTracker::OnNodeHierarchyChanged(Id node_id,
+                                               Id new_parent_id,
+                                               Id old_parent_id,
+                                               Id server_change_id,
+                                               Array<INodePtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.node_id = node_id;
@@ -184,9 +182,7 @@ void TestChangeTracker::OnNodeHierarchyChanged(
   AddChange(change);
 }
 
-void TestChangeTracker::OnNodeDeleted(
-    TransportNodeId node_id,
-    TransportChangeId server_change_id) {
+void TestChangeTracker::OnNodeDeleted(Id node_id, Id server_change_id) {
   Change change;
   change.type = CHANGE_TYPE_NODE_DELETED;
   change.node_id = node_id;
@@ -194,16 +190,16 @@ void TestChangeTracker::OnNodeDeleted(
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewDeleted(TransportViewId view_id) {
+void TestChangeTracker::OnViewDeleted(Id view_id) {
   Change change;
   change.type = CHANGE_TYPE_VIEW_DELETED;
   change.view_id = view_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnNodeViewReplaced(TransportNodeId node_id,
-                                           TransportViewId new_view_id,
-                                           TransportViewId old_view_id) {
+void TestChangeTracker::OnNodeViewReplaced(Id node_id,
+                                           Id new_view_id,
+                                           Id old_view_id) {
   Change change;
   change.type = CHANGE_TYPE_VIEW_REPLACED;
   change.node_id = node_id;
@@ -212,8 +208,7 @@ void TestChangeTracker::OnNodeViewReplaced(TransportNodeId node_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewInputEvent(TransportViewId view_id,
-                                         EventPtr event) {
+void TestChangeTracker::OnViewInputEvent(Id view_id, EventPtr event) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.view_id = view_id;

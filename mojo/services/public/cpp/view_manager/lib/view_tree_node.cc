@@ -247,7 +247,7 @@ bool ViewTreeNode::Contains(ViewTreeNode* child) const {
   return false;
 }
 
-ViewTreeNode* ViewTreeNode::GetChildById(TransportNodeId id) {
+ViewTreeNode* ViewTreeNode::GetChildById(Id id) {
   if (id == id_)
     return this;
   // TODO(beng): this could be improved depending on how we decide to own nodes.

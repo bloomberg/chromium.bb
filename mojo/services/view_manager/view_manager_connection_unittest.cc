@@ -85,7 +85,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   // The following functions are cover methods for IViewManager. They block
   // until the result is received.
-  bool CreateNode(TransportNodeId node_id) {
+  bool CreateNode(Id node_id) {
     changes_.clear();
     bool result = false;
     view_manager_->CreateNode(node_id,
@@ -94,9 +94,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool AddNode(TransportNodeId parent,
-               TransportNodeId child,
-               TransportChangeId server_change_id) {
+  bool AddNode(Id parent, Id child, Id server_change_id) {
     changes_.clear();
     bool result = false;
     view_manager_->AddNode(parent, child, server_change_id,
@@ -105,8 +103,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool RemoveNodeFromParent(TransportNodeId node_id,
-                            TransportChangeId server_change_id) {
+  bool RemoveNodeFromParent(Id node_id, Id server_change_id) {
     changes_.clear();
     bool result = false;
     view_manager_->RemoveNodeFromParent(node_id, server_change_id,
@@ -115,7 +112,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool SetView(TransportNodeId node_id, TransportViewId view_id) {
+  bool SetView(Id node_id, Id view_id) {
     changes_.clear();
     bool result = false;
     view_manager_->SetView(node_id, view_id,
@@ -124,7 +121,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool CreateView(TransportViewId view_id) {
+  bool CreateView(Id view_id) {
     changes_.clear();
     bool result = false;
     view_manager_->CreateView(view_id,
@@ -133,24 +130,24 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  void GetNodeTree(TransportNodeId node_id, std::vector<TestNode>* nodes) {
+  void GetNodeTree(Id node_id, std::vector<TestNode>* nodes) {
     changes_.clear();
     view_manager_->GetNodeTree(node_id,
                                base::Bind(&ViewManagerProxy::GotNodeTree,
                                           base::Unretained(this), nodes));
     RunMainLoop();
   }
-  bool Connect(const std::vector<TransportNodeId>& nodes) {
+  bool Connect(const std::vector<Id>& nodes) {
     changes_.clear();
     base::AutoReset<bool> auto_reset(&in_connect_, true);
     bool result = false;
-    view_manager_->Connect(kTestServiceURL, Array<TransportNodeId>::From(nodes),
+    view_manager_->Connect(kTestServiceURL, Array<Id>::From(nodes),
                            base::Bind(&ViewManagerProxy::GotResult,
                                       base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
-  bool DeleteNode(TransportNodeId node_id) {
+  bool DeleteNode(Id node_id) {
     changes_.clear();
     bool result = false;
     view_manager_->DeleteNode(node_id,
@@ -159,7 +156,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool DeleteView(TransportViewId view_id) {
+  bool DeleteView(Id view_id) {
     changes_.clear();
     bool result = false;
     view_manager_->DeleteView(view_id,
@@ -168,7 +165,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool SetNodeBounds(TransportNodeId node_id, const gfx::Rect& bounds) {
+  bool SetNodeBounds(Id node_id, const gfx::Rect& bounds) {
     changes_.clear();
     bool result = false;
     view_manager_->SetNodeBounds(node_id, Rect::From(bounds),
@@ -281,8 +278,8 @@ class TestViewManagerClientConnection
 
   // IViewMangerClient:
   virtual void OnViewManagerConnectionEstablished(
-      TransportConnectionId connection_id,
-      TransportChangeId next_server_change_id,
+      ConnectionSpecificId connection_id,
+      Id next_server_change_id,
       Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnViewManagerConnectionEstablished(
         connection_id, next_server_change_id, nodes.Pass());
@@ -291,36 +288,34 @@ class TestViewManagerClientConnection
     tracker_.OnRootsAdded(nodes.Pass());
   }
   virtual void OnServerChangeIdAdvanced(
-      TransportChangeId next_server_change_id) OVERRIDE {
+      Id next_server_change_id) OVERRIDE {
     tracker_.OnServerChangeIdAdvanced(next_server_change_id);
   }
-  virtual void OnNodeBoundsChanged(TransportNodeId node_id,
+  virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE {
     tracker_.OnNodeBoundsChanged(node_id, old_bounds.Pass(), new_bounds.Pass());
   }
-  virtual void OnNodeHierarchyChanged(
-      TransportNodeId node,
-      TransportNodeId new_parent,
-      TransportNodeId old_parent,
-      TransportChangeId server_change_id,
-      Array<INodePtr> nodes) OVERRIDE {
+  virtual void OnNodeHierarchyChanged(Id node,
+                                      Id new_parent,
+                                      Id old_parent,
+                                      Id server_change_id,
+                                      Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
                                     server_change_id, nodes.Pass());
   }
-  virtual void OnNodeDeleted(TransportNodeId node,
-                             TransportChangeId server_change_id) OVERRIDE {
+  virtual void OnNodeDeleted(Id node, Id server_change_id) OVERRIDE {
     tracker_.OnNodeDeleted(node, server_change_id);
   }
-  virtual void OnViewDeleted(TransportViewId view) OVERRIDE {
+  virtual void OnViewDeleted(Id view) OVERRIDE {
     tracker_.OnViewDeleted(view);
   }
-  virtual void OnNodeViewReplaced(TransportNodeId node,
-                                  TransportViewId new_view_id,
-                                  TransportViewId old_view_id) OVERRIDE {
+  virtual void OnNodeViewReplaced(Id node,
+                                  Id new_view_id,
+                                  Id old_view_id) OVERRIDE {
     tracker_.OnNodeViewReplaced(node, new_view_id, old_view_id);
   }
-  virtual void OnViewInputEvent(TransportViewId view_id,
+  virtual void OnViewInputEvent(Id view_id,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE {
     tracker_.OnViewInputEvent(view_id, event.Pass());
@@ -359,14 +354,14 @@ class ConnectServiceLoader : public ServiceLoader {
 };
 
 // Creates an id used for transport from the specified parameters.
-TransportNodeId BuildNodeId(TransportConnectionId connection_id,
-                            TransportConnectionSpecificNodeId node_id) {
+Id BuildNodeId(ConnectionSpecificId connection_id,
+               ConnectionSpecificId node_id) {
   return (connection_id << 16) | node_id;
 }
 
 // Creates an id used for transport from the specified parameters.
-TransportViewId BuildViewId(TransportConnectionId connection_id,
-                            TransportConnectionSpecificViewId view_id) {
+Id BuildViewId(ConnectionSpecificId connection_id,
+               ConnectionSpecificId view_id) {
   return (connection_id << 16) | view_id;
 }
 
@@ -426,10 +421,8 @@ class ViewManagerConnectionTest : public testing::Test {
   }
 
  protected:
-  void EstablishSecondConnectionWithRoots(
-      TransportNodeId id1,
-      TransportNodeId id2) {
-    std::vector<TransportNodeId> node_ids;
+  void EstablishSecondConnectionWithRoots(Id id1, Id id2) {
+    std::vector<Id> node_ids;
     node_ids.push_back(id1);
     if (id2 != 0)
       node_ids.push_back(id2);
@@ -481,8 +474,7 @@ TEST_F(ViewManagerConnectionTest, ValidId) {
   EXPECT_EQ(1, connection_->changes()[0].connection_id);
 
   // Change ids start at 1 as well.
-  EXPECT_EQ(static_cast<TransportChangeId>(1),
-            connection_->changes()[0].change_id);
+  EXPECT_EQ(static_cast<Id>(1), connection_->changes()[0].change_id);
 }
 
 // Verifies two clients/connections get different ids.
@@ -497,8 +489,7 @@ TEST_F(ViewManagerConnectionTest, TwoClientsGetDifferentConnectionIds) {
   EXPECT_EQ(2, connection2_->changes()[0].connection_id);
 
   // Change ids start at 1 as well.
-  EXPECT_EQ(static_cast<TransportChangeId>(1),
-            connection2_->changes()[0].change_id);
+  EXPECT_EQ(static_cast<Id>(1), connection2_->changes()[0].change_id);
 }
 
 // Verifies client gets a valid id.
@@ -1213,14 +1204,14 @@ TEST_F(ViewManagerConnectionTest, ConnectTwice) {
   // Try to connect again to 1,1, this should fail as already connected to that
   // root.
   {
-    std::vector<TransportNodeId> node_ids;
+    std::vector<Id> node_ids;
     node_ids.push_back(BuildNodeId(1, 1));
     ASSERT_FALSE(connection_->Connect(node_ids));
   }
 
   // Connecting to 1,2 should succeed and end up in connection2.
   {
-    std::vector<TransportNodeId> node_ids;
+    std::vector<Id> node_ids;
     node_ids.push_back(BuildNodeId(1, 2));
     ASSERT_TRUE(connection_->Connect(node_ids));
     connection2_->DoRunLoopUntilChangesCount(1);

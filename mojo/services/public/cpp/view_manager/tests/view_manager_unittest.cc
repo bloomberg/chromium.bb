@@ -195,8 +195,7 @@ class DestructionObserver : public ViewTreeNodeObserver,
                             public ViewObserver {
  public:
   // |nodes| or |views| can be NULL.
-  DestructionObserver(std::set<TransportNodeId>* nodes,
-                      std::set<TransportViewId>* views)
+  DestructionObserver(std::set<Id>* nodes, std::set<Id>* views)
       : nodes_(nodes),
         views_(views) {}
 
@@ -207,7 +206,7 @@ class DestructionObserver : public ViewTreeNodeObserver,
       ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
     if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
       return;
-    std::set<TransportNodeId>::const_iterator it = nodes_->find(node->id());
+    std::set<Id>::const_iterator it = nodes_->find(node->id());
     if (it != nodes_->end())
       nodes_->erase(it);
     if (CanQuit())
@@ -220,7 +219,7 @@ class DestructionObserver : public ViewTreeNodeObserver,
       ViewObserver::DispositionChangePhase phase) OVERRIDE {
     if (phase != ViewObserver::DISPOSITION_CHANGED)
       return;
-    std::set<TransportViewId>::const_iterator it = views_->find(view->id());
+    std::set<Id>::const_iterator it = views_->find(view->id());
     if (it != views_->end())
       views_->erase(it);
     if (CanQuit())
@@ -231,25 +230,25 @@ class DestructionObserver : public ViewTreeNodeObserver,
     return (!nodes_ || nodes_->empty()) && (!views_ || views_->empty());
   }
 
-  std::set<TransportNodeId>* nodes_;
-  std::set<TransportViewId>* views_;
+  std::set<Id>* nodes_;
+  std::set<Id>* views_;
 
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
 void WaitForDestruction(ViewManager* view_manager,
-                        std::set<TransportNodeId>* nodes,
-                        std::set<TransportViewId>* views) {
+                        std::set<Id>* nodes,
+                        std::set<Id>* views) {
   DestructionObserver observer(nodes, views);
   DCHECK(nodes || views);
   if (nodes) {
-    for (std::set<TransportNodeId>::const_iterator it = nodes->begin();
+    for (std::set<Id>::const_iterator it = nodes->begin();
           it != nodes->end(); ++it) {
       view_manager->GetNodeById(*it)->AddObserver(&observer);
     }
   }
   if (views) {
-    for (std::set<TransportViewId>::const_iterator it = views->begin();
+    for (std::set<Id>::const_iterator it = views->begin();
           it != views->end(); ++it) {
       view_manager->GetViewById(*it)->AddObserver(&observer);
     }
@@ -481,10 +480,10 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
   EXPECT_EQ(embedded->roots().front()->children().front()->id(), nested->id());
 
   // |nested| will be deleted after calling Destroy() below.
-  TransportNodeId id = nested->id();
+  Id id = nested->id();
   nested->Destroy();
 
-  std::set<TransportNodeId> nodes;
+  std::set<Id> nodes;
   nodes.insert(id);
   WaitForDestruction(embedded, &nodes, NULL);
 
@@ -497,11 +496,11 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
   window_manager()->roots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
-  TransportNodeId node_id = node->id();
+  Id node_id = node->id();
 
   UnloadApplication(GURL(kWindowManagerURL));
 
-  std::set<TransportNodeId> nodes;
+  std::set<Id> nodes;
   nodes.insert(node_id);
   WaitForDestruction(embedded, &nodes, NULL);
 
@@ -535,10 +534,10 @@ TEST_F(ViewManagerTest, DestroyView) {
 
   EXPECT_EQ(node_in_embedded->active_view()->id(), view->id());
 
-  TransportViewId view_id = view->id();
+  Id view_id = view->id();
   view->Destroy();
 
-  std::set<TransportViewId> views;
+  std::set<Id> views;
   views.insert(view_id);
   WaitForDestruction(embedded, NULL, &views);
   EXPECT_EQ(NULL, node_in_embedded->active_view());
@@ -554,14 +553,14 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
   node->SetActiveView(view);
   ViewManager* embedded = Embed(window_manager(), node);
 
-  TransportNodeId node_id = node->id();
-  TransportViewId view_id = view->id();
+  Id node_id = node->id();
+  Id view_id = view->id();
 
   UnloadApplication(GURL(kWindowManagerURL));
 
-  std::set<TransportNodeId> observed_nodes;
+  std::set<Id> observed_nodes;
   observed_nodes.insert(node_id);
-  std::set<TransportViewId> observed_views;
+  std::set<Id> observed_views;
   observed_views.insert(view_id);
   WaitForDestruction(embedded, &observed_nodes, &observed_views);
 
@@ -587,11 +586,11 @@ TEST_F(ViewManagerTest,
 
   WaitForActiveViewToChange(node);
 
-  TransportNodeId node_id = node->id();
-  TransportViewId view_id = view_in_embedded->id();
+  Id node_id = node->id();
+  Id view_id = view_in_embedded->id();
 
   UnloadApplication(GURL(kWindowManagerURL));
-  std::set<TransportNodeId> nodes;
+  std::set<Id> nodes;
   nodes.insert(node_id);
   WaitForDestruction(embedded, &nodes, NULL);
 

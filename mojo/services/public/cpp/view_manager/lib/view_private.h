@@ -22,7 +22,7 @@ class ViewPrivate {
     view_->LocalDestroy();
   }
 
-  void set_id(TransportViewId id) { view_->id_ = id; }
+  void set_id(Id id) { view_->id_ = id; }
   void set_node(ViewTreeNode* node) { view_->node_ = node; }
 
   ViewManager* view_manager() { return view_->manager_; }

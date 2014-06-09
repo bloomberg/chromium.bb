@@ -52,28 +52,28 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
                  bool is_delete_node);
     ~ScopedChange();
 
-    TransportConnectionId connection_id() const { return connection_id_; }
+    ConnectionSpecificId connection_id() const { return connection_id_; }
     ChangeType change_type() const { return change_type_; }
     bool is_delete_node() const { return is_delete_node_; }
 
     // Marks the connection with the specified id as having seen a message.
-    void MarkConnectionAsMessaged(TransportConnectionId connection_id) {
+    void MarkConnectionAsMessaged(ConnectionSpecificId connection_id) {
       message_ids_.insert(connection_id);
     }
 
     // Returns true if MarkConnectionAsMessaged(connection_id) was invoked.
-    bool DidMessageConnection(TransportConnectionId connection_id) const {
+    bool DidMessageConnection(ConnectionSpecificId connection_id) const {
       return message_ids_.count(connection_id) > 0;
     }
 
    private:
     RootNodeManager* root_;
-    const TransportConnectionId connection_id_;
+    const ConnectionSpecificId connection_id_;
     const ChangeType change_type_;
     const bool is_delete_node_;
 
     // See description of MarkConnectionAsMessaged/DidMessageConnection.
-    std::set<TransportConnectionId> message_ids_;
+    std::set<ConnectionSpecificId> message_ids_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
@@ -83,9 +83,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   virtual ~RootNodeManager();
 
   // Returns the id for the next ViewManagerConnection.
-  TransportConnectionId GetAndAdvanceNextConnectionId();
+  ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
-  TransportChangeId next_server_change_id() const {
+  Id next_server_change_id() const {
     return next_server_change_id_;
   }
 
@@ -98,12 +98,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // See description of IViewManager::Connect() for details. This assumes
   // |node_ids| has been validated.
-  void Connect(TransportConnectionId creator_id,
+  void Connect(ConnectionSpecificId creator_id,
                const String& url,
-               const Array<TransportNodeId>& node_ids);
+               const Array<Id>& node_ids);
 
   // Returns the connection by id.
-  ViewManagerConnection* GetConnection(TransportConnectionId connection_id);
+  ViewManagerConnection* GetConnection(ConnectionSpecificId connection_id);
 
   // Returns the Node identified by |id|.
   Node* GetNode(const NodeId& id);
@@ -120,13 +120,13 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
-  void OnConnectionMessagedClient(TransportConnectionId id);
+  void OnConnectionMessagedClient(ConnectionSpecificId id);
 
   // Returns true if OnConnectionMessagedClient() was invoked for id.
-  bool DidConnectionMessageClient(TransportConnectionId id) const;
+  bool DidConnectionMessageClient(ConnectionSpecificId id) const;
 
   ViewManagerConnection* GetConnectionByCreator(
-      TransportConnectionId creator_id,
+      ConnectionSpecificId creator_id,
       const std::string& url) const;
 
   // These functions trivially delegate to all ViewManagerConnections, which in
@@ -150,7 +150,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     ~Context();
   };
 
-  typedef std::map<TransportConnectionId, ViewManagerConnection*> ConnectionMap;
+  typedef std::map<ConnectionSpecificId, ViewManagerConnection*> ConnectionMap;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.
@@ -164,14 +164,14 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   void FinishChange();
 
   // Returns true if the specified connection originated the current change.
-  bool IsChangeSource(TransportConnectionId connection_id) const {
+  bool IsChangeSource(ConnectionSpecificId connection_id) const {
     return current_change_ && current_change_->connection_id() == connection_id;
   }
 
   // Implementation of the two connect variants.
-  ViewManagerConnection* ConnectImpl(TransportConnectionId creator_id,
+  ViewManagerConnection* ConnectImpl(ConnectionSpecificId creator_id,
                                      const String& url,
-                                     const Array<TransportNodeId>& node_ids);
+                                     const Array<Id>& node_ids);
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,
@@ -188,9 +188,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   ServiceProvider* service_provider_;
 
   // ID to use for next ViewManagerConnection.
-  TransportConnectionId next_connection_id_;
+  ConnectionSpecificId next_connection_id_;
 
-  TransportChangeId next_server_change_id_;
+  Id next_server_change_id_;
 
   // Set of ViewManagerConnections.
   ConnectionMap connection_map_;

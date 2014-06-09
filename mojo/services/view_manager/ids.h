@@ -14,12 +14,11 @@ namespace view_manager {
 namespace service {
 
 // Connection id reserved for the root.
-const TransportConnectionId kRootConnection = 0;
+const ConnectionSpecificId kRootConnection = 0;
 
 // Adds a bit of type safety to node ids.
 struct MOJO_VIEW_MANAGER_EXPORT NodeId {
-  NodeId(TransportConnectionId connection_id,
-         TransportConnectionSpecificNodeId node_id)
+  NodeId(ConnectionSpecificId connection_id, ConnectionSpecificId node_id)
       : connection_id(connection_id),
         node_id(node_id) {}
   NodeId() : connection_id(0), node_id(0) {}
@@ -33,14 +32,13 @@ struct MOJO_VIEW_MANAGER_EXPORT NodeId {
     return !(*this == other);
   }
 
-  TransportConnectionId connection_id;
-  TransportConnectionSpecificNodeId node_id;
+  ConnectionSpecificId connection_id;
+  ConnectionSpecificId node_id;
 };
 
 // Adds a bit of type safety to view ids.
 struct MOJO_VIEW_MANAGER_EXPORT ViewId {
-  ViewId(TransportConnectionId connection_id,
-         TransportConnectionSpecificViewId view_id)
+  ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId view_id)
       : connection_id(connection_id),
         view_id(view_id) {}
   ViewId() : connection_id(0), view_id(0) {}
@@ -54,24 +52,24 @@ struct MOJO_VIEW_MANAGER_EXPORT ViewId {
     return !(*this == other);
   }
 
-  TransportConnectionId connection_id;
-  TransportConnectionSpecificViewId view_id;
+  ConnectionSpecificId connection_id;
+  ConnectionSpecificId view_id;
 };
 
 // Functions for converting to/from structs and transport values.
-inline NodeId NodeIdFromTransportId(TransportNodeId id) {
+inline NodeId NodeIdFromTransportId(Id id) {
   return NodeId(HiWord(id), LoWord(id));
 }
 
-inline TransportNodeId NodeIdToTransportId(const NodeId& id) {
+inline Id NodeIdToTransportId(const NodeId& id) {
   return (id.connection_id << 16) | id.node_id;
 }
 
-inline ViewId ViewIdFromTransportId(TransportViewId id) {
+inline ViewId ViewIdFromTransportId(Id id) {
   return ViewId(HiWord(id), LoWord(id));
 }
 
-inline TransportViewId ViewIdToTransportId(const ViewId& id) {
+inline Id ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
 }
 

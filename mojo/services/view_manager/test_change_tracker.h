@@ -33,9 +33,9 @@ struct TestNode {
   // Returns a string description of this.
   std::string ToString() const;
 
-  TransportNodeId parent_id;
-  TransportNodeId node_id;
-  TransportNodeId view_id;
+  Id parent_id;
+  Id node_id;
+  Id view_id;
 };
 
 // Tracks a call to IViewManagerClient. See the individual functions for the
@@ -45,14 +45,14 @@ struct Change {
   ~Change();
 
   ChangeType type;
-  TransportConnectionId connection_id;
-  TransportChangeId change_id;
+  ConnectionSpecificId connection_id;
+  Id change_id;
   std::vector<TestNode> nodes;
-  TransportNodeId node_id;
-  TransportNodeId node_id2;
-  TransportNodeId node_id3;
-  TransportViewId view_id;
-  TransportViewId view_id2;
+  Id node_id;
+  Id node_id2;
+  Id node_id3;
+  Id view_id;
+  Id view_id2;
   gfx::Rect bounds;
   gfx::Rect bounds2;
   int32 event_action;
@@ -93,27 +93,21 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // IViewManagerClient function.
-  void OnViewManagerConnectionEstablished(
-      TransportConnectionId connection_id,
-      TransportChangeId next_server_change_id,
-      Array<INodePtr> nodes);
+  void OnViewManagerConnectionEstablished(ConnectionSpecificId connection_id,
+                                          Id next_server_change_id,
+                                          Array<INodePtr> nodes);
   void OnRootsAdded(Array<INodePtr> nodes);
-  void OnServerChangeIdAdvanced(TransportChangeId change_id);
-  void OnNodeBoundsChanged(TransportNodeId node_id,
-                           RectPtr old_bounds,
-                           RectPtr new_bounds);
-  void OnNodeHierarchyChanged(TransportNodeId node_id,
-                              TransportNodeId new_parent_id,
-                              TransportNodeId old_parent_id,
-                              TransportChangeId server_change_id,
+  void OnServerChangeIdAdvanced(Id change_id);
+  void OnNodeBoundsChanged(Id node_id, RectPtr old_bounds, RectPtr new_bounds);
+  void OnNodeHierarchyChanged(Id node_id,
+                              Id new_parent_id,
+                              Id old_parent_id,
+                              Id server_change_id,
                               Array<INodePtr> nodes);
-  void OnNodeDeleted(TransportNodeId node_id,
-                     TransportChangeId server_change_id);
-  void OnViewDeleted(TransportViewId view_id);
-  void OnNodeViewReplaced(TransportNodeId node_id,
-                          TransportViewId new_view_id,
-                          TransportViewId old_view_id);
-  void OnViewInputEvent(TransportViewId view_id, EventPtr event);
+  void OnNodeDeleted(Id node_id, Id server_change_id);
+  void OnViewDeleted(Id view_id);
+  void OnNodeViewReplaced(Id node_id, Id new_view_id, Id old_view_id);
+  void OnViewInputEvent(Id view_id, EventPtr event);
 
  private:
   void AddChange(const Change& change);

@@ -350,7 +350,7 @@ namespace {
 
 typedef std::vector<std::string> Changes;
 
-std::string NodeIdToString(TransportNodeId id) {
+std::string NodeIdToString(Id id) {
   return (id == 0) ? "null" :
       base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }

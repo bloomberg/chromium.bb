@@ -13,13 +13,13 @@
 namespace mojo {
 namespace view_manager {
 
-typedef uint32_t TransportChangeId;
-typedef uint16_t TransportConnectionId;
-typedef uint32_t TransportNodeId;
-typedef uint32_t TransportViewId;
+// Used to identify nodes, views and change ids.
+typedef uint32_t Id;
 
-typedef uint16_t TransportConnectionSpecificNodeId;
-typedef uint16_t TransportConnectionSpecificViewId;
+// Used to identify a connection as well as a connection specific view or node
+// id. For example, the Id for a node consists of the ConnectionSpecificId of
+// the connection and the ConnectionSpecificId of the node.
+typedef uint16_t ConnectionSpecificId;
 
 }  // namespace view_manager
 }  // namespace mojo
