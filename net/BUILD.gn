@@ -1086,10 +1086,11 @@ test("net_unittests") {
   }
 
   if (!use_nss_certs) {
-    sources -= [
-      "ssl/client_cert_store_nss_unittest.cc",
-      "ssl/client_cert_store_chromeos_unittest.cc",
-    ]
+    sources -= [ "ssl/client_cert_store_nss_unittest.cc" ]
+    if (is_chromeos) {
+      # Will have already have been removed in the ChromeOS case.
+      sources -= [ "ssl/client_cert_store_chromeos_unittest.cc" ]
+    }
   }
 
   if (use_openssl) {
