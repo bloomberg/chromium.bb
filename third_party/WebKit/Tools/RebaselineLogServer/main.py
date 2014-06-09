@@ -47,6 +47,8 @@ from google.appengine.ext.db import BadRequestError
 
 LOG_PARAM = "log"
 NEW_ENTRY_PARAM = "newentry"
+# FIXME: no_needs_rebaseline is never used anymore. Remove support for it.
+# Instead, add UI to logs.html to collapse short entries.
 NO_NEEDS_REBASELINE_PARAM = "noneedsrebaseline"
 NUM_LOGS_PARAM = "numlogs"
 BEFORE_PARAM = "before"
@@ -74,6 +76,7 @@ class UpdateLog(webapp2.RequestHandler):
         # avoid cluttering the log with useless empty posts. It just updates the
         # date of the entry so that users can see that rebaseline-o-matic is still
         # running.
+        # FIXME: no_needs_rebaseline is never used anymore. Remove support for it.
         no_needs_rebaseline = self.request.POST.get(NO_NEEDS_REBASELINE_PARAM) == "on"
 
         out = "Wrote new log entry."

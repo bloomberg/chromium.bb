@@ -659,65 +659,12 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             self.no_optimize_option,
             # FIXME: Remove this option.
             self.results_directory_option,
-            optparse.make_option("--log-server", help="Server to send logs to.")
             ])
 
-    def _log_to_server(self, log_server, query):
-        if not log_server:
-            return
-        urllib2.urlopen("http://" + log_server + "/updatelog", data=urllib.urlencode(query))
-
-    # Logs when there are no NeedsRebaseline lines in TestExpectations.
-    # These entries overwrite the existing log entry if the existing
-    # entry is also a noneedsrebaseline entry. This is special cased
-    # so that the log doesn't get bloated with entries like this
-    # when there are no tests that needs rebaselining.
-    def _log_no_needs_rebaseline_lines(self, log_server):
-        self._log_to_server(log_server, {
-            "noneedsrebaseline": "on",
-        })
-
-    # Uploaded log entries append to the existing entry unless the
-    # newentry flag is set. In that case it starts a new entry to
-    # start appending to. So, we need to call this on any fresh run
-    # that is going to end up logging stuff (i.e. any run that isn't
-    # a noneedsrebaseline run).
-    def _start_new_log_entry(self, log_server):
-        self._log_to_server(log_server, {
-            "log": "",
-            "newentry": "on",
-        })
-
-    def _configure_logging(self, log_server):
-        if not log_server:
-            return
-
-        def _log_alias(query):
-            self._log_to_server(log_server, query)
-
-        class LogHandler(logging.Handler):
-            def __init__(self):
-                logging.Handler.__init__(self)
-                self._records = []
-
-            # Since this does not have the newentry flag, it will append
-            # to the most recent log entry (i.e. the one created by
-            # _start_new_log_entry.
-            def emit(self, record):
-                _log_alias({
-                    "log": record.getMessage(),
-                })
-
-        handler = LogHandler()
-        _log.setLevel(logging.DEBUG)
-        handler.setLevel(logging.DEBUG)
-        _log.addHandler(handler)
-
-    def bot_revision_data(self, log_server):
+    def bot_revision_data(self):
         revisions = []
         for result in self.builder_data().values():
             if result.run_was_interrupted():
-                self._start_new_log_entry(log_server)
                 _log.error("Can't rebaseline because the latest run on %s exited early." % result.builder_name())
                 return []
             revisions.append({
@@ -726,7 +673,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             })
         return revisions
 
-    def tests_to_rebaseline(self, tool, min_revision, print_revisions, log_server):
+    def tests_to_rebaseline(self, tool, min_revision, print_revisions):
         port = tool.port_factory.get()
         expectations_file_path = port.path_to_generic_test_expectations_file()
 
@@ -745,8 +692,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             if "NeedsRebaseline" not in line_without_comments:
                 continue
 
-            if not has_any_needs_rebaseline_lines:
-                self._start_new_log_entry(log_server)
             has_any_needs_rebaseline_lines = True
 
             parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line_without_comments)
@@ -817,16 +762,21 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         if options.verbose:
             subprocess_command.append('--verbose')
 
-        process = self._tool.executive.popen(subprocess_command, stdout=self._tool.executive.PIPE)
+        process = self._tool.executive.popen(subprocess_command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.PIPE)
         last_output_time = time.time()
 
         # git cl sometimes completely hangs. Bail if we haven't gotten any output to stdout/stderr in a while.
         while process.poll() == None and time.time() < last_output_time + self.SECONDS_BEFORE_GIVING_UP:
-            # FIXME: Also log stderr.
+            # FIXME: This isn't awesome. It may improperly interleave stdout and stderr?
             out = process.stdout.readline().rstrip('\n')
             if out:
                 last_output_time = time.time()
                 _log.info(out)
+
+            err = process.stdout.readline().rstrip('\n')
+            if err:
+                last_output_time = time.time()
+                _log.error(err)
 
         if process.poll() == None:
             _log.error('Command hung: %s' % subprocess_command)
@@ -852,18 +802,12 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.error("Cannot proceed with working directory changes. Clean working directory first.")
             return
 
-        self._configure_logging(options.log_server)
-
-        revision_data = self.bot_revision_data(options.log_server)
+        revision_data = self.bot_revision_data()
         if not revision_data:
             return
 
         min_revision = int(min([item["revision"] for item in revision_data]))
-        tests, revision, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose, log_server=options.log_server)
-
-        if not has_any_needs_rebaseline_lines:
-            self._log_no_needs_rebaseline_lines(options.log_server)
-            return
+        tests, revision, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
 
         if options.verbose:
             _log.info("Min revision across all bots is %s." % min_revision)
@@ -920,20 +864,46 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
     show_in_main_help = True
 
     SLEEP_TIME_IN_SECONDS = 30
+    LOG_SERVER = 'blinkrebaseline.appspot.com'
+
+    # Uploaded log entries append to the existing entry unless the
+    # newentry flag is set. In that case it starts a new entry to
+    # start appending to.
+    def _log_to_server(self, log='', is_new_entry=False):
+        query = {
+            'log': log,
+        }
+        if is_new_entry:
+            query['newentry'] = 'on'
+        urllib2.urlopen("http://" + self.LOG_SERVER + "/updatelog", data=urllib.urlencode(query))
+
+    def _run_logged_command(self, command):
+        process = self._tool.executive.popen(command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.PIPE)
+        while process.poll() == None:
+            # FIXME: This should probably batch up lines if they're available and log to the server once.
+            out = process.stdout.readline()
+            if out:
+                self._log_to_server(out)
+
+            err = process.stderr.readline()
+            if err:
+                self._log_to_server(err)
+
+    def _do_one_rebaseline(self, verbose):
+        try:
+            old_branch_name = self._tool.scm().current_branch()
+            self._log_to_server(is_new_entry=True)
+            self._run_logged_command(['git', 'pull'])
+            rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
+            if verbose:
+                rebaseline_command.append('--verbose')
+            self._run_logged_command(rebaseline_command)
+        except:
+            traceback.print_exc(file=sys.stderr)
+            # Sometimes git crashes and leaves us on a detached head.
+            self._tool.scm().checkout_branch(old_branch_name)
 
     def execute(self, options, args, tool):
         while True:
-            try:
-                old_branch_name = tool.scm().current_branch()
-                tool.executive.run_command(['git', 'pull'])
-                rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline', '--log-server', 'blinkrebaseline.appspot.com']
-                if options.verbose:
-                    rebaseline_command.append('--verbose')
-                # Use call instead of run_command so that stdout doesn't get swallowed.
-                tool.executive.call(rebaseline_command)
-            except:
-                traceback.print_exc(file=sys.stderr)
-                # Sometimes git crashes and leaves us on a detached head.
-                tool.scm().checkout_branch(old_branch_name)
-
+            self._do_one_rebaseline(options.verbose)
             time.sleep(self.SLEEP_TIME_IN_SECONDS)

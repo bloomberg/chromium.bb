@@ -873,8 +873,8 @@ class TestAutoRebaseline(_BaseTestCase):
 
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
-        self.command.latest_revision_processed_on_all_bots = lambda log_server: 9000
-        self.command.bot_revision_data = lambda log_server: [{"builder": "Mock builder", "revision": "9000"}]
+        self.command.latest_revision_processed_on_all_bots = lambda: 9000
+        self.command.bot_revision_data = lambda: [{"builder": "Mock builder", "revision": "9000"}]
 
     def test_release_builders(self):
         old_exact_matches = builders._exact_matches
@@ -902,7 +902,7 @@ class TestAutoRebaseline(_BaseTestCase):
         self.tool.scm().blame = blame
 
         min_revision = 9000
-        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False, log_server=None), (
+        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
                 set(['path/to/rebaseline-without-bug-number.html', 'path/to/rebaseline-with-modifiers.html', 'path/to/rebaseline-without-modifiers.html']),
                 5678,
                 'foobarbaz1@chromium.org',
@@ -922,7 +922,7 @@ class TestAutoRebaseline(_BaseTestCase):
             expected_list_of_tests.append("path/to/rebaseline-%s.html" % i)
 
         min_revision = 9000
-        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False, log_server=None), (
+        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
                 set(expected_list_of_tests),
                 5678,
                 'foobarbaz1@chromium.org',
@@ -958,7 +958,7 @@ TBR=foo@chromium.org
 """
         self.tool.scm().blame = blame
 
-        self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+        self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_execute(self):
@@ -1030,12 +1030,12 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'closed'
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [])
 
             self.command.tree_status = lambda: 'open'
             self.tool.executive.calls = []
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
                 [
@@ -1118,7 +1118,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.command.SECONDS_BEFORE_GIVING_UP = 0
             self.command.tree_status = lambda: 'open'
             self.tool.executive.calls = []
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
                 [
@@ -1179,7 +1179,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'open'
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [['echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
@@ -1194,3 +1194,44 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
             builders._exact_matches = old_exact_matches
+
+
+class TestRebaselineOMatic(_BaseTestCase):
+    command_constructor = RebaselineOMatic
+
+    def setUp(self):
+        super(TestRebaselineOMatic, self).setUp()
+        self._logs = []
+
+    def _mock_log_to_server(self, log='', is_new_entry=False):
+        self._logs.append({'log': log, 'newentry': is_new_entry})
+
+    def test_run_logged_command(self):
+        self.command._log_to_server = self._mock_log_to_server
+        self.command._run_logged_command(['echo', 'foo'])
+        self.assertEqual(self.tool.executive.calls, [['echo', 'foo']])
+        self.assertEqual(self._logs, [{'log': 'MOCK STDOUT\n', 'newentry': False}])
+
+    def test_do_one_rebaseline(self):
+        self.command._log_to_server = self._mock_log_to_server
+        self.command._do_one_rebaseline(verbose=False)
+        self.assertEqual(self.tool.executive.calls, [
+            ['git', 'pull'],
+            ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline'],
+        ])
+        self.assertEqual(self._logs, [
+            {'log': '', 'newentry': True},
+            {'log': 'MOCK STDOUT\n', 'newentry': False},
+        ])
+
+    def test_do_one_rebaseline_verbose(self):
+        self.command._log_to_server = self._mock_log_to_server
+        self.command._do_one_rebaseline(verbose=True)
+        self.assertEqual(self.tool.executive.calls, [
+            ['git', 'pull'],
+            ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline', '--verbose'],
+        ])
+        self.assertEqual(self._logs, [
+            {'log': '', 'newentry': True},
+            {'log': 'MOCK STDOUT\n', 'newentry': False},
+        ])
