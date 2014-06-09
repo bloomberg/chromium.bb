@@ -15,7 +15,16 @@ function gatherAudioLevelSamples(peerConnection, numSamples, frequency,
   var audioLevelSamples = []
   var gatherSamples = setInterval(function() {
     peerConnection.getStats(function(response) {
-      audioLevelSamples.push(getAudioLevelFromStats_(response));
+      audioOutputLevels = getAudioLevelFromStats_(response);
+      if (audioOutputLevels.length == 0) {
+        // The call probably isn't up yet.
+        return;
+      }
+
+      // If more than one audio level is reported we get confused.
+      assertEquals(1, audioOutputLevels.length);
+      audioLevelSamples.push(audioOutputLevels[0]);
+
       if (audioLevelSamples.length == numSamples) {
         console.log('Gathered all samples.');
         clearInterval(gatherSamples);
@@ -83,8 +92,5 @@ function getAudioLevelFromStats_(response) {
       audioOutputLevels.push(report.stat('audioOutputLevel'));
     }
   }
-  // Should only be one audio level reported, otherwise we get confused.
-  assertEquals(1, audioOutputLevels.length);
-
-  return audioOutputLevels[0];
+  return audioOutputLevels;
 }

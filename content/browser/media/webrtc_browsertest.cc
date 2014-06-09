@@ -59,7 +59,7 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest,
 #endif
   }
 
-  // Convenience function since most peerconnection-call.html tests just load
+  // Convenience method since most peerconnection-call.html tests just load
   // the page, kick off some javascript and wait for the title to change to OK.
   void MakeTypicalPeerConnectionCall(const std::string& javascript) {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -69,6 +69,27 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest,
 
     DisableOpusIfOnAndroid();
     ExecuteJavascriptAndWaitForOk(javascript);
+  }
+
+  // Convenience method for making calls that detect if audio os playing (which
+  // has some special prerequisites, such that there needs to be an audio output
+  // device on the executing machine).
+  void MakeAudioDetectingPeerConnectionCall(const std::string& javascript) {
+    if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+      // Bots with no output devices will force the audio code into a state
+      // where it doesn't manage to set either the low or high latency path.
+      // This test will compute useless values in that case, so skip running on
+      // such bots (see crbug.com/326338).
+      LOG(INFO) << "Missing output devices: skipping test...";
+      return;
+    }
+
+    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kUseFakeDeviceForMediaStream))
+            << "Must run with fake devices since the test will explicitly look "
+            << "for the fake device signal.";
+
+    MakeTypicalPeerConnectionCall(javascript);
   }
 
   void DisableOpusIfOnAndroid() {
@@ -327,39 +348,22 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, AddTwoMediaStreamsToOnePC) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
-                       EstablishAudioVideoCallAndMeasureOutputLevel) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
-    // Bots with no output devices will force the audio code into a different
-    // path where it doesn't manage to set either the low or high latency path.
-    // This test will compute useless values in that case, so skip running on
-    // such bots (see crbug.com/326338).
-    LOG(INFO) << "Missing output devices: skipping test...";
-    return;
-  }
+                       EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureAudioIsPlaying(%s, {audio:true, video:true});",
+      kUseLenientAudioChecking));
+}
 
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream))
-          << "Must run with fake devices since the test will explicitly look "
-          << "for the fake device signal.";
-
-  MakeTypicalPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureAudioIsPlaying(%s);", kUseLenientAudioChecking));
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
+                       EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureAudioIsPlaying(%s, {audio:true});",
+      kUseLenientAudioChecking));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        EstablishAudioVideoCallAndVerifyMutingWorks) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
-    // See comment on EstablishAudioVideoCallAndMeasureOutputLevel.
-    LOG(INFO) << "Missing output devices: skipping test...";
-    return;
-  }
-
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream))
-          << "Must run with fake devices since the test will explicitly look "
-          << "for the fake device signal.";
-
-  MakeTypicalPeerConnectionCall(base::StringPrintf(
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
       "callAndEnsureAudioTrackMutingWorks(%s);", kUseLenientAudioChecking));
 }
 
@@ -373,18 +377,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
-    // See comment on EstablishAudioVideoCallAndMeasureOutputLevel.
-    LOG(INFO) << "Missing output devices: skipping test...";
-    return;
-  }
-
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream))
-          << "Must run with fake devices since the test will explicitly look "
-          << "for the fake device signal.";
-
-  MakeTypicalPeerConnectionCall(base::StringPrintf(
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
       "callAndEnsureAudioTrackUnmutingWorks(%s);", kUseLenientAudioChecking));
 }
 

@@ -301,9 +301,9 @@
     remoteAudioTrack.enabled = enabled;
   }
 
-  function callAndEnsureAudioIsPlaying(beLenient) {
+  function callAndEnsureAudioIsPlaying(beLenient, constraints) {
     createConnections(null);
-    navigator.webkitGetUserMedia({audio: true, video: true},
+    navigator.webkitGetUserMedia(constraints,
       addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
 
     // Wait until we have gathered samples and can conclude if audio is playing.
@@ -314,16 +314,13 @@
         verifyAudioIsPlaying(samples, beLenient);
         eventOccured();
       });
-
-      // (Also, ensure video muting doesn't affect audio).
-      enableRemoteVideo(gSecondConnection, false);
     };
 
-    detectVideoPlaying('remote-view-2', onCallEstablished);
+    waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
   }
 
   function callAndEnsureAudioTrackMutingWorks(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient);
+    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       // Call is up, now mute the track and check everything goes silent (give
       // it a small delay though, we don't expect it to happen instantly).
@@ -339,10 +336,12 @@
   }
 
   function callAndEnsureAudioTrackUnmutingWorks(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient);
+    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       // Mute, wait a while, unmute, verify audio gets back up.
+      // (Also, ensure video muting doesn't affect audio).
       enableRemoteAudio(gSecondConnection, false);
+      enableRemoteVideo(gSecondConnection, false);
 
       setTimeout(function() {
         enableRemoteAudio(gSecondConnection, true);
