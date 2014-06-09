@@ -34,7 +34,6 @@
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "public/platform/Platform.h"
-#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -52,16 +51,6 @@ DeviceMotionDispatcher::~DeviceMotionDispatcher()
 {
 }
 
-void DeviceMotionDispatcher::addDeviceMotionController(DeviceMotionController* controller)
-{
-    addController(controller);
-}
-
-void DeviceMotionDispatcher::removeDeviceMotionController(DeviceMotionController* controller)
-{
-    removeController(controller);
-}
-
 void DeviceMotionDispatcher::startListening()
 {
     blink::Platform::current()->setDeviceMotionListener(this);
@@ -76,19 +65,7 @@ void DeviceMotionDispatcher::stopListening()
 void DeviceMotionDispatcher::didChangeDeviceMotion(const blink::WebDeviceMotionData& motion)
 {
     m_lastDeviceMotionData = DeviceMotionData::create(motion);
-
-    {
-        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
-        // Don't fire controllers removed or added during event dispatch.
-        size_t size = m_controllers.size();
-        for (size_t i = 0; i < size; ++i) {
-            if (m_controllers[i])
-                static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
-        }
-    }
-
-    if (m_needsPurge)
-        purgeControllers();
+    notifyControllers();
 }
 
 DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData()

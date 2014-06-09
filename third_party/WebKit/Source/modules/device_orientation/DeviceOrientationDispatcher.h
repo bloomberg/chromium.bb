@@ -31,7 +31,7 @@
 #ifndef DeviceOrientationDispatcher_h
 #define DeviceOrientationDispatcher_h
 
-#include "core/frame/DeviceSensorEventDispatcher.h"
+#include "core/frame/DeviceEventDispatcherBase.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceOrientationListener.h"
 #include "wtf/RefPtr.h"
@@ -45,9 +45,8 @@ namespace WebCore {
 class DeviceOrientationController;
 class DeviceOrientationData;
 
-// This class listens to device motion data and dispatches it to all
-// listening controllers.
-class DeviceOrientationDispatcher : public DeviceSensorEventDispatcher, public blink::WebDeviceOrientationListener {
+// This class listens to device orientation data and notifies all registered controllers.
+class DeviceOrientationDispatcher : public DeviceEventDispatcherBase, public blink::WebDeviceOrientationListener {
 public:
     static DeviceOrientationDispatcher& instance();
 
@@ -55,15 +54,14 @@ public:
     // FIXME: make the return value const, see crbug.com/233174.
     DeviceOrientationData* latestDeviceOrientationData();
 
-    // This method is called every time new device motion data is available.
+    // Inherited from WebDeviceOrientationListener.
     virtual void didChangeDeviceOrientation(const blink::WebDeviceOrientationData&) OVERRIDE;
-    void addDeviceOrientationController(DeviceOrientationController*);
-    void removeDeviceOrientationController(DeviceOrientationController*);
 
 private:
     DeviceOrientationDispatcher();
     ~DeviceOrientationDispatcher();
 
+    // Inherited from DeviceEventDispatcherBase.
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
