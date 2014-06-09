@@ -174,7 +174,7 @@ void MIDIAccess::stop()
     if (m_state == Requesting) {
         Document* document = toDocument(executionContext());
         ASSERT(document);
-        MIDIController* controller = MIDIController::from(document->page());
+        MIDIController* controller = MIDIController::from(document->frame());
         ASSERT(controller);
         controller->cancelSysexPermissionRequest(this);
     }
@@ -205,7 +205,7 @@ ScriptPromise MIDIAccess::startRequest(ScriptState* scriptState)
     }
     Document* document = toDocument(executionContext());
     ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->page());
+    MIDIController* controller = MIDIController::from(document->frame());
     if (controller) {
         controller->requestSysexPermission(this);
     } else {

@@ -35,8 +35,8 @@
 
 namespace WebCore {
 
+class LocalFrame;
 class MIDIAccess;
-class Page;
 
 class MIDIClient {
 public:
@@ -46,7 +46,7 @@ public:
     virtual ~MIDIClient() { }
 };
 
-void provideMIDITo(Page&, PassOwnPtr<MIDIClient>);
+void provideMIDITo(LocalFrame&, PassOwnPtr<MIDIClient>);
 
 } // namespace WebCore
 

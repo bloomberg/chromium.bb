@@ -133,7 +133,6 @@
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/LinkHighlight.h"
 #include "web/LocalFileSystemClient.h"
-#include "web/MIDIClientProxy.h"
 #include "web/PopupContainer.h"
 #include "web/PrerendererClientImpl.h"
 #include "web/SpeechRecognitionClientProxy.h"
@@ -410,7 +409,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     m_page = adoptPtrWillBeNoop(new Page(pageClients));
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
-    provideMIDITo(*m_page, MIDIClientProxy::create(client ? client->webMIDIClient() : 0));
     provideSpeechRecognitionTo(*m_page, SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0));
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
 

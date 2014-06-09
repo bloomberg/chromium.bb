@@ -61,7 +61,6 @@ class WebHitTestResult;
 class WebImage;
 class WebInputElement;
 class WebKeyboardEvent;
-class WebMIDIClient;
 class WebNode;
 class WebPushClient;
 class WebRange;
@@ -284,11 +283,6 @@ public:
     {
         return WebPageVisibilityStateVisible;
     }
-
-
-    // Web MIDI -------------------------------------------------------------
-
-    virtual WebMIDIClient* webMIDIClient() { return 0; }
 
 
     // Push Messaging -------------------------------------------------------

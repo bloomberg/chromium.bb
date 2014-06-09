@@ -51,9 +51,9 @@ MIDIController::~MIDIController()
 {
 }
 
-PassOwnPtrWillBeRawPtr<MIDIController> MIDIController::create(PassOwnPtr<MIDIClient> client)
+PassOwnPtr<MIDIController> MIDIController::create(PassOwnPtr<MIDIClient> client)
 {
-    return adoptPtrWillBeNoop(new MIDIController(client));
+    return adoptPtr(new MIDIController(client));
 }
 
 void MIDIController::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
@@ -66,9 +66,9 @@ void MIDIController::cancelSysexPermissionRequest(MIDIAccess* access)
     m_client->cancelSysexPermissionRequest(access);
 }
 
-void provideMIDITo(Page& page, PassOwnPtr<MIDIClient> client)
+void provideMIDITo(LocalFrame& frame, PassOwnPtr<MIDIClient> client)
 {
-    MIDIController::provideTo(page, MIDIController::supplementName(), MIDIController::create(client));
+    MIDIController::provideTo(frame, MIDIController::supplementName(), MIDIController::create(client));
 }
 
 } // namespace WebCore

@@ -67,6 +67,7 @@ class WebGeolocationClient;
 class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebMIDIClient;
 class WebNotificationPresenter;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
@@ -462,6 +463,11 @@ public:
     virtual void willStartUsingPeerConnectionHandler(WebLocalFrame*, WebRTCPeerConnectionHandler*) { }
 
     virtual WebUserMediaClient* userMediaClient() { return 0; }
+
+
+    // Web MIDI -------------------------------------------------------------
+
+    virtual WebMIDIClient* webMIDIClient() { return 0; }
 
 
     // Messages ------------------------------------------------------
