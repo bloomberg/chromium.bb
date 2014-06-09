@@ -38,7 +38,7 @@ class ConfigDumpTest(cros_test_lib.TestCase):
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
         'configs defined in cbuildbot_config.py. Run '
-        'bin/cbuildbot_view_config -d --pretty > buildbot/config_dump.json')
+        'bin/cbuildbot_view_config -d --pretty > cbuildbot/config_dump.json')
 
 
 class ConfigPickleTest(cros_test_lib.TestCase):
