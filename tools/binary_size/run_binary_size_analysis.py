@@ -561,6 +561,35 @@ def _find_in_system_path(binary):
       return binary_path
   return None
 
+def CheckDebugFormatSupport(library, addr2line_binary):
+  """Kills the program if debug data is in an unsupported format.
+
+  There are two common versions of the DWARF debug formats and
+  since we are right now transitioning from DWARF2 to newer formats,
+  it's possible to have a mix of tools that are not compatible. Detect
+  that and abort rather than produce meaningless output."""
+  tool_output = subprocess.check_output([addr2line_binary, '--version'])
+  version_re = re.compile(r'^GNU [^ ]+ .* (\d+).(\d+).*?$', re.M)
+  parsed_output = version_re.match(tool_output)
+  major = int(parsed_output.group(1))
+  minor = int(parsed_output.group(2))
+  supports_dwarf4 = major > 2 or major == 2 and minor > 22
+
+  if supports_dwarf4:
+    return
+
+  print('Checking version of debug information in %s.' % library)
+  debug_info = subprocess.check_output(['readelf', '--debug-dump=info',
+                                       '--dwarf-depth=1', library])
+  dwarf_version_re = re.compile(r'^\s+Version:\s+(\d+)$', re.M)
+  parsed_dwarf_format_output = dwarf_version_re.search(debug_info)
+  version = int(parsed_dwarf_format_output.group(1))
+  if version > 2:
+    print('The supplied tools only support DWARF2 debug data but the binary\n' +
+          'uses DWARF%d. Update the tools or compile the binary\n' % version +
+          'with -gdwarf-2.')
+    sys.exit(1)
+
 
 def main():
   usage = """%prog [options]
@@ -655,8 +684,10 @@ def main():
     assert nm_binary, 'Unable to find nm in the path. Use --nm-binary '\
         'to specify location.'
 
-  print('nm: %s' % nm_binary)
   print('addr2line: %s' % addr2line_binary)
+  print('nm: %s' % nm_binary)
+
+  CheckDebugFormatSupport(opts.library, addr2line_binary)
 
   symbols = GetNmSymbols(opts.nm_in, opts.nm_out, opts.library,
                          opts.jobs, opts.verbose is True,
