@@ -2131,7 +2131,7 @@ name=bug_371991
 system call NtWriteFile parameter #5
 KERNELBASE.dll!WriteFile
 KERNEL32.dll!WriteFile*
-ipc.dll!IPC::Channel::ChannelImpl::ProcessOutgoingMessages
+*!IPC::Channel*::ProcessOutgoingMessages
 
 UNINITIALIZED READ
 name=bug_372254
