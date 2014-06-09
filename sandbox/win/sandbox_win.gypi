@@ -208,7 +208,6 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
@@ -240,7 +239,6 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
@@ -257,7 +255,6 @@
       'type': 'executable',
       'dependencies': [
         'sandbox',
-        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
