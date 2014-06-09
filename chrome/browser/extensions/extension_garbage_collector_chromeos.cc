@@ -60,7 +60,7 @@ bool ExtensionGarbageCollectorChromeOS::CanGarbageCollectSharedExtensions() {
     Profile* profile = user_manager->GetProfileByUser(active_users[i]);
     ExtensionGarbageCollectorChromeOS* gc =
         ExtensionGarbageCollectorChromeOS::Get(profile);
-    if (gc->crx_installs_in_progress_ > 0)
+    if (gc && gc->crx_installs_in_progress_ > 0)
       return false;
   }
 
