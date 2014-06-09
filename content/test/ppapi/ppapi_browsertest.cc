@@ -121,7 +121,11 @@ TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Scrollbar)
 TEST_PPAPI_IN_PROCESS(TraceEvent)
 TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
 
+// TODO(scottmg): Disabled with DirectWrite investigating, probably sandbox-
+// related. http://crbug.com/382729
+#if !defined(OS_WIN)
 TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
+#endif
 
 TEST_PPAPI_IN_PROCESS(URLUtil)
 TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
