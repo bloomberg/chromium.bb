@@ -36,14 +36,10 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 // Disable Genius App and use the original Help App instead.
 const char kDisableGeniusApp[] = "disable-genius-app";
 
-// Disable lock UI (user pods) scrolling into view with CSS change when virtual
-// keyboard is shown.
-const char kDisableLockScrollIntoView[]    = "disable-lock-scroll-into-view";
-
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
-// Disable login UI (user pods) scrolling into view on JS side when virtual
+// Disable login/lock UI (user pods) scrolling into view on JS side when virtual
 // keyboard is shown.
 const char kDisableLoginScrollIntoView[]    = "disable-login-scroll-into-view";
 

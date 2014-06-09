@@ -266,14 +266,6 @@ cr.define('cr.ui.login', function() {
     setVirtualKeyboardSize: function(width, height) {
       this.virtualKeyboardWidth_ = width;
       this.virtualKeyboardHeight_ = height;
-
-      // Special case for screen lock. http://crbug.com/377904
-      // In case of virtual keyboard adjuct work area.
-      if (this.displayType == DISPLAY_TYPE.LOCK) {
-        var bottom = (height) ? height : $('login-header-bar').offsetHeight;
-        var clientArea = $('outer-container');
-        clientArea.style.bottom = cr.ui.toCssPx(bottom);
-      }
     },
 
     /**

@@ -106,7 +106,7 @@ void WebUIScreenLocker::LockScreen() {
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
 
-  if (login::LockScrollIntoViewEnabled())
+  if (login::LoginScrollIntoViewEnabled())
     DisableKeyboardOverscroll();
 }
 
@@ -179,7 +179,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   ash::Shell::GetInstance()->delegate()->
       RemoveVirtualKeyboardStateObserver(this);
 
-  if (login::LockScrollIntoViewEnabled())
+  if (login::LoginScrollIntoViewEnabled())
     ResetKeyboardOverscrollOverride();
 }
 
@@ -388,14 +388,14 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
     // Keyboard has been hidden.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
-      if (login::LockScrollIntoViewEnabled())
+      if (login::LoginScrollIntoViewEnabled())
         GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
     }
   } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
     // Keyboard has been shown.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
-      if (login::LockScrollIntoViewEnabled())
+      if (login::LoginScrollIntoViewEnabled())
         GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
     }
   }

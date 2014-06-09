@@ -358,28 +358,18 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
-  const std::string& ui_type = oobe_ui_->display_type();
-  if ((ui_type != OobeUI::kLockDisplay &&
-          login::LoginScrollIntoViewEnabled()) ||
-      (ui_type == OobeUI::kLockDisplay &&
-          login::LockScrollIntoViewEnabled())) {
-    keyboard::KeyboardController* keyboard_controller =
-        keyboard::KeyboardController::GetInstance();
-    if (keyboard_controller) {
-      gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
-      SetKeyboardState(!bounds.IsEmpty(), bounds);
-    }
+  if (!login::LoginScrollIntoViewEnabled())
+    return;
+
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
+    SetKeyboardState(!bounds.IsEmpty(), bounds);
   }
 }
 
 void CoreOobeHandler::UpdateClientAreaSize() {
-  // Special case for screen lock. http://crbug.com/377904
-  // No need to update client area size so that virtual keyboard works.
-  if (oobe_ui_->display_type() == OobeUI::kLockDisplay &&
-      login::LockScrollIntoViewEnabled()) {
-    return;
-  }
-
   const gfx::Size& size = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
 }

@@ -46,7 +46,6 @@ std::string CanonicalizeUserID(const std::string& user_id);
 
 // Returns true if lock/login should scroll user pods into view itself when
 // virtual keyboard is shown and disable vk overscroll.
-bool LockScrollIntoViewEnabled();
 bool LoginScrollIntoViewEnabled();
 
 // A helper class for easily mocking out Network*Handler calls for tests.
