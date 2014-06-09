@@ -1,0 +1,68 @@
+Confirm basic Blob/File/FileList functionality.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
+
+dbname = "blob-basics-metadata.html"
+indexedDB.deleteDatabase(dbname)
+indexedDB.open(dbname)
+store = db.createObjectStore('storeName')
+store.put('value', 'key')
+
+testBlob():
+PASS FileReader != null is true
+test_content = 'This is a test. This is only a test.'
+blob = new Blob([test_content])
+
+validateResult(blob):
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(blob, 'blobkey')
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+request = store.get('blobkey')
+PASS event.target.result.size == test_content.length is true
+
+testFile():
+file = fileInput.files[0]
+
+validateResult(file):
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(file, 'filekey')
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+request = store.get('filekey')
+PASS event.target.result.name == fileInput.files[0].name is true
+
+testFileList():
+filelist = fileInput.files
+
+validateResult(filelist):
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(filelist, 'filelistkey')
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+request = store.get('filelistkey')
+PASS event.target.result[1].name == fileInput.files[1].name is true
+
+testCursor():
+transaction = db.transaction('storeName', 'readonly')
+store = transaction.objectStore('storeName')
+request = store.openCursor()
+PASS cursor.value.size == test_content.length is true
+cursor.continue();
+PASS cursor.value.name == fileInput.files[0].name is true
+cursor.continue();
+PASS cursor.value[1].name == fileInput.files[1].name is true
+cursor.continue();
+PASS cursor.value == 'value' is true
+cursor.continue();
+PASS cursor is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

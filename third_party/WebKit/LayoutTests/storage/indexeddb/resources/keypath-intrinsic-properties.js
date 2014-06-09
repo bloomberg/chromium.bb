@@ -13,12 +13,13 @@ function prepareDatabase()
     evalAndLog("store = db.createObjectStore('store', {keyPath: 'id'})");
     evalAndLog("store.createIndex('string length', 'string.length')");
     evalAndLog("store.createIndex('array length', 'array.length')");
+    evalAndLog("store.createIndex('blob size', 'blob.size')");
+    evalAndLog("store.createIndex('blob type', 'blob.type')");
 }
 
 function testKeyPaths()
 {
-    debug("");
-    debug("testKeyPaths():");
+    preamble();
 
     transaction = evalAndLog("transaction = db.transaction('store', 'readwrite')");
     transaction.onabort = unexpectedAbortCallback;
@@ -28,9 +29,11 @@ function testKeyPaths()
         var datum = {
             id: 'id#' + i,
             string: Array(i * 2 + 1).join('x'),
-            array: Array(i * 3 + 1).join('x').split(/(?:)/)
+            array: Array(i * 3 + 1).join('x').split(/(?:)/),
+            blob: new Blob([Array(i * 4 + 1).join('x')], {type: "type " + i})
         };
-        evalAndLog("store.put("+JSON.stringify(datum)+")");
+        debug("store.put(" + JSON.stringify(datum) + ")");
+        store.put(datum);
     }
 
     checkStringLengths();
@@ -56,6 +59,34 @@ function testKeyPaths()
             cursor = e.target.result;
             if (cursor) {
                 shouldBe("cursor.key", "cursor.value.array.length");
+                cursor.continue();
+            } else {
+              checkBlobSizes();
+            }
+        }
+    }
+
+    function checkBlobSizes() {
+        evalAndLog("request = store.index('blob size').openCursor()");
+        request.onerror = unexpectedErrorCallback;
+        request.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                shouldBe("cursor.key", "cursor.value.blob.size");
+                cursor.continue();
+            } else {
+              checkBlobTypes();
+            }
+        }
+    }
+
+    function checkBlobTypes() {
+        evalAndLog("request = store.index('blob type').openCursor()");
+        request.onerror = unexpectedErrorCallback;
+        request.onsuccess = function (e) {
+            cursor = e.target.result;
+            if (cursor) {
+                shouldBe("cursor.key", "cursor.value.blob.type");
                 cursor.continue();
             }
         }

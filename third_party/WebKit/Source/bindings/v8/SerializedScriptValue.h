@@ -104,10 +104,6 @@ public:
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
     static bool extractTransferables(v8::Local<v8::Value>, int, MessagePortArray&, ArrayBufferArray&, ExceptionState&, v8::Isolate*);
 
-    // Only reflects the truth if the SSV was created by walking a v8 value, not reliable
-    // if the SSV was created createdFromWire(data).
-    bool containsBlobs() const { return !m_blobDataHandles.isEmpty(); }
-
     // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
     // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.
     // Ok to invoke multiple times (only adds memory once).

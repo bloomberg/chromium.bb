@@ -178,17 +178,9 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBDatabase::PutMod
     }
 
     Vector<WebBlobInfo> blobInfo;
-
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, &blobInfo, exceptionState, scriptState->isolate());
     if (exceptionState.hadException())
         return 0;
-
-    if (serializedValue->containsBlobs()) {
-        // FIXME: Add Blob/File/FileList support
-        exceptionState.throwDOMException(DataCloneError, "The object store currently does not support blob values.");
-        return 0;
-    }
-    ASSERT(blobInfo.isEmpty());
 
     const IDBKeyPath& keyPath = m_metadata.keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
