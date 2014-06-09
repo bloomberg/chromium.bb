@@ -22,6 +22,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
