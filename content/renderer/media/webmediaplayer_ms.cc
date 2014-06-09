@@ -94,7 +94,6 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       pending_repaint_(false),
       video_frame_provider_client_(NULL),
       received_first_frame_(false),
-      sequence_started_(false),
       total_frame_count_(0),
       dropped_frame_count_(0),
       media_log_(media_log),
@@ -426,10 +425,6 @@ void WebMediaPlayerMS::OnFrameAvailable(
   if (paused_)
     return;
 
-  if (!sequence_started_) {
-    sequence_started_ = true;
-    start_time_ = frame->timestamp();
-  }
   bool size_changed = !current_frame_.get() ||
                       current_frame_->natural_size() != frame->natural_size();
 
@@ -438,7 +433,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     if (!current_frame_used_ && current_frame_.get())
       ++dropped_frame_count_;
     current_frame_ = frame;
-    current_time_ = frame->timestamp() - start_time_;
+    current_time_ = frame->timestamp();
     current_frame_used_ = false;
   }
 

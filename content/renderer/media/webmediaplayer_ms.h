@@ -175,8 +175,6 @@ class WebMediaPlayerMS
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   bool received_first_frame_;
-  bool sequence_started_;
-  base::TimeDelta start_time_;
   base::TimeDelta current_time_;
   unsigned total_frame_count_;
   unsigned dropped_frame_count_;
