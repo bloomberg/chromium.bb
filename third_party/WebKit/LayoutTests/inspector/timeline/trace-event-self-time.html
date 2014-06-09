@@ -1,7 +1,6 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 function test()
 {
@@ -188,11 +187,9 @@ function test()
     }
     ];
 
-    var model = InspectorTest.tracingModel;
+    var model = new WebInspector.TracingModel();
     var tracingTimelineModel = new WebInspector.TracingTimelineModel(model);
-    tracingTimelineModel.willStartRecordingTraceEvents();
-    model.setEventsForTest(sessionId, rawTraceEvents);
-    tracingTimelineModel.didStopRecordingTraceEvents();
+    tracingTimelineModel.setEventsForTest(sessionId, rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
     InspectorTest.assertEquals(8, events.length);
     var eventTimes = events.map(function(e)
