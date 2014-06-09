@@ -84,10 +84,12 @@ PassRefPtr<Uint8Array> TextEncoder::encode(const String& input, const Dictionary
     // handle split surrogates here.
 
     CString result;
-    if (input.is8Bit())
-        result = m_codec->encode(input.characters8(), input.length(), WTF::QuestionMarksForUnencodables);
-    else
-        result = m_codec->encode(input.characters16(), input.length(), WTF::QuestionMarksForUnencodables);
+    if (!input.isNull()) {
+        if (input.is8Bit())
+            result = m_codec->encode(input.characters8(), input.length(), WTF::QuestionMarksForUnencodables);
+        else
+            result = m_codec->encode(input.characters16(), input.length(), WTF::QuestionMarksForUnencodables);
+    }
 
     const char* buffer = result.data();
     const unsigned char* unsignedBuffer = reinterpret_cast<const unsigned char*>(buffer);
