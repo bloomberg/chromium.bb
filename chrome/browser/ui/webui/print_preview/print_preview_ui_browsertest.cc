@@ -48,6 +48,10 @@ class PrintPreviewTest : public InProcessBrowserTest {
   }
 };
 
+// The two tests below are failing on Linux LSAN
+// crbug.com/382523
+#if !defined(ADDRESS_SANITIZER)
+
 IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and print is enabled.
@@ -99,6 +103,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyPrint()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
 }
+
+#endif
 
 // Disable the test for mac as it started being flaky, see http://crbug/367665.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
