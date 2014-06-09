@@ -511,10 +511,9 @@ void BufferedDataSource::ProgressCallback(int64 position) {
 }
 
 void BufferedDataSource::UpdateDeferStrategy(bool paused) {
-  // 200 responses end up not being reused to satisfy future range requests,
-  // and we don't want to get too far ahead of the read-head (and thus require
-  // a restart), so keep to the thresholds.
-  if (!loader_->range_supported()) {
+  // No need to aggressively buffer when we are assuming the resource is fully
+  // buffered.
+  if (assume_fully_buffered()) {
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
     return;
   }
@@ -523,14 +522,15 @@ void BufferedDataSource::UpdateDeferStrategy(bool paused) {
   // and we're paused, then try to load as much as possible (the loader will
   // fall back to kCapacityDefer if it knows the current response won't be
   // useful from the cache in the future).
-  if (media_has_played_ && paused) {
+  if (media_has_played_ && paused && loader_->range_supported()) {
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
     return;
   }
 
-  // If media is currently playing or the page indicated preload=auto,
-  // use threshold strategy to enable/disable deferring when the buffer
-  // is full/depleted.
+  // If media is currently playing or the page indicated preload=auto or the
+  // the server does not support the byte range request or we do not want to go
+  // too far ahead of the read head, use threshold strategy to enable/disable
+  // deferring when the buffer is full/depleted.
   loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
 }
 
