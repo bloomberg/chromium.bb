@@ -85,6 +85,8 @@ class AppInfoSummaryTab
   void CreateShortcuts();
   bool CanCreateShortcuts() const;
 
+  bool HasImportedModules();
+
   // UI elements on the dialog.
   views::View* app_summary_panel_;
   views::Label* app_description_label_;

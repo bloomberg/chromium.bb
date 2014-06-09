@@ -299,7 +299,7 @@
   "options_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app", "shared_module"
     ]
   },
   "page_action": {

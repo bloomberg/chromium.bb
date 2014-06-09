@@ -25,6 +25,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "grit/generated_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -260,6 +261,112 @@ bool AppInfoSummaryPanel::CanShowAppInWebStore() const {
   return app_->from_webstore();
 }
 
+// A small summary panel with a list of the app's imported modules, and a link
+// to each of their options pages.
+class AppInfoImportedModulesPanel : public views::View,
+                                    public views::LinkListener {
+ public:
+  AppInfoImportedModulesPanel(Profile* profile,
+                              const extensions::Extension* app);
+  virtual ~AppInfoImportedModulesPanel();
+
+ private:
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  Profile* profile_;
+  const extensions::Extension* app_;
+  std::map<views::Link*, GURL> about_links_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppInfoImportedModulesPanel);
+};
+
+AppInfoImportedModulesPanel::AppInfoImportedModulesPanel(
+    Profile* profile,
+    const extensions::Extension* app)
+    : profile_(profile), app_(app) {
+  // Create controls.
+  views::Label* title =
+      new views::Label(l10n_util::GetStringUTF16(
+                           IDS_APPLICATION_INFO_IMPORTED_MODULES_TITLE_TEXT),
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
+                           ui::ResourceBundle::BoldFont));
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  // Layout elements.
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  static const int kTitleColumnSetId = 1;
+  views::ColumnSet* title_column_set = layout->AddColumnSet(kTitleColumnSetId);
+  title_column_set->AddColumn(views::GridLayout::LEADING,
+                              views::GridLayout::LEADING,
+                              1,  // Stretch the title to as wide as needed
+                              views::GridLayout::USE_PREF,
+                              0,
+                              0);
+
+  static const int kModulesListColumnSetId = 2;
+  views::ColumnSet* column_set = layout->AddColumnSet(kModulesListColumnSetId);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,  // Stretch the title to as wide as needed
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,  // Do not stretch the 'about' link
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+
+  layout->StartRow(0, kTitleColumnSetId);
+  layout->AddView(title);
+
+  // Find all the shared modules for this app, and display them in a list.
+  // TODO(sashab): Revisit UI layout once shared module usage becomes more
+  // common.
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+  const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
+      extensions::SharedModuleInfo::GetImports(app_);
+  for (size_t i = 0; i < imports.size(); ++i) {
+    const extensions::Extension* imported_module =
+        service->GetExtensionById(imports[i].extension_id, true);
+    DCHECK(imported_module);
+    views::Label* name_label =
+        new views::Label(base::UTF8ToUTF16(imported_module->name()));
+    name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    layout->StartRow(0, kModulesListColumnSetId);
+    layout->AddView(name_label);
+
+    // If this app has an options page, display it as an 'about' link.
+    GURL options_page =
+        extensions::ManifestURL::GetOptionsPage(imported_module);
+    if (options_page != GURL::EmptyGURL()) {
+      views::Link* about_link = new views::Link(l10n_util::GetStringUTF16(
+          IDS_APPLICATION_INFO_IMPORTED_MODULES_ABOUT_LINK_TEXT));
+      about_link->set_listener(this);
+      about_links_[about_link] = options_page;
+      layout->AddView(about_link);
+    }
+  }
+}
+
+AppInfoImportedModulesPanel::~AppInfoImportedModulesPanel() {
+}
+
+void AppInfoImportedModulesPanel::LinkClicked(views::Link* source,
+                                              int event_flags) {
+  chrome::NavigateParams params(
+      profile_, about_links_[source], content::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
+}
+
 }  // namespace
 
 // A model for a combobox selecting the launch options for a hosted app.
@@ -385,6 +492,9 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
 
   if (launch_options_combobox_)
     AddChildView(launch_options_combobox_);
+
+  if (HasImportedModules())
+    AddChildView(new AppInfoImportedModulesPanel(profile_, app_));
 
   LayoutButtons();
 }
@@ -533,4 +643,8 @@ bool AppInfoSummaryTab::CanCreateShortcuts() const {
 #else
   return true;
 #endif
+}
+
+bool AppInfoSummaryTab::HasImportedModules() {
+  return extensions::SharedModuleInfo::ImportsModules(app_);
 }

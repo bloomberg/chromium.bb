@@ -2199,6 +2199,12 @@ Even if you have downloaded files from this website before, the website might ha
           Uninstall
         </message>
       </if>
+      <message name="IDS_APPLICATION_INFO_IMPORTED_MODULES_TITLE_TEXT" desc="Text for the title above the imported modules for the app. Imported modules are like shared libraries that an app has used when it was built (but are not directly accessible by a user).">
+        This app imports the following modules:
+      </message>
+      <message name="IDS_APPLICATION_INFO_IMPORTED_MODULES_ABOUT_LINK_TEXT" desc="Text for the link next to each imported module that goes to the About page for that module. The About page may include things such as open-source and copyright licenses for the app.">
+        About
+      </message>
       <message name="IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT" desc="Heading for the required permissions for the app (the permissions that the user must grant the app upon installation).">
         Required
       </message>
