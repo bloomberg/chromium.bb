@@ -191,7 +191,7 @@ private:
     void clearResponse();
     void clearRequest();
 
-    void createRequest(ExceptionState&);
+    void createRequest(PassRefPtr<FormData>, ExceptionState&);
 
     // Dispatches a response ProgressEvent.
     void dispatchProgressEvent(const AtomicString&, long long, long long);
@@ -215,7 +215,6 @@ private:
     KURL m_url;
     AtomicString m_method;
     HTTPHeaderMap m_requestHeaders;
-    RefPtr<FormData> m_requestEntityBody;
     AtomicString m_mimeTypeOverride;
     bool m_async;
     bool m_includeCredentials;
