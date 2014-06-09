@@ -404,7 +404,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     for (unsigned i = 0; i < layersNeedingRepaint.size(); i++) {
         RenderLayer* layer = layersNeedingRepaint[i];
-        layer->repainter().computeRepaintRectsIncludingDescendants();
+        layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
 
         repaintOnCompositingChange(layer);
     }

@@ -120,15 +120,17 @@ void RenderLayerRepainter::computeRepaintRects()
     }
 }
 
-void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()
+void RenderLayerRepainter::computeRepaintRectsIncludingNonCompositingDescendants()
 {
     // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
     // We should make this more efficient.
     // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
     computeRepaintRects();
 
-    for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
-        layer->repainter().computeRepaintRectsIncludingDescendants();
+    for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling()) {
+        if (layer->compositingState() != PaintsIntoOwnBacking && layer->compositingState() != PaintsIntoGroupedBacking)
+            layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
+    }
 }
 
 inline bool RenderLayerRepainter::shouldRepaintLayer() const

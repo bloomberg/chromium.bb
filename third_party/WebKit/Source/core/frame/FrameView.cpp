@@ -1716,7 +1716,7 @@ void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()
             || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent)
             continue;
 
-        layer->repainter().computeRepaintRectsIncludingDescendants();
+        layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
     }
 }
 

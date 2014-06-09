@@ -75,7 +75,7 @@ public:
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 
     void computeRepaintRects();
-    void computeRepaintRectsIncludingDescendants();
+    void computeRepaintRectsIncludingNonCompositingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect
     // if layer compositing is being used,

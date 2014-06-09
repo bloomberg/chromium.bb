@@ -1842,7 +1842,7 @@ void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
     // The answer to paintsIntoCompositedAncestor() affects cached clip rects, so when
     // it changes we have to clear clip rects on descendants.
     m_owningLayer.clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
-    m_owningLayer.repainter().computeRepaintRectsIncludingDescendants();
+    m_owningLayer.repainter().computeRepaintRectsIncludingNonCompositingDescendants();
 
     compositor()->repaintInCompositedAncestor(&m_owningLayer, compositedBounds());
 }
