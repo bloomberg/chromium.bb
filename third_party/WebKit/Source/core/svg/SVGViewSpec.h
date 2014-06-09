@@ -60,6 +60,8 @@ public:
     void trace(Visitor*);
     void clearWeakMembers(Visitor*);
 
+    SVGSVGElement* contextElement() { return m_contextElement.get(); }
+
 private:
     explicit SVGViewSpec(SVGSVGElement*);
 
