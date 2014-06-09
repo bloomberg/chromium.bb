@@ -243,40 +243,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   }
 }
 
-namespace {
-
-// Helper enum for reporting scheme histograms.
-enum URLSchemeForHistogram {
-  kUnknownURLScheme,
-  kMissingURLScheme,
-  kHttpURLScheme,
-  kHttpsURLScheme,
-  kFtpURLScheme,
-  kChromeExtensionURLScheme,
-  kJavascriptURLScheme,
-  kFileURLScheme,
-  kBlobURLScheme,
-  kDataURLScheme,
-  kFileSystemScheme,
-  kMaxURLScheme = kFileSystemScheme  // Must be equal to highest enum value.
-};
-
-URLSchemeForHistogram URLScheme(const GURL& url) {
-  if (!url.has_scheme()) return kMissingURLScheme;
-  if (url.SchemeIs("http")) return kHttpURLScheme;
-  if (url.SchemeIs("https")) return kHttpsURLScheme;
-  if (url.SchemeIs("ftp")) return kFtpURLScheme;
-  if (url.SchemeIs("chrome-extension")) return kChromeExtensionURLScheme;
-  if (url.SchemeIs("javascript")) return kJavascriptURLScheme;
-  if (url.SchemeIs("file")) return kFileURLScheme;
-  if (url.SchemeIs("blob")) return kBlobURLScheme;
-  if (url.SchemeIs("data")) return kDataURLScheme;
-  if (url.SchemeIs("filesystem")) return kFileSystemScheme;
-  return kUnknownURLScheme;
-}
-
-}  // namespace
-
 void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
                               CORSMode cors_mode) {
   DVLOG(1) << __FUNCTION__ << "(" << load_type << ", " << url << ", "
@@ -295,7 +261,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(gurl), kMaxURLScheme);
+  ReportMediaSchemeUma(gurl);
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());

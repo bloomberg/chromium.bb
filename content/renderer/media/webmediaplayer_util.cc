@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "base/metrics/histogram.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 
@@ -74,6 +75,45 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
       NOTREACHED() << "Unexpected status! " << error;
   }
   return blink::WebMediaPlayer::NetworkStateFormatError;
+}
+
+namespace {
+
+// Helper enum for reporting scheme histograms.
+enum URLSchemeForHistogram {
+  kUnknownURLScheme,
+  kMissingURLScheme,
+  kHttpURLScheme,
+  kHttpsURLScheme,
+  kFtpURLScheme,
+  kChromeExtensionURLScheme,
+  kJavascriptURLScheme,
+  kFileURLScheme,
+  kBlobURLScheme,
+  kDataURLScheme,
+  kFileSystemScheme,
+  kMaxURLScheme = kFileSystemScheme  // Must be equal to highest enum value.
+};
+
+URLSchemeForHistogram URLScheme(const GURL& url) {
+  if (!url.has_scheme()) return kMissingURLScheme;
+  if (url.SchemeIs("http")) return kHttpURLScheme;
+  if (url.SchemeIs("https")) return kHttpsURLScheme;
+  if (url.SchemeIs("ftp")) return kFtpURLScheme;
+  if (url.SchemeIs("chrome-extension")) return kChromeExtensionURLScheme;
+  if (url.SchemeIs("javascript")) return kJavascriptURLScheme;
+  if (url.SchemeIs("file")) return kFileURLScheme;
+  if (url.SchemeIs("blob")) return kBlobURLScheme;
+  if (url.SchemeIs("data")) return kDataURLScheme;
+  if (url.SchemeIs("filesystem")) return kFileSystemScheme;
+
+  return kUnknownURLScheme;
+}
+
+}  // namespace
+
+void ReportMediaSchemeUma(const GURL& url) {
+  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url), kMaxURLScheme);
 }
 
 }  // namespace content

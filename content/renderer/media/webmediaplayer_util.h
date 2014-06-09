@@ -10,6 +10,7 @@
 #include "media/base/ranges.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebTimeRange.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -24,6 +25,9 @@ blink::WebTimeRanges ConvertToWebTimeRanges(
 
 blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     media::PipelineStatus error);
+
+// Report the scheme of Media URIs.
+void ReportMediaSchemeUma(const GURL& url);
 
 }  // namespace content
 

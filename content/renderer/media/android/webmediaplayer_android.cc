@@ -173,6 +173,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 void WebMediaPlayerAndroid::load(LoadType load_type,
                                  const blink::WebURL& url,
                                  CORSMode cors_mode) {
+  ReportMediaSchemeUma(GURL(url));
+
   switch (load_type) {
     case LoadTypeURL:
       player_type_ = MEDIA_PLAYER_TYPE_URL;
