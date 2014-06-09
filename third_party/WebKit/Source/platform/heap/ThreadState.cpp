@@ -891,4 +891,24 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
     return threads;
 }
 
+#if ENABLE(GC_TRACING)
+const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
+{
+    bool needLockForIteration = !isAnyThreadInGC();
+    if (needLockForIteration)
+        threadAttachMutex().lock();
+
+    ThreadState::AttachedThreadStateSet& threads = attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if (const GCInfo* gcInfo = (*it)->findGCInfo(address)) {
+            if (needLockForIteration)
+                threadAttachMutex().unlock();
+            return gcInfo;
+        }
+    }
+    if (needLockForIteration)
+        threadAttachMutex().unlock();
+    return 0;
+}
+#endif
 }

@@ -1600,13 +1600,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 #if ENABLE(GC_TRACING)
 const GCInfo* Heap::findGCInfo(Address address)
 {
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        if (const GCInfo* gcInfo = (*it)->findGCInfo(address)) {
-            return gcInfo;
-        }
-    }
-    return 0;
+    return ThreadState::findGCInfoFromAllThreads(address);
 }
 
 void Heap::dumpPathToObjectOnNextGC(void* p)

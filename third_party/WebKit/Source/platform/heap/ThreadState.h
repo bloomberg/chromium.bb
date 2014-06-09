@@ -495,6 +495,7 @@ public:
 
 #if ENABLE(GC_TRACING)
     const GCInfo* findGCInfo(Address);
+    static const GCInfo* findGCInfoFromAllThreads(Address);
 #endif
 
     void pushWeakObjectPointerCallback(void*, WeakPointerCallback);
