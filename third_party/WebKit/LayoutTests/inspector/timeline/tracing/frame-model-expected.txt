@@ -1,0 +1,205 @@
+Test timeline records coalescing
+
+Test: main thread only
+{
+    cpuTime : 4.001
+    duration : 16
+    endTime : 1016.001
+    startTime : 1000.001
+    timeByCategory : {
+        other : 0.004
+        scripting : 3.997
+    }
+}
+{
+    cpuTime : 12.994
+    duration : 16
+    endTime : 1032.001
+    startTime : 1016.001
+    timeByCategory : {
+        other : 3.998
+        rendering : 5.999
+        scripting : 2.997
+    }
+}
+{
+    cpuTime : 1.999
+    duration : 16
+    endTime : 1048.001
+    startTime : 1032.001
+    timeByCategory : {
+        other : 1.999
+    }
+}
+Test: impl-side only
+{
+    cpuTime : 0
+    duration : 30
+    endTime : 1030
+    startTime : 1000
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 0
+    duration : 16
+    endTime : 1046
+    startTime : 1030
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 2.997
+    duration : 32
+    endTime : 1078
+    startTime : 1046
+    timeByCategory : {
+        painting : 2.997
+    }
+}
+{
+    cpuTime : 0
+    duration : 3
+    endTime : 1081
+    startTime : 1078
+    timeByCategory : {
+    }
+}
+Test: impl-side with commits
+{
+    cpuTime : 31.995
+    duration : 46
+    endTime : 1046
+    startTime : 1000
+    timeByCategory : {
+        other : 1.999
+        painting : 1.999
+        rendering : 10
+        scripting : 17.997
+    }
+}
+{
+    cpuTime : 0.010997
+    duration : 16
+    endTime : 1062
+    startTime : 1046
+    timeByCategory : {
+        painting : 0.010997
+    }
+}
+Test: impl-side with interleaving commits
+{
+    cpuTime : 0.012997
+    duration : 14.001
+    endTime : 1014.001
+    startTime : 1000
+    timeByCategory : {
+        painting : 0.012997
+    }
+}
+{
+    cpuTime : 12.996
+    duration : 16
+    endTime : 1030.001
+    startTime : 1014.001
+    timeByCategory : {
+        painting : 3.999
+        scripting : 8.997
+    }
+}
+{
+    cpuTime : 7.999
+    duration : 16
+    endTime : 1046.001
+    startTime : 1030.001
+    timeByCategory : {
+        painting : 7.999
+    }
+}
+Test: pre-frame time accounting
+{
+    cpuTime : 1.398
+    duration : 3.001
+    endTime : 1035.001
+    startTime : 1032
+    timeByCategory : {
+        painting : 0.598
+        rendering : 0.8
+    }
+}
+{
+    cpuTime : 0
+    duration : 28
+    endTime : 1063.001
+    startTime : 1035.001
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 5.999
+    duration : 8.001
+    endTime : 1071.002
+    startTime : 1063.001
+    timeByCategory : {
+        other : 0.003
+        painting : 2.998
+        rendering : 2.998
+    }
+}
+{
+    cpuTime : 3.997
+    duration : 10
+    endTime : 1081.002
+    startTime : 1071.002
+    timeByCategory : {
+        other : 0.001
+        painting : 0.998
+        rendering : 2.998
+    }
+}
+{
+    cpuTime : 0
+    duration : 15
+    endTime : 1096.002
+    startTime : 1081.002
+    timeByCategory : {
+    }
+}
+Test: record processing order
+{
+    cpuTime : 15.994
+    duration : 13.005
+    endTime : 1013.005
+    startTime : 1000
+    timeByCategory : {
+        painting : 3.997
+        scripting : 11.997
+    }
+}
+{
+    cpuTime : 0
+    duration : 16.996
+    endTime : 1030.001
+    startTime : 1013.005
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 30.994
+    duration : 32
+    endTime : 1062.001
+    startTime : 1030.001
+    timeByCategory : {
+        painting : 19.997
+        scripting : 10.997
+    }
+}
+{
+    cpuTime : 0
+    duration : 18
+    endTime : 1080.001
+    startTime : 1062.001
+    timeByCategory : {
+    }
+}
+

@@ -1,10 +1,10 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../tracing-test.js"></script>
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
     var sessionId = "6.23";
     var rawTraceEvents = [
     {
@@ -188,14 +188,12 @@ function test()
     }
     ];
 
-    var model = new WebInspector.TracingModel();
-    var tracineTimelineModel = new WebInspector.TracingTimelineModel(model);
-    tracineTimelineModel.willStartRecordingTraceEvents();
-    model.setSessionIdForTest(sessionId);
-    model._eventsCollected(rawTraceEvents);
-    model._tracingComplete();
-    tracineTimelineModel.didStopRecordingTraceEvents();
-    var events = tracineTimelineModel.inspectedTargetEvents();
+    var model = InspectorTest.tracingModel;
+    var tracingTimelineModel = new WebInspector.TracingTimelineModel(model);
+    tracingTimelineModel.willStartRecordingTraceEvents();
+    model.setEventsForTest(sessionId, rawTraceEvents);
+    tracingTimelineModel.didStopRecordingTraceEvents();
+    var events = tracingTimelineModel.inspectedTargetEvents();
     InspectorTest.assertEquals(8, events.length);
     var eventTimes = events.map(function(e)
     {

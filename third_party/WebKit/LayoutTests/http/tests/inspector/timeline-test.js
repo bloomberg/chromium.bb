@@ -282,6 +282,27 @@ InspectorTest.FakeFileReader = function(input, delegate, callback)
     this._fileSize = input.length;
 };
 
+InspectorTest.dumpFrame = function(frame)
+{
+    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting", "painting", "rendering", "committedFrom"];
+    function formatFields(object)
+    {
+        var result = {};
+        for (var key in object) {
+            if (fieldsToDump.indexOf(key) < 0)
+                continue;
+            var value = object[key];
+            if (typeof value === "number")
+                value = Number(value.toFixed(7));
+            else if (typeof value === "object" && value)
+                value = formatFields(value);
+            result[key] = value;
+        }
+        return result;
+    }
+    InspectorTest.addObject(formatFields(frame));
+}
+
 InspectorTest.FakeFileReader.prototype = {
     start: function(output)
     {
