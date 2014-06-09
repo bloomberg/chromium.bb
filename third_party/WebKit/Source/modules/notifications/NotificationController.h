@@ -42,14 +42,14 @@ public:
     static PassOwnPtr<NotificationController> create(PassOwnPtr<NotificationClient>);
     static const char* supplementName();
     static NotificationController* from(LocalFrame* frame) { return static_cast<NotificationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
-    static NotificationClient* clientFrom(LocalFrame*);
-
-    NotificationClient* client() { return m_client.get(); }
+    static NotificationClient& clientFrom(LocalFrame*);
 
     virtual void trace(Visitor* visitor) OVERRIDE { Supplement<LocalFrame>::trace(visitor); }
 
 private:
     explicit NotificationController(PassOwnPtr<NotificationClient>);
+
+    NotificationClient& client() { return *m_client; }
 
     OwnPtr<NotificationClient> m_client;
 };
