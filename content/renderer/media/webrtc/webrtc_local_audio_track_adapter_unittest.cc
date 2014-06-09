@@ -88,12 +88,12 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, GetSignalLevel) {
   webrtc::AudioTrackInterface* webrtc_track =
       static_cast<webrtc::AudioTrackInterface*>(adapter_.get());
   int signal_level = 0;
-  EXPECT_FALSE(webrtc_track->GetSignalLevel(&signal_level));
-
-  // Enable the audio processing in the audio track.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableAudioTrackProcessing);
   EXPECT_TRUE(webrtc_track->GetSignalLevel(&signal_level));
+
+  // Disable the audio processing in the audio track.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableAudioTrackProcessing);
+  EXPECT_FALSE(webrtc_track->GetSignalLevel(&signal_level));
 }
 
 }  // namespace content

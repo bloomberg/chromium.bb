@@ -46,8 +46,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
     NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink),
     NON_EXPORTED_BASE(public AudioProcessorInterface) {
  public:
-  // Returns true if |kEnableAudioTrackProcessing| is on or if the
-  // |MediaStreamAudioTrackProcessing| finch experiment is enabled.
+  // Returns false if |kDisableAudioTrackProcessing| is set to true, otherwise
+  // returns true.
   static bool IsAudioTrackProcessingEnabled();
 
   // |playout_data_source| is used to register this class as a sink to the
