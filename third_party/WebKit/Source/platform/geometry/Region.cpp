@@ -207,6 +207,12 @@ bool Region::Shape::compareShapes(const Shape& aShape, const Shape& bShape)
     return result;
 }
 
+void Region::Shape::trimCapacities()
+{
+    m_segments.shrinkToReasonableCapacity();
+    m_spans.shrinkToReasonableCapacity();
+}
+
 struct Region::Shape::CompareContainsOperation {
     const static bool defaultResult = true;
     inline static bool aOutsideB(bool& /* result */) { return false; }
@@ -231,6 +237,12 @@ Region::Shape::Shape(const IntRect& rect)
     appendSegment(rect.x());
     appendSegment(rect.maxX());
     appendSpan(rect.maxY());
+}
+
+Region::Shape::Shape(size_t segmentsCapacity, size_t spansCapacity)
+{
+    m_segments.reserveCapacity(segmentsCapacity);
+    m_spans.reserveCapacity(spansCapacity);
 }
 
 void Region::Shape::appendSpan(int y)
@@ -393,7 +405,9 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& sh
     COMPILE_ASSERT(!(!Operation::shouldAddRemainingSegmentsFromSpan1 && Operation::shouldAddRemainingSegmentsFromSpan2), invalid_segment_combination);
     COMPILE_ASSERT(!(!Operation::shouldAddRemainingSpansFromShape1 && Operation::shouldAddRemainingSpansFromShape2), invalid_span_combination);
 
-    Shape result;
+    size_t segmentsCapacity = shape1.segmentsSize() + shape2.segmentsSize();
+    size_t spansCapacity = shape1.spansSize() + shape2.spansSize();
+    Shape result(segmentsCapacity, spansCapacity);
     if (Operation::trySimpleOperation(shape1, shape2, result))
         return result;
 
@@ -408,6 +422,9 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& sh
 
     SegmentIterator segments2 = 0;
     SegmentIterator segments2End = 0;
+
+    Vector<int, 32> segments;
+    segments.reserveCapacity(std::max(shape1.segmentsSize(), shape2.segmentsSize()));
 
     // Iterate over all spans.
     while (spans1 != spans1End && spans2 != spans2End) {
@@ -435,7 +452,9 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& sh
         SegmentIterator s1 = segments1;
         SegmentIterator s2 = segments2;
 
-        Vector<int, 32> segments;
+        // Clear vector without dropping capacity.
+        segments.resize(0);
+        ASSERT(segments.capacity());
 
         // Now iterate over the segments in each span and construct a new vector of segments.
         while (s1 != segments1End && s2 != segments2End) {
@@ -475,6 +494,8 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& sh
         result.appendSpans(shape1, spans1, spans1End);
     else if (Operation::shouldAddRemainingSpansFromShape2 && spans2 != spans2End)
         result.appendSpans(shape2, spans2, spans2End);
+
+    result.trimCapacities();
 
     return result;
 }

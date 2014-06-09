@@ -78,6 +78,7 @@ private:
     public:
         Shape();
         Shape(const IntRect&);
+        Shape(size_t segmentsCapacity, size_t spansCapacity);
 
         IntRect bounds() const;
         bool isEmpty() const { return m_spans.isEmpty(); }
@@ -86,10 +87,12 @@ private:
         typedef const Span* SpanIterator;
         SpanIterator spansBegin() const;
         SpanIterator spansEnd() const;
+        size_t spansSize() const { return m_spans.size(); }
 
         typedef const int* SegmentIterator;
         SegmentIterator segmentsBegin(SpanIterator) const;
         SegmentIterator segmentsEnd(SpanIterator) const;
+        size_t segmentsSize() const { return m_segments.size(); }
 
         static Shape unionShapes(const Shape& shape1, const Shape& shape2);
         static Shape intersectShapes(const Shape& shape1, const Shape& shape2);
@@ -103,6 +106,7 @@ private:
 
         template<typename CompareOperation>
         static bool compareShapes(const Shape& shape1, const Shape& shape2);
+        void trimCapacities();
 
 #ifndef NDEBUG
         void dump() const;
