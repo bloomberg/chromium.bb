@@ -1717,6 +1717,39 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   AddOptionalAttribute(CKA_PUBLIC_EXPONENT, public_exponent, &key_template);
   AddOptionalAttribute(CKA_PRIVATE_EXPONENT, private_exponent, &key_template);
 
+  // Manufacture a CKA_ID so the created key can be retrieved later as a
+  // SECKEYPrivateKey using FindKeyByKeyID(). Unfortunately there isn't a more
+  // direct way to do this in NSS.
+  //
+  // For consistency with other NSS key creation methods, set the CKA_ID to
+  // PK11_MakeIDFromPubKey(). There are some problems with
+  // this approach:
+  //
+  //  (1) Prior to NSS 3.16.2, there is no parameter validation when creating
+  //      private keys. It is therefore possible to construct a key using the
+  //      known public modulus, and where all the other parameters are bogus.
+  //      FindKeyByKeyID() returns the first key matching the ID. So this would
+  //      effectively allow an attacker to retrieve a private key of their
+  //      choice.
+  //      TODO(eroman): Once NSS rolls and this is fixed, disallow RSA key
+  //                    import on older versions of NSS.
+  //                    http://crbug.com/378315
+  //
+  //  (2) The ID space is shared by different key types. So theoretically
+  //      possible to retrieve a key of the wrong type which has a matching
+  //      CKA_ID. In practice I am told this is not likely except for small key
+  //      sizes, since would require constructing keys with the same public
+  //      data.
+  //
+  //  (3) FindKeyByKeyID() doesn't necessarily return the object that was just
+  //      created by CreateGenericObject. If the pre-existing key was
+  //      provisioned with flags incompatible with WebCrypto (for instance
+  //      marked sensitive) then this will break things.
+  SECItem modulus_item = MakeSECItemForBuffer(CryptoData(modulus));
+  crypto::ScopedSECItem object_id(PK11_MakeIDFromPubKey(&modulus_item));
+  AddOptionalAttribute(
+      CKA_ID, CryptoData(object_id->data, object_id->len), &key_template);
+
   // Optional properties (all of these will have been specified or none).
   AddOptionalAttribute(CKA_PRIME_1, prime1, &key_template);
   AddOptionalAttribute(CKA_PRIME_2, prime2, &key_template);
@@ -1732,17 +1765,13 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!key_object)
     return Status::OperationError();
 
-  // The ID isn't guaranteed to be set by PKCS#11. However it is by softtoken so
-  // this should work.
-  SECItem object_id = {};
-  if (PK11_ReadRawAttribute(
-          PK11_TypeGeneric, key_object.get(), CKA_ID, &object_id) != SECSuccess)
-    return Status::OperationError();
+  crypto::ScopedSECKEYPrivateKey private_key_tmp(
+      PK11_FindKeyByKeyID(slot.get(), object_id.get(), NULL));
 
+  // PK11_FindKeyByKeyID() may return a handle to an existing key, rather than
+  // the object created by PK11_CreateGenericObject().
   crypto::ScopedSECKEYPrivateKey private_key(
-      PK11_FindKeyByKeyID(slot.get(), &object_id, NULL));
-
-  SECITEM_FreeItem(&object_id, PR_FALSE);
+      SECKEY_CopyPrivateKey(private_key_tmp.get()));
 
   if (!private_key)
     return Status::OperationError();

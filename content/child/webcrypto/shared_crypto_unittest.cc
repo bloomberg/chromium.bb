@@ -90,6 +90,11 @@ bool operator==(const content::webcrypto::CryptoData& a,
          memcmp(a.bytes(), b.bytes(), a.byte_length()) == 0;
 }
 
+bool operator!=(const content::webcrypto::CryptoData& a,
+                const content::webcrypto::CryptoData& b) {
+  return !(a == b);
+}
+
 namespace {
 
 // -----------------------------------------------------------------------------
@@ -846,12 +851,12 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
     blink::WebCryptoAlgorithm algorithm =
         CreateAlgorithm(blink::WebCryptoAlgorithmIdHmac);
 
-    blink::WebCryptoAlgorithm importAlgorithm =
+    blink::WebCryptoAlgorithm import_algorithm =
         CreateHmacImportAlgorithm(test_hash.id());
 
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
         test_key,
-        importAlgorithm,
+        import_algorithm,
         blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify);
 
     EXPECT_EQ(test_hash.id(), key.algorithm().hmacParams()->hash().id());
@@ -2191,6 +2196,127 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkToPkcs8RoundTrip)) {
             CryptoData(exported_key_pkcs8));
 }
 
+// Tests importing multiple RSA private keys from JWK, and then exporting to
+// PKCS8.
+//
+// This is a regression test for http://crbug.com/378315, for which importing
+// a sequence of keys from JWK could yield the wrong key. The first key would
+// be imported correctly, however every key after that would actually import
+// the first key.
+TEST_F(SharedCryptoTest, MAYBE(ImportMultipleRSAPrivateKeysJwk)) {
+  scoped_ptr<base::ListValue> key_list;
+  ASSERT_TRUE(ReadJsonTestFileToList("rsa_private_keys.json", &key_list));
+
+  // For this test to be meaningful the keys MUST be kept alive before importing
+  // new keys.
+  std::vector<blink::WebCryptoKey> live_keys;
+
+  for (size_t key_index = 0; key_index < key_list->GetSize(); ++key_index) {
+    SCOPED_TRACE(key_index);
+
+    base::DictionaryValue* key_values;
+    ASSERT_TRUE(key_list->GetDictionary(key_index, &key_values));
+
+    // Get the JWK representation of the key.
+    base::DictionaryValue* key_jwk;
+    ASSERT_TRUE(key_values->GetDictionary("jwk", &key_jwk));
+
+    // Get the PKCS8 representation of the key.
+    std::string pkcs8_hex_string;
+    ASSERT_TRUE(key_values->GetString("pkcs8", &pkcs8_hex_string));
+    std::vector<uint8> pkcs8_bytes = HexStringToBytes(pkcs8_hex_string);
+
+    // Get the modulus length for the key.
+    int modulus_length_bits = 0;
+    ASSERT_TRUE(key_values->GetInteger("modulusLength", &modulus_length_bits));
+
+    blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
+    // Import the key from JWK.
+    ASSERT_EQ(
+        Status::Success(),
+        ImportKeyJwkFromDict(*key_jwk,
+                             CreateRsaHashedImportAlgorithm(
+                                 blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                 blink::WebCryptoAlgorithmIdSha256),
+                             true,
+                             blink::WebCryptoKeyUsageSign,
+                             &private_key));
+
+    live_keys.push_back(private_key);
+
+    EXPECT_EQ(
+        modulus_length_bits,
+        static_cast<int>(
+            private_key.algorithm().rsaHashedParams()->modulusLengthBits()));
+
+    // Export to PKCS8 and verify that it matches expectation.
+    std::vector<uint8> exported_key_pkcs8;
+    ASSERT_EQ(
+        Status::Success(),
+        ExportKey(
+            blink::WebCryptoKeyFormatPkcs8, private_key, &exported_key_pkcs8));
+
+    EXPECT_BYTES_EQ(pkcs8_bytes, exported_key_pkcs8);
+  }
+}
+
+// Import an RSA private key using JWK. Next import a JWK containing the same
+// modulus, but mismatched parameters for the rest. It should NOT be possible
+// that the second import retrieves the first key. See http://crbug.com/378315
+// for how that could happen.
+TEST_F(SharedCryptoTest, MAYBE(ImportJwkExistingModulusAndInvalid)) {
+#if defined(USE_NSS)
+  if (!NSS_VersionCheck("3.16.2")) {
+    LOG(WARNING) << "Skipping test because lacks NSS support";
+    return;
+  }
+#endif
+
+  scoped_ptr<base::ListValue> key_list;
+  ASSERT_TRUE(ReadJsonTestFileToList("rsa_private_keys.json", &key_list));
+
+  // Import a 1024-bit private key.
+  base::DictionaryValue* key1_props;
+  ASSERT_TRUE(key_list->GetDictionary(1, &key1_props));
+  base::DictionaryValue* key1_jwk;
+  ASSERT_TRUE(key1_props->GetDictionary("jwk", &key1_jwk));
+
+  blink::WebCryptoKey key1 = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            ImportKeyJwkFromDict(*key1_jwk,
+                                 CreateRsaHashedImportAlgorithm(
+                                     blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256),
+                                 true,
+                                 blink::WebCryptoKeyUsageSign,
+                                 &key1));
+
+  ASSERT_EQ(1024u, key1.algorithm().rsaHashedParams()->modulusLengthBits());
+
+  // Construct a JWK using the modulus of key1, but all the other fields from
+  // another key (also a 1024-bit private key).
+  base::DictionaryValue* key2_props;
+  ASSERT_TRUE(key_list->GetDictionary(5, &key2_props));
+  base::DictionaryValue* key2_jwk;
+  ASSERT_TRUE(key2_props->GetDictionary("jwk", &key2_jwk));
+  std::string modulus;
+  key1_jwk->GetString("n", &modulus);
+  key2_jwk->SetString("n", modulus);
+
+  // This should fail, as the n,e,d parameters are not consistent. It MUST NOT
+  // somehow return the key created earlier.
+  blink::WebCryptoKey key2 = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::OperationError(),
+            ImportKeyJwkFromDict(*key2_jwk,
+                                 CreateRsaHashedImportAlgorithm(
+                                     blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256),
+                                 true,
+                                 blink::WebCryptoKeyUsageSign,
+                                 &key2));
+}
+
 // Import a JWK RSA private key with some optional parameters missing (q, dp,
 // dq, qi).
 //
@@ -2455,7 +2581,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
 
 TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   // Import a key pair.
-  blink::WebCryptoAlgorithm importAlgorithm =
+  blink::WebCryptoAlgorithm import_algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha1);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -2463,7 +2589,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   ASSERT_NO_FATAL_FAILURE(
       ImportRsaKeyPair(HexStringToBytes(kPublicKeySpkiDerHex),
                        HexStringToBytes(kPrivateKeyPkcs8DerHex),
-                       importAlgorithm,
+                       import_algorithm,
                        false,
                        blink::WebCryptoKeyUsageVerify,
                        blink::WebCryptoKeyUsageSign,
@@ -2588,7 +2714,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
   ASSERT_TRUE(ReadJsonTestFileToList("pkcs1v15_sign.json", &tests));
 
   // Import the key pair.
-  blink::WebCryptoAlgorithm importAlgorithm =
+  blink::WebCryptoAlgorithm import_algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha1);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -2596,7 +2722,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
   ASSERT_NO_FATAL_FAILURE(
       ImportRsaKeyPair(HexStringToBytes(kPublicKeySpkiDerHex),
                        HexStringToBytes(kPrivateKeyPkcs8DerHex),
-                       importAlgorithm,
+                       import_algorithm,
                        false,
                        blink::WebCryptoKeyUsageVerify,
                        blink::WebCryptoKeyUsageSign,
