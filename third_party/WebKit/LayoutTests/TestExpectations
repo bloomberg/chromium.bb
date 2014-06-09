@@ -806,7 +806,6 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 # Still-failing tests for the new WebSocket implementation.
 crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Failure ]
 crbug.com/339373 http/tests/websocket/multiple-connections.html [ Timeout ]
-crbug.com/347109 http/tests/websocket/useragent-in-openinghandshake.html [ Failure ]
 
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
