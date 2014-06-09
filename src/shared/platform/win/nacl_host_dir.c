@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <share.h>
+#include <stddef.h>
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"

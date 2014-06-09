@@ -22,7 +22,7 @@
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 
 
-void NaClSecureRngDtor(struct NaClSecureRngIf *vself);
+static void NaClSecureRngDtor(struct NaClSecureRngIf *vself);
 static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself);
 
 static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl = {
