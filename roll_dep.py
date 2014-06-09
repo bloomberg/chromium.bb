@@ -1,0 +1,294 @@
+#!/usr/bin/env python
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""This scripts takes the path to a dep and an svn revision, and updates the
+parent repo's DEPS file with the corresponding git revision.  Sample invocation:
+
+[chromium/src]$ roll-dep third_party/WebKit 12345
+
+After the script completes, the DEPS file will be dirty with the new revision.
+The user can then:
+
+$ git add DEPS
+$ git commit
+"""
+
+import ast
+import os
+import re
+import sys
+
+from itertools import izip
+from subprocess import Popen, PIPE
+from textwrap import dedent
+
+
+def posix_path(path):
+  """Convert a possibly-Windows path to a posix-style path."""
+  return re.sub('^[A-Z]:', '', path.replace(os.sep, '/'))
+
+
+def platform_path(path):
+  """Convert a path to the native path format of the host OS."""
+  return path.replace('/', os.sep)
+
+
+def find_gclient_root():
+  """Find the directory containing the .gclient file."""
+  cwd = posix_path(os.getcwd())
+  result = ''
+  for _ in xrange(len(cwd.split('/'))):
+    if os.path.exists(os.path.join(result, '.gclient')):
+      return result
+    result = os.path.join(result, os.pardir)
+  assert False, 'Could not find root of your gclient checkout.'
+
+
+def get_solution(gclient_root, dep_path):
+  """Find the solution in .gclient containing the dep being rolled."""
+  dep_path = os.path.relpath(dep_path, gclient_root)
+  cwd = os.getcwd().rstrip(os.sep) + os.sep
+  gclient_root = os.path.realpath(gclient_root)
+  gclient_path = os.path.join(gclient_root, '.gclient')
+  gclient_locals = {}
+  execfile(gclient_path, {}, gclient_locals)
+  for soln in gclient_locals['solutions']:
+    soln_relpath = platform_path(soln['name'].rstrip('/')) + os.sep
+    if (dep_path.startswith(soln_relpath) or
+        cwd.startswith(os.path.join(gclient_root, soln_relpath))):
+      return soln
+  assert False, 'Could not determine the parent project for %s' % dep_path
+
+
+def verify_git_revision(dep_path, revision):
+  """Verify that a git revision exists in a repository."""
+  p = Popen(['git', 'rev-list', '-n', '1', revision],
+            cwd=dep_path, stdout=PIPE, stderr=PIPE)
+  result = p.communicate()[0].strip()
+  if p.returncode != 0 or not re.match('^[a-fA-F0-9]{40}$', result):
+    result = None
+  return result
+
+
+def convert_svn_revision(dep_path, revision):
+  """Find the git revision corresponding to an svn revision."""
+  err_msg = 'Unknown error'
+  revision = int(revision)
+  with open(os.devnull, 'w') as devnull:
+    for ref in ('HEAD', 'origin/master'):
+      try:
+        log_p = Popen(['git', 'log', ref],
+                      cwd=dep_path, stdout=PIPE, stderr=devnull)
+        grep_p = Popen(['grep', '-e', '^commit ', '-e', '^ *git-svn-id: '],
+                       stdin=log_p.stdout, stdout=PIPE, stderr=devnull)
+        git_rev = None
+        prev_svn_rev = None
+        for line in grep_p.stdout:
+          if line.startswith('commit '):
+            git_rev = line.split()[1]
+            continue
+          try:
+            svn_rev = int(line.split()[1].partition('@')[2])
+          except (IndexError, ValueError):
+            print >> sys.stderr, (
+                'WARNING: Could not parse svn revision out of "%s"' % line)
+            continue
+          if svn_rev == revision:
+            return git_rev
+          if svn_rev > revision:
+            prev_svn_rev = svn_rev
+            continue
+          if prev_svn_rev:
+            err_msg = 'git history skips from revision %d to revision %d.' % (
+                svn_rev, prev_svn_rev)
+          else:
+            err_msg = (
+                'latest available revision is %d; you may need to '
+                '"git fetch origin" to get the latest commits.' % svn_rev)
+      finally:
+        log_p.terminate()
+        grep_p.terminate()
+  raise RuntimeError('No match for revision %d; %s' % (revision, err_msg))
+
+
+def get_git_revision(dep_path, revision):
+  """Convert the revision argument passed to the script to a git revision."""
+  if revision.startswith('r'):
+    result = convert_svn_revision(dep_path, revision[1:])
+  elif re.search('[a-fA-F]', revision):
+    result = verify_git_revision(dep_path, revision)
+  elif len(revision) > 6:
+    result = verify_git_revision(dep_path, revision)
+    if not result:
+      result = convert_svn_revision(dep_path, revision)
+  else:
+    try:
+      result = convert_svn_revision(dep_path, revision)
+    except RuntimeError:
+      result = verify_git_revision(dep_path, revision)
+      if not result:
+        raise
+  return result
+
+
+def ast_err_msg(node):
+  return 'ERROR: Undexpected DEPS file AST structure at line %d column %d' % (
+      node.lineno, node.col_offset)
+
+
+def find_deps_section(deps_ast, section):
+  """Find a top-level section of the DEPS file in the AST."""
+  try:
+    result = [n.value for n in deps_ast.body if
+              n.__class__ is ast.Assign and
+              n.targets[0].__class__ is ast.Name and
+              n.targets[0].id == section][0]
+    return result
+  except IndexError:
+    return None
+
+
+def find_dict_index(dict_node, key):
+  """Given a key, find the index of the corresponding dict entry."""
+  assert dict_node.__class__ is ast.Dict, ast_err_msg(dict_node)
+  indices = [i for i, n in enumerate(dict_node.keys) if
+             n.__class__ is ast.Str and n.s == key]
+  assert len(indices) < 2, (
+      'Found redundant dict entries for key "%s"' % key)
+  return indices[0] if indices else None
+
+
+def update_node(deps_lines, deps_ast, node, git_revision):
+  """Update an AST node with the new git revision."""
+  if node.__class__ is ast.Str:
+    return update_string(deps_lines, node, git_revision)
+  elif node.__class__ is ast.BinOp:
+    return update_binop(deps_lines, deps_ast, node, git_revision)
+  elif node.__class__ is ast.Call:
+    return update_call(deps_lines, deps_ast, node, git_revision)
+  else:
+    assert False, ast_err_msg(node)
+
+
+def update_string(deps_lines, string_node, git_revision):
+  """Update a string node in the AST with the new git revision."""
+  line_idx = string_node.lineno - 1
+  start_idx = string_node.col_offset - 1
+  line = deps_lines[line_idx]
+  (prefix, sep, old_rev) = string_node.s.partition('@')
+  if sep:
+    start_idx = line.find(prefix + sep, start_idx) + len(prefix + sep)
+    tail_idx = start_idx + len(old_rev)
+  else:
+    start_idx = line.find(prefix, start_idx)
+    tail_idx = start_idx + len(prefix)
+    old_rev = prefix
+  deps_lines[line_idx] = line[:start_idx] + git_revision + line[tail_idx:]
+  return old_rev
+
+
+def update_binop(deps_lines, deps_ast, binop_node, git_revision):
+  """Update a binary operation node in the AST with the new git revision."""
+  # Since the revision part is always last, assume that it's the right-hand
+  # operand that needs to be updated.
+  return update_node(deps_lines, deps_ast, binop_node.right, git_revision)
+
+
+def update_call(deps_lines, deps_ast, call_node, git_revision):
+  """Update a function call node in the AST with the new git revision."""
+  # The only call we know how to handle is Var()
+  assert call_node.func.id == 'Var', ast_err_msg(call_node)
+  assert call_node.args and call_node.args[0].__class__ is ast.Str, (
+      ast_err_msg(call_node))
+  return update_var(deps_lines, deps_ast, call_node.args[0].s, git_revision)
+
+
+def update_var(deps_lines, deps_ast, var_name, git_revision):
+  """Update an entry in the vars section of the DEPS file with the new
+  git revision."""
+  vars_node = find_deps_section(deps_ast, 'vars')
+  assert vars_node, 'Could not find "vars" section of DEPS file.'
+  var_idx = find_dict_index(vars_node, var_name)
+  assert var_idx is not None, (
+      'Could not find definition of "%s" var in DEPS file.' % var_name)
+  val_node = vars_node.values[var_idx]
+  return update_node(deps_lines, deps_ast, val_node, git_revision)
+
+
+def generate_commit_message(deps_section, dep_name, new_rev):
+  (url, _, old_rev) = deps_section[dep_name].partition('@')
+  if url.endswith('.git'):
+    url = url[:-4]
+  url += '/+log/%s..%s' % (old_rev[:12], new_rev[:12])
+  return dedent('''\
+      Rolled %s
+          from revision %s
+          to revision %s
+      Summary of changes available at:
+          %s\n''' % (dep_name, old_rev, new_rev, url))
+
+def update_deps(soln_path, dep_name, new_rev):
+  """Update the DEPS file with the new git revision."""
+  commit_msg = ''
+  deps_file = os.path.join(soln_path, 'DEPS')
+  with open(deps_file) as fh:
+    deps_content = fh.read()
+  deps_locals = {}
+  def _Var(key):
+    return deps_locals['vars'][key]
+  deps_locals['Var'] = _Var
+  exec deps_content in {}, deps_locals
+  deps_lines = deps_content.splitlines()
+  deps_ast = ast.parse(deps_content, deps_file)
+  deps_node = find_deps_section(deps_ast, 'deps')
+  assert deps_node, 'Could not find "deps" section of DEPS file'
+  dep_idx = find_dict_index(deps_node, dep_name)
+  if dep_idx is not None:
+    value_node = deps_node.values[dep_idx]
+    update_node(deps_lines, deps_ast, value_node, new_rev)
+    commit_msg = generate_commit_message(deps_locals['deps'], dep_name, new_rev)
+  deps_os_node = find_deps_section(deps_ast, 'deps_os')
+  if deps_os_node:
+    for (os_name, os_node) in izip(deps_os_node.keys, deps_os_node.values):
+      dep_idx = find_dict_index(os_node, dep_name)
+      if dep_idx is not None:
+        value_node = os_node.values[dep_idx]
+        if value_node.__class__ is ast.Name and value_node.id == 'None':
+          pass
+        else:
+          update_node(deps_lines, deps_ast, value_node, new_rev)
+          commit_msg = generate_commit_message(
+              deps_locals['deps_os'][os_name], dep_name, new_rev)
+  if commit_msg:
+    print 'Pinning %s' % dep_name
+    print 'to revision %s' % new_rev
+    print 'in %s' % deps_file
+    with open(deps_file, 'w') as fh:
+      for line in deps_lines:
+        print >> fh, line
+    with open(os.path.join(soln_path, '.git', 'MERGE_MSG'), 'a') as fh:
+      fh.write(commit_msg)
+  else:
+    print 'Could not find an entry in %s to update.' % deps_file
+  return 0 if commit_msg else 1
+
+
+def main(argv):
+  if len(argv) != 2 :
+    print >> sys.stderr, 'Usage: roll_dep.py <dep path> <svn revision>'
+    return 1
+  (dep_path, revision) = argv[0:2]
+  dep_path = platform_path(dep_path)
+  assert os.path.isdir(dep_path), 'No such directory: %s' % dep_path
+  gclient_root = find_gclient_root()
+  soln = get_solution(gclient_root, dep_path)
+  soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
+  dep_name = posix_path(os.path.relpath(dep_path, gclient_root))
+  new_rev = get_git_revision(dep_path, revision)
+  assert new_rev, 'Could not find git revision matching %s' % revision
+  return update_deps(soln_path, dep_name, new_rev)
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))
