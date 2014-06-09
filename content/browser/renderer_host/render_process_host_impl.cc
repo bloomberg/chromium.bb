@@ -1251,7 +1251,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSandboxLogging,
 #endif
 #if defined(OS_WIN)
-    switches::kEnableDirectWrite,
+    switches::kDisableDirectWrite,
     switches::kEnableHighResolutionTime,
 #endif
   };

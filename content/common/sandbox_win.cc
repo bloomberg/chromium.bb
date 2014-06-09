@@ -568,7 +568,7 @@ bool ShouldUseDirectWrite() {
   // 2670838, so a Win7 check is sufficient. We do not currently attempt to
   // support Vista, where SP2 and the Platform Update are required.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kEnableDirectWrite) &&
+  return !command_line.HasSwitch(switches::kDisableDirectWrite) &&
          base::win::GetVersion() >= base::win::VERSION_WIN7;
 }
 

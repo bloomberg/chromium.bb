@@ -519,11 +519,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_WIN)
   {
-    "enable-direct-write",
-    IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME,
-    IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION,
+    "disable-direct-write",
+    IDS_FLAGS_DISABLE_DIRECT_WRITE_NAME,
+    IDS_FLAGS_DISABLE_DIRECT_WRITE_DESCRIPTION,
     kOsWin,
-    SINGLE_VALUE_TYPE(switches::kEnableDirectWrite)
+    SINGLE_VALUE_TYPE(switches::kDisableDirectWrite)
   },
 #endif
   {

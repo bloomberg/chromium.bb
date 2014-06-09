@@ -5640,11 +5640,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Prevents the automatic combining of composited layers.
       </message>
       <if expr="is_win">
-        <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME" desc="Name of the 'Enable DirectWrite' lab.">
-          Enable DirectWrite
+        <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_NAME" desc="Name of the 'Disable DirectWrite' lab.">
+          Disable DirectWrite
         </message>
-        <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Enable DirectWrite' lab.">
-          Enables the use of experimental DirectWrite font rendering system.
+        <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Disable DirectWrite' lab.">
+          Disables the use of experimental DirectWrite font rendering system.
         </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">

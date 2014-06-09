@@ -966,11 +966,11 @@ const char kDisableCoreAnimationPlugins[] =
 // Device scale factor passed to certain processes like renderers, etc.
 const char kDeviceScaleFactor[]     = "device-scale-factor";
 
+// Disables the DirectWrite font rendering system on windows.
+const char kDisableDirectWrite[]             = "disable-direct-write";
+
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
-
-// Enables the DirectWrite font rendering system on windows.
-const char kEnableDirectWrite[]             = "enable-direct-write";
 
 // Use high resolution timers for TimeTicks.
 const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
