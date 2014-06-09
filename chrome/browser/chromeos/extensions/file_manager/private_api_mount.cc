@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/task_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using chromeos::disks::DiskMountManager;
@@ -24,6 +26,24 @@ using content::BrowserThread;
 namespace file_browser_private = extensions::api::file_browser_private;
 
 namespace extensions {
+
+namespace {
+
+// Does chmod o+r for the given path to ensure the file is readable from avfs.
+void EnsureReadableFilePermissionOnBlockingPool(
+    const base::FilePath& path,
+    const base::Callback<void(drive::FileError, const base::FilePath&)>&
+        callback) {
+  int mode = 0;
+  if (!base::GetPosixFilePermissions(path, &mode) ||
+      !base::SetPosixFilePermissions(path, mode | S_IROTH)) {
+    callback.Run(drive::FILE_ERROR_ACCESS_DENIED, base::FilePath());
+    return;
+  }
+  callback.Run(drive::FILE_ERROR_OK, path);
+}
+
+}  // namespace
 
 bool FileBrowserPrivateAddMountFunction::RunAsync() {
   using file_browser_private::AddMount::Params;
@@ -59,8 +79,37 @@ bool FileBrowserPrivateAddMountFunction::RunAsync() {
             &FileBrowserPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted,
             this, path.BaseName()));
   } else {
-    RunAfterMarkCacheFileAsMounted(
-        path.BaseName(), drive::FILE_ERROR_OK, path);
+    file_manager::VolumeManager* volume_manager =
+        file_manager::VolumeManager::Get(GetProfile());
+    DCHECK(volume_manager);
+
+    bool is_under_downloads = false;
+    const std::vector<file_manager::VolumeInfo> volumes =
+        volume_manager->GetVolumeInfoList();
+    for (size_t i = 0; i < volumes.size(); ++i) {
+      if (volumes[i].type == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
+          volumes[i].mount_path.IsParent(path)) {
+        is_under_downloads = true;
+        break;
+      }
+    }
+
+    if (is_under_downloads) {
+      // For files under downloads, change the file permission and make it
+      // readable from avfs/fuse if needed.
+      BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
+          base::Bind(&EnsureReadableFilePermissionOnBlockingPool,
+                     path,
+                     google_apis::CreateRelayCallback(
+                         base::Bind(&FileBrowserPrivateAddMountFunction::
+                                        RunAfterMarkCacheFileAsMounted,
+                                    this,
+                                    path.BaseName()))));
+    } else {
+      RunAfterMarkCacheFileAsMounted(
+          path.BaseName(), drive::FILE_ERROR_OK, path);
+    }
   }
   return true;
 }
