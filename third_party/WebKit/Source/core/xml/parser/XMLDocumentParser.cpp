@@ -299,8 +299,10 @@ void XMLDocumentParser::pushCurrentNode(ContainerNode* n)
 {
     ASSERT(n);
     ASSERT(m_currentNode);
+#if !ENABLE(OILPAN)
     if (n != document())
         n->ref();
+#endif
     m_currentNodeStack.append(m_currentNode);
     m_currentNode = n;
     if (m_currentNodeStack.size() > maxXMLTreeDepth)
@@ -312,26 +314,30 @@ void XMLDocumentParser::popCurrentNode()
     if (!m_currentNode)
         return;
     ASSERT(m_currentNodeStack.size());
-
+#if !ENABLE(OILPAN)
     if (m_currentNode != document())
         m_currentNode->deref();
-
+#endif
     m_currentNode = m_currentNodeStack.last();
     m_currentNodeStack.removeLast();
 }
 
 void XMLDocumentParser::clearCurrentNodeStack()
 {
+#if !ENABLE(OILPAN)
     if (m_currentNode && m_currentNode != document())
         m_currentNode->deref();
+#endif
     m_currentNode = nullptr;
     m_leafTextNode = nullptr;
 
     if (m_currentNodeStack.size()) { // Aborted parsing.
+#if !ENABLE(OILPAN)
         for (size_t i = m_currentNodeStack.size() - 1; i != 0; --i)
             m_currentNodeStack[i]->deref();
         if (m_currentNodeStack[0] && m_currentNodeStack[0] != document())
             m_currentNodeStack[0]->deref();
+#endif
         m_currentNodeStack.clear();
     }
 }
@@ -782,10 +788,12 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     , m_scriptStartPosition(TextPosition::belowRangePosition())
     , m_parsingFragment(true)
 {
+#if !ENABLE(OILPAN)
     fragment->ref();
+#endif
 
     // Add namespaces based on the parent node
-    Vector<Element*> elemStack;
+    WillBeHeapVector<RawPtrWillBeMember<Element> > elemStack;
     while (parentElement) {
         elemStack.append(parentElement);
 
