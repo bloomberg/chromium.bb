@@ -122,19 +122,11 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     EXPECT_EQ(emptyStringHash, hasher.hash());
     EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
-    hasher.addCharacters(nullLChars);
-    EXPECT_EQ(emptyStringHash, hasher.hash());
-    EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
     hasher.addCharacters(static_cast<UChar*>(0), 0);
     EXPECT_EQ(emptyStringHash, hasher.hash());
     EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
     hasher.addCharacters(nullUChars, 0);
-    EXPECT_EQ(emptyStringHash, hasher.hash());
-    EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
-    hasher.addCharacters(nullUChars);
     EXPECT_EQ(emptyStringHash, hasher.hash());
     EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
@@ -154,23 +146,11 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
-    hasher.addCharacters(testALChars);
-    EXPECT_EQ(testAHash5, hasher.hash());
-    EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
     hasher.addCharacters(testAUChars, 5);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
-    hasher.addCharacters(testAUChars);
-    EXPECT_EQ(testAHash5, hasher.hash());
-    EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
     hasher.addCharacters(testBUChars, 5);
-    EXPECT_EQ(testBHash5, hasher.hash());
-    EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
-    hasher.addCharacters(testBUChars);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
@@ -188,7 +168,7 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     hasher = StringHasher();
     hasher.addCharacters(testALChars, 2);
     hasher.addCharacters(testALChars + 2, 2);
-    hasher.addCharacters(testALChars + 4);
+    hasher.addCharacters(testALChars + 4, 1);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
@@ -204,7 +184,7 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     hasher = StringHasher();
     hasher.addCharacters(testAUChars, 2);
     hasher.addCharacters(testAUChars + 2, 2);
-    hasher.addCharacters(testAUChars + 4);
+    hasher.addCharacters(testAUChars + 4, 1);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
@@ -220,7 +200,7 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     hasher = StringHasher();
     hasher.addCharacters(testBUChars, 2);
     hasher.addCharacters(testBUChars + 2, 2);
-    hasher.addCharacters(testBUChars + 4);
+    hasher.addCharacters(testBUChars + 4, 1);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
@@ -236,7 +216,7 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     hasher.addCharacters(testALChars, 3);
     EXPECT_EQ(testAHash3, hasher.hash());
     EXPECT_EQ(testAHash3 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher.addCharacters(testALChars + 3);
+    hasher.addCharacters(testALChars + 3, 2);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
@@ -262,7 +242,7 @@ TEST(StringHasherTest, StringHasher_addCharacters)
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
     hasher.addCharacters(testBUChars, 3);
-    hasher.addCharacters(testBUChars + 3);
+    hasher.addCharacters(testBUChars + 3, 2);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 }
@@ -288,10 +268,6 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     hasher.addCharactersAssumingAligned(nullUChars, 0);
     EXPECT_EQ(emptyStringHash, hasher.hash());
     EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
-    hasher.addCharactersAssumingAligned(nullUChars);
-    EXPECT_EQ(emptyStringHash, hasher.hash());
-    EXPECT_EQ(emptyStringHash & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
     // Hashing one character.
     hasher = StringHasher();
@@ -309,23 +285,11 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
-    hasher.addCharactersAssumingAligned(testALChars);
-    EXPECT_EQ(testAHash5, hasher.hash());
-    EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
     hasher.addCharactersAssumingAligned(testAUChars, 5);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
-    hasher.addCharactersAssumingAligned(testAUChars);
-    EXPECT_EQ(testAHash5, hasher.hash());
-    EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
     hasher.addCharactersAssumingAligned(testBUChars, 5);
-    EXPECT_EQ(testBHash5, hasher.hash());
-    EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher = StringHasher();
-    hasher.addCharactersAssumingAligned(testBUChars);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
@@ -343,7 +307,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     hasher = StringHasher();
     hasher.addCharactersAssumingAligned(testALChars, 2);
     hasher.addCharactersAssumingAligned(testALChars + 2, 2);
-    hasher.addCharactersAssumingAligned(testALChars + 4);
+    hasher.addCharactersAssumingAligned(testALChars + 4, 1);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
@@ -359,7 +323,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     hasher = StringHasher();
     hasher.addCharactersAssumingAligned(testAUChars, 2);
     hasher.addCharactersAssumingAligned(testAUChars + 2, 2);
-    hasher.addCharactersAssumingAligned(testAUChars + 4);
+    hasher.addCharactersAssumingAligned(testAUChars + 4, 1);
     EXPECT_EQ(testAHash5, hasher.hash());
     EXPECT_EQ(testAHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
     hasher = StringHasher();
@@ -375,7 +339,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     hasher = StringHasher();
     hasher.addCharactersAssumingAligned(testBUChars, 2);
     hasher.addCharactersAssumingAligned(testBUChars + 2, 2);
-    hasher.addCharactersAssumingAligned(testBUChars + 4);
+    hasher.addCharactersAssumingAligned(testBUChars + 4, 1);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 
@@ -391,7 +355,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned)
     hasher.addCharactersAssumingAligned(testBUChars[2], testBUChars[3]);
     EXPECT_EQ(testBHash4, hasher.hash());
     EXPECT_EQ(testBHash4 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
-    hasher.addCharactersAssumingAligned(testBUChars + 4);
+    hasher.addCharactersAssumingAligned(testBUChars + 4, 1);
     EXPECT_EQ(testBHash5, hasher.hash());
     EXPECT_EQ(testBHash5 & 0xFFFFFF, hasher.hashWithTop8BitsMasked());
 }

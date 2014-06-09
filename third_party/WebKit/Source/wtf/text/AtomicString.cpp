@@ -120,25 +120,6 @@ static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
     return addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 
-struct CStringTranslator {
-    static unsigned hash(const LChar* c)
-    {
-        return StringHasher::computeHashAndMaskTop8Bits(c);
-    }
-
-    static inline bool equal(StringImpl* r, const LChar* s)
-    {
-        return WTF::equal(r, s);
-    }
-
-    static void translate(StringImpl*& location, const LChar* const& c, unsigned hash)
-    {
-        location = StringImpl::create(c).leakRef();
-        location->setHash(hash);
-        location->setIsAtomic(true);
-    }
-};
-
 PassRefPtr<StringImpl> AtomicString::add(const LChar* c)
 {
     if (!c)
@@ -146,7 +127,7 @@ PassRefPtr<StringImpl> AtomicString::add(const LChar* c)
     if (!*c)
         return StringImpl::empty();
 
-    return addToStringTable<const LChar*, CStringTranslator>(c);
+    return add(c, strlen(reinterpret_cast<const char*>(c)));
 }
 
 template<typename CharacterType>

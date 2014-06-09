@@ -109,25 +109,6 @@ public:
         addCharactersAssumingAligned<T, defaultConverter>(data, length);
     }
 
-    template<typename T, UChar Converter(T)> void addCharactersAssumingAligned(const T* data)
-    {
-        ASSERT(!m_hasPendingCharacter);
-
-        while (T a = *data++) {
-            T b = *data++;
-            if (!b) {
-                addCharacter(Converter(a));
-                break;
-            }
-            addCharactersAssumingAligned(Converter(a), Converter(b));
-        }
-    }
-
-    template<typename T> void addCharactersAssumingAligned(const T* data)
-    {
-        addCharactersAssumingAligned<T, defaultConverter>(data);
-    }
-
     template<typename T, UChar Converter(T)> void addCharacters(const T* data, unsigned length)
     {
         if (m_hasPendingCharacter && length) {
@@ -141,20 +122,6 @@ public:
     template<typename T> void addCharacters(const T* data, unsigned length)
     {
         addCharacters<T, defaultConverter>(data, length);
-    }
-
-    template<typename T, UChar Converter(T)> void addCharacters(const T* data)
-    {
-        if (m_hasPendingCharacter && *data) {
-            m_hasPendingCharacter = false;
-            addCharactersAssumingAligned(m_pendingCharacter, Converter(*data++));
-        }
-        addCharactersAssumingAligned<T, Converter>(data);
-    }
-
-    template<typename T> void addCharacters(const T* data)
-    {
-        addCharacters<T, defaultConverter>(data);
     }
 
     unsigned hashWithTop8BitsMasked() const
@@ -196,21 +163,9 @@ public:
         return hasher.hashWithTop8BitsMasked();
     }
 
-    template<typename T, UChar Converter(T)> static unsigned computeHashAndMaskTop8Bits(const T* data)
-    {
-        StringHasher hasher;
-        hasher.addCharactersAssumingAligned<T, Converter>(data);
-        return hasher.hashWithTop8BitsMasked();
-    }
-
     template<typename T> static unsigned computeHashAndMaskTop8Bits(const T* data, unsigned length)
     {
         return computeHashAndMaskTop8Bits<T, defaultConverter>(data, length);
-    }
-
-    template<typename T> static unsigned computeHashAndMaskTop8Bits(const T* data)
-    {
-        return computeHashAndMaskTop8Bits<T, defaultConverter>(data);
     }
 
     template<typename T, UChar Converter(T)> static unsigned computeHash(const T* data, unsigned length)
@@ -220,21 +175,9 @@ public:
         return hasher.hash();
     }
 
-    template<typename T, UChar Converter(T)> static unsigned computeHash(const T* data)
-    {
-        StringHasher hasher;
-        hasher.addCharactersAssumingAligned<T, Converter>(data);
-        return hasher.hash();
-    }
-
     template<typename T> static unsigned computeHash(const T* data, unsigned length)
     {
         return computeHash<T, defaultConverter>(data, length);
-    }
-
-    template<typename T> static unsigned computeHash(const T* data)
-    {
-        return computeHash<T, defaultConverter>(data);
     }
 
     static unsigned hashMemory(const void* data, unsigned length)
