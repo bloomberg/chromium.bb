@@ -55,7 +55,13 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   SwitchTouchExplorationMode(true);
   aura::test::EventGenerator generator(root_window);
 
+  generator.set_current_location(gfx::Point(100, 200));
   generator.PressTouchId(1);
+  // Since the touch exploration controller doesn't know if the user is
+  // double-tapping or not, touch exploration is only initiated if the
+  // user moves more than 8 pixels away from the initial location (the "slop"),
+  // or after 300 ms has elapsed.
+  generator.MoveTouchId(gfx::Point(109, 209), 1);
   // Number of mouse events may be greater than 1 because of ET_MOUSE_ENTERED.
   EXPECT_GT(event_handler->num_mouse_events(), 0);
   EXPECT_EQ(0, event_handler->num_touch_events());
@@ -68,7 +74,9 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   event_handler->Reset();
 
   SwitchTouchExplorationMode(true);
+  generator.set_current_location(gfx::Point(500, 600));
   generator.PressTouchId(2);
+  generator.MoveTouchId(gfx::Point(509, 609), 2);
   EXPECT_GT(event_handler->num_mouse_events(), 0);
   EXPECT_EQ(0, event_handler->num_touch_events());
 

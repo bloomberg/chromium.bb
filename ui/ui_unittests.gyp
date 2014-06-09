@@ -218,6 +218,7 @@
             '../chromeos/chromeos.gyp:chromeos',
             'aura/aura.gyp:aura_test_support',
             'chromeos/ui_chromeos.gyp:ui_chromeos',
+            'events/events.gyp:gesture_detection',
           ],
           'sources': [
             'chromeos/touch_exploration_controller_unittest.cc'

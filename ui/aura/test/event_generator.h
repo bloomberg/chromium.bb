@@ -11,12 +11,13 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
 namespace base {
-class TimeDelta;
+class TickClock;
 }
 
 namespace ui {
@@ -317,6 +318,12 @@ class EventGenerator {
     current_host_ = host;
   }
 
+  // Specify an alternative tick clock to be used for simulating time in tests.
+  void SetTickClock(scoped_ptr<base::TickClock> tick_clock);
+
+  // Get the current time from the tick clock.
+  base::TimeDelta Now();
+
  private:
   // Dispatch a key event to the WindowEventDispatcher.
   void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
@@ -346,6 +353,7 @@ class EventGenerator {
   std::list<ui::Event*> pending_events_;
   // Set to true to cause events to be posted asynchronously.
   bool async_;
+  scoped_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGenerator);
 };

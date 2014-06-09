@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/time/default_tick_clock.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -69,8 +70,9 @@ class TestTouchEvent : public ui::TouchEvent {
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
                  int touch_id,
-                 int flags)
-      : TouchEvent(type, root_location, flags, touch_id, ui::EventTimeForNow(),
+                 int flags,
+                 base::TimeDelta timestamp)
+      : TouchEvent(type, root_location, flags, touch_id, timestamp,
                    1.0f, 1.0f, 1.0f, 1.0f) {
   }
 
@@ -87,7 +89,8 @@ EventGenerator::EventGenerator(Window* root_window)
       current_host_(delegate_->GetHostAt(current_location_)),
       flags_(0),
       grab_(false),
-      async_(false) {
+      async_(false),
+      tick_clock_(new base::DefaultTickClock()) {
 }
 
 EventGenerator::EventGenerator(Window* root_window, const gfx::Point& point)
@@ -96,7 +99,8 @@ EventGenerator::EventGenerator(Window* root_window, const gfx::Point& point)
       current_host_(delegate_->GetHostAt(current_location_)),
       flags_(0),
       grab_(false),
-      async_(false) {
+      async_(false),
+      tick_clock_(new base::DefaultTickClock()) {
 }
 
 EventGenerator::EventGenerator(Window* root_window, Window* window)
@@ -105,7 +109,8 @@ EventGenerator::EventGenerator(Window* root_window, Window* window)
       current_host_(delegate_->GetHostAt(current_location_)),
       flags_(0),
       grab_(false),
-      async_(false) {
+      async_(false),
+      tick_clock_(new base::DefaultTickClock()) {
 }
 
 EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
@@ -113,7 +118,8 @@ EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
       current_host_(delegate_->GetHostAt(current_location_)),
       flags_(0),
       grab_(false),
-      async_(false) {
+      async_(false),
+      tick_clock_(new base::DefaultTickClock()) {
 }
 
 EventGenerator::~EventGenerator() {
@@ -219,7 +225,8 @@ void EventGenerator::PressTouch() {
 
 void EventGenerator::PressTouchId(int touch_id) {
   TestTouchEvent touchev(
-      ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(), touch_id, flags_,
+      Now());
   Dispatch(&touchev);
 }
 
@@ -230,7 +237,8 @@ void EventGenerator::MoveTouch(const gfx::Point& point) {
 void EventGenerator::MoveTouchId(const gfx::Point& point, int touch_id) {
   current_location_ = point;
   TestTouchEvent touchev(
-      ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_MOVED, GetLocationInCurrentRoot(), touch_id, flags_,
+      Now());
   Dispatch(&touchev);
 
   if (!grab_)
@@ -243,7 +251,8 @@ void EventGenerator::ReleaseTouch() {
 
 void EventGenerator::ReleaseTouchId(int touch_id) {
   TestTouchEvent touchev(
-      ui::ET_TOUCH_RELEASED, GetLocationInCurrentRoot(), touch_id, flags_);
+      ui::ET_TOUCH_RELEASED, GetLocationInCurrentRoot(), touch_id, flags_,
+      Now());
   Dispatch(&touchev);
 }
 
@@ -263,7 +272,7 @@ void EventGenerator::GestureEdgeSwipe() {
       0,
       0,
       0,
-      ui::EventTimeForNow(),
+      Now(),
       ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE, 0, 0),
       0);
   Dispatch(&gesture);
@@ -274,7 +283,7 @@ void EventGenerator::GestureTapAt(const gfx::Point& location) {
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        location,
                        kTouchId,
-                       ui::EventTimeForNow());
+                       Now());
   Dispatch(&press);
 
   ui::TouchEvent release(
@@ -288,7 +297,7 @@ void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        location,
                        kTouchId,
-                       ui::EventTimeForNow());
+                       Now());
   Dispatch(&press);
 
   ui::TouchEvent release(
@@ -312,7 +321,7 @@ void EventGenerator::GestureScrollSequenceWithCallback(
     int steps,
     const ScrollStepCallback& callback) {
   const int kTouchId = 5;
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeDelta timestamp = Now();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
   Dispatch(&press);
 
@@ -367,7 +376,7 @@ void EventGenerator::GestureMultiFingerScrollWithDelays(
     points[i] = start[i];
   }
 
-  base::TimeDelta press_time_first = ui::EventTimeForNow();
+  base::TimeDelta press_time_first = Now();
   base::TimeDelta press_time[kMaxTouchPoints];
   bool pressed[kMaxTouchPoints];
   for (int i = 0; i < count; ++i) {
@@ -417,8 +426,7 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                                     float y_offset,
                                     int steps,
                                     int num_fingers) {
-  base::TimeDelta timestamp = base::TimeDelta::FromInternalValue(
-      base::TimeTicks::Now().ToInternalValue());
+  base::TimeDelta timestamp = Now();
   ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL,
                                start,
                                timestamp,
@@ -457,7 +465,7 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                                     const std::vector<gfx::Point>& offsets,
                                     int num_fingers) {
   int steps = offsets.size();
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeDelta timestamp = Now();
   ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL,
                                start,
                                timestamp,
@@ -499,6 +507,17 @@ void EventGenerator::ReleaseKey(ui::KeyboardCode key_code, int flags) {
 
 void EventGenerator::Dispatch(ui::Event* event) {
   DoDispatchEvent(event, async_);
+}
+
+void EventGenerator::SetTickClock(scoped_ptr<base::TickClock> tick_clock) {
+  tick_clock_ = tick_clock.Pass();
+}
+
+base::TimeDelta EventGenerator::Now() {
+  // This is the same as what EventTimeForNow() does, but here we do it
+  // with a tick clock that can be replaced with a simulated clock for tests.
+  return base::TimeDelta::FromInternalValue(
+      tick_clock_->NowTicks().ToInternalValue());
 }
 
 void EventGenerator::DispatchKeyEvent(bool is_press,
@@ -637,7 +656,6 @@ void EventGenerator::DispatchNextPendingEvent() {
                    base::Unretained(this)));
   }
 }
-
 
 }  // namespace test
 }  // namespace aura
