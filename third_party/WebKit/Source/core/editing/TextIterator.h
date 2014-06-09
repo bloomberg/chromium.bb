@@ -45,7 +45,8 @@ enum TextIteratorBehavior {
     TextIteratorEmitsOriginalText = 1 << 3,
     TextIteratorStopsOnFormControls = 1 << 4,
     TextIteratorEmitsImageAltText = 1 << 5,
-    TextIteratorEntersAuthorShadowRoots = 1 << 6
+    TextIteratorEntersAuthorShadowRoots = 1 << 6,
+    TextIteratorEmitsObjectReplacementCharacter = 1 << 7
 };
 typedef unsigned TextIteratorBehaviorFlags;
 
@@ -208,6 +209,8 @@ private:
     bool m_emitsImageAltText;
 
     bool m_entersAuthorShadowRoots;
+
+    bool m_emitsObjectReplacementCharacter;
 };
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries

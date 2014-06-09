@@ -265,6 +265,7 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
     , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
+    , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
 {
     if (range)
         initialize(range->startPosition(), range->endPosition());
@@ -295,6 +296,7 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
     , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
+    , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
 {
     initialize(start, end);
 }
@@ -781,6 +783,11 @@ bool TextIterator::handleReplacedElement()
     RenderObject* renderer = m_node->renderer();
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
         return false;
+
+    if (m_emitsObjectReplacementCharacter) {
+        emitCharacter(objectReplacementCharacter, m_node->parentNode(), m_node, 0, 1);
+        return true;
+    }
 
     if (m_lastTextNodeEndedWithCollapsedSpace) {
         emitCharacter(' ', m_lastTextNode->parentNode(), m_lastTextNode, 1, 1);

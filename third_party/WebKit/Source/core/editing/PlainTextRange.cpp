@@ -67,6 +67,11 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeForSelection(const Cont
     return createRangeFor(scope, ForSelection);
 }
 
+PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeForInputMethod(const ContainerNode& scope) const
+{
+    return createRangeFor(scope, ForInputMethod);
+}
+
 PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
 {
     ASSERT(isNotNull());
@@ -78,7 +83,12 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
 
     RefPtrWillBeRawPtr<Range> textRunRange = nullptr;
 
-    TextIterator it(rangeOfContents(const_cast<ContainerNode*>(&scope)).get(), getRangeFor == ForSelection ? TextIteratorEmitsCharactersBetweenAllVisiblePositions : TextIteratorDefaultBehavior);
+    TextIteratorBehavior behaviorFlags = TextIteratorDefaultBehavior;
+    if (getRangeFor == ForSelection)
+        behaviorFlags = TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+    else if (getRangeFor == ForInputMethod)
+        behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
+    TextIterator it(rangeOfContents(const_cast<ContainerNode*>(&scope)).get(), behaviorFlags);
 
     // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
     if (!start() && !length() && it.atEnd()) {

@@ -379,7 +379,7 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (!rootEditableElement)
         return false;
 
-    RefPtrWillBeRawPtr<Range> range = selectionOffsets.createRange(*rootEditableElement);
+    RefPtrWillBeRawPtr<Range> range = selectionOffsets.createRangeForInputMethod(*rootEditableElement);
     if (!range)
         return false;
 

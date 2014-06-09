@@ -517,4 +517,26 @@ TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
     }
 }
 
+TEST_F(TextIteratorTest, EmitsReplacementCharForInput)
+{
+    static const char* bodyContent =
+        "<div contenteditable=\"true\">"
+        "Before"
+        "<img src=\"foo.png\">"
+        "After"
+        "</div>";
+    // "Before".
+    static const UChar expectedRawString1[] = { 0x42, 0x65, 0x66, 0x6F, 0x72, 0x65, 0 };
+    // Object replacement char.
+    static const UChar expectedRawString2[] = { 0xFFFC, 0 };
+    // "After".
+    static const UChar expectedRawString3[] = { 0x41, 0x66, 0x74, 0x65, 0x72, 0 };
+    static const UChar* expectedRawStrings[] = { expectedRawString1, expectedRawString2, expectedRawString3 };
+    Vector<String> expectedTextChunks;
+    expectedTextChunks.append(expectedRawStrings, WTF_ARRAY_LENGTH(expectedRawStrings));
+
+    setBodyInnerHTML(bodyContent);
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsObjectReplacementCharacter));
+}
+
 }
