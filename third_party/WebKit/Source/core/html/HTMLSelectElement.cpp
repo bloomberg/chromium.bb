@@ -258,6 +258,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
     }
 
     int previousSelectedIndex = selectedIndex();
+    setSuggestedIndex(-1);
     setSelectedIndex(optionIndex);
 
     if (sendEvents && previousSelectedIndex != selectedIndex()) {

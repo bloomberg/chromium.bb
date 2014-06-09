@@ -14,6 +14,10 @@ After setting suggestedValue:
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"
 | "input.selectionEnd: 0"
+| "textarea.value: initial value"
+| "internals.suggestedValue(textarea): suggested value"
+| "select.value: "
+| "internals.suggestedValue(select): TX"
 
 After setting value:
 | <input>
@@ -29,4 +33,8 @@ After setting value:
 | "internals.suggestedValue(input): "
 | "input.selectionStart: 9"
 | "input.selectionEnd: 9"
+| "textarea.value: new value"
+| "internals.suggestedValue(textarea): "
+| "select.value: CA"
+| "internals.suggestedValue(select): "
 | "PASS"
