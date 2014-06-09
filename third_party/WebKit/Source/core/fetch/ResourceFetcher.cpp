@@ -755,15 +755,11 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // see https://bugs.webkit.org/show_bug.cgi?id=107962. Before caching main
     // resources, we should be sure to understand the implications for memory
     // use.
-    //
-    // Ensure main resources aren't preloaded, and other main resource loads
-    // are removed from cache to prevent reuse.
+    // Remove main resource from cache to prevent reuse.
     if (type == Resource::MainResource) {
         ASSERT(policy != Use || m_documentLoader->substituteData().isValid());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
-        if (request.forPreload())
-            return 0;
     }
 
     requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork);
@@ -1197,6 +1193,10 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 
 void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request, const String& charset)
 {
+    // Ensure main resources aren't preloaded, since the cache can't actually reuse the preload.
+    if (type == Resource::MainResource)
+        return;
+
     String encoding;
     if (type == Resource::Script || type == Resource::CSSStyleSheet)
         encoding = charset.isEmpty() ? m_document->charset().string() : charset;
