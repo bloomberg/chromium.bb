@@ -9,8 +9,7 @@ shouldBeNull("sel.anchorNode");
 sel.setBaseAndExtent(null, 0, docType, 0);
 shouldBeNull("sel.anchorNode");
 
-sel.collapse(docType);
-shouldBeNull("sel.anchorNode");
+shouldThrow("sel.collapse(docType)", '"InvalidNodeTypeError: Failed to execute \'collapse\' on \'Selection\': The node provided is of type \'c\'."');
 
 sel.selectAllChildren(docType);
 shouldBeNull("sel.anchorNode");

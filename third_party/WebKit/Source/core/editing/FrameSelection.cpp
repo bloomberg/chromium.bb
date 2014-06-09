@@ -1403,7 +1403,7 @@ void FrameSelection::selectAll()
     notifyRendererOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool isDirectional, SetSelectionOptions options)
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
@@ -1414,7 +1414,7 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelec
     m_logicalRange = nullptr;
     stopObservingVisibleSelectionChangeIfNecessary();
 
-    VisibleSelection newSelection(range, affinity);
+    VisibleSelection newSelection(range, affinity, isDirectional);
     setSelection(newSelection, options);
 
     m_logicalRange = range->cloneRange();

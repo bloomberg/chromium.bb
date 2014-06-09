@@ -6,7 +6,7 @@
 </head>
 <body>
 <script>
-description('Ranges set by Selection.addRange() and returned by Selection.getRangeAt() should be identical.');
+description('Ranges/Nodes set by a Selection method and returned by a corresoponding Selection method should be identical.');
 
 var sandboxRoot = document.createElement('div');
 sandboxRoot.innerHTML =
@@ -33,16 +33,37 @@ function collapsedRangeAt(anchorNode, offset)
 var originalRange;
 var gotRange;
 
-function testSingleRange(range)
+function testAddRange()
 {
-    originalRange = range;
-    selectRange(range);
+    originalRange = collapsedRangeAt(originalAnchorNode, originalAnchorOffset);
+    selectRange(originalRange);
     gotRange = selection.getRangeAt(0);
 
     shouldBeTrue('gotRange.startContainer === originalRange.startContainer');
     shouldBe('gotRange.startOffset', 'originalRange.startOffset');
     shouldBeTrue('gotRange.endContainer === originalRange.endContainer');
     shouldBe('gotRange.endOffset', 'originalRange.endOffset');
+}
+
+function testCollapse()
+{
+    selection.collapse(originalAnchorNode, originalAnchorOffset);
+    gotRange = selection.getRangeAt(0);
+    shouldBeTrue('gotRange.startContainer === originalAnchorNode');
+    shouldBe('gotRange.startOffset', 'originalAnchorOffset');
+    shouldBeTrue('gotRange.endContainer === originalAnchorNode');
+    shouldBe('gotRange.endOffset', 'originalAnchorOffset');
+}
+
+var originalAnchorNode;
+var originalAnchorOffset;
+function testSingleRange(anchorNode, anchorOffset)
+{
+    originalAnchorNode = anchorNode;
+    originalAnchorOffset = anchorOffset;
+
+    testAddRange();
+    testCollapse();
 }
 
 function runTest(rootElement)
@@ -55,19 +76,19 @@ function runTest(rootElement)
 
     // These positions are all visually equivalent, and should not mutate when obtained by getRangeAt().
     debug('position = [text1, 1]');
-    testSingleRange(collapsedRangeAt(text1, 1));
+    testSingleRange(text1, 1);
     debug('position = [span1, 1]');
-    testSingleRange(collapsedRangeAt(span1, 1));
+    testSingleRange(span1, 1);
     debug('position = [rootElement, 1]');
-    testSingleRange(collapsedRangeAt(rootElement, 1));
+    testSingleRange(rootElement, 1);
     debug('position = [span2, 0]');
-    testSingleRange(collapsedRangeAt(span2, 0));
+    testSingleRange(span2, 0);
     debug('position = [rootElement, 2]');
-    testSingleRange(collapsedRangeAt(rootElement, 2));
+    testSingleRange(rootElement, 2);
     debug('position = [span3, 0]');
-    testSingleRange(collapsedRangeAt(span3, 0));
+    testSingleRange(span3, 0);
     debug('position = [text2, 0]');
-    testSingleRange(collapsedRangeAt(text2, 0));
+    testSingleRange(text2, 0);
 }
 
 debug('Testing selection on non-editable nodes...');

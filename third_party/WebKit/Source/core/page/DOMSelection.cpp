@@ -207,9 +207,14 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
 
     if (!isValidForPosition(node))
         return;
-
-    // FIXME: Eliminate legacy editing positions
-    m_frame->selection().moveTo(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
+    RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
+    range->setStart(node, offset, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    range->setEnd(node, offset, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    m_frame->selection().setSelectedRange(range.get(), DOWNSTREAM, m_frame->selection().isDirectional());
 }
 
 void DOMSelection::collapse(Node* node, ExceptionState& exceptionState)

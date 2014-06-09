@@ -893,16 +893,55 @@ function forwardDeleteCommand() {
     window.queueCommand = queueCommand;
 })();
 
+function focusOnFirstTextInTestElementIfExists() {
+    var elem = document.getElementById("test");
+    var selection = window.getSelection();
+    if (elem) {
+        var traverse = function (node, offset, condition) {
+            var obj = condition(node, offset);
+            if (obj)
+                return obj;
+
+            var children = node.childNodes;
+            var len = children.length;
+            for (var i = 0; i < len; i++) {
+                var child = children[i];
+                obj = traverse(child, i, condition);
+                if (obj)
+                    return obj;
+            }
+            return null;
+        }
+
+        var firstVisiblePosition = traverse(elem, 0, function (node, offset) {
+            if (node.nodeName == '#text') {
+                offset = 0;
+                while (offset < node.textContent.length && node.textContent[offset] == '\n')
+                    offset++;
+                return { 'node': node, 'offset': offset };
+            }
+
+            if (node.nodeName == 'BR' || node.nodeName == 'IMG')
+                return { 'node': node.parentNode, 'offset': offset };
+
+            return null;
+        });
+
+        if (firstVisiblePosition)
+            selection.collapse(firstVisiblePosition.node, firstVisiblePosition.offset);
+        else
+            selection.collapse(elem, 0);
+    } else {
+        selection.removeAllRanges();
+    }
+}
+
 function runEditingTest() {
     if (window.testRunner)
         testRunner.dumpEditingCallbacks();
 
-    var elem = document.getElementById("test");
-    var selection = window.getSelection();
-    if (elem)
-        selection.collapse(elem, 0);
-    else
-        selection.removeAllRanges();
+    focusOnFirstTextInTestElementIfExists();
+
     editingTest();
 }
 
@@ -918,12 +957,8 @@ function runDumpAsTextEditingTest(enableCallbacks) {
 
     dumpAsText = true;
 
-    var elem = document.getElementById("test");
-    var selection = window.getSelection();
-    if (elem)
-        selection.collapse(elem, 0);
-    else
-        selection.removeAllRanges();
+    focusOnFirstTextInTestElementIfExists();
+
     editingTest();
 
     for (var i = 0; i < elementsForDumpingMarkupList.length; i++)

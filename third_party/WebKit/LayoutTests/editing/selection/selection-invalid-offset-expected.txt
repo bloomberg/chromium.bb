@@ -1,4 +1,5 @@
-You should see six OKs below (and not hang): 
+You should see 7 OKs below (and not hang): 
+OK
 OK
 OK
 OK
