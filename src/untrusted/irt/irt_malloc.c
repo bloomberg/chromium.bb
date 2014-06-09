@@ -54,6 +54,7 @@ static void irt_malloc_failure(void) {
   errno = ENOMEM;
 }
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #include "native_client/src/third_party/dlmalloc/malloc.c"
 
 /*

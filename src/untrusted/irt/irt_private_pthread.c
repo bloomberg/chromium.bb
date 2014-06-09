@@ -25,5 +25,6 @@ static void irt_tsd_no_more_keys(void) {
 
 #define NACL_IN_IRT
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
 #include "native_client/src/untrusted/pthread/nc_init_private.c"
 #include "native_client/src/untrusted/pthread/nc_thread.c"

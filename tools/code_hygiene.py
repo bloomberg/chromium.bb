@@ -114,7 +114,6 @@ class TidyChecker(ExternalChecker):
   """Invokes tidy tool on html files."""
   def __init__(self):
     ExternalChecker.__init__(self, HTML_CHECKER, use_stderr=True)
-    return
 
   def FileFilter(self, props):
     return '.html' in props
@@ -124,7 +123,6 @@ class PyChecker(ExternalChecker):
   """Invokes pychecker tool on python files."""
   def __init__(self):
     ExternalChecker.__init__(self, PYTHON_CHECKER)
-    return
 
   def FileFilter(self, props):
     return '.py' in props
@@ -134,7 +132,6 @@ class CppLintChecker(ExternalChecker):
   """Invokes Google's cpplint tool on c++ files."""
   def __init__(self):
     ExternalChecker.__init__(self, CPP_CHECKER, use_stderr=True)
-    return
 
   def FileFilter(self, props):
     return '.cc' in props or '.h' in props
@@ -158,7 +155,6 @@ class GenericRegexChecker(object):
     else:
       self._line_regex = re.compile(content_regex)
     self._analyze_match = analyze_match
-    return
 
   def FindProblems(self, unused_props, data):
     """Looks for presubmit issues in the data from a file."""
@@ -207,7 +203,6 @@ class TrailingWhiteSpaceChecker(GenericRegexChecker):
   """No trailing whitespaces in code we control."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r' $')
-    return
 
   def FileFilter(self, props):
     return ('.patch' not in props and
@@ -219,7 +214,6 @@ class CarriageReturnChecker(GenericRegexChecker):
   """Abolish windows style line terminators."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'\r')
-    return
 
   def FileFilter(self, props):
     return '.h' in props or '.cc' in props or '.c' in props or '.py' in props
@@ -230,7 +224,6 @@ class CppCommentChecker(GenericRegexChecker):
   def __init__(self):
     # We tolerate http:// etc in comments
     GenericRegexChecker.__init__(self, r'(^|[^:])//')
-    return
 
   def FileFilter(self, props):
     return '.c' in props
@@ -240,7 +233,6 @@ class TabsChecker(GenericRegexChecker):
   """No tabs except for makefiles."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'\t')
-    return
 
   def FileFilter(self, props):
     return ('is_makefile' not in props and
@@ -253,7 +245,6 @@ class FixmeChecker(GenericRegexChecker):
   """No FIXMEs in code we control."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'\bFIXME\b')
-    return
 
   def FileFilter(self, props):
     return '.patch' not in props
@@ -263,7 +254,6 @@ class RewriteChecker(GenericRegexChecker):
   """No rewrite markers allowed (probaly not an issue anymore)."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'[@][@]REWRITE')
-    return
 
   def FileFilter(self, unused_props):
     return 1
@@ -286,41 +276,39 @@ VALID_INCLUDE_PREFIX = [
     ]
 
 
-class IncludeChecker(object):
+class IncludeChecker(GenericRegexChecker):
   """Enforce some base 'include' rules. Cpplint does more of these."""
   def __init__(self):
-    pass
+    GenericRegexChecker.__init__(self, r'#include',
+                                 line_regex=r'^(#include.*|})',
+                                 analyze_match=True)
 
-  def FindProblems(self, unused_props, data):
-    lines = data.split('\n')
-    problem = []
-    seen_code = False
-    for no, line in enumerate(lines):
-      if line.startswith('}'):
-        # This test is our hacked indicator signaling that no includes
-        # directives should follow after we have seen actual code.
-        seen_code = True
-        continue
+  def FindProblems(self, props, data):
+    self._seen_code = False
+    return GenericRegexChecker.FindProblems(self, props, data)
 
-      if not line.startswith('#include'):
-        continue
-      if seen_code:
-        problem.append('line %d: [%s]' % (no, repr(line)))
-      token = line.split()
-      if len(token) < 2:
-        continue
-      path = token[1][1:]
-      if '..' in path:
-        problem.append('line %d: [%s]' % (no, repr(line)))
-      if not token[1].startswith('<'):
-        for prefix in VALID_INCLUDE_PREFIX:
-          if path.startswith(prefix):
-            break
-        else:
-          # No prefix matched.
-          problem.append('line %d: [%s]' % (no, repr(line)))
+  def IsProblemMatch(self, match):
+    if match.group(1) == '}':
+      # This test is our hacked indicator signaling that no includes
+      # directives should follow after we have seen actual code.
+      self._seen_code = True
+      return False
 
-    return problem
+    if self._seen_code:
+      return True
+    token = match.group(1).split()
+    if len(token) < 2:
+      return False
+    path = token[1][1:]
+    if '..' in path:
+      return True
+    if not token[1].startswith('<'):
+      for prefix in VALID_INCLUDE_PREFIX:
+        if path.startswith(prefix):
+          break
+      else:
+        return True
+    return False
 
   def FileFilter(self, props):
     return '.cc' in props or '.c' in props
@@ -451,7 +439,6 @@ def EmitStatus(filename, status, details=[]):
   print '%s: %s' % (filename, status)
   for no, line in details[:LIMIT]:
     print '  line %d: [%s]' % (no, repr(line))
-  return
 
 
 def FindExemptions(data):

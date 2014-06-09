@@ -23,6 +23,7 @@
 #define HAVE_MMAP               1
 #define HAVE_MREMAP             0
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #include "native_client/src/third_party/dlmalloc/malloc.c"
 
 /*

@@ -810,4 +810,5 @@ void __local_lock_release_recursive(_LOCK_T *lock) {
  * on one symbol.  So if these functions are in another file in a library
  * archive, they might not be linked in by static linking.
  */
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #include "native_client/src/untrusted/pthread/nc_tsd.c"
