@@ -666,13 +666,18 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   if (entriesFiltered.length === 0)
     return;
 
-  // Update the filelist without waiting the metadata.
-  this.fileList_.push.apply(this.fileList_, entriesFiltered);
-  cr.dispatchSimpleEvent(this, 'scan-updated');
-
-  this.makeSpaceInMetadataCache_(this.fileList_.length);
+  // Enlarge the cache size into the new filelist size.
+  var newListSize = this.fileList_.length + entriesFiltered.length;
+  this.makeSpaceInMetadataCache_(newListSize);
 
   this.processNewEntriesQueue_.run(function(callbackOuter) {
+    var finish = function() {
+      // Update the filelist without waiting the metadata.
+      this.fileList_.push.apply(this.fileList_, entriesFiltered);
+      cr.dispatchSimpleEvent(this, 'scan-updated');
+
+      callbackOuter();
+    }.bind(this);
     // Because the prefetchMetadata can be slow, throttling by splitting entries
     // into smaller chunks to reduce UI latency.
     // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
@@ -688,16 +693,14 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
           if (!prefetchMetadataQueue.isCancelled()) {
             if (this.scanCancelled_)
               prefetchMetadataQueue.cancel();
-            else
-              cr.dispatchSimpleEvent(this, 'scan-updated');
           }
 
           // Checks if this is the last task.
           if (prefetchMetadataQueue.getWaitingTasksCount() === 0 &&
               prefetchMetadataQueue.getRunningTasksCount() === 1) {
-            // |callbackOuter| must be called before |callbackInner|, to prevent
-            // double-calling.
-            callbackOuter();
+            // |callbackOuter| in |finish| must be called before
+            // |callbackInner|, to prevent double-calling.
+            finish();
           }
 
           callbackInner();
