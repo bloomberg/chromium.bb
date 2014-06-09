@@ -181,16 +181,6 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
                                                    hasImages));
 }
 
-void AwRenderViewExt::DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                               bool is_new_navigation) {
-  content::DocumentState* document_state =
-      content::DocumentState::FromDataSource(frame->dataSource());
-  if (document_state->can_load_local_resources()) {
-    blink::WebSecurityOrigin origin = frame->document().securityOrigin();
-    origin.grantLoadLocalResources();
-  }
-}
-
 void AwRenderViewExt::DidCommitCompositorFrame() {
   UpdatePageScaleFactor();
 }

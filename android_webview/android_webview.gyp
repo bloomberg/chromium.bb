@@ -233,6 +233,8 @@
         'renderer/aw_permission_client.h',
         'renderer/aw_render_process_observer.cc',
         'renderer/aw_render_process_observer.h',
+        'renderer/aw_render_frame_ext.cc',
+        'renderer/aw_render_frame_ext.h',
         'renderer/aw_render_view_ext.cc',
         'renderer/aw_render_view_ext.h',
         'renderer/print_web_view_helper.cc',

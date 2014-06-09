@@ -9,6 +9,7 @@
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_permission_client.h"
+#include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "android_webview/renderer/print_web_view_helper.h"
@@ -120,6 +121,7 @@ void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new AwPermissionClient(render_frame);
   new PrintRenderFrameObserver(render_frame);
+  new AwRenderFrameExt(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
   // RenderFrame construction, simplify this by just checking parent().
