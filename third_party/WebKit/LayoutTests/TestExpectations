@@ -831,7 +831,6 @@ crbug.com/309197 [ Win Debug ] webaudio/oscillator-custom.html [ Skip ]
 crbug.com/309197 [ Win Debug ] webaudio/oscillator-sine.html [ Skip ]
 crbug.com/309197 [ Win Debug ] webaudio/oscillator-square.html [ Skip ]
 
-crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Failure Missing ]
 crbug.com/372425 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe.html [ Pass Failure Timeout ]
 crbug.com/372428 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-window-open.html [ Pass Failure ]

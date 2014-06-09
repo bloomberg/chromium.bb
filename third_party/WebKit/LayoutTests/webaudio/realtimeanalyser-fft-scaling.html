@@ -14,14 +14,18 @@
       description("Test scaling of FFT data for AnalyserNode");
 
       // The number of analysers. We have analysers from size for each of the possible sizes of 32,
-      // 64, 128, 256, 512, 1024 and 2048.
+      // 64, 128, 256, 512, 1024 and 2048 for a total of 7.
       var numberOfAnalysers = 7;
       var sampleRate = 44100;
-      var context;
-      var osc;
-      var oscFrequency = sampleRate/32;
-      var analysers = new Array(7);
-      var peakValue = new Array(7);
+      var nyquistFrequency = sampleRate / 2;
+
+      // Frequency of the sine wave test signal.  Should be high enough so that we get at least one
+      // full cycle for the 32-point FFT.  This should also be such that the frequency should be
+      // exactly in one of the FFT bins for each of the possible FFT sizes.
+      var oscFrequency = nyquistFrequency/16;
+
+      // The actual peak values from each analyser.  Useful for examining the results in Chrome.
+      var peakValue = new Array(numberOfAnalysers);
       
       // For a 0dBFS sine wave, we would expect the FFT magnitude to be 0dB as well, but the
       // analyzer node applies a Blackman window (to smooth the estimate).  This reduces the energy
@@ -31,63 +35,65 @@
       // See https://code.google.com/p/chromium/issues/detail?id=341596.
       var peakThreshold = [-14.43, -13.56, -13.56, -13.56, -13.56, -13.56, -13.56];
 
-      function checkResult() {
-	  var allTestsPassed = true;
+      var allTestsPassed = true;
 
-	  for (n = 0; n < analysers.length; ++n) {
-	      // Grab the FFT data from each analyser.
-	      var fftSize = analysers[n].fftSize;
-	      var fftData = new Float32Array(fftSize);
-	      analysers[n].getFloatFrequencyData(fftData);
+      function checkResult(order, analyser) {
+          return function () {
+              var index = order - 5;
+              var fftSize = 1 << order;
+              var fftData = new Float32Array(fftSize);
+              analyser.getFloatFrequencyData(fftData);
 
-	      // Compute the frequency bin that should contain the peak.
-	      var expectedBin = fftSize * (oscFrequency / sampleRate);
+              // Compute the frequency bin that should contain the peak.
+              var expectedBin = analyser.frequencyBinCount * (oscFrequency / nyquistFrequency);
 
-	      // Find the actual bin by finding the bin containing the peak.
-	      var actualBin = 0;
-	      peakValue[n] = -1000;
-	      for (k = 0; k < analysers[n].frequencyBinCount; ++k) {
-		  if (fftData[k] > peakValue[n]) {
-		      actualBin = k;
-		      peakValue[n] = fftData[k];
-		  }
-	      }
+              // Find the actual bin by finding the bin containing the peak.
+              var actualBin = 0;
+              peakValue[index] = -1000;
+              for (k = 0; k < analyser.frequencyBinCount; ++k) {
+                  if (fftData[k] > peakValue[index]) {
+                      actualBin = k;
+                      peakValue[index] = fftData[k];
+                  }
+              }
 
-	      var success = true;
+              var success = true;
 
-	      if (actualBin == expectedBin) {
-		  testPassed("Actual FFT peak in the expected position (" + expectedBin + ")");
-	      } else {
-		  success = false;
-		  testFailed("Actual FFT peak (" + actualBin + ") differs from expected (" + expectedBin + ")");
-	      }
+              if (actualBin == expectedBin) {
+                  testPassed("Actual FFT peak in the expected position (" + expectedBin + ").");
+              } else {
+                  success = false;
+                  testFailed("Actual FFT peak (" + actualBin + ") differs from expected (" + expectedBin + ").");
+              }
 
-	      if (peakValue[n] >= peakThreshold[n]) {
-		  testPassed("Peak value is near 0 dBFS as expected");
-	      } else {
-		  success = false;
-		  testFailed("Peak value of " + peakValue[n]
+              if (peakValue[index] >= peakThreshold[index]) {
+                  testPassed("Peak value is near " + peakThreshold[index] + " dBFS as expected.");
+              } else {
+                  success = false;
+                  testFailed("Peak value of " + peakValue[index]
                              + " is incorrect.  (Expected approximately "
-                             + peakThreshold[n] + ")");
-	      }
+                             + peakThreshold[index] + ").");
+              }
 
-	      if (success) {
-		  testPassed("Analyser correctly scaled FFT data of size " + fftSize);
-	      } else {
-		  testFailed("Analyser incorrectly scaled FFT data of size " + fftSize);
-	      }
-	      allTestsPassed = allTestsPassed && success;
-	  }
+              if (success) {
+                  testPassed("Analyser correctly scaled FFT data of size " + fftSize);
+              } else {
+                  testFailed("Analyser incorrectly scaled FFT data of size " + fftSize);
+              }
+              allTestsPassed = allTestsPassed && success;
 
-	  if (allTestsPassed) {
-	      testPassed("All Analyser tests passed.");
-	  } else {
-	      testFailed("At least one Analyser test failed.");
-	  }
+              if (fftSize == 2048) {
+                  if (allTestsPassed) {
+                      testPassed("All Analyser tests passed.");
+                  } else {
+                      testFailed("At least one Analyser test failed.");
+                  }
 
-	  finishJSTest();
+                  finishJSTest();
+              }
+          }
       }
-      
+
       function runTests() {
           if (window.testRunner) {
               testRunner.dumpAsText();
@@ -96,26 +102,28 @@
 
           window.jsTestIsAsync = true;
 
-          context = new OfflineAudioContext(1, 2048, sampleRate);
-
-          // Use a sine wave oscillator as the reference source signal.
-          osc = context.createOscillator();
-          osc.type = "sine";
-          osc.frequency.value = oscFrequency;
-          osc.connect(context.destination);
-
-          // Create an analyser node for each of the possible valid sizes.
+          // Test each analyser size from order 5 (size 32) to 11 (size 2048).
           for (order = 5; order < 12; ++order) {
-	      analysers[order - 5] = context.createAnalyser();
-              // No smoothing so between frames to simplify testing.
-	      analysers[order - 5].smoothingTimeConstant = 0;
-	      analysers[order - 5].fftSize = 1 << order;
-              osc.connect(analysers[order - 5]);
-          }
+              // Create a new offline context for each analyser test with the number of samples
+              // exactly equal to the fft size.  This ensures that the analyser node gets the
+              // expected data from the oscillator.
+              var context = new OfflineAudioContext(1, 1 << order, sampleRate);
+              // Use a sine wave oscillator as the reference source signal.
+              var osc = context.createOscillator();
+              osc.type = "sine";
+              osc.frequency.value = oscFrequency;
+              osc.connect(context.destination);
 
-          osc.start();
-          context.oncomplete = checkResult;
-          context.startRendering();
+              var analyser = context.createAnalyser();
+              // No smoothing to simplify the analysis of the result.
+              analyser.smoothingTimeConstant = 0;
+              analyser.fftSize = 1 << order;
+              osc.connect(analyser);
+
+              osc.start();
+              context.oncomplete = checkResult(order, analyser);
+              context.startRendering();
+          }
       }
 
       runTests();
