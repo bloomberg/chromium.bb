@@ -29,7 +29,6 @@
 #include "modules/geolocation/GeolocationClient.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebGeolocationController.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 class GeolocationPosition;
@@ -54,7 +53,7 @@ public:
 
 private:
     WebGeolocationClient* m_client;
-    RefPtrWillBePersistent<WebCore::GeolocationPosition> m_lastPosition;
+    WebCore::Persistent<WebCore::GeolocationPosition> m_lastPosition;
 };
 
 } // namespace blink

@@ -63,8 +63,8 @@ private:
     GeolocationInspectorAgent();
     WTF::HashSet<GeolocationController*> m_controllers;
     bool m_geolocationOverridden;
-    RefPtrWillBePersistent<GeolocationPosition> m_geolocationPosition;
-    RefPtrWillBePersistent<GeolocationPosition> m_platformGeolocationPosition;
+    Persistent<GeolocationPosition> m_geolocationPosition;
+    Persistent<GeolocationPosition> m_platformGeolocationPosition;
 };
 
 

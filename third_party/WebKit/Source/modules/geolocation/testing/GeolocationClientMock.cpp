@@ -52,7 +52,7 @@ GeolocationClientMock::~GeolocationClientMock()
     ASSERT(!m_isActive);
 }
 
-void GeolocationClientMock::setPosition(PassRefPtrWillBeRawPtr<GeolocationPosition> position)
+void GeolocationClientMock::setPosition(GeolocationPosition* position)
 {
     m_lastPosition = position;
     clearError();
@@ -174,7 +174,7 @@ void GeolocationClientMock::controllerTimerFired(Timer<GeolocationClientMock>* t
             (*it)->positionChanged(m_lastPosition.get());
     } else if (m_hasError) {
         for (HashSet<GeolocationController*>::iterator it = controllers.begin(); it != controllers.end(); ++it)
-            (*it)->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage).get());
+            (*it)->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage));
     }
 }
 

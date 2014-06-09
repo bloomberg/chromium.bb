@@ -150,11 +150,11 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
 {
     position = m_inspectorAgent->overrideGeolocationPosition(position);
     if (!position) {
-        errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, "PositionUnavailable").get());
+        errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, "PositionUnavailable"));
         return;
     }
     m_lastPosition = position;
-    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
+    HeapVector<Member<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->positionChanged();
@@ -162,7 +162,7 @@ void GeolocationController::positionChanged(GeolocationPosition* position)
 
 void GeolocationController::errorOccurred(GeolocationError* error)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Geolocation> > observersVector;
+    HeapVector<Member<Geolocation> > observersVector;
     copyToVector(m_observers, observersVector);
     for (size_t i = 0; i < observersVector.size(); ++i)
         observersVector[i]->setError(error);

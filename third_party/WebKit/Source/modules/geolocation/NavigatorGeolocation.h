@@ -45,7 +45,7 @@ private:
     NavigatorGeolocation(LocalFrame*);
     static const char* supplementName();
 
-    mutable RefPtrWillBeMember<Geolocation> m_geolocation;
+    mutable PersistentWillBeMember<Geolocation> m_geolocation;
 };
 
 } // namespace WebCore

@@ -36,7 +36,6 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -50,7 +49,7 @@ public:
     GeolocationClientMock();
     virtual ~GeolocationClientMock();
 
-    void setPosition(PassRefPtrWillBeRawPtr<GeolocationPosition>);
+    void setPosition(GeolocationPosition*);
     void setPositionUnavailableError(const String& errorMessage);
     void setPermission(bool allowed);
     int numberOfPendingPermissionRequests() const;
@@ -76,7 +75,7 @@ private:
     void clearError();
 
     HashSet<GeolocationController*> m_controllers;
-    RefPtrWillBePersistent<GeolocationPosition> m_lastPosition;
+    Persistent<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
     Timer<GeolocationClientMock> m_controllerTimer;
@@ -90,7 +89,7 @@ private:
     };
 
     PermissionState m_permissionState;
-    typedef WillBePersistentHeapHashSet<RefPtrWillBeMember<Geolocation> > GeolocationSet;
+    typedef PersistentHeapHashSet<Member<Geolocation> > GeolocationSet;
     GeolocationSet m_pendingPermissions;
 };
 

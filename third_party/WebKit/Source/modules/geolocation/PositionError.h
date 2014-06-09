@@ -28,12 +28,11 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PositionError : public RefCountedWillBeGarbageCollectedFinalized<PositionError>, public ScriptWrappable {
+class PositionError : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
 public:
     enum ErrorCode {
         PERMISSION_DENIED = 1,
@@ -41,7 +40,7 @@ public:
         TIMEOUT = 3
     };
 
-    static PassRefPtrWillBeRawPtr<PositionError> create(ErrorCode code, const String& message) { return adoptRefWillBeNoop(new PositionError(code, message)); }
+    static PositionError* create(ErrorCode code, const String& message) { return new PositionError(code, message); }
     void trace(Visitor*) { }
 
     ErrorCode code() const { return m_code; }

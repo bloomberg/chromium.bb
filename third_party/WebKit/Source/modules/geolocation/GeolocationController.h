@@ -32,7 +32,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -80,8 +79,8 @@ private:
     GeolocationClient* m_client;
     bool m_hasClientForTest;
 
-    RefPtrWillBePersistent<GeolocationPosition> m_lastPosition;
-    typedef WillBePersistentHeapHashSet<RefPtrWillBeMember<Geolocation> > ObserversSet;
+    Persistent<GeolocationPosition> m_lastPosition;
+    typedef PersistentHeapHashSet<Member<Geolocation> > ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;

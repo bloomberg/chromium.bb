@@ -26,6 +26,7 @@
 #include "config.h"
 #include "public/web/WebGeolocationPermissionRequestManager.h"
 
+#include "modules/geolocation/Geolocation.h"
 #include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
@@ -33,8 +34,8 @@ namespace blink {
 
 using namespace WebCore;
 
-typedef HashMap<Geolocation*, int> GeolocationIdMap;
-typedef HashMap<int, Geolocation*> IdGeolocationMap;
+typedef PersistentHeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
+typedef PersistentHeapHashMap<int, Member<Geolocation> > IdGeolocationMap;
 
 class WebGeolocationPermissionRequestManagerPrivate {
 public:

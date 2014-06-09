@@ -29,10 +29,6 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 
-#if BLINK_IMPLEMENTATION
-#include "wtf/PassRefPtr.h"
-#endif
-
 namespace WebCore { class GeolocationPosition; }
 
 namespace blink {
@@ -52,9 +48,9 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationPosition(PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>);
-    WebGeolocationPosition& operator=(PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>);
-    operator PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>() const;
+    WebGeolocationPosition(WebCore::GeolocationPosition*);
+    WebGeolocationPosition& operator=(WebCore::GeolocationPosition*);
+    operator WebCore::GeolocationPosition*() const;
 #endif
 
 private:

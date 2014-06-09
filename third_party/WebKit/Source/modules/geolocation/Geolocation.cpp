@@ -29,12 +29,11 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
-#include "wtf/CurrentTime.h"
-
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
@@ -42,12 +41,12 @@ static const char permissionDeniedErrorMessage[] = "User denied Geolocation";
 static const char failedToStartServiceErrorMessage[] = "Failed to start Geolocation service";
 static const char framelessDocumentErrorMessage[] = "Geolocation cannot be used in frameless documents";
 
-static PassRefPtrWillBeRawPtr<Geoposition> createGeoposition(GeolocationPosition* position)
+static Geoposition* createGeoposition(GeolocationPosition* position)
 {
     if (!position)
         return nullptr;
 
-    RefPtrWillBeRawPtr<Coordinates> coordinates = Coordinates::create(
+    Coordinates* coordinates = Coordinates::create(
         position->latitude(),
         position->longitude(),
         position->canProvideAltitude(),
@@ -59,10 +58,10 @@ static PassRefPtrWillBeRawPtr<Geoposition> createGeoposition(GeolocationPosition
         position->heading(),
         position->canProvideSpeed(),
         position->speed());
-    return Geoposition::create(coordinates.release(), convertSecondsToDOMTimeStamp(position->timestamp()));
+    return Geoposition::create(coordinates, convertSecondsToDOMTimeStamp(position->timestamp()));
 }
 
-static PassRefPtrWillBeRawPtr<PositionError> createPositionError(GeolocationError* error)
+static PositionError* createPositionError(GeolocationError* error)
 {
     PositionError::ErrorCode code = PositionError::POSITION_UNAVAILABLE;
     switch (error->code()) {
@@ -77,7 +76,7 @@ static PassRefPtrWillBeRawPtr<PositionError> createPositionError(GeolocationErro
     return PositionError::create(code, error->message());
 }
 
-Geolocation::GeoNotifier::GeoNotifier(Geolocation* geolocation, PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<PositionOptions> options)
+Geolocation::GeoNotifier::GeoNotifier(Geolocation* geolocation, PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
     : m_geolocation(geolocation)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
@@ -99,7 +98,7 @@ void Geolocation::GeoNotifier::trace(Visitor* visitor)
     visitor->trace(m_fatalError);
 }
 
-void Geolocation::GeoNotifier::setFatalError(PassRefPtrWillBeRawPtr<PositionError> error)
+void Geolocation::GeoNotifier::setFatalError(PositionError* error)
 {
     // If a fatal error has already been set, stick with it. This makes sure that
     // when permission is denied, this is the error reported, as required by the
@@ -149,10 +148,6 @@ void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
 {
     m_timer.stop();
 
-    // Protect this GeoNotifier object, since it
-    // could be deleted by a call to clearWatch in a callback.
-    RefPtrWillBeRawPtr<GeoNotifier> protect(this);
-
     // Test for fatal error first. This is required for the case where the LocalFrame is
     // disconnected and requests are cancelled.
     if (m_fatalError) {
@@ -170,10 +165,8 @@ void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
         return;
     }
 
-    if (m_errorCallback) {
-        RefPtrWillBeRawPtr<PositionError> error = PositionError::create(PositionError::TIMEOUT, "Timeout expired");
-        m_errorCallback->handleEvent(error.get());
-    }
+    if (m_errorCallback)
+        m_errorCallback->handleEvent(PositionError::create(PositionError::TIMEOUT, "Timeout expired"));
     m_geolocation->requestTimedOut(this);
 }
 
@@ -183,14 +176,12 @@ void Geolocation::Watchers::trace(Visitor* visitor)
     visitor->trace(m_notifierToIdMap);
 }
 
-bool Geolocation::Watchers::add(int id, PassRefPtrWillBeRawPtr<GeoNotifier> prpNotifier)
+bool Geolocation::Watchers::add(int id, GeoNotifier* notifier)
 {
     ASSERT(id > 0);
-    RefPtrWillBeRawPtr<GeoNotifier> notifier = prpNotifier;
-
-    if (!m_idToNotifierMap.add(id, notifier.get()).isNewEntry)
+    if (!m_idToNotifierMap.add(id, notifier).isNewEntry)
         return false;
-    m_notifierToIdMap.set(notifier.release(), id);
+    m_notifierToIdMap.set(notifier, id);
     return true;
 }
 
@@ -243,11 +234,11 @@ void Geolocation::Watchers::getNotifiersVector(GeoNotifierVector& copy) const
     copyValuesToVector(m_idToNotifierMap, copy);
 }
 
-PassRefPtrWillBeRawPtr<Geolocation> Geolocation::create(ExecutionContext* context)
+Geolocation* Geolocation::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<Geolocation> geolocation = adoptRefWillBeNoop(new Geolocation(context));
+    Geolocation* geolocation = new Geolocation(context);
     geolocation->suspendIfNeeded();
-    return geolocation.release();
+    return geolocation;
 }
 
 Geolocation::Geolocation(ExecutionContext* context)
@@ -304,24 +295,24 @@ Geoposition* Geolocation::lastPosition()
     return m_lastPosition.get();
 }
 
-void Geolocation::getCurrentPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<PositionOptions> options)
+void Geolocation::getCurrentPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
 {
     if (!frame())
         return;
 
-    RefPtrWillBeRawPtr<GeoNotifier> notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
-    startRequest(notifier.get());
+    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
+    startRequest(notifier);
 
     m_oneShots.add(notifier);
 }
 
-int Geolocation::watchPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<PositionOptions> options)
+int Geolocation::watchPosition(PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
 {
     if (!frame())
         return 0;
 
-    RefPtrWillBeRawPtr<GeoNotifier> notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
-    startRequest(notifier.get());
+    GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
+    startRequest(notifier);
 
     int watchID;
     // Keep asking for the next id until we're given one that we don't already have.
@@ -445,9 +436,6 @@ void Geolocation::clearWatch(int watchID)
 
 void Geolocation::setIsAllowed(bool allowed)
 {
-    // Protect the Geolocation object from garbage collection during a callback.
-    RefPtrWillBeRawPtr<Geolocation> protect(this);
-
     // This may be due to either a new position from the service, or a cached
     // position.
     m_allowGeolocation = allowed ? Yes : No;
@@ -460,9 +448,9 @@ void Geolocation::setIsAllowed(bool allowed)
     }
 
     if (!isAllowed()) {
-        RefPtrWillBeRawPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, permissionDeniedErrorMessage);
+        PositionError* error = PositionError::create(PositionError::PERMISSION_DENIED, permissionDeniedErrorMessage);
         error->setIsFatal(true);
-        handleError(error.get());
+        handleError(error);
         m_requestsAwaitingCachedPosition.clear();
         return;
     }
@@ -650,8 +638,7 @@ void Geolocation::positionChanged()
 
 void Geolocation::setError(GeolocationError* error)
 {
-    RefPtrWillBeRawPtr<PositionError> positionError = createPositionError(error);
-    handleError(positionError.get());
+    handleError(createPositionError(error));
 }
 
 bool Geolocation::startUpdating(GeoNotifier* notifier)

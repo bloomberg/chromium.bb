@@ -30,16 +30,14 @@
 #include "modules/EventModules.h"
 #include "modules/geolocation/Coordinates.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Geoposition : public RefCountedWillBeGarbageCollectedFinalized<Geoposition>, public ScriptWrappable {
+class Geoposition : public GarbageCollectedFinalized<Geoposition>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<Geoposition> create(PassRefPtrWillBeRawPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
+    static Geoposition* create(Coordinates* coordinates, DOMTimeStamp timestamp)
     {
-        return adoptRefWillBeNoop(new Geoposition(coordinates, timestamp));
+        return new Geoposition(coordinates, timestamp);
     }
 
     void trace(Visitor* visitor)
@@ -51,7 +49,7 @@ public:
     Coordinates* coords() const { return m_coordinates.get(); }
 
 private:
-    Geoposition(PassRefPtrWillBeRawPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
+    Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
         : m_coordinates(coordinates)
         , m_timestamp(timestamp)
     {
@@ -59,7 +57,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    RefPtrWillBeMember<Coordinates> m_coordinates;
+    Member<Coordinates> m_coordinates;
     DOMTimeStamp m_timestamp;
 };
 

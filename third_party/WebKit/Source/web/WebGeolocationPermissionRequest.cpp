@@ -36,6 +36,16 @@ using namespace WebCore;
 
 namespace blink {
 
+WebGeolocationPermissionRequest::WebGeolocationPermissionRequest(Geolocation* geolocation)
+    : m_private(geolocation)
+{
+}
+
+void WebGeolocationPermissionRequest::reset()
+{
+    m_private.reset();
+}
+
 WebSecurityOrigin WebGeolocationPermissionRequest::securityOrigin() const
 {
     return WebSecurityOrigin(m_private->executionContext()->securityOrigin());

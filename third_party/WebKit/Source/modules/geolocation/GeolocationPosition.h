@@ -27,20 +27,18 @@
 #define GeolocationPosition_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class GeolocationPosition : public RefCountedWillBeGarbageCollected<GeolocationPosition> {
+class GeolocationPosition : public GarbageCollected<GeolocationPosition> {
 public:
-    static PassRefPtrWillBeRawPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy)
+    static GeolocationPosition* create(double timestamp, double latitude, double longitude, double accuracy)
     {
-        return adoptRefWillBeNoop(new GeolocationPosition(timestamp, latitude, longitude, accuracy));
+        return new GeolocationPosition(timestamp, latitude, longitude, accuracy);
     }
-    static PassRefPtrWillBeRawPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
+    static GeolocationPosition* create(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
     {
-        return adoptRefWillBeNoop(new GeolocationPosition(timestamp, latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed));
+        return new GeolocationPosition(timestamp, latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed);
     }
     void trace(Visitor*) { }
 

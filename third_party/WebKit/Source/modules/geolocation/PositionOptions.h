@@ -27,14 +27,13 @@
 #define PositionOptions_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include <limits.h>
 
 namespace WebCore {
 
-class PositionOptions : public RefCountedWillBeGarbageCollected<PositionOptions> {
+class PositionOptions : public GarbageCollected<PositionOptions> {
 public:
-    static PassRefPtrWillBeRawPtr<PositionOptions> create() { return adoptRefWillBeNoop(new PositionOptions()); }
+    static PositionOptions* create() { return new PositionOptions(); }
     void trace(Visitor*) { }
 
     bool enableHighAccuracy() const { return m_highAccuracy; }

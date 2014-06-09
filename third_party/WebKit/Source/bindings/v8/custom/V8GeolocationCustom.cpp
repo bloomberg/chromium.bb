@@ -37,17 +37,17 @@ using namespace WTF;
 
 namespace WebCore {
 
-static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded, ExceptionState& exceptionState)
+static PositionOptions* createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded, ExceptionState& exceptionState)
 {
     succeeded = true;
 
     // Create default options.
-    RefPtrWillBeRawPtr<PositionOptions> options = PositionOptions::create();
+    PositionOptions* options = PositionOptions::create();
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
     if (isUndefinedOrNull(value)) {
         // Use default options.
-        return options.release();
+        return options;
     }
 
     // Given the above test, this will always yield an object.
@@ -105,7 +105,7 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             options->setMaximumAge(toUInt32(maximumAgeValue, Clamp, exceptionState));
     }
 
-    return options.release();
+    return options;
 }
 
 void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -124,13 +124,13 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
     if (!succeeded)
         return;
 
-    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
+    PositionOptions* positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
 
     Geolocation* geolocation = V8Geolocation::toNative(info.Holder());
-    geolocation->getCurrentPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
+    geolocation->getCurrentPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions);
 }
 
 void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -149,13 +149,13 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
     if (!succeeded)
         return;
 
-    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
+    PositionOptions* positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
 
     Geolocation* geolocation = V8Geolocation::toNative(info.Holder());
-    int watchId = geolocation->watchPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
+    int watchId = geolocation->watchPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions);
     v8SetReturnValue(info, watchId);
 }
 
