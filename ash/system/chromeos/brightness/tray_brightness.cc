@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/brightness/tray_brightness.h"
 
+#include <algorithm>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/display/display_manager.h"
@@ -15,6 +17,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -113,7 +116,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
   if (is_default_view_) {
     Shell::GetInstance()->AddShellObserver(this);
-    SetVisible(Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled());
+    SetVisible(Shell::GetInstance()->maximize_mode_controller()->
+               IsMaximizeModeWindowManagerEnabled());
   }
 }
 

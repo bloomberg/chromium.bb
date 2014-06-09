@@ -20,6 +20,8 @@ namespace ash {
 
 class MaximizeModeControllerTest;
 class MaximizeModeEventBlocker;
+class MaximizeModeWindowManager;
+class MaximizeModeWindowManagerTest;
 
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
@@ -50,12 +52,30 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // maximize mode becomes enabled.
   bool CanEnterMaximizeMode();
 
+  // TODO(jonross): Merge this with EnterMaximizeMode. Currently these are
+  // separate for several reasons: there is no internal display when running
+  // unittests; the event blocker prevents keyboard input when running ChromeOS
+  // on linux. http://crbug.com/362881
+  // Turn the always maximize mode window manager on or off.
+  void EnableMaximizeModeWindowManager(bool enable);
+
+  // Test if the MaximizeModeWindowManager is enabled or not.
+  bool IsMaximizeModeWindowManagerEnabled() const;
+
+  // TODO(jonross): move this into the destructor. Currently separated as
+  // ShellOberver notifies of maximize mode ending, and the observers end up
+  // attempting to access MaximizeModeController via the Shell. If done in
+  // destructor the controller is null, and the observers segfault.
+  // Shuts down down the MaximizeModeWindowManager and notifies all observers.
+  void Shutdown();
+
   // AccelerometerObserver:
   virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
                                       const gfx::Vector3dF& lid) OVERRIDE;
 
  private:
   friend class MaximizeModeControllerTest;
+  friend class MaximizeModeWindowManagerTest;
 
   // Detect hinge rotation from |base| and |lid| accelerometers and
   // automatically start / stop maximize mode.
@@ -77,6 +97,9 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // Removes MaximizeModeWindowManager and resets the display rotation if there
   // is no rotation lock.
   void LeaveMaximizeMode();
+
+  // The maximized window manager (if enabled).
+  scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
   // An event targeter controller which traps mouse and keyboard events while
   // maximize mode is engaged.

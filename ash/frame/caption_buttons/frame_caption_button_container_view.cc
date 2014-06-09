@@ -5,12 +5,14 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
 #include <cmath>
+#include <map>
 
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,7 +59,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   size_button_ = new FrameSizeButton(this, frame, this);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  UpdateSizeButtonVisibility(false);
+  UpdateSizeButtonVisibility();
   AddChildView(size_button_);
 
   close_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE);
@@ -119,16 +121,11 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
   return HTNOWHERE;
 }
 
-void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility(
-    bool force_hidden) {
-  // TODO(flackr): Refactor the Maximize Mode notifications. Currently
-  // UpdateSizeButtonVisibilty requires a force_hidden parameter. This is
-  // because Shell::IsMaximizeWindowManagerEnabled is still false at the
-  // time when ShellObserver::OnMaximizeModeStarted is called. This prevents
-  // this method from performing that check, and instead relies on the calling
-  // code to tell it to force being hidden.
+void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility() {
   size_button_->SetVisible(
-      !force_hidden && frame_->widget_delegate()->CanMaximize());
+      !Shell::GetInstance()->maximize_mode_controller()->
+          IsMaximizeModeWindowManagerEnabled() &&
+      frame_->widget_delegate()->CanMaximize());
 }
 
 gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() const {
@@ -202,7 +199,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   if (sender == minimize_button_) {
     frame_->Minimize();
   } else if (sender == size_button_) {
-    if (frame_->IsFullscreen()) { // Can be clicked in immersive fullscreen.
+    if (frame_->IsFullscreen()) {  // Can be clicked in immersive fullscreen.
       frame_->SetFullscreen(false);
       action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
     } else if (frame_->IsMaximized()) {
@@ -212,7 +209,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
       frame_->Maximize();
       action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
     }
-  } else if(sender == close_button_) {
+  } else if (sender == close_button_) {
     frame_->Close();
     action = ash::UMA_WINDOW_CLOSE_BUTTON_CLICK;
   } else {

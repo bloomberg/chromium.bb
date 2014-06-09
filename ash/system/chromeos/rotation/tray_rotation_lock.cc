@@ -44,7 +44,8 @@ class RotationLockDefaultView : public TrayItemMore,
 RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
     : TrayItemMore(owner, false) {
   UpdateImage();
-  SetVisible(Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled());
+  SetVisible(Shell::GetInstance()->maximize_mode_controller()->
+                 IsMaximizeModeWindowManagerEnabled());
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -131,9 +132,11 @@ void TrayRotationLock::OnMaximizeModeEnded() {
 }
 
 bool TrayRotationLock::GetInitialVisibility() {
+  MaximizeModeController* controller = Shell::GetInstance()->
+      maximize_mode_controller();
   return on_primary_display_ &&
-         Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled() &&
-         Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+         controller->IsMaximizeModeWindowManagerEnabled() &&
+         controller->rotation_locked();
 }
 
 }  // namespace ash

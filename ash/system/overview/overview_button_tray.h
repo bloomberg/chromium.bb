@@ -51,9 +51,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // alignment of the shelf.
   void SetIconBorderForShelfAlignment();
 
-  // Sets the icon to visible if |maximize_mode_enabled| and
+  // Sets the icon to visible if maximize mode is enabled and
   // WindowSelectorController::CanSelect.
-  void UpdateIconVisibility(bool maximize_mode_enabled);
+  void UpdateIconVisibility();
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

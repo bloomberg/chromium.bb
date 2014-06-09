@@ -9,6 +9,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -210,11 +211,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
           widget->non_client_view()->frame_view());
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   const gfx::Rect during_maximize = frame_view->caption_button_container_->
       bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
   const gfx::Rect after_restore = frame_view->caption_button_container_->
       bounds();
   EXPECT_EQ(initial, after_restore);

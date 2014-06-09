@@ -4,6 +4,9 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
@@ -203,8 +206,7 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
           FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED;
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_,
       minimize_allowed);
-  caption_button_container_->UpdateSizeButtonVisibility(Shell::GetInstance()->
-      IsMaximizeModeWindowManagerEnabled());
+  caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 
   header_painter_->Init(frame_, this, NULL, caption_button_container_);
@@ -289,12 +291,12 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
 // CustomFrameViewAsh::HeaderView, ShellObserver overrides:
 
 void CustomFrameViewAsh::HeaderView::OnMaximizeModeStarted() {
-  caption_button_container_->UpdateSizeButtonVisibility(true);
+  caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
 }
 
 void CustomFrameViewAsh::HeaderView::OnMaximizeModeEnded() {
-  caption_button_container_->UpdateSizeButtonVisibility(false);
+  caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
 }
 

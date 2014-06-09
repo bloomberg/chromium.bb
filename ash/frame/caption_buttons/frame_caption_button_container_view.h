@@ -5,6 +5,8 @@
 #ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 #define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
+#include <map>
+
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -86,9 +88,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   int NonClientHitTest(const gfx::Point& point) const;
 
   // Updates the size button's visibility based on whether |frame_| can be
-  // maximized and |force_hidden|. A parent view should relayout to reflect the
-  // change in visibility.
-  void UpdateSizeButtonVisibility(bool force_hidden);
+  // maximized and if maximize mode is enabled. A parent view should relayout
+  // to reflect the change in visibility.
+  void UpdateSizeButtonVisibility();
 
   // views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
@@ -152,6 +154,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };
 
-}  // namesapace ash
+}  // namespace ash
 
 #endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_

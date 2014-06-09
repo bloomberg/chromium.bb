@@ -44,6 +44,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/partial_screenshot_view.h"
@@ -71,7 +72,6 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/session/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
 #include "chromeos/ime/ime_keyboard.h"
@@ -596,9 +596,10 @@ bool HandleToggleTouchViewTesting() {
   // TODO(skuhne): This is only temporary! Remove this!
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchViewTesting)) {
-    Shell* shell = Shell::GetInstance();
-    shell->EnableMaximizeModeWindowManager(
-        !shell->IsMaximizeModeWindowManagerEnabled());
+    MaximizeModeController* controller = Shell::GetInstance()->
+        maximize_mode_controller();
+    controller->EnableMaximizeModeWindowManager(
+        !controller->IsMaximizeModeWindowManagerEnabled());
     return true;
   }
   return false;

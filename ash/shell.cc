@@ -467,21 +467,9 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Shell::EnableMaximizeModeWindowManager(bool enable) {
-  if (enable && !maximize_mode_window_manager_.get()) {
-    maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
-  } else if (!enable && maximize_mode_window_manager_.get()) {
-    maximize_mode_window_manager_.reset();
-  }
-}
-
-bool Shell::IsMaximizeModeWindowManagerEnabled() {
-  return maximize_mode_window_manager_.get() != NULL;
-}
-
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
-  return !((IsMaximizeModeWindowManagerEnabled() &&
+  return !((maximize_mode_controller_->IsMaximizeModeWindowManagerEnabled() &&
             maximize_mode_controller_->in_set_screen_rotation()) ||
            resolution_notification_controller_->DoesNotificationTimeout());
 }
@@ -691,10 +679,10 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
 
-  // Destroy maximize window manager early on since it has some observers which
+  // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
+  maximize_mode_controller_->Shutdown();
   maximize_mode_controller_.reset();
-  maximize_mode_window_manager_.reset();
 
   // AppList needs to be released before shelf layout manager, which is
   // destroyed with shelf container in the loop below. However, app list

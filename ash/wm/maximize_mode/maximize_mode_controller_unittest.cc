@@ -126,8 +126,8 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     maximize_mode_controller()->OnAccelerometerUpdated(base, lid);
   }
 
-  bool IsMaximizeModeStarted() const {
-    return Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+  bool IsMaximizeModeStarted() {
+    return maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled();
   }
 
   // Overrides the internal input device list for the current event targeters

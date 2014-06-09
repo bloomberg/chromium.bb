@@ -4,6 +4,8 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
+#include <string>
+
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -11,6 +13,7 @@
 #include "ash/switchable_windows.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_properties.h"
@@ -79,20 +82,22 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
   // Create the Maximized mode window manager.
   ash::MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
     EXPECT_FALSE(maximize_mode_window_manager());
-    Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+    Shell::GetInstance()->maximize_mode_controller()->
+        EnableMaximizeModeWindowManager(true);
     return maximize_mode_window_manager();
   }
 
   // Destroy the maximized mode window manager.
   void DestroyMaximizeModeWindowManager() {
-    Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+    Shell::GetInstance()->maximize_mode_controller()->
+        EnableMaximizeModeWindowManager(false);
     EXPECT_FALSE(maximize_mode_window_manager());
   }
 
   // Get the maximze window manager.
   ash::MaximizeModeWindowManager* maximize_mode_window_manager() {
-    test::ShellTestApi test_api(Shell::GetInstance());
-    return test_api.maximize_mode_window_manager();
+    return Shell::GetInstance()->maximize_mode_controller()->
+        maximize_mode_window_manager_.get();
   }
 
   // Resize our desktop.
@@ -735,7 +740,8 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
                                   rect));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -750,7 +756,8 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
 
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -950,7 +957,8 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
 
   // 2. Check that turning on the manager will stop allowing the window from
   // dragging.
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   gfx::Rect center_bounds(window->bounds());
   EXPECT_NE(rect.origin().ToString(), center_bounds.origin().ToString());
   generator.MoveMouseTo(gfx::Point(center_bounds.x() + 1,
@@ -961,7 +969,8 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(center_bounds.x(), window->bounds().x());
   EXPECT_EQ(center_bounds.y(), window->bounds().y());
-  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  ash::Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
 
   // 3. Releasing the mazimize manager again will restore the window to its
   // previous bounds and

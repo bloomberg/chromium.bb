@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
+#include <string>
+#include <vector>
+
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
@@ -641,7 +644,7 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   // Open up 270 degrees to trigger maximize mode
   controller->OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
                                      gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
-  EXPECT_TRUE(shell->IsMaximizeModeWindowManagerEnabled());
+  EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
 
   // Trigger 90 degree rotation
   controller->OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 1.0f, 0.0f),

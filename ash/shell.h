@@ -326,12 +326,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  // Turn the always maximize mode window manager on or off.
-  void EnableMaximizeModeWindowManager(bool enable);
-
-  // Test if the MaximizeModeWindowManager is enabled or not.
-  bool IsMaximizeModeWindowManagerEnabled();
-
 #if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
   // MaximizeModeController is not currently setting a display rotation. Or if
@@ -703,9 +697,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       weak_display_manager_factory_;
 
   scoped_ptr<LocaleNotificationController> locale_notification_controller_;
-
-  // The maximized window manager (if enabled).
-  scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
   scoped_ptr<AccelerometerController> accelerometer_controller_;
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include <algorithm>
+
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
@@ -94,8 +96,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 void BrowserNonClientFrameViewAsh::Init() {
   caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame(),
       ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
-  caption_button_container_->UpdateSizeButtonVisibility(
-      ash::Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled());
+  caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
@@ -345,14 +346,14 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
 // ash::ShellObserver:
 
 void BrowserNonClientFrameViewAsh::OnMaximizeModeStarted() {
-  caption_button_container_->UpdateSizeButtonVisibility(true);
+  caption_button_container_->UpdateSizeButtonVisibility();
   InvalidateLayout();
   frame()->client_view()->InvalidateLayout();
   frame()->GetRootView()->Layout();
 }
 
 void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
-  caption_button_container_->UpdateSizeButtonVisibility(false);
+  caption_button_container_->UpdateSizeButtonVisibility();
   InvalidateLayout();
   frame()->client_view()->InvalidateLayout();
   frame()->GetRootView()->Layout();

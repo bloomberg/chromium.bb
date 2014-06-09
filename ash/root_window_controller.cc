@@ -307,7 +307,7 @@ class CrosAccessibilityObserver : public AccessibilityObserver {
 
   DISALLOW_COPY_AND_ASSIGN(CrosAccessibilityObserver);
 };
-#endif // OS_CHROMEOS
+#endif  // OS_CHROMEOS
 
 }  // namespace
 
@@ -527,6 +527,11 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 void RootWindowController::CloseChildWindows() {
   mouse_event_target_.reset();
 
+  // Remove observer as deactivating keyboard causes |docked_layout_manager_|
+  // to fire notifications.
+  if (docked_layout_manager_ && shelf_ && shelf_->shelf_layout_manager())
+    docked_layout_manager_->RemoveObserver(shelf_->shelf_layout_manager());
+
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
   DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
@@ -538,8 +543,6 @@ void RootWindowController::CloseChildWindows() {
   }
   // docked_layout_manager_ needs to be shut down before windows are destroyed.
   if (docked_layout_manager_) {
-    if (shelf_ && shelf_->shelf_layout_manager())
-      docked_layout_manager_->RemoveObserver(shelf_->shelf_layout_manager());
     docked_layout_manager_->Shutdown();
     docked_layout_manager_ = NULL;
   }

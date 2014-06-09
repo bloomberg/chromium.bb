@@ -13,6 +13,7 @@
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
@@ -60,10 +61,12 @@ TEST_F(OverviewButtonTrayTest, BasicConstruction) {
 // By default the system should not have MaximizeMode enabled.
 TEST_F(OverviewButtonTrayTest, MaximizeModeObserverOnMaximizeModeToggled) {
   ASSERT_FALSE(GetTray()->visible());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
 
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -92,10 +95,12 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   UpdateDisplay("400x400,200x200");
   EXPECT_FALSE(GetTray()->visible());
   EXPECT_FALSE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
 }
 
 // Tests if Maximize Mode is enabled before a secondary display is attached
@@ -104,16 +109,19 @@ TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
   if (!SupportsMultipleDisplays())
     return;
 
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetSecondaryTray()->visible());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
 }
 
 // Tests that the tray loses visibility when a user logs out, and that it
 // regains visibility when a user logs back in.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   SetUserLoggedIn(false);
   Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_NONE);
   EXPECT_FALSE(GetTray()->visible());
@@ -121,7 +129,8 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   SetSessionStarted(true);
   Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
   EXPECT_TRUE(GetTray()->visible());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
 }
 
 }  // namespace ash

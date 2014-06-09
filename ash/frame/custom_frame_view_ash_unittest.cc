@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -209,11 +210,13 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
 
   const gfx::Rect initial = delegate->
       GetFrameCaptionButtonContainerViewBounds();
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
   const gfx::Rect maximize_mode_bounds = delegate->
       GetFrameCaptionButtonContainerViewBounds();
   EXPECT_GT(initial.width(), maximize_mode_bounds.width());
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
   const gfx::Rect after_restore = delegate->
       GetFrameCaptionButtonContainerViewBounds();
   EXPECT_EQ(initial, after_restore);

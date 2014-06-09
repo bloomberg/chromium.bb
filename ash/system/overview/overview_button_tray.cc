@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -39,9 +40,7 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_OVERVIEW_MODE).ToImageSkia());
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
-
-  UpdateIconVisibility(Shell::GetInstance()->
-      IsMaximizeModeWindowManagerEnabled());
+  UpdateIconVisibility();
 
   Shell::GetInstance()->AddShellObserver(this);
 }
@@ -52,8 +51,7 @@ OverviewButtonTray::~OverviewButtonTray() {
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
-  UpdateIconVisibility(Shell::GetInstance()->
-      IsMaximizeModeWindowManagerEnabled());
+  UpdateIconVisibility();
 }
 
 bool OverviewButtonTray::PerformAction(const ui::Event& event) {
@@ -62,13 +60,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 }
 
 void OverviewButtonTray::OnMaximizeModeStarted() {
-  // TODO(flackr): once maximize mode has been refactored remove this so that
-  // UpdateIconVisibility polls Shell for the status directly
-  UpdateIconVisibility(/* maximize_mode_enabled */ true);
+  UpdateIconVisibility();
 }
 
 void OverviewButtonTray::OnMaximizeModeEnded() {
-  UpdateIconVisibility(/* maximize_mode_enabled */ false);
+  UpdateIconVisibility();
 }
 
 bool OverviewButtonTray::ClickedOutsideBubble() {
@@ -111,8 +107,9 @@ void OverviewButtonTray::SetIconBorderForShelfAlignment() {
   }
 }
 
-void OverviewButtonTray::UpdateIconVisibility(bool maximize_mode_enabled) {
-  SetVisible(maximize_mode_enabled &&
+void OverviewButtonTray::UpdateIconVisibility() {
+  SetVisible(Shell::GetInstance()->maximize_mode_controller()->
+                 IsMaximizeModeWindowManagerEnabled() &&
              Shell::GetInstance()->window_selector_controller()->CanSelect());
 }
 

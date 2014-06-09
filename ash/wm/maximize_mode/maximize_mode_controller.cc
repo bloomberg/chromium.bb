@@ -11,6 +11,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -155,6 +156,27 @@ bool MaximizeModeController::CanEnterMaximizeMode() {
              switches::kAshEnableTouchViewTesting);
 }
 
+void MaximizeModeController::EnableMaximizeModeWindowManager(bool enable) {
+  if (enable && !maximize_mode_window_manager_.get()) {
+    maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
+    // TODO(jonross): Move the maximize mode notifications from ShellObserver
+    // to MaximizeModeController::Observer
+    Shell::GetInstance()->OnMaximizeModeStarted();
+  } else if (!enable && maximize_mode_window_manager_.get()) {
+    maximize_mode_window_manager_.reset();
+    Shell::GetInstance()->OnMaximizeModeEnded();
+  }
+}
+
+bool MaximizeModeController::IsMaximizeModeWindowManagerEnabled() const {
+  return maximize_mode_window_manager_.get() != NULL;
+}
+
+void MaximizeModeController::Shutdown() {
+  maximize_mode_window_manager_.reset();
+  Shell::GetInstance()->OnMaximizeModeEnded();
+}
+
 void MaximizeModeController::OnAccelerometerUpdated(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
@@ -180,8 +202,7 @@ void MaximizeModeController::OnAccelerometerUpdated(
 void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
                                                  const gfx::Vector3dF& lid) {
   static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
-  bool maximize_mode_engaged =
-      Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+  bool maximize_mode_engaged = IsMaximizeModeWindowManagerEnabled();
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
   gfx::Vector3dF base_flattened(base);
@@ -216,8 +237,7 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
 }
 
 void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
-  bool maximize_mode_engaged =
-      Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+  bool maximize_mode_engaged = IsMaximizeModeWindowManagerEnabled();
 
   if (!maximize_mode_engaged || rotation_locked_)
     return;
@@ -292,7 +312,7 @@ void MaximizeModeController::EnterMaximizeMode() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   user_rotation_ = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  EnableMaximizeModeWindowManager(true);
   event_blocker_.reset(new MaximizeModeEventBlocker);
 #if defined(OS_CHROMEOS)
   event_handler_.reset(new ScreenshotActionHandler);
@@ -307,7 +327,7 @@ void MaximizeModeController::LeaveMaximizeMode() {
   if (current_rotation != user_rotation_)
     SetDisplayRotation(display_manager, user_rotation_);
   rotation_locked_ = false;
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
   event_handler_.reset();
 }
