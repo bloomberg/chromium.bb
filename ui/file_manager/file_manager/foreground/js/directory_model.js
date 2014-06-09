@@ -963,7 +963,6 @@ DirectoryModel.prototype.search = function(query,
             this.currentFileListContext_,
             currentDirEntry);
         this.clearAndScan_(newDirContents,
-                           sequence,
                            callback);
       } else {
         callback();
@@ -982,7 +981,6 @@ DirectoryModel.prototype.search = function(query,
     this.onClearSearch_ = onClearSearch;
     this.addEventListener('scan-completed', this.onSearchCompleted_);
     this.clearAndScan_(newDirContents,
-                       sequence,
                        callback);
   }.bind(this, this.changeDirectorySequence_));
 };
