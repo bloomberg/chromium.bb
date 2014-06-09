@@ -90,9 +90,6 @@ loadfailures._html = function(failureData)
 {
     var html = '';
     Object.keys(failureData).forEach(function(group) {
-        html += '<h1>' + group + '</h1>' +
-            '<table><tr><th>Test type</th><th>>1 week stale</th><th>>1 day stale, <1 week stale</th></tr>';
-
         var failingBuildersByTestType = failureData[group].failingBuilders;
         var staleBuildersByTestType = failureData[group].staleBuilders;
         var testTypesWithNoSuccessfullLoads = failureData[group].testTypesWithNoSuccessfullLoads;
@@ -102,6 +99,13 @@ loadfailures._html = function(failureData)
         var uniqueTestTypes = testTypes.sort().filter(function(value, index, array) {
             return array.indexOf(value) === index;
         });
+
+        if (!uniqueTestTypes.length)
+            return;
+
+        html += '<h1>' + group + '</h1>' +
+            '<table><tr><th>Test type</th><th>>1 week stale</th><th>>1 day stale, <1 week stale</th></tr>';
+
         uniqueTestTypes.forEach(function(testType) {
             var failures = failingBuildersByTestType[testType] || [];
             var failureHtml = '';

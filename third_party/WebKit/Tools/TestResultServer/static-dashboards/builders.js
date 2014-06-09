@@ -31,6 +31,8 @@ function LOAD_BUILDBOT_DATA(builderData)
     builders.masters = {};
     var groups = {};
     var testTypes = {};
+    var testTypesThatDoNotUpload = {};
+    builders.noUploadTestTypes = builderData['no_upload_test_types']
     builderData['masters'].forEach(function(master) {
         builders.masters[master.name] = new builders.BuilderMaster(master.name, master.url, master.tests, master.groups);
 
@@ -39,12 +41,18 @@ function LOAD_BUILDBOT_DATA(builderData)
         Object.keys(master.tests).forEach(function(testType) {
             if (builders.testTypeUploadsToFlakinessDashboardServer(testType))
                 testTypes[testType] = true;
+            else
+                testTypesThatDoNotUpload[testType] = true;
         });
     });
     builders.groups = Object.keys(groups);
     builders.groups.sort();
     builders.testTypes = Object.keys(testTypes);
     builders.testTypes.sort();
+    // FIXME: Expose this in the flakiness dashboard UI and give a clear error message
+    // pointing to a bug about getting the test type in question uploading results.
+    builders.testTypesThatDoNotUpload = Object.keys(testTypesThatDoNotUpload);
+    builders.testTypesThatDoNotUpload.sort();
 }
 
 var builders = builders || {};
@@ -53,11 +61,11 @@ var builders = builders || {};
 
 builders.testTypeUploadsToFlakinessDashboardServer = function(testType)
 {
-    // FIXME: Encode whether the test uploads to the server in the buildbot json so
-    // we can include that data in buildbot.jsonp and not need to do ugly heuristics
-    // based off the name of the test suite. This code both has some false positives
-    // and some false negatives.
-    return !testType.match(/_only|_ignore|_perf$/) && !testType.match(/^memory test:|install_/) && testType != 'Run tests';
+    for (var i = 0; i < builders.noUploadTestTypes.length; i++) {
+        if (string.contains(testType, builders.noUploadTestTypes[i]))
+            return false;
+    }
+    return true;
 }
 
 var currentBuilderGroup = {};

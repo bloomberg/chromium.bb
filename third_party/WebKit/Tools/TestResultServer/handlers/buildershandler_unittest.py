@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2012 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -96,11 +95,11 @@ class BuildersHandlerTest(unittest.TestCase):
                     return {'cachedBuilds': [], 'currentBuilds': []}
 
                 if url == 'http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/2':
-                    return {'steps': [{'name': 'webkit_tests'}, {'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
+                    return {'steps': [{'name': 'foo_tests_only'}, {'name': 'webkit_tests'}, {'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
                 if url == 'http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Win/builds/2':
-                    return {'steps': [{'name': 'webkit_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
+                    return {'steps': [{'name': 'foo_tests_ignore'}, {'name': 'webkit_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
                 if url == 'http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Mac/builds/2':
-                    return {'steps': [{'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
+                    return {'steps': [{'name': 'foo_tests_perf'}, {'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
 
                 logging.error('Cannot fetch fake url: %s' % url)
 
@@ -132,7 +131,9 @@ class BuildersHandlerTest(unittest.TestCase):
                         'browser_tests': {'builders': ['WebKit Linux', 'WebKit Mac']},
                         'mini_installer_test': {'builders': ['WebKit Linux', 'WebKit Mac', 'WebKit Win']},
                         'layout-tests': {'builders': ['WebKit Linux', 'WebKit Win']}},
-                    'name': 'ChromiumWebkit'}]}
+                    'name': 'ChromiumWebkit'}],
+                "no_upload_test_types": buildershandler.TEST_STEPS_THAT_DO_NOT_UPLOAD_YET,
+            }
             expected_json = buildershandler.dump_json(expected_masters)
 
             self.assertEqual(buildbot_data, expected_json)
@@ -203,7 +204,6 @@ class BuildersHandlerTest(unittest.TestCase):
 
         finally:
             buildershandler.fetch_json = old_fetch_json
-
 
 
 if __name__ == '__main__':

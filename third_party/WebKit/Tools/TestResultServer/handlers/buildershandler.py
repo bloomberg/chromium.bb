@@ -29,6 +29,7 @@
 import datetime
 import json
 import logging
+import re
 import sys
 import traceback
 import urllib2
@@ -48,6 +49,33 @@ MASTERS = [
     {'name': 'V8', 'url': 'http://build.chromium.org/p/client.v8', 'groups': ['@ToT V8']},
 ]
 
+# Buildbot steps that have test in the name, but don't run tests.
+NON_TEST_STEP_NAMES = [
+    'archive',
+    'Run tests',
+    'find isolated tests',
+    'read test spec',
+    'Download latest chromedriver',
+    'compile tests',
+    'create_coverage_',
+    'update test result log',
+    'memory test:',
+    'install_',
+]
+
+# Buildbot steps that run tests but don't upload results to the flakiness dashboard server.
+# FIXME: These should be fixed to upload and then removed from this list.
+TEST_STEPS_THAT_DO_NOT_UPLOAD_YET = [
+    'java_tests(chrome',
+    'python_tests(chrome',
+    'run_all_tests.py',
+    'test_report',
+    'test CronetSample',
+    'test_mini_installer',
+    'telemetry_unittests',
+    'webkit_python_tests',
+    'webkit_unit_tests',
+]
 
 class FetchBuildersException(Exception): pass
 
@@ -142,8 +170,14 @@ def fetch_buildbot_data(masters, force_update=False):
                 logging.info('Skipping build %s on builder %s due to empty data', latest_build, builder)
             for step in build['steps']:
                 step_name = step['name']
-                is_test_step = 'test' in step_name and 'archive' not in step_name and 'Run tests' not in step_name
-                if not is_test_step:
+
+                if not 'test' in step_name:
+                    continue
+
+                if any(name in step_name for name in NON_TEST_STEP_NAMES):
+                    continue
+
+                if re.search('_only|_ignore|_perf$', step_name):
                     continue
 
                 if step_name == 'webkit_tests':
@@ -155,7 +189,7 @@ def fetch_buildbot_data(masters, force_update=False):
         for builders in tests_object.values():
             builders['builders'].sort()
 
-    output_data = {'masters': master_data}
+    output_data = {'masters': master_data, 'no_upload_test_types': TEST_STEPS_THAT_DO_NOT_UPLOAD_YET}
 
     delta = datetime.datetime.now() - start_time
 

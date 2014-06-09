@@ -43,6 +43,9 @@ function resetGlobals()
         historyInstance.crossDashboardState[key] = history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES[key];
 
     LOAD_BUILDBOT_DATA({
+        "no_upload_test_types": [
+            "webkit_unit_tests"
+        ],
         'masters': [{
             name: 'ChromiumWebkit',
             url: 'dummyurl',
