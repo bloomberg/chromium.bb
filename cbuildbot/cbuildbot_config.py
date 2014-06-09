@@ -954,16 +954,12 @@ internal = _config(
 brillo = _config(
   sync_chrome=False,
   chrome_sdk=False,
-
-  # TODO(gauravsh): Should be set to True once testing works.
-  build_tests=False,
-  factory_toolkit=False,
   signer_tests=False,
+  # TODO(gauravsh): crbug.com/356414 Start running tests on Brillo configs.
   vm_tests=[],
   hw_tests=[],
 )
 
-# Base brillo config don't build tests and they only need the base image.
 brillo_non_testable = brillo.derive(
   # Literally build the minimal possible.
   packages=['virtual/target-os', 'virtual/target-os-dev'],
@@ -2029,10 +2025,8 @@ def _AddReleaseConfigs():
 
 _AddReleaseConfigs()
 
-# Brillo devices do not have Chrome or currently need for test or dev images.
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
-  images=['base', 'test']
 )
 
 _brillo_release.add_config('duck-release',
