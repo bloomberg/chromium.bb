@@ -498,8 +498,10 @@ void HIDDetectionScreenHandler::BTConnectError(
                << " error code = " << error_code;
   if (DeviceIsPointing(device_type))
     mouse_is_pairing_ = false;
-  if (DeviceIsKeyboard(device_type))
+  if (DeviceIsKeyboard(device_type)) {
     keyboard_is_pairing_ = false;
+    SendKeyboardDeviceNotification(NULL);
+  }
 
   if (pointing_device_id_.empty() || keyboard_device_id_.empty())
     UpdateDevices();
