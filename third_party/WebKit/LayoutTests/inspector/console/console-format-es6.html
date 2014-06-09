@@ -16,13 +16,13 @@ function onload()
 {
     var smb1 = Symbol();
     var smb2 = Symbol("a");
-    var obj = new Object();
+    var obj = {};
     obj[Symbol()] = 1;
     obj[smb2] = 2;
     obj["a"] = smb1;
 
     globals = [
-        smb1, smb2, obj
+        Promise.reject(-0), smb1, smb2, obj
     ];
 
     runTest();

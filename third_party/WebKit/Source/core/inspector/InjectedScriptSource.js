@@ -1108,7 +1108,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
     this.description = injectedScript._describe(object);
 
     if (generatePreview && (this.type === "object" || injectedScript._isHTMLAllCollection(object)))
-        this.preview = this._generatePreview(object, undefined, columnNames, isTable, false);
+        this.preview = this._generatePreview(object, undefined, columnNames, isTable);
 }
 
 InjectedScript.RemoteObject.prototype = {
@@ -1117,10 +1117,9 @@ InjectedScript.RemoteObject.prototype = {
      * @param {?Array.<string>=} firstLevelKeys
      * @param {?Array.<string>=} secondLevelKeys
      * @param {boolean=} isTable
-     * @param {boolean=} isTableRow
      * @return {!RuntimeAgent.ObjectPreview} preview
      */
-    _generatePreview: function(object, firstLevelKeys, secondLevelKeys, isTable, isTableRow)
+    _generatePreview: function(object, firstLevelKeys, secondLevelKeys, isTable)
     {
         var preview = { __proto__: null };
         preview.lossless = true;
@@ -1130,8 +1129,8 @@ InjectedScript.RemoteObject.prototype = {
         var firstLevelKeysCount = firstLevelKeys ? firstLevelKeys.length : 0;
 
         var propertiesThreshold = {
-            properties: (isTable || isTableRow) ? 1000 : max(5, firstLevelKeysCount),
-            indexes: (isTable || isTableRow) ? 1000 : max(100, firstLevelKeysCount)
+            properties: isTable ? 1000 : max(5, firstLevelKeysCount),
+            indexes: isTable ? 1000 : max(100, firstLevelKeysCount)
         };
 
         try {
@@ -1148,82 +1147,105 @@ InjectedScript.RemoteObject.prototype = {
                     descriptors[i] = nameToDescriptors["#" + firstLevelKeys[i]];
             }
 
-            for (var i = 0; i < descriptors.length; ++i) {
-                if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0)
-                    break;
+            this._appendPropertyDescriptors(preview, descriptors, propertiesThreshold, secondLevelKeys, isTable);
+            if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0)
+                return preview;
 
-                var descriptor = descriptors[i];
-                if (!descriptor)
-                    continue;
-                if (descriptor.wasThrown) {
-                    preview.lossless = false;
-                    continue;
-                }
-                if (!descriptor.enumerable && !descriptor.isOwn)
-                    continue;
-
-                var name = descriptor.name;
-                if (name === "__proto__")
-                    continue;
-                if (this.subtype === "array" && name === "length")
-                    continue;
-
-                if (!("value" in descriptor)) {
-                    preview.lossless = false;
-                    this._appendPropertyPreview(preview, { name: name, type: "accessor", __proto__: null }, propertiesThreshold);
-                    continue;
-                }
-
-                var value = descriptor.value;
-                if (value === null) {
-                    this._appendPropertyPreview(preview, { name: name, type: "object", value: "null", __proto__: null }, propertiesThreshold);
-                    continue;
-                }
-
-                const maxLength = 100;
-                var type = typeof value;
-                if (!descriptor.enumerable && type === "function")
-                    continue;
-                if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
-                    type = "object";
-
-                if (InjectedScript.primitiveTypes[type]) {
-                    if (type === "string" && value.length > maxLength) {
-                        value = this._abbreviateString(value, maxLength, true);
-                        preview.lossless = false;
-                    }
-                    this._appendPropertyPreview(preview, { name: name, type: type, value: toStringDescription(value), __proto__: null }, propertiesThreshold);
-                    continue;
-                }
-
-                if (secondLevelKeys === null || secondLevelKeys) {
-                    var subPreview = this._generatePreview(value, secondLevelKeys || undefined, undefined, false, isTable);
-                    var property = { name: name, type: type, valuePreview: subPreview, __proto__: null };
-                    this._appendPropertyPreview(preview, property, propertiesThreshold);
-                    if (!subPreview.lossless)
-                        preview.lossless = false;
-                    if (subPreview.overflow)
-                        preview.overflow = true;
-                    continue;
-                }
-
-                preview.lossless = false;
-
-                var subtype = injectedScript._subtype(value);
-                var description = "";
-                if (type !== "function")
-                    description = this._abbreviateString(/** @type {string} */ (injectedScript._describe(value)), maxLength, subtype === "regexp");
-
-                var property = { name: name, type: type, value: description, __proto__: null };
-                if (subtype)
-                    property.subtype = subtype;
-                this._appendPropertyPreview(preview, property, propertiesThreshold);
+            // Add internal properties to preview.
+            var internalProperties = InjectedScriptHost.getInternalProperties(object) || [];
+            for (var i = 0; i < internalProperties.length; ++i) {
+                internalProperties[i] = nullifyObjectProto(internalProperties[i]);
+                internalProperties[i].enumerable = true;
             }
+            this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
+
         } catch (e) {
             preview.lossless = false;
         }
 
         return preview;
+    },
+
+    /**
+     * @param {!RuntimeAgent.ObjectPreview} preview
+     * @param {!Array.<Object>} descriptors
+     * @param {!Object} propertiesThreshold
+     * @param {?Array.<string>=} secondLevelKeys
+     * @param {boolean=} isTable
+     */
+    _appendPropertyDescriptors: function(preview, descriptors, propertiesThreshold, secondLevelKeys, isTable)
+    {
+        for (var i = 0; i < descriptors.length; ++i) {
+            if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0)
+                break;
+
+            var descriptor = descriptors[i];
+            if (!descriptor)
+                continue;
+            if (descriptor.wasThrown) {
+                preview.lossless = false;
+                continue;
+            }
+            if (!descriptor.enumerable && !descriptor.isOwn)
+                continue;
+
+            var name = descriptor.name;
+            if (name === "__proto__")
+                continue;
+            if (this.subtype === "array" && name === "length")
+                continue;
+
+            if (!("value" in descriptor)) {
+                preview.lossless = false;
+                this._appendPropertyPreview(preview, { name: name, type: "accessor", __proto__: null }, propertiesThreshold);
+                continue;
+            }
+
+            var value = descriptor.value;
+            if (value === null) {
+                this._appendPropertyPreview(preview, { name: name, type: "object", value: "null", __proto__: null }, propertiesThreshold);
+                continue;
+            }
+
+            const maxLength = 100;
+            var type = typeof value;
+            if (!descriptor.enumerable && type === "function")
+                continue;
+            if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
+                type = "object";
+
+            if (InjectedScript.primitiveTypes[type]) {
+                if (type === "string" && value.length > maxLength) {
+                    value = this._abbreviateString(value, maxLength, true);
+                    preview.lossless = false;
+                }
+                this._appendPropertyPreview(preview, { name: name, type: type, value: toStringDescription(value), __proto__: null }, propertiesThreshold);
+                continue;
+            }
+
+            if (secondLevelKeys === null || secondLevelKeys) {
+                var subPreview = this._generatePreview(value, secondLevelKeys || undefined, undefined, isTable);
+                var property = { name: name, type: type, valuePreview: subPreview, __proto__: null };
+                this._appendPropertyPreview(preview, property, propertiesThreshold);
+                if (!subPreview.lossless)
+                    preview.lossless = false;
+                if (subPreview.overflow)
+                    preview.overflow = true;
+                continue;
+            }
+
+            preview.lossless = false;
+
+            var subtype = injectedScript._subtype(value);
+            var description = "";
+            if (type !== "function")
+                description = this._abbreviateString(/** @type {string} */ (injectedScript._describe(value)), maxLength, subtype === "regexp");
+
+            var property = { name: name, type: type, value: description, __proto__: null };
+            if (subtype)
+                property.subtype = subtype;
+            this._appendPropertyPreview(preview, property, propertiesThreshold);
+        }
     },
 
     /**
