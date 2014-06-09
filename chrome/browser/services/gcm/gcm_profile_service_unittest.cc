@@ -18,13 +18,13 @@
 #include "components/gcm_driver/fake_gcm_app_handler.h"
 #include "components/gcm_driver/fake_gcm_client.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/gcm/gcm_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {

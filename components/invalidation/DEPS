@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
 
+  "+components/gcm_driver",
   "+components/keyed_service",
   "+components/pref_registry",
 

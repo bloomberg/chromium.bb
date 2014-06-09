@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "google_apis/gaia/identity_provider.h"
-#include "google_apis/gcm/gcm_client.h"
 
 namespace base {
 class FilePath;

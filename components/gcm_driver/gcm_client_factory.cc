@@ -4,7 +4,7 @@
 
 #include "components/gcm_driver/gcm_client_factory.h"
 
-#include "google_apis/gcm/gcm_client_impl.h"
+#include "components/gcm_driver/gcm_client_impl.h"
 
 namespace gcm {
 

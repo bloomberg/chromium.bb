@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GCM_GCM_CLIENT_IMPL_H_
-#define GOOGLE_APIS_GCM_GCM_CLIENT_IMPL_H_
+#ifndef COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_
+#define COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_
 
 #include <map>
 #include <string>
@@ -13,14 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/gcm_stats_recorder_impl.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
-#include "google_apis/gcm/gcm_client.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder_impl.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/net_log.h"
@@ -49,7 +49,7 @@ class GCMClientImplTest;
 
 // Helper class for building GCM internals. Allows tests to inject fake versions
 // as necessary.
-class GCM_EXPORT GCMInternalsBuilder {
+class GCMInternalsBuilder {
  public:
   GCMInternalsBuilder();
   virtual ~GCMInternalsBuilder();
@@ -73,7 +73,7 @@ class GCM_EXPORT GCMInternalsBuilder {
 // with MCS) and other pieces of GCM infrastructure like Registration and
 // Checkins. It also allows for registering user delegates that host
 // applications that send and receive messages.
-class GCM_EXPORT GCMClientImpl
+class GCMClientImpl
     : public GCMClient, public GCMStatsRecorder::Delegate {
  public:
   explicit GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder);
@@ -121,7 +121,7 @@ class GCM_EXPORT GCMClientImpl
   };
 
   // The check-in info for the user. Returned by the server.
-  struct GCM_EXPORT CheckinInfo {
+  struct CheckinInfo {
     CheckinInfo() : android_id(0), secret(0) {}
     bool IsValid() const { return android_id != 0 && secret != 0; }
     void Reset() {
@@ -298,4 +298,4 @@ class GCM_EXPORT GCMClientImpl
 
 }  // namespace gcm
 
-#endif  // GOOGLE_APIS_GCM_GCM_CLIENT_IMPL_H_
+#endif  // COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_

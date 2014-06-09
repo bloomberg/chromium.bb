@@ -17,12 +17,12 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "google_apis/gcm/gcm_client.h"
 #include "grit/browser_resources.h"
 
 namespace {

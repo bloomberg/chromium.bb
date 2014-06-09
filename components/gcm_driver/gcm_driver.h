@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/gcm_driver/default_gcm_app_handler.h"
-#include "google_apis/gcm/gcm_client.h"
+#include "components/gcm_driver/gcm_client.h"
 
 namespace gcm {
 

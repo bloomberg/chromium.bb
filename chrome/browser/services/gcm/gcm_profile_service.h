@@ -35,8 +35,12 @@ class GCMProfileService : public KeyedService {
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+#if defined(OS_ANDROID)
+  explicit GCMProfileService(Profile* profile);
+#else
   GCMProfileService(Profile* profile,
                     scoped_ptr<GCMClientFactory> gcm_client_factory);
+#endif
   virtual ~GCMProfileService();
 
   // TODO(jianli): obsolete methods that are going to be removed soon.

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "google_apis/gcm/gcm_client.h"
+#include "components/gcm_driver/gcm_client.h"
 
 class GoogleServiceAuthError;
 

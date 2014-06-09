@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GCM_GCM_ACTIVITY_H_
-#define GOOGLE_APIS_GCM_GCM_ACTIVITY_H_
+#ifndef COMPONENTS_GCM_DRIVER_GCM_ACTIVITY_H_
+#define COMPONENTS_GCM_DRIVER_GCM_ACTIVITY_H_
 
 #include <string>
 #include <vector>
 
 #include "base/time/time.h"
-#include "google_apis/gcm/base/gcm_export.h"
 
 namespace gcm {
 
 // Contains data that are common to all activity kinds below.
-struct GCM_EXPORT Activity {
+struct Activity {
   Activity();
   virtual ~Activity();
 
@@ -24,19 +23,19 @@ struct GCM_EXPORT Activity {
 };
 
 // Contains relevant data of a connection activity.
-struct GCM_EXPORT ConnectionActivity : Activity {
+struct ConnectionActivity : Activity {
   ConnectionActivity();
   virtual ~ConnectionActivity();
 };
 
 // Contains relevant data of a check-in activity.
-struct GCM_EXPORT CheckinActivity : Activity {
+struct CheckinActivity : Activity {
   CheckinActivity();
   virtual ~CheckinActivity();
 };
 
 // Contains relevant data of a registration/unregistration step.
-struct GCM_EXPORT RegistrationActivity : Activity {
+struct RegistrationActivity : Activity {
   RegistrationActivity();
   virtual ~RegistrationActivity();
 
@@ -45,7 +44,7 @@ struct GCM_EXPORT RegistrationActivity : Activity {
 };
 
 // Contains relevant data of a message receiving event.
-struct GCM_EXPORT ReceivingActivity : Activity {
+struct ReceivingActivity : Activity {
   ReceivingActivity();
   virtual ~ReceivingActivity();
 
@@ -55,7 +54,7 @@ struct GCM_EXPORT ReceivingActivity : Activity {
 };
 
 // Contains relevant data of a send-message step.
-struct GCM_EXPORT SendingActivity : Activity {
+struct SendingActivity : Activity {
   SendingActivity();
   virtual ~SendingActivity();
 
@@ -64,7 +63,7 @@ struct GCM_EXPORT SendingActivity : Activity {
   std::string message_id;
 };
 
-struct GCM_EXPORT RecordedActivities {
+struct RecordedActivities {
   RecordedActivities();
   virtual ~RecordedActivities();
 
@@ -77,4 +76,4 @@ struct GCM_EXPORT RecordedActivities {
 
 }  // namespace gcm
 
-#endif  // GOOGLE_APIS_GCM_GCM_ACTIVITY_H_
+#endif  // COMPONENTS_GCM_DRIVER_GCM_ACTIVITY_H_

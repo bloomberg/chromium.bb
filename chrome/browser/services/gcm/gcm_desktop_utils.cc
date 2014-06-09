@@ -8,11 +8,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/gcm/gcm_client.h"
 
 namespace gcm {
 

@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GCM_GCM_STATS_RECORDER_IMPL_H_
-#define GOOGLE_APIS_GCM_GCM_STATS_RECORDER_IMPL_H_
+#ifndef COMPONENTS_GCM_DRIVER_GCM_STATS_RECORDER_IMPL_H_
+#define COMPONENTS_GCM_DRIVER_GCM_STATS_RECORDER_IMPL_H_
 
 #include <deque>
 #include <string>
 #include <vector>
 
 #include "base/time/time.h"
-#include "google_apis/gcm/base/gcm_export.h"
+#include "components/gcm_driver/gcm_activity.h"
 #include "google_apis/gcm/engine/connection_factory.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
-#include "google_apis/gcm/gcm_activity.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 
 namespace gcm {
@@ -25,7 +24,7 @@ namespace gcm {
 // by default.
 // This class is not thread safe. It is meant to be owned by a gcm client
 // instance.
-class GCM_EXPORT GCMStatsRecorderImpl : public GCMStatsRecorder {
+class GCMStatsRecorderImpl : public GCMStatsRecorder {
  public:
   GCMStatsRecorderImpl();
   virtual ~GCMStatsRecorderImpl();
@@ -153,4 +152,4 @@ class GCM_EXPORT GCMStatsRecorderImpl : public GCMStatsRecorder {
 
 }  // namespace gcm
 
-#endif  // GOOGLE_APIS_GCM_GCM_STATS_RECORDER_IMPL_H_
+#endif  // COMPONENTS_GCM_DRIVER_GCM_STATS_RECORDER_IMPL_H_

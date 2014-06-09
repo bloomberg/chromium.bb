@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GCM_GCM_CLIENT_H_
-#define GOOGLE_APIS_GCM_GCM_CLIENT_H_
+#ifndef COMPONENTS_GCM_DRIVER_GCM_CLIENT_H_
+#define COMPONENTS_GCM_DRIVER_GCM_CLIENT_H_
 
 #include <map>
 #include <string>
@@ -11,8 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "google_apis/gcm/base/gcm_export.h"
-#include "google_apis/gcm/gcm_activity.h"
+#include "components/gcm_driver/gcm_activity.h"
 
 template <class T> class scoped_refptr;
 
@@ -31,7 +30,7 @@ class Encryptor;
 
 // Interface that encapsulates the network communications with the Google Cloud
 // Messaging server. This interface is not supposed to be thread-safe.
-class GCM_EXPORT GCMClient {
+class GCMClient {
  public:
   enum Result {
     // Successful operation.
@@ -73,7 +72,7 @@ class GCM_EXPORT GCMClient {
     CHANNEL_UNKNOWN
   };
 
-  struct GCM_EXPORT ChromeBuildInfo {
+  struct ChromeBuildInfo {
     ChromeBuildInfo();
     ~ChromeBuildInfo();
 
@@ -86,7 +85,7 @@ class GCM_EXPORT GCMClient {
   typedef std::map<std::string, std::string> MessageData;
 
   // Message to be delivered to the other party.
-  struct GCM_EXPORT OutgoingMessage {
+  struct OutgoingMessage {
     OutgoingMessage();
     ~OutgoingMessage();
 
@@ -100,7 +99,7 @@ class GCM_EXPORT GCMClient {
   };
 
   // Message being received from the other party.
-  struct GCM_EXPORT IncomingMessage {
+  struct IncomingMessage {
     IncomingMessage();
     ~IncomingMessage();
 
@@ -110,7 +109,7 @@ class GCM_EXPORT GCMClient {
   };
 
   // Detailed information of the Send Error event.
-  struct GCM_EXPORT SendErrorDetails {
+  struct SendErrorDetails {
     SendErrorDetails();
     ~SendErrorDetails();
 
@@ -120,7 +119,7 @@ class GCM_EXPORT GCMClient {
   };
 
   // Internal states and activity statistics of a GCM client.
-  struct GCM_EXPORT GCMStatistics {
+  struct GCMStatistics {
    public:
     GCMStatistics();
     ~GCMStatistics();
@@ -262,4 +261,4 @@ class GCM_EXPORT GCMClient {
 
 }  // namespace gcm
 
-#endif  // GOOGLE_APIS_GCM_GCM_CLIENT_H_
+#endif  // COMPONENTS_GCM_DRIVER_GCM_CLIENT_H_

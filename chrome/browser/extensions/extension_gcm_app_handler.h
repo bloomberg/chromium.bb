@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "google_apis/gcm/gcm_client.h"
 
 class Profile;
 

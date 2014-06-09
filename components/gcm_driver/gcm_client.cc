@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/gcm_client.h"
+#include "components/gcm_driver/gcm_client.h"
 
 namespace gcm {
 

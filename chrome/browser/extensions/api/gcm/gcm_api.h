@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 
 #include "chrome/common/extensions/api/gcm.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "extensions/browser/extension_function.h"
-#include "google_apis/gcm/gcm_client.h"
 
 namespace gcm {
 class GCMDriver;

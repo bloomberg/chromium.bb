@@ -42,15 +42,20 @@ void GCMProfileService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
+#if defined(OS_ANDROID)
+GCMProfileService::GCMProfileService(Profile* profile)
+    : profile_(profile) {
+  DCHECK(!profile->IsOffTheRecord());
+
+  driver_.reset(new GCMDriverAndroid);
+}
+#else
 GCMProfileService::GCMProfileService(
     Profile* profile,
     scoped_ptr<GCMClientFactory> gcm_client_factory)
     : profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 
-#if defined(OS_ANDROID)
-  driver_.reset(new GCMDriverAndroid);
-#else
   driver_ = CreateGCMDriverDesktop(
       gcm_client_factory.Pass(),
       scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
@@ -59,8 +64,8 @@ GCMProfileService::GCMProfileService(
           LoginUIServiceFactory::GetForProfile(profile_))),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
       profile_->GetRequestContext());
-#endif
 }
+#endif  // defined(OS_ANDROID)
 
 GCMProfileService::GCMProfileService() : profile_(NULL) {
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/monitoring/gcm_stats_recorder_impl.h"
+#include "components/gcm_driver/gcm_stats_recorder_impl.h"
 
 #include <deque>
 #include <string>

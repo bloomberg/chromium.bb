@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "google_apis/gcm/gcm_client.h"
+#include "components/gcm_driver/gcm_client.h"
 
 namespace gcm {
 

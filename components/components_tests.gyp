@@ -101,7 +101,9 @@
             'feedback/feedback_common_unittest.cc',
             'feedback/feedback_data_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
+            'gcm_driver/gcm_client_impl_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
+            'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
@@ -451,10 +453,12 @@
             }],
             ['OS == "android"', {
               'sources!': [
+                'gcm_driver/gcm_client_impl_unittest.cc',
                 'gcm_driver/gcm_driver_desktop_unittest.cc',
                 'feedback/feedback_common_unittest.cc',
                 'feedback/feedback_data_unittest.cc',
                 'feedback/feedback_uploader_unittest.cc',
+                'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
                 'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
                 'storage_monitor/media_storage_util_unittest.cc',
                 'storage_monitor/storage_info_unittest.cc',
