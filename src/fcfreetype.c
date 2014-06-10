@@ -1697,6 +1697,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	goto bail1;
 
 
+#if 0
     /*
      * Compute hash digest for the font
      */
@@ -1744,6 +1745,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    free (hashstr);
 	}
     }
+#endif
 
 
     /*
