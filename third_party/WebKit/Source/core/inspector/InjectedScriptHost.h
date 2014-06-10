@@ -67,7 +67,7 @@ public:
         m_scriptDebugServer = scriptDebugServer;
     }
 
-    static Node* scriptValueAsNode(ScriptState*, ScriptValue);
+    static Node* scriptValueAsNode(ScriptValue);
     static ScriptValue nodeAsScriptValue(ScriptState*, Node*);
 
     void disconnect();

@@ -45,7 +45,7 @@ public:
 
     virtual ~InstallPhaseEvent();
 
-    void waitUntil(ScriptState*, const ScriptValue&);
+    void waitUntil(const ScriptValue&);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual void trace(Visitor*) OVERRIDE;

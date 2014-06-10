@@ -97,10 +97,10 @@ public:
     // if |value| is not a Promise object, returns a Promise object
     // resolved with |value|.
     // Returns |value| itself if it is a Promise.
-    static ScriptPromise cast(ScriptState*, const ScriptValue& /*value*/);
+    static ScriptPromise cast(const ScriptValue& /*value*/);
     static ScriptPromise cast(ScriptState*, v8::Handle<v8::Value> /*value*/);
 
-    static ScriptPromise reject(ScriptState*, const ScriptValue&);
+    static ScriptPromise reject(const ScriptValue&);
     static ScriptPromise reject(ScriptState*, v8::Handle<v8::Value>);
 
     static ScriptPromise rejectWithDOMException(ScriptState*, PassRefPtrWillBeRawPtr<DOMException>);

@@ -194,8 +194,8 @@ TEST_F(ScriptPromiseTest, castNonPromise)
     String onFulfilled1, onFulfilled2, onRejected1, onRejected2;
 
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
-    ScriptPromise promise1 = ScriptPromise::cast(scriptState(), ScriptValue(value));
-    ScriptPromise promise2 = ScriptPromise::cast(scriptState(), ScriptValue(value));
+    ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value));
+    ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value));
     promise1.then(Function::create(isolate(), &onFulfilled1), Function::create(isolate(), &onRejected1));
     promise2.then(Function::create(isolate(), &onFulfilled2), Function::create(isolate(), &onRejected2));
 
@@ -224,7 +224,7 @@ TEST_F(ScriptPromiseTest, reject)
     String onFulfilled, onRejected;
 
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
-    ScriptPromise promise = ScriptPromise::reject(scriptState(), ScriptValue(value));
+    ScriptPromise promise = ScriptPromise::reject(ScriptValue(value));
     promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());

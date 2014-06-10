@@ -64,7 +64,6 @@ void InjectedScriptBase::initialize(ScriptValue injectedScriptObject, InspectedS
 
 bool InjectedScriptBase::canAccessInspectedWindow() const
 {
-    ASSERT(!isEmpty());
     return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState());
 }
 
@@ -75,7 +74,6 @@ const ScriptValue& InjectedScriptBase::injectedScriptObject() const
 
 ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& function, bool& hadException) const
 {
-    ASSERT(!isEmpty());
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", InspectorFunctionCallEvent::data(executionContext, 0, name(), 1));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());

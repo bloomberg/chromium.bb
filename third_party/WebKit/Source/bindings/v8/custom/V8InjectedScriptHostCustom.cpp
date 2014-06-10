@@ -64,9 +64,9 @@
 
 namespace WebCore {
 
-Node* InjectedScriptHost::scriptValueAsNode(ScriptState* scriptState, ScriptValue value)
+Node* InjectedScriptHost::scriptValueAsNode(ScriptValue value)
 {
-    ScriptState::Scope scope(scriptState);
+    v8::HandleScope scope(value.isolate());
     if (!value.isObject() || value.isNull())
         return 0;
     return V8Node::toNative(v8::Handle<v8::Object>::Cast(value.v8Value()));

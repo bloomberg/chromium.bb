@@ -77,13 +77,13 @@ void RespondWithObserver::didDispatchEvent()
         sendResponse(nullptr);
 }
 
-void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValue& value)
+void RespondWithObserver::respondWith(const ScriptValue& value)
 {
     if (m_state != Initial)
         return;
 
     m_state = Pending;
-    ScriptPromise::cast(scriptState, value).then(
+    ScriptPromise::cast(value).then(
         ThenFunction::create(this, ThenFunction::Fulfilled),
         ThenFunction::create(this, ThenFunction::Rejected));
 }

@@ -437,13 +437,12 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
         kurl.string().substring(strlen("javascript:")));
 
     UserGestureIndicator gestureIndicator(popupsAllowed ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
-    v8::HandleScope handleScope(toIsolate(frame));
-    v8::Local<v8::Value> result = frame->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
+    ScriptValue result = frame->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     // Failure is reported as a null string.
-    if (result.IsEmpty() || !result->IsString())
-        return WebString();
-    return toCoreString(v8::Handle<v8::String>::Cast(result));
+    String resultString;
+    result.toString(resultString);
+    return resultString;
 }
 
 void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)

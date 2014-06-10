@@ -32,5 +32,5 @@
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
 ] interface InstallPhaseEvent : Event {
-    [CallWith=ScriptState] void waitUntil(any value);
+    void waitUntil(any value);
 };

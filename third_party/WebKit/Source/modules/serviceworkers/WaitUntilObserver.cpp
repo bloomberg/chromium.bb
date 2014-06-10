@@ -75,10 +75,10 @@ void WaitUntilObserver::didDispatchEvent()
     decrementPendingActivity();
 }
 
-void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& value)
+void WaitUntilObserver::waitUntil(const ScriptValue& value)
 {
     incrementPendingActivity();
-    ScriptPromise::cast(scriptState, value).then(
+    ScriptPromise::cast(value).then(
         ThenFunction::create(this, ThenFunction::Fulfilled),
         ThenFunction::create(this, ThenFunction::Rejected));
 }

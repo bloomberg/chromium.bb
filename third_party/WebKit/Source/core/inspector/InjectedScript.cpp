@@ -221,7 +221,7 @@ Node* InjectedScript::nodeForObjectId(const String& objectId)
     ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
 
-    return InjectedScriptHost::scriptValueAsNode(scriptState(), resultValue);
+    return InjectedScriptHost::scriptValueAsNode(resultValue);
 }
 
 void InjectedScript::releaseObject(const String& objectId)
