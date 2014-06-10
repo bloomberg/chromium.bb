@@ -65,9 +65,13 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
   WorkerObserver(base::SequencedTaskRunner* ui_task_runner,
                  base::WeakPtr<SyncEngine> sync_engine)
       : ui_task_runner_(ui_task_runner),
-        sync_engine_(sync_engine) {}
+        sync_engine_(sync_engine) {
+    sequence_checker_.DetachFromSequence();
+  }
 
-  virtual ~WorkerObserver() {}
+  virtual ~WorkerObserver() {
+    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  }
 
   virtual void OnPendingFileListUpdated(int item_count) OVERRIDE {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
@@ -76,6 +80,7 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
       return;
     }
 
+    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnPendingFileListUpdated,
@@ -94,6 +99,7 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
       return;
     }
 
+    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnFileStatusChanged,
@@ -109,15 +115,22 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
       return;
     }
 
+    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::UpdateServiceState,
                    sync_engine_, state, description));
   }
 
+  void DetachFromSequence() {
+    sequence_checker_.DetachFromSequence();
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   base::WeakPtr<SyncEngine> sync_engine_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerObserver);
 };
@@ -130,6 +143,25 @@ void DidRegisterOrigin(const base::TimeTicks& start_time,
   base::TimeDelta delta(base::TimeTicks::Now() - start_time);
   HISTOGRAM_TIMES("SyncFileSystem.RegisterOriginTime", delta);
   callback.Run(status);
+}
+
+template <typename T>
+void DeleteSoonHelper(scoped_ptr<T>) {}
+
+template <typename T>
+void DeleteSoon(const tracked_objects::Location& from_here,
+                base::TaskRunner* task_runner,
+                scoped_ptr<T> obj) {
+  if (!obj)
+    return;
+
+  T* obj_ptr = obj.get();
+  base::Closure deleter =
+      base::Bind(&DeleteSoonHelper<T>, base::Passed(&obj));
+  if (!task_runner->PostTask(from_here, deleter)) {
+    obj_ptr->DetachFromSequence();
+    deleter.Run();
+  }
 }
 
 }  // namespace
@@ -209,15 +241,10 @@ SyncEngine::~SyncEngine() {
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
 
-  WorkerObserver* worker_observer = worker_observer_.release();
-  if (!worker_task_runner_->DeleteSoon(FROM_HERE, worker_observer))
-    delete worker_observer;
-
-  SyncWorker* sync_worker = sync_worker_.release();
-  if (!worker_task_runner_->DeleteSoon(FROM_HERE, sync_worker)) {
-    sync_worker->DetachFromSequence();
-    delete sync_worker;
-  }
+  DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
+  DeleteSoon(FROM_HERE, worker_task_runner_, sync_worker_.Pass());
+  DeleteSoon(FROM_HERE, worker_task_runner_,
+             remote_change_processor_on_worker_.Pass());
 }
 
 void SyncEngine::Initialize(const base::FilePath& base_dir,

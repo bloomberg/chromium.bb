@@ -26,7 +26,9 @@ RemoteChangeProcessorOnWorker::RemoteChangeProcessorOnWorker(
   sequence_checker_.DetachFromSequence();
 }
 
-RemoteChangeProcessorOnWorker::~RemoteChangeProcessorOnWorker() {}
+RemoteChangeProcessorOnWorker::~RemoteChangeProcessorOnWorker() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+}
 
 void RemoteChangeProcessorOnWorker::PrepareForProcessRemoteChange(
     const fileapi::FileSystemURL& url,
@@ -98,6 +100,10 @@ void RemoteChangeProcessorOnWorker::RecordFakeLocalChange(
                      worker_task_runner_,
                      FROM_HERE,
                      callback)));
+}
+
+void RemoteChangeProcessorOnWorker::DetachFromSequence() {
+  sequence_checker_.DetachFromSequence();
 }
 
 }  // namespace drive_backend

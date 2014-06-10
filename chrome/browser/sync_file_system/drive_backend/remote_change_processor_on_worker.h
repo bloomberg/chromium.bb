@@ -49,6 +49,8 @@ class RemoteChangeProcessorOnWorker : public RemoteChangeProcessor {
       const FileChange& change,
       const SyncStatusCallback& callback) OVERRIDE;
 
+  void DetachFromSequence();
+
  private:
   base::WeakPtr<RemoteChangeProcessorWrapper> wrapper_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

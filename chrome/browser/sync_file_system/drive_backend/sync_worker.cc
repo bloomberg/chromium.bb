@@ -103,7 +103,9 @@ SyncWorker::SyncWorker(
       extension_service_(extension_service),
       context_(sync_engine_context.Pass()),
       has_refresh_token_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  sequence_checker_.DetachFromSequence();
+}
 
 SyncWorker::~SyncWorker() {}
 
