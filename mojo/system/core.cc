@@ -293,25 +293,16 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
 MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
                                 MojoHandle* data_pipe_producer_handle,
                                 MojoHandle* data_pipe_consumer_handle) {
-  if (options) {
-    // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
-                                                          options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-  if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  MojoCreateDataPipeOptions validated_options = { 0 };
+  MojoCreateDataPipeOptions validated_options = {};
+  // This will verify the |options| pointer.
   MojoResult result = DataPipe::ValidateCreateOptions(options,
                                                       &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_producer_handle))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!VerifyUserPointer<MojoHandle>(data_pipe_consumer_handle))
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<DataPipeProducerDispatcher> producer_dispatcher(
       new DataPipeProducerDispatcher());
@@ -414,24 +405,15 @@ MojoResult Core::CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
-  if (options) {
-    // The |struct_size| field must be valid to read.
-    if (!VerifyUserPointer<uint32_t>(&options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    // And then |options| must point to at least |options->struct_size| bytes.
-    if (!VerifyUserPointerWithSize<MOJO_ALIGNOF(int64_t)>(options,
-                                                          options->struct_size))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-  if (!VerifyUserPointer<MojoHandle>(shared_buffer_handle))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  MojoCreateSharedBufferOptions validated_options = { 0 };
+  MojoCreateSharedBufferOptions validated_options = {};
+  // This will verify the |options| pointer.
   MojoResult result =
       SharedBufferDispatcher::ValidateCreateOptions(options,
                                                     &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
+  if (!VerifyUserPointer<MojoHandle>(shared_buffer_handle))
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   result = SharedBufferDispatcher::Create(validated_options, num_bytes,
