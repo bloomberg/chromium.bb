@@ -31,6 +31,7 @@
 #include "config.h"
 #include "public/platform/linux/WebFontInfo.h"
 
+#include "public/platform/linux/WebFallbackFont.h"
 #include "public/platform/linux/WebFontFamily.h"
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include <fontconfig/fontconfig.h>
@@ -46,6 +47,7 @@ void WebFontInfo::setSubpixelPositioning(bool subpixelPositioning)
     useSubpixelPositioning = subpixelPositioning;
 }
 
+// TODO(dro): Remove this legacy version, kept until renames on the Chromium side are done. crbug.com/382411
 void WebFontInfo::familyForChar(WebUChar32 c, const char* preferredLocale, WebFontFamily* family)
 {
     FcCharSet* cset = FcCharSetCreate();
@@ -115,6 +117,91 @@ void WebFontInfo::familyForChar(WebUChar32 c, const char* preferredLocale, WebFo
             family->isItalic = slant != FC_SLANT_ROMAN;
         else
             family->isItalic = false;
+        FcFontSetDestroy(fontSet);
+        return;
+    }
+
+    FcFontSetDestroy(fontSet);
+}
+
+void WebFontInfo::fallbackFontForChar(WebUChar32 c, const char* preferredLocale, WebFallbackFont* fallbackFont)
+{
+    FcCharSet* cset = FcCharSetCreate();
+    FcCharSetAddChar(cset, c);
+    FcPattern* pattern = FcPatternCreate();
+
+    FcValue fcvalue;
+    fcvalue.type = FcTypeCharSet;
+    fcvalue.u.c = cset;
+    FcPatternAdd(pattern, FC_CHARSET, fcvalue, FcFalse);
+
+    fcvalue.type = FcTypeBool;
+    fcvalue.u.b = FcTrue;
+    FcPatternAdd(pattern, FC_SCALABLE, fcvalue, FcFalse);
+
+    if (preferredLocale) {
+        FcLangSet* langset = FcLangSetCreate();
+        FcLangSetAdd(langset, reinterpret_cast<const FcChar8 *>(preferredLocale));
+        FcPatternAddLangSet(pattern, FC_LANG, langset);
+        FcLangSetDestroy(langset);
+    }
+
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcResult result;
+    FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
+    FcPatternDestroy(pattern);
+    FcCharSetDestroy(cset);
+
+    if (!fontSet) {
+        fallbackFont->name = WebCString();
+        fallbackFont->isBold = false;
+        fallbackFont->isItalic = false;
+        return;
+    }
+    // Older versions of fontconfig have a bug where they cannot select
+    // only scalable fonts so we have to manually filter the results.
+    for (int i = 0; i < fontSet->nfont; ++i) {
+        FcPattern* current = fontSet->fonts[i];
+        FcBool isScalable;
+
+        if (FcPatternGetBool(current, FC_SCALABLE, 0, &isScalable) != FcResultMatch
+            || !isScalable)
+            continue;
+
+        // fontconfig can also return fonts which are unreadable
+        FcChar8* cFilename;
+        if (FcPatternGetString(current, FC_FILE, 0, &cFilename) != FcResultMatch)
+            continue;
+
+        if (access(reinterpret_cast<char*>(cFilename), R_OK))
+            continue;
+
+        const char* fontFilename = reinterpret_cast<char*>(cFilename);
+        fallbackFont->filename = WebCString(fontFilename, strlen(fontFilename));
+
+        // Index into font collection.
+        int ttcIndex;
+        if (FcPatternGetInteger(current, FC_INDEX, 0, &ttcIndex) != FcResultMatch && ttcIndex < 0)
+            continue;
+        fallbackFont->ttcIndex = ttcIndex;
+
+        FcChar8* familyName;
+        if (FcPatternGetString(current, FC_FAMILY, 0, &familyName) == FcResultMatch) {
+            const char* charFamily = reinterpret_cast<char*>(familyName);
+            fallbackFont->name = WebCString(charFamily, strlen(charFamily));
+        }
+        int weight;
+        if (FcPatternGetInteger(current, FC_WEIGHT, 0, &weight) == FcResultMatch)
+            fallbackFont->isBold = weight >= FC_WEIGHT_BOLD;
+        else
+            fallbackFont->isBold = false;
+        int slant;
+        if (FcPatternGetInteger(current, FC_SLANT, 0, &slant) == FcResultMatch)
+            fallbackFont->isItalic = slant != FC_SLANT_ROMAN;
+        else
+            fallbackFont->isItalic = false;
         FcFontSetDestroy(fontSet);
         return;
     }

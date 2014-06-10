@@ -49,30 +49,30 @@ void FontCache::platformInit()
 }
 
 #if !OS(WIN) && !OS(ANDROID)
-PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
 {
     icu::Locale locale = icu::Locale::getDefault();
-    FontCache::SimpleFontFamily family;
-    FontCache::getFontFamilyForCharacter(c, locale.getLanguage(), &family);
-    if (family.name.isEmpty())
+    FontCache::PlatformFallbackFont fallbackFont;
+    FontCache::getFontForCharacter(c, locale.getLanguage(), &fallbackFont);
+    if (fallbackFont.name.isEmpty())
         return nullptr;
 
-    AtomicString atomicFamily(family.name);
+    AtomicString atomicFamily(fallbackFont.name);
     // Changes weight and/or italic of given FontDescription depends on
     // the result of fontconfig so that keeping the correct font mapping
     // of the given character. See http://crbug.com/32109 for details.
     bool shouldSetSyntheticBold = false;
     bool shouldSetSyntheticItalic = false;
     FontDescription description(fontDescription);
-    if (family.isBold && description.weight() < FontWeightBold)
+    if (fallbackFont.isBold && description.weight() < FontWeightBold)
         description.setWeight(FontWeightBold);
-    if (!family.isBold && description.weight() >= FontWeightBold) {
+    if (!fallbackFont.isBold && description.weight() >= FontWeightBold) {
         shouldSetSyntheticBold = true;
         description.setWeight(FontWeightNormal);
     }
-    if (family.isItalic && description.style() == FontStyleNormal)
+    if (fallbackFont.isItalic && description.style() == FontStyleNormal)
         description.setStyle(FontStyleItalic);
-    if (!family.isItalic && description.style() == FontStyleItalic) {
+    if (!fallbackFont.isItalic && description.style() == FontStyleItalic) {
         shouldSetSyntheticItalic = true;
         description.setStyle(FontStyleNormal);
     }

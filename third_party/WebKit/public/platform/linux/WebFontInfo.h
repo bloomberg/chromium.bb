@@ -32,6 +32,7 @@
 #define WebFontInfo_h
 
 #include "../WebCString.h"
+#include "WebFallbackFont.h"
 #include "WebFontFamily.h"
 #include "WebFontRenderStyle.h"
 
@@ -55,6 +56,9 @@ public:
     //
     // Returns: the font family or an empty string if the request could not be satisfied.
     // Returns: the font family instance. The instance has an empty font name if the request could not be satisfied.
+    BLINK_EXPORT static void fallbackFontForChar(const WebUChar32 character, const char* preferredLocale, WebFallbackFont*);
+
+    // TODO(dro): Remove this legacy version, kept until renames on the Chromium side are done. crbug.com/382411
     BLINK_EXPORT static void familyForChar(const WebUChar32 character, const char* preferredLocale, WebFontFamily*);
 
     // Fill out the given WebFontRenderStyle with the user's preferences for

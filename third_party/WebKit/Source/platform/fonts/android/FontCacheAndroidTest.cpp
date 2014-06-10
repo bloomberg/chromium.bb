@@ -10,7 +10,7 @@
 
 namespace WebCore {
 
-TEST(FontCacheAndroid, platformFallbackForCharacter)
+TEST(FontCacheAndroid, fallbackFontForCharacter)
 {
     // A Latin character in the common locale system font, but not in the
     // Chinese locale-preferred font.
@@ -22,7 +22,7 @@ TEST(FontCacheAndroid, platformFallbackForCharacter)
 
     FontCache* fontCache = FontCache::fontCache();
     ASSERT_TRUE(fontCache);
-    RefPtr<SimpleFontData> fontData = fontCache->platformFallbackForCharacter(fontDescription, testChar, 0);
+    RefPtr<SimpleFontData> fontData = fontCache->fallbackFontForCharacter(fontDescription, testChar, 0);
     EXPECT_TRUE(fontData);
 }
 

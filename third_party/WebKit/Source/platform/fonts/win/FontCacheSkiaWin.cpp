@@ -85,7 +85,7 @@ static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*)
+PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*)
 {
     // FIXME: Consider passing fontDescription.dominantScript()
     // to GetFallbackFamily here.

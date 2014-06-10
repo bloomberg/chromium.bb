@@ -78,7 +78,7 @@ public:
 
     // This method is implemented by the plaform and used by
     // FontFastPath to lookup the font for a given character.
-    PassRefPtr<SimpleFontData> platformFallbackForCharacter(const FontDescription&, UChar32, const SimpleFontData* fontDataToSubstitute);
+    PassRefPtr<SimpleFontData> fallbackFontForCharacter(const FontDescription&, UChar32, const SimpleFontData* fontDataToSubstitute);
 
     // Also implemented by the platform.
     void platformInit();
@@ -118,12 +118,14 @@ public:
 #if OS(ANDROID)
     static AtomicString getGenericFamilyNameForScript(const AtomicString& familyName, UScriptCode);
 #else
-    struct SimpleFontFamily {
+    struct PlatformFallbackFont {
         String name;
+        CString filename;
+        int ttcIndex;
         bool isBold;
         bool isItalic;
     };
-    static void getFontFamilyForCharacter(UChar32, const char* preferredLocale, SimpleFontFamily*);
+    static void getFontForCharacter(UChar32, const char* preferredLocale, PlatformFallbackFont*);
 #endif
 
 private:

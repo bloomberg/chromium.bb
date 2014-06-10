@@ -34,16 +34,26 @@
 
 namespace WebCore {
 
-void FontCache::getFontFamilyForCharacter(UChar32 c, const char* preferredLocale, FontCache::SimpleFontFamily* family)
+void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
-    blink::WebFontFamily webFamily;
-    if (blink::Platform::current()->sandboxSupport())
+
+    if (blink::Platform::current()->sandboxSupport()) {
+        // TODO(dro): crbug.com/382411 Change this to using new getFallbackFontForCharacter sandbox API
+        // and WebFallbackFont class to complete the rename, and pull WebFallbackFont out of the if statement again.
+        blink::WebFontFamily webFamily;
         blink::Platform::current()->sandboxSupport()->getFontFamilyForCharacter(c, preferredLocale, &webFamily);
-    else
-        blink::WebFontInfo::familyForChar(c, preferredLocale, &webFamily);
-    family->name = String::fromUTF8(CString(webFamily.name));
-    family->isBold = webFamily.isBold;
-    family->isItalic = webFamily.isItalic;
+        fallbackFont->name = String::fromUTF8(CString(webFamily.name));
+        fallbackFont->isBold = webFamily.isBold;
+        fallbackFont->isItalic = webFamily.isItalic;
+    } else {
+        blink::WebFallbackFont webFallbackFont;
+        blink::WebFontInfo::fallbackFontForChar(c, preferredLocale, &webFallbackFont);
+        fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
+        fallbackFont->filename = CString(webFallbackFont.filename);
+        fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
+        fallbackFont->isBold = webFallbackFont.isBold;
+        fallbackFont->isItalic = webFallbackFont.isItalic;
+    }
 }
 
 }

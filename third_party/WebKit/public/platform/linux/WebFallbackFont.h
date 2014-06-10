@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,39 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSandboxSupport_h
-#define WebSandboxSupport_h
+#ifndef WebFallbackFont_h
+#define WebFallbackFont_h
 
+#include "../WebCString.h"
 #include "../WebCommon.h"
-#include "../WebString.h"
-#include "WebFallbackFont.h"
-#include "WebFontFamily.h"
 
 namespace blink {
 
-struct WebFontRenderStyle;
-
-// Put methods here that are required due to sandbox restrictions.
-// These are currently only implemented only on Linux:
-// https://code.google.com/p/chromium/wiki/LinuxSandboxIPC
-class WebSandboxSupport {
-public:
-    // Get information to instantiate a font which contains glyphs for the given Unicode code-point.
-    //   character: a UTF-32 codepoint
-    //   preferredLocale: preferred locale identifier for the |characters|
-    //                    (e.g. "en", "ja", "zh-CN")
-    //
-    // Returns a WebFontFamily instance with the font name. The instance has empty font name if the request cannot be satisfied.
-    virtual void getFontFamilyForCharacter(WebUChar32, const char* preferredLocale, WebFontFamily*) = 0;
-
-    // TODO(dro): crbug.com/382411 Add a new version on the Chromium side to complete
-    // the WebFontFamily->WebFallbackFont rename, like
-    // virtual void getFallbackFontForCharacter(WebUChar32, const char* preferredLocale, WebFallbackFont*) = 0;
-    // then add it here.
-
-    virtual void getRenderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle*) = 0;
+struct WebFallbackFont {
+    WebCString name;
+    WebCString filename;
+    int ttcIndex;
+    bool isBold;
+    bool isItalic;
 };
 
 } // namespace blink
 
-#endif
+#endif // WebFallbackFont_h
