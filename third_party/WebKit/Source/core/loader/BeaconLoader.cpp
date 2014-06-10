@@ -111,7 +111,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     ResourceRequest request(beaconURL);
     prepareRequest(frame, request);
 
-    RefPtr<FormData> entityBody = data->createMultiPartFormData(data->encoding());
+    RefPtr<FormData> entityBody = data->createMultiPartFormData();
 
     unsigned long long entitySize = entityBody->sizeInBytes();
     if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)

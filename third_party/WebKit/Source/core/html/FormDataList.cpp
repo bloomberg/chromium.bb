@@ -48,17 +48,17 @@ void FormDataList::appendBlob(PassRefPtrWillBeRawPtr<Blob> blob, const String& f
     m_items.append(Item(blob, filename));
 }
 
-PassRefPtr<FormData> FormDataList::createFormData(const WTF::TextEncoding& encoding, FormData::EncodingType encodingType)
+PassRefPtr<FormData> FormDataList::createFormData(FormData::EncodingType encodingType)
 {
     RefPtr<FormData> result = FormData::create();
-    appendKeyValuePairItemsTo(result.get(), encoding, false, encodingType);
+    appendKeyValuePairItemsTo(result.get(), m_encoding, false, encodingType);
     return result.release();
 }
 
-PassRefPtr<FormData> FormDataList::createMultiPartFormData(const WTF::TextEncoding& encoding)
+PassRefPtr<FormData> FormDataList::createMultiPartFormData()
 {
     RefPtr<FormData> result = FormData::create();
-    appendKeyValuePairItemsTo(result.get(), encoding, true);
+    appendKeyValuePairItemsTo(result.get(), m_encoding, true);
     return result.release();
 }
 

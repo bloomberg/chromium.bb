@@ -752,7 +752,7 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
     RefPtr<FormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
-        httpBody = body->createMultiPartFormData(body->encoding());
+        httpBody = body->createMultiPartFormData();
 
         if (getRequestHeader("Content-Type").isEmpty()) {
             AtomicString contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data();

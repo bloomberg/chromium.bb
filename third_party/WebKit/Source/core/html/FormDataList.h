@@ -77,8 +77,8 @@ public:
     const WillBeHeapVector<Item>& items() const { return m_items; }
     const WTF::TextEncoding& encoding() const { return m_encoding; }
 
-    PassRefPtr<FormData> createFormData(const WTF::TextEncoding&, FormData::EncodingType = FormData::FormURLEncoded);
-    PassRefPtr<FormData> createMultiPartFormData(const WTF::TextEncoding&);
+    PassRefPtr<FormData> createFormData(FormData::EncodingType = FormData::FormURLEncoded);
+    PassRefPtr<FormData> createMultiPartFormData();
 
     void trace(Visitor*);
 
