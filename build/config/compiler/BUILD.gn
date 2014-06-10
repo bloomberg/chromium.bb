@@ -87,9 +87,9 @@ config("compiler") {
 
     # CPU architecture.
     if (cpu_arch == "x64") {
-      common_mac_flags += [ "-arch x86_64" ]
+      common_mac_flags += [ "-arch", "x86_64" ]
     } else if (cpu_arch == "x86") {
-      common_mac_flags += [ "-arch i386" ]
+      common_mac_flags += [ "-arch", "i386" ]
     }
 
     cflags += common_mac_flags

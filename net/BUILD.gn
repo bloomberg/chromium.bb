@@ -1088,8 +1088,12 @@ test("net_unittests") {
   if (!use_nss_certs) {
     sources -= [
       "ssl/client_cert_store_nss_unittest.cc",
-      "ssl/client_cert_store_chromeos_unittest.cc",
     ]
+    if (is_chromeos) {  # Already removed for all non-ChromeOS builds.
+      sources -= [
+        "ssl/client_cert_store_chromeos_unittest.cc",
+      ]
+    }
   }
 
   if (use_openssl) {
@@ -1213,7 +1217,6 @@ test("net_unittests") {
     sources -= [
       "dns/mdns_cache_unittest.cc",
       "dns/mdns_client_unittest.cc",
-      "dns/mdns_query_unittest.cc",
       "dns/record_parsed_unittest.cc",
       "dns/record_rdata_unittest.cc",
     ]

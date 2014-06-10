@@ -120,7 +120,7 @@ component("aura") {
       "input_state_lookup.cc",
     ]
 
-    deps = [
+    deps += [
       "//ui/metro_viewer",
       "//ipc",
     ]
@@ -132,10 +132,11 @@ component("aura") {
       "window_tree_host_ozone.h",
     ]
 
-    deps = [
-      "//ui/events/ozone",
-      "//ui/ozone",
-    ]
+    # TODO(GYP) enable when these targets exist.
+    #deps += [
+    #  "//ui/events/ozone",
+    #  "//ui/ozone",
+    #]
   }
 }
 
@@ -182,7 +183,7 @@ source_set("aura_test_support") {
   ]
 
   if (is_win) {
-    cflags += [
+    cflags = [
       "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     ]
   }
