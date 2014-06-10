@@ -1734,8 +1734,8 @@ internal_paladin.add_config('winky-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
-  # TODO(davidjames): Re-enable hwtests on wolf -- http://crbug.com/365887
-  #hw_tests=HWTestConfig.DefaultListCQ(),
+  # TODO: unset warn_only when wolf is stable.
+  hw_tests=HWTestConfig.DefaultListCQ(warn_only=True),
 )
 
 internal_paladin.add_config('x86-zgb-paladin',
