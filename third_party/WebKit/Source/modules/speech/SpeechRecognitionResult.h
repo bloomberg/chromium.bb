@@ -29,18 +29,13 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-// FIXME: oilpan: the platform outer layer (WebSpeechRecognitionResult) depends on
-// holding a WebPrivatePtr (a RefPtr) to this result object. When/if such pointers
-// can be to GCed objects, we can drop the extra reference counting layer.
-class SpeechRecognitionResult : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionResult>, public ScriptWrappable {
+class SpeechRecognitionResult FINAL : public GarbageCollectedFinalized<SpeechRecognitionResult>, public ScriptWrappable {
 public:
     ~SpeechRecognitionResult();
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionResult> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >&, bool final);
+    static SpeechRecognitionResult* create(const HeapVector<Member<SpeechRecognitionAlternative> >&, bool final);
 
     unsigned long length() { return m_alternatives.size(); }
     SpeechRecognitionAlternative* item(unsigned long index);
@@ -49,10 +44,10 @@ public:
     void trace(Visitor*);
 
 private:
-    SpeechRecognitionResult(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >&, bool final);
+    SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative> >&, bool final);
 
     bool m_final;
-    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> > m_alternatives;
+    HeapVector<Member<SpeechRecognitionAlternative> > m_alternatives;
 };
 
 } // namespace WebCore

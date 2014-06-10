@@ -76,67 +76,67 @@ void SpeechRecognitionClientProxy::abort(SpeechRecognition* recognition)
 
 void SpeechRecognitionClientProxy::didStartAudio(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didStartAudio();
 }
 
 void SpeechRecognitionClientProxy::didStartSound(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didStartSound();
     recognition->didStartSpeech();
 }
 
 void SpeechRecognitionClientProxy::didEndSound(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didEndSpeech();
     recognition->didEndSound();
 }
 
 void SpeechRecognitionClientProxy::didEndAudio(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didEndAudio();
 }
 
 void SpeechRecognitionClientProxy::didReceiveResults(const WebSpeechRecognitionHandle& handle, const WebVector<WebSpeechRecognitionResult>& newFinalResults, const WebVector<WebSpeechRecognitionResult>& currentInterimResults)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
 
-    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > finalResultsVector(newFinalResults.size());
+    HeapVector<Member<SpeechRecognitionResult> > finalResultsVector(newFinalResults.size());
     for (size_t i = 0; i < newFinalResults.size(); ++i)
-        finalResultsVector[i] = PassRefPtrWillBeRawPtr<SpeechRecognitionResult>(newFinalResults[i]);
+        finalResultsVector[i] = static_cast<SpeechRecognitionResult*>(newFinalResults[i]);
 
-    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > interimResultsVector(currentInterimResults.size());
+    HeapVector<Member<SpeechRecognitionResult> > interimResultsVector(currentInterimResults.size());
     for (size_t i = 0; i < currentInterimResults.size(); ++i)
-        interimResultsVector[i] = PassRefPtrWillBeRawPtr<SpeechRecognitionResult>(currentInterimResults[i]);
+        interimResultsVector[i] = static_cast<SpeechRecognitionResult*>(currentInterimResults[i]);
 
     recognition->didReceiveResults(finalResultsVector, interimResultsVector);
 }
 
 void SpeechRecognitionClientProxy::didReceiveNoMatch(const WebSpeechRecognitionHandle& handle, const WebSpeechRecognitionResult& result)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didReceiveNoMatch(result);
 }
 
 void SpeechRecognitionClientProxy::didReceiveError(const WebSpeechRecognitionHandle& handle, const WebString& message, WebSpeechRecognizerClient::ErrorCode code)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     SpeechRecognitionError::ErrorCode errorCode = static_cast<SpeechRecognitionError::ErrorCode>(code);
     recognition->didReceiveError(SpeechRecognitionError::create(errorCode, message));
 }
 
 void SpeechRecognitionClientProxy::didStart(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didStart();
 }
 
 void SpeechRecognitionClientProxy::didEnd(const WebSpeechRecognitionHandle& handle)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> recognition = PassRefPtrWillBeRawPtr<SpeechRecognition>(handle);
+    SpeechRecognition* recognition(handle);
     recognition->didEnd();
 }
 

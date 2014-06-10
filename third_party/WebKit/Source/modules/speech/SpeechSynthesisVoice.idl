@@ -24,7 +24,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=SpeechSynthesis
 ] interface SpeechSynthesisVoice {

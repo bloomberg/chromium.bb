@@ -39,7 +39,6 @@
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8MIDIPort.h"
 #include "bindings/modules/v8/V8MediaStream.h"
-#include "bindings/modules/v8/V8SpeechRecognitionError.h"
 #include "bindings/modules/v8/V8SpeechRecognitionResult.h"
 #include "bindings/modules/v8/V8SpeechRecognitionResultList.h"
 #include "bindings/v8/ArrayValue.h"
@@ -52,7 +51,6 @@
 #include "modules/gamepad/Gamepad.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/mediastream/MediaStream.h"
-#include "modules/speech/SpeechRecognitionError.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "wtf/MathExtras.h"
@@ -479,17 +477,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<TrackBase>& value) co
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionError>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
-        return false;
-
-    value = V8SpeechRecognitionError::toNativeWithTypeCheck(m_isolate, v8Value);
-    return true;
-}
-
-bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionResult>& value) const
+bool Dictionary::get(const String& key, Member<SpeechRecognitionResult>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))
@@ -499,7 +487,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionResu
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionResultList>& value) const
+bool Dictionary::get(const String& key, Member<SpeechRecognitionResultList>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

@@ -33,9 +33,9 @@ SpeechRecognitionResult::~SpeechRecognitionResult()
 {
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionResult> SpeechRecognitionResult::create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >& alternatives, bool final)
+SpeechRecognitionResult* SpeechRecognitionResult::create(const HeapVector<Member<SpeechRecognitionAlternative> >& alternatives, bool final)
 {
-    return adoptRefWillBeNoop(new SpeechRecognitionResult(alternatives, final));
+    return new SpeechRecognitionResult(alternatives, final);
 }
 
 SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned long index)
@@ -46,7 +46,7 @@ SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned long index)
     return m_alternatives[index].get();
 }
 
-SpeechRecognitionResult::SpeechRecognitionResult(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >& alternatives, bool final)
+SpeechRecognitionResult::SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative> >& alternatives, bool final)
     : m_final(final)
     , m_alternatives(alternatives)
 {

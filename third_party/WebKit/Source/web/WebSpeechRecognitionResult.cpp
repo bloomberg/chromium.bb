@@ -45,7 +45,7 @@ void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
 {
     ASSERT(transcripts.size() == confidences.size());
 
-    WillBeHeapVector<RefPtrWillBeMember<WebCore::SpeechRecognitionAlternative> > alternatives(transcripts.size());
+    WebCore::HeapVector<WebCore::Member<WebCore::SpeechRecognitionAlternative> > alternatives(transcripts.size());
     for (size_t i = 0; i < transcripts.size(); ++i)
         alternatives[i] = WebCore::SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
 
@@ -57,7 +57,7 @@ void WebSpeechRecognitionResult::reset()
     m_private.reset();
 }
 
-WebSpeechRecognitionResult::operator PassRefPtrWillBeRawPtr<WebCore::SpeechRecognitionResult>() const
+WebSpeechRecognitionResult::operator WebCore::SpeechRecognitionResult*() const
 {
     return m_private.get();
 }
