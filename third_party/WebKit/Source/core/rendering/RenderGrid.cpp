@@ -928,6 +928,10 @@ void RenderGrid::placeAutoMajorAxisItemOnGrid(RenderBox* gridItem)
                 const size_t endOfMinorAxis = autoPlacementMinorAxisDirection() == ForColumns ? gridColumnCount() : gridRowCount();
                 if (minorAxisFinalPositionIndex.toInt() < endOfMinorAxis)
                     break;
+
+                // Discard empty grid area as it does not fit in the minor axis direction.
+                // We don't need to create a new empty grid area yet as we might find a valid one in the next iteration.
+                emptyGridArea = nullptr;
             }
         }
 
