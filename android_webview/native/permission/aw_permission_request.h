@@ -25,7 +25,8 @@ class AwPermissionRequest {
   enum Resource {
     Geolocation = 1 << 0,
     VideoCapture = 1 << 1,
-    AudioCapture = 1 << 2
+    AudioCapture = 1 << 2,
+    ProtectedMediaId = 1 << 3,
   };
 
   // Take the ownership of |delegate|.

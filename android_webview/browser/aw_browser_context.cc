@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 
+#include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
@@ -247,15 +248,29 @@ void AwBrowserContext::RequestProtectedMediaIdentifierPermission(
     int render_view_id,
     const GURL& origin,
     const ProtectedMediaIdentifierPermissionCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate == NULL) {
+    DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
+    callback.Run(false);
+    return;
+  }
+  delegate->RequestProtectedMediaIdentifierPermission(origin, callback);
 }
 
 void AwBrowserContext::CancelProtectedMediaIdentifierPermissionRequests(
     int render_process_id,
     int render_view_id,
     const GURL& origin) {
-  NOTIMPLEMENTED();
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate == NULL) {
+    DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission cancel";
+    return;
+  }
+  delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
 }
 
 net::URLRequestContextGetter*

@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/find_helper.h"
@@ -57,7 +58,8 @@ class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
                    public AwRenderViewHostExtClient,
                    public BrowserViewRendererClient,
-                   public PermissionRequestHandlerClient {
+                   public PermissionRequestHandlerClient,
+                   public AwBrowserPermissionRequestDelegate {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -153,6 +155,14 @@ class AwContents : public FindHelper::Listener,
                               jobject obj,
                               jstring origin,
                               jlong resources);
+
+  // AwBrowserPermissionRequestDelegate implementation.
+  virtual void RequestProtectedMediaIdentifierPermission(
+      const GURL& origin,
+      const content::BrowserContext::
+          ProtectedMediaIdentifierPermissionCallback& callback) OVERRIDE;
+  virtual void CancelProtectedMediaIdentifierPermissionRequests(
+      const GURL& origin) OVERRIDE;
 
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);

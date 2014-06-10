@@ -30,6 +30,7 @@
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "android_webview/native/permission/permission_request_handler.h"
+#include "android_webview/native/permission/protected_media_id_permission_request.h"
 #include "android_webview/native/state_serializer.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/jni_android.h"
@@ -150,6 +151,14 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
       content::WebContents::FromRenderViewHost(rvh);
   if (!web_contents) return NULL;
   return FromWebContents(web_contents);
+}
+
+// static
+AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
+    int render_process_id, int render_view_id) {
+  AwContents* aw_contents = AwContents::FromID(render_process_id,
+                                               render_view_id);
+  return implicit_cast<AwBrowserPermissionRequestDelegate*>(aw_contents);
 }
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
@@ -589,6 +598,21 @@ void AwContents::PreauthorizePermission(
     jlong resources) {
   permission_request_handler_->PreauthorizePermission(
       GURL(base::android::ConvertJavaStringToUTF8(env, origin)), resources);
+}
+
+void AwContents::RequestProtectedMediaIdentifierPermission(
+    const GURL& origin,
+    const content::BrowserContext::
+        ProtectedMediaIdentifierPermissionCallback& callback) {
+  permission_request_handler_->SendRequest(
+      scoped_ptr<AwPermissionRequestDelegate>(
+          new ProtectedMediaIdPermissionRequest(origin, callback)));
+}
+
+void AwContents::CancelProtectedMediaIdentifierPermissionRequests(
+    const GURL& origin) {
+  permission_request_handler_->CancelRequest(
+      origin, AwPermissionRequest::ProtectedMediaId);
 }
 
 void AwContents::FindAllAsync(JNIEnv* env, jobject obj, jstring search_string) {
