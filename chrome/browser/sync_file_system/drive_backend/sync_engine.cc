@@ -580,6 +580,7 @@ SyncEngine::SyncEngine(
       signin_manager_(signin_manager),
       token_service_(token_service),
       request_context_(request_context),
+      remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       sync_enabled_(false),
       env_override_(env_override),
