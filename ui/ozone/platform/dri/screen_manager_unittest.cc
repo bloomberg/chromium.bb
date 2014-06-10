@@ -94,16 +94,6 @@ TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
   EXPECT_FALSE(controller);
 }
 
-TEST_F(ScreenManagerTest, CheckDisabledControllerState) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
-  base::WeakPtr<ui::HardwareDisplayController> controller =
-      screen_manager_->GetDisplayController(1);
-  screen_manager_->DisableDisplayController(1, 2);
-
-  EXPECT_TRUE(controller);
-  EXPECT_FALSE(controller->surface());
-}
-
 TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
   screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
   screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);

@@ -54,7 +54,8 @@ HardwareDisplayController::HardwareDisplayController(
       connector_id_(connector_id),
       crtc_id_(crtc_id),
       surface_(),
-      time_of_last_flip_(0) {}
+      time_of_last_flip_(0),
+      is_disabled_(true) {}
 
 HardwareDisplayController::~HardwareDisplayController() {
   // Reset the cursor.
@@ -81,23 +82,37 @@ HardwareDisplayController::BindSurfaceToController(
 
   surface_.reset(surface.release());
   mode_ = mode;
+  is_disabled_ = false;
   return true;
 }
 
 void HardwareDisplayController::UnbindSurfaceFromController() {
   drm_->SetCrtc(crtc_id_, 0, 0, NULL);
   surface_.reset();
+  memset(&mode_, 0, sizeof(mode_));
+  is_disabled_ = true;
+}
+
+bool HardwareDisplayController::Enable() {
+  CHECK(surface_);
+  if (is_disabled_) {
+    scoped_ptr<ScanoutSurface> surface(surface_.release());
+    return BindSurfaceToController(surface.Pass(), mode_);
+  }
+
+  return true;
 }
 
 void HardwareDisplayController::Disable() {
-  UnbindSurfaceFromController();
+  drm_->SetCrtc(crtc_id_, 0, 0, NULL);
+  is_disabled_ = true;
 }
 
 bool HardwareDisplayController::SchedulePageFlip() {
   CHECK(surface_);
-  if (!drm_->PageFlip(crtc_id_,
-                      surface_->GetFramebufferId(),
-                      this)) {
+  if (!is_disabled_ && !drm_->PageFlip(crtc_id_,
+                                       surface_->GetFramebufferId(),
+                                       this)) {
     LOG(ERROR) << "Cannot page flip: " << strerror(errno);
     return false;
   }
@@ -107,6 +122,9 @@ bool HardwareDisplayController::SchedulePageFlip() {
 
 void HardwareDisplayController::WaitForPageFlipEvent() {
   TRACE_EVENT0("dri", "WaitForPageFlipEvent");
+
+  if (is_disabled_)
+    return;
 
   drmEventContext drm_event;
   drm_event.version = DRM_EVENT_CONTEXT_VERSION;
@@ -129,9 +147,9 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
 
 bool HardwareDisplayController::SetCursor(ScanoutSurface* surface) {
   bool ret = drm_->SetCursor(crtc_id_,
-                         surface->GetHandle(),
-                         surface->Size().width(),
-                         surface->Size().height());
+                             surface->GetHandle(),
+                             surface->Size().width(),
+                             surface->Size().height());
   surface->SwapBuffers();
   return ret;
 }
@@ -141,6 +159,9 @@ bool HardwareDisplayController::UnsetCursor() {
 }
 
 bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
+  if (is_disabled_)
+    return true;
+
   return drm_->MoveCursor(crtc_id_, location.x(), location.y());
 }
 

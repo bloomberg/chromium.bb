@@ -96,7 +96,10 @@ class OZONE_EXPORT HardwareDisplayController
 
   void UnbindSurfaceFromController();
 
-  // Unbinds the surface and disables the CRTC.
+  // Reconfigures the CRTC with the current surface and mode.
+  bool Enable();
+
+  // Disables the CRTC.
   void Disable();
 
   // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
@@ -166,6 +169,10 @@ class OZONE_EXPORT HardwareDisplayController
   scoped_ptr<ScanoutSurface> surface_;
 
   uint64_t time_of_last_flip_;
+
+  // Keeps track of the CRTC state. If a surface has been bound, then the value
+  // is set to false. Otherwise it is true.
+  bool is_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };

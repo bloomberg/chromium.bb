@@ -90,3 +90,23 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
                                                    kDefaultMode));
   EXPECT_FALSE(controller_->SchedulePageFlip());
 }
+
+TEST_F(HardwareDisplayControllerTest, VerifyNoDRMCallsWhenDisabled) {
+  scoped_ptr<ui::ScanoutSurface> surface(
+      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+
+  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
+  controller_->Disable();
+  EXPECT_TRUE(controller_->SchedulePageFlip());
+  EXPECT_EQ(0, drm_->get_page_flip_call_count());
+
+  surface.reset(new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+
+  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
+                                                   kDefaultMode));
+  EXPECT_TRUE(controller_->SchedulePageFlip());
+  EXPECT_EQ(1, drm_->get_page_flip_call_count());
+}

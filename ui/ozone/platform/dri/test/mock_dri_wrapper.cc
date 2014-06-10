@@ -18,6 +18,7 @@ MockDriWrapper::MockDriWrapper(int fd)
       restore_crtc_call_count_(0),
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
+      page_flip_call_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true) {
@@ -70,6 +71,7 @@ bool MockDriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
 bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               uint32_t framebuffer,
                               void* data) {
+  page_flip_call_count_++;
   static_cast<ui::HardwareDisplayController*>(data)->surface()->SwapBuffers();
   return page_flip_expectation_;
 }

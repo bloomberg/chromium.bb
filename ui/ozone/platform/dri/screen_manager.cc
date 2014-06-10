@@ -40,7 +40,7 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   HardwareDisplayController* controller = NULL;
   if (it != controllers_.end()) {
     if (SameMode(mode, it->second->get_mode()))
-      return true;
+      return it->second->Enable();
 
     controller = it->second;
     controller->UnbindSurfaceFromController();
