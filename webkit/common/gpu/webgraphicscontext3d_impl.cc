@@ -837,8 +837,13 @@ void WebGraphicsContext3DImpl::loseContextCHROMIUM(
 DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
 DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
+DELEGATE_TO_GL_3(produceTextureDirectCHROMIUM, ProduceTextureDirectCHROMIUM,
+                 WebGLId, WGC3Denum, const WGC3Dbyte*)
 DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
+DELEGATE_TO_GL_2R(createAndConsumeTextureCHROMIUM,
+                  CreateAndConsumeTextureCHROMIUM,
+                  WGC3Denum, const WGC3Dbyte*, WebGLId)
 
 void WebGraphicsContext3DImpl::insertEventMarkerEXT(
     const WGC3Dchar* marker) {

@@ -669,8 +669,15 @@ virtual void GenMailboxCHROMIUM(GLbyte* mailbox) OVERRIDE;
 virtual void ProduceTextureCHROMIUM(GLenum target,
                                     const GLbyte* mailbox) OVERRIDE;
 
+virtual void ProduceTextureDirectCHROMIUM(GLuint texture,
+                                          GLenum target,
+                                          const GLbyte* mailbox) OVERRIDE;
+
 virtual void ConsumeTextureCHROMIUM(GLenum target,
                                     const GLbyte* mailbox) OVERRIDE;
+
+virtual GLuint CreateAndConsumeTextureCHROMIUM(GLenum target,
+                                               const GLbyte* mailbox) OVERRIDE;
 
 virtual void BindUniformLocationCHROMIUM(GLuint program,
                                          GLint location,

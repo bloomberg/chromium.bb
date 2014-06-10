@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: April 25, 2012
+    Last Modifed Date: June 2, 2014
 
 Dependencies
 
@@ -18,11 +18,12 @@ Overview
 
     This extension defines a way of sharing texture image data between texture
     objects in different contexts where the contexts would not normally share
-    texture resources. Three new functions are exported. glGenMailboxCHROMIUM
+    texture resources. Five new functions are exported. glGenMailboxCHROMIUM
     generates a name that can be used to identify texture image data outside
-    the scope of a context group. glProduceMailboxCHROMIUM associates a texture
-    object with a global mailbox name. glConsumeMailboxCHROMIUM associates the
-    texture object referenced by a mailbox name to a texture name.
+    the scope of a context group. glProduceMailboxCHROMIUM and 
+    glProduceTextureDirectCHROMIUM associate a texture object with a global
+    mailbox name. glConsumeMailboxCHROMIUM and glCreateAndConsumeTextureCHROMIUM
+    associate the texture object referenced by a mailbox name to a texture name.
 
 New Procedures and Functions
 
@@ -62,6 +63,17 @@ New Procedures and Functions
     INVALID_OPERATION is generated if <mailbox> is invalid.
 
 
+    void glProduceTextureDirectCHROMIUM (GLuint texture, GLenum target,
+        const GLbyte *mailbox)
+
+    Associates the specified texture object with the mailbox name. Performs
+    identically to glProduceTextureCHROMIUM except that the texture specified by
+    <texture> is used instead of the currently bound texture. This operation
+    does not change the texture bindings or alter the bound texture in any way.
+
+    <texture> Specifies the name of a texture.
+
+
     void glConsumeTextureCHROMIUM (GLenum target, const GLbyte *mailbox)
 
     <target> uses the same parameters as TexImage2D.
@@ -95,6 +107,15 @@ New Procedures and Functions
     INVALID_OPERATION is generated if the currently bound texture was previously
     deleted (for example in another context), hence doesn't have a name.
 
+
+    GLuint glCreateAndConsumeTextureCHROMIUM (GLenum target,
+        const GLbyte *mailbox)
+    
+    Returns a new texture name associated with the given target pointing to the
+    texture object associated with the mailbox name. Does not alter the texture
+    bindings or alter the currently bound texture in any way. Otherwise performs
+    identically to glConsumeTextureCHROMIUM.
+
 New Tokens
 
     The size of a mailbox name in bytes.
@@ -118,3 +139,5 @@ Revision History
     4/25/2011    Documented the extension
     5/23/2013    Major revision in Produce/Consume semantics, introducing
                  sharing.
+    6/02/2014    Added glProduceTextureDirectCHROMIUM and
+                 glCreateAndConsumeTextureCHROMIUM definitions.

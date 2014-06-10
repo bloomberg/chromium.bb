@@ -8260,6 +8260,53 @@ COMPILE_ASSERT(offsetof(ProduceTextureCHROMIUMImmediate, header) == 0,
 COMPILE_ASSERT(offsetof(ProduceTextureCHROMIUMImmediate, target) == 4,
                OffsetOf_ProduceTextureCHROMIUMImmediate_target_not_4);
 
+struct ProduceTextureDirectCHROMIUMImmediate {
+  typedef ProduceTextureDirectCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId = kProduceTextureDirectCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 64);  // NOLINT
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize());  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _texture, GLenum _target, const GLbyte* _mailbox) {
+    SetHeader();
+    texture = _texture;
+    target = _target;
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture,
+            GLenum _target,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _target, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+  uint32_t target;
+};
+
+COMPILE_ASSERT(sizeof(ProduceTextureDirectCHROMIUMImmediate) == 12,
+               Sizeof_ProduceTextureDirectCHROMIUMImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, header) == 0,
+               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, texture) == 4,
+               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_texture_not_4);
+COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, target) == 8,
+               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_target_not_8);
+
 struct ConsumeTextureCHROMIUMImmediate {
   typedef ConsumeTextureCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kConsumeTextureCHROMIUMImmediate;

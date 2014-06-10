@@ -473,7 +473,11 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
   virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
   virtual void produceTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox);
+  virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
   virtual void consumeTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
+  virtual WebGLId createAndConsumeTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox);
 
   virtual void insertEventMarkerEXT(const WGC3Dchar* marker);

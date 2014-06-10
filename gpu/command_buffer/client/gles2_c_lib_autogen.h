@@ -862,8 +862,18 @@ void GLES2GenMailboxCHROMIUM(GLbyte* mailbox) {
 void GLES2ProduceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
   gles2::GetGLContext()->ProduceTextureCHROMIUM(target, mailbox);
 }
+void GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
+                                       GLenum target,
+                                       const GLbyte* mailbox) {
+  gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, target, mailbox);
+}
 void GLES2ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
   gles2::GetGLContext()->ConsumeTextureCHROMIUM(target, mailbox);
+}
+GLuint GLES2CreateAndConsumeTextureCHROMIUM(GLenum target,
+                                            const GLbyte* mailbox) {
+  return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(target,
+                                                                mailbox);
 }
 void GLES2BindUniformLocationCHROMIUM(GLuint program,
                                       GLint location,
@@ -1667,8 +1677,16 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glProduceTextureCHROMIUM),
     },
     {
+     "glProduceTextureDirectCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glProduceTextureDirectCHROMIUM),
+    },
+    {
      "glConsumeTextureCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glConsumeTextureCHROMIUM),
+    },
+    {
+     "glCreateAndConsumeTextureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glCreateAndConsumeTextureCHROMIUM),
     },
     {
      "glBindUniformLocationCHROMIUM",

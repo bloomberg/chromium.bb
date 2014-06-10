@@ -746,7 +746,9 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): GenMailboxCHROMIUM
 
 // TODO(gman): ProduceTextureCHROMIUMImmediate
+// TODO(gman): ProduceTextureDirectCHROMIUMImmediate
 // TODO(gman): ConsumeTextureCHROMIUMImmediate
+// TODO(gman): CreateAndConsumeTextureCHROMIUMImmediate
 // TODO(gman): BindUniformLocationCHROMIUM
 
 // TODO(gman): BindUniformLocationCHROMIUMBucket
@@ -761,7 +763,4 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 
 // TODO(gman): WaitAsyncTexImage2DCHROMIUM
 
-// TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
-
-// TODO(gman): DiscardFramebufferEXTImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

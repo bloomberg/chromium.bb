@@ -1383,6 +1383,15 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
+  'CreateAndConsumeTextureCHROMIUM': {
+    'decoder_func': 'DoCreateAndConsumeTextureCHROMIUM',
+    'impl_func': False,
+    'type': 'HandWritten',
+    'unit_test': False,
+    'client_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'ClearStencil': {
     'type': 'StateSet',
     'state': 'ClearStencil',
@@ -1967,6 +1976,17 @@ _FUNCTION_INFO = {
   },
   'ProduceTextureCHROMIUM': {
     'decoder_func': 'DoProduceTextureCHROMIUM',
+    'impl_func': False,
+    'type': 'PUT',
+    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'unit_test': False,
+    'client_test': False,
+    'extension': True,
+    'chromium': True,
+    'trace_level': 1,
+  },
+  'ProduceTextureDirectCHROMIUM': {
+    'decoder_func': 'DoProduceTextureDirectCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
