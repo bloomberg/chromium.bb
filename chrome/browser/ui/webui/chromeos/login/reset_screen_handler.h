@@ -73,6 +73,9 @@ class ResetScreenHandler : public ResetScreenActor,
   // Keeps whether rollback option is available fo.
   bool rollback_available_;
 
+  // Whether rollback is initiated.
+  bool preparing_for_rollback_;
+
   base::WeakPtrFactory<ResetScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreenHandler);

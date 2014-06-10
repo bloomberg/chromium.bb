@@ -59,6 +59,7 @@ ResetScreenHandler::ResetScreenHandler()
       restart_required_(true),
       reboot_was_requested_(false),
       rollback_available_(false),
+      preparing_for_rollback_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -117,6 +118,7 @@ void ResetScreenHandler::ChooseAndApplyShowScenario() {
       switches::kFirstExecAfterBoot);
   reboot_was_requested_ = false;
   rollback_available_ = false;
+  preparing_for_rollback_ = false;
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
 
@@ -239,6 +241,8 @@ void ResetScreenHandler::RegisterMessages() {
 }
 
 void ResetScreenHandler::HandleOnCancel() {
+  if (preparing_for_rollback_)
+    return;
   if (delegate_)
     delegate_->OnExit();
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
@@ -255,6 +259,7 @@ void ResetScreenHandler::HandleOnRestart(bool should_rollback) {
 
 void ResetScreenHandler::HandleOnPowerwash(bool rollback_checked) {
   if (rollback_available_ && (rollback_checked || reboot_was_requested_)) {
+      preparing_for_rollback_ = true;
       CallJS("updateViewOnRollbackCall");
       DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
       chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
@@ -277,7 +282,10 @@ void ResetScreenHandler::HandleOnLearnMore() {
 void ResetScreenHandler::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   VLOG(1) << "Update status change to " << status.status;
-  if (status.status == UpdateEngineClient::UPDATE_STATUS_ERROR) {
+  if (status.status == UpdateEngineClient::UPDATE_STATUS_ERROR ||
+      status.status ==
+          UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
+    preparing_for_rollback_ = false;
     // Show error screen.
     base::DictionaryValue params;
     params.SetInteger("uiState", kErrorUIStateRollback);

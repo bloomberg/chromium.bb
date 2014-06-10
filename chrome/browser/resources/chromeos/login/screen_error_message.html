@@ -1,6 +1,6 @@
 <div id="error-message" class="step hidden show-offline-error" hidden>
   <div class="step-contents">
-    <div class="error-header">
+    <div class="error-header" aria-live="assertive">
       <img alt class="error-icon" src="chrome://theme/IDR_ERROR_NETWORK_OFFLINE">
       <div id="captive-portal-title" i18n-content="captivePortalTitle"
           class="error-title
@@ -21,7 +21,7 @@
                  show-with-ui-state-rollback-error">
       </div>
     </div>
-    <div class="error-body">
+    <div class="error-body" aria-live="assertive">
       <div id="kiosk-online-message-body"
           class="error-message-paragraph
                  show-with-error-state-kiosk-online">
