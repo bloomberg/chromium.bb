@@ -74,6 +74,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                              const GURL& validated_url,
                              bool is_main_frame,
                              RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentLoadedInFrame(int64 frame_id,
+                                     RenderViewHost* render_view_host) OVERRIDE;
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
