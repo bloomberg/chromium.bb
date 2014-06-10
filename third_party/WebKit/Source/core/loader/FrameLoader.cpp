@@ -1035,7 +1035,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
 
         m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), frameScrollOffset);
 
-        if (m_frame->document()->settings()->pinchVirtualViewportEnabled()) {
+        if (m_frame->settings()->pinchVirtualViewportEnabled()) {
             // If the pinch viewport's offset is (-1, -1) it means the history item
             // is an old version of HistoryItem so distribute the scroll between
             // the main frame and the pinch viewport as best as we can.
