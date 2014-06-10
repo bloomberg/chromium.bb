@@ -77,16 +77,6 @@ leak:gpu::gles2::GLES2DecoderImpl::DoRenderbufferStorage
 # Leak in unit_tests and browser_tests. http://crbug.com/309468
 leak:TranslateBubbleView::CreateViewBeforeTranslate()
 
-# GTK leaks. GTK is deprecated, so we won't be fixing these.
-# Most of them should apply to the full browser process only.
-leak:StatusIconGtk::UpdatePlatformContextMenu
-leak:GlobalMenuBar::GlobalMenuBar
-leak:BookmarkBubbleGtk::InitFolderComboModel
-leak:TranslateInfoBarBase::CreateLanguageCombobox
-leak:GtkNativeViewManager
-leak:_gdk_x11_window_get_toplevel
-leak:gtk_util::*AppModal
-
 # http://crbug.com/318221
 leak:base::EnsureProcessTerminated
 

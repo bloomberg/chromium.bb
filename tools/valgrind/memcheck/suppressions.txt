@@ -701,20 +701,6 @@
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
 }
 {
-   # GTK tooltip doesn't always initialize variables.
-   # https://bugzilla.gnome.org/show_bug.cgi?id=554686
-   tooltip_554686
-   Memcheck:Uninitialized
-   fun:child_location_foreach
-   fun:gtk_fixed_forall
-   ...
-   fun:find_widget_under_pointer
-   fun:gtk_tooltip_show_tooltip
-   fun:tooltip_popup_timeout
-   fun:gdk_threads_dispatch
-   fun:g_timeout_dispatch
-}
-{
    bug_29675
    Memcheck:Leak
    fun:_Znw*
@@ -2378,61 +2364,6 @@
    fun:_ZN3net9HttpCache17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
    ...
    fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
-}
-{
-   bug_96369
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   fun:g_object_constructor
-   fun:g_object_newv
-   fun:g_object_new
-   fun:_gdk_window_impl_new
-   fun:gdk_window_ensure_native
-   fun:gdk_x11_drawable_get_xid
-   fun:_ZN20GtkNativeViewManager14GetIdForWidgetEP10_GtkWidget
-   fun:_ZNK7content23RenderWidgetHostViewGtk15GetNativeViewIdEv
-}
-{
-   bug_96402
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   fun:g_object_constructor
-   fun:g_object_newv
-   fun:g_object_new
-   fun:_gdk_window_impl_new
-   fun:gdk_window_ensure_native
-   fun:gdk_x11_drawable_get_xid
-   ...
-   fun:g_closure_invoke
-   fun:signal_emit_unlocked_R
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gtk_widget_realize
-   fun:gtk_widget_set_parent
-}
-{
-   bug_96407
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   fun:g_object_constructor
-   fun:g_object_newv
-   fun:g_object_new
-   fun:_gdk_window_impl_new
-   fun:gdk_window_ensure_native
-   fun:gdk_x11_drawable_get_xid
-   fun:_ZN19TestWebViewDelegate20CreatePluginDelegateE*
 }
 {
    bug_96568a
@@ -4389,18 +4320,6 @@
    fun:_ZN10extensions11ImageLoader15LoadImagesAsyncEPKNS_9ExtensionERKSt6vectorINS0_19ImageRepresentationESaIS5_EERKN4base8CallbackIFvRKN3gfx5ImageEEEE
 }
 {
-   bug_166818
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gdk_pixbuf_loader_load_module
-   fun:gdk_pixbuf_loader_close
-   fun:_ZN2ui12_GLOBAL__N_110LoadPixbufEPN4base22RefCountedStaticMemoryEb
-   fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEiNS0_8ImageRTLE
-   fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEi
-}
-{
    bug_166819
    Memcheck:Leak
    fun:_Znw*
@@ -4650,65 +4569,6 @@
    fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE12createPluginEPN5blink8WebFrameERKNS5_15WebPluginParamsE
    fun:_ZN5blink21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6String*
    fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7*
-}
-{
-   bug_176888
-   Memcheck:Leak
-   fun:malloc
-   fun:strdup
-   fun:p11_kit_registered_module_to_name
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:_ZN12_GLOBAL__N_117GcryptInitializer4InitEv
-   fun:_ZN12_GLOBAL__N_117GcryptInitializerC*
-   fun:_ZN4base25DefaultLazyInstanceTraitsIN12_GLOBAL__N_117GcryptInitializerEE3NewEPv
-}
-{
-   bug_176889_a
-   Memcheck:Uninitialized
-   fun:inflateReset2
-   fun:inflateInit2_
-   fun:png_create_read_struct_2
-   obj:/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
-   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
-   fun:gdk_pixbuf_loader*
-}
-{
-   bug_176889_b
-   Memcheck:Uninitialized
-   fun:sse2_composite_over_8888_8888
-   ...
-   fun:gdk_pixbuf_loader_close
-}
-{
-   bug_176889_c
-   Memcheck:Uninitialized
-   fun:sse2_combine_over_u
-   ...
-   fun:gdk_pixbuf_loader_close
-}
-{
-   bug_176889_d
-   Memcheck:Uninitialized
-   obj:*/librsvg-2.so*
-   fun:rsvg_handle_get_pixbuf_sub
-   obj:*/libpixbufloader-svg.so
-   fun:gdk_pixbuf_loader_close
-}
-{
-   bug_176889_e
-   Memcheck:Uninitialized
-   fun:gdk_pixbuf_saturate_and_pixelate
-}
-{
-   bug_176889_f
-   Memcheck:Uninitialized
-   fun:cache_magic_matchlet_compare
-   fun:__gio_xdg_cache_get_mime_type_for_data
-   fun:g_content_type_guess
-   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
-   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
-   fun:gdk_pixbuf_loader_close
 }
 {
    bug_176891a
