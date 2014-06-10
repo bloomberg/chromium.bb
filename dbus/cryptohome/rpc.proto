@@ -153,3 +153,18 @@ message VerifyBootLockboxRequest {
 message FinalizeBootLockboxRequest {
 }
 
+message GetKeyDataRequest {
+  // |key| must supply at least one attribute and all others will be treated as
+  // wildcards.  Currently only |key.data().label()| may be supplied.  Like
+  // AuthorizationRequest, support can be added for queries by
+  // |key.data().type()| to return all keys of a certain class, testing
+  // |key.secret()|, or |key.data().provider_data()| entries.
+  optional Key key = 1;
+}
+
+message GetKeyDataReply {
+  extend BaseReply {
+    optional GetKeyDataReply reply = 1002;
+  }
+  repeated KeyData key_data = 1;
+}
