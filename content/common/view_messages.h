@@ -837,10 +837,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerScriptLoadFailed)
 // This message is sent only if the worker successfully loaded the script.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 
-// Tells the renderer that the network state has changed so that
-// navigator.onLine and navigator.connection can be updated.
-IPC_MESSAGE_CONTROL2(ViewMsg_NetworkStateChanged,
-                     bool /* is_online */,
+// Tells the renderer that the network type has changed so that navigator.onLine
+// and navigator.connection can be updated.
+IPC_MESSAGE_CONTROL1(ViewMsg_NetworkTypeChanged,
                      net::NetworkChangeNotifier::ConnectionType /* type */)
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
