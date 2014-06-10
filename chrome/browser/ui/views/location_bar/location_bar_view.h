@@ -46,6 +46,7 @@ class OriginChipView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
+class SearchButton;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
@@ -65,7 +66,6 @@ class BubbleDelegateView;
 class ImageButton;
 class ImageView;
 class Label;
-class LabelButton;
 class Widget;
 }
 
@@ -499,7 +499,7 @@ class LocationBarView : public LocationBar,
   StarView* star_view_;
 
   // The search/go button.
-  views::LabelButton* search_button_;
+  SearchButton* search_button_;
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.

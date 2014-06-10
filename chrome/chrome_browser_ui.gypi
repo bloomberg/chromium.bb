@@ -1795,6 +1795,8 @@
         'browser/ui/views/location_bar/page_action_with_badge_view.h',
         'browser/ui/views/location_bar/page_info_helper.cc',
         'browser/ui/views/location_bar/page_info_helper.h',
+        'browser/ui/views/location_bar/search_button.cc',
+        'browser/ui/views/location_bar/search_button.h',
         'browser/ui/views/location_bar/selected_keyword_view.cc',
         'browser/ui/views/location_bar/selected_keyword_view.h',
         'browser/ui/views/location_bar/star_view.cc',
