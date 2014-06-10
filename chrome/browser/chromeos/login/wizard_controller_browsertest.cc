@@ -592,9 +592,17 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
                             EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL,
                             ""))
       .Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::EULA_ACCEPTED);
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(
+      WizardController::default_controller()->GetAutoEnrollmentCheckScreen(),
+      WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Hide()).Times(0);
-  OnExit(ScreenObserver::EULA_ACCEPTED);
+  OnExit(ScreenObserver::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
   content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),

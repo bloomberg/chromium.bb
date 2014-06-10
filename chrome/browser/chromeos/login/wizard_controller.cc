@@ -93,7 +93,8 @@ const char *kResumableScreens[] = {
   chromeos::WizardController::kUpdateScreenName,
   chromeos::WizardController::kEulaScreenName,
   chromeos::WizardController::kEnrollmentScreenName,
-  chromeos::WizardController::kTermsOfServiceScreenName
+  chromeos::WizardController::kTermsOfServiceScreenName,
+  chromeos::WizardController::kAutoEnrollmentCheckScreenName
 };
 
 // Checks flag for HID-detection screen show.
@@ -595,8 +596,7 @@ void WizardController::OnEulaAccepted() {
 
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
-    PerformOOBECompletedActions();
-    ShowEnrollmentScreen();
+    ShowAutoEnrollmentCheckScreen();
   } else {
     InitiateOOBEUpdate();
   }
@@ -886,7 +886,10 @@ void WizardController::OnExit(ExitCodes exit_code) {
       ShowNetworkScreen();
       break;
     case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
-      OnOOBECompleted();
+      if (skip_update_enroll_after_eula_)
+        ShowEnrollmentScreen();
+      else
+        OnOOBECompleted();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
