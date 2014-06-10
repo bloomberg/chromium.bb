@@ -5,13 +5,9 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 
-#include <map>
+#include <vector>
 
-#include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
 namespace mojo {
 class Application;
@@ -19,45 +15,23 @@ namespace view_manager {
 
 class View;
 class ViewManagerDelegate;
-class ViewManagerSynchronizer;
 class ViewTreeNode;
 
-// Approximately encapsulates the View Manager service.
-// Has a synchronizer that keeps a client model in sync with the service.
-// Owned by the connection.
 class ViewManager {
  public:
-  ~ViewManager();
-
   // Delegate is owned by the caller.
   static void Create(Application* application, ViewManagerDelegate* delegate);
 
-  const std::vector<ViewTreeNode*>& roots() { return roots_; }
+  // Returns all root nodes known to this connection.
+  virtual const std::vector<ViewTreeNode*>& GetRoots() const = 0;
 
-  ViewTreeNode* GetNodeById(Id id);
-  View* GetViewById(Id id);
+  // Returns a Node or View known to this connection.
+  virtual ViewTreeNode* GetNodeById(Id id) = 0;
+  virtual View* GetViewById(Id id) = 0;
 
- private:
-  friend class ViewManagerPrivate;
-  friend class ViewManagerSynchronizer;
+ protected:
+  virtual ~ViewManager() {}
 
-  typedef std::map<Id, ViewTreeNode*> IdToNodeMap;
-  typedef std::map<Id, View*> IdToViewMap;
-  typedef std::map<ConnectionSpecificId,
-                   ViewManagerSynchronizer*> SynchronizerMap;
-
-  ViewManager(ViewManagerSynchronizer* synchronizer,
-              ViewManagerDelegate* delegate);
-
-  ViewManagerDelegate* delegate_;
-  ViewManagerSynchronizer* synchronizer_;
-
-  std::vector<ViewTreeNode*> roots_;
-
-  IdToNodeMap nodes_;
-  IdToViewMap views_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewManager);
 };
 
 }  // namespace view_manager

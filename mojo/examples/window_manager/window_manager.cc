@@ -82,7 +82,7 @@ class WindowManager : public Application,
     view_manager_ = view_manager;
 
     ViewTreeNode* node = ViewTreeNode::Create(view_manager);
-    view_manager->roots().front()->AddChild(node);
+    view_manager->GetRoots().front()->AddChild(node);
     node->SetBounds(gfx::Rect(800, 600));
     parent_node_id_ = node->id();
 

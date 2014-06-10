@@ -4,7 +4,6 @@
 
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
-#include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
@@ -174,7 +173,7 @@ class ScopedDestructionNotifier {
 // Some operations are only permitted in the connection that created the node.
 bool OwnsNode(ViewManager* manager, ViewTreeNode* node) {
   return !manager ||
-      ViewManagerPrivate(manager).synchronizer()->OwnsNode(node->id());
+      static_cast<ViewManagerSynchronizer*>(manager)->OwnsNode(node->id());
 }
 
 }  // namespace
@@ -185,7 +184,7 @@ bool OwnsNode(ViewManager* manager, ViewTreeNode* node) {
 // static
 ViewTreeNode* ViewTreeNode::Create(ViewManager* view_manager) {
   ViewTreeNode* node = new ViewTreeNode(view_manager);
-  ViewManagerPrivate(view_manager).AddNode(node->id(), node);
+  static_cast<ViewManagerSynchronizer*>(view_manager)->AddNode(node);
   return node;
 }
 
@@ -194,7 +193,7 @@ void ViewTreeNode::Destroy() {
     return;
 
   if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->DestroyViewTreeNode(id_);
+    static_cast<ViewManagerSynchronizer*>(manager_)->DestroyViewTreeNode(id_);
   while (!children_.empty())
     children_.front()->Destroy();
   LocalDestroy();
@@ -205,7 +204,7 @@ void ViewTreeNode::SetBounds(const gfx::Rect& bounds) {
     return;
 
   if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->SetBounds(id_, bounds);
+    static_cast<ViewManagerSynchronizer*>(manager_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
@@ -224,7 +223,7 @@ void ViewTreeNode::AddChild(ViewTreeNode* child) {
     CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->AddChild(child->id(), id_);
+    static_cast<ViewManagerSynchronizer*>(manager_)->AddChild(child->id(), id_);
 }
 
 void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
@@ -233,8 +232,10 @@ void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
   if (manager_)
     CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalRemoveChild(child);
-  if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->RemoveChild(child->id(), id_);
+  if (manager_) {
+    static_cast<ViewManagerSynchronizer*>(manager_)->RemoveChild(child->id(),
+                                                                 id_);
+  }
 }
 
 bool ViewTreeNode::Contains(ViewTreeNode* child) const {
@@ -267,13 +268,13 @@ void ViewTreeNode::SetActiveView(View* view) {
     CHECK_EQ(ViewPrivate(view).view_manager(), manager_);
   LocalSetActiveView(view);
   if (manager_) {
-    ViewManagerPrivate(manager_).synchronizer()->SetActiveView(
+    static_cast<ViewManagerSynchronizer*>(manager_)->SetActiveView(
         id_, active_view_->id());
   }
 }
 
 void ViewTreeNode::Embed(const String& url) {
-  ViewManagerPrivate(manager_).synchronizer()->Embed(url, id_);
+  static_cast<ViewManagerSynchronizer*>(manager_)->Embed(url, id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,8 +290,10 @@ ViewTreeNode::~ViewTreeNode() {
   ScopedDestructionNotifier notifier(this);
   if (parent_)
     parent_->LocalRemoveChild(this);
+  // TODO(beng): It'd be better to do this via a destruction observer in the
+  //             synchronizer.
   if (manager_)
-    ViewManagerPrivate(manager_).RemoveNode(id_);
+    static_cast<ViewManagerSynchronizer*>(manager_)->RemoveNode(id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,7 +301,8 @@ ViewTreeNode::~ViewTreeNode() {
 
 ViewTreeNode::ViewTreeNode(ViewManager* manager)
     : manager_(manager),
-      id_(ViewManagerPrivate(manager).synchronizer()->CreateViewTreeNode()),
+      id_(static_cast<ViewManagerSynchronizer*>(
+          manager_)->CreateViewTreeNode()),
       parent_(NULL),
       active_view_(NULL) {}
 

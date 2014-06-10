@@ -54,7 +54,7 @@ class EmbeddedApp : public Application,
     view->AddObserver(this);
     root->SetActiveView(view);
     root->AddObserver(this);
-    size_t index = view_manager->roots().size() - 1;
+    size_t index = view_manager->GetRoots().size() - 1;
     view->SetColor(kColors[index % arraysize(kColors)]);
   }
   virtual void OnRootRemoved(ViewManager* view_manager,

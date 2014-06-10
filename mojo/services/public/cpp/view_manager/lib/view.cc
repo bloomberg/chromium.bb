@@ -4,9 +4,10 @@
 
 #include "mojo/services/public/cpp/view_manager/view.h"
 
-#include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "ui/gfx/canvas.h"
 
 namespace mojo {
@@ -39,13 +40,13 @@ class ScopedDestructionNotifier {
 // static
 View* View::Create(ViewManager* manager) {
   View* view = new View(manager);
-  ViewManagerPrivate(manager).AddView(view->id(), view);
+  static_cast<ViewManagerSynchronizer*>(manager)->AddView(view);
   return view;
 }
 
 void View::Destroy() {
   if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->DestroyView(id_);
+    static_cast<ViewManagerSynchronizer*>(manager_)->DestroyView(id_);
   LocalDestroy();
 }
 
@@ -58,8 +59,10 @@ void View::RemoveObserver(ViewObserver* observer) {
 }
 
 void View::SetContents(const SkBitmap& contents) {
-  if (manager_)
-    ViewManagerPrivate(manager_).synchronizer()->SetViewContents(id_, contents);
+  if (manager_) {
+    static_cast<ViewManagerSynchronizer*>(manager_)->SetViewContents(id_,
+                                                                     contents);
+  }
 }
 
 void View::SetColor(SkColor color) {
@@ -69,7 +72,7 @@ void View::SetColor(SkColor color) {
 }
 
 View::View(ViewManager* manager)
-    : id_(ViewManagerPrivate(manager).synchronizer()->CreateView()),
+    : id_(static_cast<ViewManagerSynchronizer*>(manager)->CreateView()),
       node_(NULL),
       manager_(manager) {}
 
@@ -80,8 +83,10 @@ View::View()
 
 View::~View() {
   ScopedDestructionNotifier notifier(this);
+  // TODO(beng): It'd be better to do this via a destruction observer in the
+  //             synchronizer.
   if (manager_)
-    ViewManagerPrivate(manager_).RemoveView(id_);
+    static_cast<ViewManagerSynchronizer*>(manager_)->RemoveView(id_);
 }
 
 void View::LocalDestroy() {

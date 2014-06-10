@@ -23,7 +23,8 @@ class ViewManager;
 class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
-class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
+class ViewManagerSynchronizer : public ViewManager,
+                                public InterfaceImpl<IViewManagerClient> {
  public:
   explicit ViewManagerSynchronizer(ViewManagerDelegate* delegate);
   virtual ~ViewManagerSynchronizer();
@@ -45,6 +46,7 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 
+  // Returns true if the specified node/view was created by this connection.
   bool OwnsNode(Id id) const;
   bool OwnsView(Id id) const;
 
@@ -61,9 +63,28 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
     changes_acked_callback_ = base::Callback<void(void)>();
   }
 
+  // Start/stop tracking nodes & views. While tracked, they can be retrieved via
+  // ViewManager::GetNode/ViewById.
+  void AddNode(ViewTreeNode* node);
+  void RemoveNode(Id node_id);
+
+  void AddView(View* view);
+  void RemoveView(Id view_id);
+
  private:
+  friend class RootObserver;
   friend class ViewManagerTransaction;
+
   typedef ScopedVector<ViewManagerTransaction> Transactions;
+  typedef std::map<Id, ViewTreeNode*> IdToNodeMap;
+  typedef std::map<Id, View*> IdToViewMap;
+  typedef std::map<ConnectionSpecificId,
+                   ViewManagerSynchronizer*> SynchronizerMap;
+
+  // Overridden from ViewManager:
+  virtual const std::vector<ViewTreeNode*>& GetRoots() const OVERRIDE;
+  virtual ViewTreeNode* GetNodeById(Id id) OVERRIDE;
+  virtual View* GetViewById(Id id) OVERRIDE;
 
   // Overridden from InterfaceImpl:
   virtual void OnConnectionEstablished() OVERRIDE;
@@ -100,9 +121,9 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
   // front of the queue.
   void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
 
-  ViewManager* view_manager() { return view_manager_.get(); }
+  void AddRoot(ViewTreeNode* root);
+  void RemoveRoot(ViewTreeNode* root);
 
-  scoped_ptr<ViewManager> view_manager_;
   bool connected_;
   ConnectionSpecificId connection_id_;
   ConnectionSpecificId next_id_;
@@ -110,9 +131,14 @@ class ViewManagerSynchronizer : public InterfaceImpl<IViewManagerClient> {
 
   Transactions pending_transactions_;
 
-  base::WeakPtrFactory<ViewManagerSynchronizer> sync_factory_;
-
   base::Callback<void(void)> changes_acked_callback_;
+
+  ViewManagerDelegate* delegate_;
+
+  std::vector<ViewTreeNode*> roots_;
+
+  IdToNodeMap nodes_;
+  IdToViewMap views_;
 
   IViewManager* service_;
 

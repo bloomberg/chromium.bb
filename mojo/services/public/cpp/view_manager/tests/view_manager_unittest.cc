@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/service_manager/service_manager.h"
-#include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
@@ -40,15 +39,10 @@ void QuitRunLoop() {
   current_run_loop->Quit();
 }
 
-void QuitRunLoopOnChangesAcked() {
-  QuitRunLoop();
-}
-
-void WaitForAllChangesToBeAcked(ViewManager* manager) {
-  ViewManagerPrivate(manager).synchronizer()->set_changes_acked_callback(
-      base::Bind(&QuitRunLoopOnChangesAcked));
+void WaitForAllChangesToBeAcked(ViewManagerSynchronizer* synchronizer) {
+  synchronizer->set_changes_acked_callback(base::Bind(&QuitRunLoop));
   DoRunLoop();
-  ViewManagerPrivate(manager).synchronizer()->ClearChangesAckedCallback();
+  synchronizer->ClearChangesAckedCallback();
 }
 
 class ConnectServiceLoader : public ServiceLoader,
@@ -402,12 +396,12 @@ TEST_F(ViewManagerTest, SetUp) {}
 
 TEST_F(ViewManagerTest, Embed) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
   EXPECT_TRUE(NULL != embedded);
 
-  ViewTreeNode* node_in_embedded = embedded->roots().front();
-  EXPECT_EQ(node->parent(), window_manager()->roots().front());
+  ViewTreeNode* node_in_embedded = embedded->GetRoots().front();
+  EXPECT_EQ(node->parent(), window_manager()->GetRoots().front());
   EXPECT_EQ(NULL, node_in_embedded->parent());
 }
 
@@ -416,12 +410,13 @@ TEST_F(ViewManagerTest, Embed) {
 // TODO(beng): verify whether or not this is a policy we like.
 TEST_F(ViewManagerTest, HierarchyChanged_NodeAdded) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
   ViewTreeNode* nested = ViewTreeNode::Create(window_manager());
   node->AddChild(nested);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 2);
-  EXPECT_EQ(embedded->roots().front()->children().front()->id(), nested->id());
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 2);
+  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
+            nested->id());
 }
 
 // Window manager has two nodes, N1 & N2. Embeds A at N1. Creates node N21,
@@ -429,25 +424,26 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeAdded) {
 // TODO(beng): verify whether or not this is a policy we like.
 TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
   ViewTreeNode* node1 = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node1);
+  window_manager()->GetRoots().front()->AddChild(node1);
   ViewManager* embedded = Embed(window_manager(), node1);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 1);
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
 
   ViewTreeNode* node2 = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node2);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 1);
-  EXPECT_TRUE(embedded->roots().front()->children().empty());
+  window_manager()->GetRoots().front()->AddChild(node2);
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
+  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
 
   ViewTreeNode* node21 = ViewTreeNode::Create(window_manager());
   node2->AddChild(node21);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 1);
-  EXPECT_TRUE(embedded->roots().front()->children().empty());
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
+  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
 
   // Makes node21 visible to |embedded|.
   node1->AddChild(node21);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 2);
-  EXPECT_FALSE(embedded->roots().front()->children().empty());
-  EXPECT_EQ(embedded->roots().front()->children().front()->id(), node21->id());
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 2);
+  EXPECT_FALSE(embedded->GetRoots().front()->children().empty());
+  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
+            node21->id());
 }
 
 // Window manager has two nodes, N1 and N11. Embeds A at N1. Removes N11 from
@@ -455,16 +451,17 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
 // TODO(beng): verify whether or not this is a policy we like.
 TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewTreeNode* nested = ViewTreeNode::Create(window_manager());
   node->AddChild(nested);
 
   ViewManager* embedded = Embed(window_manager(), node);
-  EXPECT_EQ(embedded->roots().front()->children().front()->id(), nested->id());
+  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
+            nested->id());
 
   node->RemoveChild(nested);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 1);
-  EXPECT_TRUE(embedded->roots().front()->children().empty());
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
+  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
 }
 
 // Window manager has two nodes, N1 and N11. Embeds A at N1. Destroys N11.
@@ -472,12 +469,13 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
 // TODO(beng): verify whether or not this is a policy we like.
 TEST_F(ViewManagerTest, NodeDestroyed) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewTreeNode* nested = ViewTreeNode::Create(window_manager());
   node->AddChild(nested);
 
   ViewManager* embedded = Embed(window_manager(), node);
-  EXPECT_EQ(embedded->roots().front()->children().front()->id(), nested->id());
+  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
+            nested->id());
 
   // |nested| will be deleted after calling Destroy() below.
   Id id = nested->id();
@@ -487,13 +485,13 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
   nodes.insert(id);
   WaitForDestruction(embedded, &nodes, NULL);
 
-  EXPECT_TRUE(embedded->roots().front()->children().empty());
+  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
   EXPECT_EQ(NULL, embedded->GetNodeById(id));
 }
 
 TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   Id node_id = node->id();
@@ -504,12 +502,12 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
   nodes.insert(node_id);
   WaitForDestruction(embedded, &nodes, NULL);
 
-  EXPECT_TRUE(embedded->roots().empty());
+  EXPECT_TRUE(embedded->GetRoots().empty());
 }
 
 TEST_F(ViewManagerTest, SetActiveView) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   View* view = View::Create(window_manager());
@@ -523,7 +521,7 @@ TEST_F(ViewManagerTest, SetActiveView) {
 
 TEST_F(ViewManagerTest, DestroyView) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   View* view = View::Create(window_manager());
@@ -548,7 +546,7 @@ TEST_F(ViewManagerTest, DestroyView) {
 // node and view disappearing from all connections that see them.
 TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   View* view = View::Create(window_manager());
   node->SetActiveView(view);
   ViewManager* embedded = Embed(window_manager(), node);
@@ -564,7 +562,7 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
   observed_views.insert(view_id);
   WaitForDestruction(embedded, &observed_nodes, &observed_views);
 
-  EXPECT_TRUE(embedded->roots().empty());
+  EXPECT_TRUE(embedded->GetRoots().empty());
   EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
   EXPECT_EQ(NULL, embedded->GetViewById(view_id));
 }
@@ -578,7 +576,7 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
 TEST_F(ViewManagerTest,
        ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
   View* view_in_embedded = View::Create(embedded);
   ViewTreeNode* node_in_embedded = embedded->GetNodeById(node->id());
@@ -594,7 +592,7 @@ TEST_F(ViewManagerTest,
   nodes.insert(node_id);
   WaitForDestruction(embedded, &nodes, NULL);
 
-  EXPECT_TRUE(embedded->roots().empty());
+  EXPECT_TRUE(embedded->GetRoots().empty());
   // node was owned by the window manager, so it should be gone.
   EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
   // view_in_embedded was owned by the embedded app, so it should still exist,
@@ -609,7 +607,7 @@ TEST_F(ViewManagerTest,
 //             Contains().
 TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   View* view_in_embedded = View::Create(embedded);
@@ -621,7 +619,7 @@ TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
 // attached.
 TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   // Create a subtree private to the window manager and make some changes to it.
@@ -632,12 +630,13 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   child11->SetBounds(child11_bounds);
   View* view11 = View::Create(window_manager());
   child11->SetActiveView(view11);
-  WaitForAllChangesToBeAcked(window_manager());
+  WaitForAllChangesToBeAcked(
+      static_cast<ViewManagerSynchronizer*>(window_manager()));
 
   // When added to the shared node, the entire hierarchy and all property
   // changes should become visible to the embedded app.
   node->AddChild(child1);
-  WaitForTreeSizeToMatch(embedded->roots().front(), 3);
+  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 3);
 
   ViewTreeNode* child11_in_embedded = embedded->GetNodeById(child11->id());
   View* view11_in_embedded = embedded->GetViewById(view11->id());
@@ -650,7 +649,7 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
 // are reflected to another.
 TEST_F(ViewManagerTest, SetBounds) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   ViewTreeNode* node_in_embedded = embedded->GetNodeById(node->id());
@@ -666,7 +665,7 @@ TEST_F(ViewManagerTest, SetBounds) {
 // connection are refused.
 TEST_F(ViewManagerTest, SetBoundsSecurity) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   ViewTreeNode* node_in_embedded = embedded->GetNodeById(node->id());
@@ -681,7 +680,7 @@ TEST_F(ViewManagerTest, SetBoundsSecurity) {
 // Verifies that a node can only be destroyed by the connection that created it.
 TEST_F(ViewManagerTest, DestroySecurity) {
   ViewTreeNode* node = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node);
+  window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
 
   ViewTreeNode* node_in_embedded = embedded->GetNodeById(node->id());
@@ -698,9 +697,9 @@ TEST_F(ViewManagerTest, DestroySecurity) {
 
 TEST_F(ViewManagerTest, MultiRoots) {
   ViewTreeNode* node1 = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node1);
+  window_manager()->GetRoots().front()->AddChild(node1);
   ViewTreeNode* node2 = ViewTreeNode::Create(window_manager());
-  window_manager()->roots().front()->AddChild(node2);
+  window_manager()->GetRoots().front()->AddChild(node2);
   ViewManager* embedded1 = Embed(window_manager(), node1);
   ViewManager* embedded2 = Embed(window_manager(), node2);
   EXPECT_EQ(embedded1, embedded2);
