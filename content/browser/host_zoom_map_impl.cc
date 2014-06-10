@@ -247,11 +247,14 @@ void HostZoomMapImpl::SetZoomLevelForWebContents(
     // WebContentsImpl::GetLastCommittedURL() may give us a virtual url that
     // is different than what the render view is using. If the two don't match,
     // the attempt to set the zoom will fail.
-    GURL url;
     NavigationEntry* entry =
         web_contents_impl.GetController().GetLastCommittedEntry();
-    DCHECK(entry);
-    url = entry->GetURL();
+    // Tests may invoke this function with a null entry, but we don't
+    // want to save zoom levels in this case.
+    if (!entry)
+      return;
+
+    GURL url = entry->GetURL();
     SetZoomLevelForHost(net::GetHostOrSpecFromURL(url), level);
   }
 }
