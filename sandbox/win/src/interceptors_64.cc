@@ -68,23 +68,6 @@ NTSTATUS WINAPI TargetNtOpenThreadTokenEx64(
                                    open_as_self, handle_attributes, token);
 }
 
-HANDLE WINAPI TargetCreateThread64(
-    LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size,
-    LPTHREAD_START_ROUTINE start_address, PVOID parameter, DWORD creation_flags,
-    LPDWORD thread_id) {
-  CreateThreadFunction orig_fn = reinterpret_cast<
-      CreateThreadFunction>(g_originals[CREATE_THREAD_ID]);
-  return TargetCreateThread(orig_fn, thread_attributes, stack_size,
-                            start_address, parameter, creation_flags,
-                            thread_id);
-}
-
-LCID WINAPI TargetGetUserDefaultLCID64(void) {
-  GetUserDefaultLCIDFunction orig_fn = reinterpret_cast<
-      GetUserDefaultLCIDFunction>(g_originals[GET_USER_DEFAULT_LCID_ID]);
-  return TargetGetUserDefaultLCID(orig_fn);
-}
-
 // -----------------------------------------------------------------------
 
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateFile64(

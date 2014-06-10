@@ -53,9 +53,6 @@ class HandleCloser {
   // Serializes and copies the closer table into the target process.
   bool InitializeTargetHandles(TargetProcess* target);
 
-  // Adds any interceptions that may be required due to closed system handles.
-  bool SetupHandleInterceptions(InterceptionManager* manager);
-
  private:
   // Calculates the memory needed to copy the serialized handles list (rounded
   // to the nearest machine-word size).

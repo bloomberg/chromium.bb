@@ -44,15 +44,6 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThreadTokenEx64(
     HANDLE thread, ACCESS_MASK desired_access, BOOLEAN open_as_self,
     ULONG handle_attributes, PHANDLE token);
 
-// Interception of CreateThread on the child process.
-SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateThread64(
-    LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size,
-    LPTHREAD_START_ROUTINE start_address, PVOID parameter,
-    DWORD creation_flags, LPDWORD thread_id);
-
-// Interception of GetUserDefaultLCID on the child process.
-SANDBOX_INTERCEPT LCID WINAPI TargetGetUserDefaultLCID64();
-
 // -----------------------------------------------------------------------
 // Interceptors handled by the file system dispatcher.
 

@@ -41,9 +41,6 @@ enum InterceptorId {
   // Sync dispatcher:
   CREATE_EVENT_ID,
   OPEN_EVENT_ID,
-  // CSRSS bypasses for HandleCloser:
-  CREATE_THREAD_ID,
-  GET_USER_DEFAULT_LCID_ID,
   INTERCEPTOR_MAX_ID
 };
 

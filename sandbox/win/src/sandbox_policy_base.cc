@@ -680,9 +680,6 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
     }
   }
 
-  if (!handle_closer_.SetupHandleInterceptions(&manager))
-    return false;
-
   if (!SetupBasicInterceptions(&manager))
     return false;
 
