@@ -38,6 +38,7 @@
 
   'targets': [
     {
+      # GN version: //third_party/WebCore/Source/core:core_event_interfaces
       'target_name': 'core_event_interfaces',
       'type': 'none',
       'actions': [
@@ -74,6 +75,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Sources/core:generated_testing_idls
       'target_name': 'generated_testing_idls',
       'type': 'none',
       'actions': [
@@ -126,6 +128,7 @@
       ]
     },
     {
+      # GN version: //third_party/WebKit/Source/core:make_core_generated
       'target_name': 'make_core_generated',
       'type': 'none',
       'hard_dependency': 1,

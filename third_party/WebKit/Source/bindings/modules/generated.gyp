@@ -21,11 +21,13 @@
   'targets': [
 ################################################################################
   {
+    # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated
     # FIXME: Should be in modules, not bindings_modules http://crbug.com/358074
     'target_name': 'modules_event_generated',
     'type': 'none',
     'actions': [
       {
+        # GN version: //third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces
         'action_name': 'event_interfaces',
         'variables': {
           'event_idl_files': [
@@ -57,6 +59,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated_event_modules_factory
         'action_name': 'EventModulesFactory',
         'inputs': [
           '<@(make_event_factory_files)',
@@ -76,6 +79,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated_event_modules_names
         'action_name': 'EventModulesNames',
         'inputs': [
           '<@(make_names_files)',
@@ -94,6 +98,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated_event_target_modules_factory
         'action_name': 'EventTargetModulesFactory',
         'inputs': [
           '<@(make_event_factory_files)',
@@ -112,6 +117,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/bindings/modules:bindings_modules_generated_event_target_modules_names
         'action_name': 'EventTargetModulesNames',
         'inputs': [
           '<@(make_names_files)',
@@ -237,6 +243,7 @@
   },
 ################################################################################
   {
+    # GN version: //third_party/WebKit/Source/bindings/modules:interfaces_info
     'target_name': 'interfaces_info',
     'type': 'none',
     'dependencies': [

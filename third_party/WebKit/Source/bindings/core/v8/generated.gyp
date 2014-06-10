@@ -24,6 +24,7 @@
   'targets': [
 ################################################################################
   {
+    # GN version: //third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated_individual
     'target_name': 'bindings_core_v8_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
@@ -96,6 +97,7 @@
   },
 ################################################################################
   {
+    # GN version: //third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated_aggregate
     'target_name': 'bindings_core_v8_generated_aggregate',
     'type': 'none',
     'actions': [{
@@ -120,6 +122,7 @@
   },
 ################################################################################
   {
+    # GN version: //third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated
     'target_name': 'bindings_core_v8_generated',
     'type': 'none',
     'dependencies': [

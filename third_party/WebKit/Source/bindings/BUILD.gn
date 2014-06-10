@@ -7,49 +7,13 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
 
-# Make these lists relative to the current directory (they're currently
-# relative to the source root).
-rel_core_idl_files = rebase_path(core_idl_files, ".", "//")
-rel_modules_idl_files = rebase_path(modules_idl_files, ".", "//")
-
-# Write lists of main IDL files to a file, so that the command lines don't
-# exceed OS length limits.
-core_idl_files_list = "$target_gen_dir/core_idl_files.tmp"
-write_file(core_idl_files_list,
-           rebase_path(rel_core_idl_files, root_build_dir))
-
-modules_idl_files_list = "$target_gen_dir/module_idl_files.tmp"
-write_file(modules_idl_files_list,
-           rebase_path(rel_modules_idl_files, root_build_dir))
-
 # Main interface IDL files (excluding dependencies and testing)
 # are included as properties on global objects, and in aggregate bindings.
-# Relative to the root build dir.
-rel_main_interface_idl_files = rel_core_idl_files + rel_modules_idl_files
+main_interface_idl_files = core_idl_files + modules_idl_files
 
 main_interface_idl_files_list = "$target_gen_dir/main_interface_idl_files.tmp"
 write_file(main_interface_idl_files_list,
-           rebase_path(rel_main_interface_idl_files, root_build_dir))
-
-# Static IDL files / Generated IDL files
-# In GYP, paths need to be passed separately for static and generated files, as
-# static files are listed in a temporary file (b/c too long for command line),
-# but generated files must be passed at the command line, as their paths are
-# not fixed at GYP time, when the temporary file is generated, because their
-# paths depend on the build directory, which varies. In GN, the build directory
-# *is* known at runtime, but we currently mimic the GYP build.
-static_interface_idl_files =
-  rel_core_idl_files +
-  rebase_path(webcore_testing_idl_files, ".", "//") +
-  rel_modules_idl_files
-static_dependency_idl_files =
-  rebase_path(core_dependency_idl_files, ".", "//") +
-  rebase_path(modules_dependency_idl_files, ".", "//") +
-  rebase_path(modules_testing_dependency_idl_files, ".", "//")
-static_idl_files = static_interface_idl_files + static_dependency_idl_files
-static_idl_files_list = "$target_gen_dir/static_idl_files.tmp"
-write_file(static_idl_files_list,
-           rebase_path(static_idl_files, root_build_dir))
+           rebase_path(main_interface_idl_files, root_build_dir))
 
 generated_global_constructors_idl_files = [
   "$blink_output_dir/WindowConstructors.idl",
@@ -63,77 +27,46 @@ generated_global_constructors_header_files = [
   "$blink_output_dir/DedicatedWorkerGlobalScopeConstructors.h",
   "$blink_output_dir/ServiceWorkerGlobalScopeConstructors.h",
 ]
-# Interfaces (files relative to current directory).
-generated_interface_idl_files =
-  rebase_path(generated_webcore_testing_idl_files, ".", "//")
-# Partial interfaces:
-generated_dependency_idl_files = generated_global_constructors_idl_files
-generated_idl_files =
-  generated_interface_idl_files + generated_dependency_idl_files
 
-interface_idl_files = static_interface_idl_files + generated_interface_idl_files
-dependency_idl_files =
-  static_dependency_idl_files + generated_dependency_idl_files
+# FIXME: Generate separate core_global_objects
+# http://crbug.com/358074
+# GYP version: generated.gyp:global_objects
+action("global_objects") {
+  script = "scripts/compute_global_objects.py"
 
-# Python source
-jinja_module_files = [
-  # jinja2/__init__.py contains version string, so sufficient for package
-  "//third_party/jinja2/__init__.py",
-  "//third_party/markupsafe/__init__.py",  # jinja2 dep
-]
+  source_prereqs = [
+    "scripts/utilities.py",
+    # Only look in main IDL files (exclude dependencies and testing,
+    # which should not define global objects).
+    main_interface_idl_files_list,
+  ] + main_interface_idl_files
 
-idl_lexer_parser_files = [
-  # PLY (Python Lex-Yacc)
-  "//third_party/ply/lex.py",
-  "//third_party/ply/yacc.py",
-  # Web IDL lexer/parser (base parser)
-  "//tools/idl_parser/idl_lexer.py",
-  "//tools/idl_parser/idl_node.py",
-  "//tools/idl_parser/idl_parser.py",
-  # Blink IDL lexer/parser/constructor
-  "scripts/blink_idl_lexer.py",
-  "scripts/blink_idl_parser.py",
-]
+  outputs = [
+    "$bindings_output_dir/GlobalObjects.pickle",
+  ]
 
-idl_compiler_files = [
-  "scripts/idl_compiler.py",
-  # Blink IDL front end (ex-lexer/parser)
-  "scripts/idl_definitions.py",
-  "scripts/idl_reader.py",
-  "scripts/idl_validator.py",
-  "scripts/interface_dependency_resolver.py",
-  # V8 code generator
-  "scripts/code_generator_v8.py",
-  "scripts/v8_attributes.py",
-  "scripts/v8_callback_interface.py",
-  "scripts/v8_globals.py",
-  "scripts/v8_interface.py",
-  "scripts/v8_methods.py",
-  "scripts/v8_types.py",
-  "scripts/v8_utilities.py",
-]
+  args = [
+    "--idl-files-list",
+    rebase_path(main_interface_idl_files_list, root_build_dir),
+    "--write-file-only-if-changed=1",  # Always true for Ninja. FIXME: remove
+                                       # when everything switched to GN.
+    "--",
+    rebase_path("$bindings_output_dir/GlobalObjects.pickle", root_build_dir),
+  ]
+}
 
-# Jinja templates
-code_generator_template_files = [
-  "templates/attributes.cpp",
-  "templates/callback_interface.cpp",
-  "templates/callback_interface.h",
-  "templates/interface_base.cpp",
-  "templates/interface.cpp",
-  "templates/interface.h",
-  "templates/methods.cpp",
-]
-
+# GYP version: generated.gyp:global_constructors_idls
 action("global_constructors_idls") {
   script = "scripts/generate_global_constructors.py"
 
   source_prereqs = [
     "scripts/generate_global_constructors.py",
     "scripts/utilities.py",
+    "$bindings_output_dir/GlobalObjects.pickle",
     # Only includes main IDL files (exclude dependencies and testing,
     # which should not appear on global objects).
     main_interface_idl_files_list,
-  ] + rel_main_interface_idl_files
+  ] + main_interface_idl_files
 
   outputs = generated_global_constructors_idl_files +
     generated_global_constructors_header_files
@@ -141,6 +74,8 @@ action("global_constructors_idls") {
   args = [
     "--idl-files-list",
     rebase_path(main_interface_idl_files_list, root_build_dir),
+    "--global-objects-file",
+    rebase_path("$bindings_output_dir/GlobalObjects.pickle", root_build_dir),
     "--write-file-only-if-changed=1",  # Always true for Ninja.
     "--",
     "Window",
@@ -155,157 +90,14 @@ action("global_constructors_idls") {
     rebase_path("$blink_output_dir/ServiceWorkerGlobalScopeConstructors.idl",
                 root_build_dir),
   ]
+
+  deps = [ ":global_objects" ]
 }
 
-action("interfaces_info") {
-  script = "scripts/compute_interfaces_info.py"
-
-  pickle_file = "$blink_output_dir/InterfacesInfo.pickle"
-  source_prereqs = [
-    "scripts/utilities.py",
-    static_idl_files_list,
-  ]
-  source_prereqs += static_idl_files
-  source_prereqs += generated_idl_files
-  outputs = [ pickle_file ]
-
-  args = [
-    "--idl-files-list", rebase_path(static_idl_files_list, root_build_dir),
-    "--interfaces-info-file", rebase_path(pickle_file, root_build_dir),
-    # Always true for Ninja. Remove flag when GYP support no longer needed.
-    "--write-file-only-if-changed=1",
-    "--"
-  ]
-  # Generated files are passed at command line.
-  # TODO: This can be merged with the file list when GYP support is no longer
-  # needed. The reason that this happens in GYP is that the output directory
-  # is not know (might be Debug or Release) but in GN it is known.
-  args += rebase_path(generated_idl_files, root_build_dir)
-
+# GYP version: generated.gyp:generated_idls
+group("generated_idls") {
   deps = [
     ":global_constructors_idls",
     "//third_party/WebKit/Source/core:generated_testing_idls",
   ]
-}
-
-# A separate pre-caching step is *not required* to use lex/parse table
-# caching in PLY, as the caches are concurrency-safe.
-# However, pre-caching ensures that all compiler processes use the cached
-# files (hence maximizing speed), instead of early processes building the
-# tables themselves (as they've not yet been written when they start).
-action("cached_lex_yacc_tables") {
-  script = "scripts/blink_idl_parser.py"
-
-  source_prereqs = idl_lexer_parser_files
-  outputs = [
-    "$bindings_output_dir/lextab.py",
-    "$bindings_output_dir/parsetab.pickle",
-  ]
-
-  args = [ rebase_path(bindings_output_dir, root_build_dir) ]
-}
-
-action("cached_jinja_templates") {
-  script = "scripts/code_generator_v8.py"
-
-  source_prereqs = jinja_module_files + [ "scripts/code_generator_v8.py" ] +
-    code_generator_template_files
-  # Dummy file to track dependency.
-  stamp_file = "$bindings_output_dir/cached_jinja_templates.stamp"
-  outputs = [ stamp_file ]
-
-  args = [
-    rebase_path(bindings_output_dir, root_build_dir),
-    rebase_path(stamp_file, root_build_dir),
-  ]
-}
-
-action_foreach("individual_generated_bindings") {
-  # TODO(brettw) GYP adds a "-S before the script name to skip "import site" to
-  # speed up startup. Figure out if we need this and do something similar (not
-  # really expressible in GN now).
-  script = "scripts/idl_compiler.py"
-
-  source_prereqs =
-    idl_lexer_parser_files +  # to be explicit (covered by parsetab)
-    idl_compiler_files
-  source_prereqs += [
-    "$bindings_output_dir/lextab.py",
-    "$bindings_output_dir/parsetab.pickle",
-    "$bindings_output_dir/cached_jinja_templates.stamp",
-    "IDLExtendedAttributes.txt",
-    # If the dependency structure or public interface info (e.g.,
-    # [ImplementedAs]) changes, we rebuild all files, since we're not
-    # computing dependencies file-by-file in the build.
-    # This data is generally stable.
-    "$blink_output_dir/InterfacesInfo.pickle",
-  ]
-  # Further, if any dependency (partial interface or implemented
-  # interface) changes, rebuild everything, since every IDL potentially
-  # depends on them, because we're not computing dependencies
-  # file-by-file.
-  # FIXME: This is too conservative, and causes excess rebuilds:
-  # compute this file-by-file.  http://crbug.com/341748
-  source_prereqs += dependency_idl_files
-
-  sources = interface_idl_files
-  outputs = [
-    "$bindings_output_dir/V8{{source_name_part}}.cpp",
-    "$bindings_output_dir/V8{{source_name_part}}.h",
-  ]
-
-  args = [
-    "--output-dir",
-    rebase_path(bindings_output_dir, root_build_dir),
-    "--interfaces-info",
-    rebase_path("$blink_output_dir/InterfacesInfo.pickle", root_build_dir),
-    "--write-file-only-if-changed=1",  # Always true for Ninja.
-    "{{source}}",
-  ]
-
-  deps = [
-    ":interfaces_info",
-    ":cached_lex_yacc_tables",
-    ":cached_jinja_templates",
-    "//third_party/WebKit/Source/core:generated_testing_idls",
-  ]
-}
-
-action("bindings_core_generated_aggregate") {
-  script = "scripts/aggregate_generated_bindings.py"
-
-  source_prereqs = [ core_idl_files_list ] + rel_core_idl_files
-  outputs = bindings_core_generated_aggregate_files
-
-  args = [ rebase_path(core_idl_files_list, root_build_dir) ]
-  args += [ "--" ]
-  args += rebase_path(bindings_core_generated_aggregate_files, root_build_dir)
-}
-
-action("bindings_modules_generated_aggregate") {
-  script = "scripts/aggregate_generated_bindings.py"
-
-  source_prereqs = [ modules_idl_files_list ] + rel_modules_idl_files
-  outputs = bindings_modules_generated_aggregate_files
-
-  args = [ rebase_path(modules_idl_files_list, root_build_dir) ]
-  args += [ "--" ]
-  args += rebase_path(bindings_modules_generated_aggregate_files,
-                      root_build_dir)
-}
-
-# Corresponds to GYP's generated_bindings.gyp:generated_bindings.
-group("bindings") {
-  deps = [
-    ":bindings_core_generated_aggregate",
-    ":bindings_modules_generated_aggregate",
-    ":individual_generated_bindings",
-  ]
-}
-
-# "event_interfaces" action in core_bindings_generated.gyp.
-generate_event_interfaces("core_bindings_generated") {
-  # core_event_idl_files paths are relative to the "core" directory.
-  sources = rebase_path(core_event_idl_files, ".", "../core")
-  output_file = "EventInterfaces.in"
 }

@@ -5,17 +5,19 @@
 import("//build/config/ui.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
+import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 platform_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("blink_platform.gypi") ],
     "scope",
     [ "blink_platform.gypi" ])
-heap_gypi = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("heap/blink_heap.gypi") ],
-    "scope",
-    [ "heap/blink_heap.gypi" ])
+# TODO(GYP) Uncomment when the targets below that need this value are enabled.
+#heap_gypi = exec_script(
+#    "//build/gypi_to_gn.py",
+#    [ rebase_path("heap/blink_heap.gypi") ],
+#    "scope",
+#    [ "heap/blink_heap.gypi" ])
 blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
   "graphics/cpu/arm/filters/FEBlendNEON.h",
@@ -90,16 +92,15 @@ action("font_family_names") {
   font_family_names_in = "fonts/FontFamilyNames.in"
   source_prereqs = make_names_files + [ font_family_names_in ]
 
-  output_path = "$root_gen_dir/blink"
   outputs = [
-    "$output_path/FontFamilyNames.cpp",
-    "$output_path/FontFamilyNames.h",
+    "$blink_platform_output_dir/FontFamilyNames.cpp",
+    "$blink_platform_output_dir/FontFamilyNames.h",
   ]
 
   args = [
     rebase_path(font_family_names_in, root_build_dir),
     "--output_dir",
-    rebase_path(output_path, root_build_dir),
+    rebase_path(blink_platform_output_dir, root_build_dir),
   ]
 }
 
@@ -115,16 +116,15 @@ action("runtime_enabled_features") {
     "../build/scripts/templates/RuntimeEnabledFeatures.h.tmpl",
   ]
 
-  output_path = "$root_gen_dir/blink"
   outputs = [
-    "$output_path/RuntimeEnabledFeatures.cpp",
-    "$output_path/RuntimeEnabledFeatures.h",
+    "$blink_platform_output_dir/RuntimeEnabledFeatures.cpp",
+    "$blink_platform_output_dir/RuntimeEnabledFeatures.h",
   ]
 
   args = [
     rebase_path(runtime_enabled_features_in, root_build_dir),
     "--output_dir",
-    rebase_path(output_path, root_build_dir),
+    rebase_path(blink_platform_output_dir, root_build_dir),
   ]
 }
 
@@ -135,7 +135,7 @@ action("color_data") {
   color_data_gperf = "ColorData.gperf"
   source_prereqs = [ color_data_gperf ]
 
-  output_file = "$root_gen_dir/blink/ColorData.cpp"
+  output_file = "$blink_platform_output_dir/ColorData.cpp"
   outputs = [ output_file ]
 
   args = [
@@ -185,7 +185,9 @@ component("platform") {
 
   include_dirs = [
     #"$angle_path/include",
-    "$root_gen_dir/blink",
+    # FIXME: This should be removed once files include the generated files with
+    # the correct path.
+    "$root_gen_dir/blink/platform",
   ]
 
   deps = [
@@ -356,6 +358,9 @@ source_set("heap_run_all_tests") {
   ]
 }
 
+# TODO(GYP) enable this target when it links (blocked on WebP symbols).
+if (false) {
+
 test("heap_unittests") {
   output_name = "blink_heap_unittests"
 
@@ -377,6 +382,8 @@ test("heap_unittests") {
   ]
 }
 
+}  # TODO(GYP)
+
 source_set("platform_run_all_tests") {
   sources = [
     "testing/RunAllTests.cpp"
@@ -395,6 +402,9 @@ source_set("platform_run_all_tests") {
     "//third_party/WebKit/Source/wtf",
   ]
 }
+
+# TODO(GYP) enable this target when it links (blocked on WebP symbols).
+if (false) {
 
 test("platform_unittests") {
   output_name = "blink_platform_unittests"
@@ -424,9 +434,11 @@ test("platform_unittests") {
   ]
 
   include_dirs = [
-    "$root_gen_dir/blink",
+    "$root_gen_dir/blink/platform",
   ]
 }
+
+}  # TODO(GYP)
 
 
 if (cpu_arch == "arm") {

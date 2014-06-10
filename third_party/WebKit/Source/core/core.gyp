@@ -72,6 +72,7 @@
 
   'targets': [
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:protocol_sources
       'target_name': 'inspector_protocol_sources',
       'type': 'none',
       'dependencies': [
@@ -111,6 +112,7 @@
       ]
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:instrumentation_sources
       'target_name': 'inspector_instrumentation_sources',
       'type': 'none',
       'dependencies': [],
@@ -142,6 +144,7 @@
       ]
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:protocol_version
       'target_name': 'generate_inspector_protocol_version',
       'type': 'none',
       'actions': [
@@ -170,6 +173,7 @@
       ]
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:inspector_overlay_page
       'target_name': 'inspector_overlay_page',
       'type': 'none',
       'variables': {
@@ -180,6 +184,7 @@
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:injected_canvas_script_source
       'target_name': 'injected_canvas_script_source',
       'type': 'none',
       'variables': {
@@ -190,6 +195,7 @@
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:injected_script_source
       'target_name': 'injected_script_source',
       'type': 'none',
       'variables': {
@@ -200,6 +206,7 @@
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core/inspector:debugger_script_source
       'target_name': 'debugger_script_source',
       'type': 'none',
       'variables': {
@@ -210,6 +217,7 @@
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:core_generated
       'target_name': 'webcore_generated',
       'type': 'static_library',
       'hard_dependency': 1,
@@ -361,6 +369,7 @@
     {
       # We'll soon split libwebcore in multiple smaller libraries.
       # webcore_prerequisites will be the 'base' target of every sub-target.
+      # GN version: //third_party/WebKit/Source/core:prerequisites
       'target_name': 'webcore_prerequisites',
       'type': 'none',
       'dependencies': [
@@ -539,6 +548,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:dom
       'target_name': 'webcore_dom',
       'type': 'static_library',
       'dependencies': [
@@ -551,6 +561,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:html
       'target_name': 'webcore_html',
       'type': 'static_library',
       'dependencies': [
@@ -573,6 +584,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:svg
       'target_name': 'webcore_svg',
       'type': 'static_library',
       'dependencies': [
@@ -588,6 +600,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:rendering
       'target_name': 'webcore_rendering',
       'type': 'static_library',
       'dependencies': [
@@ -665,6 +678,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:remaining
       'target_name': 'webcore_remaining',
       'type': 'static_library',
       'dependencies': [
@@ -739,6 +753,7 @@
       'msvs_disabled_warnings': [ 4267, 4334, ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:core
       'target_name': 'webcore',
       'type': 'none',
       'dependencies': [

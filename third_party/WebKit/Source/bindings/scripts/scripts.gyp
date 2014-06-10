@@ -21,6 +21,8 @@
     # However, pre-caching ensures that all compiler processes use the cached
     # files (hence maximizing speed), instead of early processes building the
     # tables themselves (as they've not yet been written when they start).
+    #
+    # GN version: //third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables
     'target_name': 'cached_lex_yacc_tables',
     'type': 'none',
     'actions': [{
@@ -45,6 +47,8 @@
     # A separate pre-caching step is *required* to use bytecode caching in
     # Jinja (which improves speed significantly), as the bytecode cache is
     # not concurrency-safe on write; details in code_generator_v8.py.
+    #
+    # GN version: //third_party/WebKit/Source/bindings/scripts:cached_jinja_templates
     'target_name': 'cached_jinja_templates',
     'type': 'none',
     'actions': [{
