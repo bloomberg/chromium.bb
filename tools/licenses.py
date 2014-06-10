@@ -36,6 +36,7 @@ PRUNE_PATHS = set([
 
     # Used for development and test, not in the shipping product.
     os.path.join('third_party','bison'),
+    os.path.join('third_party','blanketjs'),
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','gnu_binutils'),
     os.path.join('third_party','gold'),
