@@ -136,6 +136,19 @@ struct PDFFontSubstitution {
   bool italic;
 };
 
+PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
+  COMPILE_ASSERT(PP_BROWSERFONT_TRUSTED_WEIGHT_100 == 0,
+                 PP_BrowserFont_Trusted_Weight_Min);
+  COMPILE_ASSERT(PP_BROWSERFONT_TRUSTED_WEIGHT_900 == 8,
+                 PP_BrowserFont_Trusted_Weight_Max);
+  const int kMinimumWeight = 100;
+  const int kMaximumWeight = 900;
+  int normalized_weight =
+      std::min(std::max(weight, kMinimumWeight), kMaximumWeight);
+  normalized_weight = (normalized_weight / 100) - 1;
+  return static_cast<PP_BrowserFont_Trusted_Weight>(normalized_weight);
+}
+
 // This list is for CPWL_FontMap::GetDefaultFontByCharset().
 // We pretend to have these font natively and let the browser (or underlying
 // fontconfig) to pick the proper font on the system.
@@ -221,6 +234,9 @@ void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
     // TODO(kochi): Pass the face in UTF-8. If face is not encoded in UTF-8,
     // convert to UTF-8 before passing.
     description.set_face(face);
+
+    description.set_weight(WeightToBrowserFontTrustedWeight(weight));
+    description.set_italic(italic > 0);
   }
 
   if (!pp::PDF::IsAvailable()) {
