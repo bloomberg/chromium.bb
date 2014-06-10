@@ -200,6 +200,7 @@ void SyncEngine::AppendDependsOnFactories(
   factories->insert(SigninManagerFactory::GetInstance());
   factories->insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 SyncEngine::~SyncEngine() {
