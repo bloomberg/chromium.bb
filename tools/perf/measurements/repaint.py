@@ -10,6 +10,27 @@ class Repaint(page_measurement.PageMeasurement):
   def __init__(self):
     super(Repaint, self).__init__('RunRepaint', False)
     self._smoothness_controller = None
+    self._micro_benchmark_id = None
+
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_option('--mode', type='string',
+                      default='viewport',
+                      help='Invalidation mode. '
+                      'Supported values: fixed_size, layer, random, viewport.')
+    parser.add_option('--width', type='int',
+                      default=None,
+                      help='Width of invalidations for fixed_size mode.')
+    parser.add_option('--height', type='int',
+                      default=None,
+                      help='Height of invalidations for fixed_size mode.')
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-impl-side-painting',
+        '--enable-threaded-compositing',
+        '--enable-gpu-benchmarking'
+    ])
 
   def WillRunActions(self, page, tab):
     tab.WaitForDocumentReadyStateToBeComplete()
@@ -19,7 +40,38 @@ class Repaint(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
 
+    args = {}
+    args['mode'] = self.options.mode
+    if self.options.width:
+      args['width'] = self.options.width
+    if self.options.height:
+      args['height'] = self.options.height
+
+    # Enque benchmark
+    tab.ExecuteJavaScript("""
+        window.benchmark_results = {};
+        window.benchmark_results.id =
+            chrome.gpuBenchmarking.runMicroBenchmark(
+                "invalidation_benchmark",
+                function(value) {},
+                """ + str(args) + """
+            );
+    """)
+
+    self._micro_benchmark_id = tab.EvaluateJavaScript(
+        'window.benchmark_results.id')
+    if (not self._micro_benchmark_id):
+      raise page_measurement.MeasurementFailure(
+          'Failed to schedule invalidation_benchmark.')
+
   def DidRunActions(self, page, tab):
+    tab.ExecuteJavaScript("""
+        window.benchmark_results.message_handled =
+            chrome.gpuBenchmarking.sendMessageToMicroBenchmark(
+                """ + str(self._micro_benchmark_id) + """, {
+                  "notify_done": true
+                });
+    """)
     self._smoothness_controller.Stop(tab)
 
   def MeasurePage(self, page, tab, results):
