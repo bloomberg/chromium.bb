@@ -561,7 +561,7 @@ class DriveBackendSyncTest : public testing::Test,
 
   drive::FakeDriveService* fake_drive_service() {
     return static_cast<drive::FakeDriveService*>(
-        remote_sync_service_->GetDriveService());
+        remote_sync_service_->drive_service_.get());
   }
 
   FakeDriveServiceHelper* fake_drive_service_helper() {

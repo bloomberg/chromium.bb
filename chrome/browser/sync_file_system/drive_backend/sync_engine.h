@@ -120,9 +120,6 @@ class SyncEngine : public RemoteFileSyncService,
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  drive::DriveServiceInterface* GetDriveService();
-  drive::DriveUploaderInterface* GetDriveUploader();
-
   void OnPendingFileListUpdated(int item_count);
   void OnFileStatusChanged(const fileapi::FileSystemURL& url,
                            SyncFileStatus file_status,

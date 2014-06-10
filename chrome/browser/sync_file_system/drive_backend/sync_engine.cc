@@ -237,7 +237,7 @@ void SyncEngine::AppendDependsOnFactories(
 
 SyncEngine::~SyncEngine() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  GetDriveService()->RemoveObserver(this);
+  drive_service_->RemoveObserver(this);
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
 
@@ -290,7 +290,7 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
 
   if (notification_manager_)
     notification_manager_->AddObserver(this);
-  GetDriveService()->AddObserver(this);
+  drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
@@ -507,14 +507,6 @@ void SyncEngine::OnNetworkChanged(
       base::Bind(&SyncWorker::OnNetworkChanged,
                  base::Unretained(sync_worker_.get()),
                  type));
-}
-
-drive::DriveServiceInterface* SyncEngine::GetDriveService() {
-  return drive_service_.get();
-}
-
-drive::DriveUploaderInterface* SyncEngine::GetDriveUploader() {
-  return drive_uploader_.get();
 }
 
 SyncEngine::SyncEngine(
