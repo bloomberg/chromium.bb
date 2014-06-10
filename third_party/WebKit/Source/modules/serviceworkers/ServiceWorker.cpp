@@ -140,6 +140,9 @@ const AtomicString& ServiceWorker::state() const
 
 PassRefPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebType* worker)
 {
+    if (!worker)
+        return PassRefPtr<ServiceWorker>();
+
     blink::WebServiceWorkerProxy* proxy = worker->proxy();
     ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
     if (existingServiceWorker) {
