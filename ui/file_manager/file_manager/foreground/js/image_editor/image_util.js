@@ -417,20 +417,6 @@ ImageUtil.ImageLoader = function(document, opt_metadataCache) {
 };
 
 /**
- * Max size of image to be displayed (in pixels)
- */
-ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT = 25 * 1000 * 1000;
-
-/**
- * @param {number} width Width of the image.
- * @param {number} height Height of the image.
- * @return {boolean} True if the image is too large to be loaded.
- */
-ImageUtil.ImageLoader.isTooLarge = function(width, height) {
-  return width * height > ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT;
-};
-
-/**
  * Loads an image.
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
@@ -477,11 +463,7 @@ ImageUtil.ImageLoader.prototype.load = function(
     this.image_.onload = function(e) {
       this.image_.onerror = null;
       this.image_.onload = null;
-      if (ImageUtil.ImageLoader.isTooLarge(this.image_.width,
-                                           this.image_.height)) {
-        onError('GALLERY_IMAGE_TOO_BIG_ERROR');
-        return;
-      }
+
       transformFetcher(entry, onTransform.bind(this, e.target));
     }.bind(this);
 

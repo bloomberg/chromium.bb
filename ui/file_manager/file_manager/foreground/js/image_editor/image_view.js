@@ -381,10 +381,8 @@ ImageView.prototype.load = function(entry, metadata, effect,
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
-    } else if ((!effect || (effect.constructor.name === 'Slide')) &&
-        metadata.thumbnail && metadata.thumbnail.url &&
-        !(imageWidth && imageHeight &&
-          ImageUtil.ImageLoader.isTooLarge(imageWidth, imageHeight))) {
+    } else if ((effect && effect.constructor.name === 'Slide') &&
+               (metadata.thumbnail && metadata.thumbnail.url)) {
       // Only show thumbnails if there is no effect or the effect is Slide.
       // Also no thumbnail if the image is too large to be loaded.
       var thumbnailLoader = new ThumbnailLoader(
