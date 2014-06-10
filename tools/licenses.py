@@ -50,6 +50,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','psyco_win32'),
     os.path.join('third_party','pylib'),
     os.path.join('third_party','pywebsocket'),
+    os.path.join('third_party','qunit'),
     os.path.join('third_party','syzygy'),
     os.path.join('tools','gn'),
 
