@@ -988,6 +988,55 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_TRUE(Contains(warnings, "Use your camera"));
 }
 
+TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
+  {
+    APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kTab);
+    api_permissions.insert(APIPermission::kSessions);
+    scoped_refptr<PermissionSet> permissions(
+        new PermissionSet(api_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
+    std::vector<base::string16> messages =
+        PermissionMessageProvider::Get()->GetWarningMessages(
+            permissions, Manifest::TYPE_EXTENSION);
+    EXPECT_EQ(1u, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_EXTENSION_PROMPT_WARNING_TABS_AND_SESSIONS),
+              messages[0]);
+  }
+  {
+    APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kHistory);
+    api_permissions.insert(APIPermission::kSessions);
+    scoped_refptr<PermissionSet> permissions(
+        new PermissionSet(api_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
+    std::vector<base::string16> messages =
+        PermissionMessageProvider::Get()->GetWarningMessages(
+            permissions, Manifest::TYPE_EXTENSION);
+    EXPECT_EQ(1u, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY_AND_SESSIONS),
+              messages[0]);
+  }
+  {
+    APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kTab);
+    api_permissions.insert(APIPermission::kHistory);
+    api_permissions.insert(APIPermission::kSessions);
+    scoped_refptr<PermissionSet> permissions(
+        new PermissionSet(api_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
+    std::vector<base::string16> messages =
+        PermissionMessageProvider::Get()->GetWarningMessages(
+            permissions, Manifest::TYPE_EXTENSION);
+    EXPECT_EQ(1u, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY_AND_SESSIONS),
+              messages[0]);
+  }
+}
+
 TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   // Test that if the declarativeWebRequest permission is present
   // in combination with all hosts permission, then only the warning
