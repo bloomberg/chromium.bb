@@ -433,4 +433,17 @@ public class JniInterface {
 
     /** Returns the current cursor shape. Called on the graphics thread. */
     public static Bitmap getCursorBitmap() { return sCursorBitmap; }
+
+    /**
+     * Third Party Authentication
+     */
+    /** Pops up a third party login page to fetch the token required for authentication.*/
+    @CalledByNative
+    public static void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
+        // TODO(kelvinp): Create a intent to fetch the token from the browser
+        // (Android Third Party Auth - Part III)
+    }
+
+    /* Notify the native code to continue authentication with the |token| and the |sharedSecret| */
+    public static native void nativeOnThirdPartyTokenFetched(String token, String sharedSecret);
 }

@@ -144,6 +144,18 @@ static void SendTextEvent(JNIEnv* env,
       ConvertJavaStringToUTF8(env, text));
 }
 
+static void OnThirdPartyTokenFetched(JNIEnv* env,
+                                     jclass clazz,
+                                     jstring token,
+                                     jstring shared_secret) {
+  ChromotingJniRuntime* runtime = remoting::ChromotingJniRuntime::GetInstance();
+  runtime->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+      &ChromotingJniInstance::HandleOnThirdPartyTokenFetched,
+      runtime->session(),
+      ConvertJavaStringToUTF8(env, token),
+      ConvertJavaStringToUTF8(env, shared_secret)));
+}
+
 // ChromotingJniRuntime implementation.
 
 // static
@@ -255,6 +267,22 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
       env, j_host.obj(), j_id.obj(), j_secret.obj());
 }
 
+void ChromotingJniRuntime::FetchThirdPartyToken(const GURL& token_url,
+                                                const std::string& client_id,
+                                                const std::string& scope) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jstring> j_url =
+      ConvertUTF8ToJavaString(env, token_url.spec());
+  ScopedJavaLocalRef<jstring> j_client_id =
+      ConvertUTF8ToJavaString(env, client_id);
+  ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
+
+  Java_JniInterface_fetchThirdPartyToken(
+      env, j_url.obj(), j_client_id.obj(), j_scope.obj());
+}
+
 base::android::ScopedJavaLocalRef<jobject> ChromotingJniRuntime::NewBitmap(
     webrtc::DesktopSize size) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -302,5 +330,4 @@ void ChromotingJniRuntime::DetachFromVmAndSignal(base::WaitableEvent* waiter) {
   base::android::DetachFromVM();
   waiter->Signal();
 }
-
 }  // namespace remoting

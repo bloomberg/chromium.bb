@@ -82,6 +82,12 @@ class ChromotingJniRuntime {
                                 const std::string& id,
                                 const std::string& secret);
 
+  // Pops up a third party login page to fetch token required for
+  // authentication. Call on UI thread.
+  void FetchThirdPartyToken(const GURL& token_url,
+                            const std::string& client_id,
+                            const std::string& scope);
+
   // Creates a new Bitmap object to store a video frame.
   base::android::ScopedJavaLocalRef<jobject> NewBitmap(
       webrtc::DesktopSize size);
