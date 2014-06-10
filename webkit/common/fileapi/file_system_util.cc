@@ -454,12 +454,12 @@ std::string GetIsolatedFileSystemRootURIString(
                                           kFileSystemTypeIsolated).spec();
   if (base::FilePath::FromUTF8Unsafe(filesystem_id).ReferencesParent())
     return std::string();
-  root.append(filesystem_id);
+  root.append(net::EscapePath(filesystem_id));
   root.append("/");
   if (!optional_root_name.empty()) {
     if (base::FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent())
       return std::string();
-    root.append(optional_root_name);
+    root.append(net::EscapePath(optional_root_name));
     root.append("/");
   }
   return root;
@@ -472,7 +472,7 @@ std::string GetExternalFileSystemRootURIString(
                                           kFileSystemTypeExternal).spec();
   if (base::FilePath::FromUTF8Unsafe(mount_name).ReferencesParent())
     return std::string();
-  root.append(mount_name);
+  root.append(net::EscapePath(mount_name));
   root.append("/");
   return root;
 }
