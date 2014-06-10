@@ -6,9 +6,8 @@
 group("sandbox") {
   if (is_win) {
     deps = [ "//sandbox/win:sandbox" ]
-  # TODO(GYP)
-  #} else if (is_mac) {
-  #  deps = [ "//sandbox/mac:sandbox" ]
+  } else if (is_mac) {
+    deps = [ "//sandbox/mac:sandbox" ]
   } else if (is_linux || is_android) {
     deps = [ "//sandbox/linux:sandbox" ]
   }

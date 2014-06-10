@@ -1,0 +1,42 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("sandbox") {
+  sources = [
+    "bootstrap_sandbox.cc",
+    "bootstrap_sandbox.h",
+    "launchd_interception_server.cc",
+    "launchd_interception_server.h",
+    "os_compatibility.cc",
+    "os_compatibility.h",
+    "policy.cc",
+    "policy.h",
+  ]
+
+  defines = [ "SANDBOX_IMPLEMENTATION" ]
+  libs = [ "bsm" ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+test("sandbox_mac_unittests") {
+  sources = [
+    "bootstrap_sandbox_unittest.mm",
+    "policy_unittest.cc",
+  ]
+
+  libs = [
+    "CoreFoundation.framework",
+    "Foundation.framework",
+  ]
+
+  deps = [
+    ":sandbox",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
+  ]
+}
