@@ -332,7 +332,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
   const std::string& method = request.httpMethod().latin1();
 
-  int load_flags = net::LOAD_NORMAL;
+  int load_flags = net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING;
   switch (request.cachePolicy()) {
     case WebURLRequest::ReloadIgnoringCacheData:
       // Required by LayoutTests/http/tests/misc/refresh-headers.php
@@ -355,8 +355,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   if (request.reportUploadProgress())
     load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
-  if (request.reportLoadTiming())
-    load_flags |= net::LOAD_ENABLE_LOAD_TIMING;
   if (request.reportRawHeaders())
     load_flags |= net::LOAD_REPORT_RAW_HEADERS;
 
