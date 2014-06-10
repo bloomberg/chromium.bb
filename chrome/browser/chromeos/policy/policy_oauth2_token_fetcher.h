@@ -49,17 +49,6 @@ class PolicyOAuth2TokenFetcher
   // Starts process of minting device management service OAuth2 access token.
   void Start();
 
-  // Returns OAuth2 tokens fetched through an authenticated cookie jar.
-  const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens() const {
-    return oauth2_tokens_;
-  }
-
-  // True if we have OAuth2 tokens that were fetched through an authenticated
-  // cookie jar.
-  bool has_oauth2_tokens() const {
-    return !oauth2_tokens_.refresh_token.empty();
-  }
-
   // Returns true if we have previously attempted to fetch tokens with this
   // class and failed.
   bool failed() const {
@@ -106,7 +95,6 @@ class PolicyOAuth2TokenFetcher
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
   scoped_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
-  GaiaAuthConsumer::ClientOAuthResult oauth2_tokens_;
 
   // OAuth2 refresh token. Could come either from the outside or through
   // refresh token fetching flow within this class.

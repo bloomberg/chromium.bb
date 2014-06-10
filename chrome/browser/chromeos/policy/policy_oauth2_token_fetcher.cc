@@ -73,7 +73,6 @@ void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
 void PolicyOAuth2TokenFetcher::OnClientOAuthSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
   VLOG(1) << "OAuth2 tokens for policy fetching succeeded.";
-  oauth2_tokens_ = oauth2_tokens;
   oauth2_refresh_token_ = oauth2_tokens.refresh_token;
   retry_count_ = 0;
   StartFetchingAccessToken();
