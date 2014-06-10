@@ -58,6 +58,8 @@ public:
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
     void updateWidget();
 
+    bool shouldAccelerate() const;
+
     void requestPluginCreationWithoutRendererIfPossible();
     void createPluginWithoutRenderer();
 

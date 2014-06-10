@@ -179,6 +179,13 @@ void HTMLPlugInElement::createPluginWithoutRenderer()
     loadPlugin(url, m_serviceType, paramNames, paramValues, useFallback, false);
 }
 
+bool HTMLPlugInElement::shouldAccelerate() const
+{
+    if (Widget* widget = ownedWidget())
+        return widget->isPluginView() && toPluginView(widget)->platformLayer();
+    return false;
+}
+
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
     // Update the widget the next time we attach (detaching destroys the plugin).

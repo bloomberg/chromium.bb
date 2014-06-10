@@ -37,6 +37,7 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
@@ -369,6 +370,11 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
         // so we have to treat all image buttons as though they were explicitly sized.
         if (style->fontSize() >= 11 && (!isHTMLInputElement(element) || !toHTMLInputElement(element).isImageButton()))
             addIntrinsicMargins(style);
+        return;
+    }
+
+    if (isHTMLPlugInElement(element)) {
+        style->setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
         return;
     }
 }

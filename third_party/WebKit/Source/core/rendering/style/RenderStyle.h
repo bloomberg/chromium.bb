@@ -1394,6 +1394,9 @@ public:
     void setWillChangeScrollPosition(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_scrollPosition, b); }
     void setSubtreeWillChangeContents(bool b) { SET_VAR(rareInheritedData, m_subtreeWillChangeContents, b); }
 
+    bool requiresAcceleratedCompositingForExternalReasons(bool b) { return rareNonInheritedData->m_requiresAcceleratedCompositingForExternalReasons; }
+    void setRequiresAcceleratedCompositingForExternalReasons(bool b) { SET_VAR(rareNonInheritedData, m_requiresAcceleratedCompositingForExternalReasons, b); }
+
     const SVGRenderStyle* svgStyle() const { return m_svgStyle.get(); }
     SVGRenderStyle* accessSVGStyle() { return m_svgStyle.access(); }
 
