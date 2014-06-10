@@ -110,7 +110,7 @@ private:
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > > m_elementDependencies;
     OwnPtr<SVGResourcesCache> m_resourcesCache;
-    HashSet<SVGSVGElement*> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthSVGRootsInvalidation;

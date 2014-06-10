@@ -411,8 +411,8 @@ void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(Subt
     TemporaryChange<bool> inRelativeLengthSVGRootsChange(m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
 
-    HashSet<SVGSVGElement*>::iterator end = m_relativeLengthSVGRoots.end();
-    for (HashSet<SVGSVGElement*>::iterator it = m_relativeLengthSVGRoots.begin(); it != end; ++it)
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator end = m_relativeLengthSVGRoots.end();
+    for (WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator it = m_relativeLengthSVGRoots.begin(); it != end; ++it)
         (*it)->invalidateRelativeLengthClients(scope);
 }
 
@@ -483,6 +483,7 @@ void SVGDocumentExtensions::trace(Visitor* visitor)
     visitor->trace(m_timeContainers);
     visitor->trace(m_svgFontFaceElements);
     visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
+    visitor->trace(m_relativeLengthSVGRoots);
 }
 
 }
