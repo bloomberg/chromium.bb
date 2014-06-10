@@ -34,7 +34,7 @@ class BaseBookmarkModelObserver : public BookmarkModelObserver {
                                    int old_index,
                                    const BookmarkNode* node,
                                    const std::set<GURL>& removed_urls) OVERRIDE;
-  virtual void BookmarkAllUserNodesRemoved(
+  virtual void BookmarkAllNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,

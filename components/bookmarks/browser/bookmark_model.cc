@@ -197,12 +197,12 @@ void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
   RemoveAndDeleteNode(AsMutable(parent->GetChild(index)));
 }
 
-void BookmarkModel::RemoveAllUserBookmarks() {
+void BookmarkModel::RemoveAll() {
   std::set<GURL> removed_urls;
   ScopedVector<BookmarkNode> removed_nodes;
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    OnWillRemoveAllUserBookmarks(this));
+                    OnWillRemoveAllBookmarks(this));
 
   BeginExtensiveChanges();
   // Skip deleting permanent nodes. Permanent bookmark nodes are the root and
@@ -228,11 +228,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
     store_->ScheduleSave();
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkAllUserNodesRemoved(this, removed_urls));
-}
-
-void BookmarkModel::RemoveAll() {
-  RemoveAllUserBookmarks();
+                    BookmarkAllNodesRemoved(this, removed_urls));
 }
 
 void BookmarkModel::Move(const BookmarkNode* node,

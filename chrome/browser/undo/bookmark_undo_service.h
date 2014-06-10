@@ -49,7 +49,7 @@ class BookmarkUndoService : public BaseBookmarkModelObserver,
                                      const BookmarkNode* parent,
                                      int old_index,
                                      const BookmarkNode* node) OVERRIDE;
-  virtual void OnWillRemoveAllUserBookmarks(BookmarkModel* model) OVERRIDE;
+  virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) OVERRIDE;
   virtual void OnWillChangeBookmarkNode(BookmarkModel* model,
                                         const BookmarkNode* node) OVERRIDE;
   virtual void OnWillReorderBookmarkNode(BookmarkModel* model,

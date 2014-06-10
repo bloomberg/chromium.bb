@@ -197,7 +197,7 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
 
 void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-  model->RemoveAllUserBookmarks();
+  model->RemoveAll();
 
   // All the Profile data has been wiped. Clear the last signed in username as
   // well, so that the next signin doesn't trigger the acount change dialog.

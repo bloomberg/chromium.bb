@@ -199,7 +199,7 @@ void RecentlyUsedFoldersComboModel::BookmarkNodeChildrenReordered(
       const BookmarkNode* node) {
 }
 
-void RecentlyUsedFoldersComboModel::BookmarkAllUserNodesRemoved(
+void RecentlyUsedFoldersComboModel::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   // Changing is rare enough that we don't attempt to readjust the contents.

@@ -62,7 +62,7 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
       const BookmarkNode* node) OVERRIDE;
-  virtual void BookmarkAllUserNodesRemoved(
+  virtual void BookmarkAllNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) OVERRIDE;
 

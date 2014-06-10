@@ -114,7 +114,7 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NotifyObserver) {
   EXPECT_LT(updated_count, initial_count);
 
   // Remove all, which should remove a folder too.
-  GetModel()->RemoveAllUserBookmarks();
+  GetModel()->RemoveAll();
   EXPECT_TRUE(observer.GetAndClearChanged());
   EXPECT_LT(model.GetItemCount(), updated_count);
 

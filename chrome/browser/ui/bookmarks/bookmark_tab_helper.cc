@@ -121,7 +121,7 @@ void BookmarkTabHelper::BookmarkNodeRemoved(
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::BookmarkAllUserNodesRemoved(
+void BookmarkTabHelper::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   UpdateStarredStateForCurrentURL();

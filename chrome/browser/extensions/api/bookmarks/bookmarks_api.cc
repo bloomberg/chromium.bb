@@ -314,7 +314,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
                                              remove_info));
 }
 
-void BookmarkEventRouter::BookmarkAllUserNodesRemoved(
+void BookmarkEventRouter::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   NOTREACHED();

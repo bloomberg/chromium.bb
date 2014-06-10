@@ -393,7 +393,7 @@ void BookmarkEditorView::BookmarkNodeRemoved(
   }
 }
 
-void BookmarkEditorView::BookmarkAllUserNodesRemoved(
+void BookmarkEditorView::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   Reset();

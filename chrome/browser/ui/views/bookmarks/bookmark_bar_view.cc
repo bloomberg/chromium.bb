@@ -1066,7 +1066,7 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
   BookmarkNodeRemovedImpl(model, parent, old_index);
 }
 
-void BookmarkBarView::BookmarkAllUserNodesRemoved(
+void BookmarkBarView::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   UpdateButtonsVisibility();

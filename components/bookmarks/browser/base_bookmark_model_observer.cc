@@ -36,7 +36,7 @@ void BaseBookmarkModelObserver::BookmarkNodeRemoved(
   BookmarkModelChanged();
 }
 
-void BaseBookmarkModelObserver::BookmarkAllUserNodesRemoved(
+void BaseBookmarkModelObserver::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   BookmarkModelChanged();

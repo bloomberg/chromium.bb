@@ -137,7 +137,7 @@ void BookmarkMenuBridge::BookmarkNodeRemoved(
   InvalidateMenu();
 }
 
-void BookmarkMenuBridge::BookmarkAllUserNodesRemoved(
+void BookmarkMenuBridge::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   InvalidateMenu();

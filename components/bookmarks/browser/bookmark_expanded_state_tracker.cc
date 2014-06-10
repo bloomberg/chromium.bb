@@ -89,7 +89,7 @@ void BookmarkExpandedStateTracker::BookmarkNodeRemoved(
   GetExpandedNodes();
 }
 
-void BookmarkExpandedStateTracker::BookmarkAllUserNodesRemoved(
+void BookmarkExpandedStateTracker::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   // Ask for the nodes again, which removes any nodes that were deleted.

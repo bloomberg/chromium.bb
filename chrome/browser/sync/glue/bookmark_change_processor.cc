@@ -293,7 +293,7 @@ void BookmarkChangeProcessor::BookmarkNodeRemoved(
   RemoveSyncNodeHierarchy(node);
 }
 
-void BookmarkChangeProcessor::BookmarkAllUserNodesRemoved(
+void BookmarkChangeProcessor::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   RemoveAllSyncNodes();

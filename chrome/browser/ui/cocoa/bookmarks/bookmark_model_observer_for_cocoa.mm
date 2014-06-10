@@ -53,7 +53,7 @@ void BookmarkModelObserverForCocoa::BookmarkNodeRemoved(
   Notify(YES);
 }
 
-void BookmarkModelObserverForCocoa::BookmarkAllUserNodesRemoved(
+void BookmarkModelObserverForCocoa::BookmarkAllNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   Notify(YES);
