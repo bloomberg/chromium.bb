@@ -910,6 +910,13 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway(
   return CreateFramer(false)->SerializeFrame(go_ir);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
+                                             SpdyGoAwayStatus status,
+                                             const std::string& desc) const {
+  SpdyGoAwayIR go_ir(last_good_stream_id, status, desc);
+  return CreateFramer(false)->SerializeFrame(go_ir);
+}
+
 SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(
     const SpdyStreamId stream_id, uint32 delta_window_size) const {
   SpdyWindowUpdateIR update_ir(stream_id, delta_window_size);

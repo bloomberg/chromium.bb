@@ -3690,13 +3690,11 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
                        wrong_size,
                        spdy_util_.spdy_version());
 
-  // TODO(jgraettinger): SpdySession::OnError() should send a GOAWAY before
-  // breaking the connection.
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  MockWrite writes[] = {
-    CreateMockWrite(*req),
-  };
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_COMPRESSION_ERROR, "Framer error: 5 (DECOMPRESS_FAILURE)."));
+  MockWrite writes[] = {CreateMockWrite(*req), CreateMockWrite(*goaway)};
 
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -3710,6 +3708,55 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
+  EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
+}
+
+TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
+  if (GetParam().protocol < kProtoSPDY4) {
+    // Decompression failures are a stream error in SPDY3 and above.
+    return;
+  }
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_COMPRESSION_ERROR, "Framer error: 5 (DECOMPRESS_FAILURE)."));
+  MockWrite writes[] = {CreateMockWrite(*req), CreateMockWrite(*goaway)};
+
+  // Read HEADERS with corrupted payload.
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  memset(resp->data() + 12, 0xff, resp->size() - 12);
+  MockRead reads[] = {CreateMockRead(*resp)};
+
+  DelayedSocketData data(1, reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(
+      CreateGetRequest(), DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
+}
+
+TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_CONTROL_FRAME)."));
+  MockWrite writes[] = {CreateMockWrite(*req), CreateMockWrite(*goaway)};
+
+  // Read WINDOW_UPDATE with incorrectly-sized payload.
+  // TODO(jgraettinger): SpdyFramer signals this as an INVALID_CONTROL_FRAME,
+  // which is mapped to a protocol error, and not a frame size error.
+  scoped_ptr<SpdyFrame> bad_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(1, 1));
+  test::SetFrameLength(bad_window_update.get(),
+                       bad_window_update->size() - 1,
+                       spdy_util_.spdy_version());
+  MockRead reads[] = {CreateMockRead(*bad_window_update)};
+
+  DelayedSocketData data(1, reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(
+      CreateGetRequest(), DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
   EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
 }
 
@@ -3718,14 +3765,16 @@ TEST_P(SpdyNetworkTransactionTest, WriteError) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
-    // We'll write 10 bytes successfully
-    MockWrite(ASYNC, req->data(), 10, 0),
-    // Followed by ERROR!
-    MockWrite(ASYNC, ERR_FAILED, 1),
+      // We'll write 10 bytes successfully
+      MockWrite(ASYNC, req->data(), 10, 0),
+      // Followed by ERROR!
+      MockWrite(ASYNC, ERR_FAILED, 1),
+      // Session drains and attempts to write a GOAWAY: Another ERROR!
+      MockWrite(ASYNC, ERR_FAILED, 2),
   };
 
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 2)  // EOF
+      MockRead(ASYNC, 0, 3)  // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -3781,11 +3830,9 @@ TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
   }
   scoped_ptr<SpdyFrame> compressed(
       spdy_util_.ConstructSpdyGet(NULL, 0, true, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
-  MockWrite writes[] = {
-    CreateMockWrite(*compressed),
-  };
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_COMPRESSION_ERROR, "Framer error: 5 (DECOMPRESS_FAILURE)."));
+  MockWrite writes[] = {CreateMockWrite(*compressed), CreateMockWrite(*goaway)};
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
@@ -3802,7 +3849,7 @@ TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
                                      BoundNetLog(), GetParam(), session_deps);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
+  EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
   data.Reset();
 }
 
@@ -6673,14 +6720,11 @@ class SpdyNetworkTransactionTLSUsageCheckTest
     : public SpdyNetworkTransactionTest {
  protected:
   void RunTLSUsageCheckTest(scoped_ptr<SSLSocketDataProvider> ssl_provider) {
-    // TODO(willchan): Fix crbug.com/375033 to send GOAWAYs.
-    // scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway());
-    // MockWrite writes[] = {
-    //   CreateMockWrite(*goaway)
-    // };
+    scoped_ptr<SpdyFrame> goaway(
+        spdy_util_.ConstructSpdyGoAway(0, GOAWAY_INADEQUATE_SECURITY, ""));
+    MockWrite writes[] = {CreateMockWrite(*goaway)};
 
-    // DelayedSocketData data(1, NULL, 0, writes, arraysize(writes));
-    DelayedSocketData data(1, NULL, 0, NULL, 0);
+    DelayedSocketData data(1, NULL, 0, writes, arraysize(writes));
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL("https://www.google.com/");

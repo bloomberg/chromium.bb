@@ -598,6 +598,15 @@ NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
 // Transport security is inadequate for the SPDY version.
 NET_ERROR(SPDY_INADEQUATE_TRANSPORT_SECURITY, -360)
 
+// The peer violated SPDY flow control.
+NET_ERROR(SPDY_FLOW_CONTROL_ERROR, -361)
+
+// The peer sent an improperly sized SPDY frame.
+NET_ERROR(SPDY_FRAME_SIZE_ERROR, -362)
+
+// Decoding or encoding of compressed SPDY headers failed.
+NET_ERROR(SPDY_COMPRESSION_ERROR, -363)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

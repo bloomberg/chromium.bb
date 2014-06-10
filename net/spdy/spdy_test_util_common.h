@@ -389,6 +389,13 @@ class SpdyTestUtil {
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id) const;
 
+  // Construct a SPDY GOAWAY frame with the specified last_good_stream_id,
+  // status, and description. Returns the constructed frame. The caller takes
+  // ownership of the frame.
+  SpdyFrame* ConstructSpdyGoAway(SpdyStreamId last_good_stream_id,
+                                 SpdyGoAwayStatus status,
+                                 const std::string& desc) const;
+
   // Construct a SPDY WINDOW_UPDATE frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdyWindowUpdate(

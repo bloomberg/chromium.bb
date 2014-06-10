@@ -2610,7 +2610,9 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
 
   // In SPDY3 and up, GOAWAY frames also specify the error status code.
   if (protocol_version() >= SPDY3) {
-    builder.WriteUInt32(goaway.status());
+    // TODO(jgraettinger): Merge back to server-side.
+    builder.WriteUInt32(SpdyConstants::SerializeGoAwayStatus(protocol_version(),
+                                                             goaway.status()));
   }
 
   // In SPDY4 and up, GOAWAY frames may also specify opaque data.

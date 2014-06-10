@@ -632,13 +632,23 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
   switch (version) {
     case SPDY2:
     case SPDY3:
+      // TODO(jgraettinger): Merge this back to server-side.
       switch (status) {
-        case GOAWAY_OK:
+        case GOAWAY_NO_ERROR:
           return 0;
         case GOAWAY_PROTOCOL_ERROR:
-          return 1;
         case GOAWAY_INTERNAL_ERROR:
-          return 2;
+        case GOAWAY_FLOW_CONTROL_ERROR:
+        case GOAWAY_SETTINGS_TIMEOUT:
+        case GOAWAY_STREAM_CLOSED:
+        case GOAWAY_FRAME_SIZE_ERROR:
+        case GOAWAY_REFUSED_STREAM:
+        case GOAWAY_CANCEL:
+        case GOAWAY_COMPRESSION_ERROR:
+        case GOAWAY_CONNECT_ERROR:
+        case GOAWAY_ENHANCE_YOUR_CALM:
+        case GOAWAY_INADEQUATE_SECURITY:
+          return 1;  // PROTOCOL_ERROR.
         default:
           LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
           return -1;

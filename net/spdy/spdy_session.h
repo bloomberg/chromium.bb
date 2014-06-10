@@ -117,10 +117,12 @@ enum SpdyProtocolErrorDetails {
   // Next free value.
   NUM_SPDY_PROTOCOL_ERROR_DETAILS = 35,
 };
-SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapFramerErrorToProtocolError(
-    SpdyFramer::SpdyError);
-SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapRstStreamStatusToProtocolError(
-    SpdyRstStreamStatus);
+SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
+    MapFramerErrorToProtocolError(SpdyFramer::SpdyError error);
+Error NET_EXPORT_PRIVATE MapFramerErrorToNetError(SpdyFramer::SpdyError error);
+SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
+    MapRstStreamStatusToProtocolError(SpdyRstStreamStatus status);
+SpdyGoAwayStatus NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
@@ -515,6 +517,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, StreamIdSpaceExhausted);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, UnstallRacesWithStreamCreation);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GoAwayOnSessionFlowControlError);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
