@@ -275,7 +275,7 @@ void SearchBox::StopCapturingKeyStrokes() {
 void SearchBox::UndoAllMostVisitedDeletions() {
   render_view()->Send(
       new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-          page_seq_no_, render_view()->GetRoutingID()));
+          render_view()->GetRoutingID(), page_seq_no_));
 }
 
 void SearchBox::UndoMostVisitedDeletion(
