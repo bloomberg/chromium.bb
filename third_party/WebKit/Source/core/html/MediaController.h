@@ -29,9 +29,9 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
+#include "wtf/LinkedHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -86,6 +86,8 @@ public:
 
     void clearExecutionContext() { m_executionContext = 0; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MediaController(ExecutionContext*);
     void reportControllerState();
@@ -106,7 +108,12 @@ private:
 
     friend class HTMLMediaElement;
     friend class MediaControllerEventListener;
-    Vector<HTMLMediaElement*> m_mediaElements;
+    // FIXME: A MediaController should ideally keep an otherwise
+    // unreferenced slaved media element alive. When Oilpan is
+    // enabled by default, consider making the hash set references
+    // strong to accomplish that. crbug.com/383072
+    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > MediaElementSequence;
+    MediaElementSequence m_mediaElements;
     bool m_paused;
     double m_defaultPlaybackRate;
     double m_volume;

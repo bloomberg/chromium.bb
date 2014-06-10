@@ -266,7 +266,7 @@ public:
     bool isSafeToLoadURL(const KURL&, InvalidURLAction);
 
     MediaController* controller() const;
-    void setController(PassRefPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
+    void setController(PassRefPtrWillBeRawPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
     void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
 
@@ -293,7 +293,7 @@ protected:
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
-    void setControllerInternal(PassRefPtr<MediaController>);
+    void setControllerInternal(PassRefPtrWillBeRawPtr<MediaController>);
 
     bool ignoreTrackDisplayUpdateRequests() const { return m_ignoreTrackDisplayUpdate > 0; }
     void beginIgnoringTrackDisplayUpdateRequests();
@@ -524,7 +524,7 @@ private:
 #endif
 
     friend class MediaController;
-    RefPtr<MediaController> m_mediaController;
+    RefPtrWillBeMember<MediaController> m_mediaController;
 
     friend class Internals;
     friend class TrackDisplayUpdateScope;

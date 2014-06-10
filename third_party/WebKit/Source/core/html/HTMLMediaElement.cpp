@@ -325,12 +325,12 @@ HTMLMediaElement::~HTMLMediaElement()
 #if !ENABLE(OILPAN)
     if (m_textTracks)
         m_textTracks->clearOwner();
-#endif
 
     if (m_mediaController) {
         m_mediaController->removeMediaElement(this);
         m_mediaController = nullptr;
     }
+#endif
 
     closeMediaSource();
 
@@ -3512,7 +3512,7 @@ MediaController* HTMLMediaElement::controller() const
     return m_mediaController.get();
 }
 
-void HTMLMediaElement::setController(PassRefPtr<MediaController> controller)
+void HTMLMediaElement::setController(PassRefPtrWillBeRawPtr<MediaController> controller)
 {
     // 4.8.10.11.2 Media controllers: controller attribute.
     // On setting, it must first remove the element's mediagroup attribute, if any,
@@ -3521,7 +3521,7 @@ void HTMLMediaElement::setController(PassRefPtr<MediaController> controller)
     setControllerInternal(controller);
 }
 
-void HTMLMediaElement::setControllerInternal(PassRefPtr<MediaController> controller)
+void HTMLMediaElement::setControllerInternal(PassRefPtrWillBeRawPtr<MediaController> controller)
 {
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);
@@ -3656,6 +3656,7 @@ void HTMLMediaElement::trace(Visitor* visitor)
     visitor->trace(m_nextChildNodeToConsider);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
+    visitor->trace(m_mediaController);
     WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
 }
