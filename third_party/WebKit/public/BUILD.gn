@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+group("all_blink") {
+  deps = [
+    "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/wtf:wtf_unittests",
+  ]
+}
+
 config("blink_headers_config") {
   include_dirs = [ ".." ]
 }
