@@ -41,6 +41,11 @@ InspectorTest.DebuggerModelMock.prototype = {
         return this._target;
     },
 
+    debuggerEnabled: function()
+    {
+        return true;
+    },
+
     _addScript: function(scriptId, url)
     {
         this._scripts[scriptId] = new WebInspector.Script(this._target, scriptId, url);
