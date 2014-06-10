@@ -36,7 +36,7 @@ public:
     virtual String asTraceFormat() const
     {
         if (!m_callstack)
-            return "[]";
+            return "null";
         return m_callstack->buildInspectorArray()->toJSONString();
     }
 
