@@ -25,6 +25,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class ExtensionService;
@@ -45,6 +46,7 @@ class PrefRegistrySyncable;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 class ManagementPolicy;
 
 // Information about a page running in an extension, for example a popup bubble,
@@ -70,6 +72,7 @@ class ExtensionSettingsHandler
       public ErrorConsole::Observer,
       public ExtensionInstallPrompt::Delegate,
       public ExtensionPrefsObserver,
+      public ExtensionRegistryObserver,
       public ExtensionUninstallDialog::Delegate,
       public ExtensionWarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
@@ -114,6 +117,16 @@ class ExtensionSettingsHandler
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
   // ExtensionPrefsObserver implementation.
   virtual void OnExtensionDisableReasonsChanged(const std::string& extension_id,
@@ -278,6 +291,9 @@ class ExtensionSettingsHandler
   // a change in Disable Reasons.
   ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver>
       extension_prefs_observer_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // Whether we found any DISABLE_NOT_VERIFIED extensions and want to kick off
   // a verification check to try and rescue them.
