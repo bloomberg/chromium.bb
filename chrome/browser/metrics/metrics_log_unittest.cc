@@ -17,26 +17,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "chrome/browser/google/google_util.h"
-#include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_hashes.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/active_field_trials.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
-#endif  // defined(OS_CHROMEOS)
 
 using base::TimeDelta;
 
@@ -107,22 +97,11 @@ class TestMetricsLog : public MetricsLog {
 class MetricsLogTest : public testing::Test {
  public:
   MetricsLogTest() {
-    MetricsService::RegisterPrefs(prefs_.registry());
-#if defined(OS_CHROMEOS)
-    // TODO(blundell): Remove this code once MetricsService no longer creates
-    // ChromeOSMetricsProvider. Also remove the #include of login_state.h
-    // (http://crbug.com/375776)
-    if (!chromeos::LoginState::IsInitialized())
-      chromeos::LoginState::Initialize();
-#endif  // defined(OS_CHROMEOS)
+    MetricsLog::RegisterPrefs(prefs_.registry());
+    metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
   }
 
   virtual ~MetricsLogTest() {
-#if defined(OS_CHROMEOS)
-    // TODO(blundell): Remove this code once MetricsService no longer creates
-    // ChromeOSMetricsProvider.
-    chromeos::LoginState::Shutdown();
-#endif  // defined(OS_CHROMEOS)
   }
 
  protected:
@@ -166,8 +145,6 @@ class MetricsLogTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
   DISALLOW_COPY_AND_ASSIGN(MetricsLogTest);
 };
 
