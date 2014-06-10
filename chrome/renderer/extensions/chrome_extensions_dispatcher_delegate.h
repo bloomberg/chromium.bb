@@ -31,9 +31,8 @@ class ChromeExtensionsDispatcherDelegate
       blink::WebFrame* frame,
       const extensions::Extension* extension,
       extensions::Feature::Context context_type) OVERRIDE;
-  virtual void InitOriginPermissions(
-      const extensions::Extension* extension,
-      extensions::Feature::Context context_type) OVERRIDE;
+  virtual void InitOriginPermissions(const extensions::Extension* extension,
+                                     bool is_extension_active) OVERRIDE;
   virtual void RegisterNativeHandlers(
       extensions::Dispatcher* dispatcher,
       extensions::ModuleSystem* module_system,

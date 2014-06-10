@@ -259,7 +259,7 @@ void Dispatcher::DidCreateScriptContext(
   script_context_set_.Add(context);
 
   if (extension) {
-    InitOriginPermissions(extension, context_type);
+    InitOriginPermissions(extension);
   }
 
   {
@@ -797,9 +797,9 @@ void Dispatcher::UpdateActiveExtensions() {
   delegate_->OnActiveExtensionsUpdated(active_extensions);
 }
 
-void Dispatcher::InitOriginPermissions(const Extension* extension,
-                                       Feature::Context context_type) {
-  delegate_->InitOriginPermissions(extension, context_type);
+void Dispatcher::InitOriginPermissions(const Extension* extension) {
+  delegate_->InitOriginPermissions(extension,
+                                   IsExtensionActive(extension->id()));
   UpdateOriginPermissions(
       UpdatedExtensionPermissionsInfo::ADDED,
       extension,

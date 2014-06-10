@@ -70,11 +70,11 @@ ChromeExtensionsDispatcherDelegate::CreateScriptContext(
 
 void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
     const extensions::Extension* extension,
-    extensions::Feature::Context context_type) {
+    bool is_extension_active) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
-  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
+  if (is_extension_active &&
       extension->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kManagement)) {
     blink::WebSecurityPolicy::addOriginAccessWhitelistEntry(

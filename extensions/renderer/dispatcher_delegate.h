@@ -40,7 +40,7 @@ class DispatcherDelegate {
 
   // Initializes origin permissions for a newly created extension context.
   virtual void InitOriginPermissions(const Extension* extension,
-                                     Feature::Context context_type) {}
+                                     bool is_extension_active) {}
 
   // Includes additional native handlers in a given ModuleSystem.
   virtual void RegisterNativeHandlers(Dispatcher* dispatcher,
