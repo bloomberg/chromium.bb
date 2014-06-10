@@ -39,16 +39,16 @@ XML below will generate the following five histograms:
 
 </enums>
 
-<fieldtrials>
+<histogram_suffixes_list>
 
-<fieldtrial name="BrowserType">
+<histogram_suffixes name="BrowserType">
   <group name="Chrome"/>
   <group name="IE"/>
   <group name="Firefox"/>
   <affected-histogram name="HistogramEnum"/>
-</fieldtrial>
+</histogram_suffixes>
 
-</fieldtrials>
+</histogram_suffixes_list>
 
 </histogram-configuration>
 
@@ -58,8 +58,10 @@ import copy
 import logging
 import xml.dom.minidom
 
+OWNER_FIELD_PLACEHOLDER = (
+    'Please list the metric\'s owners. Add more owner tags as needed.')
 
-MAX_FIELDTRIAL_DEPENDENCY_DEPTH = 5
+MAX_HISTOGRAM_SUFFIX_DEPENDENCY_DEPTH = 5
 
 
 class Error(Exception):
@@ -81,14 +83,15 @@ def _JoinChildNodes(tag):
 
 
 def _NormalizeString(s):
-  """Normalizes a string (possibly of multiple lines) by replacing each
-  whitespace sequence with a single space.
+  """Replaces all whitespace sequences with a single space.
+
+  The function properly handles multi-line strings.
 
   Args:
-    s: The string to normalize, e.g. '  \n a  b c\n d  '
+    s: The string to normalize, ('  \\n a  b c\\n d  ').
 
   Returns:
-    The normalized string, e.g. 'a b c d'
+    The normalized string (a b c d).
   """
   return ' '.join(s.split())
 
@@ -106,58 +109,60 @@ def _NormalizeAllAttributeValues(node):
     for a in node.attributes.keys():
       node.attributes[a].value = _NormalizeString(node.attributes[a].value)
 
-  for c in node.childNodes: _NormalizeAllAttributeValues(c)
+  for c in node.childNodes:
+    _NormalizeAllAttributeValues(c)
   return node
 
 
-def _ExpandHistogramNameWithFieldTrial(group_name, histogram_name, fieldtrial):
-  """Creates a new histogram name based on the field trial group.
+def _ExpandHistogramNameWithSuffixes(suffix_name, histogram_name,
+                                     histogram_suffixes_node):
+  """Creates a new histogram name based on a histogram suffix.
 
   Args:
-    group_name: The name of the field trial group. May be empty.
+    suffix_name: The suffix string to apply to the histogram name. May be empty.
     histogram_name: The name of the histogram. May be of the form
-      Group.BaseName or BaseName
-    field_trial: The FieldTrial XML element.
+      Group.BaseName or BaseName.
+    histogram_suffixes_node: The histogram_suffixes XML node.
 
   Returns:
     A string with the expanded histogram name.
 
   Raises:
-    Error if the expansion can't be done.
+    Error: if the expansion can't be done.
   """
-  if fieldtrial.hasAttribute('separator'):
-    separator = fieldtrial.getAttribute('separator')
+  if histogram_suffixes_node.hasAttribute('separator'):
+    separator = histogram_suffixes_node.getAttribute('separator')
   else:
     separator = '_'
 
-  if fieldtrial.hasAttribute('ordering'):
-    ordering = fieldtrial.getAttribute('ordering')
+  if histogram_suffixes_node.hasAttribute('ordering'):
+    ordering = histogram_suffixes_node.getAttribute('ordering')
   else:
     ordering = 'suffix'
   if ordering not in ['prefix', 'suffix']:
-    logging.error('ordering needs to be prefix or suffix, value is %s' %
+    logging.error('ordering needs to be prefix or suffix, value is %s',
                   ordering)
     raise Error()
 
-  if not group_name:
+  if not suffix_name:
     return histogram_name
 
   if ordering == 'suffix':
-    return histogram_name + separator + group_name
+    return histogram_name + separator + suffix_name
 
-  # For prefixes, the group_name is inserted between the "cluster" and the
+  # For prefixes, the suffix_name is inserted between the "cluster" and the
   # "remainder", e.g. Foo.BarHist expanded with gamma becomes Foo.gamma_BarHist.
   sections = histogram_name.split('.')
   if len(sections) <= 1:
     logging.error(
-      'Prefix Field Trial expansions require histogram names which include a '
-      'dot separator. Histogram name is %s, and Field Trial is %s' %
-      (histogram_name, fieldtrial.getAttribute('name')))
+        'Prefix Field Trial expansions require histogram names which include a '
+        'dot separator. Histogram name is %s, and Field Trial is %s',
+        histogram_name, histogram_suffixes_node.getAttribute('name'))
     raise Error()
 
   cluster = sections[0] + '.'
   remainder = '.'.join(sections[1:])
-  return cluster + group_name + separator + remainder
+  return cluster + suffix_name + separator + remainder
 
 
 def _ExtractEnumsFromXmlTree(tree):
@@ -167,21 +172,21 @@ def _ExtractEnumsFromXmlTree(tree):
   have_errors = False
 
   last_name = None
-  for enum in tree.getElementsByTagName("enum"):
+  for enum in tree.getElementsByTagName('enum'):
     if enum.getAttribute('type') != 'int':
-      logging.error('Unknown enum type %s' % enum.getAttribute('type'))
+      logging.error('Unknown enum type %s', enum.getAttribute('type'))
       have_errors = True
       continue
 
     name = enum.getAttribute('name')
     if last_name is not None and name.lower() < last_name.lower():
-      logging.error('Enums %s and %s are not in alphabetical order'
-                    % (last_name, name))
+      logging.error('Enums %s and %s are not in alphabetical order',
+                    last_name, name)
       have_errors = True
     last_name = name
 
     if name in enums:
-      logging.error('Duplicate enum %s' % name)
+      logging.error('Duplicate enum %s', name)
       have_errors = True
       continue
 
@@ -190,29 +195,39 @@ def _ExtractEnumsFromXmlTree(tree):
     enum_dict['name'] = name
     enum_dict['values'] = {}
 
-    for int_tag in enum.getElementsByTagName("int"):
+    for int_tag in enum.getElementsByTagName('int'):
       value_dict = {}
       int_value = int(int_tag.getAttribute('value'))
       if last_int_value is not None and int_value < last_int_value:
-        logging.error('Enum %s int values %d and %d are not in numerical order'
-                      % (name, last_int_value, int_value))
+        logging.error('Enum %s int values %d and %d are not in numerical order',
+                      name, last_int_value, int_value)
         have_errors = True
       last_int_value = int_value
       if int_value in enum_dict['values']:
-        logging.error('Duplicate enum value %d for enum %s' % (int_value, name))
+        logging.error('Duplicate enum value %d for enum %s', int_value, name)
         have_errors = True
         continue
       value_dict['label'] = int_tag.getAttribute('label')
       value_dict['summary'] = _JoinChildNodes(int_tag)
       enum_dict['values'][int_value] = value_dict
 
-    summary_nodes = enum.getElementsByTagName("summary")
-    if len(summary_nodes) > 0:
+    summary_nodes = enum.getElementsByTagName('summary')
+    if summary_nodes:
       enum_dict['summary'] = _NormalizeString(_JoinChildNodes(summary_nodes[0]))
 
     enums[name] = enum_dict
 
   return enums, have_errors
+
+
+def _ExtractOwners(xml_node):
+  """Extract all owners into a list from owner tag under |xml_node|."""
+  owners = []
+  for owner_node in xml_node.getElementsByTagName('owner'):
+    owner_entry = _NormalizeString(_JoinChildNodes(owner_node))
+    if OWNER_FIELD_PLACEHOLDER not in owner_entry:
+      owners.append(owner_entry)
+  return owners
 
 
 def _ExtractHistogramsFromXmlTree(tree, enums):
@@ -222,30 +237,35 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
   histograms = {}
   have_errors = False
   last_name = None
-  for histogram in tree.getElementsByTagName("histogram"):
+  for histogram in tree.getElementsByTagName('histogram'):
     name = histogram.getAttribute('name')
     if last_name is not None and name.lower() < last_name.lower():
-      logging.error('Histograms %s and %s are not in alphabetical order'
-                    % (last_name, name))
+      logging.error('Histograms %s and %s are not in alphabetical order',
+                    last_name, name)
       have_errors = True
     last_name = name
     if name in histograms:
-      logging.error('Duplicate histogram definition %s' % name)
+      logging.error('Duplicate histogram definition %s', name)
       have_errors = True
       continue
     histograms[name] = histogram_entry = {}
 
+    # Find <owner> tag.
+    owners = _ExtractOwners(histogram)
+    if owners:
+      histogram_entry['owners'] = owners
+
     # Find <summary> tag.
-    summary_nodes = histogram.getElementsByTagName("summary")
-    if len(summary_nodes) > 0:
+    summary_nodes = histogram.getElementsByTagName('summary')
+    if summary_nodes:
       histogram_entry['summary'] = _NormalizeString(
           _JoinChildNodes(summary_nodes[0]))
     else:
       histogram_entry['summary'] = 'TBD'
 
     # Find <obsolete> tag.
-    obsolete_nodes = histogram.getElementsByTagName("obsolete")
-    if len(obsolete_nodes) > 0:
+    obsolete_nodes = histogram.getElementsByTagName('obsolete')
+    if obsolete_nodes:
       reason = _JoinChildNodes(obsolete_nodes[0])
       histogram_entry['obsolete'] = reason
 
@@ -254,16 +274,16 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
       histogram_entry['units'] = histogram.getAttribute('units')
 
     # Find <details> tag.
-    details_nodes = histogram.getElementsByTagName("details")
-    if len(details_nodes) > 0:
+    details_nodes = histogram.getElementsByTagName('details')
+    if details_nodes:
       histogram_entry['details'] = _NormalizeString(
           _JoinChildNodes(details_nodes[0]))
 
     # Handle enum types.
     if histogram.hasAttribute('enum'):
       enum_name = histogram.getAttribute('enum')
-      if not enum_name in enums:
-        logging.error('Unknown enum %s in histogram %s' % (enum_name, name))
+      if enum_name not in enums:
+        logging.error('Unknown enum %s in histogram %s', enum_name, name)
         have_errors = True
       else:
         histogram_entry['enum'] = enums[enum_name]
@@ -271,108 +291,130 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
   return histograms, have_errors
 
 
-def _UpdateHistogramsWithFieldTrialInformation(tree, histograms):
-  """Process field trials' tags and combine with affected histograms.
+def _UpdateHistogramsWithSuffixes(tree, histograms):
+  """Process <histogram_suffixes> tags and combine with affected histograms.
 
   The histograms dictionary will be updated in-place by adding new histograms
-  created by combining histograms themselves with field trials targetting these
-  histograms.
+  created by combining histograms themselves with histogram_suffixes targeting
+  these histograms.
 
   Args:
     tree: XML dom tree.
-    histograms: a dictinary of histograms previously extracted from the tree;
+    histograms: a dictionary of histograms previously extracted from the tree;
 
   Returns:
     True if any errors were found.
   """
   have_errors = False
 
-  # Verify order of fieldtrial fields first.
+  # TODO(yiyaoliu): Remove this part after fieldtrial is not used any more.
+  if tree.getElementsByTagName('histogram_suffixes'):
+    histogram_suffix_tag = 'histogram_suffixes'
+    suffix_tag = 'suffix'
+    with_tag = 'with-suffix'
+  else:
+    histogram_suffix_tag = 'fieldtrial'
+    suffix_tag = 'group'
+    with_tag = 'with-group'
+
+  # Verify order of histogram_suffixes fields first.
   last_name = None
-  for fieldtrial in tree.getElementsByTagName("fieldtrial"):
-    name = fieldtrial.getAttribute('name')
+  for histogram_suffixes in tree.getElementsByTagName(histogram_suffix_tag):
+    name = histogram_suffixes.getAttribute('name')
     if last_name is not None and name.lower() < last_name.lower():
-      logging.error('Field trials %s and %s are not in alphabetical order'
-                    % (last_name, name))
+      logging.error('histogram_suffixes %s and %s are not in alphabetical '
+                    'order', last_name, name)
       have_errors = True
     last_name = name
 
-  # Field trials can depend on other field trials, so we need to be careful.
-  # Make a temporary copy of the list of field trials to use as a queue.
-  # Field trials whose dependencies have not yet been processed will get
-  # relegated to the back of the queue to be processed later.
+  # histogram_suffixes can depend on other histogram_suffixes, so we need to be
+  # careful. Make a temporary copy of the list of histogram_suffixes to use as a
+  # queue. histogram_suffixes whose dependencies have not yet been processed
+  # will get relegated to the back of the queue to be processed later.
   reprocess_queue = []
-  def GenerateFieldTrials():
-    for f in tree.getElementsByTagName("fieldtrial"): yield 0, f
-    for r, f in reprocess_queue: yield r, f
+  def GenerateHistogramSuffixes():
+    for f in tree.getElementsByTagName(histogram_suffix_tag):
+      yield 0, f
+    for r, f in reprocess_queue:
+      yield r, f
 
-  for reprocess_count, fieldtrial in GenerateFieldTrials():
+  for reprocess_count, histogram_suffixes in GenerateHistogramSuffixes():
     # Check dependencies first
     dependencies_valid = True
-    affected_histograms = fieldtrial.getElementsByTagName('affected-histogram')
+    affected_histograms = histogram_suffixes.getElementsByTagName(
+        'affected-histogram')
     for affected_histogram in affected_histograms:
       histogram_name = affected_histogram.getAttribute('name')
-      if not histogram_name in histograms:
+      if histogram_name not in histograms:
         # Base histogram is missing
         dependencies_valid = False
         missing_dependency = histogram_name
         break
     if not dependencies_valid:
-      if reprocess_count < MAX_FIELDTRIAL_DEPENDENCY_DEPTH:
-        reprocess_queue.append( (reprocess_count + 1, fieldtrial) )
+      if reprocess_count < MAX_HISTOGRAM_SUFFIX_DEPENDENCY_DEPTH:
+        reprocess_queue.append((reprocess_count + 1, histogram_suffixes))
         continue
       else:
-        logging.error('Field trial %s is missing its dependency %s'
-                      % (fieldtrial.getAttribute('name'),
-                         missing_dependency))
+        logging.error('histogram_suffixes %s is missing its dependency %s',
+                      histogram_suffixes.getAttribute('name'),
+                      missing_dependency)
         have_errors = True
         continue
 
-    name = fieldtrial.getAttribute('name')
-    groups = fieldtrial.getElementsByTagName('group')
-    group_labels = {}
-    for group in groups:
-      group_labels[group.getAttribute('name')] = group.getAttribute('label')
+    name = histogram_suffixes.getAttribute('name')
+    suffix_nodes = histogram_suffixes.getElementsByTagName(suffix_tag)
+    suffix_labels = {}
+    for suffix in suffix_nodes:
+      suffix_labels[suffix.getAttribute('name')] = suffix.getAttribute('label')
+    # Find owners list under current histogram_suffixes tag.
+    owners = _ExtractOwners(histogram_suffixes)
 
     last_histogram_name = None
     for affected_histogram in affected_histograms:
       histogram_name = affected_histogram.getAttribute('name')
       if (last_histogram_name is not None
           and histogram_name.lower() < last_histogram_name.lower()):
-        logging.error('Affected histograms %s and %s of field trial %s are not '
-                      'in alphabetical order'
-                      % (last_histogram_name, histogram_name, name))
+        logging.error('Affected histograms %s and %s of histogram_suffixes %s '
+                      'are not in alphabetical order',
+                      last_histogram_name, histogram_name, name)
         have_errors = True
       last_histogram_name = histogram_name
-      base_description = histograms[histogram_name]
-      with_groups = affected_histogram.getElementsByTagName('with-group')
-      if len(with_groups) > 0:
-        histogram_groups = with_groups
+      with_suffixes = affected_histogram.getElementsByTagName(with_tag)
+      if with_suffixes:
+        suffixes_to_add = with_suffixes
       else:
-        histogram_groups = groups
-      for group in histogram_groups:
-        group_name = group.getAttribute('name')
+        suffixes_to_add = suffix_nodes
+      for suffix in suffixes_to_add:
+        suffix_name = suffix.getAttribute('name')
         try:
-          new_histogram_name = _ExpandHistogramNameWithFieldTrial(
-            group_name, histogram_name, fieldtrial)
+          new_histogram_name = _ExpandHistogramNameWithSuffixes(
+              suffix_name, histogram_name, histogram_suffixes)
           if new_histogram_name != histogram_name:
             histograms[new_histogram_name] = copy.deepcopy(
-              histograms[histogram_name])
+                histograms[histogram_name])
 
-          group_label = group_labels.get(group_name, '')
+          suffix_label = suffix_labels.get(suffix_name, '')
 
-          if not 'fieldtrial_groups' in histograms[new_histogram_name]:
+          # TODO(yiyaoliu): Rename these to be consistent with the new naming.
+          # It is kept unchanged for now to be it's used by dashboards.
+          if 'fieldtrial_groups' not in histograms[new_histogram_name]:
             histograms[new_histogram_name]['fieldtrial_groups'] = []
-          histograms[new_histogram_name]['fieldtrial_groups'].append(group_name)
+          histograms[new_histogram_name]['fieldtrial_groups'].append(
+              suffix_name)
 
-          if not 'fieldtrial_names' in histograms[new_histogram_name]:
+          if 'fieldtrial_names' not in histograms[new_histogram_name]:
             histograms[new_histogram_name]['fieldtrial_names'] = []
           histograms[new_histogram_name]['fieldtrial_names'].append(name)
 
-          if not 'fieldtrial_labels' in histograms[new_histogram_name]:
+          if 'fieldtrial_labels' not in histograms[new_histogram_name]:
             histograms[new_histogram_name]['fieldtrial_labels'] = []
           histograms[new_histogram_name]['fieldtrial_labels'].append(
-            group_label)
+              suffix_label)
+
+          # If no owners are added for this histogram-suffixes, it inherits the
+          # owners of its parents.
+          if owners:
+            histograms[new_histogram_name]['owners'] = owners
 
         except Error:
           have_errors = True
@@ -396,23 +438,27 @@ def ExtractHistogramsFromFile(file_handle):
 
   enums, enum_errors = _ExtractEnumsFromXmlTree(tree)
   histograms, histogram_errors = _ExtractHistogramsFromXmlTree(tree, enums)
-  update_errors = _UpdateHistogramsWithFieldTrialInformation(tree, histograms)
+  update_errors = _UpdateHistogramsWithSuffixes(tree, histograms)
 
   return histograms, enum_errors or histogram_errors or update_errors
 
 
 def ExtractHistograms(filename):
   """Load histogram definitions from a disk file.
+
   Args:
     filename: a file path to load data from.
 
+  Returns:
+    a dictionary of histogram descriptions.
+
   Raises:
-    Error if the file is not well-formatted.
+    Error: if the file is not well-formatted.
   """
   with open(filename, 'r') as f:
     histograms, had_errors = ExtractHistogramsFromFile(f)
     if had_errors:
-      logging.error('Error parsing %s' % filename)
+      logging.error('Error parsing %s', filename)
       raise Error()
     return histograms
 
