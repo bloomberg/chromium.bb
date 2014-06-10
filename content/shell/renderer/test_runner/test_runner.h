@@ -416,6 +416,7 @@ class TestRunner : public WebTestRunner,
 
   // WebPermissionClient related.
   void SetImagesAllowed(bool allowed);
+  void SetMediaAllowed(bool allowed);
   void SetScriptsAllowed(bool allowed);
   void SetStorageAllowed(bool allowed);
   void SetPluginsAllowed(bool allowed);

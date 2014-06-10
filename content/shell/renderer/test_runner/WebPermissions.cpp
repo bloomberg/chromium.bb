@@ -31,6 +31,14 @@ bool WebPermissions::allowImage(bool enabledPerSettings, const blink::WebURL& im
     return allowed;
 }
 
+bool WebPermissions::allowMedia(const blink::WebURL& imageURL)
+{
+    bool allowed = m_mediaAllowed;
+    if (m_dumpCallbacks && m_delegate)
+        m_delegate->printMessage(std::string("PERMISSION CLIENT: allowMedia(") + normalizeLayoutTestURL(imageURL.spec()) + "): " + (allowed ? "true" : "false") + "\n");
+    return allowed;
+}
+
 bool WebPermissions::allowScriptFromSource(bool enabledPerSettings, const blink::WebURL& scriptURL)
 {
     bool allowed = enabledPerSettings && m_scriptsAllowed;
@@ -62,6 +70,11 @@ bool WebPermissions::allowRunningInsecureContent(bool enabledPerSettings, const 
 void WebPermissions::setImagesAllowed(bool imagesAllowed)
 {
     m_imagesAllowed = imagesAllowed;
+}
+
+void WebPermissions::setMediaAllowed(bool mediaAllowed)
+{
+    m_mediaAllowed = mediaAllowed;
 }
 
 void WebPermissions::setScriptsAllowed(bool scriptsAllowed)
@@ -103,6 +116,7 @@ void WebPermissions::reset()
 {
     m_dumpCallbacks = false;
     m_imagesAllowed = true;
+    m_mediaAllowed = true;
     m_scriptsAllowed = true;
     m_storageAllowed = true;
     m_pluginsAllowed = true;

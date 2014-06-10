@@ -211,6 +211,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpResourceRequestCallbacks();
   void DumpResourceResponseMIMETypes();
   void SetImagesAllowed(bool allowed);
+  void SetMediaAllowed(bool allowed);
   void SetScriptsAllowed(bool allowed);
   void SetStorageAllowed(bool allowed);
   void SetPluginsAllowed(bool allowed);
@@ -429,6 +430,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpResourceResponseMIMETypes",
                  &TestRunnerBindings::DumpResourceResponseMIMETypes)
       .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
+      .SetMethod("setMediaAllowed", &TestRunnerBindings::SetMediaAllowed)
       .SetMethod("setScriptsAllowed", &TestRunnerBindings::SetScriptsAllowed)
       .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
       .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
@@ -1061,6 +1063,11 @@ void TestRunnerBindings::DumpResourceResponseMIMETypes() {
 void TestRunnerBindings::SetImagesAllowed(bool allowed) {
   if (runner_)
     runner_->SetImagesAllowed(allowed);
+}
+
+void TestRunnerBindings::SetMediaAllowed(bool allowed) {
+  if (runner_)
+    runner_->SetMediaAllowed(allowed);
 }
 
 void TestRunnerBindings::SetScriptsAllowed(bool allowed) {
@@ -2497,6 +2504,10 @@ void TestRunner::DumpResourceResponseMIMETypes() {
 
 void TestRunner::SetImagesAllowed(bool allowed) {
   web_permissions_->setImagesAllowed(allowed);
+}
+
+void TestRunner::SetMediaAllowed(bool allowed) {
+  web_permissions_->setMediaAllowed(allowed);
 }
 
 void TestRunner::SetScriptsAllowed(bool allowed) {

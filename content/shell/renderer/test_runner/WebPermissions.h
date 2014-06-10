@@ -20,6 +20,7 @@ public:
 
     // Override WebPermissionClient methods.
     virtual bool allowImage(bool enabledPerSettings, const blink::WebURL& imageURL);
+    virtual bool allowMedia(const blink::WebURL& mediaURL);
     virtual bool allowScriptFromSource(bool enabledPerSettings, const blink::WebURL& scriptURL);
     virtual bool allowStorage(bool local);
     virtual bool allowPlugins(bool enabledPerSettings);
@@ -28,6 +29,7 @@ public:
 
     // Hooks to set the different policies.
     void setImagesAllowed(bool);
+    void setMediaAllowed(bool);
     void setScriptsAllowed(bool);
     void setStorageAllowed(bool);
     void setPluginsAllowed(bool);
@@ -45,6 +47,7 @@ private:
     bool m_dumpCallbacks;
 
     bool m_imagesAllowed;
+    bool m_mediaAllowed;
     bool m_scriptsAllowed;
     bool m_storageAllowed;
     bool m_pluginsAllowed;
