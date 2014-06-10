@@ -151,6 +151,7 @@ void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
 
 void ServiceWorkerURLRequestJob::OnReadCompleted(net::URLRequest* request,
                                                  int bytes_read) {
+  SetStatus(request->status());
   if (!request->status().is_success()) {
     NotifyDone(request->status());
     return;
