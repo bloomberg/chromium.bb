@@ -31,7 +31,7 @@
 {
   'includes': [
     'core.gypi',
-    '../bindings/bindings.gypi',
+    '../bindings/scripts/scripts.gypi',
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
   ],

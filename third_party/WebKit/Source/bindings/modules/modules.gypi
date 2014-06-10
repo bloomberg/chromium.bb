@@ -4,7 +4,6 @@
 
 {
   'includes': [
-    '../bindings.gypi',
     'v8/generated.gypi',
   ],
 

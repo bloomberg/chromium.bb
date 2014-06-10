@@ -9,7 +9,6 @@
 {
   'includes': [
     # ../.. == Source
-    '../../bindings/bindings.gypi',
     '../../bindings/scripts/scripts.gypi',
     '../../core/core.gypi',
     'core.gypi',
@@ -21,32 +20,11 @@
 ################################################################################
   {
     'target_name': 'core_global_objects',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'compute_core_global_objects',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only look in main IDL files (exclude dependencies and testing,
-        # which should not define global objects).
-        '<(core_idl_files_list)',
-        '<@(core_idl_files)',
-      ],
-      'outputs': [
-        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '--idl-files-list',
-        '<(core_idl_files_list)',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
-       ],
-       'message': 'Computing global objects in core',
-      }]
+    'variables': {
+      'idl_files': '<(core_idl_files)',
+      'output_file': '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
+    },
+    'includes': ['../../bindings/scripts/global_objects.gypi'],
   },
 ################################################################################
   {

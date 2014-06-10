@@ -9,7 +9,6 @@
 {
   'includes': [
     # ../.. == Source
-    '../../bindings/bindings.gypi',
     '../../bindings/core/core.gypi',
     '../../bindings/scripts/scripts.gypi',
     '../../build/scripts/scripts.gypi',  # FIXME: Needed for event files, should be in modules, not bindings_modules http://crbug.com/358074
@@ -135,36 +134,18 @@
 ################################################################################
   {
     'target_name': 'modules_global_objects',
-    'type': 'none',
     'dependencies': [
-        '../core/generated.gyp:core_global_objects',
+      '../core/generated.gyp:core_global_objects',
     ],
-    'actions': [{
-      'action_name': 'compute_modules_global_objects',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only look in main IDL files (exclude dependencies and testing,
-        # which should not define global objects).
-        '<(modules_idl_files_list)',
-        '<@(modules_idl_files)',
-      ],
-      'outputs': [
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_global_objects.py',
-        '--idl-files-list',
-        '<(modules_idl_files_list)',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
+    'variables': {
+      'idl_files': '<(modules_idl_files)',
+      'input_files': [
         '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
+      ],
+      'output_file':
         '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-       ],
-       'message': 'Computing global objects in modules',
-      }]
+    },
+    'includes': ['../../bindings/scripts/global_objects.gypi'],
   },
 ################################################################################
   {
