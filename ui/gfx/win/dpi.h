@@ -73,6 +73,9 @@ GFX_EXPORT double GetUndocumentedDPITouchScale();
 // the process.
 GFX_EXPORT bool IsDeviceScaleFactorSet();
 
+GFX_EXPORT extern const wchar_t kRegistryProfilePath[];
+GFX_EXPORT extern const wchar_t kHighDPISupportW[];
+
 }  // namespace win
 }  // namespace gfx
 

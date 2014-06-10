@@ -28,6 +28,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/gfx/win/dpi.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
 #include "win8/viewer/metro_viewer_constants.h"
@@ -107,14 +108,14 @@ bool LaunchChromeBrowserProcess() {
 
 bool CommandExecuteImpl::path_provider_initialized_ = false;
 
-// CommandExecuteImpl is resposible for activating chrome in Windows 8. The
+// CommandExecuteImpl is responsible for activating chrome in Windows 8. The
 // flow is complicated and this tries to highlight the important events.
 // The current approach is to have a single instance of chrome either
 // running in desktop or metro mode. If there is no current instance then
 // the desktop shortcut launches desktop chrome and the metro tile or search
 // charm launches metro chrome.
 // If chrome is running then focus/activation is given to the existing one
-// regarless of what launch point the user used.
+// regardless of what launch point the user used.
 //
 // The general flow for activation is as follows:
 //
@@ -171,7 +172,7 @@ CommandExecuteImpl::CommandExecuteImpl()
   start_info_.cb = sizeof(start_info_);
 
   // We need to query the user data dir of chrome so we need chrome's
-  // path provider. We can be created multiplie times in a single instance
+  // path provider. We can be created multiple times in a single instance
   // however so make sure we do this only once.
   if (!path_provider_initialized_) {
     chrome::RegisterPathProvider();
@@ -207,6 +208,13 @@ STDMETHODIMP CommandExecuteImpl::SetDirectory(LPCWSTR directory) {
   return S_OK;
 }
 
+void CommandExecuteImpl::SetHighDPIRegistryKey(bool enable) {
+  uint32 key_value = enable ? 1 : 2;
+  base::win::RegKey high_dpi_key(HKEY_CURRENT_USER);
+  high_dpi_key.CreateKey(gfx::win::kRegistryProfilePath, KEY_SET_VALUE);
+  high_dpi_key.WriteValue(gfx::win::kHighDPISupportW, key_value);
+}
+
 STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   if (!GetLaunchScheme(&display_name_, &launch_scheme_)) {
     AtlTrace("Failed to get scheme, E_FAIL\n");
@@ -222,8 +230,10 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   // call to CommandExecuteImpl::Execute().  If we wait until then to launch
   // the browser process as well, it will appear laggy while they connect to
   // each other, so we pre-launch the browser process now.
-  if (*pahe == AHE_IMMERSIVE && verb_ != win8::kMetroViewerConnectVerb)
+  if (*pahe == AHE_IMMERSIVE && verb_ != win8::kMetroViewerConnectVerb) {
+    SetHighDPIRegistryKey(true);
     LaunchChromeBrowserProcess();
+  }
   return S_OK;
 }
 
@@ -387,6 +397,8 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
     default:
       break;
   }
+
+  SetHighDPIRegistryKey(false);
 
   CommandLine chrome(
       delegate_execute::MakeChromeCommandLine(chrome_exe_, parameters_,

@@ -20,9 +20,6 @@ namespace {
 int kDefaultDPIX = 96;
 int kDefaultDPIY = 96;
 
-const wchar_t kRegistryProfilePath[] = L"SOFTWARE\\Google\\Chrome\\Profile";
-const wchar_t kHighDPISupportW[] = L"high-dpi-support";
-
 bool force_highdpi_for_testing = false;
 
 BOOL IsProcessDPIAwareWrapper() {
@@ -153,8 +150,8 @@ bool IsHighDPIEnabled() {
   // under the DWORD value high-dpi-support.
   // Default is disabled.
   static DWORD value = ReadRegistryValue(
-      HKEY_CURRENT_USER, kRegistryProfilePath,
-      kHighDPISupportW, TRUE);
+      HKEY_CURRENT_USER, gfx::win::kRegistryProfilePath,
+      gfx::win::kHighDPISupportW, TRUE);
   return value != 0;
 }
 
@@ -170,6 +167,10 @@ void EnableHighDPISupport() {
 }
 
 namespace win {
+
+GFX_EXPORT const wchar_t kRegistryProfilePath[] =
+    L"Software\\Google\\Chrome\\Profile";
+GFX_EXPORT const wchar_t kHighDPISupportW[] = L"high-dpi-support";
 
 float GetDeviceScaleFactor() {
   DCHECK_NE(0.0f, g_device_scale_factor);
