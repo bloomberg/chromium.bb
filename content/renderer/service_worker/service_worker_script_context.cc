@@ -11,6 +11,7 @@
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
@@ -49,6 +50,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
@@ -138,6 +140,13 @@ void ServiceWorkerScriptContext::OnFetchEvent(
 
 void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
   proxy_->dispatchSyncEvent(request_id);
+}
+
+void ServiceWorkerScriptContext::OnPushEvent(int request_id,
+                                             const std::string& data) {
+  proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
+  Send(new ServiceWorkerHostMsg_PushEventFinished(
+      GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::OnPostMessage(

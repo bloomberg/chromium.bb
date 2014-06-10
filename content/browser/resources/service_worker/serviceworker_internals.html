@@ -48,6 +48,9 @@
         <button href="#" class="sync"
             jsvalues=".cmdArgs:{partition_id:$partition_id,version_id:version_id}"
             jsdisplay="$this.running_status == 'RUNNING'">Sync</button>
+        <button href="#" class="push"
+            jsvalues=".cmdArgs:{partition_id:$partition_id,version_id:version_id}"
+            jsdisplay="$this.running_status == 'RUNNING'">Push</button>
         <button href="#" class="inspect"
             jsvalues=".cmdArgs:{process_id:process_id,devtools_agent_route_id:devtools_agent_route_id}"
             jsdisplay="$this.running_status == 'RUNNING'">Inspect</button>

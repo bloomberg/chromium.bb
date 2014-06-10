@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CONTEXT_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CONTEXT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -67,6 +68,7 @@ class ServiceWorkerScriptContext {
   void OnInstallEvent(int request_id, int active_version_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnSyncEvent(int request_id);
+  void OnPushEvent(int request_id, const std::string& data);
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);

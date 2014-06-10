@@ -53,7 +53,7 @@ cr.define('serviceworker', function() {
   }
 
   // All commands are completed with 'onOperationComplete'.
-  var COMMANDS = ['stop', 'sync', 'inspect', 'unregister', 'start'];
+  var COMMANDS = ['stop', 'sync', 'push', 'inspect', 'unregister', 'start'];
   function commandHandler(command) {
     return function(event) {
       var link = event.target;

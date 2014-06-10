@@ -304,6 +304,35 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   }
 }
 
+void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
+                                             const std::string& data) {
+  DCHECK_EQ(ACTIVE, status()) << status();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+
+  if (running_status() != RUNNING) {
+    // Schedule calling this method after starting the worker.
+    StartWorker(base::Bind(&RunTaskAfterStartWorker,
+                           weak_factory_.GetWeakPtr(), callback,
+                           base::Bind(&self::DispatchPushEvent,
+                                      weak_factory_.GetWeakPtr(),
+                                      callback, data)));
+    return;
+  }
+
+  int request_id = push_callbacks_.Add(new StatusCallback(callback));
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
+      ServiceWorkerMsg_PushEvent(request_id, data));
+  if (status != SERVICE_WORKER_OK) {
+    push_callbacks_.Remove(request_id);
+    RunSoon(base::Bind(callback, status));
+  }
+}
+
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {
   embedded_worker_->AddProcessReference(process_id);
 }
@@ -396,6 +425,9 @@ void ServiceWorkerVersion::OnStopped() {
   RunIDMapCallbacks(&sync_callbacks_,
                     &StatusCallback::Run,
                     MakeTuple(SERVICE_WORKER_ERROR_FAILED));
+  RunIDMapCallbacks(&push_callbacks_,
+                    &StatusCallback::Run,
+                    MakeTuple(SERVICE_WORKER_ERROR_FAILED));
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
 }
@@ -440,6 +472,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnFetchEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SyncEventFinished,
                         OnSyncEventFinished)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PushEventFinished,
+                        OnPushEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
                         OnPostMessageToDocument)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -558,6 +592,19 @@ void ServiceWorkerVersion::OnSyncEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
   sync_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerVersion::OnPushEventFinished(
+    int request_id) {
+  StatusCallback* callback = push_callbacks_.Lookup(request_id);
+  if (!callback) {
+    NOTREACHED() << "Got unexpected message: " << request_id;
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+  callback->Run(SERVICE_WORKER_OK);
+  push_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(

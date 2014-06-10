@@ -110,6 +110,8 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
                     content::ServiceWorkerResponse)
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SyncEventFinished,
                     int /* request_id */)
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_PushEventFinished,
+                    int /* request_id */)
 
 // Asks the browser to retrieve documents controlled by the sender
 // ServiceWorker.
@@ -181,6 +183,9 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FetchEvent,
                      content::ServiceWorkerFetchRequest)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
                      int /* request_id */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
+                     int /* request_id */,
+                     std::string /* data */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,

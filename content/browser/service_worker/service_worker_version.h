@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -175,6 +176,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVE.
   void DispatchSyncEvent(const StatusCallback& callback);
 
+  // Sends push event to the associated embedded worker and asynchronously calls
+  // |callback| when it errors out or it gets response from the worker to notify
+  // completion.
+  //
+  // This must be called when the status() is ACTIVE.
+  void DispatchPushEvent(const StatusCallback& callback,
+                         const std::string& data);
+
   // These are expected to be called when a renderer process host for the
   // same-origin as for this ServiceWorkerVersion is created.  The added
   // processes are used to run an in-renderer embedded worker.
@@ -238,6 +247,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
   void OnSyncEventFinished(int request_id);
+  void OnPushEventFinished(int request_id);
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
@@ -259,6 +269,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<StatusCallback, IDMapOwnPointer> install_callbacks_;
   IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> sync_callbacks_;
+  IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
 
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;
