@@ -9,7 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/gfx/size.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace base {
@@ -90,12 +93,14 @@ class RenderingHelper {
  private:
   void Clear();
 
-  // Make window_id's surface current w/ the GL context, or release the context
-  // if |window_id < 0|.
-  void MakeCurrent(int window_id);
+  void RenderContent();
+  void DrawTexture(const gfx::Rect& area,
+                   uint32 texture_target,
+                   uint32 texture_id);
 
+  // Timer to trigger the RenderContent() repeatly.
+  base::RepeatingTimer<RenderingHelper> render_timer_;
   base::MessageLoop* message_loop_;
-  std::vector<gfx::Size> window_dimensions_;
   std::vector<gfx::Size> frame_dimensions_;
 
   NativeContextType gl_context_;
@@ -103,17 +108,24 @@ class RenderingHelper {
 
 #if defined(GL_VARIANT_EGL)
   EGLDisplay gl_display_;
-  std::vector<EGLSurface> gl_surfaces_;
+  EGLSurface gl_surface_;
 #else
   XVisualInfo* x_visual_;
 #endif
 
 #if defined(OS_WIN)
-  std::vector<HWND> windows_;
+  HWND window_;
 #else
   Display* x_display_;
-  std::vector<Window> x_windows_;
+  Window x_window_;
 #endif
+
+  // The rendering area of each window on the screen.
+  std::vector<gfx::Rect> render_areas_;
+
+  // The texture to be rendered on each window.
+  std::vector<uint32> texture_ids_;
+  std::vector<uint32> texture_targets_;
 
   bool render_as_thumbnails_;
   int frame_count_;
@@ -122,6 +134,7 @@ class RenderingHelper {
   gfx::Size thumbnails_fbo_size_;
   gfx::Size thumbnail_size_;
   GLuint program_;
+  base::TimeDelta frame_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingHelper);
 };

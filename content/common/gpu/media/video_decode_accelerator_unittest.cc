@@ -469,6 +469,8 @@ class GLRenderingVDAClient
   std::vector<base::TimeDelta> decode_time_;
   // The number of VDA::Decode calls per second. This is to simulate webrtc.
   int decode_calls_per_second_;
+  // The id of the picture which is being hold for displayed.
+  int on_hold_picture_buffer_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
@@ -508,7 +510,8 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       texture_target_(0),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
-      decode_calls_per_second_(decode_calls_per_second) {
+      decode_calls_per_second_(decode_calls_per_second),
+      on_hold_picture_buffer_id_(-1) {
   CHECK_GT(num_in_flight_decodes, 0);
   CHECK_GT(num_play_throughs, 0);
   CHECK_GE(rendering_fps, 0);
@@ -651,20 +654,27 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   media::PictureBuffer* picture_buffer =
       picture_buffers_by_id_[picture.picture_buffer_id()];
   CHECK(picture_buffer);
+
+  int released_picture_buffer_id = picture.picture_buffer_id();
   if (!suppress_rendering_) {
+    // Replace with the last holding picture buffer.
+    std::swap(released_picture_buffer_id, on_hold_picture_buffer_id_);
     rendering_helper_->RenderTexture(texture_target_,
                                      picture_buffer->texture_id());
   }
 
-  if (num_decoded_frames() > delay_reuse_after_frame_num_) {
+  if (released_picture_buffer_id < 0)
+    return;
+
+  if ((num_decoded_frames() > delay_reuse_after_frame_num_)) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
                    weak_decoder_factory_->GetWeakPtr(),
-                   picture.picture_buffer_id()),
+                   released_picture_buffer_id),
         kReuseDelay);
   } else {
-    decoder_->ReusePictureBuffer(picture.picture_buffer_id());
+    decoder_->ReusePictureBuffer(released_picture_buffer_id);
   }
 }
 
@@ -683,6 +693,7 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
 void GLRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
+
   SetState(CS_FLUSHED);
   --remaining_play_throughs_;
   DCHECK_GE(remaining_play_throughs_, 0);
@@ -695,7 +706,6 @@ void GLRenderingVDAClient::NotifyFlushDone() {
 void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
-
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
     DecodeNextFragment();

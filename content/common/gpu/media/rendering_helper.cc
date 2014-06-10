@@ -14,17 +14,18 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"
 #endif
 
 #ifdef GL_VARIANT_GLX
-typedef GLXWindow NativeWindowType;
 struct XFreeDeleter {
   void operator()(void* x) const { ::XFree(x); }
 };
-#else  // EGL
-typedef EGLNativeWindowType NativeWindowType;
 #endif
 
 // Helper for Shader creation.
@@ -64,44 +65,37 @@ static const gfx::GLImplementation kGLImplementation =
 #endif
 
 RenderingHelper::RenderingHelper() {
+#if defined(GL_VARIANT_EGL)
+  gl_surface_ = EGL_NO_SURFACE;
+#endif
+
+#if defined(OS_WIN)
+  window_ = NULL;
+#else
+  x_window_ = (Window)0;
+#endif
+
   Clear();
 }
 
 RenderingHelper::~RenderingHelper() {
-  CHECK_EQ(window_dimensions_.size(), 0U) <<
-    "Must call UnInitialize before dtor.";
+  CHECK_EQ(frame_dimensions_.size(), 0U)
+      << "Must call UnInitialize before dtor.";
   Clear();
-}
-
-void RenderingHelper::MakeCurrent(int window_id) {
-#if GL_VARIANT_GLX
-  if (window_id < 0) {
-    CHECK(glXMakeContextCurrent(x_display_, GLX_NONE, GLX_NONE, NULL));
-  } else {
-    CHECK(glXMakeContextCurrent(
-        x_display_, x_windows_[window_id], x_windows_[window_id], gl_context_));
-  }
-#else  // EGL
-  if (window_id < 0) {
-    CHECK(eglMakeCurrent(gl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE,
-                         EGL_NO_CONTEXT)) << eglGetError();
-  } else {
-    CHECK(eglMakeCurrent(gl_display_, gl_surfaces_[window_id],
-                         gl_surfaces_[window_id], gl_context_))
-        << eglGetError();
-  }
-#endif
 }
 
 void RenderingHelper::Initialize(const RenderingHelperParams& params,
                                  base::WaitableEvent* done) {
-  // Use window_dimensions_.size() != 0 as a proxy for the class having already
+  // Use frame_dimensions_.size() != 0 as a proxy for the class having already
   // been Initialize()'d, and UnInitialize() before continuing.
-  if (window_dimensions_.size()) {
+  if (frame_dimensions_.size()) {
     base::WaitableEvent done(false, false);
     UnInitialize(&done);
     done.Wait();
   }
+
+  // TODO(owenlin): pass fps from params
+  frame_duration_ = base::TimeDelta::FromSeconds(1) / 60;
 
   gfx::InitializeStaticGLBindings(kGLImplementation);
   scoped_refptr<gfx::GLContextStubWithExtensions> stub_context(
@@ -109,11 +103,12 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   CHECK_GT(params.window_dimensions.size(), 0U);
   CHECK_EQ(params.frame_dimensions.size(), params.window_dimensions.size());
-  window_dimensions_ = params.window_dimensions;
   frame_dimensions_ = params.frame_dimensions;
   render_as_thumbnails_ = params.render_as_thumbnails;
   message_loop_ = base::MessageLoop::current();
   CHECK_GT(params.num_windows, 0);
+
+  gfx::Size window_size;
 
 #if GL_VARIANT_GLX
   x_display_ = gfx::GetXDisplay();
@@ -142,17 +137,23 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   stub_context->SetGLVersionString(
       reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
+  Screen* screen = DefaultScreenOfDisplay(x_display_);
+  window_size = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
 #else // EGL
   EGLNativeDisplayType native_display;
 
 #if defined(OS_WIN)
   native_display = EGL_DEFAULT_DISPLAY;
+  window_size =
+      gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 #else
   x_display_ = gfx::GetXDisplay();
   CHECK(x_display_);
   native_display = x_display_;
-#endif
 
+  Screen* screen = DefaultScreenOfDisplay(x_display_);
+  window_size = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
+#endif
   gl_display_ = eglGetDisplay(native_display);
   CHECK(gl_display_);
   CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
@@ -183,62 +184,92 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 #endif
 
   // Per-window/surface X11 & EGL initialization.
+  CHECK(texture_ids_.empty());
+  CHECK(texture_targets_.empty());
+
+  // Initialize to an invalid texture id: 0 to indicate no texture
+  // for rendering.
+  texture_ids_.resize(params.num_windows, 0);
+  texture_targets_.resize(params.num_windows, 0);
+
   for (int i = 0; i < params.num_windows; ++i) {
     // Arrange X windows whimsically, with some padding.
-    int j = i % window_dimensions_.size();
-    int width = window_dimensions_[j].width();
-    int height = window_dimensions_[j].height();
+    int j = i % params.window_dimensions.size();
+    int width = params.window_dimensions[j].width();
+    int height = params.window_dimensions[j].height();
     CHECK_GT(width, 0);
     CHECK_GT(height, 0);
     int top_left_x = (width + 20) * (i % 4);
     int top_left_y = (height + 12) * (i % 3);
+    render_areas_.push_back(gfx::Rect(top_left_x, top_left_y, width, height));
+  }
 
 #if defined(OS_WIN)
-    NativeWindowType window =
-        CreateWindowEx(0, L"Static", L"VideoDecodeAcceleratorTest",
-                       WS_OVERLAPPEDWINDOW | WS_VISIBLE, top_left_x,
-                       top_left_y, width, height, NULL, NULL, NULL,
-                       NULL);
-    CHECK(window != NULL);
-    windows_.push_back(window);
+  window_ = CreateWindowEx(0,
+                           L"Static",
+                           L"VideoDecodeAcceleratorTest",
+                           WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                           0,
+                           0,
+                           window_size.width(),
+                           window_size.height(),
+                           NULL,
+                           NULL,
+                           NULL,
+                           NULL);
+  CHECK(window_ != NULL);
 #else
-    int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
+  int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
 
 #if defined(GL_VARIANT_GLX)
-    CHECK_EQ(depth, x_visual_->depth);
+  CHECK_EQ(depth, x_visual_->depth);
 #endif
 
-    XSetWindowAttributes window_attributes;
-    window_attributes.background_pixel =
-        BlackPixel(x_display_, DefaultScreen(x_display_));
-    window_attributes.override_redirect = true;
+  XSetWindowAttributes window_attributes;
+  window_attributes.background_pixel =
+      BlackPixel(x_display_, DefaultScreen(x_display_));
+  window_attributes.override_redirect = true;
 
-    NativeWindowType window = XCreateWindow(
-        x_display_, DefaultRootWindow(x_display_),
-        top_left_x, top_left_y, width, height,
-        0 /* border width */,
-        depth, CopyFromParent /* class */, CopyFromParent /* visual */,
-        (CWBackPixel | CWOverrideRedirect), &window_attributes);
-    XStoreName(x_display_, window, "VideoDecodeAcceleratorTest");
-    XSelectInput(x_display_, window, ExposureMask);
-    XMapWindow(x_display_, window);
-    x_windows_.push_back(window);
+  x_window_ = XCreateWindow(x_display_,
+                            DefaultRootWindow(x_display_),
+                            0,
+                            0,
+                            window_size.width(),
+                            window_size.height(),
+                            0 /* border width */,
+                            depth,
+                            CopyFromParent /* class */,
+                            CopyFromParent /* visual */,
+                            (CWBackPixel | CWOverrideRedirect),
+                            &window_attributes);
+  XStoreName(x_display_, x_window_, "VideoDecodeAcceleratorTest");
+  XSelectInput(x_display_, x_window_, ExposureMask);
+  XMapWindow(x_display_, x_window_);
 #endif
 
 #if GL_VARIANT_EGL
-    EGLSurface egl_surface =
-        eglCreateWindowSurface(gl_display_, egl_config, window, NULL);
-    gl_surfaces_.push_back(egl_surface);
-    CHECK_NE(egl_surface, EGL_NO_SURFACE);
+#if defined(OS_WIN)
+  gl_surface_ =
+      eglCreateWindowSurface(gl_display_, egl_config, window_, NULL);
+#else
+  gl_surface_ =
+      eglCreateWindowSurface(gl_display_, egl_config, x_window_, NULL);
 #endif
-    MakeCurrent(i);
-  }
+  CHECK_NE(gl_surface_, EGL_NO_SURFACE);
+#endif
+
+#if GL_VARIANT_GLX
+  CHECK(glXMakeContextCurrent(x_display_, x_window_, x_window_, gl_context_));
+#else  // EGL
+  CHECK(eglMakeCurrent(gl_display_, gl_surface_, gl_surface_, gl_context_))
+      << eglGetError();
+#endif
 
   // Must be done after a context is made current.
   gfx::InitializeDynamicGLBindings(kGLImplementation, stub_context.get());
 
   if (render_as_thumbnails_) {
-    CHECK_EQ(window_dimensions_.size(), 1U);
+    CHECK_EQ(frame_dimensions_.size(), 1U);
 
     GLint max_texture_size;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -277,6 +308,11 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+    // In render_as_thumbnails_ mode, we render the FBO content on the
+    // screen instead of the decoded textures.
+    texture_targets_[0] = GL_TEXTURE_2D;
+    texture_ids_[0] = thumbnails_texture_id_;
   }
 
   // These vertices and texture coords. map (0,0) in the texture to the
@@ -355,11 +391,15 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   int tc_location = glGetAttribLocation(program_, "in_tc");
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
+
+  render_timer_.Start(
+      FROM_HERE, frame_duration_, this, &RenderingHelper::RenderContent);
   done->Signal();
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  render_timer_.Stop();
   if (render_as_thumbnails_) {
     glDeleteTextures(1, &thumbnails_texture_id_);
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
@@ -368,10 +408,8 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
 
   glXDestroyContext(x_display_, gl_context_);
 #else // EGL
-  MakeCurrent(-1);
   CHECK(eglDestroyContext(gl_display_, gl_context_));
-  for (size_t i = 0; i < gl_surfaces_.size(); ++i)
-    CHECK(eglDestroySurface(gl_display_, gl_surfaces_[i]));
+  CHECK(eglDestroySurface(gl_display_, gl_surface_));
   CHECK(eglTerminate(gl_display_));
 #endif
   gfx::ClearGLBindings();
@@ -390,7 +428,6 @@ void RenderingHelper::CreateTexture(int window_id,
                    window_id, texture_target, texture_id, done));
     return;
   }
-  MakeCurrent(window_id);
   glGenTextures(1, texture_id);
   glBindTexture(texture_target, *texture_id);
   int dimensions_id = window_id % frame_dimensions_.size();
@@ -418,32 +455,36 @@ void RenderingHelper::CreateTexture(int window_id,
 
 void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
-  size_t window_id = texture_id_to_surface_index_[texture_id];
-  MakeCurrent(window_id);
-
-  int dimensions_id = window_id % window_dimensions_.size();
-  int width = window_dimensions_[dimensions_id].width();
-  int height = window_dimensions_[dimensions_id].height();
+  if (texture_id == 0)
+    return;
 
   if (render_as_thumbnails_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
-    const int thumbnails_in_row =
-        thumbnails_fbo_size_.width() / thumbnail_size_.width();
-    const int thumbnails_in_column =
-        thumbnails_fbo_size_.height() / thumbnail_size_.height();
+    const int width = thumbnail_size_.width();
+    const int height = thumbnail_size_.height();
+    const int thumbnails_in_row = thumbnails_fbo_size_.width() / width;
+    const int thumbnails_in_column = thumbnails_fbo_size_.height() / height;
     const int row = (frame_count_ / thumbnails_in_row) % thumbnails_in_column;
     const int col = frame_count_ % thumbnails_in_row;
-    const int x = col * thumbnail_size_.width();
-    const int y = row * thumbnail_size_.height();
 
-    glViewport(x, y, thumbnail_size_.width(), thumbnail_size_.height());
-    glScissor(x, y, thumbnail_size_.width(), thumbnail_size_.height());
+    gfx::Rect area(col * width, row * height, width, height);
+
     glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
+    DrawTexture(area, texture_target, texture_id);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    ++frame_count_;
   } else {
-    glViewport(0, 0, width, height);
-    glScissor(0, 0, width, height);
-    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
+    size_t window_id = texture_id_to_surface_index_[texture_id];
+    texture_targets_[window_id] = texture_target;
+    texture_ids_[window_id] = texture_id;
   }
+}
+
+void RenderingHelper::DrawTexture(const gfx::Rect& area,
+                                  uint32 texture_target,
+                                  uint32 texture_id) {
+  glViewport(area.x(), area.y(), area.width(), area.height());
+  glScissor(area.x(), area.y(), area.width(), area.height());
 
   // Unbound texture samplers default to (0, 0, 0, 1).  Use this fact to switch
   // between GL_TEXTURE_2D and GL_TEXTURE_EXTERNAL_OES as appopriate.
@@ -451,37 +492,16 @@ void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(texture_target, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
   } else if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(texture_target, texture_id);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
   }
+
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-
-  ++frame_count_;
-
-  if (render_as_thumbnails_) {
-    // Copy from FBO to screen
-    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, width, height);
-    glScissor(0, 0, width, height);
-    glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(texture_target, 0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  }
-
-#if GL_VARIANT_GLX
-  glXSwapBuffers(x_display_, x_windows_[window_id]);
-#else  // EGL
-  eglSwapBuffers(gl_display_, gl_surfaces_[window_id]);
-  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
-#endif
 }
 
 void RenderingHelper::DeleteTexture(uint32 texture_id) {
@@ -500,14 +520,13 @@ void* RenderingHelper::GetGLDisplay() {
 }
 
 void RenderingHelper::Clear() {
-  window_dimensions_.clear();
   frame_dimensions_.clear();
   texture_id_to_surface_index_.clear();
   message_loop_ = NULL;
   gl_context_ = NULL;
 #if GL_VARIANT_EGL
   gl_display_ = EGL_NO_DISPLAY;
-  gl_surfaces_.clear();
+  gl_surface_ = EGL_NO_SURFACE;
 #endif
   render_as_thumbnails_ = false;
   frame_count_ = 0;
@@ -515,19 +534,19 @@ void RenderingHelper::Clear() {
   thumbnails_texture_id_ = 0;
 
 #if defined(OS_WIN)
-  for (size_t i = 0; i < windows_.size(); ++i) {
-    DestroyWindow(windows_[i]);
+  if (window_) {
+    DestroyWindow(window_);
+    window_ = NULL;
   }
-  windows_.clear();
 #else
   // Destroy resources acquired in Initialize, in reverse-acquisition order.
-  for (size_t i = 0; i < x_windows_.size(); ++i) {
-    CHECK(XUnmapWindow(x_display_, x_windows_[i]));
-    CHECK(XDestroyWindow(x_display_, x_windows_[i]));
+  if (x_window_) {
+    CHECK(XUnmapWindow(x_display_, x_window_));
+    CHECK(XDestroyWindow(x_display_, x_window_));
+    x_window_ = (Window)0;
   }
   // Mimic newly created object.
   x_display_ = NULL;
-  x_windows_.clear();
 #endif
 }
 
@@ -567,4 +586,17 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
   done->Signal();
 }
 
+void RenderingHelper::RenderContent() {
+  glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
+  for (size_t i = 0; i < render_areas_.size(); ++i) {
+    DrawTexture(render_areas_[i], texture_targets_[i], texture_ids_[i]);
+  }
+
+#if GL_VARIANT_GLX
+  glXSwapBuffers(x_display_, x_window_);
+#else  // EGL
+  eglSwapBuffers(gl_display_, gl_surface_);
+  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
+#endif
+}
 }  // namespace content
