@@ -101,7 +101,7 @@ SVGElement::~SVGElement()
     }
 
     // With Oilpan, either removedFrom has been called or the document is dead
-    // as well and there is no reason to clear out the extensions.
+    // as well and there is no reason to clear out the references.
     document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
 #endif

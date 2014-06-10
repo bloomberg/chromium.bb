@@ -307,10 +307,10 @@ Element* SVGDocumentExtensions::removeElementFromPendingResourcesForRemoval(cons
     return element;
 }
 
-HashSet<SVGElement*>* SVGDocumentExtensions::setOfElementsReferencingTarget(SVGElement* referencedElement) const
+SVGElementSet* SVGDocumentExtensions::setOfElementsReferencingTarget(SVGElement* referencedElement) const
 {
     ASSERT(referencedElement);
-    const HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > >::const_iterator it = m_elementDependencies.find(referencedElement);
+    const ElementDependenciesMap::const_iterator it = m_elementDependencies.find(referencedElement);
     if (it == m_elementDependencies.end())
         return 0;
     return it->value.get();
@@ -321,25 +321,25 @@ void SVGDocumentExtensions::addElementReferencingTarget(SVGElement* referencingE
     ASSERT(referencingElement);
     ASSERT(referencedElement);
 
-    if (HashSet<SVGElement*>* elements = m_elementDependencies.get(referencedElement)) {
+    if (SVGElementSet* elements = m_elementDependencies.get(referencedElement)) {
         elements->add(referencingElement);
         return;
     }
 
-    OwnPtr<HashSet<SVGElement*> > elements = adoptPtr(new HashSet<SVGElement*>);
+    OwnPtrWillBeRawPtr<SVGElementSet> elements = adoptPtrWillBeNoop(new SVGElementSet);
     elements->add(referencingElement);
     m_elementDependencies.set(referencedElement, elements.release());
 }
 
 void SVGDocumentExtensions::removeAllTargetReferencesForElement(SVGElement* referencingElement)
 {
-    Vector<SVGElement*> toBeRemoved;
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > toBeRemoved;
 
-    HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > >::iterator end = m_elementDependencies.end();
-    for (HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > >::iterator it = m_elementDependencies.begin(); it != end; ++it) {
+    ElementDependenciesMap::iterator end = m_elementDependencies.end();
+    for (ElementDependenciesMap::iterator it = m_elementDependencies.begin(); it != end; ++it) {
         SVGElement* referencedElement = it->key;
-        HashSet<SVGElement*>* referencingElements = it->value.get();
-        HashSet<SVGElement*>::iterator setIt = referencingElements->find(referencingElement);
+        SVGElementSet* referencingElements = it->value.get();
+        SVGElementSet::iterator setIt = referencingElements->find(referencingElement);
         if (setIt == referencingElements->end())
             continue;
 
@@ -354,22 +354,20 @@ void SVGDocumentExtensions::removeAllTargetReferencesForElement(SVGElement* refe
 void SVGDocumentExtensions::rebuildAllElementReferencesForTarget(SVGElement* referencedElement)
 {
     ASSERT(referencedElement);
-    HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > >::iterator it = m_elementDependencies.find(referencedElement);
+    ElementDependenciesMap::iterator it = m_elementDependencies.find(referencedElement);
     if (it == m_elementDependencies.end())
         return;
     ASSERT(it->key == referencedElement);
-    Vector<SVGElement*> toBeNotified;
 
-    HashSet<SVGElement*>* referencingElements = it->value.get();
-    HashSet<SVGElement*>::iterator setEnd = referencingElements->end();
-    for (HashSet<SVGElement*>::iterator setIt = referencingElements->begin(); setIt != setEnd; ++setIt)
-        toBeNotified.append(*setIt);
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > toBeNotified;
+    SVGElementSet* referencingElements = it->value.get();
+    copyToVector(*referencingElements, toBeNotified);
 
     // Force rebuilding the referencingElement so it knows about this change.
-    Vector<SVGElement*>::iterator vectorEnd = toBeNotified.end();
-    for (Vector<SVGElement*>::iterator vectorIt = toBeNotified.begin(); vectorIt != vectorEnd; ++vectorIt) {
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::iterator vectorEnd = toBeNotified.end();
+    for (WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::iterator vectorIt = toBeNotified.begin(); vectorIt != vectorEnd; ++vectorIt) {
         // Before rebuilding referencingElement ensure it was not removed from under us.
-        if (HashSet<SVGElement*>* referencingElements = setOfElementsReferencingTarget(referencedElement)) {
+        if (SVGElementSet* referencingElements = setOfElementsReferencingTarget(referencedElement)) {
             if (referencingElements->contains(*vectorIt))
                 (*vectorIt)->svgAttributeChanged(XLinkNames::hrefAttr);
         }
@@ -379,7 +377,7 @@ void SVGDocumentExtensions::rebuildAllElementReferencesForTarget(SVGElement* ref
 void SVGDocumentExtensions::removeAllElementReferencesForTarget(SVGElement* referencedElement)
 {
     ASSERT(referencedElement);
-    HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > >::iterator it = m_elementDependencies.find(referencedElement);
+    ElementDependenciesMap::iterator it = m_elementDependencies.find(referencedElement);
     if (it == m_elementDependencies.end())
         return;
     ASSERT(it->key == referencedElement);
@@ -480,9 +478,11 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
 
 void SVGDocumentExtensions::trace(Visitor* visitor)
 {
+    visitor->trace(m_document);
     visitor->trace(m_timeContainers);
     visitor->trace(m_svgFontFaceElements);
     visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
+    visitor->trace(m_elementDependencies);
     visitor->trace(m_relativeLengthSVGRoots);
 }
 

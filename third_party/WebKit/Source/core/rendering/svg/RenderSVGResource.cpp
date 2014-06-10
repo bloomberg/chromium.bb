@@ -183,24 +183,27 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
 
     if (!object->node() || !object->node()->isSVGElement())
         return;
-    HashSet<SVGElement*>* dependencies = object->document().accessSVGExtensions().setOfElementsReferencingTarget(toSVGElement(object->node()));
+    SVGElementSet* dependencies = object->document().accessSVGExtensions().setOfElementsReferencingTarget(toSVGElement(object->node()));
     if (!dependencies)
         return;
 
     // We allow cycles in SVGDocumentExtensions reference sets in order to avoid expensive
     // reference graph adjustments on changes, so we need to break possible cycles here.
-    DEFINE_STATIC_LOCAL(HashSet<SVGElement*>, invalidatingDependencies, ());
+    // This strong reference is safe, as it is guaranteed that this set will be emptied
+    // at the end of recursion.
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGElementSet>, invalidatingDependencies, (adoptPtrWillBeNoop(new SVGElementSet)));
 
-    HashSet<SVGElement*>::iterator end = dependencies->end();
-    for (HashSet<SVGElement*>::iterator it = dependencies->begin(); it != end; ++it) {
+    SVGElementSet::iterator end = dependencies->end();
+    for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
         if (RenderObject* renderer = (*it)->renderer()) {
-            if (UNLIKELY(!invalidatingDependencies.add(*it).isNewEntry)) {
+            if (UNLIKELY(!invalidatingDependencies->add(*it).isNewEntry)) {
                 // Reference cycle: we are in process of invalidating this dependant.
                 continue;
             }
 
             RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
-            invalidatingDependencies.remove(*it);
+            invalidatingDependencies->remove(*it);
         }
     }
 }

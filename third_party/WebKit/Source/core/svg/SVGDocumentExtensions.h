@@ -42,6 +42,8 @@ class SVGSMILElement;
 class SVGSVGElement;
 class Element;
 
+typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
+
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
     WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -67,7 +69,7 @@ public:
 
     SVGResourcesCache* resourcesCache() const { return m_resourcesCache.get(); }
 
-    HashSet<SVGElement*>* setOfElementsReferencingTarget(SVGElement* referencedElement) const;
+    SVGElementSet* setOfElementsReferencingTarget(SVGElement* referencedElement) const;
     void addElementReferencingTarget(SVGElement* referencingElement, SVGElement* referencedElement);
     void removeAllTargetReferencesForElement(SVGElement*);
     void rebuildAllElementReferencesForTarget(SVGElement*);
@@ -98,7 +100,7 @@ public:
     void trace(Visitor*);
 
 private:
-    Document* m_document; // weak reference
+    RawPtrWillBeMember<Document> m_document;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_timeContainers; // For SVG 1.2 support this will need to be made more general.
 #if ENABLE(SVG_FONTS)
     WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> > m_svgFontFaceElements;
@@ -108,7 +110,8 @@ private:
     HashMap<AtomicString, RenderSVGResourceContainer*> m_resources;
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResources; // Resources that are pending.
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
-    HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > > m_elementDependencies;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<SVGElement>, OwnPtrWillBeMember<SVGElementSet> > ElementDependenciesMap;
+    ElementDependenciesMap m_elementDependencies;
     OwnPtr<SVGResourcesCache> m_resourcesCache;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
