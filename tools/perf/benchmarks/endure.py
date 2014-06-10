@@ -21,8 +21,8 @@ class _EndureBenchmark(test.Test):
   # Default options for endure benchmarks. Could be overridden in subclasses.
   options = {
       # Depending on the page and the actions performed on the page,
-      # 2000 iterations should be between 1 and 2 hours.
-      'page_repeat': 2000,
+      # 1000 iterations should be between 30 and 60 minutes.
+      'page_repeat': 1000,
       # One sample per 10 iterations -> 200 points per run.
       'perf_stats_interval': 10
   }
