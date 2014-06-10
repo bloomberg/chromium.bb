@@ -1586,10 +1586,7 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
     }
 
     const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    if (hasLayer())
-        toRenderLayerModelObject(this)->layer()->mapRectToRepaintBacking(repaintContainer, dirtyRect);
-    else
-        mapRectToRepaintBacking(repaintContainer, dirtyRect);
+    RenderLayer::mapRectToRepaintBacking(this, repaintContainer, dirtyRect);
     repaintUsingContainer(repaintContainer, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }
 

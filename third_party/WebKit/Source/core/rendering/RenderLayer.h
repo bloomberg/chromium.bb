@@ -339,8 +339,8 @@ public:
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
 
-    // Adjusts the given rect to the coordinate space of the repaint container's GraphicsLayer backing.
-    void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&) const;
+    // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |repaintContainer|'s GraphicsLayer backing.
+    static void mapRectToRepaintBacking(const RenderObject*, const RenderLayerModelObject* repaintContainer, LayoutRect&);
 
     // Computes the bounding repaint rect for |renderObject|, in the coordinate space of |repaintContainer|'s GraphicsLayer backing.
     static LayoutRect computeRepaintRect(const RenderObject*, const RenderLayer* repaintContainer);

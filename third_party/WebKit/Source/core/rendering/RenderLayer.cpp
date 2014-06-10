@@ -693,15 +693,15 @@ void RenderLayer::updatePagination()
     }
 }
 
-void RenderLayer::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect) const
+void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer, LayoutRect& rect)
 {
     if (!repaintContainer->groupedMapping()) {
-        m_renderer->mapRectToRepaintBacking(repaintContainer, rect);
+        renderObject->mapRectToRepaintBacking(repaintContainer, rect);
         return;
     }
 
-    ASSERT(enclosingTransformedAncestor());
-    ASSERT(enclosingTransformedAncestor()->renderer());
+    ASSERT(repaintContainer->layer()->enclosingTransformedAncestor());
+    ASSERT(repaintContainer->layer()->enclosingTransformedAncestor()->renderer());
 
     // FIXME: this defensive code should not have to exist. None of these pointers should ever be 0. See crbug.com/370410.
     RenderLayerModelObject* transformedAncestor = 0;
@@ -720,7 +720,7 @@ void RenderLayer::mapRectToRepaintBacking(const RenderLayerModelObject* repaintC
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
-    m_renderer->mapRectToRepaintBacking(transformedAncestor, rect);
+    renderObject->mapRectToRepaintBacking(transformedAncestor, rect);
     rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 
     return;
@@ -731,7 +731,7 @@ LayoutRect RenderLayer::computeRepaintRect(const RenderObject* renderObject, con
     if (!repaintContainer->groupedMapping())
         return renderObject->computeRepaintRect(repaintContainer->renderer());
     LayoutRect rect = renderObject->clippedOverflowRectForRepaint(repaintContainer->renderer());
-    repaintContainer->mapRectToRepaintBacking(repaintContainer->renderer(), rect);
+    mapRectToRepaintBacking(repaintContainer->renderer(), repaintContainer->renderer(), rect);
     return rect;
 }
 
