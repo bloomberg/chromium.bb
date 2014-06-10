@@ -466,8 +466,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 
   // SwapAck throttle the BeginMainFrames
   // TODO(brianderson): Remove this restriction to improve throughput.
-  if (pending_swaps_ >= max_pending_swaps_ &&
-      begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
+  if (pending_swaps_ >= max_pending_swaps_)
     return false;
 
   if (skip_begin_main_frame_to_reduce_latency_)
