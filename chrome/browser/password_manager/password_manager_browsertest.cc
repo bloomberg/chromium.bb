@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -173,23 +174,83 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  // Executes |script| and uses the EXPECT macros to check the return value
-  // against |expected_return_value|.
-  void CheckScriptReturnValue(std::string& script, bool expected_return_value);
+  // Waits until the "value" attribute of the HTML element with |element_id| is
+  // equal to |expected_value|. If the current value is not as expected, this
+  // waits until the "change" event is fired for the element. This also
+  // guarantees that once the real value matches the expected, the JavaScript
+  // event loop is spun to allow all other possible events to take place.
+  void WaitForElementValue(const std::string& element_id,
+                           const std::string& expected_value);
+  // Checks that the current "value" attribute of the HTML element with
+  // |element_id| is equal to |expected_value|.
+  void CheckElementValue(const std::string& element_id,
+                         const std::string& expected_value);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTest);
 };
 
-void PasswordManagerBrowserTest::CheckScriptReturnValue(
-    std::string& script,
-    bool expected_return_value) {
-  const std::string wrapped_script =
-      std::string("window.domAutomationController.send(") + script + ");";
-  bool return_value = !expected_return_value;
+void PasswordManagerBrowserTest::WaitForElementValue(
+    const std::string& element_id,
+    const std::string& expected_value) {
+  enum ReturnCodes {  // Possible results of the JavaScript code.
+    RETURN_CODE_OK,
+    RETURN_CODE_NO_ELEMENT,
+    RETURN_CODE_WRONG_VALUE,
+    RETURN_CODE_INVALID,
+  };
+  const std::string value_check_function = base::StringPrintf(
+      "function valueCheck() {"
+      "  var element = document.getElementById('%s');"
+      "  return element && element.value == '%s';"
+      "}",
+      element_id.c_str(),
+      expected_value.c_str());
+  const std::string script =
+      value_check_function +
+      base::StringPrintf(
+          "if (valueCheck()) {"
+          "  /* Spin the event loop with setTimeout. */"
+          "  setTimeout(window.domAutomationController.send(%d), 0);"
+          "} else {"
+          "  var element = document.getElementById('%s');"
+          "  if (!element)"
+          "    window.domAutomationController.send(%d);"
+          "  element.onchange = function() {"
+          "    if (valueCheck()) {"
+          "      /* Spin the event loop with setTimeout. */"
+          "      setTimeout(window.domAutomationController.send(%d), 0);"
+          "    } else {"
+          "      window.domAutomationController.send(%d);"
+          "    }"
+          "  };"
+          "}",
+          RETURN_CODE_OK,
+          element_id.c_str(),
+          RETURN_CODE_NO_ELEMENT,
+          RETURN_CODE_OK,
+          RETURN_CODE_WRONG_VALUE);
+  int return_value = RETURN_CODE_INVALID;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(), script, &return_value));
+  EXPECT_EQ(RETURN_CODE_OK, return_value)
+      << "element_id = " << element_id
+      << ", expected_value = " << expected_value;
+}
+
+void PasswordManagerBrowserTest::CheckElementValue(
+    const std::string& element_id,
+    const std::string& expected_value) {
+  const std::string value_check_script = base::StringPrintf(
+      "var element = document.getElementById('%s');"
+      "window.domAutomationController.send(element && element.value == '%s');",
+      element_id.c_str(),
+      expected_value.c_str());
+  bool return_value = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      RenderViewHost(), wrapped_script, &return_value));
-  EXPECT_EQ(expected_return_value, return_value) << "script = " << script;
+      RenderViewHost(), value_check_script, &return_value));
+  EXPECT_TRUE(return_value) << "element_id = " << element_id
+                            << ", expected_value = " << expected_value;
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -593,14 +654,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
   // The only thing we check here is that there is no use-after-free reported.
 }
 
-// Disabled on Windows due to flakiness: http://crbug.com/346297
-#if defined(OS_WIN)
-#define MAYBE_PasswordValueAccessible DISABLED_PasswordValueAccessible
-#else
-#define MAYBE_PasswordValueAccessible PasswordValueAccessible
-#endif
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_PasswordValueAccessible) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PasswordValueAccessible) {
   NavigateToFile("/password/form_and_link.html");
 
   // Click on a link to open a new tab, then switch back to the first one.
@@ -626,18 +680,18 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   NavigateToFile("/password/form_and_link.html");
   reload_observer.Wait();
 
-  // Check that while the username is immediately available, the password value
-  // needs a user interaction to show up.
-  std::string check_username =
-      "document.getElementById('username_field').value == 'temp'";
-  std::string check_password =
-      "document.getElementById('password_field').value == 'random'";
-  CheckScriptReturnValue(check_username, true);
-  CheckScriptReturnValue(check_password, false);
-  content::SimulateMouseClick(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft);
-  CheckScriptReturnValue(check_username, true);
-  CheckScriptReturnValue(check_password, true);
+  // Wait until the username is filled, to make sure autofill kicked in.
+  WaitForElementValue("username_field", "temp");
+  // Now check that the password is not accessible yet.
+  CheckElementValue("password_field", "");
+  // Let the user interact with the page.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+  // Wait until that interaction causes the password value to be revealed.
+  WaitForElementValue("password_field", "random");
+  // And check that after the side-effects of the interaction took place, the
+  // username value stays the same.
+  CheckElementValue("username_field", "temp");
 }
 
 // The following test is limited to Aura, because
