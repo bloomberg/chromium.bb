@@ -52,23 +52,6 @@ class FloatRect;
 class FloatSize;
 class GraphicsContext;
 
-// Used by computeResamplingMode to tell how bitmaps should be resampled.
-enum ResamplingMode {
-    // Nearest neighbor resampling. Used when we detect that the page is
-    // trying to make a pattern by stretching a small bitmap very large.
-    NoResampling,
-
-    // Default skia resampling. Used for large growing of images where high
-    // quality resampling doesn't get us very much except a slowdown.
-    LinearResampling,
-
-    // LinearResampling for upscaling. Mipmapping for downscaling.
-    LinearWithMipmapsResampling,
-
-    // High quality resampling.
-    AwesomeResampling,
-};
-
 // This object is used as the "native image" in our port. When WebKit uses
 // PassNativeImagePtr / NativeImagePtr, it is a smart pointer to this type.
 // It has an SkBitmap, and also stores a cached resized image.
@@ -169,7 +152,7 @@ private:
     // entire thing, it's best to just do it up front.
     bool shouldCacheResampling(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
-    ResamplingMode computeResamplingMode(const SkMatrix&, float srcWidth, float srcHeight, float destWidth, float destHeight) const;
+    InterpolationQuality computeInterpolationQuality(const SkMatrix&, float srcWidth, float srcHeight, float destWidth, float destHeight) const;
     SkBitmap extractScaledImageFragment(const SkRect& srcRect, float scaleX, float scaleY, SkRect* scaledSrcRect) const;
     void drawResampledBitmap(GraphicsContext*, SkPaint&, const SkRect& srcRect, const SkRect& destRect) const;
 
