@@ -93,8 +93,8 @@ public:
     void dispatchDisplayEvent() { dispatchShowEvent(); }
 
 #if BLINK_IMPLEMENTATION
-    WebNotification(const WTF::RawPtr<WebCore::Notification>&);
-    WebNotification& operator=(const WTF::RawPtr<WebCore::Notification>&);
+    WebNotification(WebCore::Notification*);
+    WebNotification& operator=(WebCore::Notification*);
 #endif
 
 private:

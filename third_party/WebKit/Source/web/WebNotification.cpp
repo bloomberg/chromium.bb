@@ -114,12 +114,12 @@ void WebNotification::dispatchClickEvent()
     m_private->dispatchClickEvent();
 }
 
-WebNotification::WebNotification(const WTF::RawPtr<Notification>& notification)
+WebNotification::WebNotification(Notification* notification)
     : m_private(notification)
 {
 }
 
-WebNotification& WebNotification::operator=(const WTF::RawPtr<Notification>& notification)
+WebNotification& WebNotification::operator=(Notification* notification)
 {
     m_private = notification;
     return *this;
