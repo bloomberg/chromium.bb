@@ -185,6 +185,9 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+      file_path = file_path.NormalizePathSeparators();
+#endif  // defined(FILE_PATH_USES_WIN_SEPARATORS)
       root_hashes_[file_path] = std::string();
       root_hashes_[file_path].swap(root_hash);
     }

@@ -76,10 +76,13 @@ TEST(VerifiedContents, Simple) {
       "txHiG5KQvNoPOSH5FbQo9Zb5gJ23j3oFB0Ru9DOnziw",
       contents.GetTreeHashRoot(
           base::FilePath::FromUTF8Unsafe("background.js"))));
-  EXPECT_TRUE(Base64UrlStringEquals(
-      "L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU",
-      contents.GetTreeHashRoot(
-          base::FilePath::FromUTF8Unsafe("foo/bar.html"))));
+
+  base::FilePath foo_bar_html =
+      base::FilePath(FILE_PATH_LITERAL("foo")).AppendASCII("bar.html");
+  EXPECT_FALSE(foo_bar_html.IsAbsolute());
+  EXPECT_TRUE(
+      Base64UrlStringEquals("L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU",
+                            contents.GetTreeHashRoot(foo_bar_html)));
 
   base::FilePath nonexistent = base::FilePath::FromUTF8Unsafe("nonexistent");
   EXPECT_TRUE(contents.GetTreeHashRoot(nonexistent) == NULL);
