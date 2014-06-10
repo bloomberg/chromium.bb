@@ -19,6 +19,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -55,6 +56,10 @@ content::DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
 #else
   return static_cast<content::DesktopMediaID::Id>(accelerated_widget);
 #endif
+}
+
+int GetMediaListViewHeightForRows(size_t rows) {
+  return kListItemHeight * rows;
 }
 
 class DesktopMediaListView;
@@ -179,6 +184,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
       ui::DialogButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
+
+  void OnMediaListRowsChanged();
 
  private:
   DesktopMediaPickerViews* parent_;
@@ -390,7 +397,7 @@ DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
 
 gfx::Size DesktopMediaListView::GetPreferredSize() const {
   int total_rows = (child_count() + kListColumns - 1) / kListColumns;
-  return gfx::Size(kTotalListWidth, kListItemHeight * total_rows);
+  return gfx::Size(kTotalListWidth, GetMediaListViewHeightForRows(total_rows));
 }
 
 void DesktopMediaListView::Layout() {
@@ -470,6 +477,9 @@ void DesktopMediaListView::OnSourceAdded(int index) {
   AddChildViewAt(source_view, index);
 
   PreferredSizeChanged();
+
+  if (child_count() % kListColumns == 1)
+    parent_->OnMediaListRowsChanged();
 }
 
 void DesktopMediaListView::OnSourceRemoved(int index) {
@@ -485,6 +495,9 @@ void DesktopMediaListView::OnSourceRemoved(int index) {
     OnSelectionChanged();
 
   PreferredSizeChanged();
+
+  if (child_count() % kListColumns == 0)
+    parent_->OnMediaListRowsChanged();
 }
 
 void DesktopMediaListView::OnSourceMoved(int old_index, int new_index) {
@@ -533,6 +546,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   AddChildView(label_);
 
   scroll_view_->SetContents(list_view_);
+  scroll_view_->ClipHeightTo(
+      GetMediaListViewHeightForRows(1), GetMediaListViewHeightForRows(2));
   AddChildView(scroll_view_);
 
   // If |parent_web_contents| is set, the picker will be shown modal to the
@@ -581,12 +596,23 @@ void DesktopMediaPickerDialogView::DetachParent() {
 }
 
 gfx::Size DesktopMediaPickerDialogView::GetPreferredSize() const {
-  return gfx::Size(600, 500);
+  static const size_t kDialogViewWidth = 600;
+  const gfx::Insets title_insets = views::BubbleFrameView::GetTitleInsets();
+  size_t label_height =
+      label_->GetHeightForWidth(kDialogViewWidth - title_insets.height() * 2);
+
+  return gfx::Size(kDialogViewWidth,
+                   views::kPanelVertMargin * 2 + label_height +
+                       views::kPanelVerticalSpacing +
+                       scroll_view_->GetPreferredSize().height());
 }
 
 void DesktopMediaPickerDialogView::Layout() {
+  // DialogDelegate uses the bubble style frame.
+  const gfx::Insets title_insets = views::BubbleFrameView::GetTitleInsets();
   gfx::Rect rect = GetLocalBounds();
-  rect.Inset(views::kPanelHorizMargin, views::kPanelVertMargin);
+
+  rect.Inset(title_insets.left(), views::kPanelVertMargin);
 
   gfx::Rect label_rect(rect.x(), rect.y(), rect.width(),
                        label_->GetHeightForWidth(rect.width()));
@@ -650,6 +676,15 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
 void DesktopMediaPickerDialogView::OnDoubleClick() {
   // This will call Accept() and close the dialog.
   GetDialogClientView()->AcceptWindow();
+}
+
+void DesktopMediaPickerDialogView::OnMediaListRowsChanged() {
+  gfx::Rect widget_bound = GetWidget()->GetWindowBoundsInScreen();
+
+  int new_height = widget_bound.height() - scroll_view_->height() +
+      scroll_view_->GetPreferredSize().height();
+
+  GetWidget()->CenterWindow(gfx::Size(widget_bound.width(), new_height));
 }
 
 DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {

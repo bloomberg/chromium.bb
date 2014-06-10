@@ -175,27 +175,38 @@ void DesktopMediaListAsh::EnumerateSources(
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
+  for (size_t i = 0; i < root_windows.size(); ++i) {
     if (source_types_ & SCREENS) {
       SourceDescription screen_source(
-          content::DesktopMediaID::RegisterAuraWindow(*iter), (*iter)->title());
-      if (*iter == ash::Shell::GetPrimaryRootWindow()) {
+          content::DesktopMediaID::RegisterAuraWindow(root_windows[i]),
+          root_windows[i]->title());
+
+      if (root_windows[i] == ash::Shell::GetPrimaryRootWindow())
         sources->insert(sources->begin(), screen_source);
-      } else {
+      else
         sources->push_back(screen_source);
+
+      if (screen_source.name.empty()) {
+        if (root_windows.size() > 1) {
+          screen_source.name = l10n_util::GetStringFUTF16Int(
+              IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
+              static_cast<int>(i + 1));
+        } else {
+          screen_source.name = l10n_util::GetStringUTF16(
+              IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME);
+        }
       }
 
-      CaptureThumbnail(screen_source.id, *iter);
+      CaptureThumbnail(screen_source.id, root_windows[i]);
     }
 
     if (source_types_ & WINDOWS) {
       EnumerateWindowsForRoot(
-          sources, *iter, ash::kShellWindowId_DefaultContainer);
+          sources, root_windows[i], ash::kShellWindowId_DefaultContainer);
       EnumerateWindowsForRoot(
-          sources, *iter, ash::kShellWindowId_AlwaysOnTopContainer);
+          sources, root_windows[i], ash::kShellWindowId_AlwaysOnTopContainer);
       EnumerateWindowsForRoot(
-          sources, *iter, ash::kShellWindowId_DockedContainer);
+          sources, root_windows[i], ash::kShellWindowId_DockedContainer);
     }
   }
 }
