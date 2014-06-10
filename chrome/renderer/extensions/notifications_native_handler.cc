@@ -25,7 +25,7 @@ NotificationsNativeHandler::NotificationsNativeHandler(ScriptContext* context)
 
 void NotificationsNativeHandler::GetNotificationImageSizes(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  NotificationBitmapSizes bitmap_sizes = NotificationBitmapSizes();
+  NotificationBitmapSizes bitmap_sizes = GetNotificationBitmapSizes();
 
   float scale_factor =
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactors().back());

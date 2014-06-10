@@ -8,6 +8,17 @@ const red_dot = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA" +
     "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO" +
     "9TXL0Y4OHwAAAABJRU5ErkJggg==";
 
+function createBigImageUrl() {
+  var canvas = document.createElement('canvas');
+  canvas.width = 5000;
+  canvas.height = 5000;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = "rgb(200, 0, 0)";
+  ctx.fillRect(10, 20, 30, 40);
+
+  return canvas.toDataURL();
+};
+
 var basicNotificationOptions = {
   type: "basic",
   title: "Basic title",
@@ -300,6 +311,21 @@ function testProgress() {
     }).then(fail, succeed);
 }
 
+function testLargeImage() {
+  var testName = "testLargeImage";
+  console.log("Starting " + testName);
+  var succeed = succeedTest(testName);
+  var fail = failTest(testName);
+  var options = {
+    type: "basic",
+    title: "Basic title",
+    message: "Basic message",
+    iconUrl: createBigImageUrl(),
+  };
+  create("largeImage", options).then(succeed, fail);
+}
+
 chrome.test.runTests([
-    testIdUsage, testBaseFormat, testListItem, testGetAll, testProgress
+    testIdUsage, testBaseFormat, testListItem, testGetAll, testProgress,
+    testLargeImage
 ]);
