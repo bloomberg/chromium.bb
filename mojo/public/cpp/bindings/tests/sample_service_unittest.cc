@@ -81,9 +81,7 @@ FooPtr MakeFoo() {
     array_of_array_of_bools[i] = array_of_bools.Pass();
   }
 
-  mojo::ScopedMessagePipeHandle pipe0, pipe1;
-  mojo::CreateMessagePipe(&pipe0, &pipe1);
-
+  mojo::MessagePipe pipe;
   FooPtr foo(Foo::New());
   foo->name = name;
   foo->x = 1;
@@ -94,7 +92,7 @@ FooPtr MakeFoo() {
   foo->bar = bar.Pass();
   foo->extra_bars = extra_bars.Pass();
   foo->data = data.Pass();
-  foo->source = pipe1.Pass();
+  foo->source = pipe.handle1.Pass();
   foo->input_streams = input_streams.Pass();
   foo->output_streams = output_streams.Pass();
   foo->array_of_array_of_bools = array_of_array_of_bools.Pass();

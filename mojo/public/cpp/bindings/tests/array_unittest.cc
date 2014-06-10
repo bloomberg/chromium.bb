@@ -35,37 +35,33 @@ TEST(ArrayTest, Bool) {
 
 // Tests that Array<ScopedMessagePipeHandle> supports transferring handles.
 TEST(ArrayTest, Handle) {
-  ScopedMessagePipeHandle pipe0, pipe1;
-  CreateMessagePipe(&pipe0, &pipe1);
-
+  MessagePipe pipe;
   Array<ScopedMessagePipeHandle> handles(2);
-  handles[0] = pipe0.Pass();
-  handles[1].reset(pipe1.release());
+  handles[0] = pipe.handle0.Pass();
+  handles[1].reset(pipe.handle1.release());
 
-  EXPECT_FALSE(pipe0.is_valid());
-  EXPECT_FALSE(pipe1.is_valid());
+  EXPECT_FALSE(pipe.handle0.is_valid());
+  EXPECT_FALSE(pipe.handle1.is_valid());
 
   Array<ScopedMessagePipeHandle> handles2 = handles.Pass();
   EXPECT_TRUE(handles2[0].is_valid());
   EXPECT_TRUE(handles2[1].is_valid());
 
-  pipe0 = handles2[0].Pass();
-  EXPECT_TRUE(pipe0.is_valid());
+  ScopedMessagePipeHandle pipe_handle = handles2[0].Pass();
+  EXPECT_TRUE(pipe_handle.is_valid());
   EXPECT_FALSE(handles2[0].is_valid());
 }
 
 // Tests that Array<ScopedMessagePipeHandle> supports closing handles.
 TEST(ArrayTest, HandlesAreClosed) {
-  ScopedMessagePipeHandle pipe0, pipe1;
-  CreateMessagePipe(&pipe0, &pipe1);
-
-  MojoHandle pipe0_value = pipe0.get().value();
-  MojoHandle pipe1_value = pipe1.get().value();
+  MessagePipe pipe;
+  MojoHandle pipe0_value = pipe.handle0.get().value();
+  MojoHandle pipe1_value = pipe.handle0.get().value();
 
   {
     Array<ScopedMessagePipeHandle> handles(2);
-    handles[0] = pipe0.Pass();
-    handles[1].reset(pipe1.release());
+    handles[0] = pipe.handle0.Pass();
+    handles[1].reset(pipe.handle0.release());
   }
 
   // We expect the pipes to have been closed.
