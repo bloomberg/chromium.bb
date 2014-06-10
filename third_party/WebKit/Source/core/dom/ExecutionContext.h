@@ -70,7 +70,6 @@ public:
     virtual ~ExecutionContext();
 
     // Delegating to ExecutionContextClient
-    void setClient(ExecutionContextClient* client) { m_client = client; }
     bool isDocument() const { return m_client && m_client->isDocument(); }
     bool isWorkerGlobalScope() const { return m_client && m_client->isWorkerGlobalScope(); }
     bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
@@ -130,6 +129,7 @@ public:
     virtual EventQueue* eventQueue() const = 0;
 
 protected:
+    void setClient(ExecutionContextClient* client) { m_client = client; }
 
     ContextLifecycleNotifier& lifecycleNotifier();
 
