@@ -34,7 +34,8 @@
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
-#include <unicode/uidna.h>
+#include <unicode/idna.h>
+#include <unicode/unistr.h>
 
 namespace WebCore {
 
@@ -49,8 +50,9 @@ static const char emailPattern[] =
     "(?:\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*";
 
 // RFC5321 says the maximum total length of a domain name is 255 octets.
-static const size_t maximumDomainNameLength = 255;
-static const int32_t idnaConversionOption = UIDNA_ALLOW_UNASSIGNED;
+static const int32_t maximumDomainNameLength = 255;
+// Use the same option as in url/url_canon_icu.cc
+static const int32_t idnaConversionOption = UIDNA_CHECK_BIDI;
 
 static String convertEmailAddressToASCII(const String& address)
 {
@@ -61,15 +63,24 @@ static String convertEmailAddressToASCII(const String& address)
     if (atPosition == kNotFound)
         return address;
 
-    UErrorCode error = U_ZERO_ERROR;
-    UChar domainNameBuffer[maximumDomainNameLength];
-    int32_t domainNameLength = uidna_IDNToASCII(address.charactersWithNullTermination().data() + atPosition + 1, address.length() - atPosition - 1, domainNameBuffer, WTF_ARRAY_LENGTH(domainNameBuffer), idnaConversionOption, 0, &error);
-    if (error != U_ZERO_ERROR || domainNameLength <= 0)
+    // UnicodeString ctor for copy-on-write does not work reliably (in debug
+    // build.) TODO(jshin): In an unlikely case this is a perf-issue, treat
+    // 8bit and non-8bit strings separately.
+    icu::UnicodeString idnDomainName(address.charactersWithNullTermination().data() + atPosition + 1, address.length() - atPosition - 1);
+    icu::UnicodeString domainName;
+
+    // Leak |idna| at the end.
+    UErrorCode errorCode = U_ZERO_ERROR;
+    static icu::IDNA *idna = icu::IDNA::createUTS46Instance(idnaConversionOption, errorCode);
+    ASSERT(idna);
+    icu::IDNAInfo idnaInfo;
+    idna->nameToASCII(idnDomainName, domainName, idnaInfo, errorCode);
+    if (U_FAILURE(errorCode) || idnaInfo.hasErrors() || domainName.length() > maximumDomainNameLength)
         return address;
 
     StringBuilder builder;
     builder.append(address, 0, atPosition + 1);
-    builder.append(domainNameBuffer, domainNameLength);
+    builder.append(domainName.getBuffer(), domainName.length());
     return builder.toString();
 }
 
