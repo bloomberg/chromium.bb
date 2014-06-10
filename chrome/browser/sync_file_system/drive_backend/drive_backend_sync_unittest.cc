@@ -87,6 +87,10 @@ class DriveBackendSyncTest : public testing::Test,
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     file_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::FILE);
+    scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
+        worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+            worker_pool->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
     RegisterSyncableFileSystem();
     local_sync_service_ = LocalFileSyncService::CreateForTesting(
@@ -107,15 +111,22 @@ class DriveBackendSyncTest : public testing::Test,
         kSyncRootFolderTitle));
 
     remote_sync_service_.reset(new SyncEngine(
-        drive_service.PassAs<drive::DriveServiceInterface>(),
-        uploader.Pass(),
-        file_task_runner_.get(),
-        NULL, NULL, NULL));
+        base::MessageLoopProxy::current(),  // ui_task_runner
+        worker_task_runner_,
+        file_task_runner_,
+        drive_task_runner,
+        base_dir_.path(),
+        NULL,  // task_logger
+        NULL,  // notification_manager
+        NULL,  // extension_service
+        NULL,  // signin_manager
+        NULL,  // token_service
+        NULL,  // request_context
+        in_memory_env_.get()));
     remote_sync_service_->AddServiceObserver(this);
-    remote_sync_service_->Initialize(base_dir_.path(),
-                                     NULL,
-                                     worker_task_runner_.get(),
-                                     in_memory_env_.get());
+    remote_sync_service_->InitializeForTesting(
+        drive_service.PassAs<drive::DriveServiceInterface>(),
+        uploader.Pass());
     remote_sync_service_->SetSyncEnabled(true);
 
     local_sync_service_->SetLocalChangeProcessor(remote_sync_service_.get());

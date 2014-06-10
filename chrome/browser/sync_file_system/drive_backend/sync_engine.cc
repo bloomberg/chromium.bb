@@ -51,6 +51,7 @@
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -171,57 +172,48 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     TaskLogger* task_logger) {
   scoped_refptr<base::SequencedWorkerPool> worker_pool(
       content::BrowserThread::GetBlockingPool());
-  scoped_refptr<base::SequencedTaskRunner> drive_task_runner(
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      base::MessageLoopProxy::current();
+  // TODO(peria): Create another task runner to manage SyncWorker.
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
+      base::MessageLoopProxy::current();
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   Profile* profile = Profile::FromBrowserContext(context);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  scoped_ptr<drive::DriveServiceInterface> drive_service(
-      new drive::DriveAPIService(
-          token_service,
-          context->GetRequestContext(),
-          drive_task_runner.get(),
-          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-          GURL(google_apis::DriveApiUrlGenerator::
-               kBaseDownloadUrlForProduction),
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-          std::string() /* custom_user_agent */));
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  drive_service->Initialize(signin_manager->GetAuthenticatedAccountId());
-
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
-      new drive::DriveUploader(drive_service.get(), drive_task_runner.get()));
-
   drive::DriveNotificationManager* notification_manager =
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(context)->extension_service();
-
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-
-  // TODO(peria): Create another task runner to manage SyncWorker.
-  scoped_refptr<base::SingleThreadTaskRunner>
-      worker_task_runner = base::MessageLoopProxy::current();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      context->GetRequestContext();
 
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new SyncEngine(drive_service.Pass(),
-                     drive_uploader.Pass(),
+      new SyncEngine(ui_task_runner,
                      worker_task_runner,
+                     file_task_runner,
+                     drive_task_runner,
+                     GetSyncFileSystemDir(context->GetPath()),
+                     task_logger,
                      notification_manager,
                      extension_service,
-                     signin_manager));
-  sync_engine->Initialize(GetSyncFileSystemDir(context->GetPath()),
-                          task_logger,
-                          file_task_runner.get(),
-                          NULL);
+                     signin_manager,
+                     token_service,
+                     request_context,
+                     NULL  /* env_override */));
 
+  sync_engine->Initialize();
   return sync_engine.Pass();
 }
 
@@ -236,53 +228,105 @@ void SyncEngine::AppendDependsOnFactories(
 }
 
 SyncEngine::~SyncEngine() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  drive_service_->RemoveObserver(this);
+  Reset();
+}
+
+void SyncEngine::Reset() {
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
+  if (drive_service_)
+    drive_service_->RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 
   DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
   DeleteSoon(FROM_HERE, worker_task_runner_, sync_worker_.Pass());
   DeleteSoon(FROM_HERE, worker_task_runner_,
              remote_change_processor_on_worker_.Pass());
+
+  drive_service_wrapper_.reset();
+  drive_service_.reset();
+  drive_uploader_wrapper_.reset();
+  drive_uploader_.reset();
+  remote_change_processor_wrapper_.reset();
+  callback_tracker_.AbortAll();
 }
 
-void SyncEngine::Initialize(const base::FilePath& base_dir,
-                            TaskLogger* task_logger,
-                            base::SequencedTaskRunner* file_task_runner,
-                            leveldb::Env* env_override) {
+void SyncEngine::Initialize() {
+  Reset();
+
+  scoped_ptr<drive::DriveServiceInterface> drive_service(
+      new drive::DriveAPIService(
+          token_service_,
+          request_context_,
+          drive_task_runner_,
+          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+          GURL(google_apis::DriveApiUrlGenerator::
+               kBaseDownloadUrlForProduction),
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+          std::string() /* custom_user_agent */));
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
+      new drive::DriveUploader(drive_service.get(), drive_task_runner_));
+
+  InitializeInternal(drive_service.Pass(), drive_uploader.Pass());
+}
+
+void SyncEngine::InitializeForTesting(
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
+  Reset();
+  InitializeInternal(drive_service.Pass(), drive_uploader.Pass());
+}
+
+void SyncEngine::InitializeInternal(
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
+  drive_service_ = drive_service.Pass();
+  drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
+
+  std::string account_id;
+  if (signin_manager_)
+    account_id = signin_manager_->GetAuthenticatedAccountId();
+  drive_service_->Initialize(account_id);
+
+  drive_uploader_ = drive_uploader.Pass();
+  drive_uploader_wrapper_.reset(
+      new DriveUploaderWrapper(drive_uploader_.get()));
+
   // DriveServiceWrapper and DriveServiceOnWorker relay communications
   // between DriveService and syncers in SyncWorker.
   scoped_ptr<drive::DriveServiceInterface> drive_service_on_worker(
       new DriveServiceOnWorker(drive_service_wrapper_->AsWeakPtr(),
-                               base::MessageLoopProxy::current(),
+                               ui_task_runner_,
                                worker_task_runner_));
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_on_worker(
       new DriveUploaderOnWorker(drive_uploader_wrapper_->AsWeakPtr(),
-                                base::MessageLoopProxy::current(),
+                                ui_task_runner_,
                                 worker_task_runner_));
   scoped_ptr<SyncEngineContext> sync_engine_context(
       new SyncEngineContext(drive_service_on_worker.Pass(),
                             drive_uploader_on_worker.Pass(),
-                            task_logger,
-                            base::MessageLoopProxy::current(),
+                            task_logger_,
+                            ui_task_runner_,
                             worker_task_runner_,
-                            file_task_runner));
+                            file_task_runner_));
 
   worker_observer_.reset(
-      new WorkerObserver(base::MessageLoopProxy::current(),
-                         weak_ptr_factory_.GetWeakPtr()));
+      new WorkerObserver(ui_task_runner_, weak_ptr_factory_.GetWeakPtr()));
 
   base::WeakPtr<ExtensionServiceInterface> extension_service_weak_ptr;
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
   sync_worker_.reset(new SyncWorker(
-      base_dir,
+      sync_file_system_dir_,
       extension_service_weak_ptr,
       sync_engine_context.Pass(),
-      env_override));
+      env_override_));
+
   sync_worker_->AddObserver(worker_observer_.get());
+  if (remote_change_processor_)
+    SetRemoteChangeProcessor(remote_change_processor_);
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::Initialize,
@@ -292,6 +336,10 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
     notification_manager_->AddObserver(this);
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
+  SetSyncEnabled(sync_enabled_);
+  OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
 }
 
 void SyncEngine::AddServiceObserver(SyncServiceObserver* observer) {
@@ -373,8 +421,7 @@ void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
 
   remote_change_processor_on_worker_.reset(new RemoteChangeProcessorOnWorker(
       remote_change_processor_wrapper_->AsWeakPtr(),
-      base::MessageLoopProxy::current(), /* ui_task_runner */
-      worker_task_runner_));
+      ui_task_runner_, worker_task_runner_));
 
   worker_task_runner_->PostTask(
       FROM_HERE,
@@ -437,12 +484,13 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
       tracked_callback);
 }
 
-void SyncEngine::SetSyncEnabled(bool enabled) {
+void SyncEngine::SetSyncEnabled(bool sync_enabled) {
+  sync_enabled_ = sync_enabled;
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::SetSyncEnabled,
                  base::Unretained(sync_worker_.get()),
-                 enabled));
+                 sync_enabled));
 }
 
 void SyncEngine::PromoteDemotedChanges() {
@@ -510,21 +558,31 @@ void SyncEngine::OnNetworkChanged(
 }
 
 SyncEngine::SyncEngine(
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    base::SingleThreadTaskRunner* ui_task_runner,
     base::SequencedTaskRunner* worker_task_runner,
+    base::SequencedTaskRunner* file_task_runner,
+    base::SequencedTaskRunner* drive_task_runner,
+    const base::FilePath& sync_file_system_dir,
+    TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
     ExtensionServiceInterface* extension_service,
-    SigninManagerBase* signin_manager)
-    : drive_service_(drive_service.Pass()),
-      drive_service_wrapper_(new DriveServiceWrapper(drive_service_.get())),
-      drive_uploader_(drive_uploader.Pass()),
-      drive_uploader_wrapper_(new DriveUploaderWrapper(drive_uploader_.get())),
-      service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* token_service,
+    net::URLRequestContextGetter* request_context,
+    leveldb::Env* env_override)
+    : ui_task_runner_(ui_task_runner),
+      worker_task_runner_(worker_task_runner),
+      file_task_runner_(file_task_runner),
+      drive_task_runner_(drive_task_runner),
+      task_logger_(task_logger),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       signin_manager_(signin_manager),
-      worker_task_runner_(worker_task_runner),
+      token_service_(token_service),
+      request_context_(request_context),
+      service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
+      sync_enabled_(false),
+      env_override_(env_override),
       weak_ptr_factory_(this) {}
 
 void SyncEngine::OnPendingFileListUpdated(int item_count) {
