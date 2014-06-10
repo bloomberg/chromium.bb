@@ -109,6 +109,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
 // Disable the test for mac as it started being flaky, see http://crbug/367665.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
+// Disable the test for Linux LSAN, see http://crbug.com/382764.
+#elif defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
 #else
 #define MAYBE_TaskManagerExistingPrintPreview TaskManagerExistingPrintPreview
 #endif
