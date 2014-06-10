@@ -116,12 +116,15 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   }
 
   if (bubble_showing_) {
-    content::RecordAction(
-        base::UserMetricsAction("PermissionBubbleRequestQueued"));
-    if (is_main_frame)
+    if (is_main_frame) {
+      content::RecordAction(
+          base::UserMetricsAction("PermissionBubbleRequestQueued"));
       queued_requests_.push_back(request);
-    else
+    } else {
+      content::RecordAction(
+          base::UserMetricsAction("PermissionBubbleIFrameRequestQueued"));
       queued_frame_requests_.push_back(request);
+    }
     return;
   }
 
@@ -130,6 +133,8 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
     // TODO(gbillock): do we need to make default state a request property?
     accept_states_.push_back(true);
   } else {
+    content::RecordAction(
+        base::UserMetricsAction("PermissionBubbleIFrameRequestQueued"));
     queued_frame_requests_.push_back(request);
   }
 

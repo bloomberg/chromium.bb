@@ -9362,6 +9362,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="PermissionBubbleIFrameRequestQueued">
+  <owner>gbillock@chromium.org</owner>
+  <owner>leng@chromium.org</owner>
+  <description>
+    A website with a domain that is not the same as the main frame's domain
+    requested a permission and that permission was queued because an existing
+    permission request was already visible, or because an existing request for
+    the main frame's domain is pending.
+  </description>
+</action>
+
 <action name="PermissionBubbleRequest">
   <owner>gbillock@chromium.org</owner>
   <owner>leng@chromium.org</owner>
