@@ -595,10 +595,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
 
 void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer)
 {
-    // If we haven't built z-order lists yet, wait until later.
-    if (m_owningLayer.stackingNode()->isStackingContext() && m_owningLayer.stackingNode()->zOrderListsDirty())
-        return;
-
     if (!shouldUpdateGraphicsLayer(updateType))
         return;
 
