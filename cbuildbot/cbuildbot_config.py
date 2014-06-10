@@ -443,9 +443,6 @@ _settings = dict(
 #                             image.
   upload_hw_test_artifacts=True,
 
-# hw_tests_warn -- If true, failures in the hw_tests stage only warn.
-  hw_tests_warn=False,
-
 # upload_standalone_images -- If true, uploads individual image tarballs.
   upload_standalone_images=True,
 
@@ -635,6 +632,8 @@ class HWTestConfig(object):
              lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
     pool: Pool to use for hw testing.
     async: Fire-and-forget suite.
+    warn_only: Failure on HW tests warns only (does not generate error). If set,
+               'critical' cannot be set.
     critical: Usually we consider structural failures here as OK.
     num: Maximum number of devices to use when scheduling tests in the hw lab.
     file_bugs: Should we file bugs if a test fails in a suite run.
@@ -717,7 +716,7 @@ class HWTestConfig(object):
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
-               async=False, critical=False, file_bugs=False,
+               async=False, warn_only=False, critical=False, file_bugs=False,
                priority=constants.HWTEST_BUILD_PRIORITY, retry=False):
     """Constructor -- see members above."""
     self.suite = suite
@@ -725,10 +724,12 @@ class HWTestConfig(object):
     self.pool = pool
     self.timeout = timeout
     self.async = async
+    self.warn_only = warn_only
     self.critical = critical
     self.file_bugs = file_bugs
     self.priority = priority
     self.retry = retry
+    assert not (self.warn_only and self.critical)
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""

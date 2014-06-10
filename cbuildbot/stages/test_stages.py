@@ -234,8 +234,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     """Override and don't set status to FAIL but FORGIVEN instead."""
     exc_type = exc_info[0]
 
-    # If the config says HW Tests can only warn. Only warn.
-    if self._run.config.hw_tests_warn:
+    # If the suite config says HW Tests can only warn, only warn.
+    if self.suite_config.warn_only:
       return self._HandleExceptionAsWarning(exc_info)
 
     if self.suite_config.critical:

@@ -167,12 +167,13 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, version=None, **kwargs):
+  def _Prepare(self, bot_id=None, version=None, warn_only=False, **kwargs):
     super(HWTestStageTest, self)._Prepare(bot_id, **kwargs)
 
     self.version = version or self.VERSION
     self._run.options.log_dir = '/b/cbuild/mylogdir'
     self.suite_config = self.GetHWTestSuite()
+    self.suite_config.warn_only = warn_only
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
@@ -274,8 +275,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._RunHWTestSuite(returncode=1, fails=True)
 
   def testWithSuiteWithFatalFailureWarnFlag(self):
-    """Tests that we don't fail if hw_test_warn is True."""
-    self._Prepare('x86-alex-release', extra_config={'hw_tests_warn': True})
+    """Tests that we don't fail if HWTestConfig warn_only is True."""
+    self._Prepare('x86-alex-release', warn_only=True)
     self._RunHWTestSuite(returncode=1, fails=False)
 
   def testReturnTimeoutForCanary(self):
