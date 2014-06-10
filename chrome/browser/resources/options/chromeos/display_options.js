@@ -622,17 +622,9 @@ cr.define('options', function() {
       } else {
         for (var i = 0; i < display.resolutions.length; i++) {
           var option = document.createElement('option');
-          var width = display.resolutions[i].width;
-          var height = display.resolutions[i].height;
-          var scaleFactor = display.resolutions[i].scaleFactor;
-          if (display.resolutions[i].scaleFactor) {
-            width /= scaleFactor;
-            height /= scaleFactor;
-          }
           option.value = i;
-          option.textContent = width + 'x' + height;
-          if (scaleFactor && scaleFactor > 1)
-            option.textContent += '(x' + scaleFactor + ')';
+          option.textContent = display.resolutions[i].width + 'x' +
+              display.resolutions[i].height;
           if (display.resolutions[i].isBest) {
             option.textContent += ' ' +
                 loadTimeData.getString('annotateBest');
