@@ -22,11 +22,11 @@ namespace base {
 
 namespace {
 
-int WaitpidWithTimeout(ProcessHandle handle,
-                       int64 wait_milliseconds,
-                       bool* success) {
+bool WaitpidWithTimeout(ProcessHandle handle,
+                        int* status,
+                        base::TimeDelta wait) {
   // This POSIX version of this function only guarantees that we wait no less
-  // than |wait_milliseconds| for the process to exit.  The child process may
+  // than |wait| for the process to exit.  The child process may
   // exit sometime before the timeout has ended but we may still block for up
   // to 256 milliseconds after the fact.
   //
@@ -37,7 +37,7 @@ int WaitpidWithTimeout(ProcessHandle handle,
   // affect other parts of the application and would be difficult to debug.
   //
   // Our strategy is to call waitpid() once up front to check if the process
-  // has already exited, otherwise to loop for wait_milliseconds, sleeping for
+  // has already exited, otherwise to loop for |wait|, sleeping for
   // at most 256 milliseconds each time using usleep() and then calling
   // waitpid().  The amount of time we sleep starts out at 1 milliseconds, and
   // we double it every 4 sleep cycles.
@@ -48,15 +48,18 @@ int WaitpidWithTimeout(ProcessHandle handle,
   //
   // This function is used primarily for unit tests, if we want to use it in
   // the application itself it would probably be best to examine other routes.
-  int status = -1;
-  pid_t ret_pid = HANDLE_EINTR(waitpid(handle, &status, WNOHANG));
+
+  if (wait.InMilliseconds() == base::kNoTimeout) {
+    return HANDLE_EINTR(waitpid(handle, status, 0)) > 0;
+  }
+
+  pid_t ret_pid = HANDLE_EINTR(waitpid(handle, status, WNOHANG));
   static const int64 kMaxSleepInMicroseconds = 1 << 18;  // ~256 milliseconds.
   int64 max_sleep_time_usecs = 1 << 10;  // ~1 milliseconds.
   int64 double_sleep_time = 0;
 
   // If the process hasn't exited yet, then sleep and try again.
-  TimeTicks wakeup_time = TimeTicks::Now() +
-      TimeDelta::FromMilliseconds(wait_milliseconds);
+  TimeTicks wakeup_time = TimeTicks::Now() + wait;
   while (ret_pid == 0) {
     TimeTicks now = TimeTicks::Now();
     if (now > wakeup_time)
@@ -70,7 +73,7 @@ int WaitpidWithTimeout(ProcessHandle handle,
     // usleep() will return 0 and set errno to EINTR on receipt of a signal
     // such as SIGCHLD.
     usleep(sleep_time_usecs);
-    ret_pid = HANDLE_EINTR(waitpid(handle, &status, WNOHANG));
+    ret_pid = HANDLE_EINTR(waitpid(handle, status, WNOHANG));
 
     if ((max_sleep_time_usecs < kMaxSleepInMicroseconds) &&
         (double_sleep_time++ % 4 == 0)) {
@@ -78,10 +81,7 @@ int WaitpidWithTimeout(ProcessHandle handle,
     }
   }
 
-  if (success)
-    *success = (ret_pid != -1);
-
-  return status;
+  return ret_pid > 0;
 }
 
 TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
@@ -226,12 +226,8 @@ bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
 bool WaitForExitCodeWithTimeout(ProcessHandle handle,
                                 int* exit_code,
                                 base::TimeDelta timeout) {
-  bool waitpid_success = false;
-  int status = WaitpidWithTimeout(handle, timeout.InMilliseconds(),
-                                  &waitpid_success);
-  if (status == -1)
-    return false;
-  if (!waitpid_success)
+  int status;
+  if (!WaitpidWithTimeout(handle, &status, timeout))
     return false;
   if (WIFSIGNALED(status)) {
     *exit_code = -1;
@@ -369,21 +365,10 @@ bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
 #endif  // OS_MACOSX
   }
 
-  bool waitpid_success;
-  int status = -1;
-  if (wait.InMilliseconds() == base::kNoTimeout) {
-    waitpid_success = (HANDLE_EINTR(waitpid(handle, &status, 0)) != -1);
-  } else {
-    status = WaitpidWithTimeout(
-        handle, wait.InMilliseconds(), &waitpid_success);
-  }
-
-  if (status != -1) {
-    DCHECK(waitpid_success);
-    return WIFEXITED(status);
-  } else {
+  int status;
+  if (!WaitpidWithTimeout(handle, &status, wait))
     return false;
-  }
+  return WIFEXITED(status);
 }
 
 bool CleanupProcesses(const FilePath::StringType& executable_name,
