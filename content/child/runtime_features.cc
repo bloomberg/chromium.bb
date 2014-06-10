@@ -48,6 +48,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableNavigatorContentUtils(false);
   WebRuntimeFeatures::enableTouchIconLoading(true);
   WebRuntimeFeatures::enableOrientationEvent(true);
+  WebRuntimeFeatures::enableFastMobileScrolling(true);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
