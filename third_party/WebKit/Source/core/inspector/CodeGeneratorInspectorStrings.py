@@ -44,23 +44,19 @@ ${frontendDomainMethodDeclarations}
 """)
 
 backend_method = (
-"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(long callId, JSONObject*$requestMessageObject)
+"""void InspectorBackendDispatcherImpl::${domainName}_$methodName(long callId, JSONObject*$requestMessageObject, JSONArray* protocolErrors)
 {
-    RefPtr<JSONArray> protocolErrors = JSONArray::create();
-
     if (!$agentField)
         protocolErrors->pushString("${domainName} handler is not available.");
-$methodOutCode
-$methodInCode
-    RefPtr<JSONObject> result = JSONObject::create();
-    RefPtr<JSONValue> resultErrorData;
-    ErrorString error;
-    if (!protocolErrors->length()) {
-        $agentField->$methodName(&error$agentCallParams);
-
-$errorCook${responseCook}
+$methodCode
+    if (protocolErrors->length()) {
+        reportProtocolError(&callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
+        return;
     }
-    sendResponse(callId, result, commandName($commandNameIndex), protocolErrors, error, resultErrorData);
+    ErrorString error;
+    $agentField->$methodName(&error$agentCallParams);
+$responseCook
+    sendResponse(callId, $sendResponseCallParams);
 }
 """)
 
@@ -247,7 +243,7 @@ $constructorInit
     virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
     using InspectorBackendDispatcher::reportProtocolError;
 
-    void sendResponse(long callId, PassRefPtr<JSONObject> result, const ErrorString&invocationError, PassRefPtr<JSONValue> errorData);
+    void sendResponse(long callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
     bool isActive() { return m_inspectorFrontendChannel; }
 
 $setters
@@ -267,9 +263,18 @@ $fieldDeclarations
     static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
     static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
 
-    void sendResponse(long callId, PassRefPtr<JSONObject> result, const char* commandName, PassRefPtr<JSONArray> protocolErrors, ErrorString invocationError, PassRefPtr<JSONValue> errorData);
-
+    void sendResponse(long callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
+    {
+        sendResponse(callId, invocationError, RefPtr<JSONValue>(), result);
+    }
+    void sendResponse(long callId, ErrorString invocationError)
+    {
+        sendResponse(callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
+    }
+    static const char InvalidParamsFormatString[];
 };
+
+const char InspectorBackendDispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
 
 $methods
 
@@ -282,7 +287,7 @@ PassRefPtr<InspectorBackendDispatcher> InspectorBackendDispatcher::create(Inspec
 void InspectorBackendDispatcherImpl::dispatch(const String& message)
 {
     RefPtr<InspectorBackendDispatcher> protect = this;
-    typedef void (InspectorBackendDispatcherImpl::*CallHandler)(long callId, JSONObject* messageObject);
+    typedef void (InspectorBackendDispatcherImpl::*CallHandler)(long callId, JSONObject* messageObject, JSONArray* protocolErrors);
     typedef HashMap<String, CallHandler> DispatchMap;
     DEFINE_STATIC_LOCAL(DispatchMap, dispatchMap, );
     long callId = 0;
@@ -336,20 +341,11 @@ $messageHandlers
         return;
     }
 
-    ((*this).*it->value)(callId, messageObject.get());
+    RefPtr<JSONArray> protocolErrors = JSONArray::create();
+    ((*this).*it->value)(callId, messageObject.get(), protocolErrors.get());
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<JSONObject> result, const char* commandName, PassRefPtr<JSONArray> protocolErrors, ErrorString invocationError, PassRefPtr<JSONValue> errorData)
-{
-    if (protocolErrors->length()) {
-        String errorMessage = String::format("Some arguments of method '%s' can't be processed", commandName);
-        reportProtocolError(&callId, InvalidParams, errorMessage, protocolErrors);
-        return;
-    }
-    sendResponse(callId, result, invocationError, errorData);
-}
-
-void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<JSONObject> result, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData)
+void InspectorBackendDispatcherImpl::sendResponse(long callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
 {
     if (invocationError.length()) {
         reportProtocolError(&callId, ServerError, invocationError, errorData);
@@ -508,7 +504,7 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
 {
     if (m_alreadySent)
         return;
-    m_backendImpl->sendResponse(m_id, partialMessage, invocationError, errorData);
+    m_backendImpl->sendResponse(m_id, invocationError, errorData, partialMessage);
     m_alreadySent = true;
 }
 
@@ -901,7 +897,6 @@ $validatorCode
 param_container_access_code = """
     RefPtr<JSONObject> paramsContainer = requestMessageObject->getObject("params");
     JSONObject* paramsContainerPtr = paramsContainer.get();
-    JSONArray* protocolErrorsPtr = protocolErrors.get();
 """
 
 class_binding_builder_part_1 = (
