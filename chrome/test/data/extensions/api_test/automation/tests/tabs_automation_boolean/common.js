@@ -6,7 +6,7 @@ var assertEq = chrome.test.assertEq;
 var assertFalse = chrome.test.assertFalse;
 var assertTrue = chrome.test.assertTrue;
 
-var tree = null;
+var rootNode = null;
 
 function setUpAndRunTests(allTests) {
   chrome.test.getConfig(function(config) {
@@ -14,9 +14,9 @@ function setUpAndRunTests(allTests) {
     var url = 'http://a.com:PORT/index.html'
         .replace(/PORT/, config.testServer.port);
 
-    function gotTree(returnedTree) {
-      tree = returnedTree;
-      tree.addEventListener('loadComplete', function() {
+    function gotTree(returnedRootNode) {
+      rootNode = returnedRootNode;
+      rootNode.addEventListener('loadComplete', function() {
         chrome.test.runTests(allTests);
       });
     }

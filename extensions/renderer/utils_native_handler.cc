@@ -21,25 +21,34 @@ UtilsNativeHandler::~UtilsNativeHandler() {}
 
 void UtilsNativeHandler::CreateClassWrapper(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsString());
   std::string name = *v8::String::Utf8Value(args[0]);
   CHECK(args[1]->IsObject());
-  v8::Local<v8::Object> obj = args[1].As<v8::Object>();
+  v8::Local<v8::Object> cls = args[1].As<v8::Object>();
+  CHECK(args[2]->IsObject() || args[2]->IsUndefined());
+  v8::Local<v8::Value> superclass = args[2];
 
   v8::HandleScope handle_scope(GetIsolate());
   // TODO(fsamuel): Consider moving the source wrapping to ModuleSystem.
   v8::Handle<v8::String> source = v8::String::NewFromUtf8(
       GetIsolate(),
       base::StringPrintf(
-          "(function($Object, $Function, privates, cls) {"
+          "(function($Object, $Function, privates, cls, superclass) {"
           "'use strict';\n"
-          "  return function %s() {\n"
-          "  var privateObj = $Object.create(cls.prototype);\n"
-          "  $Function.apply(cls, privateObj, arguments);\n"
-          "  privateObj.wrapper = this;\n"
-          "  privates(this).impl = privateObj;\n"
-          "}})",
+          "  function %s() {\n"
+          "    var privateObj = $Object.create(cls.prototype);\n"
+          "    $Function.apply(cls, privateObj, arguments);\n"
+          "    privateObj.wrapper = this;\n"
+          "    privates(this).impl = privateObj;\n"
+          "  };\n"
+          "  if (superclass) {\n"
+          "    %s.prototype = Object.create(superclass.prototype);\n"
+          "  }\n"
+          "  return %s;\n"
+          "})",
+          name.c_str(),
+          name.c_str(),
           name.c_str()).c_str());
   v8::Handle<v8::Value> func_as_value = context()->module_system()->RunString(
       source, v8::String::NewFromUtf8(GetIsolate(), name.c_str()));
@@ -57,7 +66,8 @@ void UtilsNativeHandler::CreateClassWrapper(
       context()->safe_builtins()->GetFunction(),
       natives->Get(v8::String::NewFromUtf8(
           GetIsolate(), "privates", v8::String::kInternalizedString)),
-      obj};
+      cls,
+      superclass};
   v8::Local<v8::Value> result;
   {
     v8::TryCatch try_catch;

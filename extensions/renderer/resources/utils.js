@@ -72,15 +72,18 @@ function loadTypeSchema(typeName, defaultSchema) {
  * instance of the implementation class).
  * @param {string} name The name of the exposed wrapper class.
  * @param {Object} cls The class implementation.
- * @param {{functions: ?Array.<string>,
+ * @param {{superclass: ?Function,
+ *          functions: ?Array.<string>,
  *          properties: ?Array.<string>,
  *          readonly: ?Array.<string>}} exposed The names of properties on the
- *     implementation class to be exposed. |functions| represents the names of
- *     functions which should be delegated to the implementation; |properties|
- *     are gettable/settable properties and |readonly| are read-only properties.
+ *     implementation class to be exposed. |superclass| represents the
+ *     constructor of the class to be used as the superclass of the exposed
+ *     class; |functions| represents the names of functions which should be
+ *     delegated to the implementation; |properties| are gettable/settable
+ *     properties and |readonly| are read-only properties.
  */
 function expose(name, cls, exposed) {
-  var publicClass = createClassWrapper(name, cls);
+  var publicClass = createClassWrapper(name, cls, exposed.superclass);
 
   if ('functions' in exposed) {
     $Array.forEach(exposed.functions, function(func) {

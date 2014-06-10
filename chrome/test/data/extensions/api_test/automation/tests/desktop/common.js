@@ -10,7 +10,7 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
-var tree = null;
+var rootNode = null;
 
 function findAutomationNode(root, condition) {
   if (condition(root))
@@ -26,8 +26,8 @@ function findAutomationNode(root, condition) {
 }
 
 function setupAndRunTests(allTests) {
-  chrome.automation.getDesktop(function(treeArg) {
-    tree = treeArg;
+  chrome.automation.getDesktop(function(rootNodeArg) {
+    rootNode = rootNodeArg;
     chrome.test.runTests(allTests);
   });
 }

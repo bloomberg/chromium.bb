@@ -10,7 +10,7 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
-var tree = null;
+var rootNode = null;
 
 function createTab(url, callback) {
   chrome.tabs.create({"url": url}, function(tab) {
@@ -21,9 +21,9 @@ function createTab(url, callback) {
 function setUpAndRunTests(allTests) {
   getUrlFromConfig(function(url) {
     createTab(url, function(unused_tab) {
-      chrome.automation.getTree(function (returnedTree) {
-        tree = returnedTree;
-        tree.addEventListener('loadComplete', function() {
+      chrome.automation.getTree(function (returnedRootNode) {
+        rootNode = returnedRootNode;
+        rootNode.addEventListener('loadComplete', function() {
           chrome.test.runTests(allTests);
         });
       });

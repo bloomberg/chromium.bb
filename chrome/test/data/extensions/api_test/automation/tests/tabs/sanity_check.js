@@ -12,13 +12,13 @@ var RemoveUntestedStates = function(state) {
 
 var allTests = [
   function testSimplePage() {
-    var title = tree.root.attributes.docTitle;
+    var title = rootNode.attributes.docTitle;
     assertEq('Automation Tests', title);
-    RemoveUntestedStates(tree.root.state);
+    RemoveUntestedStates(rootNode.state);
     assertEq(
       {enabled: true, focusable: true, readOnly: true},
-      tree.root.state);
-    var children = tree.root.children();
+      rootNode.state);
+    var children = rootNode.children();
     assertEq(1, children.length);
     var body = children[0];
     assertEq('body', body.attributes.htmlTag);
@@ -48,11 +48,11 @@ var allTests = [
              cancelButton.state);
 
     // Traversal.
-    assertEq(undefined, tree.root.parent());
-    assertEq(tree.root, body.parent());
+    assertEq(undefined, rootNode.parent());
+    assertEq(rootNode, body.parent());
 
-    assertEq(body, tree.root.firstChild());
-    assertEq(body, tree.root.lastChild());
+    assertEq(body, rootNode.firstChild());
+    assertEq(body, rootNode.lastChild());
 
     assertEq(okButton, body.firstChild());
     assertEq(cancelButton, body.lastChild());
@@ -72,6 +72,11 @@ var allTests = [
     assertEq(userNameInput, cancelButton.previousSibling());
     assertEq(undefined, cancelButton.nextSibling());
 
+    chrome.test.succeed();
+  },
+  function testIsRoot() {
+    assertTrue(rootNode.isRootNode);
+    assertFalse(rootNode.firstChild().isRootNode);
     chrome.test.succeed();
   }
 ];

@@ -31,8 +31,14 @@
   // A listener for events on an <code>AutomationNode</code>.
   callback AutomationListener = void(AutomationEvent event);
 
-  // A single node in an <code>AutomationTree</code>.
+  // A single node in an Automation tree.
   [nocompile] dictionary AutomationNode {
+    // The root node of the tree containing this AutomationNode.
+    AutomationRootNode root;
+
+    // Whether this AutomationNode is an AutomationRootNode.
+    bool isRootNode;
+
     // Unique ID to identify this node.
     long id;
 
@@ -75,18 +81,34 @@
         DOMString eventType, AutomationListener listener, bool capture);
   };
 
-  // The automation tree for a single page.
-  [nocompile] dictionary AutomationTree {
-    AutomationNode root;
+  // The root node of the automation tree for a single frame or desktop.
+  // This may be:
+  // <ul>
+  //   <li> The desktop
+  //   <li> The top frame of a page
+  //   <li> A frame or iframe within a page
+  // </ul>
+  // Thus, an <code>AutomationRootNode</code> may be a descendant of one or
+  // more <code>AutomationRootNode</code>s, and in turn have one or more
+  // <code>AutomationRootNode</code>s in its descendants. Thus, the
+  // <code>root</code> property of the <code>AutomationRootNode</code> will be
+  // the immediate parent <code>AutomationRootNode</code>, or <code>null</code>
+  // if this is the top-level <code>AutomationRootNode</code>.
+  //
+  // Extends $(ref:automation.AutomationNode).
+  [nocompile] dictionary AutomationRootNode {
+    // Whether this AutomationRootNode is loaded or not. If false, call load()
+    // to get the contents.
+    // TODO(aboxhall/dtseng): implement.
+    bool loaded;
 
-    static void addEventListener(
-        DOMString eventType, AutomationListener listener, bool capture);
-    static void removeEventListener(
-        DOMString eventType, AutomationListener listener, bool capture);
+    // Load the accessibility tree for this AutomationRootNode.
+    // TODO(aboxhall/dtseng): implement.
+    static void load(RootCallback callback);
   };
 
-  // Called when the <code>AutomationTree</code> for the page is available.
-  callback RootCallback = void(AutomationTree tree);
+  // Called when the <code>AutomationRootNode</code> for the page is available.
+  callback RootCallback = void(AutomationRootNode rootNode);
 
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current

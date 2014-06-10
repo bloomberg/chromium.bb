@@ -4,7 +4,7 @@
 
 var allTests = [
   function testDoDefault() {
-    var firstTextField = findAutomationNode(tree.root,
+    var firstTextField = findAutomationNode(rootNode,
         function(node) {
           return node.role == 'textField';
         });
@@ -16,7 +16,7 @@ var allTests = [
   },
 
   function testFocus() {
-    var firstFocusableNode = findAutomationNode(tree.root,
+    var firstFocusableNode = findAutomationNode(rootNode,
         function(node) {
           return node.role == 'button' && node.state.focusable;
         });

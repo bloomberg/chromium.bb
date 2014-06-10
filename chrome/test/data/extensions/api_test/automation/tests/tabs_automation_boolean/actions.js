@@ -6,7 +6,7 @@ var allTests = [
   function testError() {
     chrome.automation.getTree(function(tree) {
       try {
-        tree.root.focus();
+        rootNode.focus();
       } catch (e) {
         chrome.test.assertEq('focus requires {"desktop": true} or' +
                 ' {"interact": true} in the "automation" manifest key.',

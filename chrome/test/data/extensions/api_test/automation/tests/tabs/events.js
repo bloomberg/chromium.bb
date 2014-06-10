@@ -4,7 +4,7 @@
 
 var allTests = [
   function testEventListenerTarget() {
-    var cancelButton = tree.root.firstChild().children()[2];
+    var cancelButton = rootNode.firstChild().children()[2];
     assertEq('Cancel', cancelButton.attributes.name);
     cancelButton.addEventListener(EventType.focus,
                                   function onFocusTarget(event) {
@@ -16,7 +16,7 @@ var allTests = [
     cancelButton.focus();
   },
   function testEventListenerBubble() {
-    var cancelButton = tree.root.firstChild().children()[2];
+    var cancelButton = rootNode.firstChild().children()[2];
     assertEq('Cancel', cancelButton.attributes.name);
     var cancelButtonGotEvent = false;
     cancelButton.addEventListener(EventType.focus,
@@ -24,21 +24,21 @@ var allTests = [
       cancelButtonGotEvent = true;
       cancelButton.removeEventListener(EventType.focus, onFocusBubble);
     });
-    tree.root.addEventListener(EventType.focus,
+    rootNode.addEventListener(EventType.focus,
                                function onFocusBubbleRoot(event) {
       assertEq('focus', event.type);
       assertEq(cancelButton, event.target);
       assertTrue(cancelButtonGotEvent);
-      tree.root.removeEventListener(EventType.focus, onFocusBubbleRoot);
+      rootNode.removeEventListener(EventType.focus, onFocusBubbleRoot);
       chrome.test.succeed();
     });
     cancelButton.focus();
   },
   function testStopPropagation() {
-    var cancelButton = tree.root.firstChild().children()[2];
+    var cancelButton = rootNode.firstChild().children()[2];
     assertEq('Cancel', cancelButton.attributes.name);
     function onFocusStopPropRoot(event) {
-      tree.root.removeEventListener(EventType.focus, onFocusStopPropRoot);
+      rootNode.removeEventListener(EventType.focus, onFocusStopPropRoot);
       chrome.test.fail("Focus event was propagated to root");
     };
     cancelButton.addEventListener(EventType.focus,
@@ -46,15 +46,15 @@ var allTests = [
       cancelButton.removeEventListener(EventType.focus, onFocusStopProp);
       event.stopPropagation();
       window.setTimeout((function() {
-        tree.root.removeEventListener(EventType.focus, onFocusStopPropRoot);
+        rootNode.removeEventListener(EventType.focus, onFocusStopPropRoot);
         chrome.test.succeed();
       }).bind(this), 0);
     });
-    tree.root.addEventListener(EventType.focus, onFocusStopPropRoot);
+    rootNode.addEventListener(EventType.focus, onFocusStopPropRoot);
     cancelButton.focus();
   },
   function testEventListenerCapture() {
-    var cancelButton = tree.root.firstChild().children()[2];
+    var cancelButton = rootNode.firstChild().children()[2];
     assertEq('Cancel', cancelButton.attributes.name);
     var cancelButtonGotEvent = false;
     function onFocusCapture(event) {
@@ -63,14 +63,14 @@ var allTests = [
       chrome.test.fail("Focus event was not captured by root");
     };
     cancelButton.addEventListener(EventType.focus, onFocusCapture);
-    tree.root.addEventListener(EventType.focus,
+    rootNode.addEventListener(EventType.focus,
                                function onFocusCaptureRoot(event) {
       assertEq('focus', event.type);
       assertEq(cancelButton, event.target);
       assertFalse(cancelButtonGotEvent);
       event.stopPropagation();
-      tree.root.removeEventListener(EventType.focus, onFocusCaptureRoot);
-      tree.root.removeEventListener(EventType.focus, onFocusCapture);
+      rootNode.removeEventListener(EventType.focus, onFocusCaptureRoot);
+      rootNode.removeEventListener(EventType.focus, onFocusCapture);
       window.setTimeout(chrome.test.succeed.bind(this), 0);
     }, true);
     cancelButton.focus();

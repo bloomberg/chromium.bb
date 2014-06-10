@@ -20,9 +20,9 @@ var allTests = [
       // Keep the NTP as the active tab so that we know we're requesting the
       // tab by ID rather than just getting the active tab still.
       createBackgroundTab(url, function(tab) {
-        chrome.automation.getTree(tab.id, function(tree) {
-          tree.addEventListener('loadComplete', function() {
-            var title = tree.root.attributes['docTitle'];
+        chrome.automation.getTree(tab.id, function(rootNode) {
+          rootNode.addEventListener('loadComplete', function() {
+            var title = rootNode.attributes['docTitle'];
             chrome.test.assertEq('Automation Tests', title);
             chrome.test.succeed();
           });
