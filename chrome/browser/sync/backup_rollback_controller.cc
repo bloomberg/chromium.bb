@@ -34,9 +34,14 @@ BackupRollbackController::~BackupRollbackController() {
 
 void BackupRollbackController::Start(base::TimeDelta delay) {
 #if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncEnableBackupRollback)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableBackup)) {
     return;
+  }
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableRollback)) {
+    sync_prefs_->SetRemainingRollbackTries(0);
   }
 
   if (delay == base::TimeDelta()) {

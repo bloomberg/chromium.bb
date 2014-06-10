@@ -889,7 +889,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Starts up the backend sync components. |mode| specifies the kind of
   // backend to start, one of SYNC, BACKUP or ROLLBACK.
-  void StartUpSlowBackendComponents(BackendMode mode);
+  virtual void StartUpSlowBackendComponents(BackendMode mode);
 
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.

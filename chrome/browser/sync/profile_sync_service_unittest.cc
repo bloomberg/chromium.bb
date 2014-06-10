@@ -84,7 +84,8 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
 
 class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
  public:
-  SyncBackendHostMockCollectDeleteDirParam(std::vector<bool>* delete_dir_param)
+  explicit SyncBackendHostMockCollectDeleteDirParam(
+      std::vector<bool>* delete_dir_param)
      : delete_dir_param_(delete_dir_param) {}
 
   virtual void Initialize(
@@ -141,11 +142,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kSyncEnableBackupRollback);
-#endif
 
     CHECK(profile_manager_.SetUp());
 
@@ -533,6 +529,9 @@ TEST_F(ProfileSyncServiceTest, BackupAfterSyncDisabled) {
 }
 
 TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncEnableRollback);
+
   CreateService(browser_sync::MANUAL_START);
   service()->SetSyncSetupCompleted();
   ExpectDataTypeManagerCreation(3);

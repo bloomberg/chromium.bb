@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -322,6 +323,18 @@ void ProfileSyncService::Initialize() {
   startup_controller_.TryStart();
 
   backup_rollback_controller_.Start(backup_start_delay_);
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableBackup)) {
+    profile_->GetIOTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(base::DeleteFile),
+                   profile_->GetPath().Append(kSyncBackupDataFolderName),
+                   true),
+        backup_start_delay_);
+  }
+#endif
 }
 
 void ProfileSyncService::TrySyncDatatypePrefRecovery() {
@@ -560,7 +573,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile_->GetRequestContext());
 
-  if (delete_stale_data)
+  if (backend_mode_ == SYNC && delete_stale_data)
     ClearStaleErrors();
 
   scoped_ptr<syncer::UnrecoverableErrorHandler>
@@ -1446,7 +1459,7 @@ void ProfileSyncService::OnConfigureDone(
     if (configure_status_ == DataTypeManager::OK ||
         configure_status_ == DataTypeManager::PARTIAL_SUCCESS) {
       StartSyncingWithServer();
-    } else {
+    } else if (!expect_sync_configuration_aborted_) {
       DVLOG(1) << "Backup/rollback backend failed to configure.";
       ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
     }
