@@ -574,3 +574,13 @@ USER32.dll!ReleaseDC
 *!base::AtExitManager::ProcessCallbacksNow
 *!base::AtExitManager::~AtExitManager
 *!base::TestSuite::~TestSuite
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/382784
+*!content::PepperMediaStreamAudioTrackHost::AudioSink::OnData
+*!content::MediaStreamAudioSinkOwner::OnData
+*!content::WebRtcLocalAudioTrack::Capture
+*!content::WebRtcAudioCapturer::Capture
+*!media::AudioInputDevice::AudioThreadCallback::Process
+*!media::AudioDeviceThread::Thread::Run
+*!media::AudioDeviceThread::Thread::ThreadMain
