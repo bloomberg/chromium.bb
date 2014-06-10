@@ -49,12 +49,13 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
     m_scriptState = ScriptState::from(toV8Context(frame, *world));
 
+    v8::HandleScope handleScope(m_scriptState->isolate());
     ASSERT(frame);
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
     Vector<ScriptSourceCode> sources;
     sources.append(preprocessorSourceCode);
-    Vector<ScriptValue> scriptResults;
+    Vector<v8::Local<v8::Value> > scriptResults;
     frame->script().executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
 
     if (scriptResults.size() != 1) {
@@ -62,12 +63,12 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
         return;
     }
 
-    ScriptValue preprocessorFunction = scriptResults[0];
-    if (!preprocessorFunction.isFunction()) {
+    v8::Local<v8::Value> preprocessorFunction = scriptResults[0];
+    if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction()) {
         frame->console().addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
         return;
     }
-    m_preprocessorFunction.set(m_scriptState->isolate(), v8::Handle<v8::Function>::Cast(preprocessorFunction.v8Value()));
+    m_preprocessorFunction.set(m_scriptState->isolate(), v8::Handle<v8::Function>::Cast(preprocessorFunction));
 }
 
 String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const String& sourceName)

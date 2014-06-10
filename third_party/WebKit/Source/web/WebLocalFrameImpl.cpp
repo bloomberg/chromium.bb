@@ -726,6 +726,7 @@ void WebLocalFrameImpl::executeScript(const WebScriptSource& source)
 {
     ASSERT(frame());
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
+    v8::HandleScope handleScope(toIsolate(frame()));
     frame()->script().executeScriptInMainWorld(ScriptSourceCode(source.code, source.url, position));
 }
 
@@ -808,7 +809,7 @@ v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebSc
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
-    return frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position)).v8Value();
+    return frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position));
 }
 
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
@@ -825,11 +826,11 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     }
 
     if (results) {
-        Vector<ScriptValue> scriptResults;
+        Vector<v8::Local<v8::Value> > scriptResults;
         frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
         WebVector<v8::Local<v8::Value> > v8Results(scriptResults.size());
         for (unsigned i = 0; i < scriptResults.size(); i++)
-            v8Results[i] = v8::Local<v8::Value>::New(toIsolate(frame()), scriptResults[i].v8Value());
+            v8Results[i] = v8::Local<v8::Value>::New(toIsolate(frame()), scriptResults[i]);
         results->swap(v8Results);
     } else {
         frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
@@ -1862,12 +1863,11 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
 
     String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    ScriptValue result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
-
-    String scriptResult;
-    if (!result.toString(scriptResult))
+    v8::HandleScope handleScope(toIsolate(frame()));
+    v8::Local<v8::Value> result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
+    if (result.IsEmpty() || !result->IsString())
         return;
-
+    String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
     if (!frame()->navigationScheduler().locationChangePending())
         frame()->document()->loader()->replaceDocument(scriptResult, ownerDocument.get());
 }

@@ -94,9 +94,9 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     return ScriptPromise(m_scriptState.get(), resultPromise);
 }
 
-ScriptPromise ScriptPromise::cast(const ScriptValue& value)
+ScriptPromise ScriptPromise::cast(ScriptState* scriptState, const ScriptValue& value)
 {
-    return ScriptPromise::cast(value.scriptState(), value.v8Value());
+    return ScriptPromise::cast(scriptState, value.v8Value());
 }
 
 ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Handle<v8::Value> value)
@@ -112,9 +112,9 @@ ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Handle<v8::Value
     return promise;
 }
 
-ScriptPromise ScriptPromise::reject(const ScriptValue& value)
+ScriptPromise ScriptPromise::reject(ScriptState* scriptState, const ScriptValue& value)
 {
-    return ScriptPromise::reject(value.scriptState(), value.v8Value());
+    return ScriptPromise::reject(scriptState, value.v8Value());
 }
 
 ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Value> value)

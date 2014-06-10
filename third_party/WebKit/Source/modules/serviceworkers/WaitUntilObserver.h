@@ -13,6 +13,7 @@
 namespace WebCore {
 
 class ExecutionContext;
+class ScriptState;
 class ScriptValue;
 
 // Created for each InstallPhaseEvent instance.
@@ -35,7 +36,7 @@ public:
 
     // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.
-    void waitUntil(const ScriptValue&);
+    void waitUntil(ScriptState*, const ScriptValue&);
 
 private:
     class ThenFunction;

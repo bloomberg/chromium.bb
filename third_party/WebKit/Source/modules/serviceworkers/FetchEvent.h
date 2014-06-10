@@ -26,7 +26,7 @@ public:
 
     Request* request() const;
 
-    void respondWith(const ScriptValue&);
+    void respondWith(ScriptState*, const ScriptValue&);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

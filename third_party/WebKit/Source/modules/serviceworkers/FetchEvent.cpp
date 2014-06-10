@@ -26,9 +26,9 @@ Request* FetchEvent::request() const
     return m_request.get();
 }
 
-void FetchEvent::respondWith(const ScriptValue& value)
+void FetchEvent::respondWith(ScriptState* scriptState, const ScriptValue& value)
 {
-    m_observer->respondWith(value);
+    m_observer->respondWith(scriptState, value);
 }
 
 const AtomicString& FetchEvent::interfaceName() const

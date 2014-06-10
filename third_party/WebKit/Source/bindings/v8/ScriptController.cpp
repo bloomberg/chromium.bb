@@ -513,20 +513,20 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     bool locationChangeBefore = m_frame->navigationScheduler().locationChangePending();
 
     String decodedURL = decodeURLEscapeSequences(url.string());
-    ScriptValue result = evaluateScriptInMainWorld(ScriptSourceCode(decodedURL.substring(javascriptSchemeLength)), NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Value> result = evaluateScriptInMainWorld(ScriptSourceCode(decodedURL.substring(javascriptSchemeLength)), NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
 
     // If executing script caused this frame to be removed from the page, we
     // don't want to try to replace its document!
     if (!m_frame->page())
         return true;
 
-    String scriptResult;
-    if (!result.toString(scriptResult))
+    if (result.IsEmpty() || !result->IsString())
         return true;
+    String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
 
     // We're still in a frame, so there should be a DocumentLoader.
     ASSERT(m_frame->document()->loader());
-
     if (!locationChangeBefore && m_frame->navigationScheduler().locationChangePending())
         return true;
 
@@ -541,23 +541,25 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
 void ScriptController::executeScriptInMainWorld(const String& script, ExecuteScriptPolicy policy)
 {
+    v8::HandleScope handleScope(m_isolate);
     evaluateScriptInMainWorld(ScriptSourceCode(script), NotSharableCrossOrigin, policy);
 }
 
 void ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus)
 {
+    v8::HandleScope handleScope(m_isolate);
     evaluateScriptInMainWorld(sourceCode, corsStatus, DoNotExecuteScriptWhenScriptsDisabled);
 }
 
-ScriptValue ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode)
+v8::Local<v8::Value> ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode)
 {
     return evaluateScriptInMainWorld(sourceCode, NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
 }
 
-ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, ExecuteScriptPolicy policy)
+v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, ExecuteScriptPolicy policy)
 {
     if (policy == DoNotExecuteScriptWhenScriptsDisabled && !canExecuteScripts(AboutToExecuteScript))
-        return ScriptValue();
+        return v8::Local<v8::Value>();
 
     String sourceURL = sourceCode.url();
     const String* savedSourceURL = m_sourceURL;
@@ -565,8 +567,9 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
 
     ScriptState* scriptState = ScriptState::forMainWorld(m_frame);
     if (scriptState->contextIsEmpty())
-        return ScriptValue();
+        return v8::Local<v8::Value>();
 
+    v8::EscapableHandleScope handleScope(scriptState->isolate());
     ScriptState::Scope scope(scriptState);
 
     RefPtr<LocalFrame> protect(m_frame);
@@ -580,12 +583,12 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())
-        return ScriptValue();
+        return v8::Local<v8::Value>();
 
-    return ScriptValue(scriptState, object);
+    return handleScope.Escape(object);
 }
 
-void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<ScriptValue>* results)
+void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results)
 {
     ASSERT(worldID > 0);
 
@@ -595,6 +598,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
         return;
 
     ScriptState* scriptState = isolatedWorldShell->scriptState();
+    v8::EscapableHandleScope handleScope(scriptState->isolate());
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
 
@@ -607,7 +611,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 
     if (results) {
         for (size_t i = 0; i < resultArray->Length(); ++i)
-            results->append(ScriptValue(scriptState, resultArray->Get(i)));
+            results->append(handleScope.Escape(resultArray->Get(i)));
     }
 }
 

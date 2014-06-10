@@ -2286,10 +2286,9 @@ private:
     virtual ScriptValue call(ScriptValue value) OVERRIDE
     {
         v8::Local<v8::Value> v8Value = value.v8Value();
-        v8::Isolate* isolate = value.isolate();
         ASSERT(v8Value->IsNumber());
         int intValue = v8Value.As<v8::Integer>()->Value();
-        ScriptValue result  = ScriptValue(value.scriptState(), v8::Integer::New(isolate, intValue + 1));
+        ScriptValue result  = ScriptValue(ScriptState::current(isolate()), v8::Integer::New(isolate(), intValue + 1));
         return result;
     }
 };

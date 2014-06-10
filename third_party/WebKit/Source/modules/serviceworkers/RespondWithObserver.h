@@ -13,6 +13,7 @@ namespace WebCore {
 
 class ExecutionContext;
 class Response;
+class ScriptState;
 class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
@@ -28,7 +29,7 @@ public:
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
     // given promise is resolved or rejected.
-    void respondWith(const ScriptValue&);
+    void respondWith(ScriptState*, const ScriptValue&);
 
     void responseWasRejected();
     void responseWasFulfilled(const ScriptValue&);
