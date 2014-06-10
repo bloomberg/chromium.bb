@@ -49,6 +49,7 @@
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMarquee.h"
@@ -1056,6 +1057,10 @@ void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)
 
     // Remove all the information in the flow thread associated with the leftover anonymous block.
     child->removeFromRenderFlowThread();
+
+    // RenderGrid keeps track of its children, we must notify it about changes in the tree.
+    if (child->parent()->isRenderGrid())
+        toRenderGrid(child->parent())->dirtyGrid();
 
     child->setParent(0);
     child->setPreviousSibling(0);
