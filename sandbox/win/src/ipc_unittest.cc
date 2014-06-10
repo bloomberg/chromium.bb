@@ -315,8 +315,7 @@ TEST(IPCTest, CrossCallValidation) {
   EXPECT_EQ(1, ccp->GetParamsCount());
   delete[] (reinterpret_cast<char*>(ccp));
 
-#if defined(NDEBUG)
-  // Test hat we handle integer overflow on the number of params
+  // Test that we handle integer overflow on the number of params
   // correctly. We use a test-only ctor for ActualCallParams that
   // allows to create malformed cross-call buffers.
   const int32 kPtrDiffSz = sizeof(ptrdiff_t);
@@ -332,7 +331,6 @@ TEST(IPCTest, CrossCallValidation) {
     // If the buffer is malformed the return is NULL.
     EXPECT_TRUE(NULL == ccp);
   }
-#endif  // defined(NDEBUG)
 
   ActualCallParams<1, kBufferSize> params_3(kTag, 1);
   params_3.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);

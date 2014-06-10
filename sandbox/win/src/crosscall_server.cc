@@ -60,7 +60,6 @@ uint32 GetActualBufferSize(uint32 param_count, void* buffer_base) {
     case 9:
       return reinterpret_cast<ActualCP9*>(buffer_base)->GetSize();
     default:
-      NOTREACHED();
       return 0;
   }
 }

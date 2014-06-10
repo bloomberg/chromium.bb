@@ -14,7 +14,6 @@
 namespace sandbox {
 
 unsigned RestrictedToken::Init(const HANDLE effective_token) {
-  DCHECK(!init_);
   if (init_)
     return ERROR_ALREADY_INITIALIZED;
 

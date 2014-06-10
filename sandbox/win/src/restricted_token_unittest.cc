@@ -408,8 +408,8 @@ TEST(RestrictedTokenTest, DeletePrivilege) {
 // elements in the restricting sids list has to be equal.
 void CheckRestrictingSid(const ATL::CAccessToken &restricted_token,
                          ATL::CSid sid, int count) {
-  DWORD length = 1000;
-  BYTE *memory = new BYTE[1000];
+  DWORD length = 8192;
+  BYTE *memory = new BYTE[length];
   TOKEN_GROUPS *groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
   ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
                                     TokenRestrictedSids,
@@ -530,8 +530,8 @@ TEST(RestrictedTokenTest, AddMultipleRestrictingSids) {
   ATL::CSid session;
   restricted_token.GetLogonSid(&session);
 
-  DWORD length = 1000;
-  BYTE *memory = new BYTE[1000];
+  DWORD length = 8192;
+  BYTE *memory = new BYTE[length];
   TOKEN_GROUPS *groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
   ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
                                     TokenRestrictedSids,
@@ -577,9 +577,6 @@ TEST(RestrictedTokenTest, AddAllSidToRestrictingSids) {
   CheckRestrictingSid(restricted_token, user, -1);
 }
 
-// Test to be executed only in release because they are triggering DCHECKs.
-#ifndef _DEBUG
-
 // Checks the error code when the object is initialized twice.
 TEST(RestrictedTokenTest, DoubleInit) {
   RestrictedToken token;
@@ -587,7 +584,5 @@ TEST(RestrictedTokenTest, DoubleInit) {
 
   ASSERT_EQ(ERROR_ALREADY_INITIALIZED, token.Init(NULL));
 }
-
-#endif
 
 }  // namespace sandbox
