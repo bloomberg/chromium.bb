@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_handle.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/component_updater/component_patcher.h"

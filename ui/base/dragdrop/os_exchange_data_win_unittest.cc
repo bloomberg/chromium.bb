@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"

@@ -21,7 +21,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_handle.h"
+#include "base/files/scoped_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
@@ -117,7 +117,7 @@ EVP_PKEY* ImportPrivateKeyFile(const char* filename) {
   // Load file in memory.
   base::FilePath certs_dir = GetTestCertsDirectory();
   base::FilePath file_path = certs_dir.AppendASCII(filename);
-  ScopedStdioHandle handle(base::OpenFile(file_path, "rb"));
+  base::ScopedFILE handle(base::OpenFile(file_path, "rb"));
   if (!handle.get()) {
     LOG(ERROR) << "Could not open private key file: " << filename;
     return NULL;
@@ -166,7 +166,7 @@ EVP_PKEY* ImportPublicKeyFile(const char* filename) {
   // Load file as PEM data.
   base::FilePath certs_dir = GetTestCertsDirectory();
   base::FilePath file_path = certs_dir.AppendASCII(filename);
-  ScopedStdioHandle handle(base::OpenFile(file_path, "rb"));
+  base::ScopedFILE handle(base::OpenFile(file_path, "rb"));
   if (!handle.get()) {
     LOG(ERROR) << "Could not open public key file: " << filename;
     return NULL;

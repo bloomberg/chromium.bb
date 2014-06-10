@@ -143,7 +143,6 @@
 #include <objbase.h>
 #else
 // TODO(port)
-#include "base/memory/scoped_handle.h"
 #include "content/child/npapi/np_channel_base.h"
 #endif
 

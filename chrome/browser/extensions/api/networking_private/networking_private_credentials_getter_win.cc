@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/memory/scoped_handle.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_utility_messages.h"

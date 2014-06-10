@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_handle.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"

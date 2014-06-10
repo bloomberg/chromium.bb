@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -152,13 +152,13 @@ bool ComponentUnpacker::Verify() {
   }
   // First, validate the CRX header and signature. As of today
   // this is SHA1 with RSA 1024.
-  ScopedStdioHandle file(base::OpenFile(path_, "rb"));
+  base::ScopedFILE file(base::OpenFile(path_, "rb"));
   if (!file.get()) {
     error_ = kInvalidFile;
     return false;
   }
   CRXValidator validator(file.get());
-  file.Close();
+  file.reset();
   if (!validator.valid()) {
     error_ = kInvalidFile;
     return false;

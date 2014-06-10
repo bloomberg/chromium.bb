@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 
-#include "base/memory/scoped_handle.h"
+#include "base/files/scoped_file.h"
 #include "net/base/net_log.h"
 
 namespace base {
@@ -47,7 +47,7 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
   static base::DictionaryValue* GetConstants();
 
  private:
-  ScopedStdioHandle file_;
+  base::ScopedFILE file_;
 
   // The LogLevel to log at.
   NetLog::LogLevel log_level_;

@@ -12,7 +12,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
 #endif
-#include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"

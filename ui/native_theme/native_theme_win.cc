@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"

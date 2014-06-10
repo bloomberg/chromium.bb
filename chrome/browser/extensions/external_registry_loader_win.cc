@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_handle.h"
+#include "base/files/scoped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,7 +39,7 @@ const wchar_t kRegistryExtensionVersion[] = L"version";
 const wchar_t kRegistryExtensionUpdateUrl[] = L"update_url";
 
 bool CanOpenFileForReading(const base::FilePath& path) {
-  ScopedStdioHandle file_handle(base::OpenFile(path, "rb"));
+  base::ScopedFILE file_handle(base::OpenFile(path, "rb"));
   return file_handle.get() != NULL;
 }
 

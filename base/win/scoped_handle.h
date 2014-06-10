@@ -27,7 +27,7 @@ namespace win {
 
 // Generic wrapper for raw handles that takes care of closing handles
 // automatically. The class interface follows the style of
-// the ScopedStdioHandle class with one addition:
+// the ScopedFILE class with one addition:
 //   - IsValid() method can tolerate multiple invalid handle values such as NULL
 //     and INVALID_HANDLE_VALUE (-1) for Win32 handles.
 template <class Traits, class Verifier>
