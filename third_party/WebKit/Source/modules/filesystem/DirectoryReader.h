@@ -34,21 +34,19 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
+#include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class EntriesCallback;
-class EntriesCallbacks;
 class ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DirectoryReader> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static DirectoryReader* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new DirectoryReader(fileSystem, fullPath));
+        return new DirectoryReader(fileSystem, fullPath);
     }
 
     virtual ~DirectoryReader();
@@ -63,14 +61,14 @@ private:
     class EntriesCallbackHelper;
     class ErrorCallbackHelper;
 
-    DirectoryReader(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryReader(DOMFileSystemBase*, const String& fullPath);
 
-    void addEntries(const WillBeHeapVector<RefPtrWillBeMember<Entry> >& entries);
+    void addEntries(const EntryHeapVector& entries);
 
     void onError(FileError*);
 
     bool m_isReading;
-    WillBeHeapVector<RefPtrWillBeMember<Entry> > m_entries;
+    EntryHeapVector m_entries;
     RefPtrWillBeMember<FileError> m_error;
     OwnPtr<EntriesCallback> m_entriesCallback;
     OwnPtr<ErrorCallback> m_errorCallback;

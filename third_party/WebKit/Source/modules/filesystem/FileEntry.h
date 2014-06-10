@@ -42,9 +42,9 @@ class FileWriterCallback;
 
 class FileEntry FINAL : public Entry {
 public:
-    static PassRefPtrWillBeRawPtr<FileEntry> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static FileEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new FileEntry(fileSystem, fullPath));
+        return new FileEntry(fileSystem, fullPath);
     }
 
     void createWriter(PassOwnPtr<FileWriterCallback>, PassOwnPtr<ErrorCallback> = nullptr);
@@ -55,7 +55,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    FileEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    FileEntry(DOMFileSystemBase*, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());

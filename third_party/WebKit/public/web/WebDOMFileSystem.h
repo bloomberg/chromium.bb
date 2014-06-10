@@ -102,8 +102,8 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    WebDOMFileSystem(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>&);
-    WebDOMFileSystem& operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>&);
+    WebDOMFileSystem(WebCore::DOMFileSystem*);
+    WebDOMFileSystem& operator=(WebCore::DOMFileSystem*);
 #endif
 
 private:

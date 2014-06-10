@@ -320,7 +320,7 @@ void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
         fileSystem()->directoryExists(createFileSystemURL(absolutePath), callbacks.release());
 }
 
-int DOMFileSystemBase::readDirectory(PassRefPtrWillBeRawPtr<DirectoryReaderBase> reader, const String& path, PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
+int DOMFileSystemBase::readDirectory(DirectoryReaderBase* reader, const String& path, PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
     ASSERT(DOMFilePath::isAbsolute(path));
 

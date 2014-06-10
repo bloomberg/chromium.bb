@@ -44,7 +44,7 @@ namespace WebCore {
 
 class DirectoryReaderSync::EntriesCallbackHelper : public EntriesCallback {
 public:
-    EntriesCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReaderSync> reader)
+    explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
         : m_reader(reader)
     {
     }
@@ -59,12 +59,12 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<DirectoryReaderSync> m_reader;
+    Persistent<DirectoryReaderSync> m_reader;
 };
 
 class DirectoryReaderSync::ErrorCallbackHelper : public ErrorCallback {
 public:
-    ErrorCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReaderSync> reader)
+    explicit ErrorCallbackHelper(DirectoryReaderSync* reader)
         : m_reader(reader)
     {
     }
@@ -75,10 +75,10 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<DirectoryReaderSync> m_reader;
+    Persistent<DirectoryReaderSync> m_reader;
 };
 
-DirectoryReaderSync::DirectoryReaderSync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_callbacksId(0)
     , m_errorCode(FileError::OK)

@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface DOMFileSystemSync {
     readonly attribute DOMString name;
     readonly attribute DirectoryEntrySync root;

@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-Entry::Entry(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+Entry::Entry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
@@ -54,14 +54,14 @@ void Entry::getMetadata(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr
     m_fileSystem->getMetadata(this, successCallback, errorCallback);
 }
 
-void Entry::moveTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
+void Entry::moveTo(DirectoryEntry* parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
-    m_fileSystem->move(this, parent.get(), name, successCallback, errorCallback);
+    m_fileSystem->move(this, parent, name, successCallback, errorCallback);
 }
 
-void Entry::copyTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
+void Entry::copyTo(DirectoryEntry* parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
-    m_fileSystem->copy(this, parent.get(), name, successCallback, errorCallback);
+    m_fileSystem->copy(this, parent, name, successCallback, errorCallback);
 }
 
 void Entry::remove(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const

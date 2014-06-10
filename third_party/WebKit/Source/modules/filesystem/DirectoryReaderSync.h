@@ -35,8 +35,6 @@
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,13 +42,13 @@ namespace WebCore {
 class EntrySync;
 class ExceptionState;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<EntrySync> > EntrySyncHeapVector;
+typedef HeapVector<Member<EntrySync> > EntrySyncHeapVector;
 
 class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DirectoryReaderSync> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static DirectoryReaderSync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new DirectoryReaderSync(fileSystem, fullPath));
+        return new DirectoryReaderSync(fileSystem, fullPath);
     }
 
     virtual ~DirectoryReaderSync();
@@ -73,7 +71,7 @@ private:
     class EntriesCallbackHelper;
     class ErrorCallbackHelper;
 
-    DirectoryReaderSync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryReaderSync(DOMFileSystemBase*, const String& fullPath);
 
     int m_callbacksId;
     EntrySyncHeapVector m_entries;

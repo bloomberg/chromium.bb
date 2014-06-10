@@ -53,8 +53,8 @@ template <typename ResultType, typename CallbackArg>
 struct HelperResultType {
     DISALLOW_ALLOCATION();
 public:
-    typedef PassRefPtrWillBeRawPtr<ResultType> ReturnType;
-    typedef RefPtrWillBePersistent<ResultType> StorageType;
+    typedef ResultType* ReturnType;
+    typedef Persistent<ResultType> StorageType;
 
     static ReturnType createFromCallbackArg(CallbackArg argument)
     {
@@ -157,10 +157,10 @@ private:
     bool m_completed;
 };
 
-struct EmptyType : public RefCountedWillBeGarbageCollected<EmptyType> {
-    static PassRefPtrWillBeRawPtr<EmptyType> create(EmptyType*)
+struct EmptyType : public GarbageCollected<EmptyType> {
+    static EmptyType* create(EmptyType*)
     {
-        return nullptr;
+        return 0;
     }
 
     void trace(Visitor*) { }

@@ -34,7 +34,6 @@
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -47,13 +46,13 @@ class VoidCallback;
 
 class DirectoryEntry FINAL : public Entry {
 public:
-    static PassRefPtrWillBeRawPtr<DirectoryEntry> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static DirectoryEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new DirectoryEntry(fileSystem, fullPath));
+        return new DirectoryEntry(fileSystem, fullPath);
     }
     virtual bool isDirectory() const OVERRIDE { return true; }
 
-    PassRefPtrWillBeRawPtr<DirectoryReader> createReader();
+    DirectoryReader* createReader();
     void getFile(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
     void getDirectory(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
     void removeRecursively(PassOwnPtr<VoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
@@ -61,7 +60,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    DirectoryEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryEntry(DOMFileSystemBase*, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntry, Entry, entry, entry->isDirectory(), entry.isDirectory());

@@ -62,18 +62,18 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& wor
     LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, &worker, fileSystemType));
 }
 
-PassRefPtrWillBeRawPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope& worker, int type, long long size, ExceptionState& exceptionState)
+DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope& worker, int type, long long size, ExceptionState& exceptionState)
 {
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         exceptionState.throwSecurityError(FileError::securityErrorMessage);
-        return nullptr;
+        return 0;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
         exceptionState.throwDOMException(InvalidModificationError, "the type must be TEMPORARY or PERSISTENT.");
-        return nullptr;
+        return 0;
     }
 
     RefPtr<FileSystemSyncCallbackHelper> helper = FileSystemSyncCallbackHelper::create();
@@ -101,18 +101,18 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, &worker));
 }
 
-PassRefPtrWillBeRawPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope& worker, const String& url, ExceptionState& exceptionState)
+EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope& worker, const String& url, ExceptionState& exceptionState)
 {
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         exceptionState.throwSecurityError(FileError::securityErrorMessage);
-        return nullptr;
+        return 0;
     }
 
     if (!completedURL.isValid()) {
         exceptionState.throwDOMException(EncodingError, "the URL '" + url + "' is invalid.");
-        return nullptr;
+        return 0;
     }
 
     RefPtr<EntrySyncCallbackHelper> resolveURLHelper = EntrySyncCallbackHelper::create();
@@ -121,10 +121,7 @@ PassRefPtrWillBeRawPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLoca
 
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, callbacks.release());
 
-    RefPtrWillBeRawPtr<EntrySync> entry = resolveURLHelper->getResult(exceptionState);
-    if (!entry)
-        return nullptr;
-    return entry.release();
+    return resolveURLHelper->getResult(exceptionState);
 }
 
 COMPILE_ASSERT(static_cast<int>(WorkerGlobalScopeFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);

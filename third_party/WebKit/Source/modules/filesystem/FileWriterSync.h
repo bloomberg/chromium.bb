@@ -44,9 +44,9 @@ class ExceptionState;
 
 class FileWriterSync FINAL : public FileWriterBase, public ScriptWrappable, public blink::WebFileWriterClient {
 public:
-    static PassRefPtrWillBeRawPtr<FileWriterSync> create()
+    static FileWriterSync* create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FileWriterSync());
+        return adoptRefCountedGarbageCollected(new FileWriterSync());
     }
     virtual ~FileWriterSync();
 

@@ -2181,8 +2181,8 @@ private:
             return false;
         if (!readWebCoreString(&url))
             return false;
-        RefPtrWillBeRawPtr<DOMFileSystem> fs = DOMFileSystem::create(m_scriptState->executionContext(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, url));
-        *value = toV8(fs.release(), m_scriptState->context()->Global(), isolate());
+        DOMFileSystem* fs = DOMFileSystem::create(m_scriptState->executionContext(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, url));
+        *value = toV8(fs, m_scriptState->context()->Global(), isolate());
         return true;
     }
 

@@ -48,10 +48,10 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileWriter FINAL : public FileWriterBase, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
-    REFCOUNTED_EVENT_TARGET(FileWriterBase);
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<FileWriterBase>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
-    static PassRefPtrWillBeRawPtr<FileWriter> create(ExecutionContext*);
+    static FileWriter* create(ExecutionContext*);
 
     enum ReadyState {
         INIT = 0,

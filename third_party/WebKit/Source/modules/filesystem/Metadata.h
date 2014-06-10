@@ -34,20 +34,19 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/FileMetadata.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Metadata : public RefCountedWillBeGarbageCollectedFinalized<Metadata>, public ScriptWrappable {
+class Metadata : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<Metadata> create(const FileMetadata& platformMetadata)
+    static Metadata* create(const FileMetadata& platformMetadata)
     {
-        return adoptRefWillBeNoop(new Metadata(platformMetadata));
+        return new Metadata(platformMetadata);
     }
 
-    static PassRefPtrWillBeRawPtr<Metadata> create(Metadata* metadata)
+    static Metadata* create(Metadata* metadata)
     {
-        return adoptRefWillBeNoop(new Metadata(metadata->m_platformMetadata));
+        return new Metadata(metadata->m_platformMetadata);
     }
 
     // Needs to return epoch time in milliseconds for Date while FileMetadata's modificationTime is in seconds.

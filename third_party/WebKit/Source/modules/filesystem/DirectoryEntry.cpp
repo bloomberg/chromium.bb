@@ -39,13 +39,13 @@
 
 namespace WebCore {
 
-DirectoryEntry::DirectoryEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryEntry::DirectoryEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<DirectoryReader> DirectoryEntry::createReader()
+DirectoryReader* DirectoryEntry::createReader()
 {
     return DirectoryReader::create(m_fileSystem, m_fullPath);
 }

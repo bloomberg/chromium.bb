@@ -216,7 +216,7 @@ private:
     RefPtr<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
     RefPtr<Array<TypeBuilder::FileSystem::Entry> > m_entries;
-    RefPtrWillBePersistent<DirectoryReader> m_directoryReader;
+    Persistent<DirectoryReader> m_directoryReader;
 };
 
 void DirectoryContentRequest::start(ExecutionContext* executionContext)
@@ -264,7 +264,7 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& ent
     }
 
     for (size_t i = 0; i < entries.size(); ++i) {
-        RefPtrWillBeRawPtr<Entry> entry = entries[i];
+        Entry* entry = entries[i];
         RefPtr<TypeBuilder::FileSystem::Entry> entryForFrontend = TypeBuilder::FileSystem::Entry::create()
             .setUrl(entry->toURL())
             .setName(entry->name())

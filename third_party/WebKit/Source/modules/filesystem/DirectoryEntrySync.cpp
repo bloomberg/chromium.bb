@@ -40,31 +40,31 @@
 
 namespace WebCore {
 
-DirectoryEntrySync::DirectoryEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryEntrySync::DirectoryEntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
+DirectoryReaderSync* DirectoryEntrySync::createReader()
 {
     return DirectoryReaderSync::create(m_fileSystem, m_fullPath);
 }
 
-PassRefPtrWillBeRawPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+FileEntrySync* DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
     m_fileSystem->getFile(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
-    return static_pointer_cast<FileEntrySync>(helper->getResult(exceptionState));
+    return static_cast<FileEntrySync*>(helper->getResult(exceptionState));
 }
 
-PassRefPtrWillBeRawPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+DirectoryEntrySync* DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
     m_fileSystem->getDirectory(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
-    return static_pointer_cast<DirectoryEntrySync>(helper->getResult(exceptionState));
+    return static_cast<DirectoryEntrySync*>(helper->getResult(exceptionState));
 }
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState)

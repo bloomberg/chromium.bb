@@ -15,7 +15,7 @@ class InspectorFrontendHost;
 
 class InspectorFrontendHostFileSystem {
 public:
-    static PassRefPtrWillBeRawPtr<DOMFileSystem> isolatedFileSystem(InspectorFrontendHost&, const String& fileSystemName, const String& rootURL);
+    static DOMFileSystem* isolatedFileSystem(InspectorFrontendHost&, const String& fileSystemName, const String& rootURL);
     static void upgradeDraggedFileSystemPermissions(InspectorFrontendHost&, DOMFileSystem*);
 private:
     InspectorFrontendHostFileSystem();

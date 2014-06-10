@@ -35,7 +35,6 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -51,15 +50,15 @@ public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 
     void getMetadata(PassOwnPtr<MetadataCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
-    void moveTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
-    void copyTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void moveTo(DirectoryEntry* parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void copyTo(DirectoryEntry* parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
     void remove(PassOwnPtr<VoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
     void getParent(PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
 
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    Entry(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    Entry(DOMFileSystemBase*, const String& fullPath);
 };
 
 } // namespace WebCore

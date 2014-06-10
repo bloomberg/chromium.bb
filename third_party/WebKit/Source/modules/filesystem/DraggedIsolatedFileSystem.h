@@ -59,7 +59,7 @@ public:
 
 private:
     DraggedIsolatedFileSystem(DataObject& host, const String& filesystemId);
-    RefPtrWillBeMember<DOMFileSystem> m_filesystem;
+    PersistentWillBeMember<DOMFileSystem> m_filesystem;
 };
 
 } // namespace WebCore

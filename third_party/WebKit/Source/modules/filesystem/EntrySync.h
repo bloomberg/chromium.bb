@@ -36,7 +36,6 @@
 #include "modules/filesystem/EntryBase.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -46,20 +45,20 @@ class ExceptionState;
 
 class EntrySync : public EntryBase, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<EntrySync> create(EntryBase*);
+    static EntrySync* create(EntryBase*);
 
     DOMFileSystemSync* filesystem() const { return static_cast<DOMFileSystemSync*>(m_fileSystem.get()); }
 
-    PassRefPtrWillBeRawPtr<Metadata> getMetadata(ExceptionState&);
-    PassRefPtrWillBeRawPtr<EntrySync> moveTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
-    PassRefPtrWillBeRawPtr<EntrySync> copyTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
+    Metadata* getMetadata(ExceptionState&);
+    EntrySync* moveTo(DirectoryEntrySync* parent, const String& name, ExceptionState&) const;
+    EntrySync* copyTo(DirectoryEntrySync* parent, const String& name, ExceptionState&) const;
     void remove(ExceptionState&) const;
-    PassRefPtrWillBeRawPtr<EntrySync> getParent() const;
+    EntrySync* getParent() const;
 
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    EntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    EntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
 }

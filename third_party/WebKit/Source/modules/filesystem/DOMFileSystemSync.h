@@ -45,21 +45,21 @@ class ExceptionState;
 
 class DOMFileSystemSync FINAL : public DOMFileSystemBase, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DOMFileSystemSync> create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+    static DOMFileSystemSync* create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DOMFileSystemSync(context, name, type, rootURL));
+        return new DOMFileSystemSync(context, name, type, rootURL);
     }
 
-    static PassRefPtrWillBeRawPtr<DOMFileSystemSync> create(DOMFileSystemBase*);
+    static DOMFileSystemSync* create(DOMFileSystemBase*);
 
     virtual ~DOMFileSystemSync();
 
     virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
 
-    PassRefPtrWillBeRawPtr<DirectoryEntrySync> root();
+    DirectoryEntrySync* root();
 
     PassRefPtrWillBeRawPtr<File> createFile(const FileEntrySync*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<FileWriterSync> createWriter(const FileEntrySync*, ExceptionState&);
+    FileWriterSync* createWriter(const FileEntrySync*, ExceptionState&);
 
 private:
     DOMFileSystemSync(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);

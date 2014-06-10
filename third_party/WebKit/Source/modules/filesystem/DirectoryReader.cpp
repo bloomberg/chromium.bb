@@ -40,7 +40,7 @@ namespace WebCore {
 
 class DirectoryReader::EntriesCallbackHelper : public EntriesCallback {
 public:
-    EntriesCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReader> reader)
+    explicit EntriesCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
     {
     }
@@ -51,13 +51,13 @@ public:
     }
 
 private:
-    // FIXME: This RefPtr keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
-    RefPtrWillBePersistent<DirectoryReader> m_reader;
+    // FIXME: This Persistent keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
+    Persistent<DirectoryReader> m_reader;
 };
 
 class DirectoryReader::ErrorCallbackHelper : public ErrorCallback {
 public:
-    ErrorCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReader> reader)
+    explicit ErrorCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
     {
     }
@@ -68,10 +68,10 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<DirectoryReader> m_reader;
+    Persistent<DirectoryReader> m_reader;
 };
 
-DirectoryReader::DirectoryReader(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryReader::DirectoryReader(DOMFileSystemBase* fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_isReading(false)
 {
@@ -90,7 +90,7 @@ void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, P
     }
 
     if (m_error) {
-        filesystem()->scheduleCallback(errorCallback, m_error.get());
+        filesystem()->scheduleCallback(errorCallback, PassRefPtrWillBeRawPtr<FileError>(m_error.get()));
         return;
     }
 

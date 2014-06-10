@@ -54,17 +54,17 @@
 namespace WebCore {
 
 // static
-PassRefPtrWillBeRawPtr<DOMFileSystem> DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+DOMFileSystem* DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
 {
-    RefPtrWillBeRawPtr<DOMFileSystem> fileSystem(adoptRefWillBeRefCountedGarbageCollected(new DOMFileSystem(context, name, type, rootURL)));
+    DOMFileSystem* fileSystem(new DOMFileSystem(context, name, type, rootURL));
     fileSystem->suspendIfNeeded();
-    return fileSystem.release();
+    return fileSystem;
 }
 
-PassRefPtrWillBeRawPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
+DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
 {
     if (filesystemId.isEmpty())
-        return nullptr;
+        return 0;
 
     StringBuilder filesystemName;
     filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
@@ -93,7 +93,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, File
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<DirectoryEntry> DOMFileSystem::root()
+DirectoryEntry* DOMFileSystem::root()
 {
     return DirectoryEntry::create(this, DOMFilePath::root);
 }
@@ -147,17 +147,17 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWrit
 {
     ASSERT(fileEntry);
 
-    RefPtrWillBeRawPtr<FileWriter> fileWriter = FileWriter::create(executionContext());
+    FileWriter* fileWriter = FileWriter::create(executionContext());
     OwnPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback.release(), errorCallback, m_context);
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
+    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());
 }
 
 namespace {
 
 class SnapshotFileCallback : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystem* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
     {
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context)));
     }
@@ -190,8 +190,8 @@ public:
     }
 
 private:
-    SnapshotFileCallback(PassRefPtrWillBeRawPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
-        : FileSystemCallbacksBase(errorCallback, filesystem.get(), context)
+    SnapshotFileCallback(DOMFileSystem* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+        : FileSystemCallbacksBase(errorCallback, filesystem, context)
         , m_name(name)
         , m_url(url)
         , m_successCallback(successCallback)

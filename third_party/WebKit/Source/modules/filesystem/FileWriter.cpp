@@ -44,11 +44,11 @@ namespace WebCore {
 static const int kMaxRecursionDepth = 3;
 static const double progressNotificationIntervalMS = 50;
 
-PassRefPtrWillBeRawPtr<FileWriter> FileWriter::create(ExecutionContext* context)
+FileWriter* FileWriter::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<FileWriter> fileWriter(adoptRefWillBeRefCountedGarbageCollected(new FileWriter(context)));
+    FileWriter* fileWriter = adoptRefCountedGarbageCollected(new FileWriter(context));
     fileWriter->suspendIfNeeded();
-    return fileWriter.release();
+    return fileWriter;
 }
 
 FileWriter::FileWriter(ExecutionContext* context)

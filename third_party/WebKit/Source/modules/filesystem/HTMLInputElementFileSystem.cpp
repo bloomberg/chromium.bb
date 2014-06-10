@@ -52,7 +52,7 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(ExecutionContext* exec
     if (!files)
         return entries;
 
-    RefPtrWillBeRawPtr<DOMFileSystem> filesystem = DOMFileSystem::createIsolatedFileSystem(executionContext, input.droppedFileSystemId());
+    DOMFileSystem* filesystem = DOMFileSystem::createIsolatedFileSystem(executionContext, input.droppedFileSystemId());
     if (!filesystem) {
         // Drag-drop isolated filesystem is not available.
         return entries;

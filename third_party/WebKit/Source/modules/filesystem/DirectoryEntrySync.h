@@ -33,7 +33,6 @@
 
 #include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/FileSystemFlags.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,21 +43,21 @@ class FileEntrySync;
 
 class DirectoryEntrySync FINAL : public EntrySync {
 public:
-    static PassRefPtrWillBeRawPtr<DirectoryEntrySync> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new DirectoryEntrySync(fileSystem, fullPath));
+        return new DirectoryEntrySync(fileSystem, fullPath);
     }
     virtual bool isDirectory() const OVERRIDE { return true; }
 
-    PassRefPtrWillBeRawPtr<DirectoryReaderSync> createReader();
-    PassRefPtrWillBeRawPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionState&);
-    PassRefPtrWillBeRawPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionState&);
+    DirectoryReaderSync* createReader();
+    FileEntrySync* getFile(const String& path, const Dictionary&, ExceptionState&);
+    DirectoryEntrySync* getDirectory(const String& path, const Dictionary&, ExceptionState&);
     void removeRecursively(ExceptionState&);
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    DirectoryEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntrySync, EntrySync, entry, entry->isDirectory(), entry.isDirectory());

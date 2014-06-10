@@ -32,7 +32,7 @@
 [
     NoInterfaceObject,
     ActiveDOMObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface DOMFileSystem {
     readonly attribute DOMString name;
     readonly attribute DirectoryEntry root;

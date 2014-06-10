@@ -72,7 +72,7 @@ WebDOMFileSystem WebDOMFileSystem::create(
     SerializableType serializableType)
 {
     ASSERT(frame && toWebLocalFrameImpl(frame)->frame());
-    RefPtrWillBeRawPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebLocalFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
+    DOMFileSystem* domFileSystem = DOMFileSystem::create(toWebLocalFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
     if (serializableType == SerializableTypeSerializable)
         domFileSystem->makeClonable();
     return WebDOMFileSystem(domFileSystem);
@@ -139,12 +139,12 @@ v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
     return toV8(FileEntry::create(m_private.get(), path), creationContext, isolate);
 }
 
-WebDOMFileSystem::WebDOMFileSystem(const PassRefPtrWillBeRawPtr<DOMFileSystem>& domFileSystem)
+WebDOMFileSystem::WebDOMFileSystem(DOMFileSystem* domFileSystem)
     : m_private(domFileSystem)
 {
 }
 
-WebDOMFileSystem& WebDOMFileSystem::operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>& domFileSystem)
+WebDOMFileSystem& WebDOMFileSystem::operator=(WebCore::DOMFileSystem* domFileSystem)
 {
     m_private = domFileSystem;
     return *this;

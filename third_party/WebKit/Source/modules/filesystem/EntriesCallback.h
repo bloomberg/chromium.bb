@@ -32,12 +32,11 @@
 #define EntriesCallback_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class Entry;
-typedef WillBeHeapVector<RefPtrWillBeMember<Entry> > EntryHeapVector;
+typedef HeapVector<Member<Entry> > EntryHeapVector;
 
 class EntriesCallback {
 public:

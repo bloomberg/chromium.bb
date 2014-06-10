@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-FileEntrySync::FileEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+FileEntrySync::FileEntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
@@ -48,7 +48,7 @@ PassRefPtrWillBeRawPtr<File> FileEntrySync::file(ExceptionState& exceptionState)
     return filesystem()->createFile(this, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionState& exceptionState)
+FileWriterSync* FileEntrySync::createWriter(ExceptionState& exceptionState)
 {
     return filesystem()->createWriter(this, exceptionState);
 }

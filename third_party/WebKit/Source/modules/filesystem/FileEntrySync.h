@@ -33,7 +33,6 @@
 
 #include "modules/filesystem/EntrySync.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -44,20 +43,20 @@ class FileWriterSync;
 
 class FileEntrySync FINAL : public EntrySync {
 public:
-    static PassRefPtrWillBeRawPtr<FileEntrySync> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static FileEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
-        return adoptRefWillBeNoop(new FileEntrySync(fileSystem, fullPath));
+        return new FileEntrySync(fileSystem, fullPath);
     }
 
     virtual bool isFile() const OVERRIDE { return true; }
 
     PassRefPtrWillBeRawPtr<File> file(ExceptionState&);
-    PassRefPtrWillBeRawPtr<FileWriterSync> createWriter(ExceptionState&);
+    FileWriterSync* createWriter(ExceptionState&);
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    FileEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
+    FileEntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(FileEntrySync, EntrySync, entry, entry->isFile(), entry.isFile());

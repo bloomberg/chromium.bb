@@ -50,9 +50,9 @@ namespace WebCore {
 
 class FileWriterBase;
 
-PassRefPtrWillBeRawPtr<DOMFileSystemSync> DOMFileSystemSync::create(DOMFileSystemBase* fileSystem)
+DOMFileSystemSync* DOMFileSystemSync::create(DOMFileSystemBase* fileSystem)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new DOMFileSystemSync(fileSystem->m_context, fileSystem->name(), fileSystem->type(), fileSystem->rootURL()));
+    return new DOMFileSystemSync(fileSystem->m_context, fileSystem->name(), fileSystem->type(), fileSystem->rootURL());
 }
 
 DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
@@ -70,7 +70,7 @@ void DOMFileSystemSync::reportError(PassOwnPtr<ErrorCallback> errorCallback, Pas
     errorCallback->handleEvent(fileError.get());
 }
 
-PassRefPtrWillBeRawPtr<DirectoryEntrySync> DOMFileSystemSync::root()
+DirectoryEntrySync* DOMFileSystemSync::root()
 {
     return DirectoryEntrySync::create(this, DOMFilePath::root);
 }
@@ -226,11 +226,11 @@ private:
 
 }
 
-PassRefPtrWillBeRawPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
+FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
 {
     ASSERT(fileEntry);
 
-    RefPtrWillBeRawPtr<FileWriterSync> fileWriter = FileWriterSync::create();
+    FileWriterSync* fileWriter = FileWriterSync::create();
     OwnPtr<ReceiveFileWriterCallback> successCallback = ReceiveFileWriterCallback::create();
     FileError::ErrorCode errorCode = FileError::OK;
     OwnPtr<LocalErrorCallback> errorCallback = LocalErrorCallback::create(errorCode);
@@ -238,12 +238,12 @@ PassRefPtrWillBeRawPtr<FileWriterSync> DOMFileSystemSync::createWriter(const Fil
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback.release(), errorCallback.release(), m_context);
     callbacks->setShouldBlockUntilCompletion(true);
 
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
+    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());
     if (errorCode != FileError::OK) {
         FileError::throwDOMException(exceptionState, errorCode);
-        return nullptr;
+        return 0;
     }
-    return fileWriter.release();
+    return fileWriter;
 }
 
 }

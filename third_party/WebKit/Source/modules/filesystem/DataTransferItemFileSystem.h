@@ -41,7 +41,7 @@ class ExecutionContext;
 
 class DataTransferItemFileSystem {
 public:
-    static PassRefPtrWillBeRawPtr<Entry> webkitGetAsEntry(ExecutionContext*, DataTransferItem&);
+    static Entry* webkitGetAsEntry(ExecutionContext*, DataTransferItem&);
 
 private:
     DataTransferItemFileSystem();

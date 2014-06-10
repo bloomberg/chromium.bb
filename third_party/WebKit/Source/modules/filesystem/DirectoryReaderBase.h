@@ -33,12 +33,11 @@
 
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class DirectoryReaderBase : public RefCountedWillBeGarbageCollectedFinalized<DirectoryReaderBase> {
+class DirectoryReaderBase : public GarbageCollectedFinalized<DirectoryReaderBase> {
 public:
     DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
     void setHasMoreEntries(bool hasMoreEntries) { m_hasMoreEntries = hasMoreEntries; }
@@ -51,14 +50,14 @@ public:
     }
 
 protected:
-    DirectoryReaderBase(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    DirectoryReaderBase(DOMFileSystemBase* fileSystem, const String& fullPath)
         : m_fileSystem(fileSystem)
         , m_fullPath(fullPath)
         , m_hasMoreEntries(true)
     {
     }
 
-    RefPtrWillBeMember<DOMFileSystemBase> m_fileSystem;
+    Member<DOMFileSystemBase> m_fileSystem;
 
     // This is a virtual path.
     String m_fullPath;

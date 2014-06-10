@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface DirectoryReader {
     void readEntries(EntriesCallback successCallback, optional ErrorCallback errorCallback);
 };
