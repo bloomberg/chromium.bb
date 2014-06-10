@@ -1,0 +1,2 @@
+# Crashes: http://crbug.com/383054
+BrowserAccessibilityManagerWinTest.TestAccessibleHWND
