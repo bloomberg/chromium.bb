@@ -404,30 +404,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  if (browser_compositor_lock_)
-    browser_compositor_damaged_during_lock_ = true;
-  else
-    [browser_compositor_view_ compositor]->ScheduleFullRedraw();
-}
-
-void RenderWidgetHostViewMac::DelegatedCompositorDidSwapBuffers() {
-  // If this view is not visible then do not lock the compositor, because the
-  // wait for the surface to be drawn will time out.
-  NSWindow* window = [cocoa_view_ window];
-  if (!window)
-    return;
-  if (window && [window respondsToSelector:@selector(occlusionState)]) {
-    bool window_is_occluded =
-        !([window occlusionState] & NSWindowOcclusionStateVisible);
-    if (window_is_occluded)
-      return;
-  }
-  browser_compositor_lock_ =
-      [browser_compositor_view_ compositor]->GetCompositorLock();
-}
-
-void RenderWidgetHostViewMac::DelegatedCompositorAbortedSwapBuffers() {
-  PostReleaseBrowserCompositorLock();
+  [browser_compositor_view_ compositor]->ScheduleFullRedraw();
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -783,23 +760,6 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   }
 }
 
-void RenderWidgetHostViewMac::PostReleaseBrowserCompositorLock() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&RenderWidgetHostViewMac::ReleaseBrowserCompositorLock,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void RenderWidgetHostViewMac::ReleaseBrowserCompositorLock() {
-  if (!browser_compositor_view_)
-    return;
-
-  browser_compositor_lock_ = NULL;
-  if (browser_compositor_damaged_during_lock_) {
-    browser_compositor_damaged_during_lock_ = false;
-    [browser_compositor_view_ compositor]->ScheduleFullRedraw();
-  }
-}
-
 void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
   if (!render_widget_host_ || !display_link_)
     return;
@@ -850,7 +810,6 @@ void RenderWidgetHostViewMac::WasHidden() {
   // Any pending frames will not be displayed until this is shown again. Ack
   // them now.
   SendPendingSwapAck();
-  PostReleaseBrowserCompositorLock();
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -1063,7 +1022,6 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
-  browser_compositor_lock_ = NULL;
   [browser_compositor_view_ resetClient];
   delegated_frame_host_.reset();
   root_layer_.reset();
@@ -1766,8 +1724,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
   if (frame->delegated_frame_data) {
     if (!browser_compositor_view_) {
-      browser_compositor_view_.reset([[BrowserCompositorViewMac alloc]
-          initWithSuperview:cocoa_view_ withClient:this]);
+      browser_compositor_view_.reset(
+          [[BrowserCompositorViewMac alloc] initWithSuperview:cocoa_view_]);
       root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
       delegated_frame_host_.reset(new DelegatedFrameHost(this));
       [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
@@ -2293,13 +2251,6 @@ void RenderWidgetHostViewMac::LayoutLayers() {
 
 SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   return SkBitmap::kARGB_8888_Config;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCompositorViewMacClient, public:
-
-void RenderWidgetHostViewMac::BrowserCompositorDidDrawFrame() {
-  PostReleaseBrowserCompositorLock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

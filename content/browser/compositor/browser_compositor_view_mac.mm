@@ -64,10 +64,8 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 @implementation BrowserCompositorViewMac : NSView
 
-- (id)initWithSuperview:(NSView*)view
-             withClient:(content::BrowserCompositorViewMacClient*)client {
+- (id)initWithSuperview:(NSView*)view {
   if (self = [super init]) {
-    client_ = client;
     helper_.reset(new content::BrowserCompositorViewMacHelper(self));
 
     // Disable the fade-in animation as the layer and view are added.
@@ -141,7 +139,6 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 - (void)resetClient {
   [accelerated_layer_ resetClient];
-  client_ = NULL;
 }
 
 - (ui::Compositor*)compositor {
@@ -241,8 +238,6 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 }
 
 - (void)layerDidDrawFrame {
-  if (client_)
-    client_->BrowserCompositorDidDrawFrame();
 }
 
 @end  // BrowserCompositorViewMac

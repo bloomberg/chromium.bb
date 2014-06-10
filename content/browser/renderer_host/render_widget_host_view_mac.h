@@ -214,7 +214,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public DelegatedFrameHostClient,
       public IPC::Sender,
       public SoftwareFrameManagerClient,
-      public BrowserCompositorViewMacClient,
       public CompositingIOSurfaceLayerClient {
  public:
   // The view will associate itself with the given widget. The native view must
@@ -345,9 +344,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
 
-  // BrowserCompositorViewMacHelper implementation.
-  virtual void BrowserCompositorDidDrawFrame() OVERRIDE;
-
   // CompositingIOSurfaceLayerClient implementation.
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
 
@@ -439,12 +435,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
 
-  // This lock is taken when the browser compositor produces a frame, and is
-  // released when that frame is displayed. It is by this mechanism that the
-  // browser compositor can exert GPU backpressure on the renderer compositor.
-  scoped_refptr<ui::CompositorLock> browser_compositor_lock_;
-  bool browser_compositor_damaged_during_lock_;
-
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
@@ -509,8 +499,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual RenderWidgetHostImpl* GetHost() OVERRIDE;
   virtual void SchedulePaintInRect(
       const gfx::Rect& damage_rect_in_dip) OVERRIDE;
-  virtual void DelegatedCompositorDidSwapBuffers() OVERRIDE;
-  virtual void DelegatedCompositorAbortedSwapBuffers() OVERRIDE;
   virtual bool IsVisible() OVERRIDE;
   virtual scoped_ptr<ResizeLock> CreateResizeLock(
       bool defer_compositor_lock) OVERRIDE;
@@ -574,12 +562,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Send updated vsync parameters to the renderer.
   void SendVSyncParametersToRenderer();
-
-  // Release the browser compositor lock, and request another frame from the
-  // browser compositor. Because this can be requested from inside compositor
-  // calbacks, post it as task instead of calling it directly.
-  void PostReleaseBrowserCompositorLock();
-  void ReleaseBrowserCompositorLock();
 
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the

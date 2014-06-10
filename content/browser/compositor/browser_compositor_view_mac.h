@@ -17,12 +17,6 @@
 
 namespace content {
 class BrowserCompositorViewMacHelper;
-
-class BrowserCompositorViewMacClient {
- public:
-  virtual void BrowserCompositorDidDrawFrame() = 0;
-};
-
 }  // namespace content
 
 // Additions to the NSView interface for compositor frames.
@@ -47,13 +41,11 @@ class BrowserCompositorViewMacClient {
   base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
-  content::BrowserCompositorViewMacClient* client_;
   scoped_ptr<content::BrowserCompositorViewMacHelper> helper_;
 }
 
 // Initialize to render the content of a specific superview.
-- (id)initWithSuperview:(NSView*)view
-             withClient:(content::BrowserCompositorViewMacClient*)client;
+- (id)initWithSuperview:(NSView*)view;
 
 // Re-position the layers to the correct place when this view's superview
 // changes size, or when the accelerated or software content changes.
