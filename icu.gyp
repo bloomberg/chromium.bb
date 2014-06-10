@@ -73,6 +73,29 @@
     ['use_system_icu==0 or want_separate_host_toolset==1', {
       'targets': [
         {
+          'target_name': 'copy_icudtl_dat',
+          'type': 'none',
+          # icudtl.dat is the same for both host/target, so this only supports a
+          # single toolset. If a target requires that the .dat file be copied
+          # to the output directory, it should explicitly depend on this target
+          # with the host toolset (like copy_icudtl_dat#host).
+          'toolsets': [ 'host' ],
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'conditions': [
+              ['OS == "android"', {
+                'files': [
+                  'android/icudtl.dat',
+                ],
+              } , { # else: OS != android
+                'files': [
+                  'source/data/in/icudtl.dat',
+                ],
+              }],
+            ],
+          }],
+        },
+        {
           'target_name': 'icudata',
           'type': 'static_library',
           'defines': [
@@ -117,20 +140,9 @@
               # Make sure any binary depending on this gets the data file.
               'conditions': [
                 ['OS != "ios"', {
-                  'copies': [{
-                    'destination': '<(PRODUCT_DIR)',
-                    'conditions': [
-                      ['OS == "android"', {
-                        'files': [
-                          'android/icudtl.dat',
-                        ],
-                      } , { # else: OS != android
-                        'files': [
-                          'source/data/in/icudtl.dat',
-                        ],
-                      }],
-                    ],
-                  }],
+                  'dependencies': [
+                    'copy_icudtl_dat#host',
+                  ],
                 } , { # else: OS=="ios"
                   'link_settings': {
                     'mac_bundle_resources': [
