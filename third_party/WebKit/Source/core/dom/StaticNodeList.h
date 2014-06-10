@@ -56,10 +56,6 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    // If AllocationSize() is larger than this, we report it as external
-    // allocated memory to V8.
-    const static ptrdiff_t externalMemoryReportSizeLimit = 1024;
-
     ptrdiff_t AllocationSize()
     {
         return m_nodes.capacity() * sizeof(RefPtrWillBeMember<Node>);
