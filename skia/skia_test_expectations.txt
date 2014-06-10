@@ -48,20 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# Rebaseline needed after removing SK_IGNORE_CORRECT_HIGH_QUALITY_IMAGE_SCALE
-crbug.com/380686 svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ ImageOnlyFailure ]
-crbug.com/380686 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
-crbug.com/380686 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/380686 svg/dynamic-updates/SVGFEImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
-crbug.com/380686 svg/dynamic-updates/SVGFEImageElement-svgdom-preserveAspectRatio-prop.html [ ImageOnlyFailure ]
-crbug.com/380686 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFailure ]
-crbug.com/380686 svg/filters/filterRes.svg [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/video-controls-drag.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/video-controls-timeline.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/video-scrolled-iframe.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure ]
-crbug.com/380686 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
