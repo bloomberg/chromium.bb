@@ -74,18 +74,18 @@ using namespace HTMLNames;
 
 static inline float parentPageZoomFactor(LocalFrame* frame)
 {
-    LocalFrame* parent = frame->tree().parent();
-    if (!parent)
+    Frame* parent = frame->tree().parent();
+    if (!parent || !parent->isLocalFrame())
         return 1;
-    return parent->pageZoomFactor();
+    return toLocalFrame(parent)->pageZoomFactor();
 }
 
 static inline float parentTextZoomFactor(LocalFrame* frame)
 {
-    LocalFrame* parent = frame->tree().parent();
-    if (!parent)
+    Frame* parent = frame->tree().parent();
+    if (!parent || !parent->isLocalFrame())
         return 1;
-    return parent->textZoomFactor();
+    return toLocalFrame(parent)->textZoomFactor();
 }
 
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
@@ -178,8 +178,10 @@ void LocalFrame::sendOrientationChangeEvent()
 
     // Notify subframes.
     Vector<RefPtr<LocalFrame> > childFrames;
-    for (LocalFrame* child = tree().firstChild(); child; child = child->tree().nextSibling())
-        childFrames.append(child);
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            childFrames.append(toLocalFrame(child));
+    }
 
     for (size_t i = 0; i < childFrames.size(); ++i)
         childFrames[i]->sendOrientationChangeEvent();
@@ -203,15 +205,17 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
-    for (RefPtr<LocalFrame> child = tree().firstChild(); child; child = child->tree().nextSibling())
-        child->setPrinting(printing, FloatSize(), FloatSize(), 0);
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child.get())->setPrinting(printing, FloatSize(), FloatSize(), 0);
+    }
 }
 
 bool LocalFrame::shouldUsePrintingLayout() const
 {
     // Only top frame being printed should be fit to page size.
     // Subframes should be constrained by parents only.
-    return document()->printing() && (!tree().parent() || !tree().parent()->document()->printing());
+    return document()->printing() && (!tree().parent() || !tree().parent()->isLocalFrame() || !toLocalFrame(tree().parent())->document()->printing());
 }
 
 FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize, const FloatSize& expectedSize)
@@ -248,8 +252,10 @@ void LocalFrame::didChangeVisibilityState()
         document()->didChangeVisibilityState();
 
     Vector<RefPtr<LocalFrame> > childFrames;
-    for (LocalFrame* child = tree().firstChild(); child; child = child->tree().nextSibling())
-        childFrames.append(child);
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            childFrames.append(toLocalFrame(child));
+    }
 
     for (size_t i = 0; i < childFrames.size(); ++i)
         childFrames[i]->didChangeVisibilityState();
@@ -260,8 +266,9 @@ void LocalFrame::willDetachFrameHost()
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
 
-    if (LocalFrame* parent = tree().parent())
-        parent->loader().checkLoadComplete();
+    Frame* parent = tree().parent();
+    if (parent && parent->isLocalFrame())
+        toLocalFrame(parent)->loader().checkLoadComplete();
 
     Frame::willDetachFrameHost();
     script().clearScriptObjects();
@@ -425,8 +432,10 @@ String LocalFrame::layerTreeAsText(LayerTreeFlags flags) const
     TextStream textStream;
     textStream << localLayerTreeAsText(flags);
 
-    for (LocalFrame* child = tree().firstChild(); child; child = child->tree().traverseNext(this)) {
-        String childLayerTree = child->localLayerTreeAsText(flags);
+    for (Frame* child = tree().firstChild(); child; child = child->tree().traverseNext(this)) {
+        if (!child->isLocalFrame())
+            continue;
+        String childLayerTree = toLocalFrame(child)->localLayerTreeAsText(flags);
         if (!childLayerTree.length())
             continue;
 
@@ -496,8 +505,10 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     m_pageZoomFactor = pageZoomFactor;
     m_textZoomFactor = textZoomFactor;
 
-    for (RefPtr<LocalFrame> child = tree().firstChild(); child; child = child->tree().nextSibling())
-        child->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child.get())->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
+    }
 
     document->setNeedsStyleRecalc(SubtreeStyleChange);
     document->updateLayoutIgnorePendingStylesheets();
@@ -506,8 +517,10 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
 void LocalFrame::deviceOrPageScaleFactorChanged()
 {
     document()->mediaQueryAffectingValueChanged();
-    for (RefPtr<LocalFrame> child = tree().firstChild(); child; child = child->tree().nextSibling())
-        child->deviceOrPageScaleFactorChanged();
+    for (RefPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child.get())->deviceOrPageScaleFactorChanged();
+    }
 }
 
 bool LocalFrame::isURLAllowed(const KURL& url) const
@@ -517,8 +530,10 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
     if (page()->subframeCount() >= Page::maxNumberOfFrames)
         return false;
     bool foundSelfReference = false;
-    for (const LocalFrame* frame = this; frame; frame = frame->tree().parent()) {
-        if (equalIgnoringFragmentIdentifier(frame->document()->url(), url)) {
+    for (const Frame* frame = this; frame; frame = frame->tree().parent()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (equalIgnoringFragmentIdentifier(toLocalFrame(frame)->document()->url(), url)) {
             if (foundSelfReference)
                 return false;
             foundSelfReference = true;
@@ -642,7 +657,7 @@ LocalFrame* LocalFrame::localFrameRoot()
 {
     LocalFrame* curFrame = this;
     while (curFrame && curFrame->tree().parent() && curFrame->tree().parent()->isLocalFrame())
-        curFrame = curFrame->tree().parent();
+        curFrame = toLocalFrame(curFrame->tree().parent());
 
     return curFrame;
 }

@@ -47,8 +47,10 @@ void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* docume
     ASSERT(document && document->frame());
     GeolocationClientMock* client = new GeolocationClientMock();
 
-    for (LocalFrame* childFrame = document->page()->mainFrame(); childFrame; childFrame = childFrame->tree().traverseNext())
-        GeolocationController::from(childFrame)->setClientForTest(client);
+    for (Frame* childFrame = document->page()->mainFrame(); childFrame; childFrame = childFrame->tree().traverseNext()) {
+        if (childFrame->isLocalFrame())
+            GeolocationController::from(toLocalFrame(childFrame))->setClientForTest(client);
+    }
 }
 
 void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document, double latitude, double longitude, double accuracy)

@@ -3229,7 +3229,7 @@ String Document::outgoingReferrer()
     if (LocalFrame* frame = m_frame) {
         while (frame->document()->isSrcdocDocument()) {
             // Srcdoc documents must be local within the containing frame.
-            frame = frame->tree().parent();
+            frame = toLocalFrame(frame->tree().parent());
             // Srcdoc documents cannot be top-level documents, by definition,
             // because they need to be contained in iframes with the srcdoc.
             ASSERT(frame);
@@ -4449,8 +4449,13 @@ void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 void Document::setDesignMode(InheritedBool value)
 {
     m_designMode = value;
-    for (LocalFrame* frame = m_frame; frame && frame->document(); frame = frame->tree().traverseNext(m_frame))
-        frame->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    for (Frame* frame = m_frame; frame; frame = frame->tree().traverseNext(m_frame)) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (!toLocalFrame(frame)->document())
+            break;
+        toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    }
 }
 
 Document::InheritedBool Document::getDesignMode() const
@@ -4488,10 +4493,10 @@ Document* Document::parentDocument() const
 {
     if (!m_frame)
         return 0;
-    LocalFrame* parent = m_frame->tree().parent();
-    if (!parent)
+    Frame* parent = m_frame->tree().parent();
+    if (!parent || !parent->isLocalFrame())
         return 0;
-    return parent->document();
+    return toLocalFrame(parent)->document();
 }
 
 Document& Document::topDocument() const
@@ -4853,7 +4858,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
-        contentSecurityPolicy()->copyStateFrom(m_frame->tree().parent()->document()->contentSecurityPolicy());
+        contentSecurityPolicy()->copyStateFrom(toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy());
     contentSecurityPolicy()->didReceiveHeaders(headers);
 }
 

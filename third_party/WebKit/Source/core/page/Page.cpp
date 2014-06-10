@@ -563,8 +563,10 @@ void Page::acceptLanguagesChanged()
 
     // Even though we don't fire an event from here, the DOMWindow's will fire
     // an event so we keep the frames alive until we are done.
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frames.append(frame);
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            frames.append(toLocalFrame(frame));
+    }
 
     for (unsigned i = 0; i < frames.size(); ++i)
         frames[i]->domWindow()->acceptLanguagesChanged();

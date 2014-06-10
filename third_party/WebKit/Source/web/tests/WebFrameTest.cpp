@@ -760,17 +760,21 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
     webViewHelper.webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webViewImpl()->layout();
 
-    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
-        EXPECT_TRUE(setTextAutosizingMultiplier(frame->document(), 2));
-        for (WebCore::RenderObject* renderer = frame->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (WebCore::Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        EXPECT_TRUE(setTextAutosizingMultiplier(toLocalFrame(frame)->document(), 2));
+        for (WebCore::RenderObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_FALSE(renderer->needsLayout());
         }
     }
 
     frameView->setFrameRect(WebCore::IntRect(0, 0, 200, 200));
-    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
-        for (WebCore::RenderObject* renderer = frame->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (WebCore::Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        for (WebCore::RenderObject* renderer = toLocalFrame(frame)->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_TRUE(renderer->needsLayout());
         }

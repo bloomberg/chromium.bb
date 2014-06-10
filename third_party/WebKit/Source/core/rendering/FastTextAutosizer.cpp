@@ -488,8 +488,10 @@ void FastTextAutosizer::updatePageInfoInAllFrames()
 {
     ASSERT(!m_document->frame() || m_document->frame()->isMainFrame());
 
-    for (LocalFrame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
-        if (FastTextAutosizer* textAutosizer = frame->document()->fastTextAutosizer())
+    for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (FastTextAutosizer* textAutosizer = toLocalFrame(frame)->document()->fastTextAutosizer())
             textAutosizer->updatePageInfo();
     }
 }

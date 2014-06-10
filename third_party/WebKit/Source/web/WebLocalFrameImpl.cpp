@@ -238,10 +238,13 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
 
     // Recursively walk the children.
     const FrameTree& frameTree = frame->tree();
-    for (LocalFrame* curChild = frameTree.firstChild(); curChild; curChild = curChild->tree().nextSibling()) {
+    for (Frame* curChild = frameTree.firstChild(); curChild; curChild = curChild->tree().nextSibling()) {
+        if (!curChild->isLocalFrame())
+            continue;
+        LocalFrame* curLocalChild = toLocalFrame(curChild);
         // Ignore the text of non-visible frames.
-        RenderView* contentRenderer = curChild->contentRenderer();
-        RenderPart* ownerRenderer = curChild->ownerRenderer();
+        RenderView* contentRenderer = curLocalChild->contentRenderer();
+        RenderPart* ownerRenderer = curLocalChild->ownerRenderer();
         if (!contentRenderer || !contentRenderer->width() || !contentRenderer->height()
             || (contentRenderer->x() + contentRenderer->width() <= 0) || (contentRenderer->y() + contentRenderer->height() <= 0)
             || (ownerRenderer && ownerRenderer->style() && ownerRenderer->style()->visibility() != VISIBLE)) {
@@ -257,7 +260,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
             return;
 
         output.append(frameSeparator, frameSeparatorLength);
-        frameContentAsPlainText(maxChars, curChild, output);
+        frameContentAsPlainText(maxChars, curLocalChild, output);
         if (output.length() >= maxChars)
             return; // Filled up the buffer.
     }
@@ -658,21 +661,35 @@ WebFrame* WebLocalFrameImpl::traversePrevious(bool wrap) const
 {
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree().traversePreviousWithWrap(wrap));
+    // FIXME: This should move to WebFrame and become local/remote agnostic.
+    Frame* prevFrame = frame()->tree().traversePreviousWithWrap(wrap);
+    if (!prevFrame || !prevFrame->isLocalFrame())
+        return 0;
+    return fromFrame(toLocalFrame(prevFrame));
 }
 
 WebFrame* WebLocalFrameImpl::traverseNext(bool wrap) const
 {
+    // FIXME: This should move to WebFrame and become local/remote agnostic.
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree().traverseNextWithWrap(wrap));
+    // FIXME: This should move to WebFrame and become local/remote agnostic.
+    Frame* nextFrame = frame()->tree().traverseNextWithWrap(wrap);
+    if (!nextFrame || !nextFrame->isLocalFrame())
+        return 0;
+    return fromFrame(toLocalFrame(nextFrame));
 }
 
 WebFrame* WebLocalFrameImpl::findChildByName(const WebString& name) const
 {
+    // FIXME: This should move to WebFrame and become local/remote agnostic.
     if (!frame())
         return 0;
-    return fromFrame(frame()->tree().child(name));
+    // FIXME: This should move to WebFrame and become local/remote agnostic.
+    Frame* child = frame()->tree().child(name);
+    if (!child || !child->isLocalFrame())
+        return 0;
+    return fromFrame(toLocalFrame(child));
 }
 
 WebDocument WebLocalFrameImpl::document() const

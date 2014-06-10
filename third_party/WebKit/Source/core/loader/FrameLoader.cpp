@@ -311,7 +311,7 @@ void FrameLoader::receivedFirstData()
     HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
     if (historyCommitType == StandardCommit && (m_documentLoader->urlForHistory().isEmpty() || (opener() && !m_currentItem && m_documentLoader->originalRequest().url().isEmpty())))
         historyCommitType = HistoryInertCommit;
-    else if (historyCommitType == InitialCommitInChildFrame && (!m_frame->tree().top()->isLocalFrame() || MixedContentChecker::isMixedContent(m_frame->tree().top()->document()->securityOrigin(), m_documentLoader->url())))
+    else if (historyCommitType == InitialCommitInChildFrame && (!m_frame->tree().top()->isLocalFrame() || MixedContentChecker::isMixedContent(toLocalFrame(m_frame->tree().top())->document()->securityOrigin(), m_documentLoader->url())))
         historyCommitType = HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType);
 
@@ -598,11 +598,14 @@ void FrameLoader::completed()
 {
     RefPtr<LocalFrame> protect(m_frame);
 
-    for (LocalFrame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame))
-        descendant->navigationScheduler().startTimer();
+    for (Frame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame)) {
+        if (descendant->isLocalFrame())
+            toLocalFrame(descendant)->navigationScheduler().startTimer();
+    }
 
-    if (LocalFrame* parent = m_frame->tree().parent())
-        parent->loader().checkCompleted();
+    Frame* parent = m_frame->tree().parent();
+    if (parent && parent->isLocalFrame())
+        toLocalFrame(parent)->loader().checkCompleted();
 
     if (m_frame->view())
         m_frame->view()->maintainScrollPositionAtAnchor(0);

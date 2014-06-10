@@ -71,7 +71,7 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
     LocalFrame* frame = document->frame();
     LocalFrame* parentFrame = 0;
     if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame())
-        parentFrame = frame->tree().parent();
+        parentFrame = toLocalFrame(frame->tree().parent());
 
     if (!m_encoding.isEmpty())
         decoder->setEncoding(m_encoding.string(), m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);

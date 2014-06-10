@@ -1112,8 +1112,10 @@ int DOMWindow::innerHeight() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (LocalFrame* parent = m_frame->tree().parent())
-        parent->document()->updateLayoutIgnorePendingStylesheets();
+    if (Frame* parent = m_frame->tree().parent()) {
+        if (parent && parent->isLocalFrame())
+            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
+    }
 
     return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).height(), m_frame->pageZoomFactor());
 }
@@ -1128,8 +1130,10 @@ int DOMWindow::innerWidth() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (LocalFrame* parent = m_frame->tree().parent())
-        parent->document()->updateLayoutIgnorePendingStylesheets();
+    if (Frame* parent = m_frame->tree().parent()) {
+        if (parent && parent->isLocalFrame())
+            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
+    }
 
     return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).width(), m_frame->pageZoomFactor());
 }
@@ -1276,7 +1280,7 @@ DOMWindow* DOMWindow::parent() const
     if (!m_frame)
         return 0;
 
-    LocalFrame* parent = m_frame->tree().parent();
+    Frame* parent = m_frame->tree().parent();
     if (parent)
         return parent->domWindow();
 
@@ -1813,16 +1817,17 @@ PassRefPtrWillBeRawPtr<DOMWindow> DOMWindow::open(const String& urlString, const
 
     // Get the target frame for the special cases of _top and _parent.
     // In those cases, we schedule a location change right now and return early.
-    LocalFrame* targetFrame = 0;
+    Frame* targetFrame = 0;
     if (frameName == "_top")
         targetFrame = m_frame->tree().top();
     else if (frameName == "_parent") {
-        if (LocalFrame* parent = m_frame->tree().parent())
+        if (Frame* parent = m_frame->tree().parent())
             targetFrame = parent;
         else
             targetFrame = m_frame;
     }
-    if (targetFrame) {
+    // FIXME: Navigating RemoteFrames is not yet supported.
+    if (targetFrame && targetFrame->isLocalFrame()) {
         if (!activeDocument->canNavigate(*targetFrame))
             return nullptr;
 
@@ -1836,7 +1841,7 @@ PassRefPtrWillBeRawPtr<DOMWindow> DOMWindow::open(const String& urlString, const
 
         // For whatever reason, Firefox uses the first window rather than the active window to
         // determine the outgoing referrer. We replicate that behavior here.
-        targetFrame->navigationScheduler().scheduleLocationChange(
+        toLocalFrame(targetFrame)->navigationScheduler().scheduleLocationChange(
             activeDocument,
             completedURL,
             Referrer(firstFrame->document()->outgoingReferrer(), firstFrame->document()->referrerPolicy()),
@@ -1881,7 +1886,7 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
     if (!frame)
         return 0;
 
-    LocalFrame* child = frame->tree().scopedChild(index);
+    Frame* child = frame->tree().scopedChild(index);
     if (child)
         return child->domWindow();
 

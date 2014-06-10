@@ -54,12 +54,12 @@ static Document* ownerDocument(LocalFrame* frame)
     if (!frame)
         return 0;
 
-    LocalFrame* ownerFrame = frame->tree().parent();
+    Frame* ownerFrame = frame->tree().parent();
     if (!ownerFrame)
         ownerFrame = frame->loader().opener();
-    if (!ownerFrame)
+    if (!ownerFrame || !ownerFrame->isLocalFrame())
         return 0;
-    return ownerFrame->document();
+    return toLocalFrame(ownerFrame)->document();
 }
 
 DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawPtr<Document> contextDocument, HTMLImportsController* importsController)

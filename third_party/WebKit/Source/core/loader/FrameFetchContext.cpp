@@ -81,7 +81,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
     if (isMainResource && m_frame->isMainFrame())
         request.setFirstPartyForCookies(request.url());
     else if (m_frame->tree().top()->isLocalFrame())
-        request.setFirstPartyForCookies(m_frame->tree().top()->document()->firstPartyForCookies());
+        request.setFirstPartyForCookies(toLocalFrame(m_frame->tree().top())->document()->firstPartyForCookies());
 
     // The remaining modifications are only necessary for HTTP and HTTPS.
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())

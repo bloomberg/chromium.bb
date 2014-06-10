@@ -25,7 +25,6 @@
 namespace WebCore {
 
 class Frame;
-class LocalFrame;
 class TreeScope;
 
 class FrameTree {
@@ -40,29 +39,29 @@ public:
     // |fallbackName| is used as a source of uniqueName.
     void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
 
-    LocalFrame* parent() const;
-    LocalFrame* top() const;
-    LocalFrame* previousSibling() const;
-    LocalFrame* nextSibling() const;
-    LocalFrame* firstChild() const;
-    LocalFrame* lastChild() const;
+    Frame* parent() const;
+    Frame* top() const;
+    Frame* previousSibling() const;
+    Frame* nextSibling() const;
+    Frame* firstChild() const;
+    Frame* lastChild() const;
 
-    bool isDescendantOf(const LocalFrame* ancestor) const;
-    LocalFrame* traversePreviousWithWrap(bool) const;
-    LocalFrame* traverseNext(const LocalFrame* stayWithin = 0) const;
-    LocalFrame* traverseNextWithWrap(bool) const;
+    bool isDescendantOf(const Frame* ancestor) const;
+    Frame* traversePreviousWithWrap(bool) const;
+    Frame* traverseNext(const Frame* stayWithin = 0) const;
+    Frame* traverseNextWithWrap(bool) const;
 
-    LocalFrame* child(const AtomicString& name) const;
-    LocalFrame* find(const AtomicString& name) const;
+    Frame* child(const AtomicString& name) const;
+    Frame* find(const AtomicString& name) const;
     unsigned childCount() const;
 
-    LocalFrame* scopedChild(unsigned index) const;
-    LocalFrame* scopedChild(const AtomicString& name) const;
+    Frame* scopedChild(unsigned index) const;
+    Frame* scopedChild(const AtomicString& name) const;
     unsigned scopedChildCount() const;
     void invalidateScopedChildCount();
 
 private:
-    LocalFrame* deepLastChild() const;
+    Frame* deepLastChild() const;
     AtomicString uniqueChildName(const AtomicString& requestedName) const;
     bool uniqueNameExists(const AtomicString& name) const;
     unsigned scopedChildCount(TreeScope*) const;
@@ -79,7 +78,7 @@ private:
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showFrameTree(const WebCore::LocalFrame*);
+void showFrameTree(const WebCore::Frame*);
 #endif
 
 #endif // FrameTree_h

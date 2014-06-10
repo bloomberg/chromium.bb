@@ -1602,9 +1602,9 @@ unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionState&)
     if (frame->view()->scrollableAreas())
         count += frame->view()->scrollableAreas()->size();
 
-    for (LocalFrame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->view() && child->view()->scrollableAreas())
-            count += child->view()->scrollableAreas()->size();
+    for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame() && toLocalFrame(child)->view() && toLocalFrame(child)->view()->scrollableAreas())
+            count += toLocalFrame(child)->view()->scrollableAreas()->size();
     }
 
     return count;

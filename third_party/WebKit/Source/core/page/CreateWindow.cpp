@@ -68,7 +68,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
         created = false;
         if (!openerFrame.tree().top()->isLocalFrame())
             return 0;
-        return openerFrame.tree().top();
+        return toLocalFrame(openerFrame.tree().top());
     }
 
     Page* oldPage = openerFrame.page();

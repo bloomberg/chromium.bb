@@ -205,8 +205,10 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
 
 void RenderLayerCompositor::updateIfNeededRecursive()
 {
-    for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
-        child->contentRenderer()->compositor()->updateIfNeededRecursive();
+    for (Frame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child)->contentRenderer()->compositor()->updateIfNeededRecursive();
+    }
 
     TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateIfNeededRecursive");
 
@@ -226,8 +228,10 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 
 #if ASSERT_ENABLED
     assertNoUnresolvedDirtyBits();
-    for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
-        child->contentRenderer()->compositor()->assertNoUnresolvedDirtyBits();
+    for (Frame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (child->isLocalFrame())
+            toLocalFrame(child)->contentRenderer()->compositor()->assertNoUnresolvedDirtyBits();
+    }
 #endif
 }
 

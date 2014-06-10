@@ -96,8 +96,10 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
     if (isContinuousSpellCheckingEnabled()) {
         m_spellCheckThisFieldStatus = SpellCheckForcedOff;
         if (Page* page = m_webView->page()) {
-            for (LocalFrame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
-                frame->document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
+            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+                if (!frame->isLocalFrame())
+                    continue;
+                toLocalFrame(frame)->document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
             }
         }
     } else {

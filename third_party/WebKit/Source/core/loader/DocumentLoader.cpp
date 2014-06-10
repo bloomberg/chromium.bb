@@ -631,7 +631,7 @@ void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
     if (!m_frame->tree().parent() || !m_frame->tree().parent()->isLocalFrame())
         return;
 
-    ArchiveResourceCollection* parentCollection = m_frame->tree().parent()->loader().documentLoader()->m_archiveResourceCollection.get();
+    ArchiveResourceCollection* parentCollection = toLocalFrame(m_frame->tree().parent())->loader().documentLoader()->m_archiveResourceCollection.get();
     if (!parentCollection)
         return;
 

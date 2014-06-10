@@ -2488,11 +2488,14 @@ WebFrame* WebViewImpl::mainFrame()
 WebFrame* WebViewImpl::findFrameByName(
     const WebString& name, WebFrame* relativeToFrame)
 {
+    // FIXME: Either this should only deal with WebLocalFrames or it should move to WebFrame.
     if (!relativeToFrame)
         relativeToFrame = mainFrame();
-    LocalFrame* frame = toWebLocalFrameImpl(relativeToFrame)->frame();
+    Frame* frame = toWebLocalFrameImpl(relativeToFrame)->frame();
     frame = frame->tree().find(name);
-    return WebLocalFrameImpl::fromFrame(frame);
+    if (!frame->isLocalFrame())
+        return 0;
+    return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
 }
 
 WebFrame* WebViewImpl::focusedFrame()
@@ -3280,8 +3283,10 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
 {
     Vector<uint32_t> result;
-    for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        const WillBeHeapVector<DocumentMarker*>& documentMarkers = frame->document()->markers().markers();
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        const WillBeHeapVector<DocumentMarker*>& documentMarkers = toLocalFrame(frame)->document()->markers().markers();
         for (size_t i = 0; i < documentMarkers.size(); ++i)
             result.append(documentMarkers[i]->hash());
     }
@@ -3479,9 +3484,10 @@ void WebViewImpl::hidePopups()
 void WebViewImpl::setIsTransparent(bool isTransparent)
 {
     // Set any existing frames to be transparent.
-    LocalFrame* frame = m_page->mainFrame();
+    Frame* frame = m_page->mainFrame();
     while (frame) {
-        frame->view()->setTransparent(isTransparent);
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->view()->setTransparent(isTransparent);
         frame = frame->tree().traverseNext();
     }
 

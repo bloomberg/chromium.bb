@@ -145,9 +145,12 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
     const HashSet<Page*>& pages = Page::ordinaryPages();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != pages.end(); ++it) {
-        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
+            if (!frame->isLocalFrame())
+                continue;
             Storage* storage = frame->domWindow()->optionalLocalStorage();
-            if (storage && frame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+            if (storage && toLocalFrame(frame)->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 frame->domWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
         InspectorInstrumentation::didDispatchDOMStorageEvent(*it, key, oldValue, newValue, LocalStorage, securityOrigin);
@@ -173,9 +176,12 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
     if (!page)
         return;
 
-    for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
+        if (!frame->isLocalFrame())
+            continue;
         Storage* storage = frame->domWindow()->optionalSessionStorage();
-        if (storage && frame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+        if (storage && toLocalFrame(frame)->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             frame->domWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
     InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, SessionStorage, securityOrigin);

@@ -375,8 +375,10 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect.width() != oldRect.width()) {
         if (m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled()) {
             autosizerNeedsUpdating = true;
-            for (LocalFrame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext()) {
-                if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
+            for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext()) {
+                if (!frame->isLocalFrame())
+                    continue;
+                if (TextAutosizer* textAutosizer = toLocalFrame(frame)->document()->textAutosizer())
                     textAutosizer->recalculateMultipliers();
             }
         }
@@ -1355,8 +1357,10 @@ void FrameView::scrollContentsIfNeededRecursive()
 {
     scrollContentsIfNeeded();
 
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (FrameView* view = child->view())
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(child)->view())
             view->scrollContentsIfNeededRecursive();
     }
 }
@@ -1955,8 +1959,10 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
-    for (LocalFrame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
-        if (FrameView* view = frame->view()) {
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(frame)->view()) {
             view->setTransparent(transparent);
             view->setBaseBackgroundColor(backgroundColor);
         }
@@ -2643,8 +2649,9 @@ FrameView* FrameView::parentFrameView() const
     if (!parent())
         return 0;
 
-    if (LocalFrame* parentFrame = m_frame->tree().parent())
-        return parentFrame->view();
+    Frame* parentFrame = m_frame->tree().parent();
+    if (parentFrame && parentFrame->isLocalFrame())
+        return toLocalFrame(parentFrame)->view();
 
     return 0;
 }
@@ -2851,8 +2858,10 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // FIXME: Calling layout() shouldn't trigger scripe execution or have any
     // observable effects on the frame tree but we're not quite there yet.
     Vector<RefPtr<FrameView> > frameViews;
-    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (FrameView* view = child->view())
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        if (FrameView* view = toLocalFrame(child)->view())
             frameViews.append(view);
     }
 
@@ -3109,8 +3118,10 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
     if (trackPaintInvalidations == m_isTrackingPaintInvalidations)
         return;
 
-    for (LocalFrame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
-        if (RenderView* renderView = frame->contentRenderer())
+    for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (RenderView* renderView = toLocalFrame(frame)->contentRenderer())
             renderView->compositor()->setTracksRepaints(trackPaintInvalidations);
     }
 

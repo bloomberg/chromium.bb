@@ -88,12 +88,12 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
         WrappedResourceRequest wrapped(request);
 
         const WebApplicationCacheHost* spawningHost = 0;
-        LocalFrame* spawningFrame = frame.tree().parent();
-        if (!spawningFrame)
+        Frame* spawningFrame = frame.tree().parent();
+        if (!spawningFrame || !spawningFrame->isLocalFrame())
             spawningFrame = frame.loader().opener();
-        if (!spawningFrame)
+        if (!spawningFrame || !spawningFrame->isLocalFrame())
             spawningFrame = &frame;
-        if (DocumentLoader* spawningDocLoader = spawningFrame->loader().documentLoader())
+        if (DocumentLoader* spawningDocLoader = toLocalFrame(spawningFrame)->loader().documentLoader())
             spawningHost = spawningDocLoader->applicationCacheHost() ? spawningDocLoader->applicationCacheHost()->m_host.get() : 0;
 
         m_host->willStartMainResourceRequest(wrapped, spawningHost);
