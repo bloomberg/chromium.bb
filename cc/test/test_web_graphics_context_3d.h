@@ -323,8 +323,10 @@ class TestWebGraphicsContext3D {
   virtual GLuint NextImageId();
   virtual void RetireImageId(GLuint id);
 
-  size_t GetTransferBufferMemoryUsedBytes() const;
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
+  size_t max_used_transfer_buffer_usage_bytes() const {
+    return max_used_transfer_buffer_usage_bytes_;
+  }
 
   void set_test_support(TestContextSupport* test_support) {
     test_support_ = test_support;
@@ -415,6 +417,8 @@ class TestWebGraphicsContext3D {
   bool context_lost_;
   int times_map_image_chromium_succeeds_;
   int times_map_buffer_chromium_succeeds_;
+  int current_used_transfer_buffer_usage_bytes_;
+  int max_used_transfer_buffer_usage_bytes_;
   base::Closure context_lost_callback_;
   base::hash_set<unsigned> used_textures_;
   unsigned next_program_id_;

@@ -4199,7 +4199,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 
     // Expect that the transfer buffer memory used is equal to the
     // MaxTransferBufferUsageBytes value set in CreateOutputSurface.
-    EXPECT_EQ(1024 * 1024u, context->GetTransferBufferMemoryUsedBytes());
+    EXPECT_EQ(1024 * 1024u, context->max_used_transfer_buffer_usage_bytes());
     EndTest();
   }
 
@@ -4210,10 +4210,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 };
 
 // Impl-side painting is a multi-threaded compositor feature.
-// Disabled for flakiness: http://crbug.com/380662
-#if 0
 MULTI_THREAD_TEST_F(LayerTreeHostTestMaxTransferBufferUsageBytes);
-#endif
 
 // Test ensuring that memory limits are sent to the prioritized resource
 // manager.

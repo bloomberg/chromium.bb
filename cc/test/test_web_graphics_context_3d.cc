@@ -55,6 +55,8 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       context_lost_(false),
       times_map_image_chromium_succeeds_(-1),
       times_map_buffer_chromium_succeeds_(-1),
+      current_used_transfer_buffer_usage_bytes_(0),
+      max_used_transfer_buffer_usage_bytes_(0),
       next_program_id_(1000),
       next_shader_id_(2000),
       max_texture_size_(2048),
@@ -498,10 +500,17 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
     return;
   }
 
+  size_t old_size = buffer->size;
+
   buffer->pixels.reset(new uint8[size]);
   buffer->size = size;
   if (data != NULL)
     memcpy(buffer->pixels.get(), data, size);
+  if (buffer->target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
+    current_used_transfer_buffer_usage_bytes_ += buffer->size - old_size;
+  max_used_transfer_buffer_usage_bytes_ =
+      std::max(max_used_transfer_buffer_usage_bytes_,
+               current_used_transfer_buffer_usage_bytes_);
 }
 
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
@@ -645,18 +654,6 @@ void TestWebGraphicsContext3D::RetireImageId(GLuint id) {
   DCHECK(image_id);
   DCHECK_LT(image_id, namespace_->next_image_id);
   DCHECK_EQ(context_id, context_id_);
-}
-
-size_t TestWebGraphicsContext3D::GetTransferBufferMemoryUsedBytes() const {
-  size_t total_bytes = 0;
-  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
-  base::ScopedPtrHashMap<unsigned, Buffer>::iterator it = buffers.begin();
-  for (; it != buffers.end(); ++it) {
-    Buffer* buffer = it->second;
-    if (buffer->target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
-      total_bytes += buffer->size;
-  }
-  return total_bytes;
 }
 
 void TestWebGraphicsContext3D::SetMaxTransferBufferUsageBytes(
