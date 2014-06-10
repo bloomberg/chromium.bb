@@ -120,6 +120,8 @@ def WipeDeviceData(device):
 
 
 def ProvisionDevices(options):
+  # TODO(jbudorick): Parallelize provisioning of all attached devices after
+  # swithcing from AndroidCommands.
   if options.device is not None:
     devices = [options.device]
   else:
@@ -129,8 +131,7 @@ def ProvisionDevices(options):
     device.old_interface.EnableAdbRoot()
     WipeDeviceData(device)
   try:
-    (device_utils.DeviceUtils.parallel(devices)
-     .old_interface.Reboot(True))
+    device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
   except errors.DeviceUnresponsiveError:
     pass
   for device_serial in devices:
@@ -146,6 +147,13 @@ def ProvisionDevices(options):
       device_settings.ConfigureContentSettingsDict(
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
+  try:
+    device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
+  except errors.DeviceUnresponsiveError:
+    pass
+  for device_serial in devices:
+    device = device_utils.DeviceUtils(device_serial)
+    device.WaitUntilFullyBooted(timeout=90)
     (_, props) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
     for prop in props:
       print prop
