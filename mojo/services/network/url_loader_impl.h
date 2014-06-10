@@ -51,6 +51,7 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   scoped_ptr<net::URLRequest> url_request_;
   ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<PendingWriteToDataPipe> pending_write_;
+  bool auto_follow_redirects_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 };

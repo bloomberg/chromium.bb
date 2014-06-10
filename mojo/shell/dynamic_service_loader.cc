@@ -96,7 +96,7 @@ class NetworkLoader : public Loader, public URLLoaderClient {
 
     URLRequestPtr request(URLRequest::New());
     request->url = url.spec();
-    request->follow_redirects = true;
+    request->auto_follow_redirects = true;
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableCache)) {

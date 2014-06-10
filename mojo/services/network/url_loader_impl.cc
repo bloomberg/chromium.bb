@@ -4,6 +4,7 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
+#include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -93,6 +94,7 @@ class URLLoaderImpl::DependentIOBuffer : public net::WrappedIOBuffer {
 
 URLLoaderImpl::URLLoaderImpl(NetworkContext* context)
     : context_(context),
+      auto_follow_redirects_(true),
       weak_ptr_factory_(this) {
 }
 
@@ -126,13 +128,29 @@ void URLLoaderImpl::Start(URLRequestPtr request,
                           net::DEFAULT_PRIORITY,
                           this,
                           context_->url_request_context()));
+  url_request_->set_method(request->method);
+  if (request->headers) {
+    net::HttpRequestHeaders headers;
+    for (size_t i = 0; i < request->headers.size(); ++i)
+      headers.AddHeaderFromString(request->headers[i].To<base::StringPiece>());
+    url_request_->SetExtraRequestHeaders(headers);
+  }
   if (request->bypass_cache)
     url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+  // TODO(darin): Handle request body.
+
+  auto_follow_redirects_ = request->auto_follow_redirects;
+
   url_request_->Start();
 }
 
 void URLLoaderImpl::FollowRedirect() {
-  NOTIMPLEMENTED();
+  if (auto_follow_redirects_) {
+    DLOG(ERROR) << "Spurious call to FollowRedirect";
+  } else {
+    if (url_request_)
+      url_request_->FollowDeferredRedirect();
+  }
 }
 
 void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
@@ -148,7 +166,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   client()->OnReceivedRedirect(
       response.Pass(), new_url.spec(), redirect_method);
 
-  *defer_redirect = false;
+  *defer_redirect = !auto_follow_redirects_;
 }
 
 void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
