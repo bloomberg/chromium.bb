@@ -90,6 +90,12 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   SuppressMessage(messages,
                   PermissionMessage::kBrowsingHistory,
                   PermissionMessage::kTabs);
+  // Warning for full access permission already covers warning for tabs
+  // permission.
+  SuppressMessage(messages,
+                  PermissionMessage::kHostsAll,
+                  PermissionMessage::kTabs);
+
   return messages;
 }
 
