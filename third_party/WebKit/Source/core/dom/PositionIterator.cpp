@@ -165,6 +165,12 @@ bool PositionIterator::isCandidate() const
     if (renderer->isText())
         return !Position::nodeIsUserSelectNone(m_anchorNode) && Position(*this).inRenderedText();
 
+    if (renderer->isSVG()) {
+        // We don't consider SVG elements are contenteditable except for
+        // associated renderer returns isText() true, e.g. RenderSVGInlineText.
+        return false;
+    }
+
     if (isRenderedTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 

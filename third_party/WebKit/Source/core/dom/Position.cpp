@@ -865,6 +865,12 @@ bool Position::isCandidate() const
     if (renderer->isText())
         return !nodeIsUserSelectNone(deprecatedNode()) && inRenderedText();
 
+    if (renderer->isSVG()) {
+        // We don't consider SVG elements are contenteditable except for
+        // associated renderer returns isText() true, e.g. RenderSVGInlineText.
+        return false;
+    }
+
     if (isRenderedTableElement(deprecatedNode()) || editingIgnoresContent(deprecatedNode()))
         return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(deprecatedNode()->parentNode());
 
