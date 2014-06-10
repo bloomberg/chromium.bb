@@ -39,18 +39,19 @@ namespace WebCore {
 class MIDIAccess;
 class MIDIClient;
 
-class MIDIController FINAL : public Supplement<LocalFrame> {
+class MIDIController FINAL : public NoBaseWillBeGarbageCollectedFinalized<MIDIController>, public WillBeHeapSupplement<LocalFrame> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIController);
 public:
     virtual ~MIDIController();
 
     void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
     void cancelSysexPermissionRequest(MIDIAccess*);
 
-    static PassOwnPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
+    static PassOwnPtrWillBeRawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();
-    static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
+    static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<LocalFrame>::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
 protected:
     explicit MIDIController(PassOwnPtr<MIDIClient>);

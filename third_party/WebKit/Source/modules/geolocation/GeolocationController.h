@@ -40,12 +40,13 @@ class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
 
-class GeolocationController FINAL : public Supplement<LocalFrame>, public PageLifecycleObserver {
+class GeolocationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
     virtual ~GeolocationController();
 
-    static PassOwnPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
+    static PassOwnPtrWillBeRawPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
 
     void addObserver(Geolocation*, bool enableHighAccuracy);
     void removeObserver(Geolocation*);
@@ -66,7 +67,9 @@ public:
     virtual void pageVisibilityChanged() OVERRIDE;
 
     static const char* supplementName();
-    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
+    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void willBeDestroyed() OVERRIDE;
 
@@ -79,8 +82,8 @@ private:
     GeolocationClient* m_client;
     bool m_hasClientForTest;
 
-    Persistent<GeolocationPosition> m_lastPosition;
-    typedef PersistentHeapHashSet<Member<Geolocation> > ObserversSet;
+    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
+    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation> > ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;

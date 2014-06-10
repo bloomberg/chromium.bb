@@ -60,7 +60,7 @@ namespace WebCore {
     class TreeScope;
     class VisiblePosition;
 
-    class LocalFrame : public Frame, public Supplementable<LocalFrame>  {
+    class LocalFrame : public Frame, public WillBePersistentHeapSupplementable<LocalFrame>  {
     public:
         static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 

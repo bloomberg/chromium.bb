@@ -819,9 +819,11 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 #define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
 #define WillBeHeapSupplement WebCore::HeapSupplement
 #define WillBeHeapSupplementable WebCore::HeapSupplementable
+#define WillBePersistentHeapSupplementable WebCore::PersistentHeapSupplementable
 #define WillBeHeapTerminatedArray WebCore::HeapTerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WebCore::HeapTerminatedArrayBuilder
 #define WillBeHeapLinkedStack WebCore::HeapLinkedStack
+#define PersistentHeapHashSetWillBeHeapHashSet WebCore::HeapHashSet
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -922,9 +924,11 @@ public:
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
 #define WillBeHeapSupplement WebCore::Supplement
 #define WillBeHeapSupplementable WebCore::Supplementable
+#define WillBePersistentHeapSupplementable WebCore::Supplementable
 #define WillBeHeapTerminatedArray WTF::TerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
 #define WillBeHeapLinkedStack WTF::LinkedStack
+#define PersistentHeapHashSetWillBeHeapHashSet WebCore::PersistentHeapHashSet
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

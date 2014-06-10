@@ -96,9 +96,9 @@ void GeolocationController::willBeDestroyed()
         m_client->geolocationDestroyed();
 }
 
-PassOwnPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
+PassOwnPtrWillBeRawPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
 {
-    return adoptPtr(new GeolocationController(frame, client));
+    return adoptPtrWillBeNoop(new GeolocationController(frame, client));
 }
 
 void GeolocationController::addObserver(Geolocation* observer, bool enableHighAccuracy)
@@ -205,9 +205,17 @@ const char* GeolocationController::supplementName()
     return "GeolocationController";
 }
 
+void GeolocationController::trace(Visitor* visitor)
+{
+    visitor->trace(m_lastPosition);
+    visitor->trace(m_observers);
+    visitor->trace(m_highAccuracyObservers);
+    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+}
+
 void provideGeolocationTo(LocalFrame& frame, GeolocationClient* client)
 {
-    Supplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
+    WillBeHeapSupplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
 }
 
 } // namespace WebCore

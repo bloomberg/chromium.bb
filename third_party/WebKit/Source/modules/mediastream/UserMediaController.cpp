@@ -37,13 +37,11 @@ UserMediaController::UserMediaController(UserMediaClient* client)
 {
 }
 
-UserMediaController::~UserMediaController()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController)
 
-PassOwnPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)
+PassOwnPtrWillBeRawPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)
 {
-    return adoptPtr(new UserMediaController(client));
+    return adoptPtrWillBeNoop(new UserMediaController(client));
 }
 
 void provideUserMediaTo(LocalFrame& frame, UserMediaClient* client)

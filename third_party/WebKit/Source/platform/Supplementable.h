@@ -151,7 +151,7 @@ template<typename T, bool>
 class SupplementableTracing;
 
 template<typename T>
-class SupplementableTracing<T, true> : public GarbageCollectedMixin { };
+class SupplementableTracing<T, true> { };
 
 template<typename T>
 class SupplementableTracing<T, false> { };
@@ -195,6 +195,8 @@ public:
     }
 
 private:
+    // FIXME: Oilpan: Remove this ignore once PersistentHeapSupplementable is removed again.
+    GC_PLUGIN_IGNORE("")
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 
 #if !ASSERT_DISABLED
@@ -209,8 +211,25 @@ private:
 template<typename T>
 class HeapSupplement : public SupplementBase<T, true> { };
 
+// FIXME: Oilpan: Move GarbageCollectedMixin to SupplementableBase<T, true> once PersistentHeapSupplementable is removed again.
 template<typename T>
-class HeapSupplementable : public SupplementableBase<T, true> { };
+class HeapSupplementable : public SupplementableBase<T, true>, public GarbageCollectedMixin { };
+
+template<typename T>
+class PersistentHeapSupplementable : public SupplementableBase<T, true> {
+public:
+    PersistentHeapSupplementable() : m_root(this) { }
+private:
+    class TraceDelegate : PersistentBase<ThreadLocalPersistents<AnyThread>, TraceDelegate> {
+    public:
+        TraceDelegate(PersistentHeapSupplementable* owner) : m_owner(owner) { }
+        void trace(Visitor* visitor) { m_owner->trace(visitor); }
+    private:
+        PersistentHeapSupplementable* m_owner;
+    };
+
+    TraceDelegate m_root;
+};
 
 template<typename T>
 class Supplement : public SupplementBase<T, false> { };

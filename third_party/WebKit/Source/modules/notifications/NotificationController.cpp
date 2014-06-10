@@ -40,9 +40,9 @@ NotificationController::~NotificationController()
 {
 }
 
-PassOwnPtr<NotificationController> NotificationController::create(PassOwnPtr<NotificationClient> client)
+PassOwnPtrWillBeRawPtr<NotificationController> NotificationController::create(PassOwnPtr<NotificationClient> client)
 {
-    return adoptPtr(new NotificationController(client));
+    return adoptPtrWillBeNoop(new NotificationController(client));
 }
 
 NotificationClient& NotificationController::clientFrom(LocalFrame* frame)

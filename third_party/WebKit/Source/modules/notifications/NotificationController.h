@@ -34,17 +34,18 @@ namespace WebCore {
 
 class NotificationClient;
 
-class NotificationController FINAL : public Supplement<LocalFrame> {
+class NotificationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<NotificationController>, public WillBeHeapSupplement<LocalFrame> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NotificationController);
     WTF_MAKE_NONCOPYABLE(NotificationController);
 public:
     virtual ~NotificationController();
 
-    static PassOwnPtr<NotificationController> create(PassOwnPtr<NotificationClient>);
+    static PassOwnPtrWillBeRawPtr<NotificationController> create(PassOwnPtr<NotificationClient>);
     static const char* supplementName();
-    static NotificationController* from(LocalFrame* frame) { return static_cast<NotificationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
+    static NotificationController* from(LocalFrame* frame) { return static_cast<NotificationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
     static NotificationClient& clientFrom(LocalFrame*);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<LocalFrame>::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
 private:
     explicit NotificationController(PassOwnPtr<NotificationClient>);

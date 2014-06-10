@@ -51,9 +51,9 @@ MIDIController::~MIDIController()
 {
 }
 
-PassOwnPtr<MIDIController> MIDIController::create(PassOwnPtr<MIDIClient> client)
+PassOwnPtrWillBeRawPtr<MIDIController> MIDIController::create(PassOwnPtr<MIDIClient> client)
 {
-    return adoptPtr(new MIDIController(client));
+    return adoptPtrWillBeNoop(new MIDIController(client));
 }
 
 void MIDIController::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
