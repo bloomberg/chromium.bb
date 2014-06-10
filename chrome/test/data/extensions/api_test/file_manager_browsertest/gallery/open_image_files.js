@@ -47,6 +47,28 @@ function waitForElement(appWindow, query) {
 }
 
 /**
+ * Launches the Gallery app with the test entries.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {Array.<TestEntryInfo>} entries Entries to be parepared and passed to
+ *     the application.
+ */
+function launchWithTestEntries(testVolumeName, volumeType, entries) {
+  var entriesPromise = addEntries([testVolumeName], entries).then(function() {
+    return getFilesUnderVolume(
+        volumeType,
+        entries.map(function(entry) { return entry.nameText; }));
+  });
+  return launch(entriesPromise).then(function() {
+    return appWindowPromise.then(function(appWindow) {
+      return {appWindow: appWindow, entries: entries};
+    });
+  });
+}
+
+/**
  * Runs a test to open a single image.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -55,39 +77,65 @@ function waitForElement(appWindow, query) {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function openSingleImage(testVolumeName, volumeType) {
-  var addEntriesPromsie = addEntries([testVolumeName], [ENTRIES.desktop]);
-  var imageFilesPromise = addEntriesPromsie.then(function() {
-    return getFilesUnderVolume(volumeType,
-                               [ENTRIES.desktop.nameText]);
-  });
-  return launch(imageFilesPromise).then(function() {
-    var resizedWindowPromise = appWindowPromise.then(function(appWindow) {
-      appWindow.resizeTo(480, 480);
-      return repeatUntil(function() {
-        if (appWindow.innerBounds.width !== 480 ||
-            appWindow.innerBounds.height !== 480) {
-          return pending(
-              'Window bounds is expected %d x %d, but is %d x %d',
-              480,
-              480,
-              appWindow.innerBounds.width,
-              appWindow.innerBounds.height);
-        }
-        return appWindow;
-      });
-    });
-    return resizedWindowPromise.then(function(appWindow) {
+  var launchedPromise = launchWithTestEntries(
+      testVolumeName, volumeType, [ENTRIES.desktop]);
+  return launchedPromise.then(function(args) {
+    var appWindow = args.appWindow;
+    appWindow.resizeTo(480, 480);
+    var resizedWindowPromise = repeatUntil(function() {
+      if (appWindow.innerBounds.width !== 480 ||
+          appWindow.innerBounds.height !== 480) {
+        return pending(
+            'Window bounds is expected %d x %d, but is %d x %d',
+            480,
+            480,
+            appWindow.innerBounds.width,
+            appWindow.innerBounds.height);
+      }
+      return appWindow;
+    }).then(function(appWindow) {
+      var rootElementPromise =
+          waitForElement(appWindow, '.gallery[mode="slide"]');
       var imagePromise =
           waitForElement(appWindow, '.gallery .content canvas.image');
       var fullImagePromsie =
           waitForElement(appWindow, '.gallery .content canvas.fullres');
-      return Promise.all([imagePromise, fullImagePromsie]).then(function(args) {
-        chrome.test.assertEq(480, args[0].width);
-        chrome.test.assertEq(360, args[0].height);
-        chrome.test.assertEq(800, args[1].width);
-        chrome.test.assertEq(600, args[1].height);
-      });
+      return Promise.all([rootElementPromise, imagePromise, fullImagePromsie]).
+          then(function(args) {
+            chrome.test.assertEq(480, args[1].width);
+            chrome.test.assertEq(360, args[1].height);
+            chrome.test.assertEq(800, args[2].width);
+            chrome.test.assertEq(600, args[2].height);
+          });
     });
+  });
+}
+
+/**
+ * Runs a test to open multiple images.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function openMultipleImages(testVolumeName, volumeType) {
+  var testEntries = [ENTRIES.desktop, ENTRIES.image2, ENTRIES.image3];
+  var launchedPromise = launchWithTestEntries(
+      testVolumeName, volumeType, testEntries);
+  return launchedPromise.then(function(args) {
+    var appWindow = args.appWindow;
+    var rootElementPromise =
+        waitForElement(appWindow, '.gallery[mode="mosaic"]');
+    var tilesPromise = repeatUntil(function() {
+      var tiles = appWindow.contentWindow.document.querySelectorAll(
+          '.mosaic-tile');
+      if (tiles.length !== 3)
+        return pending('The number of tiles is expected 3, but is %d',
+                       tiles.length);
+      return tiles;
+    });
+    return Promise.all([rootElementPromise, tilesPromise]);
   });
 }
 
@@ -105,4 +153,20 @@ function openSingleImageOnDownloads() {
  */
 function openSingleImageOnDrive() {
   return openSingleImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
+}
+
+/**
+ * The openMultiImages test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function openMultipleImagesOnDownloads() {
+  return openMultipleImages('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
+}
+
+/**
+ * The openMultiImages test for Google Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function openMultipleImagesOnDrive() {
+  return openMultipleImages('drive', VolumeManagerCommon.VolumeType.DRIVE);
 }

@@ -1274,5 +1274,24 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openMultipleImagesOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       OpenMultipleImagesOnDownloads) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openMultipleImagesOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
+  AddScript("gallery/open_image_files.js");
+  set_test_case_name("openMultipleImagesOnDrive");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager

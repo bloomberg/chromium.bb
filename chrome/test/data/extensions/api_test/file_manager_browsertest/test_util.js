@@ -221,6 +221,16 @@ var ENTRIES = {
       'text/plain', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
       'My Desktop Background.png', '272 bytes', 'PNG image'),
 
+  image2: new TestEntryInfo(
+      EntryType.FILE, 'image2.png', 'image2.png',
+      'image/png', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'image2.png', '272 bytes', 'PNG image'),
+
+  image3: new TestEntryInfo(
+      EntryType.FILE, 'image3.jpg', 'image3.jpg',
+      'image/jpg', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'image3.jpg', '272 bytes', 'JPEG image'),
+
   beautiful: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
       'text/plain', SharedOption.NONE, 'Nov 12, 2086 12:00 PM',
