@@ -16,7 +16,6 @@
               (children 1
                 (GraphicsLayer
                   (transformOrigin 50.00 50.00)
-                  (bounds 1.00 1.00)
                   (shouldFlattenTransform 0)
                   (3dRenderingContext 1)
                   (transform [0.35 0.25 -0.50 0.00] [0.00 0.35 0.71 0.00] [0.35 -0.25 0.50 0.00] [0.00 0.00 0.00 1.00])
@@ -92,7 +91,6 @@ After:
               (children 1
                 (GraphicsLayer
                   (transformOrigin 50.00 50.00)
-                  (bounds 1.00 1.00)
                   (shouldFlattenTransform 0)
                   (3dRenderingContext 1)
                   (transform [0.71 0.50 -0.50 0.00] [0.00 0.71 0.71 0.00] [0.71 -0.50 0.50 0.00] [0.00 0.00 0.00 1.00])

@@ -388,7 +388,6 @@ private:
 
     LayoutRect m_compositedBounds;
 
-    bool m_artificiallyInflatedBounds : 1; // bounds had to be made non-zero to make transform-origin work
     bool m_isMainFrameRenderViewLayer : 1;
     bool m_requiresOwnBackingStoreForIntrinsicReasons : 1;
     bool m_requiresOwnBackingStoreForAncestorReasons : 1;

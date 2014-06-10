@@ -162,7 +162,6 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(RenderLayer& layer)
 
 CompositedLayerMapping::CompositedLayerMapping(RenderLayer& layer)
     : m_owningLayer(layer)
-    , m_artificiallyInflatedBounds(false)
     , m_isMainFrameRenderViewLayer(false)
     , m_requiresOwnBackingStoreForIntrinsicReasons(true)
     , m_requiresOwnBackingStoreForAncestorReasons(true)
@@ -319,36 +318,13 @@ void CompositedLayerMapping::updateContentsOpaque()
     }
 }
 
-static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
-{
-    RenderStyle* style = renderer->style();
-    return (style->transformOriginX().type() == Fixed && style->transformOriginX().value())
-        || (style->transformOriginY().type() == Fixed && style->transformOriginY().value());
-}
-
 void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
 {
     if (!shouldUpdateGraphicsLayer(updateType))
         return;
 
-    LayoutRect layerBounds = m_owningLayer.boundingBoxForCompositing();
-
-    // FIXME: either move this hack to RenderLayer or find a way to get rid of it. Removing it from here
-    // will alow us to get rid of m_compositedBounds.
-
-    // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
-    // then we need to ensure that the compositing layer has non-zero size so that we can apply
-    // the transform-origin via the GraphicsLayer anchorPoint (which is expressed as a fractional value).
-    // FIXME: this code is no longer necessary, remove.
-    if (layerBounds.isEmpty() && hasNonZeroTransformOrigin(renderer())) {
-        layerBounds.setWidth(1);
-        layerBounds.setHeight(1);
-        m_artificiallyInflatedBounds = true;
-    } else {
-        m_artificiallyInflatedBounds = false;
-    }
-
-    m_compositedBounds = layerBounds;
+    // FIXME: if this is really needed for performance, it would be better to store it on RenderLayer.
+    m_compositedBounds = m_owningLayer.boundingBoxForCompositing();
 }
 
 void CompositedLayerMapping::updateAfterWidgetResize()
@@ -1627,7 +1603,7 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendant(RenderLayer* par
 
 bool CompositedLayerMapping::containsPaintedContent() const
 {
-    if (paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer.isReflection())
+    if (paintsIntoCompositedAncestor() || m_owningLayer.isReflection())
         return false;
 
     if (isDirectlyCompositedImage())
