@@ -12,6 +12,7 @@ from chrome_profiler import controllers
 
 from pylib import android_commands
 from pylib import constants
+from pylib.perf import perf_control
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'tools',
@@ -55,6 +56,8 @@ class _PerfProfiler(object):
            '--output', self._output_file.name] + _PERF_OPTIONS
     if categories:
       cmd += ['--event', ','.join(categories)]
+    self._perf_control = perf_control.PerfControl(self._device)
+    self._perf_control.ForceAllCpusOnline(True)
     self._perf_process = subprocess.Popen(cmd,
                                           stdout=self._log_file,
                                           stderr=subprocess.STDOUT)
@@ -64,6 +67,7 @@ class _PerfProfiler(object):
     self._device.old_interface.RunShellCommand(
         'kill -SIGINT ' + ' '.join(perf_pids))
     self._perf_process.wait()
+    self._perf_control.ForceAllCpusOnline(False)
 
   def _FailWithLog(self, msg):
     self._log_file.seek(0)

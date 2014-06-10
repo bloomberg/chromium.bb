@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import logging
+import time
+
 from pylib import android_commands
 from pylib.device import device_utils
 
@@ -58,3 +59,38 @@ class PerfControl(object):
         self._device.old_interface.SetProtectedFileContents(
             scaling_governor_file, value)
 
+  def ForceAllCpusOnline(self, force_online):
+    """Force all CPUs on a device to be online.
+
+    Force every CPU core on an Android device to remain online, or return the
+    cores under system power management control. This is needed to work around
+    a bug in perf which makes it unable to record samples from CPUs that become
+    online when recording is already underway.
+
+    Args:
+      force_online: True to set all CPUs online, False to return them under
+          system power management control.
+    """
+    def ForceCpuOnline(online_path):
+      script = 'chmod 644 {0}; echo 1 > {0}; chmod 444 {0}'.format(online_path)
+      self._device.old_interface.RunShellCommandWithSU(script)
+      return self._device.old_interface.GetFileContents(online_path)[0] == '1'
+
+    def ResetCpu(online_path):
+      self._device.old_interface.RunShellCommandWithSU(
+          'chmod 644 %s' % online_path)
+
+    def WaitFor(condition):
+      for _ in range(100):
+        if condition():
+          return
+        time.sleep(0.1)
+      raise RuntimeError('Timed out')
+
+    cpu_online_files = self._device.old_interface.RunShellCommand(
+        'ls -d /sys/devices/system/cpu/cpu[0-9]*/online')
+    for online_path in cpu_online_files:
+      if force_online:
+        WaitFor(lambda: ForceCpuOnline(online_path))
+      else:
+        ResetCpu(online_path)
