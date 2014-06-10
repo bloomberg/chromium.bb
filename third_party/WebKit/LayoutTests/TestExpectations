@@ -77,10 +77,6 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/381138 fast/repaint/reflection-repaint-test.html [ NeedsRebaseline ]
-crbug.com/381138 fast/repaint/transform-disable-layoutstate.html [ NeedsRebaseline ]
-crbug.com/381138 fast/repaint/transform-layout-repaint.html [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
