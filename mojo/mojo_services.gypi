@@ -335,10 +335,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         'mojo_application',
-        'mojo_common_lib',
         'mojo_environment_standalone',
         'mojo_test_service_bindings',
-        'mojo_system_impl',
+        'mojo_system',
         'mojo_utility',
       ],
       'sources': [
