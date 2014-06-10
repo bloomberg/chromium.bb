@@ -297,11 +297,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # https://code.google.com/p/colorama/issues/detail?id=44
-    'tools/swarming_client/third_party/colorama': [
-        'UNKNOWN',
-    ],
-
     # http://crbug.com/334668
     # MIT license.
     'tools/swarming_client/third_party/httplib2': [
