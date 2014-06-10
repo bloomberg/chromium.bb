@@ -78,7 +78,7 @@ class MediaDecoderJob {
   // Flushes the decoder and abandons all the data that is being decoded.
   virtual void Flush();
 
-  // Enter prerolling state. The job must not currently be decoding.
+  // Enters prerolling state. The job must not currently be decoding.
   void BeginPrerolling(base::TimeDelta preroll_timestamp);
 
   // Releases all the decoder resources as the current tab is going background.
@@ -229,8 +229,12 @@ class MediaDecoderJob {
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const = 0;
 
-  // Update the demuxer configs.
+  // Updates the demuxer configs.
   virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) = 0;
+
+  // Returns true if |media_codec_bridge_| needs to be reconfigured for the
+  // new DemuxerConfigs, or false otherwise.
+  virtual bool IsCodecReconfigureNeeded(const DemuxerConfigs& configs) const;
 
   // Return the index to |received_data_| that is not currently being decoded.
   size_t inactive_demuxer_data_index() const {

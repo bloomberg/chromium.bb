@@ -92,6 +92,26 @@ void VideoDecoderJob::UpdateDemuxerConfigs(const DemuxerConfigs& configs) {
   set_is_content_encrypted(configs.is_video_encrypted);
 }
 
+bool VideoDecoderJob::IsCodecReconfigureNeeded(
+    const DemuxerConfigs& configs) const {
+  if (!media_codec_bridge_)
+    return true;
+
+  if (!AreDemuxerConfigsChanged(configs))
+    return false;
+
+  bool only_size_changed = false;
+  if (video_codec_ == configs.video_codec &&
+      is_content_encrypted() == configs.is_video_encrypted) {
+    only_size_changed = true;
+  }
+
+  return !only_size_changed ||
+      !static_cast<VideoCodecBridge*>(media_codec_bridge_.get())->
+          IsAdaptivePlaybackSupported(configs.video_size.width(),
+                                      configs.video_size.height());
+}
+
 bool VideoDecoderJob::AreDemuxerConfigsChanged(
     const DemuxerConfigs& configs) const {
   return video_codec_ != configs.video_codec ||

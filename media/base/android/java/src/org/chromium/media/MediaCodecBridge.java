@@ -50,6 +50,10 @@ class MediaCodecBridge {
     private static final int MEDIA_CODEC_DECODER = 0;
     private static final int MEDIA_CODEC_ENCODER = 1;
 
+    // Max adaptive playback size to be supplied to the decoder.
+    private static final int MAX_ADAPTIVE_PLAYBACK_WIDTH = 1920;
+    private static final int MAX_ADAPTIVE_PLAYBACK_HEIGHT = 1080;
+
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase
     // after decoding a frame. To detect this, we check whether the presentation timestamp from
@@ -65,6 +69,7 @@ class MediaCodecBridge {
     private AudioTrack mAudioTrack;
     private boolean mFlushed;
     private long mLastPresentationTimeUs;
+    private String mMime;
 
     private static class DequeueInputResult {
         private final int mStatus;
@@ -193,9 +198,10 @@ class MediaCodecBridge {
         return null;
     }
 
-    private MediaCodecBridge(MediaCodec mediaCodec) {
+    private MediaCodecBridge(MediaCodec mediaCodec, String mime) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
+        mMime = mime;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
     }
@@ -228,14 +234,14 @@ class MediaCodecBridge {
             return null;
         }
 
-        return new MediaCodecBridge(mediaCodec);
+        return new MediaCodecBridge(mediaCodec, mime);
     }
 
     @CalledByNative
     private void release() {
         try {
             mMediaCodec.release();
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             // The MediaCodec is stuck in a wrong state, possibly due to losing
             // the surface.
             Log.e(TAG, "Cannot release media codec", e);
@@ -407,7 +413,7 @@ class MediaCodecBridge {
     private void releaseOutputBuffer(int index, boolean render) {
         try {
             mMediaCodec.releaseOutputBuffer(index, render);
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             // TODO(qinmin): May need to report the error to the caller. crbug.com/356498.
             Log.e(TAG, "Failed to release output buffer", e);
         }
@@ -453,6 +459,11 @@ class MediaCodecBridge {
     private boolean configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
             int flags) {
         try {
+            if (isAdaptivePlaybackSupported(
+                    MAX_ADAPTIVE_PLAYBACK_WIDTH, MAX_ADAPTIVE_PLAYBACK_HEIGHT)) {
+                format.setInteger(MediaFormat.KEY_MAX_WIDTH, MAX_ADAPTIVE_PLAYBACK_WIDTH);
+                format.setInteger(MediaFormat.KEY_MAX_HEIGHT, MAX_ADAPTIVE_PLAYBACK_HEIGHT);
+            }
             mMediaCodec.configure(format, surface, crypto, flags);
             return true;
         } catch (IllegalStateException e) {
@@ -480,6 +491,23 @@ class MediaCodecBridge {
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
         return format;
+    }
+
+    @CalledByNative
+    private boolean isAdaptivePlaybackSupported(int width, int height) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || mMediaCodec == null) {
+            return false;
+        }
+        if (width > MAX_ADAPTIVE_PLAYBACK_WIDTH || height > MAX_ADAPTIVE_PLAYBACK_HEIGHT) {
+            return false;
+        }
+        MediaCodecInfo info = mMediaCodec.getCodecInfo();
+        if (info.isEncoder()) {
+            return false;
+        }
+        MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mMime);
+        return (capabilities != null) && capabilities.isFeatureSupported(
+                MediaCodecInfo.CodecCapabilities.FEATURE_AdaptivePlayback);
     }
 
     @CalledByNative

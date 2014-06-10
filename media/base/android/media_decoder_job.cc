@@ -289,8 +289,9 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
 bool MediaDecoderJob::HasData() const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // When |input_eos_encountered_| is set, |access_unit_index_| and
-  // |current_demuxer_data_index_| must be pointing to an EOS unit.
-  // We'll reuse this unit to flush the decoder until we hit output EOS.
+  // |current_demuxer_data_index_| must be pointing to an EOS unit,
+  // or a |kConfigChanged| unit if |drain_decoder_| is true. In both cases,
+  // we'll feed an EOS input unit to drain the decoder until we hit output EOS.
   DCHECK(!input_eos_encountered_ || !NoAccessUnitsRemainingInChunk(true));
   return !NoAccessUnitsRemainingInChunk(true) ||
       !NoAccessUnitsRemainingInChunk(false);
@@ -332,16 +333,18 @@ void MediaDecoderJob::DecodeCurrentAccessUnit(
   const AccessUnit& access_unit = CurrentAccessUnit();
   if (CurrentAccessUnit().status == DemuxerStream::kConfigChanged) {
     int index = CurrentReceivedDataChunkIndex();
-    bool config_changed = SetDemuxerConfigs(
-        received_data_[index].demuxer_configs[0]);
-    if (config_changed)
+    const DemuxerConfigs& configs = received_data_[index].demuxer_configs[0];
+    bool reconfigure_needed = IsCodecReconfigureNeeded(configs);
+    // TODO(qinmin): |config_changed_cb_| should be run after draining finishes.
+    // http://crbug.com/381975.
+    if (SetDemuxerConfigs(configs))
       config_changed_cb_.Run();
     if (!drain_decoder_) {
       // If we haven't decoded any data yet, just skip the current access unit
       // and request the MediaCodec to be recreated on next Decode().
-      if (skip_eos_enqueue_ || !config_changed) {
+      if (skip_eos_enqueue_ || !reconfigure_needed) {
         need_to_reconfig_decoder_job_ =
-            need_to_reconfig_decoder_job_ || config_changed;
+            need_to_reconfig_decoder_job_ || reconfigure_needed;
         ui_task_runner_->PostTask(FROM_HERE, base::Bind(
             &MediaDecoderJob::OnDecodeCompleted, base::Unretained(this),
             MEDIA_CODEC_OUTPUT_FORMAT_CHANGED, kNoTimestamp(), kNoTimestamp()));
@@ -630,6 +633,13 @@ bool MediaDecoderJob::CreateMediaCodecBridge() {
   DVLOG(1) << __FUNCTION__ << " : creating new media codec bridge";
 
   return CreateMediaCodecBridgeInternal();
+}
+
+bool MediaDecoderJob::IsCodecReconfigureNeeded(
+    const DemuxerConfigs& configs) const {
+  if (!AreDemuxerConfigsChanged(configs))
+    return false;
+  return true;
 }
 
 void MediaDecoderJob::ReleaseMediaCodecBridge() {

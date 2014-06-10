@@ -55,6 +55,8 @@ class VideoDecoderJob : public MediaDecoderJob {
       const ReleaseOutputCompletionCallback& callback) OVERRIDE;
   virtual bool ComputeTimeToRender() const OVERRIDE;
   virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) OVERRIDE;
+  virtual bool IsCodecReconfigureNeeded(
+      const DemuxerConfigs& configs) const OVERRIDE;
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const OVERRIDE;
   virtual bool CreateMediaCodecBridgeInternal() OVERRIDE;

@@ -263,10 +263,26 @@ class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
   void SetVideoBitrate(int bps);
   void RequestKeyFrameSoon();
 
+  // Returns whether adaptive playback is supported for this object given
+  // the new size.
+  bool IsAdaptivePlaybackSupported(int width, int height);
+
+  // Test-only method to set the return value of IsAdaptivePlaybackSupported().
+  // Without this function, the return value of that function will be device
+  // dependent. If |adaptive_playback_supported| is equal to 0, the return value
+  // will be false. If |adaptive_playback_supported| is larger than 0, the
+  // return value will be true.
+  void set_adaptive_playback_supported_for_testing(
+      int adaptive_playback_supported) {
+    adaptive_playback_supported_for_testing_ = adaptive_playback_supported;
+  }
+
  private:
   VideoCodecBridge(const std::string& mime,
                    bool is_secure,
                    MediaCodecDirection direction);
+
+  int adaptive_playback_supported_for_testing_;
 };
 
 }  // namespace media

@@ -602,10 +602,13 @@ class MediaSourcePlayerTest : public testing::Test {
   // (prefetch). If false, regular data is fed and decoded prior to feeding the
   // config change AU in response to the second data request (after prefetch
   // completed). |config_unit_index| controls which access unit is
-  // |kConfigChanged|.
+  // |kConfigChanged|. If |enable_adaptive_playback| is true, config change will
+  // not cause the decoder to recreate the media codec bridge. Otherwise, the
+  // decoder has to drain all its data before recreating the new codec.
   void SendConfigChangeToDecoder(bool is_audio,
                                  bool config_unit_in_prefetch,
-                                 int config_unit_index) {
+                                 int config_unit_index,
+                                 bool enable_adaptive_playback) {
     EXPECT_FALSE(GetMediaCodecBridge(is_audio));
     if (is_audio) {
       StartAudioDecoderJob();
@@ -617,10 +620,12 @@ class MediaSourcePlayerTest : public testing::Test {
     int expected_num_data_requests = demuxer_->num_data_requests();
     // Feed and decode a standalone access unit so the player exits prefetch.
     if (!config_unit_in_prefetch) {
-      if (is_audio)
+      if (is_audio) {
         player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
-      else
+      } else {
         player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+        EnableAdaptiveVideoPlayback(enable_adaptive_playback);
+      }
 
       WaitForDecodeDone(is_audio, !is_audio);
 
@@ -645,22 +650,36 @@ class MediaSourcePlayerTest : public testing::Test {
       player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
     else
       player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+
+    // If the adaptive playback setting was not passed to the MediaCodecBridge
+    // earlier, do it here.
+    if (config_unit_in_prefetch && !is_audio)
+      EnableAdaptiveVideoPlayback(enable_adaptive_playback);
   }
 
   // Send a config change to the decoder job and drain the decoder so that the
   // config change is processed.
   void StartConfigChange(bool is_audio,
                          bool config_unit_in_prefetch,
-                         int config_unit_index) {
+                         int config_unit_index,
+                         bool enable_adaptive_playback) {
     SendConfigChangeToDecoder(is_audio, config_unit_in_prefetch,
-                              config_unit_index);
-    EXPECT_EQ(!config_unit_in_prefetch && config_unit_index == 0,
-              IsDrainingDecoder(is_audio));
+                              config_unit_index, enable_adaptive_playback);
+
+    EXPECT_EQ(!config_unit_in_prefetch && !enable_adaptive_playback &&
+              config_unit_index == 0, IsDrainingDecoder(is_audio));
     int expected_num_data_requests = demuxer_->num_data_requests();
     // Run until decoder starts to request new data.
     while (demuxer_->num_data_requests() == expected_num_data_requests)
       message_loop_.RunUntilIdle();
     EXPECT_FALSE(IsDrainingDecoder(is_audio));
+  }
+
+  void EnableAdaptiveVideoPlayback(bool enable) {
+    EXPECT_TRUE(GetMediaCodecBridge(false));
+    static_cast<VideoCodecBridge*>(GetMediaCodecBridge(false))->
+        set_adaptive_playback_supported_for_testing(
+            enable ? 1 : 0);
   }
 
   void CreateNextTextureAndSetVideoSurface() {
@@ -1645,6 +1664,7 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
   EXPECT_TRUE(GetMediaCodecBridge(true));
   EXPECT_TRUE(GetMediaCodecBridge(false));
+  EnableAdaptiveVideoPlayback(false);
   WaitForAudioVideoDecodeDone();
 
   // Simulate audio |kConfigChanged| prefetched as standalone access unit.
@@ -1665,6 +1685,39 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
     message_loop_.RunUntilIdle();
 }
 
+TEST_F(MediaSourcePlayerTest,
+       SimultaneousAudioVideoConfigChangeWithAdaptivePlayback) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player allows simultaneous audio and video config change with
+  // adaptive video playback enabled.
+  CreateNextTextureAndSetVideoSurface();
+  Start(CreateAudioVideoDemuxerConfigs());
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+  EXPECT_TRUE(GetMediaCodecBridge(true));
+  EXPECT_TRUE(GetMediaCodecBridge(false));
+  EnableAdaptiveVideoPlayback(true);
+  WaitForAudioVideoDecodeDone();
+
+  // Simulate audio |kConfigChanged| prefetched as standalone access unit.
+  DemuxerConfigs audio_configs = CreateAudioDemuxerConfigs(kCodecVorbis, true);
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 0, audio_configs));
+
+  // Simulate video |kConfigChanged| prefetched as standalone access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(
+          false, 0, CreateVideoDemuxerConfigs(true)));
+  EXPECT_EQ(6, demuxer_->num_data_requests());
+  EXPECT_TRUE(IsDrainingDecoder(true));
+  EXPECT_FALSE(IsDrainingDecoder(false));
+
+  // Waiting for audio decoder to finish draining.
+  while (IsDrainingDecoder(true))
+    message_loop_.RunUntilIdle();
+}
+
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit0) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
@@ -1672,7 +1725,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit0) {
   // the |kConfigChanged| unit is the very first unit in the set of units
   // received in OnDemuxerDataAvailable() ostensibly while
   // |PREFETCH_DONE_EVENT_PENDING|.
-  StartConfigChange(true, true, 0);
+  StartConfigChange(true, true, 0, false);
 }
 
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit1) {
@@ -1682,7 +1735,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit1) {
   // the |kConfigChanged| unit is not the first unit in the set of units
   // received in OnDemuxerDataAvailable() ostensibly while
   // |PREFETCH_DONE_EVENT_PENDING|.
-  StartConfigChange(true, true, 1);
+  StartConfigChange(true, true, 1, false);
 }
 
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit0AfterPrefetch) {
@@ -1692,7 +1745,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit0AfterPrefetch) {
   // the |kConfigChanged| unit is the very first unit in the set of units
   // received in OnDemuxerDataAvailable() from data requested ostensibly while
   // not prefetching.
-  StartConfigChange(true, false, 0);
+  StartConfigChange(true, false, 0, false);
 }
 
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit1AfterPrefetch) {
@@ -1702,7 +1755,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit1AfterPrefetch) {
   // the |kConfigChanged| unit is not the first unit in the set of units
   // received in OnDemuxerDataAvailable() from data requested ostensibly while
   // not prefetching.
-  StartConfigChange(true, false, 1);
+  StartConfigChange(true, false, 1, false);
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_PrerollAfterBrowserSeek) {
@@ -1730,13 +1783,35 @@ TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {
 
   // Test that video config change notification results in creating a new
   // video codec without any browser seek.
-  StartConfigChange(false, true, 1);
+  StartConfigChange(false, true, 1, false);
 
   // New video codec should have been created and configured, without any
   // browser seek.
   EXPECT_TRUE(GetMediaCodecBridge(false));
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(0, demuxer_->num_seek_requests());
+
+  // 2 codecs should have been created, one before the config change, and one
+  // after it.
+  EXPECT_EQ(2, manager_.num_resources_requested());
+  EXPECT_EQ(1, manager_.num_resources_released());
+}
+
+TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChangeWithAdaptivePlayback) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that if codec supports adaptive playback, no new codec should be
+  // created beyond the one used to decode the prefetch media data prior to
+  // the kConfigChanged.
+  StartConfigChange(false, true, 1, true);
+
+  // No browser seek should be needed.
+  EXPECT_TRUE(GetMediaCodecBridge(false));
+  EXPECT_EQ(3, demuxer_->num_data_requests());
+  EXPECT_EQ(0, demuxer_->num_seek_requests());
+
+  // Only 1 codec should have been created so far.
+  EXPECT_EQ(1, manager_.num_resources_requested());
 }
 
 TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySeek) {
@@ -1744,7 +1819,7 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySeek) {
 
   // Test if a decoder is being drained while receiving a seek request, draining
   // is canceled.
-  SendConfigChangeToDecoder(true, false, 0);
+  SendConfigChangeToDecoder(true, false, 0, false);
   EXPECT_TRUE(IsDrainingDecoder(true));
 
   player_.SeekTo(base::TimeDelta::FromMilliseconds(100));
@@ -1761,7 +1836,7 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedByRelease) {
 
   // Test if a decoder is being drained while receiving a release request,
   // draining is canceled.
-  SendConfigChangeToDecoder(true, false, 0);
+  SendConfigChangeToDecoder(true, false, 0, false);
   EXPECT_TRUE(IsDrainingDecoder(true));
 
   ReleasePlayer();
@@ -1782,7 +1857,7 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySurfaceChange) {
 
   // Test if a video decoder is being drained while surface changes, draining
   // is canceled.
-  SendConfigChangeToDecoder(false, false, 0);
+  SendConfigChangeToDecoder(false, false, 0, false);
   EXPECT_TRUE(IsDrainingDecoder(false));
 
   CreateNextTextureAndSetVideoSurface();
@@ -1988,7 +2063,7 @@ TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenStart) {
   // Test if Release() occurs after |kConfigChanged| is processed, new data
   // requested of demuxer, and the requested data arrive before the next
   // Start(), then the player starts to decode the new data without any seek.
-  StartConfigChange(true, true, 0);
+  StartConfigChange(true, true, 0, false);
   ReleasePlayer();
 
   EXPECT_TRUE(GetMediaCodecBridge(true));
