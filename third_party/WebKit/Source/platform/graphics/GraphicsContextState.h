@@ -46,14 +46,18 @@ namespace WebCore {
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
 class PLATFORM_EXPORT GraphicsContextState FINAL {
-    WTF_MAKE_NONCOPYABLE(GraphicsContextState);
 public:
     static PassOwnPtr<GraphicsContextState> create()
     {
         return adoptPtr(new GraphicsContextState());
     }
 
-    void copy(GraphicsContextState*);
+    static PassOwnPtr<GraphicsContextState> createAndCopy(const GraphicsContextState& other)
+    {
+        return adoptPtr(new GraphicsContextState(other));
+    }
+
+    void copy(const GraphicsContextState&);
 
     // SkPaint objects that reflect the current state. If the length of the
     // path to be stroked is known, pass it in for correct dash or dot placement.
@@ -142,6 +146,8 @@ public:
 
 private:
     GraphicsContextState();
+    explicit GraphicsContextState(const GraphicsContextState&);
+    GraphicsContextState& operator=(const GraphicsContextState&);
 
     // Helper function for applying the state's alpha value to the given input
     // color to produce a new output color.
