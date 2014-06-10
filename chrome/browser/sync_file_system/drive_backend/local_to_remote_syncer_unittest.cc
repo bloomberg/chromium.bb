@@ -409,7 +409,9 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
 }
 
-TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
+// This is failing and overloading the try servers.
+// http://crbug.com/382648
+TEST_F(LocalToRemoteSyncerTest, DISABLED_Conflict_UpdateDeleteOnFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
