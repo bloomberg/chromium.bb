@@ -5,7 +5,9 @@
 #include "mojo/shell/shell_test_base.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/test_service/test_service.mojom.h"
@@ -18,6 +20,20 @@ namespace test {
 namespace {
 
 typedef ShellTestBase ShellTestBaseTest;
+
+class QuitMessageLoopErrorHandler : public ErrorHandler {
+ public:
+  QuitMessageLoopErrorHandler() {}
+  virtual ~QuitMessageLoopErrorHandler() {}
+
+  // |ErrorHandler| implementation:
+  virtual void OnConnectionError() OVERRIDE {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuitMessageLoopErrorHandler);
+};
 
 void PingCallback(base::MessageLoop* message_loop, bool* was_run) {
   *was_run = true;
@@ -76,7 +92,14 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcessInvalidService) {
   // This will quit because there's nothing running.
   message_loop()->Run();
   EXPECT_FALSE(was_run);
-  EXPECT_TRUE(test_service.encountered_error());
+
+  // It may have quit before an error was processed.
+  if (!test_service.encountered_error()) {
+    QuitMessageLoopErrorHandler quitter;
+    test_service.set_error_handler(&quitter);
+    message_loop()->Run();
+    EXPECT_TRUE(test_service.encountered_error());
+  }
 
   test_service.reset();
 }
@@ -85,4 +108,3 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcessInvalidService) {
 }  // namespace test
 }  // namespace shell
 }  // namespace mojo
-
