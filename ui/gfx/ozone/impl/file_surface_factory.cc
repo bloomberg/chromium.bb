@@ -45,7 +45,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   }
   virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE {
     SkBitmap bitmap;
-    bitmap.setConfig(surface_->getCanvas()->imageInfo());
+    bitmap.setInfo(surface_->getCanvas()->imageInfo());
 
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
