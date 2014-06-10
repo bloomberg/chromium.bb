@@ -100,7 +100,7 @@ void TraceEventDispatcher::processBackgroundEvents()
 
 void TraceEventDispatcher::innerAddListener(const char* name, char phase, TraceEventTargetBase* instance, TraceEventHandlerMethod method, InspectorClient* client)
 {
-    static const char CategoryFilter[] = "devtools";
+    static const char CategoryFilter[] = "devtools,disabled-by-default.devtools.timeline,disabled-by-default.devtools.timeline.frame";
 
     ASSERT(isMainThread());
     MutexLocker locker(m_mutex);
