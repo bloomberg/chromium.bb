@@ -54,6 +54,7 @@ window.onload = function() {
   updateGetUserMediaConstraints();
   setupLocalStorageFieldValues();
   acceptIncomingCalls();
+  setPeerConnectionConstraints();
   if ($('get-devices-onload').checked == true) {
     getDevices();
   }
@@ -66,7 +67,8 @@ window.onbeforeunload = function() {
   disconnect_();
 };
 
-/** TODO Add element.id as a parameter and call this function instead?
+/** TODO (jansson) Fix the event assigment to allow the elements to have more
+ *      than one event assigned to it (currently replaces existing events).
  *  A list of element id's to be registered for local storage.
  */
 function setupLocalStorageFieldValues() {
@@ -74,7 +76,6 @@ function setupLocalStorageFieldValues() {
   registerLocalStorage_('pc-createanswer-constraints');
   registerLocalStorage_('pc-createoffer-constraints');
   registerLocalStorage_('get-devices-onload');
-  registerLocalStorage_('data-channel-type-rtp');
 }
 
 // Public HTML functions
@@ -221,7 +222,6 @@ function updateGetUserMediaConstraints() {
       // Default optional constraints placed here.
       constraints.video = {optional: [{minWidth: $('video-width').value},
                                       {minHeight: $('video-height').value},
-                                      {googCpuOveruseDetection: true},
                                       {googLeakyBucket: true}]
       };
       if (devices.videoId != null) {
@@ -450,11 +450,30 @@ function handleMessage(peerConnection, message) {
   error_('unknown message received');
 }
 
-function createPeerConnection(stun_server, useRtpDataChannels) {
+/**
+ * Sets the peerConnection constraints based on checkboxes.
+ * TODO (jansson) Make it possible to use the text field for constraints like
+ *     for getUserMedia.
+ */
+function setPeerConnectionConstraints() {
+  // Only added optional for now.
+  global.pcConstraints = {
+    optional: []
+  };
+
+  global.pcConstraints.optional.push(
+      {googCpuOveruseDetection: $('cpuoveruse-detection').checked});
+
+  global.pcConstraints.optional.push(
+      {RtpDataChannels: $('data-channel-type-rtp').checked});
+
+  $('pc-constraints').value = JSON.stringify(global.pcConstraints, null, ' ');
+}
+
+function createPeerConnection(stun_server) {
   servers = {iceServers: [{url: 'stun:' + stun_server}]};
   try {
-    var constraints = { optional: [{ RtpDataChannels: useRtpDataChannels }]};
-    peerConnection = new RTCPeerConnection(servers, constraints);
+    peerConnection = new RTCPeerConnection(servers, global.pcConstraints);
   } catch (exception) {
     error_('Failed to create peer connection: ' + exception);
   }
@@ -552,8 +571,7 @@ function preparePeerConnection() {
   if (global.peerConnection != null)
     error_('creating peer connection, but we already have one.');
 
-  global.peerConnection = createPeerConnection(STUN_SERVER,
-      $('data-channel-type-rtp').checked);
+  global.peerConnection = createPeerConnection(STUN_SERVER);
   print_('ok-peerconnection-created');
 }
 
@@ -1336,8 +1354,7 @@ function handlePeerMessage_(peerId, message) {
     // The other side is calling us.
     print_('We are being called: answer...');
 
-    global.peerConnection = createPeerConnection(STUN_SERVER,
-        $('data-channel-type-rtp').checked);
+    global.peerConnection = createPeerConnection(STUN_SERVER);
 
     if ($('auto-add-stream-oncall') &&
         obtainGetUserMediaResult_() == 'ok-got-stream') {

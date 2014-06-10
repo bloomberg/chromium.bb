@@ -74,16 +74,21 @@
           value="http://localhost:8888"/>
       Peer ID: <input type="text" id="peer-id" size="10" />
       <button id="connect" onclick="connectFromHere();">Connect</button><br/>
-      PeerConnection <a href="http://goo.gl/xVi12">createOffer MediaConstraints:
-          </a><br/>
+      PeerConnection Constraints:
+      CPU overuse <input type="checkbox" id="cpuoveruse-detection"
+          onclick="setPeerConnectionConstraints();" checked="true"/>
+      RTP <input type="checkbox" id="data-channel-type-rtp"
+          onclick="setPeerConnectionConstraints();"><br/>
+      <input type="text" id="pc-constraints" size="80" value="{}"><br/>
+      PeerConnection <a href="http://goo.gl/xVi12">
+          createOffer MediaConstraints:</a><br/>
       <input type="text" id="pc-createoffer-constraints" rows="7" cols="40"
-          value="{}"/>
-      <br/>
-      PeerConnection <a href="http://goo.gl/0TjfX">createAnswer
-          MediaConstraints:</a><br/>
+          value="{}"/><br/>
+      PeerConnection <a href="http://goo.gl/0TjfX">
+          createAnswer MediaConstraints:</a><br/>
       <input type="text" id="pc-createanswer-constraints" rows="7" cols="40"
-          value="{}"/>
-      <br/>
+          value="{}"/><br/>
+
       Call:
       <button onclick="negotiateCallFromHere();">Negotiate</button>
       <button onclick="hangUpFromHere();">Hang up</button><br/>
@@ -98,7 +103,6 @@
       <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
       Data Channel:
       <button onclick="createDataChannelFromHere();">Create</button>
-      RTP <input type="checkbox" id="data-channel-type-rtp"/>
       <button onclick="closeDataChannelFromHere();">Close</button>
       status:
       <input type="text" id="data-channel-status" size="10" value="not created"
