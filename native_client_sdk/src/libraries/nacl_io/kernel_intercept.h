@@ -46,7 +46,7 @@ int ki_init(void* kernel_proxy);
  * use this to save the current state before calling ki_init().  The
  * pushed state is restored in the next call to ki_uninit().
  */
-int ki_push_state_for_testing();
+int ki_push_state_for_testing(void);
 
 int ki_init_ppapi(void* kernel_proxy,
                   PP_Instance instance,
@@ -62,8 +62,8 @@ int ki_init_interface(void* kernel_proxy, void* pepper_interface);
 nacl_io::KernelProxy* ki_get_proxy();
 #endif
 
-int ki_is_initialized();
-void ki_uninit();
+int ki_is_initialized(void);
+void ki_uninit(void);
 
 int ki_chdir(const char* path);
 void ki_exit(int status);

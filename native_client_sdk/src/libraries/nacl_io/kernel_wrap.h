@@ -55,8 +55,8 @@ typedef ssize_t write_ssize_t;
 
 EXTERN_C_BEGIN
 
-void kernel_wrap_init();
-void kernel_wrap_uninit();
+void kernel_wrap_init(void);
+void kernel_wrap_uninit(void);
 
 int NAME(access)(const char* path, int amode) NOTHROW;
 int NAME(chdir)(const char* path) NOTHROW;
