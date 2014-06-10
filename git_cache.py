@@ -361,6 +361,18 @@ class Mirror(object):
     gsutil.call('cp', tmp_zipfile, dest_name)
     os.remove(tmp_zipfile)
 
+  @staticmethod
+  def DeleteTmpPackFiles(path):
+    pack_dir = os.path.join(path, 'objects', 'pack')
+    pack_files = [f for f in os.listdir(pack_dir) if
+                  f.startswith('.tmp-') or f.startswith('tmp_pack_')]
+    for f in pack_files:
+      f = os.path.join(pack_dir, f)
+      try:
+        os.remove(f)
+        logging.warn('Deleted stale temporary pack file %s' % f)
+      except OSError:
+        logging.warn('Unable to delete temporary pack file %s' % f)
 
   @staticmethod
   def BreakLocks(path):
