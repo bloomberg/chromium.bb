@@ -66,7 +66,6 @@ bool Display::Draw() {
         DelegatedRendererLayer::Create(delegated_frame_provider_);
 
     layer_tree_host_->SetRootLayer(delegated_layer_);
-    delegated_layer_->SetDisplaySize(current_surface_->size());
     delegated_layer_->SetBounds(current_surface_->size());
     delegated_layer_->SetContentsOpaque(true);
     delegated_layer_->SetIsDrawable(true);

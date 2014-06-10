@@ -48,8 +48,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void SetFrameData(const DelegatedFrameData* frame_data,
                     const gfx::RectF& damage_in_frame);
 
-  void SetDisplaySize(const gfx::Size& size);
-
  protected:
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 
@@ -77,9 +75,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       RenderPass::Id delegated_render_pass_id,
       RenderPass::Id* output_render_pass_id) const;
 
-  gfx::Transform DelegatedFrameToLayerSpaceTransform(
-      const gfx::Size& frame_size) const;
-
   void AppendRenderPassQuads(
       QuadSink* quad_sink,
       AppendQuadsData* append_quads_data,
@@ -90,11 +85,11 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
   bool have_render_passes_to_push_;
+  float inverse_device_scale_factor_;
   ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
   ResourceProvider::ResourceIdArray resources_;
 
-  gfx::Size display_size_;
   int child_id_;
   bool own_child_id_;
 

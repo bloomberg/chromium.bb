@@ -958,7 +958,6 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (delegated_renderer_layer_.get()) {
     size.SetToMin(frame_size_in_dip_);
-    delegated_renderer_layer_->SetDisplaySize(frame_size_in_dip_);
   }
   cc_layer_->SetBounds(size);
 }

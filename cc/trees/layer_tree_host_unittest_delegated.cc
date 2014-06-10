@@ -486,9 +486,8 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
             CreateFrameData(gfx::Rect(0, 0, 20, 20), gfx::Rect(0, 0, 0, 0)));
         break;
       case 3:
-        // Should create a total amount of gfx::Rect(2, 2, 10, 6) damage.
-        // The frame size is 20x20 while the layer is 10x10, so this should
-        // produce a gfx::Rect(1, 1, 5, 3) damage rect.
+        // Should create a total amount of gfx::Rect(2, 2, 8, 6) damage:
+        // (2, 2, 10, 6) clamped to the root output rect.
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 20, 20), gfx::Rect(2, 2, 5, 5)));
         SetFrameData(
@@ -517,41 +516,35 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         layer_tree_host()->SetNeedsCommit();
         break;
       case 9:
-        // Should damage the full layer.
-        delegated_->SetDisplaySize(gfx::Size(10, 10));
-        break;
-      case 10:
         // Should create zero damage.
         layer_tree_host()->SetNeedsCommit();
         break;
-      case 11:
+      case 10:
         // Changing the frame size damages the full layer.
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 5, 5), gfx::Rect(4, 4, 1, 1)));
         break;
-      case 12:
+      case 11:
         // An invalid frame isn't used, so it should not cause damage.
         SetFrameData(CreateInvalidFrameData(gfx::Rect(0, 0, 5, 5),
                                             gfx::Rect(4, 4, 1, 1)));
         break;
-      case 13:
-        // Should create gfx::Rect(1, 1, 2, 2) of damage. The frame size is
-        // 5x5 and the display size is now set to 10x10, so this should result
-        // in a gfx::Rect(2, 2, 4, 4) damage rect.
+      case 12:
+        // Should create gfx::Rect(1, 1, 2, 2) of damage.
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 5, 5), gfx::Rect(1, 1, 2, 2)));
         break;
-      case 14:
+      case 13:
         // Should create zero damage.
         layer_tree_host()->SetNeedsCommit();
         break;
-      case 15:
+      case 14:
         // Moving the layer out of the tree and back in will damage the whole
         // impl layer.
         delegated_->RemoveFromParent();
         layer_tree_host()->root_layer()->AddChild(delegated_);
         break;
-      case 16:
+      case 15:
         // Make a larger frame with lots of damage. Then a frame smaller than
         // the first frame's damage. The entire layer should be damaged, but
         // nothing more.
@@ -560,7 +553,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 5, 5), gfx::Rect(1, 1, 2, 2)));
         break;
-      case 17:
+      case 16:
         // Make a frame with lots of damage. Then replace it with a frame with
         // no damage. The entire layer should be damaged, but nothing more.
         SetFrameData(
@@ -568,7 +561,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 10, 10), gfx::Rect(0, 0, 0, 0)));
         break;
-      case 18:
+      case 17:
         // Make another layer that uses the same frame provider. The new layer
         // should be damaged.
         delegated_copy_ = CreateDelegatedLayer(frame_provider_);
@@ -578,11 +571,12 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 10, 10), gfx::Rect(4, 0, 1, 1)));
         break;
-      case 19:
+      case 18:
         // Set another new frame, both layers should be damaged in the same
         // ways.
         SetFrameData(
             CreateFrameData(gfx::Rect(0, 0, 10, 10), gfx::Rect(3, 3, 1, 1)));
+        break;
     }
     first_draw_for_source_frame_ = true;
   }
@@ -616,7 +610,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 3:
-        EXPECT_EQ(gfx::Rect(1, 1, 5, 3).ToString(), damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(2, 2, 8, 6).ToString(), damage_rect.ToString());
         break;
       case 4:
         EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
@@ -634,22 +628,22 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 9:
-        EXPECT_EQ(gfx::Rect(6, 6).ToString(), damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 10:
-        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
-        break;
-      case 11:
         EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
-      case 12:
+      case 11:
         EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
+        break;
+      case 12:
+        EXPECT_EQ(gfx::Rect(1, 1, 2, 2).ToString(), damage_rect.ToString());
         break;
       case 13:
-        EXPECT_EQ(gfx::Rect(2, 2, 4, 4).ToString(), damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 14:
-        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 15:
         EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
@@ -658,14 +652,11 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 17:
-        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
-        break;
-      case 18:
         EXPECT_EQ(gfx::UnionRects(gfx::Rect(5, 0, 10, 10),
                                   gfx::Rect(4, 0, 1, 1)).ToString(),
                   damage_rect.ToString());
         break;
-      case 19:
+      case 18:
         EXPECT_EQ(gfx::Rect(3, 3, 6, 1).ToString(), damage_rect.ToString());
         EndTest();
         break;

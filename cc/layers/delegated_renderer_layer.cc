@@ -67,8 +67,6 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
   DelegatedRendererLayerImpl* delegated_impl =
       static_cast<DelegatedRendererLayerImpl*>(impl);
 
-  delegated_impl->SetDisplaySize(display_size_);
-
   delegated_impl->CreateChildIdIfNeeded(
       frame_provider_->GetReturnResourcesCallbackForImplThread());
 
@@ -84,13 +82,6 @@ void DelegatedRendererLayer::ProviderHasNewFrame() {
   // The active frame needs to be replaced and resources returned before the
   // commit is called complete.
   SetNextCommitWaitsForActivation();
-}
-
-void DelegatedRendererLayer::SetDisplaySize(const gfx::Size& size) {
-  if (display_size_ == size)
-    return;
-  display_size_ = size;
-  SetNeedsCommit();
 }
 
 bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,

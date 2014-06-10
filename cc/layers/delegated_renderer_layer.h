@@ -29,12 +29,6 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
                       const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* impl) OVERRIDE;
 
-  // Set the size at which the frame should be displayed, with the origin at the
-  // layer's origin. This must always contain at least the layer's bounds. A
-  // value of (0, 0) implies that the frame should be displayed to fit exactly
-  // in the layer's bounds.
-  void SetDisplaySize(const gfx::Size& size);
-
   // Called by the DelegatedFrameProvider when a new frame is available to be
   // picked up.
   void ProviderHasNewFrame();
@@ -51,8 +45,6 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   DelegatedFrameData* frame_data_;
   gfx::RectF frame_damage_;
-
-  gfx::Size display_size_;
 
   scoped_refptr<BlockingTaskRunner> main_thread_runner_;
   base::WeakPtrFactory<DelegatedRendererLayer> weak_ptrs_;
