@@ -216,6 +216,13 @@
       'include_dirs': [
         '../..',
       ],
+      # Do not use any sanitizer tools with this binary. http://crbug.com/382766
+      'cflags/': [
+        ['exclude', '-fsanitize'],
+      ],
+      'ldflags/': [
+        ['exclude', '-fsanitize'],
+      ],
     },
     { 'target_name': 'sandbox_services',
       'type': '<(component)',
