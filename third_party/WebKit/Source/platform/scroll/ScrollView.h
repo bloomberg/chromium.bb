@@ -120,8 +120,8 @@ public:
     // included.
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const OVERRIDE;
     IntSize visibleSize() const { return visibleContentRect().size(); }
-    virtual int visibleWidth() const OVERRIDE { return visibleContentRect().width(); }
-    virtual int visibleHeight() const OVERRIDE { return visibleContentRect().height(); }
+    virtual int visibleWidth() const OVERRIDE FINAL { return visibleContentRect().width(); }
+    virtual int visibleHeight() const OVERRIDE FINAL { return visibleContentRect().height(); }
 
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
@@ -282,12 +282,21 @@ protected:
     virtual bool isVerticalDocument() const { return true; }
     virtual bool isFlippedDocument() const { return false; }
 
+    enum ComputeScrollbarExistenceOption {
+        FirstPass,
+        Incremental
+    };
+    void computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, ComputeScrollbarExistenceOption = FirstPass) const;
+    void updateScrollbarGeometry();
+
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const IntSize& desiredOffset);
 
     IntSize excludeScrollbars(const IntSize&) const;
 
 private:
+    bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
+
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;
     ScrollbarMode m_horizontalScrollbarMode;
@@ -307,7 +316,6 @@ private:
     bool m_scrollbarsSuppressed;
 
     bool m_inUpdateScrollbars;
-    unsigned m_updateScrollbarsPass;
 
     IntPoint m_panScrollIconPoint;
     bool m_drawPanScrollIcon;

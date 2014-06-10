@@ -31,6 +31,7 @@
 #include "platform/HostWindow.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/TemporaryChange.h"
 
 using namespace std;
 
@@ -44,7 +45,6 @@ ScrollView::ScrollView()
     , m_scrollbarsAvoidingResizer(0)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
-    , m_updateScrollbarsPass(0)
     , m_drawPanScrollIcon(false)
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
@@ -324,29 +324,19 @@ void ScrollView::windowResizerRectChanged()
     updateScrollbars(scrollOffset());
 }
 
-static const unsigned cMaxUpdateScrollbarsPass = 2;
-
-void ScrollView::updateScrollbars(const IntSize& desiredOffset)
+static bool useOverlayScrollbars()
 {
-    if (m_inUpdateScrollbars)
-        return;
+    // FIXME: Need to detect the presence of CSS custom scrollbars, which are non-overlay regardless the ScrollbarTheme.
+    return ScrollbarTheme::theme()->usesOverlayScrollbars();
+}
 
-    // If we came in here with the view already needing a layout, then go ahead and do that
-    // first.  (This will be the common case, e.g., when the page changes due to window resizing for example).
-    // This layout will not re-enter updateScrollbars and does not count towards our max layout pass total.
-    if (!m_scrollbarsSuppressed) {
-        m_inUpdateScrollbars = true;
-        scrollbarExistenceDidChange();
-        m_inUpdateScrollbars = false;
-    }
-
-    IntRect oldScrollCornerRect = scrollCornerRect();
-
+void ScrollView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, ComputeScrollbarExistenceOption option) const
+{
     bool hasHorizontalScrollbar = m_horizontalScrollbar;
     bool hasVerticalScrollbar = m_verticalScrollbar;
 
-    bool newHasHorizontalScrollbar = hasHorizontalScrollbar;
-    bool newHasVerticalScrollbar = hasVerticalScrollbar;
+    newHasHorizontalScrollbar = hasHorizontalScrollbar;
+    newHasVerticalScrollbar = hasVerticalScrollbar;
 
     ScrollbarMode hScroll = m_horizontalScrollbarMode;
     ScrollbarMode vScroll = m_verticalScrollbarMode;
@@ -356,86 +346,40 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     if (vScroll != ScrollbarAuto)
         newHasVerticalScrollbar = (vScroll == ScrollbarAlwaysOn);
 
-    if (m_scrollbarsSuppressed || (hScroll != ScrollbarAuto && vScroll != ScrollbarAuto)) {
-        if (hasHorizontalScrollbar != newHasHorizontalScrollbar)
-            setHasHorizontalScrollbar(newHasHorizontalScrollbar);
-        if (hasVerticalScrollbar != newHasVerticalScrollbar)
-            setHasVerticalScrollbar(newHasVerticalScrollbar);
-    } else {
-        bool scrollbarExistenceChanged = false;
-
-        IntSize docSize = contentsSize();
-        IntSize fullVisibleSize = visibleContentRect(IncludeScrollbars).size();
-
-        bool scrollbarsAreOverlay = ScrollbarTheme::theme()->usesOverlayScrollbars();
-
-        if (hScroll == ScrollbarAuto) {
-            newHasHorizontalScrollbar = docSize.width() > visibleWidth();
-            if (!scrollbarsAreOverlay && newHasHorizontalScrollbar && !m_updateScrollbarsPass && docSize.width() <= fullVisibleSize.width() && docSize.height() <= fullVisibleSize.height())
-                newHasHorizontalScrollbar = false;
-        }
-        if (vScroll == ScrollbarAuto) {
-            newHasVerticalScrollbar = docSize.height() > visibleHeight();
-            if (!scrollbarsAreOverlay && newHasVerticalScrollbar && !m_updateScrollbarsPass && docSize.width() <= fullVisibleSize.width() && docSize.height() <= fullVisibleSize.height())
-                newHasVerticalScrollbar = false;
-        }
-
-        if (!scrollbarsAreOverlay) {
-            // If we ever turn one scrollbar off, always turn the other one off too.  Never ever
-            // try to both gain/lose a scrollbar in the same pass.
-            if (!newHasHorizontalScrollbar && hasHorizontalScrollbar && vScroll != ScrollbarAlwaysOn)
-                newHasVerticalScrollbar = false;
-            if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
-                newHasHorizontalScrollbar = false;
-        }
-
-        if (hasHorizontalScrollbar != newHasHorizontalScrollbar) {
-            scrollbarExistenceChanged = true;
-            if (scrollOrigin().y() && !newHasHorizontalScrollbar && !scrollbarsAreOverlay)
-                ScrollableArea::setScrollOrigin(IntPoint(scrollOrigin().x(), scrollOrigin().y() - m_horizontalScrollbar->height()));
-            if (hasHorizontalScrollbar)
-                m_horizontalScrollbar->invalidate();
-            setHasHorizontalScrollbar(newHasHorizontalScrollbar);
-        }
-
-        if (hasVerticalScrollbar != newHasVerticalScrollbar) {
-            scrollbarExistenceChanged = true;
-            if (scrollOrigin().x() && !newHasVerticalScrollbar && !scrollbarsAreOverlay)
-                ScrollableArea::setScrollOrigin(IntPoint(scrollOrigin().x() - m_verticalScrollbar->width(), scrollOrigin().y()));
-            if (hasVerticalScrollbar)
-                m_verticalScrollbar->invalidate();
-            setHasVerticalScrollbar(newHasVerticalScrollbar);
-        }
-
-        if (scrollbarExistenceChanged) {
-            if (scrollbarsAreOverlay) {
-                // Synchronize status of scrollbar layers if necessary.
-                m_inUpdateScrollbars = true;
-                scrollbarExistenceDidChange();
-                m_inUpdateScrollbars = false;
-            } else if (m_updateScrollbarsPass < cMaxUpdateScrollbarsPass) {
-                m_updateScrollbarsPass++;
-                contentsResized();
-                scrollbarExistenceDidChange();
-                IntSize newDocSize = contentsSize();
-                if (newDocSize == docSize) {
-                    // The layout with the new scroll state had no impact on
-                    // the document's overall size, so updateScrollbars didn't get called.
-                    // Recur manually.
-                    updateScrollbars(desiredOffset);
-                }
-                m_updateScrollbarsPass--;
-            }
-        }
-    }
-
-    // Set up the range, but only do this if we're not in a nested call (to avoid
-    // doing it multiple times).
-    if (m_updateScrollbarsPass)
+    if (m_scrollbarsSuppressed || (hScroll != ScrollbarAuto && vScroll != ScrollbarAuto))
         return;
 
-    m_inUpdateScrollbars = true;
+    IntSize docSize = contentsSize();
 
+    if (hScroll == ScrollbarAuto)
+        newHasHorizontalScrollbar = docSize.width() > visibleWidth();
+    if (vScroll == ScrollbarAuto)
+        newHasVerticalScrollbar = docSize.height() > visibleHeight();
+
+    if (useOverlayScrollbars())
+        return;
+
+    IntSize fullVisibleSize = visibleContentRect(IncludeScrollbars).size();
+
+    bool attemptToRemoveScrollbars = (option == FirstPass
+        && docSize.width() <= fullVisibleSize.width() && docSize.height() <= fullVisibleSize.height());
+    if (attemptToRemoveScrollbars) {
+        if (hScroll == ScrollbarAuto)
+            newHasHorizontalScrollbar = false;
+        if (vScroll == ScrollbarAuto)
+            newHasVerticalScrollbar = false;
+    }
+
+    // If we ever turn one scrollbar off, always turn the other one off too.
+    // Never ever try to both gain/lose a scrollbar in the same pass.
+    if (!newHasHorizontalScrollbar && hasHorizontalScrollbar && vScroll != ScrollbarAlwaysOn)
+        newHasVerticalScrollbar = false;
+    if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
+        newHasHorizontalScrollbar = false;
+}
+
+void ScrollView::updateScrollbarGeometry()
+{
     if (m_horizontalScrollbar) {
         int clientWidth = visibleWidth();
         IntRect oldRect(m_horizontalScrollbar->frameRect());
@@ -451,6 +395,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             m_horizontalScrollbar->setSuppressInvalidation(true);
         m_horizontalScrollbar->setEnabled(contentsWidth() > clientWidth);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
+        m_horizontalScrollbar->offsetDidChange();
         if (m_scrollbarsSuppressed)
             m_horizontalScrollbar->setSuppressInvalidation(false);
     }
@@ -470,35 +415,88 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             m_verticalScrollbar->setSuppressInvalidation(true);
         m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
         m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
+        m_verticalScrollbar->offsetDidChange();
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(false);
     }
+}
 
-    if (hasHorizontalScrollbar != newHasHorizontalScrollbar || hasVerticalScrollbar != newHasVerticalScrollbar) {
+bool ScrollView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option)
+{
+    ASSERT(m_inUpdateScrollbars);
+
+    // If we came in here with the view already needing a layout, then go ahead and do that
+    // first.  (This will be the common case, e.g., when the page changes due to window resizing for example).
+    // This layout will not re-enter updateScrollbars and does not count towards our max layout pass total.
+    if (!m_scrollbarsSuppressed)
+        scrollbarExistenceDidChange();
+
+    bool hasHorizontalScrollbar = m_horizontalScrollbar;
+    bool hasVerticalScrollbar = m_verticalScrollbar;
+
+    bool newHasHorizontalScrollbar = false;
+    bool newHasVerticalScrollbar = false;
+    computeScrollbarExistence(newHasHorizontalScrollbar, newHasVerticalScrollbar, option);
+
+    bool scrollbarExistenceChanged = hasHorizontalScrollbar != newHasHorizontalScrollbar || hasVerticalScrollbar != newHasVerticalScrollbar;
+    if (!scrollbarExistenceChanged)
+        return false;
+
+    setHasHorizontalScrollbar(newHasHorizontalScrollbar);
+    setHasVerticalScrollbar(newHasVerticalScrollbar);
+
+    if (m_scrollbarsSuppressed)
+        return true;
+
+    if (!useOverlayScrollbars())
+        contentsResized();
+    scrollbarExistenceDidChange();
+    return true;
+}
+
+void ScrollView::updateScrollbars(const IntSize& desiredOffset)
+{
+    if (m_inUpdateScrollbars)
+        return;
+    TemporaryChange<bool> inUpdateScrollbarsChange(m_inUpdateScrollbars, true);
+
+    IntSize oldVisibleSize = visibleSize();
+
+    bool scrollbarExistenceChanged = false;
+    int maxUpdateScrollbarsPass = useOverlayScrollbars() || m_scrollbarsSuppressed ? 1 : 3;
+    for (int updateScrollbarsPass = 0; updateScrollbarsPass < maxUpdateScrollbarsPass; updateScrollbarsPass++) {
+        if (!adjustScrollbarExistence(updateScrollbarsPass ? Incremental : FirstPass))
+            break;
+        scrollbarExistenceChanged = true;
+    }
+
+    updateScrollbarGeometry();
+
+    if (scrollbarExistenceChanged) {
         // FIXME: Is frameRectsChanged really necessary here? Have any frame rects changed?
         frameRectsChanged();
         positionScrollbarLayers();
         updateScrollCorner();
-        if (!m_horizontalScrollbar && !m_verticalScrollbar)
-            invalidateScrollCornerRect(oldScrollCornerRect);
     }
+
+    // FIXME: We don't need to do this if we are composited.
+    IntSize newVisibleSize = visibleSize();
+    if (newVisibleSize.width() > oldVisibleSize.width()) {
+        if (shouldPlaceVerticalScrollbarOnLeft())
+            invalidateRect(IntRect(0, 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));
+        else
+            invalidateRect(IntRect(oldVisibleSize.width(), 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));
+    }
+    if (newVisibleSize.height() > oldVisibleSize.height())
+        invalidateRect(IntRect(0, oldVisibleSize.height(), newVisibleSize.width(), newVisibleSize.height() - oldVisibleSize.height()));
 
     IntPoint adjustedScrollPosition = IntPoint(desiredOffset);
     if (!isRubberBandInProgress())
         adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
-
     if (adjustedScrollPosition != scrollPosition() || scrollOriginChanged()) {
         ScrollableArea::scrollToOffsetWithoutAnimation(adjustedScrollPosition);
         resetScrollOriginChanged();
     }
-
-    // Make sure the scrollbar offsets are up to date.
-    if (m_horizontalScrollbar)
-        m_horizontalScrollbar->offsetDidChange();
-    if (m_verticalScrollbar)
-        m_verticalScrollbar->offsetDidChange();
-
-    m_inUpdateScrollbars = false;
 }
 
 const int panIconSizeLength = 16;
