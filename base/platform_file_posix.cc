@@ -117,13 +117,6 @@ static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
 
 }  // namespace
 
-// NaCl doesn't implement system calls to open files directly.
-#if !defined(OS_NACL)
-FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
-  return fdopen(file, mode);
-}
-#endif  // !defined(OS_NACL)
-
 bool ClosePlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
   return !IGNORE_EINTR(close(file));

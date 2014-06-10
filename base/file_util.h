@@ -308,6 +308,10 @@ BASE_EXPORT FILE* OpenFile(const FilePath& filename, const char* mode);
 // Closes file opened by OpenFile. Returns true on success.
 BASE_EXPORT bool CloseFile(FILE* file);
 
+// Associates a standard FILE stream with an existing File. Note that this
+// functions take ownership of the existing File.
+BASE_EXPORT FILE* FileToFILE(File file, const char* mode);
+
 // Truncates an open file to end at the location of the current file pointer.
 // This is a cross-platform analog to Windows' SetEndOfFile() function.
 BASE_EXPORT bool TruncateFile(FILE* file);

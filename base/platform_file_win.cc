@@ -13,15 +13,6 @@
 
 namespace base {
 
-FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
-  if (file == kInvalidPlatformFileValue)
-    return NULL;
-  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(file), 0);
-  if (fd < 0)
-    return NULL;
-  return _fdopen(fd, mode);
-}
-
 bool ClosePlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
   return (CloseHandle(file) != 0);

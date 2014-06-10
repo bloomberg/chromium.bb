@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 
 #include <windows.h>
+#include <io.h>
 #include <psapi.h>
 #include <shellapi.h>
 #include <shlobj.h>
@@ -576,6 +577,20 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   ThreadRestrictions::AssertIOAllowed();
   std::wstring w_mode = ASCIIToWide(std::string(mode));
   return _wfsopen(filename.value().c_str(), w_mode.c_str(), _SH_DENYNO);
+}
+
+FILE* FileToFILE(File file, const char* mode) {
+  if (!file.IsValid())
+    return NULL;
+  int fd =
+      _open_osfhandle(reinterpret_cast<intptr_t>(file.GetPlatformFile()), 0);
+  if (fd < 0)
+    return NULL;
+  file.TakePlatformFile();
+  FILE* stream = _fdopen(fd, mode);
+  if (!stream)
+    _close(fd);
+  return stream;
 }
 
 int ReadFile(const FilePath& filename, char* data, int max_size) {

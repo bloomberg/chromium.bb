@@ -654,6 +654,16 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   return result;
 }
 
+// NaCl doesn't implement system calls to open files directly.
+#if !defined(OS_NACL)
+FILE* FileToFILE(File file, const char* mode) {
+  FILE* stream = fdopen(file.GetPlatformFile(), mode);
+  if (stream)
+    file.TakePlatformFile();
+  return stream;
+}
+#endif  // !defined(OS_NACL)
+
 int ReadFile(const FilePath& filename, char* data, int max_size) {
   ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_RDONLY));

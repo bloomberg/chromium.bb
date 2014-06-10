@@ -1685,6 +1685,21 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
   }
 }
 
+TEST_F(FileUtilTest, FileToFILE) {
+  File file;
+  FILE* stream = FileToFILE(file.Pass(), "w");
+  EXPECT_FALSE(stream);
+
+  FilePath file_name = temp_dir_.path().Append(FPL("The file.txt"));
+  file = File(file_name, File::FLAG_CREATE | File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
+
+  stream = FileToFILE(file.Pass(), "w");
+  EXPECT_TRUE(stream);
+  EXPECT_FALSE(file.IsValid());
+  EXPECT_TRUE(CloseFile(stream));
+}
+
 TEST_F(FileUtilTest, CreateNewTempDirectoryTest) {
   FilePath temp_dir;
   ASSERT_TRUE(CreateNewTempDirectory(FilePath::StringType(), &temp_dir));

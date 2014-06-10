@@ -134,8 +134,6 @@ const PlatformFile kInvalidPlatformFileValue = -1;
 BASE_EXPORT PlatformFileError ErrnoToPlatformFileError(int saved_errno);
 #endif
 
-BASE_EXPORT FILE* FdopenPlatformFile(PlatformFile file, const char* mode);
-
 // Closes a file handle. Returns |true| on success and |false| otherwise.
 BASE_EXPORT bool ClosePlatformFile(PlatformFile file);
 

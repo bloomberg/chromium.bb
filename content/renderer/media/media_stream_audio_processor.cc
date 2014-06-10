@@ -240,8 +240,7 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
 
 void MediaStreamAudioProcessor::StartAecDump(base::File aec_dump_file) {
   if (audio_processing_)
-    StartEchoCancellationDump(audio_processing_.get(),
-                              aec_dump_file.TakePlatformFile());
+    StartEchoCancellationDump(audio_processing_.get(), aec_dump_file.Pass());
 }
 
 void MediaStreamAudioProcessor::StopAecDump() {

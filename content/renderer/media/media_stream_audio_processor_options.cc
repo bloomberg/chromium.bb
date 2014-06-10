@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -258,10 +259,10 @@ void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing) {
 }
 
 void StartEchoCancellationDump(AudioProcessing* audio_processing,
-                               const base::PlatformFile& aec_dump_file) {
-  DCHECK_NE(aec_dump_file, base::kInvalidPlatformFileValue);
+                               base::File aec_dump_file) {
+  DCHECK(aec_dump_file.IsValid());
 
-  FILE* stream = base::FdopenPlatformFile(aec_dump_file, "w");
+  FILE* stream = base::FileToFILE(aec_dump_file.Pass(), "w");
   if (!stream) {
     LOG(ERROR) << "Failed to open AEC dump file";
     return;
