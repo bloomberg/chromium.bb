@@ -341,7 +341,7 @@ def main():
     # TODO(navabi): Build fails on device status check step if there exists any
     # devices with critically low battery. Remove those devices from testing,
     # allowing build to continue with good devices.
-    return 1
+    return 2
 
   if not devices:
     return 1
