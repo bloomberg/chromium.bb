@@ -19,7 +19,6 @@
 namespace device {
 
 class BluetoothGattService;
-class BluetoothProfile;
 class BluetoothSocket;
 class BluetoothUUID;
 
@@ -365,17 +364,6 @@ class BluetoothDevice {
   // There is no callback for success because this object is often deleted
   // before that callback would be called.
   virtual void Forget(const ErrorCallback& error_callback) = 0;
-
-  // Attempts to initiate an outgoing connection to this device for the profile
-  // identified by |profile|, on success the profile's connection callback
-  // will be called as well as |callback|; on failure |error_callback| will be
-  // called.
-  typedef base::Callback<void(const std::string&)>
-      ConnectToProfileErrorCallback;
-  virtual void ConnectToProfile(
-      BluetoothProfile* profile,
-      const base::Closure& callback,
-      const ConnectToProfileErrorCallback& error_callback) = 0;
 
   // Attempts to initiate an outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |uuid|, performing an SDP lookup

@@ -162,8 +162,9 @@ void BluetoothAdapterMac::CreateRfcommService(
     bool insecure,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement.
-  NOTIMPLEMENTED();
+  scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
+  socket->ListenUsingRfcomm(
+      this, uuid, channel, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothAdapterMac::CreateL2capService(
@@ -171,8 +172,9 @@ void BluetoothAdapterMac::CreateL2capService(
     int psm,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement.
-  NOTIMPLEMENTED();
+  scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
+  socket->ListenUsingL2cap(
+      this, uuid, psm, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(

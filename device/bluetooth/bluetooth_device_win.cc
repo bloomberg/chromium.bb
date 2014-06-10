@@ -197,14 +197,6 @@ void BluetoothDeviceWin::Forget(const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceWin::ConnectToProfile(
-    device::BluetoothProfile* profile,
-    const base::Closure& callback,
-    const ConnectToProfileErrorCallback& error_callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  error_callback.Run("Removed. Use chrome.bluetoothSocket.connect() instead.");
-}
-
 void BluetoothDeviceWin::ConnectToService(
     const BluetoothUUID& uuid,
     const ConnectToServiceCallback& callback,

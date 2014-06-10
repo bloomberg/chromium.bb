@@ -433,14 +433,6 @@ void BluetoothDeviceChromeOS::Forget(const ErrorCallback& error_callback) {
                      error_callback));
 }
 
-void BluetoothDeviceChromeOS::ConnectToProfile(
-    device::BluetoothProfile* profile,
-    const base::Closure& callback,
-    const ConnectToProfileErrorCallback& error_callback) {
-  // TODO(keybuK): Remove.
-  error_callback.Run("Removed. Use chrome.bluetoothSocket.connect() instead.");
-}
-
 void BluetoothDeviceChromeOS::ConnectToService(
     const BluetoothUUID& uuid,
     const ConnectToServiceCallback& callback,

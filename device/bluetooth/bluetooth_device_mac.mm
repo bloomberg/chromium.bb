@@ -7,13 +7,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/hash.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "device/bluetooth/bluetooth_profile_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -210,20 +210,13 @@ void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::ConnectToProfile(
-    BluetoothProfile* profile,
-    const base::Closure& callback,
-    const ConnectToProfileErrorCallback& error_callback) {
-  static_cast<BluetoothProfileMac*>(profile)
-      ->Connect(device_, callback, error_callback);
-}
-
 void BluetoothDeviceMac::ConnectToService(
     const BluetoothUUID& uuid,
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement
-  NOTIMPLEMENTED();
+  scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
+  socket->Connect(
+      device_.get(), uuid, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothDeviceMac::StartConnectionMonitor(
