@@ -338,7 +338,7 @@
         'mojo_common_lib',
         'mojo_environment_standalone',
         'mojo_test_service_bindings',
-        'mojo_system',
+        'mojo_system_impl',
         'mojo_utility',
       ],
       'sources': [

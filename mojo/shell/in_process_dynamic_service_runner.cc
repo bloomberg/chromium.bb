@@ -48,8 +48,8 @@ void InProcessDynamicServiceRunner::Start(
 }
 
 void InProcessDynamicServiceRunner::Run() {
-  DVLOG(2) << "Loading/running Mojo app in process from library: "
-           << app_path_.value();
+  DVLOG(2) << "Loading/running Mojo app from " << app_path_.value()
+           << " in process";
 
   base::ScopedClosureRunner app_deleter(
       base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
@@ -59,7 +59,7 @@ void InProcessDynamicServiceRunner::Run() {
     base::ScopedNativeLibrary app_library(
         base::LoadNativeLibrary(app_path_, &error));
     if (!app_library.is_valid()) {
-      LOG(ERROR) << "Failed to load app library (error: " << error.ToString()
+      LOG(ERROR) << "Failed to load library (error: " << error.ToString()
                  << ")";
       break;
     }
@@ -72,14 +72,10 @@ void InProcessDynamicServiceRunner::Run() {
       size_t expected_size = mojo_set_system_thunks_fn(&system_thunks);
       if (expected_size > sizeof(MojoSystemThunks)) {
         LOG(ERROR)
-            << "Invalid app library: expected MojoSystemThunks size: "
+            << "Invalid DSO. Expected MojoSystemThunks size: "
             << expected_size;
         break;
       }
-    } else {
-      // Strictly speaking this is not required, but it's very unusual to have
-      // an app that doesn't require the basic system library.
-      LOG(WARNING) << "MojoSetSystemThunks not found in app library";
     }
 
     typedef MojoResult (*MojoMainFunction)(MojoHandle);
