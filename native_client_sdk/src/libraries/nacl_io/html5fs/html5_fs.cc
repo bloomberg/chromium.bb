@@ -66,7 +66,7 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
 
   // FileRef returns PP_ERROR_NOACCESS which is translated to EACCES if you
   // try to create the root directory. EEXIST is a better errno here.
-  if (path.Top())
+  if (path.IsRoot())
     return EEXIST;
 
   ScopedResource fileref_resource(

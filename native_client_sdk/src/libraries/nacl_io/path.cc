@@ -12,18 +12,12 @@
 
 namespace nacl_io {
 
-Path::Path() {
-}
-
 Path::Path(const Path& path) {
   paths_ = path.paths_;
 }
 
 Path::Path(const std::string& path) {
   Set(path);
-}
-
-Path::~Path() {
 }
 
 bool Path::IsAbsolute() const {
@@ -38,12 +32,14 @@ size_t Path::Size() const {
   return paths_.size();
 }
 
-bool Path::Top() const {
-  return (paths_.size() == 0) || (paths_.size() == 1 && paths_[0] == "/");
+bool Path::IsRoot() const {
+  return paths_.empty() || (paths_.size() == 1 && paths_[0] == "/");
 }
 
 Path& Path::Append(const std::string& path) {
   StringArray_t paths = Split(path);
+  if (paths.empty())
+    return *this;
 
   for (size_t index = 0; index < paths.size(); index++) {
     // Skip ROOT
@@ -58,13 +54,16 @@ Path& Path::Append(const std::string& path) {
 
 Path& Path::Prepend(const std::string& path) {
   StringArray_t paths = Split(path);
+  if (paths.empty())
+    return *this;
 
   for (size_t index = 0; index < paths_.size(); index++) {
     // Skip ROOT
     if (index == 0 && paths_[0] == "/")
       continue;
-    paths.push_back(paths[index]);
+    paths.push_back(paths_[index]);
   }
+
   paths_ = Normalize(paths);
   return *this;
 }
@@ -145,7 +144,7 @@ StringArray_t Path::Normalize(const StringArray_t& paths) {
   }
 
   // If the path was valid, but now it's empty, return self
-  if (path_out.size() == 0)
+  if (path_out.empty())
     path_out.push_back(".");
 
   return path_out;

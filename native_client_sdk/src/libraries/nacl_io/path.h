@@ -16,26 +16,25 @@ typedef std::vector<std::string> StringArray_t;
 
 class Path {
  public:
-  Path();
+  Path() {}
   Path(const Path& path);
 
   // This constructor splits path by '/' as a starting point for this Path.
   // If the path begins with the character '/', the path is considered
   // to be absolute.
   explicit Path(const std::string& path);
-  ~Path();
 
   // Return true of the first path item is '/'.
   bool IsAbsolute() const;
+
+  // Return true if this is the root path (i.e. it has no parent)
+  bool IsRoot() const;
 
   // Return a part of the path
   const std::string& Part(size_t index) const;
 
   // Return the number of path parts
   size_t Size() const;
-
-  // Return true of this is the top of the path
-  bool Top() const;
 
   // Update the path.
   Path& Append(const std::string& path);

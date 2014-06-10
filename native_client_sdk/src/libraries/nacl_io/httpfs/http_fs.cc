@@ -268,7 +268,7 @@ Error HttpFs::FindOrCreateDir(const Path& path, ScopedNode* out_node) {
     return error;
 
   // If not the root node, find the parent node and add it to the parent
-  if (!path.Top()) {
+  if (!path.IsRoot()) {
     ScopedNode parent;
     error = FindOrCreateDir(path.Parent(), &parent);
     if (error)

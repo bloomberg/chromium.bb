@@ -35,27 +35,27 @@ TEST(PathTest, Assignment) {
 
   EXPECT_EQ(0, empty.Size());
   EXPECT_FALSE(empty.IsAbsolute());
-  EXPECT_EQ(std::string(""), empty.Join());
+  EXPECT_EQ("", empty.Join());
 
   EXPECT_EQ(1, dot.Size());
   EXPECT_FALSE(dot.IsAbsolute());
-  EXPECT_EQ(std::string("."), dot.Join());
+  EXPECT_EQ(".", dot.Join());
 
   EXPECT_EQ(1, root.Size());
   EXPECT_TRUE(root.IsAbsolute());
-  EXPECT_EQ(std::string("/"), root.Join());
+  EXPECT_EQ("/", root.Join());
 
   EXPECT_EQ(4, abs_str.Size());
   EXPECT_TRUE(abs_str.IsAbsolute());
-  EXPECT_EQ(std::string("/abs/from/string"), abs_str.Join());
+  EXPECT_EQ("/abs/from/string", abs_str.Join());
 
   EXPECT_EQ(3, rel_str.Size());
   EXPECT_FALSE(rel_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/string"), rel_str.Join());
+  EXPECT_EQ("rel/from/string", rel_str.Join());
 
   EXPECT_EQ(3, self_str.Size());
   EXPECT_FALSE(self_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/string"), self_str.Join());
+  EXPECT_EQ("rel/from/string", self_str.Join());
 
   empty = "";
   dot = ".";
@@ -66,58 +66,58 @@ TEST(PathTest, Assignment) {
 
   EXPECT_EQ(1, empty.Size());
   EXPECT_FALSE(empty.IsAbsolute());
-  EXPECT_EQ(std::string("."), empty.Join());
+  EXPECT_EQ(".", empty.Join());
 
   EXPECT_EQ(1, dot.Size());
   EXPECT_FALSE(dot.IsAbsolute());
-  EXPECT_EQ(std::string("."), dot.Join());
+  EXPECT_EQ(".", dot.Join());
 
   EXPECT_EQ(1, root.Size());
   EXPECT_TRUE(root.IsAbsolute());
-  EXPECT_EQ(std::string("/"), root.Join());
+  EXPECT_EQ("/", root.Join());
 
   EXPECT_EQ(4, abs_str.Size());
   EXPECT_TRUE(abs_str.IsAbsolute());
-  EXPECT_EQ(std::string("/abs/from/assign"), abs_str.Join());
+  EXPECT_EQ("/abs/from/assign", abs_str.Join());
 
   EXPECT_EQ(3, rel_str.Size());
   EXPECT_FALSE(rel_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/assign"), rel_str.Join());
+  EXPECT_EQ("rel/from/assign", rel_str.Join());
 
   EXPECT_EQ(3, self_str.Size());
   EXPECT_FALSE(self_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/assign"), self_str.Join());
+  EXPECT_EQ("rel/from/assign", self_str.Join());
 
   Path cpy_str;
   cpy_str = empty;
   EXPECT_EQ(1, cpy_str.Size());
   EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("."), cpy_str.Join());
+  EXPECT_EQ(".", cpy_str.Join());
 
   cpy_str = dot;
   EXPECT_EQ(1, cpy_str.Size());
   EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("."), cpy_str.Join());
+  EXPECT_EQ(".", cpy_str.Join());
 
   cpy_str = root;
   EXPECT_EQ(1, cpy_str.Size());
   EXPECT_TRUE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("/"), cpy_str.Join());
+  EXPECT_EQ("/", cpy_str.Join());
 
   cpy_str = abs_str;
   EXPECT_EQ(4, cpy_str.Size());
   EXPECT_TRUE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("/abs/from/assign"), cpy_str.Join());
+  EXPECT_EQ("/abs/from/assign", cpy_str.Join());
 
   cpy_str = rel_str;
   EXPECT_EQ(3, cpy_str.Size());
   EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/assign"), cpy_str.Join());
+  EXPECT_EQ("rel/from/assign", cpy_str.Join());
 
   cpy_str = self_str;
   EXPECT_EQ(3, cpy_str.Size());
   EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(std::string("rel/from/assign"), cpy_str.Join());
+  EXPECT_EQ("rel/from/assign", cpy_str.Join());
 }
 
 
@@ -200,23 +200,22 @@ TEST(PathTest, AppendAndJoin) {
   EXPECT_EQ("../node1/node5", ph4.Join());
 }
 
-
 TEST(PathTest, Invalid) {
-  Path rooted("/usr/local");
+  Path absolute("/usr/local");
   Path current("./usr/local");
   Path relative("usr/local");
 
   Path test;
 
-  test = rooted;
+  test = absolute;
   test.Append("../..");
   EXPECT_EQ("/", test.Join());
 
-  test = rooted;
+  test = absolute;
   test.Append("../../..");
   EXPECT_EQ("/", test.Join());
 
-  test = rooted;
+  test = absolute;
   test.Append("../../../foo");
   EXPECT_EQ("/foo", test.Join());
 
@@ -259,3 +258,14 @@ TEST(PathTest, Range) {
   EXPECT_EQ("absolute", p.Range(2, 3));
 }
 
+TEST(PathTest, PrependRelative) {
+  Path p("foo/bar");
+  p.Prepend("prefix");
+  EXPECT_EQ("prefix/foo/bar", p.Join());
+}
+
+TEST(PathTest, PrependAbsolute) {
+  Path p("/foo/bar");
+  p.Prepend("/prefix");
+  EXPECT_EQ("/prefix/foo/bar", p.Join());
+}
