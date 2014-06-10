@@ -6,6 +6,7 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/stringprintf.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -108,6 +110,77 @@ void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
       filtered.push_back((*tasks)[i]);
   }
   tasks->swap(filtered);
+}
+
+// Finds a task that matches |app_id| and |action_id| from |task_list|.
+// Returns a mutable iterator to the handler if found. Returns task_list->end()
+// if not found.
+std::vector<FullTaskDescriptor>::iterator
+FindTaskForAppIdAndActionId(
+    std::vector<FullTaskDescriptor>* task_list,
+    const std::string& app_id,
+    const std::string& action_id) {
+  DCHECK(task_list);
+
+  std::vector<FullTaskDescriptor>::iterator iter = task_list->begin();
+  while (iter != task_list->end() &&
+         !(iter->task_descriptor().app_id == app_id &&
+           iter->task_descriptor().action_id == action_id)) {
+    ++iter;
+  }
+  return iter;
+}
+
+void ChooseSuitableGalleryHandler(std::vector<FullTaskDescriptor>* task_list) {
+  const bool disable_new_gallery =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kFileManagerEnableNewGallery) == "false";
+  std::vector<FullTaskDescriptor>::iterator it = task_list->begin();
+  while (it != task_list->end()) {
+    if (disable_new_gallery) {
+      if (it->task_descriptor().app_id == kGalleryAppId)
+        it = task_list->erase(it);
+      else
+        ++it;
+    } else {
+      if (it->task_descriptor().app_id == kFileManagerAppId &&
+          (it->task_descriptor().action_id == "gallery" ||
+           it->task_descriptor().action_id == "gallery-video")) {
+        it = task_list->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+}
+
+// Chooses a suitable video handeler and removes other internal video hander.
+// Both "watch" and "gallery-video" actions are applicable which means that the
+// selection is all videos. Showing them both is confusing, so we only keep
+// the one that makes more sense ("watch" for single selection, "gallery"
+// for multiple selection).
+void ChooseSuitableVideoHandler(
+    const std::vector<GURL>& file_urls,
+    std::vector<FullTaskDescriptor>* task_list) {
+  std::vector<FullTaskDescriptor>::iterator video_player_iter =
+      FindTaskForAppIdAndActionId(task_list, kVideoPlayerAppId, "video");
+  std::vector<FullTaskDescriptor>::iterator gallery_video_iter;
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kFileManagerEnableNewGallery) == "false") {
+    gallery_video_iter = FindTaskForAppIdAndActionId(
+        task_list, kFileManagerAppId, "gallery-video");
+  } else {
+    gallery_video_iter =
+        FindTaskForAppIdAndActionId(task_list, kGalleryAppId, "open");
+  }
+
+  if (video_player_iter != task_list->end() &&
+      gallery_video_iter != task_list->end()) {
+    if (file_urls.size() == 1)
+      task_list->erase(gallery_video_iter);
+    else
+      task_list->erase(video_player_iter);
+  }
 }
 
 }  // namespace
@@ -470,6 +543,9 @@ void FindAllTypesOfTasks(
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(path_mime_set))
     KeepOnlyFileManagerInternalTasks(result_list);
+
+  ChooseSuitableGalleryHandler(result_list);
+  ChooseSuitableVideoHandler(file_urls, result_list);
 
   ChooseAndSetDefaultTask(*profile->GetPrefs(), path_mime_set, result_list);
 }

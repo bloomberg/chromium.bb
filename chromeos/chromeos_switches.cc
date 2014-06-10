@@ -122,6 +122,10 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 const char kEnterpriseEnrollmentSkipRobotAuth[] =
     "enterprise-enrollment-skip-robot-auth";
 
+// Enables the new gallery in the Files.app.
+const char kFileManagerEnableNewGallery[] =
+    "file-manager-enable-new-gallery";
+
 // Enables the new audio player in the Files.app.
 const char kFileManagerEnableNewAudioPlayer[] =
     "file-manager-enable-new-audio-player";

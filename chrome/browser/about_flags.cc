@@ -435,6 +435,14 @@ const Experiment::Choice kEnableFileManagerMTPChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     chromeos::switches::kEnableFileManagerMTP, "false" }
 };
+
+const Experiment::Choice kEnableFileManagerNewGalleryChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    chromeos::switches::kFileManagerEnableNewGallery, "true"},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    chromeos::switches::kFileManagerEnableNewGallery, "false"}
+};
 #endif
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -1012,6 +1020,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_AUDIO_PLAYER_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableNewAudioPlayer)
+  },
+  {
+    "enable-new-gallery",
+    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_GALLERY_NAME,
+    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_GALLERY_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kEnableFileManagerNewGalleryChoices)
   },
   {
     "disable-quickoffice-component-app",

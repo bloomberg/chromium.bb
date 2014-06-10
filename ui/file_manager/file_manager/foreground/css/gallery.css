@@ -1,0 +1,1381 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  -webkit-user-select: none;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-size: 84%;
+  margin: 0;
+}
+
+.gallery,
+.gallery .content {
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* Common background for both mosaic and slide mode. */
+.gallery .content {
+  background-color: black;
+}
+
+/* Close button */
+
+/* We actually want (left,top) to be (0,0) but for some weird reason
+   this triggers :hover style on page reload which is ugly. */
+.gallery > .back-button {
+  cursor: pointer;
+  left: 1px;
+  position: absolute;
+  top: 1px;
+  z-index: 200;
+}
+
+/* The close icon is in a nested div so that its opacity can be manipulated
+   independently from its parent (which can be dimmed when the crop frame
+   overlaps it) */
+.gallery > .back-button div {
+  background-image: -webkit-image-set(
+    url('../images/gallery/back_to_files.png') 1x,
+    url('../images/gallery/2x/back_to_files.png') 2x);
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 40px;
+  opacity: 0;
+  width: 64px;
+}
+
+.gallery[tools] > .back-button div {
+  opacity: 0.5;
+}
+
+.gallery[tools] > .back-button div:hover {
+  opacity: 1;
+}
+
+/* Image container and canvas elements */
+
+.gallery .image-container {
+  cursor: none;   /* Only visible when the toolbar is active */
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+.gallery[tools] .image-container[cursor='default'] {
+  cursor: default;
+}
+
+.gallery[tools] .image-container[cursor='move'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_move.png') 1x,
+    url('../images/gallery/2x/cursor_move.png') 2x) 15 15, auto;
+}
+
+.gallery[tools] .image-container[cursor='crop'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_crop.png') 1x,
+    url('../images/gallery/2x/cursor_crop.png') 2x) 15 15, auto;
+}
+
+.gallery[tools] .image-container[cursor='n-resize'],
+.gallery[tools] .image-container[cursor='s-resize'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_updown.png') 1x,
+    url('../images/gallery/2x/cursor_updown.png') 2x) 15 15, auto;
+}
+
+.gallery[tools] .image-container[cursor='e-resize'],
+.gallery[tools] .image-container[cursor='w-resize'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_leftright.png') 1x,
+    url('../images/gallery/2x/cursor_leftright.png') 2x) 15 15, auto;
+}
+
+.gallery[tools] .image-container[cursor='nw-resize'],
+.gallery[tools] .image-container[cursor='se-resize'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_nwse.png') 1x,
+    url('../images/gallery/2x/cursor_nwse.png') 2x) 15 15, auto;
+}
+
+.gallery[tools] .image-container[cursor='ne-resize'],
+.gallery[tools] .image-container[cursor='sw-resize'] {
+  cursor: -webkit-image-set(
+    url('../images/gallery/cursor_swne.png') 1x,
+    url('../images/gallery/2x/cursor_swne.png') 2x) 15 15, auto;
+}
+
+.gallery .image-container > .image {
+  pointer-events: none;
+  position: absolute;
+  /* Duration and timing function are set in Javascript. */
+  transition-property: -webkit-transform, opacity;
+}
+
+.gallery .image-container > .image[fade] {
+  opacity: 0;
+}
+
+/* Full resolution image is invisible unless printing. */
+.gallery .image-container > canvas.fullres {
+  display: none;
+}
+
+@media print {
+  /* Do not print anything but the image content. */
+  .gallery > :not(.content) {
+    display: none !important;
+  }
+
+  /* Center the printed image. */
+  .gallery .image-container {
+    -webkit-box-align: center;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: center;
+    display: -webkit-box;
+  }
+
+  /* Do not print the screen resolution image. */
+  .gallery .image-container > canvas.image {
+    display: none !important;
+  }
+
+  /* Print the full resolution image instead. */
+  .gallery .image-container > canvas.fullres {
+    display: block !important;
+    max-height: 100%;
+    max-width: 100%;
+  }
+
+  /* Print video at the center of the page */
+  .gallery .image-container > video.image {
+    position: auto !important;
+  }
+}
+
+/* Toolbar */
+
+.gallery > .header,
+.gallery > .toolbar {
+  -webkit-box-align: stretch;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  background-color: rgba(30, 30, 30, 0.8);
+  display: -webkit-box;
+  left: 0;
+  opacity: 0;
+  padding: 0 10px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  transition: opacity 300ms ease;
+}
+
+.gallery > .header {
+  -webkit-box-align: center;
+  -webkit-box-pack: end;
+  border-bottom: 1px solid rgba(50, 50, 50, 0.8);
+  display: -webkit-box;
+  height: 45px;
+  top: 0;
+}
+
+.gallery > .toolbar {
+  border-top: 1px solid rgba(50, 50, 50, 0.8);
+  bottom: 0;
+  height: 55px;
+  min-width: 800px;
+}
+
+.gallery[tools]:not([slideshow]) > .header,
+.gallery[tools]:not([slideshow]) > .toolbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hide immediately when entering the slideshow. */
+.gallery[tools][slideshow] > .toolbar {
+  transition-duration: 0;
+}
+
+.gallery[tools][locked] > .toolbar {
+  pointer-events: none;
+}
+
+.gallery .arrow-box {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+}
+
+.gallery .arrow-box .arrow {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gallery .arrow-box .arrow-spacer {
+  -webkit-box-flex: 1;
+  pointer-events: none;
+}
+
+.gallery[tools] .arrow-box[active] .arrow {
+  cursor: pointer;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The arrow icons are in nested divs so that their opacity can be manipulated
+ * independently from their parent (which can be dimmed when the crop frame
+ * overlaps it) */
+.gallery .arrow div {
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 193px;
+  opacity: 0;
+  width: 105px;
+}
+
+.gallery[tools] .arrow-box[active] .arrow div {
+  opacity: 0.25;
+}
+
+.gallery[tools] .arrow-box[active] .arrow div:hover {
+  opacity: 1;
+}
+
+.gallery .arrow.left div {
+  background-image: -webkit-image-set(
+    url('../images/gallery/arrow_left.png') 1x,
+    url('../images/gallery/2x/arrow_left.png') 2x);
+}
+
+.gallery .arrow.right div {
+  background-image: -webkit-image-set(
+    url('../images/gallery/arrow_right.png') 1x,
+    url('../images/gallery/2x/arrow_right.png') 2x);
+}
+
+/* Special behavior on mouse drag.
+  Redundant .gallery attributes included to make the rules more specific */
+
+/* Everything but the image container should become mouse-transparent */
+.gallery[tools][editing][mousedrag] * {
+  pointer-events: none;
+}
+
+.gallery[tools][editing][mousedrag] .image-container {
+  pointer-events: auto;
+}
+
+/* The editor marks elements with 'dimmed' attribute to get them out of the way
+   of the crop frame */
+.gallery[tools][editing] [dimmed],
+.gallery[tools][editing] [dimmed] * {
+  pointer-events: none;
+}
+
+.gallery[tools][editing] [dimmed] {
+  opacity: 0.2;
+}
+
+/* Filename */
+
+.gallery .filename-spacer {
+  position: relative;
+  width: 270px;
+}
+
+.gallery .filename-spacer > * {
+  background-color: transparent;
+  overflow: hidden;
+  position: absolute;
+  transition: visibility 0 linear 180ms, all 180ms linear;
+  width: 260px;
+}
+
+.gallery .filename-spacer * {
+  color: white;
+}
+
+.gallery .filename-spacer .namebox {
+  height: 22px;
+  top: 15px;
+}
+
+.gallery[editing] .filename-spacer .namebox {
+  height: 21px;
+  top: 5px;
+}
+
+
+.gallery .filename-spacer .namebox {
+  background-color: transparent;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  font-size: 120%;
+  outline: none;
+  overflow: hidden;
+  padding: 0 3px;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery .filename-spacer .namebox[disabled] {
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.gallery .filename-spacer .namebox:not([disabled]):not(:focus):hover {
+  background-color: rgba(48, 48, 48, 1.0);
+}
+
+.gallery .filename-spacer .namebox:focus {
+  background-color: white;
+  color: black;
+  cursor: text;
+}
+
+.gallery .filename-spacer .options {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  display: -webkit-box;
+  opacity: 0;
+  top: 50px;
+  visibility: hidden;
+}
+
+.gallery[editing] .filename-spacer .options {
+  opacity: 1;
+  top: 28px;
+  visibility: visible;
+}
+
+.gallery .filename-spacer .saved,
+.gallery .filename-spacer .overwrite-original {
+  cursor: inherit;
+  font-size: 90%;
+  margin-left: 3px;
+  margin-right: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all linear 120ms;
+}
+
+.gallery[editing] .filename-spacer .saved {
+  color: white;
+  opacity: 0.5;
+}
+
+.gallery[editing] .filename-spacer .overwrite-original,
+.gallery[editing] .filename-spacer .overwrite-original > * {
+  cursor: pointer;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.gallery[editing] .options[saved] .overwrite-original {
+  opacity: 0.5;
+}
+
+.gallery[editing] .options[saved] .overwrite-original,
+.gallery[editing] .options[saved] .overwrite-original > * {
+  cursor: default;
+  pointer-events: none;
+}
+
+.gallery .filename-spacer .overwrite-original input {
+  margin-bottom: -2px;
+  margin-right: 6px;
+}
+
+.gallery .filename-spacer .saved[highlighted] {
+  -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0);
+  opacity: 1;
+}
+
+/* Bubble */
+.gallery .toolbar .bubble {
+  bottom: 65px;
+  font-size: 85%;
+  left: 50px;
+  position: absolute;
+  width: 220px;
+}
+
+.gallery:not([editing]) .toolbar .bubble {
+  display: none;
+}
+
+/* Toolbar buttons */
+
+.gallery .button-spacer {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+/* Thumbnails */
+
+.gallery .ribbon-spacer {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  left: 280px;
+  position: absolute;
+  right: 280px;
+}
+
+.gallery .toolbar .ribbon {
+  -webkit-box-flex: 0;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  display: -webkit-box;
+  height: 100%;
+  overflow: hidden;
+  transition: opacity 180ms linear, visibility 0 linear;
+  z-index: 0;
+}
+
+.gallery[editing] .toolbar .ribbon {
+  opacity: 0;
+  transition-delay: 0, 180ms;
+  visibility: hidden;
+}
+
+.gallery .ribbon-image {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  border: 2px solid rgba(255, 255, 255, 0);  /* transparent white */
+  cursor: pointer;
+  display: -webkit-box;
+  height: 47px;
+  margin: 2px;
+  overflow: hidden;
+  transition: all 180ms linear;
+  width: 47px;
+}
+
+.ribbon-image[vanishing='smooth'] {
+  border-left-width: 0;
+  border-right-width: 0;
+  margin-left: 0;
+  margin-right: 0;
+  width: 0;
+}
+
+.gallery .ribbon-image[selected] {
+  border: 2px solid rgba(255, 233, 168, 1);
+}
+
+.gallery .toolbar .ribbon.fade-left {
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0,
+                                                rgba(0, 0, 0, 1) 40px);
+}
+
+.gallery .toolbar .ribbon.fade-right {
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0,
+                                               rgba(0, 0, 0, 1) 40px);
+}
+
+.gallery .toolbar .ribbon.fade-left.fade-right {
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0,
+                                                rgba(0, 0, 0, 1) 40px,
+                                                rgba(0, 0, 0, 1) 230px,
+                                                rgba(0, 0, 0, 0) 100%);
+}
+
+.gallery .image-wrapper {
+  background-size: 45px 45px;
+  border: 1px solid rgba(0, 0, 0, 0);  /* transparent black */
+  height: 45px;
+  overflow: hidden;
+  position: relative;
+  width: 45px;
+}
+
+.gallery .image-wrapper > img {
+  position: absolute;
+}
+
+.gallery .image-wrapper > img:not(.cached) {
+  -webkit-animation: fadeIn 500ms ease-in;
+}
+
+/* Editor buttons */
+
+.gallery .edit-bar-spacer {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  left: 280px;
+  opacity: 0;
+  position: absolute;
+  right: 280px;
+  transition: opacity 180ms linear, visibility 0 linear 180ms;
+  visibility: hidden;
+}
+
+.gallery .toolbar .edit-main {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  color: white;
+  display: -webkit-box;
+  height: 55px;
+  overflow: visible;
+}
+
+.gallery[editing] .edit-bar-spacer {
+  opacity: 1.0;
+  pointer-events: auto;
+  transition-delay: 100ms, 100ms;
+  visibility: visible;
+}
+
+.gallery .header button,
+.gallery .toolbar button,
+.gallery .header button[disabled],
+.gallery .toolbar button[disabled] {
+  -webkit-box-align: center;
+  -webkit-box-flex: 0;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  background-color: rgba(0, 0, 0, 0);
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  box-shadow: none;
+  color: white;
+  cursor: pointer;
+  display: -webkit-box;
+  opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
+  padding: 1px;  /* Instead of a border. */
+  position: relative;
+  z-index: 10;
+}
+
+.gallery .header button,
+.gallery .toolbar button {
+  height: 40px;
+  margin: 6px 0;
+  min-width: 40px;  /* Reset. */
+  width: 40px;
+}
+
+/* By default, labels are hidden. */
+.gallery > .toolbar button span {
+  display: none;
+}
+
+/* Show labels if there is enough space. */
+@media (min-width: 1180px) {
+
+  .gallery .edit-main button,
+  .gallery .edit-main button[disabled] {
+    background-position: 5px center;
+    max-width: 60px;
+    min-width: 0;  /* Reset. */
+    padding: 0 10px 0 35px;
+    width: auto;
+  }
+
+  .gallery > .toolbar button span {
+    display: inline;
+  }
+
+}
+
+.gallery .header button:hover,
+.gallery .toolbar button:hover {
+  background-color: rgba(31, 31, 31, 1);
+  color: white;
+}
+
+.gallery .header button:active,
+.gallery .toolbar button:active,
+.gallery .header button[pressed],
+.gallery .toolbar button[pressed],
+.gallery .header button[pressed]:hover,
+.gallery .toolbar button[pressed]:hover {
+  background-color: rgba(240, 240, 240, 1);
+  color: black;
+}
+
+.gallery > .toolbar button.autofix {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_autofix.png') 1x,
+    url('../images/gallery/2x/icon_autofix.png') 2x);
+}
+
+.gallery > .toolbar button.autofix:active,
+.gallery > .toolbar button.autofix[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_autofix_selected.png') 1x,
+    url('../images/gallery/2x/icon_autofix_selected.png') 2x);
+}
+
+.gallery > .toolbar button.crop {
+  background-image:  -webkit-image-set(
+    url('../images/gallery/icon_crop.png') 1x,
+    url('../images/gallery/2x/icon_crop.png') 2x);
+}
+
+.gallery > .toolbar button.crop:active,
+.gallery > .toolbar button.crop[pressed] {
+  background-image:  -webkit-image-set(
+    url('../images/gallery/icon_crop_selected.png') 1x,
+    url('../images/gallery/2x/icon_crop_selected.png') 2x);
+}
+
+.gallery > .toolbar button.exposure {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_brightness.png') 1x,
+    url('../images/gallery/2x/icon_brightness.png') 2x);
+}
+
+.gallery > .toolbar button.exposure:active,
+.gallery > .toolbar button.exposure[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_brightness_selected.png') 1x,
+    url('../images/gallery/2x/icon_brightness_selected.png') 2x);
+}
+
+.gallery > .toolbar button.rotate_right {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_rotate.png') 1x,
+    url('../images/gallery/2x/icon_rotate.png') 2x);
+}
+
+.gallery > .toolbar button.rotate_right:active,
+.gallery > .toolbar button.rotate_right[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_rotate_selected.png') 1x,
+    url('../images/gallery/2x/icon_rotate_selected.png') 2x);
+}
+
+.gallery > .toolbar button.rotate_left {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_rotate_left.png') 1x,
+    url('../images/gallery/2x/icon_rotate_left.png') 2x);
+}
+
+.gallery > .toolbar button.rotate_left:active,
+.gallery > .toolbar button.rotate_left[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_rotate_left_selected.png') 1x,
+    url('../images/gallery/2x/icon_rotate_left_selected.png') 2x);
+}
+
+.gallery > .toolbar button.undo {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_undo.png') 1x,
+    url('../images/gallery/2x/icon_undo.png') 2x);
+}
+
+.gallery > .toolbar button.undo:active,
+.gallery > .toolbar button.undo[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_undo_selected.png') 1x,
+    url('../images/gallery/2x/icon_undo_selected.png') 2x);
+}
+
+.gallery > .toolbar button.redo {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_redo.png') 1x,
+    url('../images/gallery/2x/icon_redo.png') 2x);
+  position: absolute;  /* Exclude from center-packing*/
+}
+
+.gallery > .toolbar button.redo:active,
+.gallery > .toolbar button.redo[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_redo_selected.png') 1x,
+    url('../images/gallery/2x/icon_redo_selected.png') 2x);
+}
+
+.gallery > .toolbar button[disabled],
+.gallery[tools][locked] > .toolbar button {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.gallery > .toolbar button[hidden] {
+  display: none;
+}
+
+.gallery[mode='slide'] > .toolbar > button.mode {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_mosaic.png') 1x,
+    url('../images/gallery/2x/icon_mosaic.png') 2x);
+}
+
+.gallery[mode='slide'] > .toolbar > button.mode:active {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_mosaic_selected.png') 1x,
+    url('../images/gallery/2x/icon_mosaic_selected.png') 2x);
+}
+
+.gallery[mode='mosaic'] > .toolbar > button.mode {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_1up.png') 1x,
+    url('../images/gallery/2x/icon_1up.png') 2x);
+}
+
+.gallery[mode='mosaic'] > .toolbar > button.mode:active {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_1up_selected.png') 1x,
+    url('../images/gallery/2x/icon_1up_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.slideshow {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_slideshow.png') 1x,
+    url('../images/gallery/2x/icon_slideshow.png') 2x);
+}
+
+.gallery > .toolbar > button.slideshow:active,
+.gallery > .toolbar > button.slideshow[pressed] {
+    background-image: -webkit-image-set(
+        url('../images/gallery/icon_slideshow_selected.png') 1x,
+        url('../images/gallery/2x/icon_slideshow_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.delete {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_delete.png') 1x,
+    url('../images/gallery/2x/icon_delete.png') 2x);
+}
+
+.gallery > .toolbar > button.delete:active {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_delete_selected.png') 1x,
+    url('../images/gallery/2x/icon_delete_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.edit {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_edit.png') 1x,
+    url('../images/gallery/2x/icon_edit.png') 2x);
+}
+
+.gallery > .toolbar > button.edit:active,
+.gallery > .toolbar > button.edit[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_edit_selected.png') 1x,
+    url('../images/gallery/2x/icon_edit_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.print {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_print.png') 1x,
+    url('../images/gallery/2x/icon_print.png') 2x);
+}
+
+.gallery > .toolbar > button.print:active,
+.gallery > .toolbar > button.print[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_print_selected.png') 1x,
+    url('../images/gallery/2x/icon_print_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.share {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_share.png') 1x,
+    url('../images/gallery/2x/icon_share.png') 2x);
+}
+
+.gallery > .toolbar > button.share:active,
+.gallery > .toolbar > button.share[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_share_selected.png') 1x,
+    url('../images/gallery/2x/icon_share_selected.png') 2x);
+}
+
+.gallery > .toolbar > button.share[disabled] {
+  display: none;
+}
+
+/* Secondary toolbar (mode-specific tools) */
+
+.gallery .edit-modal {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  bottom: 80px;
+  display: -webkit-box;
+  height: 40px;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.gallery .edit-modal-wrapper[hidden] {
+  display: none;
+}
+
+.gallery .edit-modal-wrapper {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  display: -webkit-box;
+  padding-right: 5px;
+  pointer-events: auto;
+}
+
+.gallery .edit-modal .label {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  background-position: 20px center;
+  background-repeat: no-repeat;
+  display: -webkit-box;
+  height: 20px;
+  padding-left: 50px;
+  padding-right: 10px;
+}
+
+.gallery .edit-modal .label.brightness {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_brightness.png') 1x,
+    url('../images/gallery/2x/icon_brightness.png') 2x);
+}
+
+.gallery .edit-modal .label.contrast {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_contrast.png') 1x,
+    url('../images/gallery/2x/icon_contrast.png') 2x);
+  height: 24px;
+  margin-left: 15px;
+}
+
+.gallery .edit-modal .range {
+  -webkit-appearance: none !important;
+  height: 3px;
+  margin-right: 10px;
+  margin-top: 1px;
+}
+
+.gallery .edit-modal .range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+    url('../images/gallery/slider_thumb.png') 1x,
+    url('../images/gallery/2x/slider_thumb.png') 2x);
+  height: 29px;
+  width: 16px;
+}
+
+/* Crop frame */
+
+.gallery .crop-overlay {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  pointer-events: none;
+  position: absolute;
+}
+
+.gallery .crop-overlay .shadow {
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+.gallery .crop-overlay .middle-box {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.gallery .crop-frame {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  position: relative;
+}
+
+.gallery .crop-frame div {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.75);
+  position: absolute;
+}
+
+.gallery .crop-frame .horizontal {
+  height: 1px;
+  left: 7px;
+  right: 7px;
+}
+
+.gallery .crop-frame .horizontal.top {
+  top: 0;
+}
+
+.gallery .crop-frame .horizontal.bottom {
+  bottom: 0;
+}
+
+.gallery .crop-frame .vertical {
+  bottom: 7px;
+  top: 7px;
+  width: 1px;
+}
+
+.gallery .crop-frame .vertical.left {
+  left: 0;
+}
+
+.gallery .crop-frame .vertical.right {
+  right: 0;
+}
+
+.gallery .crop-frame .corner {
+  border-radius: 6px;
+  height: 13px;
+  width: 13px;
+}
+
+.gallery .crop-frame .corner.left {
+  left: -6px;
+}
+
+.gallery .crop-frame .corner.right {
+  right: -6px;
+}
+
+.gallery .crop-frame .corner.top {
+  top: -6px;
+}
+
+.gallery .crop-frame .corner.bottom {
+  bottom: -6px;
+}
+
+/* Prompt/notification panel */
+
+.gallery .prompt-wrapper {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.gallery .prompt-wrapper[pos=top] {
+  -webkit-box-align: start;
+}
+
+.gallery .prompt-wrapper[pos=center] {
+  -webkit-box-align: center;
+}
+
+.gallery .prompt-wrapper[pos=center] .back-button {
+  display: none;
+}
+
+.gallery .prompt-wrapper > div.dimmable {
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.gallery .prompt {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  display: -webkit-box;
+  font-size: 120%;
+  height: 40px;
+  opacity: 0;
+  padding: 0 20px;
+  position: relative;
+  top: 5px;
+  transition: all 180ms ease;
+}
+
+.gallery .prompt[state='fadein'] {
+  opacity: 1;
+  top: 0;
+}
+
+.gallery .prompt[state='fadeout'] {
+  opacity: 0;
+  top: 0;
+}
+
+.gallery .prompt-wrapper[pos=top] .prompt {
+  padding-right: 10px;
+}
+
+.gallery .prompt .back-button {
+  background-image: -webkit-image-set(
+    url('../images/gallery/butterbar_close_button.png') 1x,
+    url('../images/gallery/2x/butterbar_close_button.png') 2x);
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 16px;
+  margin-left: 16px;
+  opacity: 0.65;
+  pointer-events: auto;
+  width: 16px;
+}
+
+.gallery .prompt .back-button:hover {
+  background-color: rgba(81, 81, 81, 1);
+  opacity: 1.0;
+}
+
+.gallery .share-menu {
+  -webkit-box-align: stretch;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: start;
+  background-color: white;
+  border: 1px solid #7f7f7f;
+  border-radius: 1px;
+  bottom: 60px;
+  display: -webkit-box;
+  opacity: 1.0;
+  padding: 8px;
+  position: absolute;
+  right: 10px;
+  transition: opacity 500ms ease-in-out;
+}
+
+.gallery .share-menu .bubble-point {
+  background-image: -webkit-image-set(
+    url('../images/gallery/bubble_point.png') 1x,
+    url('../images/gallery/2x/bubble_point.png') 2x);
+  background-position: center top;
+  background-repeat: no-repeat;
+  bottom: -8px;
+  height: 8px;
+  padding: 0;
+  position: absolute;
+  right: 20px;
+  width: 20px;
+}
+
+.gallery .share-menu[hidden] {
+  bottom: -100%;  /* Offscreen so that 'dimmed' attribute does not show it. */
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gallery .share-menu > .item {
+  background-color: rgba(0, 0, 0, 0);
+  background-position: 5px center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding: 5px;
+  padding-left: 26px;
+}
+
+.gallery .share-menu > .item:hover {
+  background-color: rgba(240, 240, 240, 1);
+}
+
+.gallery .share-menu > div > img {
+  display: block;
+  margin-right: 5px;
+}
+
+/* Load spinner and error banner. */
+
+.gallery .spinner {
+  background-image: url(../images/common/spinner.svg);
+  background-size: 100%;
+  height: 16px;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  position: absolute;
+  top: 50%;
+  width: 16px;
+}
+
+.gallery:not([spinner]) .spinner {
+  display: none;
+}
+
+.gallery .error-banner {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  background-color: rgba(24, 24, 24, 1);
+  background-image: -webkit-image-set(
+    url('../images/media/error.png') 1x,
+    url('../images/media/2x/error.png') 2x);
+  background-position: 25px center;
+  background-repeat: no-repeat;
+  color: white;
+  display: -webkit-box;
+  height: 54px;
+  padding-left: 70px;
+  padding-right: 35px;
+}
+
+.gallery:not([error]) .error-banner {
+  display: none;
+}
+
+/* Video playback support. */
+
+.gallery video {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+.gallery .video-controls-spacer {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  bottom: 60px;  /* Just above the toolbar */
+  display: -webkit-box;
+  height: 30px;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.gallery[video] .video-controls-spacer {
+  /* Animate opacity on 'tools' attribute toggle. */
+  /* Change opacity immediately on 'video' attribute change. */
+  transition: opacity 280ms ease;
+}
+
+.gallery[video][tools] .video-controls-spacer {
+  opacity: 1;
+}
+
+.gallery .video-controls {
+  display: none;
+  max-width: 800px;
+}
+
+.gallery[video] .video-controls {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+.gallery[video] > .toolbar .edit-main {
+  display: none;
+}
+
+/* Mosaic view. */
+.mosaic {
+  bottom: 55px;  /* Toolbar height. */
+  left: 0;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  /* transition-duration is set in Javascript. */
+  transition-property: -webkit-transform;
+  transition-timing-function: linear;
+}
+
+.mosaic::-webkit-scrollbar {
+  background: transparent;
+}
+
+.mosaic::-webkit-scrollbar-thumb {
+  background: rgb(31, 31, 31);
+}
+
+.gallery:not([mode='mosaic']) .mosaic::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.mosaic-tile {
+  position: absolute;
+  /* Tile's zoom factor is animated on hover. We apply the transform to
+  the entire tile so that the image outline is included into the animation. */
+  transition: -webkit-transform 150ms linear;
+}
+
+/* Mosaic tile's opacity is controlled by |visible| attribute which changes
+   separately from .gallery[mode] */
+.mosaic:not([visible]) .mosaic-tile .img-border {
+  opacity: 0;
+}
+
+/* Animate tile's opacity, except for the selected tile which should show/hide
+  instantly (this looks better when zooming to/from the slide mode). */
+.mosaic-tile:not([selected]) .img-border {
+  transition: opacity 350ms linear;
+}
+
+/* Must be in sync with mosaic_mode.js.
+  Mosaic.Layout.SPACING should be equal to
+    top + bottom + border-top-width + border-bottom-width AND
+    left + right + border-left-width + border-right-width */
+.mosaic-tile .img-border {
+  border: 1px solid black;  /* Space between the outline and the image. */
+  bottom: 4px;
+  left: 4px;
+  outline: 2px solid transparent;
+  overflow: hidden;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+}
+
+/* Selected and hover state are only visible when zoom transition is over. */
+.mosaic[visible='normal'] .mosaic-tile[selected] .img-border {
+  outline-color: rgb(51, 153, 255);
+}
+
+.mosaic[visible='normal'].hover-visible .mosaic-tile:hover {
+  -webkit-transform: scale(1.05);
+  z-index: 50;
+}
+
+.mosaic[visible='normal'].hover-visible
+    .mosaic-tile:hover:not([selected]) .img-border {
+  outline-color: rgb(182, 212, 252);
+}
+
+.mosaic-tile .img-wrapper {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.mosaic-tile .img-wrapper[generic-thumbnail],
+.mosaic-tile .img-wrapper.animated:not([generic-thumbnail])
+    canvas:not(.cached) {
+  -webkit-animation: fadeIn ease-in 1;
+  -webkit-animation-duration: 500ms;
+  -webkit-animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* In order to do mode animated transitions smoothly we keep both mosaic and
+  image-container but transparent. */
+.gallery:not([mode='mosaic']) .mosaic,
+.gallery:not([mode='slide']) .image-container {
+  pointer-events: none;
+}
+
+.gallery:not([mode='slide']) .ribbon,
+.gallery:not([mode='slide']) .arrow-box {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Temporary. Remove this along with the delete confirmation dialog
+  when Undo delete is implemented. */
+.cr-dialog-shield {
+  background-color: black;
+}
+
+/* Slideshow controls */
+
+.slideshow-toolbar {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: none;
+  left: 0;
+  padding-bottom: 6px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.gallery[tools][slideshow] .slideshow-toolbar {
+  display: -webkit-box;
+}
+
+.slideshow-toolbar > div {
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 68px;
+  opacity: 0.5;
+  pointer-events: auto;
+  width: 68px;
+}
+
+.slideshow-toolbar > div:hover {
+  opacity: 1;
+}
+
+.slideshow-toolbar > .slideshow-play {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-play.png') 1x,
+    url('../images/gallery/2x/slideshow-play.png') 2x);
+  margin-right: -2px;
+}
+
+.gallery[slideshow='playing'] .slideshow-toolbar > .slideshow-play {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-pause.png') 1x,
+    url('../images/gallery/2x/slideshow-pause.png') 2x);
+}
+
+.slideshow-toolbar > .slideshow-end {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-end.png') 1x,
+    url('../images/gallery/2x/slideshow-end.png') 2x);
+  margin-left: -2px;
+}
+
+.gallery > .header > button {
+  -webkit-margin-start: 10px;
+  cursor: default;
+  height: 32px;
+  min-width: 32px;
+  width: 32px;
+}
+
+.gallery > .header > .minimize-button {
+  background: -webkit-image-set(
+    url('chrome://resources/images/apps/topbar_button_minimize.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_minimize.png') 2x)
+    center;
+}
+
+.gallery > .header > .maximize-button {
+  background: -webkit-image-set(
+    url('chrome://resources/images/apps/topbar_button_maximize.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_maximize.png') 2x)
+    center;
+}
+
+.gallery > .header > .close-button {
+  background: -webkit-image-set(
+    url('chrome://resources/images/apps/topbar_button_close.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_close.png') 2x)
+    center;
+}
