@@ -100,15 +100,11 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
 }
 
 TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
-
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher->GetType());
 
@@ -141,13 +137,10 @@ TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
 }
 
 TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
                                            &dispatcher1));
 
   // Map and write something.
@@ -177,14 +170,11 @@ TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
 }
 
 TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher1));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher1));
 
   MojoDuplicateBufferHandleOptions options[] = {
     {sizeof(MojoDuplicateBufferHandleOptions),
@@ -204,14 +194,11 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
 }
 
 TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher1));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher1));
 
   // Invalid |struct_size|.
   {
@@ -239,35 +226,27 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
 }
 
 TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
-
   // Size too big.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            SharedBufferDispatcher::Create(validated_options,
-                                           std::numeric_limits<uint64_t>::max(),
-                                           &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                std::numeric_limits<uint64_t>::max(), &dispatcher));
   EXPECT_FALSE(dispatcher);
 
   // Zero size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            SharedBufferDispatcher::Create(validated_options, 0, &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 0, &dispatcher));
   EXPECT_FALSE(dispatcher);
 }
 
 TEST(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
-  MojoCreateSharedBufferOptions validated_options = {};
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
-
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher));
 
   scoped_ptr<RawSharedBufferMapping> mapping;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,

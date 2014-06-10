@@ -20,19 +20,21 @@ namespace mojo {
 namespace system {
 
 // static
+const MojoCreateDataPipeOptions DataPipe::kDefaultCreateOptions = {
+  static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
+  MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+  1u,
+  static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
+};
+
+// static
 MojoResult DataPipe::ValidateCreateOptions(
     const MojoCreateDataPipeOptions* in_options,
     MojoCreateDataPipeOptions* out_options) {
   const MojoCreateDataPipeOptionsFlags kKnownFlags =
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD;
-  static const MojoCreateDataPipeOptions kDefaultOptions = {
-    static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-    1u,
-    static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)
-  };
 
-  *out_options = kDefaultOptions;
+  *out_options = kDefaultCreateOptions;
   if (!in_options)
     return MOJO_RESULT_OK;
 

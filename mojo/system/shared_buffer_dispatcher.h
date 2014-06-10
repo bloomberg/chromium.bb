@@ -17,6 +17,11 @@ namespace system {
 // have anything that's waitable. I want to add a "transferrable" wait flag.
 class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
  public:
+  // The default options to use for |MojoCreateSharedBuffer()|. (Real uses
+  // should obtain this via |ValidateCreateOptions()| with a null |in_options|;
+  // this is exposed directly for testing convenience.)
+  static const MojoCreateSharedBufferOptions kDefaultCreateOptions;
+
   // Validates and/or sets default options for |MojoCreateSharedBufferOptions|.
   // If non-null, |in_options| must point to a struct of at least
   // |in_options->struct_size| bytes. |out_options| must point to a (current)
