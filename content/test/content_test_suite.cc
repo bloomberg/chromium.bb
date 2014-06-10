@@ -6,13 +6,15 @@
 
 #include "base/base_paths.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -53,23 +55,18 @@ namespace content {
 
 ContentTestSuite::ContentTestSuite(int argc, char** argv)
     : ContentTestSuiteBase(argc, argv) {
-#if defined(USE_AURA)
-  base::FilePath pak_file;
-  PathService::Get(base::DIR_MODULE, &pak_file);
-  pak_file = pak_file.AppendASCII("ui_test.pak");
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
-#endif
 }
 
 ContentTestSuite::~ContentTestSuite() {
-#if defined(USE_AURA)
-  ui::ResourceBundle::CleanupSharedInstance();
-#endif
 }
 
 void ContentTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
+
+#if defined(OS_WIN)
+  gfx::InitDeviceScaleFactor(1.0f);
 #endif
 
   ContentTestSuiteBase::Initialize();
