@@ -5,7 +5,7 @@ MAIN AUTHOR
     project(s)
   - has put his heart and soul into liblouis
   - has written the bulk of the code
-  - was the former project maintainer
+  - maintainer emeritus
 
 CODE CONTRIBUTORS
 
@@ -37,6 +37,7 @@ Considerable coding was done by:
 Patches were provided by:
 
   Jeremy Roman <jbroman@google.com>
+  Milan Zamazal <pdm@brailcom.org>
   Peter Nilsson Lundblad <plundblad@google.com>
   Timothy Lee <timothy.ty.lee@gmail.com>
   Vincent Untz
@@ -145,17 +146,24 @@ TABLE CONTRIBUTORS
   <Aliminator83@gmail.com>
   <eric@integra-belgium.com>
 
+HYPHEN AUTHORS
+
+Code was borrowed from the hyphenation library Hyphen, which is based
+on Libhnj.
+
+  Raph Levien <raph@acm.org>
+  ALTLinux, Moscow <www.alt-linux.org>
+  Peter Novodvorsky <nidd@alt-linux.org>
+  László Németh <nemeth@numbertext.org>
+
+Hyphenation dictionaries were copied from OpenOffice.org.
+
 OTHER CONTRIBUTORS
 
 These are contributions not in the form of code or tables.
 
   John Gardner <john.gardner@viewplus.com> from ViewPlus Technologies, Inc. <www.viewplus.com>
 
-Bug reports by:
-
-  Corand van Strien <CVS@optelec.nl>
-  Milan Zamazal <pdm@brailcom.org>
-
-[FIXME] unknown contribution by:
+Unknown contribution:
 
   Alastair Irving
