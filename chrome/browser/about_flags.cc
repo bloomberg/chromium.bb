@@ -1691,7 +1691,7 @@ const Experiment kExperiments[] = {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
   },
   {
