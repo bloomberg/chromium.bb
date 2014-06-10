@@ -1686,7 +1686,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
         updateWidgetPositions();
         if (RenderView* renderView = this->renderView()) {
             renderView->layer()->updateLayerPositionsAfterDocumentScroll();
-            renderView->layer()->setNeedsToUpdateAncestorDependentProperties();
+            renderView->layer()->setNeedsCompositingInputsUpdate();
             renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
         }
     }

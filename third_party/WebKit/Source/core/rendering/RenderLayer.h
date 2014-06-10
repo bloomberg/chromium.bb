@@ -439,9 +439,9 @@ public:
     CompositingReasons styleDeterminedCompositingReasons() const { return m_styleDeterminedCompositingReasons; }
     void setStyleDeterminedCompositingReasons(CompositingReasons reasons) { ASSERT(reasons == (reasons & CompositingReasonComboAllStyleDeterminedReasons)); m_styleDeterminedCompositingReasons = reasons; }
 
-    class AncestorDependentProperties {
+    class CompositingInputs {
     public:
-        AncestorDependentProperties()
+        CompositingInputs()
             : opacityAncestor(0)
             , transformAncestor(0)
             , filterAncestor(0)
@@ -455,17 +455,17 @@ public:
         unsigned isUnclippedDescendant : 1;
     };
 
-    void setNeedsToUpdateAncestorDependentProperties();
-    bool childNeedsToUpdateAncestorDependantProperties() const { return m_childNeedsToUpdateAncestorDependantProperties; }
-    bool needsToUpdateAncestorDependentProperties() const { return m_needsToUpdateAncestorDependentProperties; }
+    void setNeedsCompositingInputsUpdate();
+    bool childNeedsCompositingInputsUpdate() const { return m_childNeedsCompositingInputsUpdate; }
+    bool needsCompositingInputsUpdate() const { return m_needsCompositingInputsUpdate; }
 
-    void updateAncestorDependentProperties(const AncestorDependentProperties&);
-    void clearChildNeedsToUpdateAncestorDependantProperties();
+    void updateCompositingInputs(const CompositingInputs&);
+    void clearChildNeedsCompositingInputsUpdate();
 
-    const AncestorDependentProperties& ancestorDependentProperties() const { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
+    const CompositingInputs& compositingInputs() const { ASSERT(!m_needsCompositingInputsUpdate); return m_compositingInputs; }
 
     // FIXME: Remove this function.
-    bool potentiallyStaleIsUnclippedDescendant() const { return m_ancestorDependentProperties.isUnclippedDescendant; }
+    bool potentiallyStaleIsUnclippedDescendant() const { return m_compositingInputs.isUnclippedDescendant; }
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
@@ -647,8 +647,8 @@ private:
     const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
 
     unsigned m_hasFilterInfo : 1;
-    unsigned m_needsToUpdateAncestorDependentProperties : 1;
-    unsigned m_childNeedsToUpdateAncestorDependantProperties : 1;
+    unsigned m_needsCompositingInputsUpdate : 1;
+    unsigned m_childNeedsCompositingInputsUpdate : 1;
 
     // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
     unsigned m_hasCompositingDescendant : 1;
@@ -703,7 +703,7 @@ private:
     // Used for invalidating this layer's contents on the squashing GraphicsLayer.
     IntSize m_offsetFromSquashingLayerOrigin;
 
-    AncestorDependentProperties m_ancestorDependentProperties;
+    CompositingInputs m_compositingInputs;
 
     IntRect m_blockSelectionGapsBounds;
 

@@ -45,6 +45,7 @@
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/rendering/compositing/CompositingInputsUpdater.h"
 #include "core/rendering/compositing/CompositingLayerAssigner.h"
 #include "core/rendering/compositing/CompositingRequirementsUpdater.h"
 #include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
@@ -265,7 +266,7 @@ void RenderLayerCompositor::didLayout()
     // FIXME: Rather than marking the entire RenderView as dirty, we should
     // track which RenderLayers moved during layout and only dirty those
     // specific RenderLayers.
-    rootRenderLayer()->setNeedsToUpdateAncestorDependentProperties();
+    rootRenderLayer()->setNeedsCompositingInputsUpdate();
     setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
@@ -341,10 +342,10 @@ void RenderLayerCompositor::updateIfNeeded()
     if (updateType >= CompositingUpdateAfterCompositingInputChange) {
         bool layersChanged = false;
         {
-            TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
-            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot);
+            TRACE_EVENT0("blink_rendering", "CompositingInputsUpdater::update");
+            CompositingInputsUpdater(updateRoot).update(updateRoot);
 #if ASSERT_ENABLED
-            CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
+            CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(updateRoot);
 #endif
         }
 

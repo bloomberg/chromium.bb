@@ -122,8 +122,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_containsDirtyOverlayScrollbars(false)
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
-    , m_needsToUpdateAncestorDependentProperties(true)
-    , m_childNeedsToUpdateAncestorDependantProperties(true)
+    , m_needsCompositingInputsUpdate(true)
+    , m_childNeedsCompositingInputsUpdate(true)
     , m_hasCompositingDescendant(false)
     , m_hasNonCompositedChild(false)
     , m_shouldIsolateCompositedDescendants(false)
@@ -731,7 +731,7 @@ void RenderLayer::setHasVisibleContent()
     m_hasVisibleContent = true;
     m_visibleContentStatusDirty = false;
 
-    setNeedsToUpdateAncestorDependentProperties();
+    setNeedsCompositingInputsUpdate();
     repainter().computeRepaintRects();
 
     if (parent())
@@ -862,7 +862,7 @@ void RenderLayer::updateDescendantDependentFlags()
         // FIXME: We can remove this code once we remove the recursive tree
         // walk inside updateGraphicsLayerGeometry.
         if (hasVisibleContent() != previouslyHasVisibleContent)
-            setNeedsToUpdateAncestorDependentProperties();
+            setNeedsCompositingInputsUpdate();
     }
 }
 
@@ -1056,7 +1056,7 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 
 LayoutPoint RenderLayer::computeOffsetFromTransformedAncestor() const
 {
-    const AncestorDependentProperties& properties = ancestorDependentProperties();
+    const CompositingInputs& properties = compositingInputs();
 
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
     // FIXME: add a test that checks flipped writing mode and ApplyContainerFlip are correct.
@@ -1159,24 +1159,24 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
     return 0;
 }
 
-void RenderLayer::setNeedsToUpdateAncestorDependentProperties()
+void RenderLayer::setNeedsCompositingInputsUpdate()
 {
-    m_needsToUpdateAncestorDependentProperties = true;
+    m_needsCompositingInputsUpdate = true;
 
-    for (RenderLayer* current = this; current && !current->m_childNeedsToUpdateAncestorDependantProperties; current = current->parent())
-        current->m_childNeedsToUpdateAncestorDependantProperties = true;
+    for (RenderLayer* current = this; current && !current->m_childNeedsCompositingInputsUpdate; current = current->parent())
+        current->m_childNeedsCompositingInputsUpdate = true;
 }
 
-void RenderLayer::updateAncestorDependentProperties(const AncestorDependentProperties& ancestorDependentProperties)
+void RenderLayer::updateCompositingInputs(const CompositingInputs& compositingInputs)
 {
-    m_ancestorDependentProperties = ancestorDependentProperties;
-    m_needsToUpdateAncestorDependentProperties = false;
+    m_compositingInputs = compositingInputs;
+    m_needsCompositingInputsUpdate = false;
 }
 
-void RenderLayer::clearChildNeedsToUpdateAncestorDependantProperties()
+void RenderLayer::clearChildNeedsCompositingInputsUpdate()
 {
-    ASSERT(!m_needsToUpdateAncestorDependentProperties);
-    m_childNeedsToUpdateAncestorDependantProperties = false;
+    ASSERT(!m_needsCompositingInputsUpdate);
+    m_childNeedsCompositingInputsUpdate = false;
 }
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
@@ -1374,7 +1374,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
 
     child->m_parent = this;
 
-    setNeedsToUpdateAncestorDependentProperties();
+    setNeedsCompositingInputsUpdate();
 
     if (child->stackingNode()->isNormalFlowOnly())
         m_stackingNode->dirtyNormalFlowList();
@@ -3714,7 +3714,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     compositor()->updateStyleDeterminedCompositingReasons(this);
 
-    setNeedsToUpdateAncestorDependentProperties();
+    setNeedsCompositingInputsUpdate();
 
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756

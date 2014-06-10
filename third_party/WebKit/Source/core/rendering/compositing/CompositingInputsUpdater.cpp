@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/compositing/CompositingPropertyUpdater.h"
+#include "core/rendering/compositing/CompositingInputsUpdater.h"
 
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
@@ -11,20 +11,20 @@
 
 namespace WebCore {
 
-CompositingPropertyUpdater::CompositingPropertyUpdater(RenderLayer* rootRenderLayer)
+CompositingInputsUpdater::CompositingInputsUpdater(RenderLayer* rootRenderLayer)
     : m_geometryMap(UseTransforms)
     , m_rootRenderLayer(rootRenderLayer)
 {
     rootRenderLayer->updateDescendantDependentFlags();
 }
 
-CompositingPropertyUpdater::~CompositingPropertyUpdater()
+CompositingInputsUpdater::~CompositingInputsUpdater()
 {
 }
 
-void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
+void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
-    if (!layer->childNeedsToUpdateAncestorDependantProperties() && updateType != ForceUpdate)
+    if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
         return;
 
     m_geometryMap.pushMappingsToAncestor(layer, layer->parent());
@@ -32,14 +32,14 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
     if (layer->hasCompositedLayerMapping())
         info.enclosingCompositedLayer = layer;
 
-    if (layer->needsToUpdateAncestorDependentProperties()) {
+    if (layer->needsCompositingInputsUpdate()) {
         if (info.enclosingCompositedLayer)
             info.enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
         updateType = ForceUpdate;
     }
 
     if (updateType == ForceUpdate) {
-        RenderLayer::AncestorDependentProperties properties;
+        RenderLayer::CompositingInputs properties;
 
         if (!layer->isRootLayer()) {
             properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->boundingBoxForCompositingOverlapTest()));
@@ -53,9 +53,9 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
             properties.clippedAbsoluteBoundingBox.intersect(clipRect);
 
             const RenderLayer* parent = layer->parent();
-            properties.opacityAncestor = parent->isTransparent() ? parent : parent->ancestorDependentProperties().opacityAncestor;
-            properties.transformAncestor = parent->hasTransform() ? parent : parent->ancestorDependentProperties().transformAncestor;
-            properties.filterAncestor = parent->hasFilter() ? parent : parent->ancestorDependentProperties().filterAncestor;
+            properties.opacityAncestor = parent->isTransparent() ? parent : parent->compositingInputs().opacityAncestor;
+            properties.transformAncestor = parent->hasTransform() ? parent : parent->compositingInputs().transformAncestor;
+            properties.filterAncestor = parent->hasFilter() ? parent : parent->compositingInputs().filterAncestor;
 
             if (layer->renderer()->isOutOfFlowPositioned() && info.ancestorScrollingLayer && !layer->subtreeIsInvisible()) {
                 const RenderObject* container = layer->renderer()->containingBlock();
@@ -64,29 +64,29 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
             }
         }
 
-        layer->updateAncestorDependentProperties(properties);
+        layer->updateCompositingInputs(properties);
     }
 
     if (layer->scrollsOverflow())
         info.ancestorScrollingLayer = layer;
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        updateAncestorDependentProperties(child, updateType, info);
+        update(child, updateType, info);
 
     m_geometryMap.popMappingsToAncestor(layer->parent());
 
-    layer->clearChildNeedsToUpdateAncestorDependantProperties();
+    layer->clearChildNeedsCompositingInputsUpdate();
 }
 
 #if !ASSERT_DISABLED
 
-void CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(RenderLayer* layer)
+void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer* layer)
 {
-    ASSERT(!layer->childNeedsToUpdateAncestorDependantProperties());
-    ASSERT(!layer->needsToUpdateAncestorDependentProperties());
+    ASSERT(!layer->childNeedsCompositingInputsUpdate());
+    ASSERT(!layer->needsCompositingInputsUpdate());
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(child);
+        assertNeedsCompositingInputsUpdateBitsCleared(child);
 }
 
 #endif

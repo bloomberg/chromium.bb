@@ -28,9 +28,7 @@
 
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/compositing/CompositingPropertyUpdater.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
-#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 

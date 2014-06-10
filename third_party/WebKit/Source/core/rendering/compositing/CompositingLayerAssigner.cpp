@@ -68,7 +68,7 @@ void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping
 
 bool CompositingLayerAssigner::squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const CompositingLayerAssigner::SquashingState& squashingState)
 {
-    IntRect bounds = candidate->ancestorDependentProperties().clippedAbsoluteBoundingBox;
+    IntRect bounds = candidate->compositingInputs().clippedAbsoluteBoundingBox;
     IntRect newBoundingRect = squashingState.boundingRect;
     newBoundingRect.unite(bounds);
     const uint64_t newBoundingRectArea = newBoundingRect.size().area();
@@ -130,7 +130,7 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return false;
 
-    // FIXME: this is not efficient, since it walks up the tree . We should store these values on the AncestorDependentPropertiesCache.
+    // FIXME: this is not efficient, since it walks up the tree . We should store these values on the CompositingInputsCache.
     ASSERT(squashingState.hasMostRecentMapping);
     const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
 
@@ -146,16 +146,16 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
     if (layer->scrollsWithRespectTo(&squashingLayer))
         return false;
 
-    const RenderLayer::AncestorDependentProperties& ancestorDependentProperties = layer->ancestorDependentProperties();
-    const RenderLayer::AncestorDependentProperties& squashingLayerAncestorDependentProperties = squashingLayer.ancestorDependentProperties();
+    const RenderLayer::CompositingInputs& compositingInputs = layer->compositingInputs();
+    const RenderLayer::CompositingInputs& squashingLayerCompositingInputs = squashingLayer.compositingInputs();
 
-    if (ancestorDependentProperties.opacityAncestor != squashingLayerAncestorDependentProperties.opacityAncestor)
+    if (compositingInputs.opacityAncestor != squashingLayerCompositingInputs.opacityAncestor)
         return false;
 
-    if (ancestorDependentProperties.transformAncestor != squashingLayerAncestorDependentProperties.transformAncestor)
+    if (compositingInputs.transformAncestor != squashingLayerCompositingInputs.transformAncestor)
         return false;
 
-    if (ancestorDependentProperties.filterAncestor != squashingLayerAncestorDependentProperties.filterAncestor)
+    if (compositingInputs.filterAncestor != squashingLayerCompositingInputs.filterAncestor)
         return false;
 
     return true;
@@ -244,7 +244,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
         const bool layerIsSquashed = compositedLayerUpdate == PutInSquashingLayer || (compositedLayerUpdate == NoCompositingStateChange && layer->groupedMapping());
         if (layerIsSquashed) {
             squashingState.nextSquashedLayerIndex++;
-            IntRect layerBounds = layer->ancestorDependentProperties().clippedAbsoluteBoundingBox;
+            IntRect layerBounds = layer->compositingInputs().clippedAbsoluteBoundingBox;
             squashingState.totalAreaOfSquashedRects += layerBounds.size().area();
             squashingState.boundingRect.unite(layerBounds);
         }

@@ -1725,7 +1725,7 @@ void Element::setNeedsCompositingUpdate()
         return;
     if (!renderer->hasLayer())
         return;
-    renderer->layer()->setNeedsToUpdateAncestorDependentProperties();
+    renderer->layer()->setNeedsCompositingInputsUpdate();
     document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 

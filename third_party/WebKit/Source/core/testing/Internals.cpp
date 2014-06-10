@@ -1695,7 +1695,7 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
     if (!layer->compositor()->acceleratedCompositingForOverflowScrollEnabled())
         return false;
 
-    return layer->ancestorDependentProperties().isUnclippedDescendant;
+    return layer->compositingInputs().isUnclippedDescendant;
 }
 
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& exceptionState) const

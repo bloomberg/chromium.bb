@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositingPropertyUpdater_h
-#define CompositingPropertyUpdater_h
+#ifndef CompositingInputsUpdater_h
+#define CompositingInputsUpdater_h
 
 #include "core/rendering/RenderGeometryMap.h"
 
@@ -11,7 +11,7 @@ namespace WebCore {
 
 class RenderLayer;
 
-class CompositingPropertyUpdater {
+class CompositingInputsUpdater {
 private:
     struct AncestorInfo {
         AncestorInfo()
@@ -25,18 +25,18 @@ private:
     };
 
 public:
-    explicit CompositingPropertyUpdater(RenderLayer* rootRenderLayer);
-    ~CompositingPropertyUpdater();
+    explicit CompositingInputsUpdater(RenderLayer* rootRenderLayer);
+    ~CompositingInputsUpdater();
 
     enum UpdateType {
         DoNotForceUpdate,
         ForceUpdate,
     };
 
-    void updateAncestorDependentProperties(RenderLayer*, UpdateType = DoNotForceUpdate, AncestorInfo = AncestorInfo());
+    void update(RenderLayer*, UpdateType = DoNotForceUpdate, AncestorInfo = AncestorInfo());
 
 #if !ASSERT_DISABLED
-    static void assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(RenderLayer*);
+    static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
 #endif
 
 private:
@@ -46,4 +46,4 @@ private:
 
 } // namespace WebCore
 
-#endif // CompositingPropertyUpdater_h
+#endif // CompositingInputsUpdater_h
