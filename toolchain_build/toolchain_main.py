@@ -134,15 +134,14 @@ class PackageBuilder(object):
     """Main entry point."""
     pynacl.file_tools.MakeDirectoryIfAbsent(self._options.source)
     pynacl.file_tools.MakeDirectoryIfAbsent(self._options.output)
-    with open(os.path.join(
-      self._options.output, 'toolchain_build.log'), 'w') as log_file:
-      pynacl.log_tools.SetupLogging(
-          verbose=self._options.verbose,
-          file_handle=log_file,
-          quiet=self._options.quiet,
-          no_annotator=self._options.no_annotator)
-      self.BuildAll()
-      self.OutputPackagesInformation()
+
+    pynacl.log_tools.SetupLogging(
+        verbose=self._options.verbose,
+        log_file=self._options.log_file,
+        quiet=self._options.quiet,
+        no_annotator=self._options.no_annotator)
+    self.BuildAll()
+    self.OutputPackagesInformation()
 
   def GetOutputDir(self, package, use_subdir):
     # The output dir of source packages is in the source directory, and can be
@@ -429,6 +428,9 @@ class PackageBuilder(object):
     parser.add_option('--install', dest='install',
                       help='After building, copy contents of build packages' +
                       ' to the specified directory')
+    parser.add_option('--log-file', dest='log_file',
+                      default=None, action='store',
+                      help='Log all logging into a log file.')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
       print >>sys.stderr, (

@@ -10,22 +10,80 @@ import os
 import subprocess
 import sys
 
+ROOT_LOGGER = logging.getLogger()
+ANNOTATOR_LOGGER = None
+CONSOLE_LOGGER = None
 
-_log_fh = None
-_console_log_level = None
-_no_annotator = False
+
+class StreamFlushHandler(logging.StreamHandler):
+  """Simple stream handler which always flushes the output before outputting."""
+  def __init__(self, stream=None, direct_write=False, flush_stream=sys.stdout):
+    logging.StreamHandler.__init__(self, stream=stream)
+    self._direct_write = direct_write
+    self._flush_stream = flush_stream
+
+  def emit(self, record):
+    if self._flush_stream:
+      self._flush_stream.flush()
+
+    if self._direct_write:
+      msg = self.format(record)
+      self.stream.write(msg)
+    else:
+      logging.StreamHandler.emit(self, record)
 
 
-def SetupLogging(verbose, file_handle=None, quiet=False, no_annotator=False):
+class AnnotatorFormatter(logging.Formatter):
+  """Formatter which can convert annotator messages to regular messages."""
+  def __init__(self, enable_annotator):
+    logging.Formatter.__init__(self)
+    self._enable_annotator = enable_annotator
+
+  def format(self, record):
+    message = record.getMessage()
+    if not self._enable_annotator:
+      message = message.replace('@', '%')
+
+    return message
+
+
+class LevelBasedFormatter(logging.Formatter):
+  """Formatter that can output different formats based on the level."""
+  def __init__(self, fmt=None, datefmt=None,
+               debug_fmt=None, info_fmt=None, warn_fmt=None, error_fmt=None):
+    logging.Formatter.__init__(self, fmt=fmt, datefmt=datefmt)
+    self._debug_fmt = debug_fmt
+    self._info_fmt = info_fmt
+    self._warn_fmt = warn_fmt
+    self._error_fmt = error_fmt
+
+  def format(self, record):
+    log_format = None
+    if record.levelno <= logging.DEBUG:
+      log_format = self._debug_fmt
+    elif record.levelno <= logging.INFO:
+      log_format = self._info_fmt
+    elif record.levelno <= logging.WARN:
+      log_format = self._warn_fmt
+    else:
+      log_format = self._error_fmt
+
+    if log_format:
+      record.message = record.getMessage()
+      return log_format % record.__dict__
+
+    return logging.Formatter.format(self, record)
+
+
+def SetupLogging(verbose, log_file=None, quiet=False, no_annotator=False):
   """Set up python logging.
 
   Args:
     verbose: If True, log to stderr at DEBUG level and write subprocess output
              to stdout. Otherwise log to stderr at INFO level and do not print
              subprocess output unless there is an error.
-    file_handle: If not None, must be a file-like object. All log output will
-                 be written at DEBUG level, and all subprocess output will be
-                 written, regardless of whether there are errors.
+    log_file: If not None, will record the root, annotator, and console logger
+              into a single file. File will be overwritten if it already exists.
     quiet: If True, log to stderr at WARNING level only. Only valid if verbose
            is False.
     no_annotator: If True, only emit scrubbed annotator tags to the console.
@@ -33,37 +91,60 @@ def SetupLogging(verbose, file_handle=None, quiet=False, no_annotator=False):
   """
   # Since one of our handlers always wants debug, set the global level to debug.
   logging.getLogger().setLevel(logging.DEBUG)
-  console_handler = logging.StreamHandler()
+  console_handler = logging.StreamHandler(stream=sys.stdout)
   console_handler.setFormatter(
       logging.Formatter(fmt='%(levelname)s: %(message)s'))
-  global _no_annotator
-  _no_annotator = no_annotator
-  global _console_log_level
+
   if verbose:
-    _console_log_level = logging.DEBUG
+    log_level = logging.DEBUG
   elif quiet:
-    _console_log_level = logging.WARN
+    log_level = logging.WARN
   else:
-    _console_log_level = logging.INFO
-  console_handler.setLevel(_console_log_level)
+    log_level = logging.INFO
+  console_handler.setLevel(log_level)
   logging.getLogger().addHandler(console_handler)
 
-  if file_handle:
-    global _log_fh
-    file_handler = logging.StreamHandler(file_handle)
-    file_handler.setLevel(logging.DEBUG)
+  SetupAnnotatorLogger(not no_annotator)
+  SetupConsoleLogger(log_level)
+  SetupFileLogHandler(log_file)
+
+
+def SetupAnnotatorLogger(enable_annotator):
+  global ANNOTATOR_LOGGER
+  ANNOTATOR_LOGGER = logging.getLogger('annotator')
+  ANNOTATOR_LOGGER.propagate = False
+  ANNOTATOR_LOGGER.setLevel(logging.INFO)
+
+  annotator_formatter = AnnotatorFormatter(enable_annotator)
+  annotator_handler = StreamFlushHandler(stream=sys.stderr)
+  annotator_handler.setFormatter(annotator_formatter)
+  ANNOTATOR_LOGGER.addHandler(annotator_handler)
+
+
+def SetupConsoleLogger(log_level):
+  global CONSOLE_LOGGER
+  CONSOLE_LOGGER = logging.getLogger('console')
+  CONSOLE_LOGGER.propagate = False
+  CONSOLE_LOGGER.setLevel(logging.DEBUG)
+
+  formatter = logging.Formatter(fmt='%(message)s')
+  console_handler = StreamFlushHandler(stream=sys.stdout,
+                                       direct_write=True,
+                                       flush_stream=None)
+  console_handler.setFormatter(formatter)
+  console_handler.setLevel(log_level)
+  CONSOLE_LOGGER.addHandler(console_handler)
+
+
+def SetupFileLogHandler(log_file=None):
+  if log_file:
+    file_handler = logging.FileHandler(log_file, mode='w')
     file_handler.setFormatter(
         logging.Formatter(fmt='%(levelname)s: %(message)s'))
-    logging.getLogger().addHandler(file_handler)
-    _log_fh = file_handle
-
-
-def WriteToLog(text):
-  """Write text to the current log file, and possibly stdout."""
-  if _console_log_level == logging.DEBUG:
-    sys.stdout.write(text)
-  if _log_fh:
-    _log_fh.write(text)
+    file_handler.setLevel(logging.DEBUG)
+    ROOT_LOGGER.addHandler(file_handler)
+    ANNOTATOR_LOGGER.addHandler(file_handler)
+    CONSOLE_LOGGER.addHandler(file_handler)
 
 
 def WriteAnnotatorLine(text):
@@ -76,17 +157,10 @@ def WriteAnnotatorLine(text):
 
   Leading and trailing newlines are added.
   """
-  if _console_log_level in [logging.DEBUG, logging.INFO]:
-    sys.stdout.flush()
-    if _no_annotator:
-      sys.stderr.write('\n' + text.replace('@', '%') + '\n')
-    else:
-      sys.stderr.write('\n' + text + '\n')
-  if _log_fh:
-    _log_fh.write(text)
+  ANNOTATOR_LOGGER.info(text)
 
 
-def CheckCall(command, stdout=None, **kwargs):
+def CheckCall(command, stdout=None, logger=None, **kwargs):
   """Modulate command output level based on logging level.
 
   If a logging file handle is set, always emit all output to it.
@@ -97,6 +171,9 @@ def CheckCall(command, stdout=None, **kwargs):
     stdout (optional): File name to redirect stdout to.
     **kwargs: Keyword args.
   """
+  if logger is None:
+    logger = CONSOLE_LOGGER
+
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
   logging.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
 
@@ -117,7 +194,7 @@ def CheckCall(command, stdout=None, **kwargs):
   # Capture the output as it comes and emit it immediately.
   line = output.readline()
   while line:
-    WriteToLog(line)
+    logger.info(line)
     line = output.readline()
 
   if p.wait() != 0:
@@ -128,7 +205,7 @@ def CheckCall(command, stdout=None, **kwargs):
   sys.stdout.flush()
 
 
-def CheckOutput(command, **kwargs):
+def CheckOutput(command, logger=None, **kwargs):
   """Capture stdout from a command, while logging its stderr.
 
   This is essentially subprocess.check_output, but stderr is
@@ -137,6 +214,9 @@ def CheckOutput(command, **kwargs):
     command: Command to run.
     **kwargs: Keyword args.
   """
+  if logger is None:
+    logger = CONSOLE_LOGGER
+
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
   logging.info('Running: subprocess.check_output(%r, cwd=%r)' % (command, cwd))
 
@@ -151,7 +231,8 @@ def CheckOutput(command, **kwargs):
   # worth the hair.
   stdout_text, stderr_text = p.communicate()
 
-  WriteToLog(stderr_text)
+  if stderr_text:
+    logger.info(stderr_text)
 
   if p.wait() != 0:
     raise subprocess.CalledProcessError(cmd=command, returncode=p.returncode)
