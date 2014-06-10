@@ -107,7 +107,7 @@ private:
     RenderObject* m_renderer;
 };
 
-class Node : public TreeSharedWillBeRefCountedGarbageCollected<Node>, public EventTarget, public ScriptWrappable {
+class Node : public EventTarget, public ScriptWrappable, public TreeSharedWillBeRefCountedGarbageCollected<Node> {
     friend class Document;
     friend class TreeScope;
     friend class TreeScopeAdopter;
