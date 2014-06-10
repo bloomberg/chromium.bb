@@ -396,9 +396,6 @@ public:
     // The frame's document finished the initial non-empty layout of a page.
     virtual void didFirstVisuallyNonEmptyLayout(WebLocalFrame*) { }
 
-    // The size of the content area changed.
-    virtual void didChangeContentsSize(WebLocalFrame*, const WebSize&) { }
-
     // The main frame scrolled.
     virtual void didChangeScrollOffset(WebLocalFrame*) { }
 

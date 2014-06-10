@@ -531,8 +531,6 @@ void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& siz
 
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     webframe->didChangeContentsSize(size);
-    if (webframe->client())
-        webframe->client()->didChangeContentsSize(webframe, size);
 
     frame->loader().restoreScrollPositionAndViewState();
 }
