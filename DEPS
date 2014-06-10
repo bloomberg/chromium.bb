@@ -43,7 +43,7 @@ vars = {
   "libphonenumber_revision": "621",
   "libvpx_revision": "269083",
   "lss_revision": "26",
-  "sfntly_revision": "228",
+  "sfntly_revision": "239",
   "lighttpd_revision": "33737",
   "skia_revision": "2d2a68c51b4a71bd60760510bf2b2e58bc9890b2",
   # Three lines of non-changing comments so that
