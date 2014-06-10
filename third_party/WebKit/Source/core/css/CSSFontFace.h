@@ -65,9 +65,6 @@ public:
 
     bool isValid() const { return !m_sources.isEmpty(); }
 
-    // FIXME: Should not be exposed (used by tentative CORS fallback code).
-    CSSFontSelector* fontSelector() const;
-
     void addSource(PassOwnPtrWillBeRawPtr<CSSFontFaceSource>);
 
     void didBeginLoad();

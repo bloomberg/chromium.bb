@@ -50,7 +50,6 @@ FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
     , m_loadInitiated(false)
     , m_exceedsFontLoadWaitLimit(false)
-    , m_corsFailed(false)
     , m_fontLoadWaitLimitTimer(this, &FontResource::fontLoadWaitLimitCallback)
 {
 }
@@ -185,16 +184,9 @@ void FontResource::allClientsRemoved()
 void FontResource::checkNotify()
 {
     m_fontLoadWaitLimitTimer.stop();
-
     ResourceClientWalker<FontResourceClient> w(m_clients);
-    // FIXME: Remove this CORS fallback once we have enough UMA to make a decision.
-    if (m_corsFailed) {
-        while (FontResourceClient* client = w.next())
-            client->corsFailed(this);
-    } else {
-        while (FontResourceClient* c = w.next())
-            c->fontLoaded(this);
-    }
+    while (FontResourceClient* c = w.next())
+        c->fontLoaded(this);
 }
 
 }

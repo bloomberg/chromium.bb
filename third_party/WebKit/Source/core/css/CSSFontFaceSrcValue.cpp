@@ -92,14 +92,12 @@ bool CSSFontFaceSrcValue::shouldSetCrossOriginAccessControl(const KURL& resource
 {
     if (resource.isLocalFile() || resource.protocolIsData())
         return false;
-    if (m_fetched && m_fetched->isCORSFailed())
-        return false;
     return !securityOrigin->canRequest(resource);
 }
 
 FontResource* CSSFontFaceSrcValue::fetch(Document* document)
 {
-    if (!m_fetched || m_fetched->isCORSFailed()) {
+    if (!m_fetched) {
         FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
         SecurityOrigin* securityOrigin = document->securityOrigin();
         if (shouldSetCrossOriginAccessControl(request.url(), securityOrigin)) {

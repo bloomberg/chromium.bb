@@ -220,14 +220,6 @@ static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetc
     return ResourceRequest::TargetIsSubresource;
 }
 
-static void reportFontResourceCORSFailed(Resource* resource, const KURL& url, LocalFrame* frame)
-{
-    FontResource* fontResource = toFontResource(resource);
-    fontResource->setCORSFailed();
-    if (frame && frame->document())
-        frame->document()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "Blink is considering rejecting non spec-compliant cross-origin web font requests: " + url.string() + ". Please use Access-Control-Allow-Origin to make these requests spec-compliant.");
-}
-
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     : m_document(nullptr)
     , m_documentLoader(documentLoader)
@@ -613,12 +605,6 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
 
     String errorDescription;
     if (!resource->passesAccessControlCheck(sourceOrigin, errorDescription)) {
-        // FIXME: Remove later, http://crbug.com/286681
-        if (resource->type() == Resource::Font) {
-            reportFontResourceCORSFailed(resource, url, frame());
-            return false;
-        }
-
         if (frame() && frame()->document()) {
             String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
             frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
@@ -1373,12 +1359,6 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
 
         String errorMessage;
         if (!CrossOriginAccessControl::handleRedirect(resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
-            // FIXME: Remove later, http://crbug.com/286681
-            if (resource->type() == Resource::Font) {
-                reportFontResourceCORSFailed(resource, request.url(), frame());
-                return false;
-            }
-
             if (frame() && frame()->document())
                 frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorMessage);
             return false;

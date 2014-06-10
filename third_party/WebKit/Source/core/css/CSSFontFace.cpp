@@ -50,11 +50,6 @@ void CSSFontFace::setSegmentedFontFace(CSSSegmentedFontFace* segmentedFontFace)
     m_segmentedFontFace = segmentedFontFace;
 }
 
-CSSFontSelector* CSSFontFace::fontSelector() const
-{
-    return m_segmentedFontFace ? m_segmentedFontFace->fontSelector() : 0;
-}
-
 void CSSFontFace::didBeginLoad()
 {
     if (loadStatus() == FontFace::Unloaded)

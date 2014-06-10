@@ -5,11 +5,9 @@
 #include "config.h"
 #include "core/css/RemoteFontFaceSource.h"
 
-#include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSCustomFontData.h"
 #include "core/css/CSSFontFace.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/fetch/ResourceFetcher.h"
+#include "core/css/FontLoader.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -83,28 +81,6 @@ void RemoteFontFaceSource::fontLoadWaitLimitExceeded(FontResource*)
         m_face->fontLoadWaitLimitExceeded(this);
 
     m_histograms.recordFallbackTime(m_font.get());
-}
-
-void RemoteFontFaceSource::corsFailed(FontResource*)
-{
-    if (m_face) {
-        m_histograms.corsFailed();
-        Document* document = m_face->fontSelector() ? m_face->fontSelector()->document() : 0;
-        if (document) {
-            FetchRequest request(ResourceRequest(m_font->url()), FetchInitiatorTypeNames::css);
-            ResourcePtr<FontResource> newFontResource = document->fetcher()->fetchFont(request);
-            if (newFontResource) {
-                m_font->removeClient(this);
-                m_font = newFontResource;
-                m_font->addClient(this);
-                m_fontLoader->addFontToBeginLoading(m_font.get());
-                return;
-            } else {
-                pruneTable();
-            }
-        }
-        m_face->fontLoaded(this);
-    }
 }
 
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(const FontDescription& fontDescription)
@@ -190,12 +166,6 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
             : font->response().wasCached() ? Hit
             : Miss;
         blink::Platform::current()->histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
-
-        if (!font->errorOccurred()) {
-            enum { CORSFail, CORSSuccess, CORSEnumMax };
-            int corsValue = m_corsFailed ? CORSFail : CORSSuccess;
-            blink::Platform::current()->histogramEnumeration("WebFont.CORSSuccess", corsValue, CORSEnumMax);
-        }
     }
 }
 
