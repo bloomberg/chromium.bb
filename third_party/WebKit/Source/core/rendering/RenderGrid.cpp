@@ -728,28 +728,24 @@ bool RenderGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection dire
 }
 #endif
 
-void RenderGrid::growGrid(GridTrackSizingDirection direction, size_t maximumPositionIndex)
+void RenderGrid::ensureGridSize(size_t maximumRowIndex, size_t maximumColumnIndex)
 {
-    if (direction == ForColumns) {
-        ASSERT(maximumPositionIndex >= gridColumnCount());
-        for (size_t row = 0; row < gridRowCount(); ++row)
-            m_grid[row].grow(maximumPositionIndex + 1);
-    } else {
-        ASSERT(maximumPositionIndex >= gridRowCount());
-        const size_t oldRowSize = gridRowCount();
-        m_grid.grow(maximumPositionIndex + 1);
+    const size_t oldRowSize = gridRowCount();
+    if (maximumRowIndex >= oldRowSize) {
+        m_grid.grow(maximumRowIndex + 1);
         for (size_t row = oldRowSize; row < gridRowCount(); ++row)
             m_grid[row].grow(gridColumnCount());
+    }
+
+    if (maximumColumnIndex >= gridColumnCount()) {
+        for (size_t row = 0; row < gridRowCount(); ++row)
+            m_grid[row].grow(maximumColumnIndex + 1);
     }
 }
 
 void RenderGrid::insertItemIntoGrid(RenderBox* child, const GridCoordinate& coordinate)
 {
-    // Ensure that the grid is big enough to contain new grid item.
-    if (gridRowCount() <= coordinate.rows.resolvedFinalPosition.toInt())
-        growGrid(ForRows, coordinate.rows.resolvedFinalPosition.toInt());
-    if (gridColumnCount() <= coordinate.columns.resolvedFinalPosition.toInt())
-        growGrid(ForColumns, coordinate.columns.resolvedFinalPosition.toInt());
+    ensureGridSize(coordinate.rows.resolvedFinalPosition.toInt(), coordinate.columns.resolvedFinalPosition.toInt());
 
     for (GridSpan::iterator row = coordinate.rows.begin(); row != coordinate.rows.end(); ++row) {
         for (GridSpan::iterator column = coordinate.columns.begin(); column != coordinate.columns.end(); ++column)
