@@ -1600,7 +1600,7 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     // (preventing the browser from inspecting the renderer process).
     int minidump_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         GetBreakpadClient()->GetAndroidMinidumpDescriptor());
-    if (minidump_fd == base::kInvalidPlatformFileValue) {
+    if (minidump_fd < 0) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {
       EnableNonBrowserCrashDumping(process_type, minidump_fd);

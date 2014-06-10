@@ -57,11 +57,11 @@ class Broker : public PPB_Broker_API, public Resource {
 Broker::Broker(const HostResource& resource)
     : Resource(OBJECT_IS_PROXY, resource),
       called_connect_(false),
-      socket_handle_(base::kInvalidPlatformFileValue) {
+      socket_handle_(base::SyncSocket::kInvalidHandle) {
 }
 
 Broker::~Broker() {
-  socket_handle_ = base::kInvalidPlatformFileValue;
+  socket_handle_ = base::SyncSocket::kInvalidHandle;
 }
 
 PPB_Broker_API* Broker::AsPPB_Broker_API() {
@@ -84,7 +84,7 @@ int32_t Broker::Connect(scoped_refptr<TrackedCallback> connect_callback) {
 }
 
 int32_t Broker::GetHandle(int32_t* handle) {
-  if (socket_handle_ == base::kInvalidPlatformFileValue)
+  if (socket_handle_ == base::SyncSocket::kInvalidHandle)
     return PP_ERROR_FAILED;
   *handle = PlatformFileToInt(socket_handle_);
   return PP_OK;
@@ -93,7 +93,7 @@ int32_t Broker::GetHandle(int32_t* handle) {
 void Broker::ConnectComplete(IPC::PlatformFileForTransit socket_handle,
                              int32_t result) {
   if (result == PP_OK) {
-    DCHECK(socket_handle_ == base::kInvalidPlatformFileValue);
+    DCHECK(socket_handle_ == base::SyncSocket::kInvalidHandle);
     socket_handle_ = IPC::PlatformFileForTransitToPlatformFile(socket_handle);
   } else {
     // The caller may still have given us a handle in the failure case.
@@ -197,12 +197,13 @@ void PPB_Broker_Proxy::ConnectCompleteInHost(int32_t result,
   IPC::PlatformFileForTransit foreign_socket_handle =
       IPC::InvalidPlatformFileForTransit();
   if (result == PP_OK) {
-    int32_t socket_handle = PlatformFileToInt(base::kInvalidPlatformFileValue);
+    int32_t socket_handle = PlatformFileToInt(base::SyncSocket::kInvalidHandle);
     EnterHostFromHostResource<PPB_Broker_API> enter(broker);
     if (enter.succeeded())
       result = enter.object()->GetHandle(&socket_handle);
     DCHECK(result == PP_OK ||
-           socket_handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
+           socket_handle ==
+               PlatformFileToInt(base::SyncSocket::kInvalidHandle));
 
     if (result == PP_OK) {
       foreign_socket_handle =

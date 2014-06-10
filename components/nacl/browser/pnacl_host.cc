@@ -318,7 +318,7 @@ void PnaclHost::OnCacheQueryReturn(
 
 // Callback from temp file creation. |id| is bound from
 // SendCacheQueryAndTempFileRequest, and |file| is the created file.
-// If there was an error, fd is kInvalidPlatformFileValue.
+// If there was an error, file is invalid.
 // (Bound callbacks must re-lookup the TranslationID because the translation
 // could be cancelled before they get called).
 void PnaclHost::OnTempFileReturn(const TranslationID& id,

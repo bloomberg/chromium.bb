@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "ipc/ipc_export.h"
 
@@ -25,7 +24,7 @@ typedef base::FileDescriptor PlatformFileForTransit;
 
 inline PlatformFileForTransit InvalidPlatformFileForTransit() {
 #if defined(OS_WIN)
-  return base::kInvalidPlatformFileValue;
+  return INVALID_HANDLE_VALUE;
 #elif defined(OS_POSIX)
   return base::FileDescriptor();
 #endif
