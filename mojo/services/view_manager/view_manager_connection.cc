@@ -346,6 +346,11 @@ bool ViewManagerConnection::SetViewImpl(Node* node, const ViewId& view_id) {
       this, root_node_manager_,
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID, false);
   node->SetView(view);
+
+  // TODO(sky): this is temporary, need a real focus API.
+  if (view && root_node_manager_->root()->Contains(node))
+    node->window()->Focus();
+
   return true;
 }
 

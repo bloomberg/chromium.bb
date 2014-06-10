@@ -72,6 +72,8 @@ class WindowManager : public Application,
         CreateWindow("mojo:mojo_embedded_app");
       else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
         CreateWindow("mojo:mojo_nesting_app");
+      else if (event->flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+        CreateWindow("mojo:mojo_browser");
     }
   }
 

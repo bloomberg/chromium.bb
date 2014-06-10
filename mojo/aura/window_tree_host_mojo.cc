@@ -115,6 +115,7 @@ gfx::Rect WindowTreeHostMojo::GetBounds() const {
 }
 
 void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
+  window()->SetBounds(gfx::Rect(bounds.size()));
 }
 
 gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {

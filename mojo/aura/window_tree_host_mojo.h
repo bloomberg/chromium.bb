@@ -34,6 +34,10 @@ class WindowTreeHostMojo : public aura::WindowTreeHost, public ui::EventSource {
   // delegate.
   void SetContents(const SkBitmap& contents);
 
+  ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
+    return ui::EventSource::SendEventToProcessor(event);
+  }
+
  private:
   // WindowTreeHost:
   virtual ui::EventSource* GetEventSource() OVERRIDE;

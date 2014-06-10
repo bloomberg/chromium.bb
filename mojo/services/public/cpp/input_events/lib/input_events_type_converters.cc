@@ -41,4 +41,27 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
   return event.Pass();
 }
 
+// static
+scoped_ptr<ui::Event>
+TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
+    const EventPtr& input) {
+  scoped_ptr<ui::Event> ui_event;
+  switch (input->action) {
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+      ui_event.reset(new ui::KeyEvent(
+                         static_cast<ui::EventType>(input->action),
+                         static_cast<ui::KeyboardCode>(
+                             input->key_data->key_code),
+                         input->flags,
+                         input->key_data->is_char));
+      break;
+    default:
+      // TODO: support other types.
+      NOTIMPLEMENTED();
+  }
+  // TODO: need to support time_stamp.
+  return ui_event.Pass();
+}
+
 }  // namespace mojo

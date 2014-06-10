@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
 #define MOJO_SERVICES_PUBLIC_CPP_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "mojo/services/public/cpp/input_events/mojo_input_events_export.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "ui/events/event.h"
@@ -15,6 +16,13 @@ template<>
 class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::Event> {
  public:
   static EventPtr ConvertFrom(const ui::Event& input);
+};
+
+template<>
+class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr,
+                                             scoped_ptr<ui::Event> > {
+ public:
+  static scoped_ptr<ui::Event> ConvertTo(const EventPtr& input);
 };
 
 }  // namespace mojo

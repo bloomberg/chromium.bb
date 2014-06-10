@@ -14,6 +14,7 @@
 
 namespace aura {
 namespace client {
+class FocusClient;
 class WindowTreeClient;
 }
 class WindowTreeHost;
@@ -59,6 +60,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
   scoped_ptr<gfx::Screen> screen_;
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  scoped_ptr<aura::client::FocusClient> focus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RootViewManager);
 };
