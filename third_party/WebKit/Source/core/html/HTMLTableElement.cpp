@@ -51,7 +51,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLTableElement::HTMLTableElement(Document& document)
+inline HTMLTableElement::HTMLTableElement(Document& document)
     : HTMLElement(tableTag, document)
     , m_borderAttr(false)
     , m_borderColorAttr(false)
@@ -62,10 +62,7 @@ HTMLTableElement::HTMLTableElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLTableElement> HTMLTableElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLTableElement)
 
 HTMLTableCaptionElement* HTMLTableElement::caption() const
 {

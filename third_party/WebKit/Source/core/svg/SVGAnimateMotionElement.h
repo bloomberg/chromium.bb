@@ -32,7 +32,7 @@ class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:
     virtual ~SVGAnimateMotionElement();
 
-    DEFINE_NODE_FACTORY(SVGAnimateMotionElement);
+    DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
     void updateAnimationPath();
 
 private:

@@ -41,7 +41,7 @@ class SVGPatternElement FINAL : public SVGElement,
                                 public SVGTests,
                                 public SVGFitToViewBox {
 public:
-    DEFINE_NODE_FACTORY(SVGPatternElement);
+    DECLARE_NODE_FACTORY(SVGPatternElement);
 
     void collectPatternAttributes(PatternAttributes&) const;
 

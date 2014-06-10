@@ -96,10 +96,10 @@ private:
 
 class SliderContainerElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<SliderContainerElement> create(Document&);
+    DECLARE_NODE_FACTORY(SliderContainerElement);
 
 private:
-    SliderContainerElement(Document&);
+    explicit SliderContainerElement(Document&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 };

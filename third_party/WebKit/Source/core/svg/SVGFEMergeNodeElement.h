@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGFEMergeNodeElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFEMergeNodeElement);
+    DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:

@@ -39,10 +39,7 @@ inline HTMLBaseElement::HTMLBaseElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLBaseElement> HTMLBaseElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLBaseElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLBaseElement)
 
 void HTMLBaseElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {

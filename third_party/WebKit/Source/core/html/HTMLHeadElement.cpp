@@ -30,15 +30,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLHeadElement::HTMLHeadElement(Document& document)
+inline HTMLHeadElement::HTMLHeadElement(Document& document)
     : HTMLElement(headTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLHeadElement> HTMLHeadElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHeadElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLHeadElement)
 
 }

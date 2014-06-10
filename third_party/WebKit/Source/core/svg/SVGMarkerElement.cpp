@@ -40,7 +40,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 }
 
 
-SVGMarkerElement::SVGMarkerElement(Document& document)
+inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
     , SVGFitToViewBox(this)
     , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -63,6 +63,8 @@ SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_orientAngle);
     addToPropertyMap(m_markerUnits);
 }
+
+DEFINE_NODE_FACTORY(SVGMarkerElement)
 
 AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {

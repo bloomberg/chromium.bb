@@ -29,11 +29,13 @@
 
 namespace WebCore {
 
-SVGAltGlyphDefElement::SVGAltGlyphDefElement(Document& document)
+inline SVGAltGlyphDefElement::SVGAltGlyphDefElement(Document& document)
     : SVGElement(SVGNames::altGlyphDefTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGAltGlyphDefElement)
 
 bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const
 {

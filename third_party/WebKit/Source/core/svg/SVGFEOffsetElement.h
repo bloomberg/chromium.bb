@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGFEOffsetElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEOffsetElement);
+    DECLARE_NODE_FACTORY(SVGFEOffsetElement);
 
     SVGAnimatedNumber* dx() { return m_dx.get(); }
     SVGAnimatedNumber* dy() { return m_dy.get(); }

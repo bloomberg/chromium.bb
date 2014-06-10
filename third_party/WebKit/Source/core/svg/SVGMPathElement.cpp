@@ -29,12 +29,14 @@
 
 namespace WebCore {
 
-SVGMPathElement::SVGMPathElement(Document& document)
+inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document)
     , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGMPathElement)
 
 SVGMPathElement::~SVGMPathElement()
 {

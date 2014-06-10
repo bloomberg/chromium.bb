@@ -31,7 +31,7 @@ struct LinearGradientAttributes;
 
 class SVGLinearGradientElement FINAL : public SVGGradientElement {
 public:
-    DEFINE_NODE_FACTORY(SVGLinearGradientElement);
+    DECLARE_NODE_FACTORY(SVGLinearGradientElement);
 
     bool collectGradientAttributes(LinearGradientAttributes&);
 

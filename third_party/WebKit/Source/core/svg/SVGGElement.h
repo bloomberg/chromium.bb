@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGGElement FINAL : public SVGGraphicsElement {
 public:
-    DEFINE_NODE_FACTORY(SVGGElement);
+    DECLARE_NODE_FACTORY(SVGGElement);
 
 protected:
     explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);

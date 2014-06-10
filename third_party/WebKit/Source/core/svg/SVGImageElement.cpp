@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-SVGImageElement::SVGImageElement(Document& document)
+inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document)
     , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -50,6 +50,8 @@ SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_preserveAspectRatio);
 }
+
+DEFINE_NODE_FACTORY(SVGImageElement)
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {

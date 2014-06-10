@@ -35,11 +35,13 @@
 
 namespace WebCore {
 
-SVGDiscardElement::SVGDiscardElement(Document& document)
+inline SVGDiscardElement::SVGDiscardElement(Document& document)
     : SVGSMILElement(SVGNames::discardTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGDiscardElement)
 
 bool SVGDiscardElement::hasValidAttributeType()
 {

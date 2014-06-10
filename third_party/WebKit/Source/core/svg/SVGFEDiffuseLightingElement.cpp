@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
+inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag, document)
     , m_diffuseConstant(SVGAnimatedNumber::create(this, SVGNames::diffuseConstantAttr, SVGNumber::create(1)))
     , m_surfaceScale(SVGAnimatedNumber::create(this, SVGNames::surfaceScaleAttr, SVGNumber::create(1)))
@@ -43,6 +43,8 @@ SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
     addToPropertyMap(m_kernelUnitLength);
     addToPropertyMap(m_in1);
 }
+
+DEFINE_NODE_FACTORY(SVGFEDiffuseLightingElement)
 
 bool SVGFEDiffuseLightingElement::isSupportedAttribute(const QualifiedName& attrName)
 {

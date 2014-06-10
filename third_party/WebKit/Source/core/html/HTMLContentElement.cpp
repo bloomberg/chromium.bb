@@ -40,18 +40,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtrWillBeRawPtr<HTMLContentElement> HTMLContentElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLContentElement(document));
-}
-
-HTMLContentElement::HTMLContentElement(Document& document)
+inline HTMLContentElement::HTMLContentElement(Document& document)
     : InsertionPoint(contentTag, document)
     , m_shouldParseSelect(false)
     , m_isValidSelector(true)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(HTMLContentElement)
 
 HTMLContentElement::~HTMLContentElement()
 {

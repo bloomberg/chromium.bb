@@ -28,7 +28,7 @@ namespace WebCore {
 // SVGAnimateElement implements superset of the functionality.
 class SVGSetElement FINAL : public SVGAnimateElement {
 public:
-    DEFINE_NODE_FACTORY(SVGSetElement);
+    DECLARE_NODE_FACTORY(SVGSetElement);
 
 private:
     explicit SVGSetElement(Document&);

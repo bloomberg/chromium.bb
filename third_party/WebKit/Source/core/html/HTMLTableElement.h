@@ -38,7 +38,7 @@ class HTMLTableSectionElement;
 
 class HTMLTableElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTableElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLTableElement);
 
     HTMLTableCaptionElement* caption() const;
     void setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement>, ExceptionState&);

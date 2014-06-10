@@ -30,7 +30,7 @@ namespace WebCore {
 
 class SVGCircleElement FINAL : public SVGGeometryElement {
 public:
-    DEFINE_NODE_FACTORY(SVGCircleElement);
+    DECLARE_NODE_FACTORY(SVGCircleElement);
 
     SVGAnimatedLength* cx() const { return m_cx.get(); }
     SVGAnimatedLength* cy() const { return m_cy.get(); }

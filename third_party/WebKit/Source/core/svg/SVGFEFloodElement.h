@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGFEFloodElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEFloodElement);
+    DECLARE_NODE_FACTORY(SVGFEFloodElement);
 
 private:
     explicit SVGFEFloodElement(Document&);

@@ -36,16 +36,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLMapElement::HTMLMapElement(Document& document)
+inline HTMLMapElement::HTMLMapElement(Document& document)
     : HTMLElement(mapTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLMapElement> HTMLMapElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLMapElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLMapElement)
 
 HTMLMapElement::~HTMLMapElement()
 {

@@ -37,7 +37,7 @@ class HTMLMediaElement;
 
 class HTMLTrackElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTrackElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLTrackElement);
 
     const AtomicString& kind();
     void setKind(const AtomicString&);

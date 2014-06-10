@@ -39,13 +39,15 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
+inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
     : SVGAnimationElement(animateMotionTag, document)
     , m_hasToPointAtEndOfDuration(false)
 {
     setCalcMode(CalcModePaced);
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement()
 {

@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLHtmlElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLHtmlElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLHtmlElement);
 
     void insertedByParser();
 

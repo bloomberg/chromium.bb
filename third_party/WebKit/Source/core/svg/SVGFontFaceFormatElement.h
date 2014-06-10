@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGFontFaceFormatElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFontFaceFormatElement);
+    DECLARE_NODE_FACTORY(SVGFontFaceFormatElement);
 
 private:
     explicit SVGFontFaceFormatElement(Document&);

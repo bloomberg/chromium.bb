@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLFrameElement FINAL : public HTMLFrameElementBase {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLFrameElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLFrameElement);
 
     bool hasFrameBorder() const { return m_frameBorder; }
 

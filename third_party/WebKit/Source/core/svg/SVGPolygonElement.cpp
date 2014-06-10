@@ -24,10 +24,12 @@
 
 namespace WebCore {
 
-SVGPolygonElement::SVGPolygonElement(Document& document)
+inline SVGPolygonElement::SVGPolygonElement(Document& document)
     : SVGPolyElement(SVGNames::polygonTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGPolygonElement)
 
 }

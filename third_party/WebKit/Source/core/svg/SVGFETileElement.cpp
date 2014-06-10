@@ -28,13 +28,15 @@
 
 namespace WebCore {
 
-SVGFETileElement::SVGFETileElement(Document& document)
+inline SVGFETileElement::SVGFETileElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feTileTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
 }
+
+DEFINE_NODE_FACTORY(SVGFETileElement)
 
 bool SVGFETileElement::isSupportedAttribute(const QualifiedName& attrName)
 {

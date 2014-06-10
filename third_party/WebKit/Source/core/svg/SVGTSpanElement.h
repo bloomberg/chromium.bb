@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGTSpanElement FINAL : public SVGTextPositioningElement {
 public:
-    DEFINE_NODE_FACTORY(SVGTSpanElement);
+    DECLARE_NODE_FACTORY(SVGTSpanElement);
 
 private:
     explicit SVGTSpanElement(Document&);

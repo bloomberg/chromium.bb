@@ -30,7 +30,7 @@ namespace WebCore {
 class SVGGlyphRefElement FINAL : public SVGElement,
                                  public SVGURIReference {
 public:
-    DEFINE_NODE_FACTORY(SVGGlyphRefElement);
+    DECLARE_NODE_FACTORY(SVGGlyphRefElement);
 
     bool hasValidGlyphElement(AtomicString& glyphName) const;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

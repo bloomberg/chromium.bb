@@ -37,10 +37,7 @@ inline HTMLParamElement::HTMLParamElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLParamElement> HTMLParamElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLParamElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLParamElement)
 
 const AtomicString& HTMLParamElement::name() const
 {

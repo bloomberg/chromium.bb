@@ -38,8 +38,7 @@ namespace WebCore {
 
 class HTMLShadowElement FINAL : public InsertionPoint {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLShadowElement> create(Document&);
-
+    DECLARE_NODE_FACTORY(HTMLShadowElement);
     virtual ~HTMLShadowElement();
 
     ShadowRoot* olderShadowRoot();

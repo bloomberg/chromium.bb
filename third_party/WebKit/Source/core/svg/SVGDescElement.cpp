@@ -24,10 +24,12 @@
 
 namespace WebCore {
 
-SVGDescElement::SVGDescElement(Document& document)
+inline SVGDescElement::SVGDescElement(Document& document)
     : SVGElement(SVGNames::descTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGDescElement)
 
 }

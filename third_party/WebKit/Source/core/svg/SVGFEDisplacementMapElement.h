@@ -31,7 +31,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSele
 
 class SVGFEDisplacementMapElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEDisplacementMapElement);
+    DECLARE_NODE_FACTORY(SVGFEDisplacementMapElement);
 
     static ChannelSelectorType stringToChannel(const String&);
 

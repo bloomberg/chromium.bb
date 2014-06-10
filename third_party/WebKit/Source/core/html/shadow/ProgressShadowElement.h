@@ -50,7 +50,7 @@ protected:
 
 class ProgressInnerElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtrWillBeRawPtr<ProgressInnerElement> create(Document&);
+    DECLARE_NODE_FACTORY(ProgressInnerElement);
 
 private:
     explicit ProgressInnerElement(Document&);
@@ -59,37 +59,22 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 };
 
-inline PassRefPtrWillBeRawPtr<ProgressInnerElement> ProgressInnerElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new ProgressInnerElement(document));
-}
-
 class ProgressBarElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtrWillBeRawPtr<ProgressBarElement> create(Document&);
+    DECLARE_NODE_FACTORY(ProgressBarElement);
 
 private:
     explicit ProgressBarElement(Document&);
 };
 
-inline PassRefPtrWillBeRawPtr<ProgressBarElement> ProgressBarElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new ProgressBarElement(document));
-}
-
 class ProgressValueElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtrWillBeRawPtr<ProgressValueElement> create(Document&);
+    DECLARE_NODE_FACTORY(ProgressValueElement);
     void setWidthPercentage(double);
 
 private:
     explicit ProgressValueElement(Document&);
 };
-
-inline PassRefPtrWillBeRawPtr<ProgressValueElement> ProgressValueElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new ProgressValueElement(document));
-}
 
 }
 

@@ -30,7 +30,7 @@ namespace WebCore {
 class SVGSymbolElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
 public:
-    DEFINE_NODE_FACTORY(SVGSymbolElement);
+    DECLARE_NODE_FACTORY(SVGSymbolElement);
 
 private:
     explicit SVGSymbolElement(Document&);

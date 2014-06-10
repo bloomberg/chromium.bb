@@ -31,7 +31,7 @@ namespace WebCore {
 
 class HTMLFrameSetElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLFrameSetElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLFrameSetElement);
 
     bool hasFrameBorder() const { return m_frameborder; }
     bool noResize() const { return m_noresize; }

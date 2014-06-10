@@ -38,7 +38,7 @@ namespace WebCore {
 class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference {
 public:
-    DEFINE_NODE_FACTORY(SVGFilterElement);
+    DECLARE_NODE_FACTORY(SVGFilterElement);
     virtual void trace(Visitor*) OVERRIDE;
 
     void setFilterRes(unsigned x, unsigned y);

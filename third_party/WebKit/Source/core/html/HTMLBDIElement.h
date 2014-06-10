@@ -27,19 +27,18 @@ namespace WebCore {
 
 class HTMLBDIElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLBDIElement> create(Document& document)
-    {
-        return adoptRefWillBeRefCountedGarbageCollected(new HTMLBDIElement(document));
-    }
+    DECLARE_NODE_FACTORY(HTMLBDIElement);
 
 private:
-    explicit HTMLBDIElement(Document& document)
+    inline explicit HTMLBDIElement(Document& document)
         : HTMLElement(HTMLNames::bdiTag, document)
     {
         // FIXME: Rename setSelfOrAncestorHasDirAutoAttribute to reflect the fact bdi also uses this flag.
         setSelfOrAncestorHasDirAutoAttribute(true);
     }
 };
+
+DEFINE_NODE_FACTORY(HTMLBDIElement)
 
 } // namespace WebCore
 

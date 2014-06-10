@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-SVGPatternElement::SVGPatternElement(Document& document)
+inline SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(SVGNames::patternTag, document)
     , SVGURIReference(this)
     , SVGTests(this)
@@ -54,6 +54,8 @@ SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_patternUnits);
     addToPropertyMap(m_patternContentUnits);
 }
+
+DEFINE_NODE_FACTORY(SVGPatternElement)
 
 bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
 {

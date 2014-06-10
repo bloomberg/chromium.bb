@@ -30,4 +30,6 @@ SVGPolylineElement::SVGPolylineElement(Document& document)
     ScriptWrappable::init(this);
 }
 
+DEFINE_NODE_FACTORY(SVGPolylineElement)
+
 }

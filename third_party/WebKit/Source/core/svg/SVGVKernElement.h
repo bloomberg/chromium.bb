@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGVKernElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGVKernElement);
+    DECLARE_NODE_FACTORY(SVGVKernElement);
 
     void buildVerticalKerningPair(KerningPairVector&);
 

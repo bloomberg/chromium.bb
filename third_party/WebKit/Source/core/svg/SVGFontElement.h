@@ -55,7 +55,7 @@ class SVGMissingGlyphElement;
 
 class SVGFontElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFontElement);
+    DECLARE_NODE_FACTORY(SVGFontElement);
 
     void invalidateGlyphCache();
     void collectGlyphsForString(const String&, Vector<SVGGlyph>&);

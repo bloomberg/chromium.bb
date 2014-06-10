@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLParagraphElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLParagraphElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLParagraphElement);
 
 private:
     explicit HTMLParagraphElement(Document&);

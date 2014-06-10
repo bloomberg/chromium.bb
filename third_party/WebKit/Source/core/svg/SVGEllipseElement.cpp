@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-SVGEllipseElement::SVGEllipseElement(Document& document)
+inline SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(SVGNames::ellipseTag, document)
     , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
@@ -42,6 +42,8 @@ SVGEllipseElement::SVGEllipseElement(Document& document)
     addToPropertyMap(m_rx);
     addToPropertyMap(m_ry);
 }
+
+DEFINE_NODE_FACTORY(SVGEllipseElement)
 
 bool SVGEllipseElement::isSupportedAttribute(const QualifiedName& attrName)
 {

@@ -27,13 +27,15 @@
 
 namespace WebCore {
 
-SVGClipPathElement::SVGClipPathElement(Document& document)
+inline SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(SVGNames::clipPathTag, document)
     , m_clipPathUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::clipPathUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_clipPathUnits);
 }
+
+DEFINE_NODE_FACTORY(SVGClipPathElement)
 
 bool SVGClipPathElement::isSupportedAttribute(const QualifiedName& attrName)
 {

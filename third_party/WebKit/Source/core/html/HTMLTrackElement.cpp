@@ -58,17 +58,14 @@ inline HTMLTrackElement::HTMLTrackElement(Document& document)
     ScriptWrappable::init(this);
 }
 
+DEFINE_NODE_FACTORY(HTMLTrackElement)
+
 HTMLTrackElement::~HTMLTrackElement()
 {
 #if !ENABLE(OILPAN)
     if (m_track)
         m_track->clearTrackElement();
 #endif
-}
-
-PassRefPtrWillBeRawPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTrackElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)

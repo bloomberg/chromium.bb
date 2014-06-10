@@ -34,7 +34,7 @@ namespace WebCore {
 class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGURIReference {
 public:
-    DEFINE_NODE_FACTORY(SVGImageElement);
+    DECLARE_NODE_FACTORY(SVGImageElement);
 
     bool currentFrameHasSingleSecurityOrigin() const;
 

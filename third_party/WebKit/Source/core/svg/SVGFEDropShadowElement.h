@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGFEDropShadowElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEDropShadowElement);
+    DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
 
     void setStdDeviation(float stdDeviationX, float stdDeviationY);
 

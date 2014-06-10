@@ -41,16 +41,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLBodyElement::HTMLBodyElement(Document& document)
+inline HTMLBodyElement::HTMLBodyElement(Document& document)
     : HTMLElement(bodyTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLBodyElement> HTMLBodyElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLBodyElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLBodyElement)
 
 HTMLBodyElement::~HTMLBodyElement()
 {

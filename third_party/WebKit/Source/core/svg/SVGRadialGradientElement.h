@@ -31,7 +31,7 @@ struct RadialGradientAttributes;
 
 class SVGRadialGradientElement FINAL : public SVGGradientElement {
 public:
-    DEFINE_NODE_FACTORY(SVGRadialGradientElement);
+    DECLARE_NODE_FACTORY(SVGRadialGradientElement);
 
     bool collectGradientAttributes(RadialGradientAttributes&);
 

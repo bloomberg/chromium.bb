@@ -38,15 +38,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLWBRElement::HTMLWBRElement(Document& document)
+inline HTMLWBRElement::HTMLWBRElement(Document& document)
     : HTMLElement(wbrTag, document)
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLWBRElement> HTMLWBRElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLWBRElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLWBRElement)
 
 RenderObject* HTMLWBRElement::createRenderer(RenderStyle* style)
 {

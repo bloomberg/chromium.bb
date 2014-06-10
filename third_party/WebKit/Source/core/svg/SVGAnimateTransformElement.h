@@ -32,7 +32,7 @@ class AffineTransform;
 
 class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
 public:
-    DEFINE_NODE_FACTORY(SVGAnimateTransformElement);
+    DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
 
     SVGTransformType transformType() const { return m_type; }
 

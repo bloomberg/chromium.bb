@@ -61,7 +61,7 @@
 
 namespace WebCore {
 
-SVGSVGElement::SVGSVGElement(Document& doc)
+inline SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(SVGNames::svgTag, doc)
     , SVGFitToViewBox(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -84,6 +84,8 @@ SVGSVGElement::SVGSVGElement(Document& doc)
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
 }
+
+DEFINE_NODE_FACTORY(SVGSVGElement)
 
 SVGSVGElement::~SVGSVGElement()
 {

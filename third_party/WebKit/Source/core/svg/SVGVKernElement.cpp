@@ -26,11 +26,13 @@
 
 namespace WebCore {
 
-SVGVKernElement::SVGVKernElement(Document& document)
+inline SVGVKernElement::SVGVKernElement(Document& document)
     : SVGElement(SVGNames::vkernTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGVKernElement)
 
 Node::InsertionNotificationRequest SVGVKernElement::insertedInto(ContainerNode* rootParent)
 {

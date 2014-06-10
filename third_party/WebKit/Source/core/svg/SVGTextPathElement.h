@@ -54,7 +54,7 @@ public:
         TEXTPATH_SPACINGTYPE_EXACT = SVGTextPathSpacingExact
     };
 
-    DEFINE_NODE_FACTORY(SVGTextPathElement);
+    DECLARE_NODE_FACTORY(SVGTextPathElement);
 
     SVGAnimatedLength* startOffset() const { return m_startOffset.get(); }
     SVGAnimatedEnumeration<SVGTextPathMethodType>* method() { return m_method.get(); }

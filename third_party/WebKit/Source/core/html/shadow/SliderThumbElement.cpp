@@ -444,10 +444,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 {
 }
 
-PassRefPtrWillBeRawPtr<SliderContainerElement> SliderContainerElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new SliderContainerElement(document));
-}
+DEFINE_NODE_FACTORY(SliderContainerElement)
 
 RenderObject* SliderContainerElement::createRenderer(RenderStyle*)
 {

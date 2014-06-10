@@ -27,12 +27,14 @@
 
 namespace WebCore {
 
-SVGSymbolElement::SVGSymbolElement(Document& document)
+inline SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(SVGNames::symbolTag, document)
     , SVGFitToViewBox(this)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGSymbolElement)
 
 bool SVGSymbolElement::isSupportedAttribute(const QualifiedName& attrName)
 {

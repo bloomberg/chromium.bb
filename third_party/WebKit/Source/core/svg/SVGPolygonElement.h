@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGPolygonElement FINAL : public SVGPolyElement {
 public:
-    DEFINE_NODE_FACTORY(SVGPolygonElement);
+    DECLARE_NODE_FACTORY(SVGPolygonElement);
 
 private:
     explicit SVGPolygonElement(Document&);

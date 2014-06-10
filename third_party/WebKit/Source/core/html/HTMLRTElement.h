@@ -13,7 +13,7 @@ namespace WebCore {
 // so HTMLElement's createRenderer doesn't need to know about it.
 class HTMLRTElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLRTElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLRTElement);
 
 private:
     explicit HTMLRTElement(Document&);

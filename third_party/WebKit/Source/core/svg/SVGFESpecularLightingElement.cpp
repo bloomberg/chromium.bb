@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
+inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feSpecularLightingTag, document)
     , m_specularConstant(SVGAnimatedNumber::create(this, SVGNames::specularConstantAttr, SVGNumber::create(1)))
     , m_specularExponent(SVGAnimatedNumber::create(this, SVGNames::specularExponentAttr, SVGNumber::create(1)))
@@ -46,6 +46,8 @@ SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
     addToPropertyMap(m_kernelUnitLength);
     addToPropertyMap(m_in1);
 }
+
+DEFINE_NODE_FACTORY(SVGFESpecularLightingElement)
 
 bool SVGFESpecularLightingElement::isSupportedAttribute(const QualifiedName& attrName)
 {

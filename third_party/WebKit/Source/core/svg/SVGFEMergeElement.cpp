@@ -29,11 +29,13 @@
 
 namespace WebCore {
 
-SVGFEMergeElement::SVGFEMergeElement(Document& document)
+inline SVGFEMergeElement::SVGFEMergeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMergeTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGFEMergeElement)
 
 PassRefPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {

@@ -37,7 +37,7 @@ namespace WebCore {
 
 class SVGDiscardElement FINAL : public SVGSMILElement {
 public:
-    DEFINE_NODE_FACTORY(SVGDiscardElement);
+    DECLARE_NODE_FACTORY(SVGDiscardElement);
 
     virtual bool isSVGDiscardElement() const OVERRIDE { return true; }
 private:

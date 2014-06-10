@@ -26,7 +26,7 @@ namespace WebCore {
 
 class SVGFEDistantLightElement FINAL : public SVGFELightElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFEDistantLightElement);
+    DECLARE_NODE_FACTORY(SVGFEDistantLightElement);
 
 private:
     explicit SVGFEDistantLightElement(Document&);

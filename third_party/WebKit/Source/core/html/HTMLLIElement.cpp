@@ -33,16 +33,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLLIElement::HTMLLIElement(Document& document)
+inline HTMLLIElement::HTMLLIElement(Document& document)
     : HTMLElement(liTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLLIElement> HTMLLIElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLIElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLLIElement)
 
 bool HTMLLIElement::isPresentationAttribute(const QualifiedName& name) const
 {

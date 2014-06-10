@@ -29,11 +29,13 @@
 
 namespace WebCore {
 
-SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
+inline SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(SVGNames::gTag, document, constructionType)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGGElement)
 
 bool SVGGElement::isSupportedAttribute(const QualifiedName& attrName)
 {

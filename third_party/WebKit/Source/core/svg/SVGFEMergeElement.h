@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGFEMergeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEMergeElement);
+    DECLARE_NODE_FACTORY(SVGFEMergeElement);
 
 private:
     explicit SVGFEMergeElement(Document&);

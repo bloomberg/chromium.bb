@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGPolylineElement FINAL : public SVGPolyElement {
 public:
-    DEFINE_NODE_FACTORY(SVGPolylineElement);
+    DECLARE_NODE_FACTORY(SVGPolylineElement);
 
 private:
     explicit SVGPolylineElement(Document&);

@@ -51,10 +51,7 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLSourceElement> HTMLSourceElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSourceElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLSourceElement)
 
 HTMLSourceElement::~HTMLSourceElement()
 {

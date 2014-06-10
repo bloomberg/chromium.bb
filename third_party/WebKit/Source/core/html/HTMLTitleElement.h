@@ -28,7 +28,7 @@ namespace WebCore {
 
 class HTMLTitleElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTitleElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLTitleElement);
 
     String text() const;
     void setText(const String&);

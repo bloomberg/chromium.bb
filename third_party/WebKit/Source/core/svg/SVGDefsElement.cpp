@@ -27,11 +27,13 @@
 
 namespace WebCore {
 
-SVGDefsElement::SVGDefsElement(Document& document)
+inline SVGDefsElement::SVGDefsElement(Document& document)
     : SVGGraphicsElement(SVGNames::defsTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGDefsElement)
 
 RenderObject* SVGDefsElement::createRenderer(RenderStyle*)
 {

@@ -27,11 +27,13 @@
 
 namespace WebCore {
 
-SVGHKernElement::SVGHKernElement(Document& document)
+inline SVGHKernElement::SVGHKernElement(Document& document)
     : SVGElement(SVGNames::hkernTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGHKernElement)
 
 Node::InsertionNotificationRequest SVGHKernElement::insertedInto(ContainerNode* rootParent)
 {

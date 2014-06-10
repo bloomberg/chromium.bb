@@ -32,7 +32,7 @@ class HTMLFormControlElement;
 
 class HTMLLegendElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLLegendElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLLegendElement);
 
     HTMLFormElement* form() const;
 

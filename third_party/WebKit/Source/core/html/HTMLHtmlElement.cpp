@@ -36,16 +36,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLHtmlElement::HTMLHtmlElement(Document& document)
+inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(htmlTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLHtmlElement> HTMLHtmlElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHtmlElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLHtmlElement)
 
 bool HTMLHtmlElement::isURLAttribute(const Attribute& attribute) const
 {

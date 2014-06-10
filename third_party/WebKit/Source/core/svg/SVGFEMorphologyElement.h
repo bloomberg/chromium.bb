@@ -31,7 +31,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyO
 
 class SVGFEMorphologyElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEMorphologyElement);
+    DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
     void setRadius(float radiusX, float radiusY);
 

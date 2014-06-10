@@ -31,7 +31,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeTy
 
 class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEBlendElement);
+    DECLARE_NODE_FACTORY(SVGFEBlendElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedString* in2() { return m_in2.get(); }
     SVGAnimatedEnumeration<BlendModeType>* mode() { return m_mode.get(); }

@@ -26,7 +26,7 @@ namespace WebCore {
 
 class SVGFEPointLightElement FINAL : public SVGFELightElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFEPointLightElement);
+    DECLARE_NODE_FACTORY(SVGFEPointLightElement);
 
 private:
     explicit SVGFEPointLightElement(Document&);

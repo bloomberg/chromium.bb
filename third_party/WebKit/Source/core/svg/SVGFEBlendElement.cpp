@@ -41,7 +41,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeTy
     return entries;
 }
 
-SVGFEBlendElement::SVGFEBlendElement(Document& document)
+inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
@@ -52,6 +52,8 @@ SVGFEBlendElement::SVGFEBlendElement(Document& document)
     addToPropertyMap(m_in2);
     addToPropertyMap(m_mode);
 }
+
+DEFINE_NODE_FACTORY(SVGFEBlendElement)
 
 bool SVGFEBlendElement::isSupportedAttribute(const QualifiedName& attrName)
 {

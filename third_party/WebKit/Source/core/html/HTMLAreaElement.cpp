@@ -46,10 +46,7 @@ inline HTMLAreaElement::HTMLAreaElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLAreaElement> HTMLAreaElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLAreaElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLAreaElement)
 
 void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {

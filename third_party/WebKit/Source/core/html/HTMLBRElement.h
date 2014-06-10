@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLBRElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLBRElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLBRElement);
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 

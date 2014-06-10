@@ -89,7 +89,7 @@ static void inertSubtreesChanged(Document& document)
         cache->childrenChanged(cache->getOrCreate(&topDocument));
 }
 
-HTMLDialogElement::HTMLDialogElement(Document& document)
+inline HTMLDialogElement::HTMLDialogElement(Document& document)
     : HTMLElement(dialogTag, document)
     , m_centeringMode(NotCentered)
     , m_centeredPosition(0)
@@ -98,10 +98,7 @@ HTMLDialogElement::HTMLDialogElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDialogElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLDialogElement)
 
 void HTMLDialogElement::close(const String& returnValue, ExceptionState& exceptionState)
 {

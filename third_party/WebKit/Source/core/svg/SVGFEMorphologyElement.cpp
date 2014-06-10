@@ -38,7 +38,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyO
     return entries;
 }
 
-SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
+inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMorphologyTag, document)
     , m_radius(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::radiusAttr))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
@@ -50,6 +50,8 @@ SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     addToPropertyMap(m_in1);
     addToPropertyMap(m_svgOperator);
 }
+
+DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
 
 void SVGFEMorphologyElement::setRadius(float x, float y)
 {

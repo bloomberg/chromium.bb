@@ -12,15 +12,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLRTElement::HTMLRTElement(Document& document)
+inline HTMLRTElement::HTMLRTElement(Document& document)
     : HTMLElement(rtTag, document)
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLRTElement> HTMLRTElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLRTElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLRTElement)
 
 RenderObject* HTMLRTElement::createRenderer(RenderStyle* style)
 {

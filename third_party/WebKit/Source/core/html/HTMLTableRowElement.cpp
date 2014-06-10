@@ -38,11 +38,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLTableRowElement::HTMLTableRowElement(Document& document)
+inline HTMLTableRowElement::HTMLTableRowElement(Document& document)
     : HTMLTablePartElement(trTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(HTMLTableRowElement)
 
 bool HTMLTableRowElement::hasLegalLinkAttribute(const QualifiedName& name) const
 {
@@ -52,11 +54,6 @@ bool HTMLTableRowElement::hasLegalLinkAttribute(const QualifiedName& name) const
 const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const
 {
     return backgroundAttr;
-}
-
-PassRefPtrWillBeRawPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableRowElement(document));
 }
 
 int HTMLTableRowElement::rowIndex() const

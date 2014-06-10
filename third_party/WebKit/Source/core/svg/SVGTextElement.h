@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGTextElement FINAL : public SVGTextPositioningElement {
 public:
-    DEFINE_NODE_FACTORY(SVGTextElement);
+    DECLARE_NODE_FACTORY(SVGTextElement);
 
     virtual AffineTransform animatedLocalTransform() const OVERRIDE;
 

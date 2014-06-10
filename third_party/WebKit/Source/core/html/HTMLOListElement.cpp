@@ -32,7 +32,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLOListElement::HTMLOListElement(Document& document)
+inline HTMLOListElement::HTMLOListElement(Document& document)
     : HTMLElement(olTag, document)
     , m_start(0xBADBEEF)
     , m_itemCount(0)
@@ -43,10 +43,7 @@ HTMLOListElement::HTMLOListElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLOListElement> HTMLOListElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOListElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLOListElement)
 
 bool HTMLOListElement::isPresentationAttribute(const QualifiedName& name) const
 {

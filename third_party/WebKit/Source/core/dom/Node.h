@@ -898,11 +898,13 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
     template<typename T> inline thisType* to##thisType(const RefPtr<T>& node) { return to##thisType(node.get()); } \
     DEFINE_TYPE_CASTS(thisType, Node, node, is##thisType(*node), is##thisType(node))
 
+#define DECLARE_NODE_FACTORY(T) \
+    static PassRefPtrWillBeRawPtr<T> create(Document&)
 #define DEFINE_NODE_FACTORY(T) \
-    inline static PassRefPtrWillBeRawPtr<T> create(Document& document) \
-    { \
-        return adoptRefWillBeRefCountedGarbageCollected(new T(document)); \
-    }
+PassRefPtrWillBeRawPtr<T> T::create(Document& document) \
+{ \
+    return adoptRefWillBeRefCountedGarbageCollected(new T(document)); \
+}
 
 } // namespace WebCore
 

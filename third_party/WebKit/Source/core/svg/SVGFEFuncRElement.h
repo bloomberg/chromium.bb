@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGFEFuncRElement FINAL : public SVGComponentTransferFunctionElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFEFuncRElement);
+    DECLARE_NODE_FACTORY(SVGFEFuncRElement);
 
 private:
     explicit SVGFEFuncRElement(Document&);

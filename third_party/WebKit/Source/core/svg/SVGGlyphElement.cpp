@@ -30,11 +30,13 @@
 
 namespace WebCore {
 
-SVGGlyphElement::SVGGlyphElement(Document& document)
+inline SVGGlyphElement::SVGGlyphElement(Document& document)
     : SVGElement(SVGNames::glyphTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGGlyphElement)
 
 void SVGGlyphElement::invalidateGlyphCache()
 {

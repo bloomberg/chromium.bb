@@ -47,7 +47,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceT
     return entries;
 }
 
-SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
+inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feTurbulenceTag, document)
     , m_baseFrequency(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::baseFrequencyAttr))
     , m_seed(SVGAnimatedNumber::create(this, SVGNames::seedAttr, SVGNumber::create(0)))
@@ -63,6 +63,8 @@ SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     addToPropertyMap(m_type);
     addToPropertyMap(m_numOctaves);
 }
+
+DEFINE_NODE_FACTORY(SVGFETurbulenceElement)
 
 bool SVGFETurbulenceElement::isSupportedAttribute(const QualifiedName& attrName)
 {

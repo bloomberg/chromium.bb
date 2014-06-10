@@ -31,7 +31,7 @@ namespace WebCore {
 
 class HTMLLabelElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLLabelElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLLabelElement);
 
     LabelableElement* control() const;
 

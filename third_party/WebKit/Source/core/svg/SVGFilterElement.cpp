@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-SVGFilterElement::SVGFilterElement(Document& document)
+inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
     , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -59,6 +59,8 @@ SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_primitiveUnits);
     addToPropertyMap(m_filterRes);
 }
+
+DEFINE_NODE_FACTORY(SVGFilterElement)
 
 void SVGFilterElement::trace(Visitor* visitor)
 {

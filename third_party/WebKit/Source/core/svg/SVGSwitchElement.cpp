@@ -28,13 +28,15 @@
 
 namespace WebCore {
 
-SVGSwitchElement::SVGSwitchElement(Document& document)
+inline SVGSwitchElement::SVGSwitchElement(Document& document)
     : SVGGraphicsElement(SVGNames::switchTag, document)
 {
     ScriptWrappable::init(this);
 
     UseCounter::count(document, UseCounter::SVGSwitchElement);
 }
+
+DEFINE_NODE_FACTORY(SVGSwitchElement)
 
 RenderObject* SVGSwitchElement::createRenderer(RenderStyle*)
 {

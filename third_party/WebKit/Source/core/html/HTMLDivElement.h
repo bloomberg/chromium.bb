@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLDivElement : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLDivElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLDivElement);
 
 protected:
     explicit HTMLDivElement(Document&);

@@ -37,10 +37,7 @@ HTMLDivElement::HTMLDivElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLDivElement> HTMLDivElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDivElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLDivElement)
 
 void HTMLDivElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {

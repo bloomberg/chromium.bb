@@ -13,7 +13,7 @@ namespace WebCore {
 // so HTMLElement's createRenderer doesn't need to know about it.
 class HTMLRubyElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLRubyElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLRubyElement);
 
 private:
     explicit HTMLRubyElement(Document&);

@@ -39,7 +39,7 @@ namespace WebCore {
 // so HTMLElement's rendererIsNeeded doesn't need to know about it.
 class HTMLNoEmbedElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLNoEmbedElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLNoEmbedElement);
 
 private:
     explicit HTMLNoEmbedElement(Document&);

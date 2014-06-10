@@ -39,15 +39,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
+inline HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
     : HTMLElement(noembedTag, document)
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLNoEmbedElement> HTMLNoEmbedElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLNoEmbedElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLNoEmbedElement)
 
 bool HTMLNoEmbedElement::rendererIsNeeded(const RenderStyle& style)
 {

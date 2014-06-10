@@ -38,8 +38,7 @@ namespace WebCore {
 
 class HTMLContentElement FINAL : public InsertionPoint {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLContentElement> create(Document&);
-
+    DECLARE_NODE_FACTORY(HTMLContentElement);
     virtual ~HTMLContentElement();
 
     virtual bool canAffectSelector() const OVERRIDE { return true; }

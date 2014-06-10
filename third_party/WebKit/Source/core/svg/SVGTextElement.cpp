@@ -27,11 +27,13 @@
 
 namespace WebCore {
 
-SVGTextElement::SVGTextElement(Document& doc)
+inline SVGTextElement::SVGTextElement(Document& doc)
     : SVGTextPositioningElement(SVGNames::textTag, doc)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGTextElement)
 
 // We override SVGGraphics::animatedLocalTransform() so that the transform-origin
 // is not taken into account.

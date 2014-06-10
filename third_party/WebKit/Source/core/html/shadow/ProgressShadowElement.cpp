@@ -56,10 +56,12 @@ bool ProgressShadowElement::rendererIsNeeded(const RenderStyle& style)
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(style);
 }
 
-ProgressInnerElement::ProgressInnerElement(Document& document)
+inline ProgressInnerElement::ProgressInnerElement(Document& document)
     : ProgressShadowElement(document)
 {
 }
+
+DEFINE_NODE_FACTORY(ProgressInnerElement)
 
 RenderObject* ProgressInnerElement::createRenderer(RenderStyle*)
 {
@@ -75,10 +77,12 @@ bool ProgressInnerElement::rendererIsNeeded(const RenderStyle& style)
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(style);
 }
 
-ProgressBarElement::ProgressBarElement(Document& document)
+inline ProgressBarElement::ProgressBarElement(Document& document)
     : ProgressShadowElement(document)
 {
 }
+
+DEFINE_NODE_FACTORY(ProgressBarElement)
 
 ProgressValueElement::ProgressValueElement(Document& document)
     : ProgressShadowElement(document)
@@ -89,5 +93,7 @@ void ProgressValueElement::setWidthPercentage(double width)
 {
     setInlineStyleProperty(CSSPropertyWidth, width, CSSPrimitiveValue::CSS_PERCENTAGE);
 }
+
+DEFINE_NODE_FACTORY(ProgressValueElement)
 
 }

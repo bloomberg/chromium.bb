@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGStopElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGStopElement);
+    DECLARE_NODE_FACTORY(SVGStopElement);
 
     Color stopColorIncludingOpacity() const;
 

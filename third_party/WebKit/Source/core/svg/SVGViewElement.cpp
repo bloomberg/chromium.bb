@@ -24,7 +24,7 @@
 
 namespace WebCore {
 
-SVGViewElement::SVGViewElement(Document& document)
+inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
     , SVGFitToViewBox(this)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
@@ -33,6 +33,8 @@ SVGViewElement::SVGViewElement(Document& document)
 
     addToPropertyMap(m_viewTarget);
 }
+
+DEFINE_NODE_FACTORY(SVGViewElement)
 
 bool SVGViewElement::isSupportedAttribute(const QualifiedName& attrName)
 {

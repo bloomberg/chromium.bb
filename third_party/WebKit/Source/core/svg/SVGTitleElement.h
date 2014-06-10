@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGTitleElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGTitleElement);
+    DECLARE_NODE_FACTORY(SVGTitleElement);
 
 private:
     explicit SVGTitleElement(Document&);

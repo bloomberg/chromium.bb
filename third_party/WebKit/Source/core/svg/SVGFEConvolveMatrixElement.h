@@ -36,7 +36,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
 
 class SVGFEConvolveMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEConvolveMatrixElement);
+    DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
 
     SVGAnimatedBoolean* preserveAlpha() { return m_preserveAlpha.get(); }
     SVGAnimatedNumber* divisor() { return m_divisor.get(); }

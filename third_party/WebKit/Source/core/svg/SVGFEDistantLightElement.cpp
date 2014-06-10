@@ -25,11 +25,13 @@
 
 namespace WebCore {
 
-SVGFEDistantLightElement::SVGFEDistantLightElement(Document& document)
+inline SVGFEDistantLightElement::SVGFEDistantLightElement(Document& document)
     : SVGFELightElement(SVGNames::feDistantLightTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGFEDistantLightElement)
 
 PassRefPtr<LightSource> SVGFEDistantLightElement::lightSource() const
 {

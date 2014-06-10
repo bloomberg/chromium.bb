@@ -33,7 +33,7 @@ class SVGFontData;
 
 class SVGGlyphElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGGlyphElement);
+    DECLARE_NODE_FACTORY(SVGGlyphElement);
 
     SVGGlyph buildGlyphIdentifier() const;
 

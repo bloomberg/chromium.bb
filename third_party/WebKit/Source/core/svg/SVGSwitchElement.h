@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGSwitchElement FINAL : public SVGGraphicsElement {
 public:
-    DEFINE_NODE_FACTORY(SVGSwitchElement);
+    DECLARE_NODE_FACTORY(SVGSwitchElement);
 
 private:
     explicit SVGSwitchElement(Document&);

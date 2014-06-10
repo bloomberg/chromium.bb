@@ -35,7 +35,7 @@ class StyleRuleFontFace;
 
 class SVGFontFaceElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGFontFaceElement);
+    DECLARE_NODE_FACTORY(SVGFontFaceElement);
 
     unsigned unitsPerEm() const;
     int xHeight() const;

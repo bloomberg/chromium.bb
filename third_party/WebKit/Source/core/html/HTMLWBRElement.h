@@ -39,7 +39,7 @@ namespace WebCore {
 // so HTMLElement's createRenderer doesn't need to know about it.
 class HTMLWBRElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLWBRElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLWBRElement);
 
 private:
     explicit HTMLWBRElement(Document&);

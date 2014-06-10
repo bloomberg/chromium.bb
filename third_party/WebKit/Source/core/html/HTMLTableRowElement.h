@@ -34,7 +34,7 @@ class ExceptionState;
 
 class HTMLTableRowElement FINAL : public HTMLTablePartElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTableRowElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLTableRowElement);
 
     int rowIndex() const;
 

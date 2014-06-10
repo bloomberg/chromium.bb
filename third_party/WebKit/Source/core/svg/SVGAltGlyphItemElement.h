@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGAltGlyphItemElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGAltGlyphItemElement);
+    DECLARE_NODE_FACTORY(SVGAltGlyphItemElement);
 
     bool hasValidGlyphElements(Vector<AtomicString>& glyphNames) const;
 

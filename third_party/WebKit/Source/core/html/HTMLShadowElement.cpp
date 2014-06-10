@@ -44,10 +44,7 @@ inline HTMLShadowElement::HTMLShadowElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLShadowElement> HTMLShadowElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLShadowElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLShadowElement)
 
 HTMLShadowElement::~HTMLShadowElement()
 {

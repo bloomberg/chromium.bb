@@ -73,7 +73,7 @@ static const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CanvasObserver);
 
-HTMLCanvasElement::HTMLCanvasElement(Document& document)
+inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(canvasTag, document)
     , DocumentVisibilityObserver(document)
     , m_size(DefaultWidth, DefaultHeight)
@@ -87,10 +87,7 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLCanvasElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLCanvasElement)
 
 HTMLCanvasElement::~HTMLCanvasElement()
 {

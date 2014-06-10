@@ -24,10 +24,12 @@
 
 namespace WebCore {
 
-SVGFEFuncAElement::SVGFEFuncAElement(Document& document)
+inline SVGFEFuncAElement::SVGFEFuncAElement(Document& document)
     : SVGComponentTransferFunctionElement(SVGNames::feFuncATag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGFEFuncAElement)
 
 }

@@ -13,11 +13,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLPictureElement::HTMLPictureElement(Document& document)
+inline HTMLPictureElement::HTMLPictureElement(Document& document)
     : HTMLElement(pictureTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(HTMLPictureElement)
 
 void HTMLPictureElement::sourceOrMediaChanged()
 {

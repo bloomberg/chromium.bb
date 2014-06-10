@@ -40,7 +40,7 @@ class TemplateContentDocumentFragment;
 
 class HTMLTemplateElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTemplateElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLTemplateElement);
     virtual ~HTMLTemplateElement();
     virtual void trace(Visitor*) OVERRIDE;
 

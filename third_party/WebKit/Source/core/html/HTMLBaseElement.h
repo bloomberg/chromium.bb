@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLBaseElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLBaseElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLBaseElement);
 
     KURL href() const;
     void setHref(const AtomicString&);

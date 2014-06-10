@@ -41,10 +41,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLIFrameElement> HTMLIFrameElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLIFrameElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLIFrameElement)
 
 bool HTMLIFrameElement::isPresentationAttribute(const QualifiedName& name) const
 {

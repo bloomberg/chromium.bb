@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-SVGFontElement::SVGFontElement(Document& document)
+inline SVGFontElement::SVGFontElement(Document& document)
     : SVGElement(SVGNames::fontTag, document)
     , m_missingGlyph(0)
     , m_isGlyphCacheValid(false)
@@ -43,6 +43,8 @@ SVGFontElement::SVGFontElement(Document& document)
 
     UseCounter::count(document, UseCounter::SVGFontElement);
 }
+
+DEFINE_NODE_FACTORY(SVGFontElement)
 
 void SVGFontElement::invalidateGlyphCache()
 {

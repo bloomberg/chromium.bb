@@ -28,11 +28,13 @@
 
 namespace WebCore {
 
-SVGFEFloodElement::SVGFEFloodElement(Document& document)
+inline SVGFEFloodElement::SVGFEFloodElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feFloodTag, document)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
 bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {

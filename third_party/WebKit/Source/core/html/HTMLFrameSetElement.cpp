@@ -40,7 +40,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
+inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     : HTMLElement(framesetTag, document)
     , m_border(6)
     , m_borderSet(false)
@@ -53,10 +53,7 @@ HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtrWillBeRawPtr<HTMLFrameSetElement> HTMLFrameSetElement::create(Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFrameSetElement(document));
-}
+DEFINE_NODE_FACTORY(HTMLFrameSetElement)
 
 bool HTMLFrameSetElement::isPresentationAttribute(const QualifiedName& name) const
 {

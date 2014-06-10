@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGMetadataElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGMetadataElement);
+    DECLARE_NODE_FACTORY(SVGMetadataElement);
 
 private:
     explicit SVGMetadataElement(Document&);

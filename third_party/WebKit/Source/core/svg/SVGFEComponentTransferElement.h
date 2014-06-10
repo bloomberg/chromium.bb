@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGFEComponentTransferElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEComponentTransferElement);
+    DECLARE_NODE_FACTORY(SVGFEComponentTransferElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:

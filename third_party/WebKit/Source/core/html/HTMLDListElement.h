@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLDListElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLDListElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLDListElement);
 
 private:
     explicit HTMLDListElement(Document&);

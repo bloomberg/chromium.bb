@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGMissingGlyphElement FINAL : public SVGElement {
 public:
-    DEFINE_NODE_FACTORY(SVGMissingGlyphElement);
+    DECLARE_NODE_FACTORY(SVGMissingGlyphElement);
 
 private:
     explicit SVGMissingGlyphElement(Document&);

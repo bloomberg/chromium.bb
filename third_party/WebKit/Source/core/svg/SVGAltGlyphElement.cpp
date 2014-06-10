@@ -35,12 +35,14 @@
 
 namespace WebCore {
 
-SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
+inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)
     , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
 }
+
+DEFINE_NODE_FACTORY(SVGAltGlyphElement)
 
 void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& exceptionState)
 {

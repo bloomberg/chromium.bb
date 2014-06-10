@@ -33,7 +33,7 @@ class FEDiffuseLighting;
 
 class SVGFEDiffuseLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    DEFINE_NODE_FACTORY(SVGFEDiffuseLightingElement);
+    DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);
     void lightElementAttributeChanged(const SVGFELightElement*, const QualifiedName&);
 
     SVGAnimatedNumber* diffuseConstant() { return m_diffuseConstant.get(); }

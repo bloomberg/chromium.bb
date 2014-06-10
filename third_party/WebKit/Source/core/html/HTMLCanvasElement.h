@@ -69,7 +69,7 @@ public:
 class HTMLCanvasElement FINAL : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
-    static PassRefPtrWillBeRawPtr<HTMLCanvasElement> create(Document&);
+    DECLARE_NODE_FACTORY(HTMLCanvasElement);
     virtual ~HTMLCanvasElement();
 
     void addObserver(CanvasObserver*);
