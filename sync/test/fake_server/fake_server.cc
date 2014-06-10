@@ -115,7 +115,8 @@ class UpdateSieve {
 
 scoped_ptr<UpdateSieve> UpdateSieve::Create(
     const sync_pb::GetUpdatesMessage& get_updates_message) {
-  DCHECK_GT(get_updates_message.from_progress_marker_size(), 0);
+  CHECK_GT(get_updates_message.from_progress_marker_size(), 0)
+      << "A GetUpdates request must have at least one progress marker.";
 
   UpdateSieve::ModelTypeToVersionMap request_from_version;
   int64 min_version = std::numeric_limits<int64>::max();
@@ -128,7 +129,7 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
     // first request for this type).
     if (marker.has_token() && !marker.token().empty()) {
       bool parsed = base::StringToInt64(marker.token(), &version);
-      DCHECK(parsed);
+      CHECK(parsed) << "Unable to parse progress marker token.";
     }
 
     ModelType model_type = syncer::GetModelTypeFromSpecificsFieldNumber(
@@ -223,7 +224,7 @@ void FakeServer::HandleCommand(const string& request,
 
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
-  DCHECK(parsed);
+  CHECK(parsed) << "Unable to parse the ClientToServerMessage.";
 
   sync_pb::SyncEnums_ErrorType error_code;
   sync_pb::ClientToServerResponse response_proto;

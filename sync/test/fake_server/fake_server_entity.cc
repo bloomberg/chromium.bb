@@ -87,8 +87,6 @@ FakeServerEntity::FakeServerEntity(const string& id,
 
 void FakeServerEntity::SerializeBaseProtoFields(
     sync_pb::SyncEntity* sync_entity) {
-  DCHECK(sync_entity);
-
   // FakeServerEntity fields
   sync_entity->set_id_string(id_);
   sync_entity->set_version(version_);

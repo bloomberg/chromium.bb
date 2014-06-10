@@ -31,8 +31,7 @@ class PermanentEntity : public FakeServerEntity {
   static FakeServerEntity* CreateTopLevel(const syncer::ModelType& model_type);
 
   // Factory function for creating an updated version of a PermanentEntity.
-  // This function should only be called for the Nigori entity and will return
-  // NULL if any other type is specified.
+  // This function should only be called for the Nigori entity.
   static FakeServerEntity* CreateUpdatedNigoriEntity(
       const sync_pb::SyncEntity& client_entity,
       FakeServerEntity* current_server_entity);

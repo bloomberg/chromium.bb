@@ -23,9 +23,8 @@ UniqueClientEntity::~UniqueClientEntity() { }
 // static
 FakeServerEntity* UniqueClientEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity) {
-  DCHECK(client_entity.has_client_defined_unique_tag());
-  DCHECK(!client_entity.folder());
-  DCHECK(!client_entity.deleted());
+  CHECK(client_entity.has_client_defined_unique_tag())
+      << "A UniqueClientEntity must have a client-defined unique tag.";
   ModelType model_type =
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
   string id = client_entity.version() == 0 ?

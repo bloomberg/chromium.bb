@@ -29,13 +29,14 @@ FakeServerEntity* PermanentEntity::Create(const ModelType& model_type,
                                           const string& server_tag,
                                           const string& name,
                                           const string& parent_server_tag) {
-  DCHECK(model_type != syncer::UNSPECIFIED);
-  DCHECK(!server_tag.empty());
-  DCHECK(!name.empty());
-  DCHECK(!parent_server_tag.empty());
-  if (parent_server_tag == kRootParentTag) {
-    return NULL;
-  }
+  CHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
+                                           << "invalid.";
+  CHECK(!server_tag.empty()) << "A PermanentEntity must have a server tag.";
+  CHECK(!name.empty()) << "The entity must have a non-empty name.";
+  CHECK(!parent_server_tag.empty()) << "A PermanentEntity must have a parent "
+                                    << "server tag.";
+  CHECK(parent_server_tag != kRootParentTag) << "Top-level entities should not "
+                                             << "be created with this factory.";
 
   string id = FakeServerEntity::CreateId(model_type, server_tag);
   string parent_id = FakeServerEntity::CreateId(model_type, parent_server_tag);
@@ -50,8 +51,9 @@ FakeServerEntity* PermanentEntity::Create(const ModelType& model_type,
 }
 
 // static
-FakeServerEntity* PermanentEntity::CreateTopLevel(
-    const ModelType& model_type) {
+FakeServerEntity* PermanentEntity::CreateTopLevel(const ModelType& model_type) {
+  CHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
+                                           << "invalid.";
   string server_tag = syncer::ModelTypeToRootTag(model_type);
   string name = syncer::ModelTypeToString(model_type);
   string id = FakeServerEntity::CreateId(model_type, server_tag);
@@ -70,9 +72,8 @@ FakeServerEntity* PermanentEntity::CreateUpdatedNigoriEntity(
     const sync_pb::SyncEntity& client_entity,
     FakeServerEntity* current_server_entity) {
   ModelType model_type = current_server_entity->GetModelType();
-  if (model_type != syncer::NIGORI) {
-    return NULL;
-  }
+  CHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
+                                      << "entities.";
 
   return new PermanentEntity(current_server_entity->GetId(),
                              model_type,
