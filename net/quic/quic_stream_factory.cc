@@ -822,7 +822,7 @@ int QuicStreamFactory::CreateSession(
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 
   QuicConfig config = config_;
-  config_.SetInitialCongestionWindowToSend(
+  config.SetInitialCongestionWindowToSend(
       server_id.is_https() ? kServerSecureInitialCongestionWindow
                            : kServerInecureInitialCongestionWindow);
   if (http_server_properties_) {
