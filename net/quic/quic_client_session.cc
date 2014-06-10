@@ -584,8 +584,9 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenStreams());
     if (!IsCryptoHandshakeConfirmed()) {
-      // If there have been any streams created, they were 0-RTT speculative
-      // requests that have not be serviced.
+      UMA_HISTOGRAM_COUNTS(
+          "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
+          GetNumOpenStreams());
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
           num_total_streams_);

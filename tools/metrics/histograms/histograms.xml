@@ -14214,6 +14214,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The reason a QUIC handshake failed.</summary>
 </histogram>
 
+<histogram
+    name="Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of streams open when a QUIC session crypto handshake timed out.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut">
   <owner>rch@chromium.org</owner>
   <summary>The number of streams open when a QUIC session timed out.</summary>
