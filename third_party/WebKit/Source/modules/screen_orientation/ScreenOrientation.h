@@ -17,7 +17,6 @@
 namespace WebCore {
 
 class Document;
-class Page;
 class ScriptPromise;
 class ScriptState;
 class Screen;
@@ -42,7 +41,6 @@ private:
 
     static const char* supplementName();
     Document* document() const;
-    Page* page() const;
 };
 
 } // namespace WebCore

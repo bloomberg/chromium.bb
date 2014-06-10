@@ -3,11 +3,17 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<iframe src='about:blank'></iframe>
 <script>
 var orientationChangeEventListenerCalls = 0;
+var orientationChangeEventListenerCallsForFrame = 0;
 
 window.addEventListener('orientationchange', function() {
     orientationChangeEventListenerCalls++;
+});
+
+window.frames[0].addEventListener('orientationchange', function() {
+    orientationChangeEventListenerCallsForFrame++;
 });
 
 test(function() {
@@ -42,6 +48,11 @@ test(function() {
     // Should keep returning the start returning the orientation value.
     assert_equals(screen.orientation, "portrait-primary");
 }, "Test that screen.orientation is updated once the page is visible again");
+
+test(function() {
+    assert_equals(orientationChangeEventListenerCallsForFrame, orientationChangeEventListenerCalls);
+}, "Test that the iframe got as many events as the main frame.")
+
 </script>
 </body>
 </html>

@@ -84,7 +84,6 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/push_messaging/PushController.h"
-#include "modules/screen_orientation/ScreenOrientationController.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
@@ -428,8 +427,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
         providePushControllerTo(*m_page, m_client->webPushClient());
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);
-        if (RuntimeEnabledFeatures::screenOrientationEnabled())
-            ScreenOrientationController::provideTo(*m_page, m_client->webScreenOrientationClient());
     }
 
     m_inspectorSettingsMap = adoptPtr(new SettingsMap);

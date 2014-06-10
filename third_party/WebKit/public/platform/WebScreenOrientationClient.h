@@ -11,7 +11,7 @@ namespace blink {
 
 class WebLockOrientationCallback;
 
-// Client handling screen orientation locking for a given WebView.
+// Client handling screen orientation locking for a given WebFrame.
 class WebScreenOrientationClient {
 public:
     virtual ~WebScreenOrientationClient() { }

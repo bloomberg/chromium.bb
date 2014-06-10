@@ -22,21 +22,22 @@ ScreenOrientationController::~ScreenOrientationController()
 {
 }
 
-void ScreenOrientationController::provideTo(Page& page, blink::WebScreenOrientationClient* client)
+void ScreenOrientationController::provideTo(LocalFrame& frame, blink::WebScreenOrientationClient* client)
 {
-    ScreenOrientationController* controller = new ScreenOrientationController(page, client);
-    WillBeHeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(controller));
+    ScreenOrientationController* controller = new ScreenOrientationController(frame, client);
+    WillBeHeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
 }
 
-ScreenOrientationController& ScreenOrientationController::from(Page& page)
+ScreenOrientationController& ScreenOrientationController::from(LocalFrame& frame)
 {
-    return *static_cast<ScreenOrientationController*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
+    return *static_cast<ScreenOrientationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
-ScreenOrientationController::ScreenOrientationController(Page& page, blink::WebScreenOrientationClient* client)
-    : PageLifecycleObserver(&page)
+ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, blink::WebScreenOrientationClient* client)
+    : PageLifecycleObserver(frame.page())
     , m_overrideOrientation(blink::WebScreenOrientationUndefined)
     , m_client(client)
+    , m_frame(frame)
 {
 }
 
@@ -77,9 +78,13 @@ void ScreenOrientationController::pageVisibilityChanged()
     if (page() && page()->visibilityState() == PageVisibilityStateVisible) {
         blink::WebScreenOrientationType oldOrientation = m_overrideOrientation;
         m_overrideOrientation = blink::WebScreenOrientationUndefined;
-        LocalFrame* mainFrame = page()->mainFrame();
-        if (mainFrame && oldOrientation != orientation())
-            mainFrame->sendOrientationChangeEvent();
+        // FIXME: sendOrientationChangeEvent() currently send an event all the
+        // children of the frame, so it should only be called on the frame on
+        // top of the tree. We would need the embedder to call
+        // sendOrientationChangeEvent on every WebFrame part of a WebView to be
+        // able to remove this.
+        if (m_frame == m_frame.localFrameRoot() && oldOrientation != orientation())
+            m_frame.sendOrientationChangeEvent();
     } else if (m_overrideOrientation == blink::WebScreenOrientationUndefined) {
         // The page is no longer visible, store the last know screen orientation
         // so that we keep returning this orientation until the page becomes
@@ -96,13 +101,10 @@ blink::WebScreenOrientationType ScreenOrientationController::orientation() const
         return m_overrideOrientation;
     }
 
-    LocalFrame* mainFrame = page() ? page()->mainFrame() : 0;
-    if (!mainFrame)
-        return blink::WebScreenOrientationPortraitPrimary;
-    blink::WebScreenOrientationType orientationType = screenOrientationType(mainFrame->view());
+    blink::WebScreenOrientationType orientationType = screenOrientationType(m_frame.view());
     if (orientationType == blink::WebScreenOrientationUndefined) {
         // The embedder could not provide us with an orientation, deduce it ourselves.
-        orientationType = computeOrientation(mainFrame->view());
+        orientationType = computeOrientation(m_frame.view());
     }
     ASSERT(orientationType != blink::WebScreenOrientationUndefined);
     return orientationType;
