@@ -651,4 +651,54 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
+
+// Double-tapping where the user holds their finger down for the second time
+// for a longer press should send a touch press and released (right click)
+// to the location of the last successful touch exploration.
+TEST_F(TouchExplorationTest, DoubleTapLongPress) {
+  SwitchTouchExplorationMode(true);
+
+  // Tap at one location, and get a mouse move event.
+  gfx::Point tap_location(11, 12);
+  generator_->set_current_location(tap_location);
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+  AdvanceSimulatedTimePastTapDelay();
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  EXPECT_EQ(tap_location, events[0]->location());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_IS_SYNTHESIZED);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ClearCapturedEvents();
+
+  // Now double-tap and hold at a different location.
+  // This should result in a single touch long press and release
+  // at the location of the tap, not at the location of the double-tap.
+  // There should be a time delay between the touch press and release.
+  gfx::Point first_tap_location(33, 34);
+  generator_->set_current_location(first_tap_location);
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+  gfx::Point second_tap_location(23, 24);
+  generator_->set_current_location(second_tap_location);
+  generator_->PressTouch();
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(8000));
+  generator_->ReleaseTouch();
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(tap_location, captured_events[0]->location());
+  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(tap_location, captured_events[1]->location());
+  base::TimeDelta released_time = captured_events[1]->time_stamp();
+  EXPECT_EQ(
+      base::TimeDelta::FromMilliseconds(8000),
+      released_time - pressed_time);
+}
+
 }  // namespace ui
