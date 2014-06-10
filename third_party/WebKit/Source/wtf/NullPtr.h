@@ -49,6 +49,12 @@ typedef decltype(nullptr) nullptr_t;
 namespace std {
 class nullptr_t {
 public:
+    // Required in order to create const nullptr_t objects without an
+    // explicit initializer in GCC 4.5, a la:
+    //
+    // const std::nullptr_t nullptr;
+    nullptr_t() { }
+
     // Make nullptr convertible to any pointer type.
     template<typename T> operator T*() const { return 0; }
     // Make nullptr convertible to any member pointer type.
