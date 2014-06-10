@@ -418,9 +418,7 @@ std::string SSLBlockingPage::GetHTMLContentsV1() {
 std::string SSLBlockingPage::GetHTMLContentsV2() {
   base::DictionaryValue loadTimeData;
   base::string16 url(ASCIIToUTF16(request_url_.host()));
-  bool rtl = base::i18n::IsRTL();
-  loadTimeData.SetString("textDirection", rtl ? "rtl" : "ltr");
-  if (rtl)
+  if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&url);
   webui::SetFontAndTextDirection(&loadTimeData);
 

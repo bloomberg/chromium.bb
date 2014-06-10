@@ -3,13 +3,13 @@
    found in the LICENSE file. */
 
 a {
-  color: rgb(43, 43, 43);
+  color: #585858;
 }
 
 body {
   background: rgb(247, 247, 247);
-  color: rgb(43, 43, 43);
-  line-height: 1.7em;
+  color: #585858;
+  font-size: 125%;
 }
 
 button {
@@ -20,19 +20,36 @@ button {
   color: #fff;
   cursor: pointer;
   float: right;
+  font-size: .875em;
+  height: 36px;
   margin: -6px 0 0;
   padding: 8px 24px;
 }
 
+button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .50);
+}
+
+button:active {
+  background: rgb(50, 102, 213);
+}
+
 #details {
-  margin: 40px 0 150px 0;
+  color: #696969;
+  margin: 45px 0 150px 0;
+}
+
+#details-button {
+  color: #696969;
+  font-size: .875em;
 }
 
 h1 {
-  -webkit-margin-after: 15px;
+  -webkit-margin-after: 16px;
+  color: #585858;
   font-size: 1.6em;
   font-weight: normal;
-  line-height: 1.2em;
+  line-height: 1.75em;
 }
 
 .hidden {
@@ -45,20 +62,22 @@ h1 {
       url('images/2x/brokenssl_red.png') 2x);
   background-repeat: no-repeat;
   background-size: 100%;
-  height: 69px;
-  margin: 0 0 40px;
-  width: 56px;
+  height: 72px;
+  margin: 0 0 45px;
+  width: 72px;
 }
 
 .interstitial-wrapper {
   box-sizing: border-box;
+  font-size: 1em;
+  line-height: 1.6em;
   margin: 10% auto 0;
-  max-width: 552px;
+  max-width: 600px;
   width: 100%;
 }
 
 .nav-wrapper {
-  margin-top: 60px;
+  margin-top: 84px;
 }
 
 .nav-wrapper::after {
@@ -68,8 +87,8 @@ h1 {
   width: 100%;
 }
 
-p {
-  margin-bottom: 22px;
+#details p:not(:first-of-type) {
+  margin-top: 39px;
 }
 
 @media (max-width: 700px) {
