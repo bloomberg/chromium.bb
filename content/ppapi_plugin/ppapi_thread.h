@@ -56,6 +56,7 @@ class PpapiThread : public ChildThread,
     LOAD_FAILED,
     ENTRY_POINT_MISSING,
     INIT_FAILED,
+    FILE_MISSING,
     // NOTE: Add new values only immediately above this line.
     LOAD_RESULT_MAX  // Boundary value for UMA_HISTOGRAM_ENUMERATION.
   };

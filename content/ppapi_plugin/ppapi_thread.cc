@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/debug/crash_logging.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -275,6 +276,10 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     if (!library.is_valid()) {
       LOG(ERROR) << "Failed to load Pepper module from " << path.value()
                  << " (error: " << error.ToString() << ")";
+      if (!base::PathExists(path)) {
+        ReportLoadResult(path, FILE_MISSING);
+        return;
+      }
       ReportLoadResult(path, LOAD_FAILED);
       // Report detailed reason for load failure.
       ReportLoadErrorCode(path, error);
