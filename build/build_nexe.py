@@ -584,7 +584,7 @@ class Builder(object):
     _, ext = os.path.splitext(src)
     if ext in ['.c', '.S']:
       bin_name = self.GetCCompiler()
-      extra = ['-std=gnu99']
+      extra = ['-std=gnu99', '-Wstrict-prototypes']
       if self.is_pnacl_toolchain and ext == '.S':
         extra.append('-arch')
         extra.append(self.arch)
