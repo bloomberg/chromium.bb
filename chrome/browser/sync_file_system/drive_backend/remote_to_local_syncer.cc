@@ -74,19 +74,6 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
   return metadata.Pass();
 }
 
-template <typename R, typename S, typename T>
-R ComposeFunction(const base::Callback<T()>& g,
-                  const base::Callback<R(S)>& f) {
-  return f.Run(g.Run());
-}
-
-template <typename R, typename S, typename T>
-base::Callback<R()> CreateComposedFunction(
-    const base::Callback<T()>& g,
-    const base::Callback<R(S)>& f) {
-  return base::Bind(&ComposeFunction<R, S, T>, g, f);
-}
-
 }  // namespace
 
 RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)

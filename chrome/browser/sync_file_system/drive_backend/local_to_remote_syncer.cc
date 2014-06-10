@@ -17,6 +17,7 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
+#include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/folder_creator.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -395,13 +396,19 @@ void LocalToRemoteSyncer::UploadExistingFile(
     const SyncStatusCallback& callback)  {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
+  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
-  base::PostTaskAndReplyWithResult(
-      sync_context_->GetFileTaskRunner(), FROM_HERE,
-      base::Bind(&drive::util::GetMd5Digest, local_path_),
+  base::Callback<void(const std::string&)> did_calculate_callback =
       base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
+  sync_context_->GetWorkerTaskRunner()->PostTask(
+      FROM_HERE,
+      CreateComposedFunction(
+          base::Bind(&drive::util::GetMd5Digest, local_path_),
+          RelayCallbackToTaskRunner(
+              sync_context_->GetWorkerTaskRunner(), FROM_HERE,
+              did_calculate_callback)));
 }
 
 void LocalToRemoteSyncer::DidGetMD5ForUpload(
