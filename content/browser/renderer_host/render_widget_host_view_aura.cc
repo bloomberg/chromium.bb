@@ -623,7 +623,6 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
     }
   }
 
-  SnapToPhysicalPixelBoundary();
   InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
@@ -987,15 +986,14 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
 
   gfx::Vector2dF fudge = view_offset_snapped - view_offset;
   fudge.Scale(1.0 / current_device_scale_factor_);
-  gfx::Transform fudge_transform;
-  fudge_transform.Translate(fudge.x(), fudge.y());
-  GetLayer()->cc_layer()->SetTransform(fudge_transform);
+  GetLayer()->SetSubpixelPositionOffset(fudge);
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (HasDisplayPropertyChanged(window_))
     host_->InvalidateScreenInfo();
 
+  SnapToPhysicalPixelBoundary();
   // Don't recursively call SetBounds if this bounds update is the result of
   // a Window::SetBoundsInternal call.
   if (!in_bounds_changed_)

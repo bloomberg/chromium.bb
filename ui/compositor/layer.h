@@ -139,6 +139,10 @@ class COMPOSITOR_EXPORT Layer
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
 
+  // The offset from our parent (stored in bounds.origin()) is an integer but we
+  // may need to be at a fractional pixel offset to align properly on screen.
+  void SetSubpixelPositionOffset(const gfx::Vector2dF offset);
+
   // Return the target bounds if animator is running, or the current bounds
   // otherwise.
   gfx::Rect GetTargetBounds() const;
@@ -410,6 +414,7 @@ class COMPOSITOR_EXPORT Layer
   std::vector<Layer*> children_;
 
   gfx::Rect bounds_;
+  gfx::Vector2dF subpixel_position_offset_;
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;

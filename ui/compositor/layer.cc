@@ -243,6 +243,11 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
   GetAnimator()->SetBounds(bounds);
 }
 
+void Layer::SetSubpixelPositionOffset(const gfx::Vector2dF offset) {
+  subpixel_position_offset_ = offset;
+  RecomputePosition();
+}
+
 gfx::Rect Layer::GetTargetBounds() const {
   if (animator_.get() && animator_->IsAnimatingProperty(
       LayerAnimationElement::BOUNDS)) {
@@ -959,7 +964,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 }
 
 void Layer::RecomputePosition() {
-  cc_layer_->SetPosition(gfx::PointF(bounds_.x(), bounds_.y()));
+  cc_layer_->SetPosition(bounds_.origin() + subpixel_position_offset_);
 }
 
 void Layer::AddAnimatorsInTreeToCollection(
