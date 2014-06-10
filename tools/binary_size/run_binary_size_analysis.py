@@ -632,7 +632,7 @@ def main():
                     'library. This is to be used when the addr2line in '
                     'the path is not for the right architecture or '
                     'of the right version.')
-  parser.add_option('--jobs',
+  parser.add_option('--jobs', type='int',
                     help='number of jobs to use for the parallel '
                     'addr2line processing pool; defaults to 1. More '
                     'jobs greatly improve throughput but eat RAM like '
