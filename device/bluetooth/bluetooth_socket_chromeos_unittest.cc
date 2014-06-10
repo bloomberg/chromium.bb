@@ -258,7 +258,7 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
   EXPECT_EQ(BluetoothSocket::kDisconnected, last_reason_);
-  EXPECT_EQ(net::ErrorToString(net::ERR_CONNECTION_CLOSED), last_message_);
+  EXPECT_EQ(net::ErrorToString(net::OK), last_message_);
 
   success_callback_count_ = 0;
   error_callback_count_ = 0;

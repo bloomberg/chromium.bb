@@ -191,18 +191,9 @@ void BluetoothSocketNet::DoReceive(
                                    success_callback,
                                    error_callback));
 
-  if (read_result > 0) {
-    success_callback.Run(read_result, buffer);
-  } else if (read_result == net::OK ||
-             read_result == net::ERR_CONNECTION_CLOSED) {
-    error_callback.Run(BluetoothSocket::kDisconnected,
-                       net::ErrorToString(net::ERR_CONNECTION_CLOSED));
-  } else if (read_result == net::ERR_IO_PENDING) {
-    read_buffer_ = buffer;
-  } else {
-    error_callback.Run(BluetoothSocket::kSystemError,
-                       net::ErrorToString(read_result));
-  }
+  read_buffer_ = buffer;
+  if (read_result != net::ERR_IO_PENDING)
+    OnSocketReadComplete(success_callback, error_callback, read_result);
 }
 
 void BluetoothSocketNet::OnSocketReadComplete(
@@ -217,9 +208,10 @@ void BluetoothSocketNet::OnSocketReadComplete(
   if (read_result > 0) {
     success_callback.Run(read_result, buffer);
   } else if (read_result == net::OK ||
-             read_result == net::ERR_CONNECTION_CLOSED) {
+             read_result == net::ERR_CONNECTION_CLOSED ||
+             read_result == net::ERR_CONNECTION_RESET) {
     error_callback.Run(BluetoothSocket::kDisconnected,
-                       net::ErrorToString(net::ERR_CONNECTION_CLOSED));
+                       net::ErrorToString(read_result));
   } else {
     error_callback.Run(BluetoothSocket::kSystemError,
                        net::ErrorToString(read_result));
