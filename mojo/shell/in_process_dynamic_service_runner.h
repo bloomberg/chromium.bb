@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/shell/dynamic_service_runner.h"
+#include "mojo/shell/keep_alive.h"
 
 namespace mojo {
 namespace shell {
@@ -32,6 +33,7 @@ class InProcessDynamicServiceRunner
   // |base::DelegateSimpleThread::Delegate| method:
   virtual void Run() OVERRIDE;
 
+  KeepAlive keep_alive_;
   base::FilePath app_path_;
   ScopedMessagePipeHandle service_handle_;
   base::Callback<bool(void)> app_completed_callback_runner_;

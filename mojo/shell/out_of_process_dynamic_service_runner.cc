@@ -15,7 +15,8 @@ namespace shell {
 
 OutOfProcessDynamicServiceRunner::OutOfProcessDynamicServiceRunner(
     Context* context)
-    : context_(context) {
+    : context_(context),
+      keep_alive_(context) {
 }
 
 OutOfProcessDynamicServiceRunner::~OutOfProcessDynamicServiceRunner() {

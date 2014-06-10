@@ -8,11 +8,12 @@ module mojo {
 
 struct URLRequest {
   string url;
-  string method;
+  string method = "GET";
   string[] headers;
   handle<data_pipe_consumer> body;
-  int64 body_length;  // Set to -1 if length is unknown.
-  bool follow_redirects;
+  int64 body_length = 0;  // Set to -1 if length is unknown.
+  bool follow_redirects = false;
+  bool bypass_cache = false;
 };
 
 struct URLResponse {

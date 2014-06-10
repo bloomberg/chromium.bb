@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/service_manager/service_loader.h"
+#include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/shell/dynamic_service_runner.h"
 #include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
@@ -29,10 +30,7 @@ class DynamicServiceLoader : public ServiceLoader {
                        scoped_ptr<DynamicServiceRunnerFactory> runner_factory);
   virtual ~DynamicServiceLoader();
 
-  // Initiates the dynamic load. If the URL has a mojo: scheme, then the name
-  // specified will be modified to the platform's naming scheme. Also, the
-  // value specified to the --origin command line argument will be used as the
-  // host/port.
+  // ServiceLoader methods:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle service_handle) OVERRIDE;
@@ -40,15 +38,9 @@ class DynamicServiceLoader : public ServiceLoader {
       OVERRIDE;
 
  private:
-  class LoadContext;
-
-  void AppCompleted(const GURL& url);
-
   Context* const context_;
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory_;
-
-  typedef std::map<GURL, LoadContext*> LoadContextMap;
-  LoadContextMap url_to_load_context_;
+  NetworkServicePtr network_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicServiceLoader);
 };

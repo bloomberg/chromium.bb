@@ -25,12 +25,9 @@ scoped_ptr<base::Thread> CreateIOThread(const char* name) {
 
 TaskRunners::TaskRunners(base::SingleThreadTaskRunner* ui_runner)
     : ui_runner_(ui_runner),
-      cache_thread_(CreateIOThread("cache_thread")),
       io_thread_(CreateIOThread("io_thread")),
-      file_thread_(new base::Thread("file_thread")),
       blocking_pool_(new base::SequencedWorkerPool(kMaxBlockingPoolThreads,
                                                    "blocking_pool")) {
-  file_thread_->Start();
 }
 
 TaskRunners::~TaskRunners() {

@@ -33,14 +33,6 @@ class TaskRunners {
     return io_thread_->message_loop_proxy();
   }
 
-  base::SingleThreadTaskRunner* file_runner() const {
-    return file_thread_->message_loop_proxy();
-  }
-
-  base::MessageLoopProxy* cache_runner() const {
-    return cache_thread_->message_loop_proxy();
-  }
-
   base::SequencedWorkerPool* blocking_pool() const {
     return blocking_pool_.get();
   }
@@ -48,9 +40,7 @@ class TaskRunners {
  private:
   // TODO(beng): should this be named shell_runner_?
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
-  scoped_ptr<base::Thread> cache_thread_;
   scoped_ptr<base::Thread> io_thread_;
-  scoped_ptr<base::Thread> file_thread_;
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 

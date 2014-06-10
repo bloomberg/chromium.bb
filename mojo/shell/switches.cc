@@ -19,7 +19,10 @@ const char kDisableCache[] = "disable-cache";
 // change it to "single-process") when it works.
 const char kEnableMultiprocess[] = "enable-multiprocess";
 
+// Map mojo: URLs to a shared library of similar name at this origin. See
+// mojo_url_resolver.cc for details.
 const char kOrigin[] = "origin";
+
 // Enables the mojo spy, which acts as a man-in-the-middle inspector for
 // message pipes and other activities. This is work in progress.
 const char kSpy[] = "spy";

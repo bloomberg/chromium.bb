@@ -46,7 +46,8 @@ void ShellTestBase::LaunchServiceInProcess(
   // On Linux, they're under lib/.
   base::FilePath service_dir(base_dir.AppendASCII("lib"));
 #endif
-  shell_context_->set_mojo_origin(net::FilePathToFileURL(service_dir).spec());
+  shell_context_->mojo_url_resolver()->set_origin(
+      net::FilePathToFileURL(service_dir).spec());
 
   shell_context_->service_manager()->ConnectToService(
       service_url, service_name, client_handle.Pass(), GURL());

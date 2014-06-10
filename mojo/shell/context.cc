@@ -17,7 +17,6 @@
 #include "mojo/services/native_viewport/native_viewport_service.h"
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
-#include "mojo/shell/network_delegate.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
 #include "mojo/spy/spy.h"
@@ -33,6 +32,12 @@
 namespace mojo {
 namespace shell {
 namespace {
+
+// These mojo: URLs are loaded directly from the local filesystem. They
+// correspond to shared libraries bundled alongside the mojo_shell.
+const char* kLocalMojoURLs[] = {
+  "mojo:mojo_network_service",
+};
 
 // Used to ensure we only init once.
 class Setup {
@@ -75,14 +80,12 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
 };
 
 Context::Context()
-    : task_runners_(base::MessageLoop::current()->message_loop_proxy()),
-      storage_(),
-      loader_(task_runners_.io_runner(),
-              task_runners_.file_runner(),
-              task_runners_.cache_runner(),
-              scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
-              storage_.profile_path()) {
+    : task_runners_(base::MessageLoop::current()->message_loop_proxy()) {
   setup.Get();
+
+  for (size_t i = 0; i < arraysize(kLocalMojoURLs); ++i)
+    mojo_url_resolver_.AddLocalFileMapping(GURL(kLocalMojoURLs[i]));
+
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
   if (cmdline->HasSwitch(switches::kEnableMultiprocess))

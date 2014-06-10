@@ -23,10 +23,6 @@ void Run(Context* context, const std::vector<GURL>& app_urls) {
   for (std::vector<GURL>::const_iterator it = app_urls.begin();
        it != app_urls.end();
        ++it) {
-    if (it->scheme() == "mojo" && context->mojo_origin().empty()) {
-      LOG(ERROR) << "mojo: URL passed with no origin specified";
-      return;
-    }
     ScopedMessagePipeHandle no_handle;
     context->service_manager()->ConnectToService(
         *it, std::string(), no_handle.Pass(), GURL());

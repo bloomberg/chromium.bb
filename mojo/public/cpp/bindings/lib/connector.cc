@@ -118,7 +118,7 @@ void Connector::WaitToReadMore() {
 void Connector::ReadMore() {
   while (true) {
     bool receiver_result = false;
-    MojoResult rv =  ReadAndDispatchMessage(
+    MojoResult rv = ReadAndDispatchMessage(
         message_pipe_.get(), incoming_receiver_, &receiver_result);
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();

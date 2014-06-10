@@ -6,6 +6,7 @@
 
 #include "mojo/services/network/network_context.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 
 namespace mojo {
@@ -125,6 +126,8 @@ void URLLoaderImpl::Start(URLRequestPtr request,
                           net::DEFAULT_PRIORITY,
                           this,
                           context_->url_request_context()));
+  if (request->bypass_cache)
+    url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
   url_request_->Start();
 }
 

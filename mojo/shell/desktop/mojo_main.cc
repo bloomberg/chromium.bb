@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kOrigin)) {
-      shell_context.set_mojo_origin(
+      shell_context.mojo_url_resolver()->set_origin(
           command_line.GetSwitchValueASCII(switches::kOrigin));
     }
 

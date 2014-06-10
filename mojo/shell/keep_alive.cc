@@ -4,6 +4,7 @@
 
 #include "mojo/shell/keep_alive.h"
 
+#include "base/bind.h"
 #include "mojo/shell/context.h"
 
 namespace mojo {

@@ -9,8 +9,7 @@
 
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/keep_alive.h"
-#include "mojo/shell/loader.h"
-#include "mojo/shell/storage.h"
+#include "mojo/shell/mojo_url_resolver.h"
 #include "mojo/shell/task_runners.h"
 
 #if defined(OS_ANDROID)
@@ -31,16 +30,10 @@ class Context {
   Context();
   ~Context();
 
-  const std::string& mojo_origin() const { return mojo_origin_; }
-  void set_mojo_origin(const std::string& mojo_origin) {
-    mojo_origin_ = mojo_origin;
-  }
-
   TaskRunners* task_runners() { return &task_runners_; }
-  Storage* storage() { return &storage_; }
-  Loader* loader() { return &loader_; }
   ServiceManager* service_manager() { return &service_manager_; }
   KeepAliveCounter* keep_alive_counter() { return &keep_alive_counter_; }
+  MojoURLResolver* mojo_url_resolver() { return &mojo_url_resolver_; }
 
 #if defined(OS_ANDROID)
   jobject activity() const { return activity_.obj(); }
@@ -50,12 +43,9 @@ class Context {
  private:
   class NativeViewportServiceLoader;
 
-  std::string mojo_origin_;
-
   TaskRunners task_runners_;
-  Storage storage_;
-  Loader loader_;
   ServiceManager service_manager_;
+  MojoURLResolver mojo_url_resolver_;
   scoped_ptr<Spy> spy_;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;

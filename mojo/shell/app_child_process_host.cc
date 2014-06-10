@@ -4,6 +4,7 @@
 
 #include "mojo/shell/app_child_process_host.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/embedder.h"
