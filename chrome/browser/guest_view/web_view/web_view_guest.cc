@@ -1130,8 +1130,8 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
   // chrome://settings.
   bool scheme_is_blocked =
       (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
-          url.scheme()) &&
-      !url.SchemeIs(content::kAboutScheme)) ||
+           url.scheme()) &&
+       !url.SchemeIs(url::kAboutScheme)) ||
       url.SchemeIs(url::kJavaScriptScheme);
   if (scheme_is_blocked || !url.is_valid()) {
     std::string error_type(net::ErrorToString(net::ERR_ABORTED));

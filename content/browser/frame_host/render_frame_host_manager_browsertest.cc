@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // renderer.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_BackForwardNotStale) {
   StartServer();
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Visit a page on first site.
   NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));

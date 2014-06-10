@@ -486,7 +486,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     GURL url(net::UnescapeURLComponent(
         query, net::UnescapeRule::URL_SPECIAL_CHARS));
     if (!url.is_valid())
-      url = GURL(kAboutBlankURL);
+      url = GURL(url::kAboutBlankURL);
     scoped_ptr<DevToolsTarget> target(delegate_->CreateNewTarget(url));
     if (!target) {
       SendJson(connection_id,

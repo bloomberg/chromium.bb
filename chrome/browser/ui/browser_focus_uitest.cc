@@ -519,8 +519,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Open about:blank, focus should be on the location bar.
-  chrome::AddSelectedTabWithURL(browser(), GURL(content::kAboutBlankURL),
-                                content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(
+      browser(), GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
   ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));

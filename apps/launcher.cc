@@ -411,9 +411,9 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
 
 #if defined(OS_WIN)
   base::CommandLine::StringType about_blank_url(
-      base::ASCIIToWide(content::kAboutBlankURL));
+      base::ASCIIToWide(url::kAboutBlankURL));
 #else
-  base::CommandLine::StringType about_blank_url(content::kAboutBlankURL);
+  base::CommandLine::StringType about_blank_url(url::kAboutBlankURL);
 #endif
   CommandLine::StringVector args = command_line.GetArgs();
   // Browser tests will add about:blank to the command line. This should

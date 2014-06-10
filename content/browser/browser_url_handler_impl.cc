@@ -50,7 +50,7 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     }
 
     if (!is_sub_scheme_allowed) {
-      *url = GURL(kAboutBlankURL);
+      *url = GURL(url::kAboutBlankURL);
       return false;
     }
 

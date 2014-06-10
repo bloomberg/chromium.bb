@@ -34,7 +34,7 @@ void ExtensionApiUnittest::CreateBackgroundPage() {
   if (!contents_) {
     GURL url = BackgroundInfo::GetBackgroundURL(extension());
     if (url.is_empty())
-      url = GURL(content::kAboutBlankURL);
+      url = GURL(url::kAboutBlankURL);
     AddTab(browser(), url);
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
   }

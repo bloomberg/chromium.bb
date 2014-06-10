@@ -325,7 +325,8 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  InitNavigateParams(&params, 0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  InitNavigateParams(
+      &params, 0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   LoadCommittedDetails details;
   cont.RendererDidNavigate(main_test_rfh(), params, &details);
@@ -1232,7 +1233,7 @@ TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
 
   // When opening a new window, it is navigated to about:blank internally.
   // Currently, this results in two DidNavigate events.
-  const GURL url(kAboutBlankURL);
+  const GURL url(url::kAboutBlankURL);
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
 
@@ -2297,7 +2298,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // A navigation to about:whatever should always look like a navigation to
   // about:blank
-  GURL url_normalized(kAboutBlankURL);
+  GURL url_normalized(url::kAboutBlankURL);
   GURL url_from_ipc("about:whatever");
 
   // We navigate the test WebContents to about:blank, since NavigateAndCommit

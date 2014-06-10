@@ -1439,7 +1439,7 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
   const std::string& url = gurl.spec();
   if (url == chrome::kChromeUINewTabURL)
     return AutocompleteInput::NTP;
-  if (url == content::kAboutBlankURL)
+  if (url == url::kAboutBlankURL)
     return AutocompleteInput::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
     return AutocompleteInput::HOME_PAGE;

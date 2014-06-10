@@ -1397,8 +1397,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(popup, GURL(content::kAboutBlankURL),
-                                content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(
+      popup, GURL(url::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
   // Wait for the page to finish loading.
   observer.Wait();
   popup->window()->Show();
@@ -1607,7 +1607,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, WindowedNPAPIPluginHidden) {
   // Create a new tab and open the find bar there.
   chrome::NewTab(browser());
   browser()->tab_strip_model()->ActivateTabAt(1, true);
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   EnsureFindBoxOpen();
 

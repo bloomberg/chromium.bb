@@ -129,10 +129,10 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ASSERT_EQ(S_OK, hr);
   ASSERT_TRUE(NULL != acc_obj);
 
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
-  std::wstring title = UTF16ToWide(l10n_util::GetStringFUTF16(
-      IDS_BROWSER_WINDOW_TITLE_FORMAT,
-      base::ASCIIToUTF16(content::kAboutBlankURL)));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  std::wstring title = UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
+                                 base::ASCIIToUTF16(url::kAboutBlankURL)));
   TestAccessibilityInfo(acc_obj, title, ROLE_SYSTEM_WINDOW);
 }
 

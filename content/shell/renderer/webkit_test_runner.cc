@@ -151,7 +151,7 @@ class NavigateAwayVisitor : public RenderViewVisitor {
     if (render_view == main_render_view_)
       return true;
     render_view->GetWebView()->mainFrame()->loadRequest(
-        WebURLRequest(GURL(kAboutBlankURL)));
+        WebURLRequest(GURL(url::kAboutBlankURL)));
     return true;
   }
 
@@ -706,7 +706,7 @@ void WebKitTestRunner::OnReset() {
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   render_view()->GetWebView()->mainFrame()->loadRequest(
-      WebURLRequest(GURL(kAboutBlankURL)));
+      WebURLRequest(GURL(url::kAboutBlankURL)));
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 
@@ -718,7 +718,7 @@ void WebKitTestRunner::OnNotifyDone() {
 void WebKitTestRunner::OnTryLeakDetection() {
   WebLocalFrame* main_frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
-  DCHECK_EQ(GURL(kAboutBlankURL), GURL(main_frame->document().url()));
+  DCHECK_EQ(GURL(url::kAboutBlankURL), GURL(main_frame->document().url()));
   DCHECK(!main_frame->isLoading());
 
   leak_detector_->TryLeakDetection(main_frame);

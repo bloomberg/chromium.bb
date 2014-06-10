@@ -9,6 +9,9 @@
 
 namespace url {
 
+URL_EXPORT extern const char kAboutBlankURL[];
+
+URL_EXPORT extern const char kAboutScheme[];
 URL_EXPORT extern const char kBlobScheme[];
 URL_EXPORT extern const char kDataScheme[];
 URL_EXPORT extern const char kFileScheme[];

@@ -389,7 +389,7 @@ AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
         AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
   }
 
-  if (url == content::kAboutBlankURL)
+  if (url == url::kAboutBlankURL)
     return AutocompleteInput::BLANK;
 
   if (url == profile_->GetPrefs()->GetString(prefs::kHomePage))

@@ -26,7 +26,7 @@ using content::WebContents;
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.
 TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
-  GURL about_blank(content::kAboutBlankURL);
+  GURL about_blank(url::kAboutBlankURL);
 
   // Create three tabs.
   AddTab(browser(), about_blank);

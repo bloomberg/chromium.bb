@@ -734,14 +734,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EscapeToDefaultMatch) {
 #define MAYBE_BasicTextOperations BasicTextOperations
 #endif
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
 
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
   base::string16 old_text = omnibox_view->GetText();
-  EXPECT_EQ(base::UTF8ToUTF16(content::kAboutBlankURL), old_text);
+  EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), old_text);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   size_t start, end;
@@ -1066,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DeleteItem) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   model->SetUserSelectedDefaultSearchProvider(NULL);
 
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
 
   OmniboxView* omnibox_view = NULL;
@@ -1371,14 +1371,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
 #if defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
 
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
   base::string16 old_text = omnibox_view->GetText();
-  EXPECT_EQ(base::UTF8ToUTF16(content::kAboutBlankURL), old_text);
+  EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), old_text);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Delete the text, then undo.

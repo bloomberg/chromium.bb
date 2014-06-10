@@ -79,8 +79,12 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
 
 TEST_F(WebDialogWebContentsDelegateTest, OpenURLFromTabTest) {
   test_web_contents_delegate_->OpenURLFromTab(
-    NULL, OpenURLParams(GURL(content::kAboutBlankURL), Referrer(),
-    NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+      NULL,
+      OpenURLParams(GURL(url::kAboutBlankURL),
+                    Referrer(),
+                    NEW_FOREGROUND_TAB,
+                    content::PAGE_TRANSITION_LINK,
+                    false));
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
@@ -102,8 +106,12 @@ TEST_F(WebDialogWebContentsDelegateTest, DetachTest) {
   EXPECT_EQ(NULL, test_web_contents_delegate_->browser_context());
   // Now, none of the following calls should do anything.
   test_web_contents_delegate_->OpenURLFromTab(
-      NULL, OpenURLParams(GURL(content::kAboutBlankURL), Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+      NULL,
+      OpenURLParams(GURL(url::kAboutBlankURL),
+                    Referrer(),
+                    NEW_FOREGROUND_TAB,
+                    content::PAGE_TRANSITION_LINK,
+                    false));
   test_web_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false, NULL);
   EXPECT_EQ(0, browser()->tab_strip_model()->count());

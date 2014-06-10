@@ -186,7 +186,7 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
 void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
                                  content::WebContents* web_contents) {
   // Let's try to avoid histogramming useless URLs.
-  if (cleaned_url.empty() || cleaned_url == content::kAboutBlankURL ||
+  if (cleaned_url.empty() || cleaned_url == url::kAboutBlankURL ||
       cleaned_url == chrome::kChromeUINewTabURL)
     return;
 
@@ -395,7 +395,7 @@ void UmaPolicy::CleanupClosedPage(const std::string& cleaned_url,
 // We convert to a string in the hopes that this is faster than Replacements.
 std::string UmaPolicy::CleanURL(const GURL& gurl) {
   if (gurl.spec().empty())
-    return GURL(content::kAboutBlankURL).spec();
+    return GURL(url::kAboutBlankURL).spec();
   if (!gurl.is_valid())
     return gurl.spec();
   if (!gurl.has_ref())

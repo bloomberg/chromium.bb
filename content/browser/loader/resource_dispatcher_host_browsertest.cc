@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Navigate to a cross-site page that loads immediately without making a
   // network request.  The unload event should still be run.
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Check that the cookie was set.
   EXPECT_EQ("onunloadCookie=foo", GetCookies(url));

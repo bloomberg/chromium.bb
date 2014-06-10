@@ -681,9 +681,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
 
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);   // Assert the interstitial is gone
-  EXPECT_EQ(
-      GURL(content::kAboutBlankURL),  // Back to "about:blank"
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
@@ -733,9 +732,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
 
-  EXPECT_EQ(
-      GURL(content::kAboutBlankURL),  // Back to "about:blank"
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
@@ -822,9 +820,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
   // The "proceed" command should go back instead, if proceeding is disabled.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
   AssertNoInterstitial(true);
-  EXPECT_EQ(
-      GURL(content::kAboutBlankURL),  // Back to "about:blank"
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Verifies that the reporting checkbox is hidden on non-HTTP pages.
@@ -858,9 +855,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
 
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);   // Assert the interstitial is gone
-  EXPECT_EQ(
-      GURL(content::kAboutBlankURL),  // Back to "about:blank"
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
@@ -886,9 +882,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
 
   EXPECT_TRUE(ClickAndWaitForDetach("back"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
-  EXPECT_EQ(
-      GURL(content::kAboutBlankURL),  // We are back to "about:blank".
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),  // We are back to "about:blank".
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // http://crbug.com/247763

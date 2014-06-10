@@ -537,7 +537,7 @@ void WebNavigationTabObserver::DidFinishLoad(
   DCHECK(
       navigation_state_.GetUrl(frame_id) == validated_url ||
       (navigation_state_.GetUrl(frame_id) == GURL(content::kAboutSrcDocURL) &&
-       validated_url == GURL(content::kAboutBlankURL)))
+       validated_url == GURL(url::kAboutBlankURL)))
       << "validated URL is " << validated_url << " but we expected "
       << navigation_state_.GetUrl(frame_id);
   DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);

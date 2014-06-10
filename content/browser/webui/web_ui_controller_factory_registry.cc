@@ -83,7 +83,7 @@ bool WebUIControllerFactoryRegistry::IsURLAcceptableForWebUI(
   return UseWebUIForURL(browser_context, url) ||
       // It's possible to load about:blank in a Web UI renderer.
       // See http://crbug.com/42547
-      url.spec() == kAboutBlankURL ||
+      url.spec() == url::kAboutBlankURL ||
       // javascript: and debug URLs like chrome://kill are allowed.
       IsRendererDebugURL(url);
 }

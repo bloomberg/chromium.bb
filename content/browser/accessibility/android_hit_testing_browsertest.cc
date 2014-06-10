@@ -39,7 +39,7 @@ class AndroidHitTestingBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AndroidHitTestingBrowserTest,
                        HitTestOutsideDocumentBoundsReturnsRoot) {
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Load the page.
   AccessibilityNotificationWaiter waiter(

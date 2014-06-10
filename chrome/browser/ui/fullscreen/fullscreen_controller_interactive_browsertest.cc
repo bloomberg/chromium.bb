@@ -22,7 +22,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-using content::kAboutBlankURL;
+using url::kAboutBlankURL;
 using content::WebContents;
 using content::PAGE_TRANSITION_TYPED;
 
@@ -181,13 +181,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   {
     FullscreenNotificationObserver fullscreen_observer;
-    AddTabAtIndex(1, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(1, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
@@ -212,8 +212,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestFullscreenBubbleMouseLockState) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
-  AddTabAtIndex(1, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(1, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter tab fullscreen.
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   // Exit browser fullscreen.
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter and then exit tab fullscreen.
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(
     FullscreenControllerTest, DISABLED_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 

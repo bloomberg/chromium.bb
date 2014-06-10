@@ -457,7 +457,7 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   // should be killed.
   if (!CanCommitURL(validated_params.url)) {
     VLOG(1) << "Blocked URL " << validated_params.url.spec();
-    validated_params.url = GURL(kAboutBlankURL);
+    validated_params.url = GURL(url::kAboutBlankURL);
     RecordAction(base::UserMetricsAction("CanCommitURL_BlockedAndKilled"));
     // Kills the process.
     process->ReceivedBadMessage();

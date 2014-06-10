@@ -173,7 +173,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
 
   void Init(bool prerender_search_results_base_page,
             bool call_did_finish_load) {
-    AddTab(browser(), GURL(content::kAboutBlankURL));
+    AddTab(browser(), GURL(url::kAboutBlankURL));
 
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map[std::string()] =
@@ -304,7 +304,7 @@ TEST_F(InstantSearchPrerendererTest, CancelPrerenderRequestOnTabChangeEvent) {
   EXPECT_NE(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 
   // Add a new tab to deactivate the current tab.
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Make sure the pending prerender request is cancelled.
@@ -324,7 +324,7 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   Init(true, true);
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
   content::WebContents* active_tab = GetActiveWebContents();
-  EXPECT_EQ(GURL(content::kAboutBlankURL), active_tab->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), active_tab->GetURL());
 
   // Allow prerendering only for search type AutocompleteMatch suggestions.
   AutocompleteMatch search_type_match(NULL, 1100, false,

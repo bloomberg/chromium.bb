@@ -1654,15 +1654,15 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // This is because the browser treats navigation to an empty GURL as a
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
-    *url = GURL(kAboutBlankURL);
+    *url = GURL(url::kAboutBlankURL);
     RecordAction(base::UserMetricsAction("FilterURLTermiate_Invalid"));
     return;
   }
 
-  if (url->SchemeIs(kAboutScheme)) {
+  if (url->SchemeIs(url::kAboutScheme)) {
     // The renderer treats all URLs in the about: scheme as being about:blank.
     // Canonicalize about: URLs to about:blank.
-    *url = GURL(kAboutBlankURL);
+    *url = GURL(url::kAboutBlankURL);
     RecordAction(base::UserMetricsAction("FilterURLTermiate_About"));
   }
 
@@ -1676,7 +1676,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.
     VLOG(1) << "Blocked URL " << url->spec();
-    *url = GURL(kAboutBlankURL);
+    *url = GURL(url::kAboutBlankURL);
     RecordAction(base::UserMetricsAction("FilterURLTermiate_Blocked"));
   }
 }

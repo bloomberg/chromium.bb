@@ -1170,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
   ui_test_utils::NavigateToURL(browser(), downloads_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 
-  GURL blank_url(content::kAboutBlankURL);
+  GURL blank_url(url::kAboutBlankURL);
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
@@ -1484,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Add a pinned non-app tab.
   chrome::NewTab(browser());
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   model->SetTabPinned(2, true);
 
   // Write out the pinned tabs.
@@ -1624,7 +1624,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
 // Makes sure the forward button is disabled immediately when navigating
 // forward to a slow-to-commit page.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
-  GURL blank_url(content::kAboutBlankURL);
+  GURL blank_url(url::kAboutBlankURL);
   ui_test_utils::NavigateToURL(browser(), blank_url);
 
   ui_test_utils::NavigateToURL(
@@ -2084,7 +2084,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, app_browser->tab_strip_model()->count());
 
   // Now try opening another tab in the app browser.
-  AddTabWithURLParams params2(GURL(content::kAboutBlankURL),
+  AddTabWithURLParams params2(GURL(url::kAboutBlankURL),
                               content::PAGE_TRANSITION_TYPED);
   app_browser->AddTabWithURL(&params2);
   EXPECT_EQ(app_browser, params2.target);
@@ -2102,7 +2102,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, app_popup_browser->tab_strip_model()->count());
 
   // Now try opening another tab in the app popup browser.
-  AddTabWithURLParams params3(GURL(content::kAboutBlankURL),
+  AddTabWithURLParams params3(GURL(url::kAboutBlankURL),
                               content::PAGE_TRANSITION_TYPED);
   app_popup_browser->AddTabWithURL(&params3);
   EXPECT_EQ(app_popup_browser, params3.target);

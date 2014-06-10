@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
       new content::MessageLoopRunner;
   web_contents_hidden_callback_ = runner->QuitClosure();
   chrome::AddSelectedTabWithURL(browser(),
-                                GURL(content::kAboutBlankURL),
+                                GURL(url::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   runner->Run();
   web_contents_hidden_callback_.Reset();

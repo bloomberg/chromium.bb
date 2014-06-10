@@ -28,8 +28,8 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL("http://google.com")
       },
       {
-        GURL(content::kAboutBlankURL),
-        GURL(content::kAboutBlankURL)
+        GURL(url::kAboutBlankURL),
+        GURL(url::kAboutBlankURL)
       },
       {
         GURL(chrome_prefix + chrome::kChromeUIMemoryHost),

@@ -1400,7 +1400,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   // Create a panel with a non-extension host.
   CreatePanelParams params1(extension_app_name, gfx::Rect(), SHOW_AS_ACTIVE);
-  params1.url = GURL(content::kAboutBlankURL);
+  params1.url = GURL(url::kAboutBlankURL);
   Panel* panel1 = CreatePanelWithParams(params1);
   EXPECT_EQ(2, panel_manager->num_panels());
 

@@ -30,7 +30,7 @@
   content::ShellBrowserContext* browserContext =
       content::ShellContentBrowserClient::Get()->browser_context();
   content::Shell::CreateNewWindow(browserContext,
-                                  GURL(content::kAboutBlankURL),
+                                  GURL(url::kAboutBlankURL),
                                   NULL,
                                   MSG_ROUTING_NONE,
                                   gfx::Size());

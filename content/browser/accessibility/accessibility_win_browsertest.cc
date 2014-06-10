@@ -419,7 +419,7 @@ base::string16 AccessibleChecker::RoleVariantToString(
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        MAYBE(TestBusyAccessibilityTree)) {
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
 
   // Navigate to another page.
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Verify that the IAccessible reference still points to a valid object and
   // that calls to its methods fail since the tree is no longer valid after

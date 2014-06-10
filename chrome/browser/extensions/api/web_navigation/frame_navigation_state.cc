@@ -81,7 +81,7 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
       return true;
   }
   // Allow about:blank and about:srcdoc.
-  if (url.spec() == content::kAboutBlankURL ||
+  if (url.spec() == url::kAboutBlankURL ||
       url.spec() == content::kAboutSrcDocURL) {
     return true;
   }
@@ -101,7 +101,7 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
   frame_state.url = url;
   frame_state.is_main_frame = is_main_frame;
   frame_state.is_iframe_srcdoc = is_iframe_srcdoc;
-  DCHECK(!is_iframe_srcdoc || url == GURL(content::kAboutBlankURL));
+  DCHECK(!is_iframe_srcdoc || url == GURL(url::kAboutBlankURL));
   frame_state.is_navigating = true;
   frame_state.is_committed = false;
   frame_state.is_server_redirected = false;

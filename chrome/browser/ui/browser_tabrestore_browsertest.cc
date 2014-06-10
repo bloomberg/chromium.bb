@@ -69,7 +69,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(content::kAboutBlankURL), NEW_WINDOW,
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
   BrowserList* active_browser_list =
       BrowserList::GetInstance(browser()->host_desktop_type());
@@ -103,7 +105,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(content::kAboutBlankURL), NEW_WINDOW,
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
   BrowserList* active_browser_list =
       BrowserList::GetInstance(browser()->host_desktop_type());

@@ -152,7 +152,7 @@ GURL ToolbarModelImpl::GetURL() const {
       return ShouldDisplayURL() ? entry->GetVirtualURL() : GURL();
   }
 
-  return GURL(content::kAboutBlankURL);
+  return GURL(url::kAboutBlankURL);
 }
 
 bool ToolbarModelImpl::WouldPerformSearchTermReplacement(

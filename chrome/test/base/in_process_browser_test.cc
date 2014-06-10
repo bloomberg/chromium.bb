@@ -249,7 +249,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
 
   if (command_line->GetArgs().empty())
-    command_line->AppendArg(content::kAboutBlankURL);
+    command_line->AppendArg(url::kAboutBlankURL);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {
@@ -342,7 +342,8 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser, GURL(content::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser,
+                                GURL(url::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 

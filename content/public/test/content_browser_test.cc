@@ -157,7 +157,7 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
 Shell* ContentBrowserTest::CreateBrowser() {
   return Shell::CreateNewWindow(
       ShellContentBrowserClient::Get()->browser_context(),
-      GURL(kAboutBlankURL),
+      GURL(url::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,
       gfx::Size());
@@ -166,7 +166,7 @@ Shell* ContentBrowserTest::CreateBrowser() {
 Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
   return Shell::CreateNewWindow(
       ShellContentBrowserClient::Get()->off_the_record_browser_context(),
-      GURL(kAboutBlankURL),
+      GURL(url::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,
       gfx::Size());

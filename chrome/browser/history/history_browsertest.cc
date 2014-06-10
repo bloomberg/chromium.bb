@@ -494,7 +494,9 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);
 

@@ -971,7 +971,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
 
   // Allow all about: and chrome: URLs except about:blank, since the user may
   // like to see "chrome://memory/", etc. in their history and autocomplete.
-  if (url == GURL(content::kAboutBlankURL))
+  if (url == GURL(url::kAboutBlankURL))
     return false;
 
   return true;

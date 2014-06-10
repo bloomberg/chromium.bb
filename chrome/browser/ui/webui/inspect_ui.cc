@@ -283,11 +283,11 @@ void InspectUI::InspectBrowserWithCustomFrontend(
   WebContents* inspect_ui = web_ui()->GetWebContents();
   WebContents* front_end = inspect_ui->GetDelegate()->OpenURLFromTab(
       inspect_ui,
-      content::OpenURLParams(GURL(content::kAboutBlankURL),
-                    content::Referrer(),
-                    NEW_FOREGROUND_TAB,
-                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                    false));
+      content::OpenURLParams(GURL(url::kAboutBlankURL),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                             false));
 
   // Install devtools bindings.
   DevToolsUIBindings* bindings = new DevToolsUIBindings(front_end,

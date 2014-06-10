@@ -40,13 +40,13 @@ bool CanImportURL(const GURL& url) {
   }
 
   // Check if |url| is about:blank.
-  if (url == GURL(content::kAboutBlankURL))
+  if (url == GURL(url::kAboutBlankURL))
     return true;
 
   // If |url| starts with chrome:// or about:, check if it's one of the URLs
   // that we support.
   if (url.SchemeIs(content::kChromeUIScheme) ||
-      url.SchemeIs(content::kAboutScheme)) {
+      url.SchemeIs(url::kAboutScheme)) {
     if (url.host() == chrome::kChromeUIUberHost ||
         url.host() == chrome::kChromeUIAboutHost)
       return true;

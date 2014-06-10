@@ -80,7 +80,7 @@ bool AccessibilityNotificationWaiter::IsAboutBlank() {
     if (root.string_attributes[i].first != ui::AX_ATTR_DOC_URL)
       continue;
     const std::string& doc_url = root.string_attributes[i].second;
-    return doc_url == kAboutBlankURL;
+    return doc_url == url::kAboutBlankURL;
   }
   return false;
 }

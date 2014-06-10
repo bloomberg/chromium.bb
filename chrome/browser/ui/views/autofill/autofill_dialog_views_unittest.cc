@@ -57,7 +57,7 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
     view_delegate_.SetProfile(profile());
 
-    AddTab(browser(), GURL(content::kAboutBlankURL));
+    AddTab(browser(), GURL(url::kAboutBlankURL));
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(0);
     ASSERT_TRUE(contents);

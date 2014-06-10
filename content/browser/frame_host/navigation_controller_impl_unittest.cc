@@ -541,7 +541,7 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
       GURL("data:text/html,dataurl"));
   load_params.load_type = NavigationController::LOAD_TYPE_DATA;
   load_params.base_url_for_data_url = GURL("http://foo");
-  load_params.virtual_url_for_data_url = GURL(kAboutBlankURL);
+  load_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
   load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
 
   controller.LoadURLWithParams(load_params);
@@ -917,7 +917,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   contents()->SetDelegate(delegate.get());
 
   // Without any navigations, the renderer starts at about:blank.
-  const GURL kExistingURL(kAboutBlankURL);
+  const GURL kExistingURL(url::kAboutBlankURL);
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");

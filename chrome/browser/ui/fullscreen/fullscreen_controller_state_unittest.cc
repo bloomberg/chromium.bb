@@ -326,7 +326,7 @@ Browser* FullscreenControllerStateUnitTest::GetBrowser() {
 // exist.
 TEST_F(FullscreenControllerStateUnitTest, TransitionsForEachState) {
   // A tab is needed for tab fullscreen.
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   TestTransitionsForEachState();
   // Progress of test can be examined via LOG(INFO) << GetAndClearDebugLog();
 }
@@ -334,12 +334,12 @@ TEST_F(FullscreenControllerStateUnitTest, TransitionsForEachState) {
 
 // Individual tests for each pair of state and event ---------------------------
 
-#define TEST_EVENT(state, event) \
-    TEST_F(FullscreenControllerStateUnitTest, state##__##event) { \
-      AddTab(browser(), GURL(content::kAboutBlankURL)); \
-      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event)) \
-          << GetAndClearDebugLog(); \
-    }
+#define TEST_EVENT(state, event)                                \
+  TEST_F(FullscreenControllerStateUnitTest, state##__##event) { \
+    AddTab(browser(), GURL(url::kAboutBlankURL));               \
+    ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event))    \
+        << GetAndClearDebugLog();                               \
+  }
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
 
@@ -355,7 +355,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   // Only possible without reentrancy.
   if (FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant())
     return;
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_NO_FATAL_FAILURE(
       TransitionToState(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME))
       << GetAndClearDebugLog();
@@ -371,7 +371,7 @@ TEST_F(FullscreenControllerStateUnitTest, DISABLED_ToggleTabWhenPendingTab) {
   // Only possible without reentrancy.
   if (FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant())
     return;
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_NO_FATAL_FAILURE(
       TransitionToState(STATE_TO_TAB_FULLSCREEN))
       << GetAndClearDebugLog();
@@ -417,7 +417,7 @@ TEST_F(FullscreenControllerStateUnitTest, DISABLED_DebugLogStateTables) {
 // This currently occurs when an extension exits fullscreen via changing the
 // browser bounds.
 TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -430,8 +430,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
 
 // Test that switching tabs takes the browser out of tab fullscreen.
 TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaSwitchingTab) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -445,8 +445,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaSwitchingTab) {
 // fullscreen) takes the browser out of tab fullscreen. This case can
 // occur if the user is in both tab fullscreen and immersive browser fullscreen.
 TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaDetachingTab) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -461,7 +461,7 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaDetachingTab) {
 // takes the browser out of tab fullscreen. This can occur if the user
 // navigates to a prerendered page from a page which is tab fullscreen.
 TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -490,8 +490,8 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
     return;
   }
 
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const first_tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   content::WebContents* const second_tab =
@@ -557,8 +557,8 @@ TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
     return;
   }
 
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const first_tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   content::WebContents* const second_tab =
@@ -618,8 +618,8 @@ TEST_F(FullscreenControllerStateUnitTest,
     return;
   }
 
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const first_tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   content::WebContents* const second_tab =
@@ -677,7 +677,7 @@ TEST_F(FullscreenControllerStateUnitTest,
     return;
   }
 
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
 
@@ -731,8 +731,8 @@ TEST_F(FullscreenControllerStateUnitTest,
     return;
   }
 
-  AddTab(browser(), GURL(content::kAboutBlankURL));
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
 
@@ -759,7 +759,7 @@ TEST_F(FullscreenControllerStateUnitTest,
       false,
       browser()->host_desktop_type(),
       second_browser_window.get()));
-  AddTab(second_browser.get(), GURL(content::kAboutBlankURL));
+  AddTab(second_browser.get(), GURL(url::kAboutBlankURL));
   content::WebContentsDelegate* const second_wc_delegate =
       static_cast<content::WebContentsDelegate*>(second_browser.get());
 

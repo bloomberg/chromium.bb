@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(chrome::CanSavePage(browser()));
 }
 

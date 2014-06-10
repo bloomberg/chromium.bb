@@ -172,7 +172,7 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   // Common scenario. If |match_about_blank| is false (as is the case in most
   // extensions), or if the frame is not an about:-page, just return
   // |document_url| (supposedly the URL of the frame).
-  if (!match_about_blank || !document_url.SchemeIs(content::kAboutScheme))
+  if (!match_about_blank || !document_url.SchemeIs(url::kAboutScheme))
     return document_url;
 
   // Non-sandboxed about:blank and about:srcdoc pages inherit their security
@@ -182,7 +182,7 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   do {
     parent = parent->parent() ? parent->parent() : parent->opener();
   } while (parent != NULL &&
-           GURL(parent->document().url()).SchemeIs(content::kAboutScheme));
+           GURL(parent->document().url()).SchemeIs(url::kAboutScheme));
 
   if (parent) {
     // Only return the parent URL if the frame can access it.

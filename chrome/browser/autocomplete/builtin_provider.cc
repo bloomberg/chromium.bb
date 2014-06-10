@@ -70,8 +70,9 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       (input.type() == metrics::OmniboxInputType::QUERY))
     return;
 
-  const size_t kAboutSchemeLength = strlen(content::kAboutScheme);
-  const base::string16 kAbout = base::ASCIIToUTF16(content::kAboutScheme) +
+  const size_t kAboutSchemeLength = strlen(url::kAboutScheme);
+  const base::string16 kAbout =
+      base::ASCIIToUTF16(url::kAboutScheme) +
       base::ASCIIToUTF16(url::kStandardSchemeSeparator);
   const base::string16 kChrome = base::ASCIIToUTF16(content::kChromeUIScheme) +
       base::ASCIIToUTF16(url::kStandardSchemeSeparator);
@@ -110,12 +111,12 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       // Chrome does not support trailing slashes or paths for about:blank.
       const base::string16 blank_host = base::ASCIIToUTF16("blank");
       const base::string16 host = base::UTF8ToUTF16(url.host());
-      if (StartsWith(text, base::ASCIIToUTF16(content::kAboutScheme), false) &&
+      if (StartsWith(text, base::ASCIIToUTF16(url::kAboutScheme), false) &&
           StartsWith(blank_host, host, false) && (url.path().length() <= 1) &&
           !EndsWith(text, base::ASCIIToUTF16("/"), false)) {
         ACMatchClassifications styles;
         styles.push_back(ACMatchClassification(0, kMatch));
-        base::string16 match = base::ASCIIToUTF16(content::kAboutBlankURL);
+        base::string16 match = base::ASCIIToUTF16(url::kAboutBlankURL);
         // Measure the length of the matching host after the "about:" scheme.
         const size_t corrected_length = kAboutSchemeLength + 1 + host.length();
         if (blank_host.length() > host.length())

@@ -52,7 +52,7 @@ class SessionHistoryTest : public ContentBrowserTest {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleEchoTitleRequest, "/echotitle"));
 
-    NavigateToURL(shell(), GURL(kAboutBlankURL));
+    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   }
 
   // Simulate clicking a link.  Only works on the frames.html testserver page.
@@ -164,10 +164,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
   EXPECT_EQ("bot1", GetTabTitle());
 
   GoBack();
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   GoForward();
   EXPECT_EQ("bot1", GetTabTitle());
@@ -203,8 +203,8 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
   EXPECT_EQ(frames, GetTabURL());
 
   GoBack();
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
-  EXPECT_EQ(GURL(kAboutBlankURL), GetTabURL());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), GetTabURL());
 
   GoForward();
   EXPECT_EQ("bot1", GetTabTitle());
@@ -400,10 +400,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   // history is [blank, bot1, bot2, *bot3]
 
   JavascriptGo("-3");
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   JavascriptGo("1");
   EXPECT_EQ("bot1", GetTabTitle());
@@ -419,10 +419,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   EXPECT_EQ("bot1", GetTabTitle());
 
   JavascriptGo("-1");
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
+  EXPECT_EQ(std::string(url::kAboutBlankURL), GetTabTitle());
 
   JavascriptGo("1");
   EXPECT_EQ("bot1", GetTabTitle());

@@ -59,9 +59,9 @@ class ViewIDTest : public InProcessBrowserTest {
       if (!bookmark_model->loaded())
         test::WaitForBookmarkModelToLoad(bookmark_model);
 
-      bookmark_utils::AddIfNotBookmarked(
-          bookmark_model, GURL(content::kAboutBlankURL),
-          base::ASCIIToUTF16("about"));
+      bookmark_utils::AddIfNotBookmarked(bookmark_model,
+                                         GURL(url::kAboutBlankURL),
+                                         base::ASCIIToUTF16("about"));
     }
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
@@ -107,17 +107,21 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
   // Open 9 new tabs.
   for (int i = 1; i <= 9; ++i) {
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), false);
-    browser()->OpenURL(OpenURLParams(
-        GURL(content::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
-         content::PAGE_TRANSITION_TYPED, false));
+    browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
+                                     Referrer(),
+                                     NEW_BACKGROUND_TAB,
+                                     content::PAGE_TRANSITION_TYPED,
+                                     false));
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), true);
     // VIEW_ID_TAB_LAST should always be available.
     CheckViewID(VIEW_ID_TAB_LAST, true);
   }
 
   // Open the 11th tab.
-  browser()->OpenURL(OpenURLParams(
-      GURL(content::kAboutBlankURL), Referrer(), NEW_BACKGROUND_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
+                                   Referrer(),
+                                   NEW_BACKGROUND_TAB,
+                                   content::PAGE_TRANSITION_TYPED,
+                                   false));
   CheckViewID(VIEW_ID_TAB_LAST, true);
 }

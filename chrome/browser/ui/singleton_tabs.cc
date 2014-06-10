@@ -50,7 +50,7 @@ void ShowSingletonTabOverwritingNTP(Browser* browser,
   if (contents) {
     const GURL& contents_url = contents->GetURL();
     if ((contents_url == GURL(kChromeUINewTabURL) || IsInstantNTP(contents) ||
-         contents_url == GURL(content::kAboutBlankURL)) &&
+         contents_url == GURL(url::kAboutBlankURL)) &&
         GetIndexOfSingletonTab(&local_params) < 0) {
       local_params.disposition = CURRENT_TAB;
     }

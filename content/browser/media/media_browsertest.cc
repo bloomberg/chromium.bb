@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
 // Covers tear-down when navigating away as opposed to browser exiting.
 IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   PlayVideo("bear.ogv", false);
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 

@@ -2064,7 +2064,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
                                         browser()->host_desktop_type()));
   // Navigate the new browser window so it'll be shown and we can pick the
   // active window.
-  ui_test_utils::NavigateToURL(browser2, GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser2, GURL(url::kAboutBlankURL));
 
   // Generally, |browser2| will be the active window.  However, if the
   // original browser window lost focus before creating the new one, such as

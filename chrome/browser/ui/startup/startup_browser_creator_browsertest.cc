@@ -93,8 +93,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
-    command_line->AppendSwitchASCII(switches::kHomePage,
-                                    content::kAboutBlankURL);
+    command_line->AppendSwitchASCII(switches::kHomePage, url::kAboutBlankURL);
 #if defined(OS_CHROMEOS)
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);

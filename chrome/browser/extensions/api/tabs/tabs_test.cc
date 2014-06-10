@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   for (size_t i = 0; i < kExtraWindows; ++i)
     CreateBrowser(browser()->profile());
 
-  GURL url(content::kAboutBlankURL);
+  GURL url(url::kAboutBlankURL);
   AddTabAtIndexToBrowser(browser(), 0, url, content::PAGE_TRANSITION_LINK);
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
@@ -510,10 +510,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
-  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+  content::OpenURLParams params(GURL(url::kAboutBlankURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                content::PAGE_TRANSITION_LINK,
+                                false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
@@ -553,10 +554,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
-  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+  content::OpenURLParams params(GURL(url::kAboutBlankURL),
                                 content::Referrer(),
                                 NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
+                                content::PAGE_TRANSITION_LINK,
+                                false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);

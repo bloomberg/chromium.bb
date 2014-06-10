@@ -6,8 +6,6 @@
 
 namespace content {
 
-const char kAboutScheme[] = "about";
-
 // Before adding new chrome schemes please check with security@chromium.org.
 // There are security implications associated with introducing new schemes.
 const char kChromeDevToolsScheme[] = "chrome-devtools";
@@ -17,7 +15,6 @@ const char kMetadataScheme[] = "metadata";
 const char kSwappedOutScheme[] = "swappedout";
 const char kViewSourceScheme[] = "view-source";
 
-const char kAboutBlankURL[] = "about:blank";
 const char kAboutSrcDocURL[] = "about:srcdoc";
 
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";

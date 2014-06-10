@@ -271,7 +271,7 @@ TEST_F(SearchIPCRouterTest, HandleTabChangedEvents) {
   EXPECT_TRUE(IsActiveTab(contents));
 
   // Add a new tab to deactivate the current tab.
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->GetIndexOfWebContents(contents));
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());

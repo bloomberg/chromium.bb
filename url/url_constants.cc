@@ -6,6 +6,9 @@
 
 namespace url {
 
+const char kAboutBlankURL[] = "about:blank";
+
+const char kAboutScheme[] = "about";
 const char kBlobScheme[] = "blob";
 const char kDataScheme[] = "data";
 const char kFileScheme[] = "file";

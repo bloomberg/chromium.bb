@@ -940,7 +940,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(expected, web_contents->GetURL());
 
   // Verify that searching from the omnibox can be disabled.
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   EXPECT_TRUE(service->GetDefaultSearchProvider());
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
   // This means that submitting won't trigger any action.
   EXPECT_FALSE(model->CurrentMatch(NULL).destination_url.is_valid());
-  EXPECT_EQ(GURL(content::kAboutBlankURL), web_contents->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), web_contents->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
@@ -1159,7 +1159,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
     return;
 
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   // WebGL is enabled by default.
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1751,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
             browser()->profile()->GetHomePage());
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(GURL(content::kAboutBlankURL), contents->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), contents->GetURL());
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   EXPECT_EQ(GURL(chrome::kChromeUIPolicyURL), contents->GetURL());
 
@@ -1816,7 +1816,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   // Reload the page.
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   // Developer tools still work when javascript is disabled.
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
@@ -1827,13 +1827,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   EXPECT_TRUE(IsJavascriptEnabled(contents));
 
   // The javascript content setting policy overrides the javascript policy.
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW), NULL);
   UpdateProviderPolicy(policies);
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
 }
 
@@ -2641,7 +2641,7 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   // CompleteInitialization() task has executed as well.
   content::RunAllPendingInMessageLoop();
 
-  GURL kAboutHistograms = GURL(std::string(content::kAboutScheme) +
+  GURL kAboutHistograms = GURL(std::string(url::kAboutScheme) +
                                std::string(url::kStandardSchemeSeparator) +
                                std::string(content::kChromeUIHistogramHost));
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);

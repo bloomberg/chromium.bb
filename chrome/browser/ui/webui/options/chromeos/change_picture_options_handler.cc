@@ -75,7 +75,7 @@ const char kProfileDownloadReason[] = "Preferences";
 }  // namespace
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
-    : previous_image_url_(content::kAboutBlankURL),
+    : previous_image_url_(url::kAboutBlankURL),
       previous_image_index_(User::kInvalidImageIndex) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::NotificationService::AllSources());

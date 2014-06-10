@@ -65,9 +65,9 @@ struct TestItem {
     true
   },
   {
-    GURL(content::kAboutBlankURL),
-    base::ASCIIToUTF16(content::kAboutBlankURL),
-    base::ASCIIToUTF16(content::kAboutBlankURL),
+    GURL(url::kAboutBlankURL),
+    base::ASCIIToUTF16(url::kAboutBlankURL),
+    base::ASCIIToUTF16(url::kAboutBlankURL),
     base::string16(),
     false,
     true
@@ -253,7 +253,7 @@ PopupToolbarModelTest::~PopupToolbarModelTest() {
 // Test that we only replace URLs when query extraction and URL replacement
 // are enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Before we enable instant extended, query extraction is disabled.
   EXPECT_FALSE(chrome::IsQueryExtractionEnabled())
@@ -290,7 +290,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
 // enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURL_OriginChip) {
   EnableOriginChipFieldTrial();
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Check each case with the origin chip enabled but query extraction disabled.
   EXPECT_TRUE(chrome::ShouldDisplayOriginChip());
@@ -325,7 +325,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_OriginChip) {
  // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
   chrome::EnableQueryExtractionForTesting();
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // While loading, we should be willing to extract search terms.
   content::NavigationController* controller =
@@ -351,7 +351,7 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
 // secure.
 TEST_F(ToolbarModelTest, GoogleBaseURL) {
   chrome::EnableQueryExtractionForTesting();
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // If the Google base URL wasn't specified on the command line, then if it's
   // HTTP, we should not extract search terms.
@@ -375,7 +375,7 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
 // ignores whether the origin chip is enabled and only respects the query
 // extraction flag.
 TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
-  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Check with neither query extraction nor the origin chip enabled.
   EXPECT_FALSE(chrome::ShouldDisplayOriginChip());

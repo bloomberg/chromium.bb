@@ -31,7 +31,8 @@
 
 namespace {
 
-// For selected kChromeUIScheme and kAboutScheme, return the string resource
+// For selected kChromeUIScheme and url::kAboutScheme, return the string
+// resource
 // number for the title of the page. If we don't have a specialized title,
 // returns -1.
 int StringForChromeHost(const GURL& url) {
@@ -177,7 +178,7 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
 
   // About scheme pages. Currently all about: URLs other than about:blank
   // redirect to chrome: URLs, so this only affects about:blank.
-  if (url.SchemeIs(content::kAboutScheme))
+  if (url.SchemeIs(url::kAboutScheme))
     return base::UTF8ToUTF16(url.spec());
 
   // Chrome built-in pages.

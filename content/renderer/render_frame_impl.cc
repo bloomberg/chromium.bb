@@ -200,7 +200,7 @@ WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
 
 void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(kAboutBlankURL);
+  const WebURL& blank_url = GURL(url::kAboutBlankURL);
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
   result->reserve(urls.size());
@@ -2042,7 +2042,7 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
 
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->document().url();
-  if (url.is_valid() && url.spec() != kAboutBlankURL) {
+  if (url.is_valid() && url.spec() != url::kAboutBlankURL) {
     // TODO(nasko): Check if webview()->mainFrame() is the same as the
     // frame->tree()->top().
     blink::WebFrame* main_frame = render_view_->webview()->mainFrame();
@@ -3265,7 +3265,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // browser process, and issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
-  if (!frame->parent() && is_content_initiated && !url.SchemeIs(kAboutScheme)) {
+  if (!frame->parent() && is_content_initiated &&
+      !url.SchemeIs(url::kAboutScheme)) {
     bool send_referrer = false;
 
     // All navigations to or from WebUI URLs or within WebUI-enabled
@@ -3325,7 +3326,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // (see below).
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      old_url == GURL(kAboutBlankURL) &&
+      old_url == GURL(url::kAboutBlankURL) &&
       // Must be the first real navigation of the tab.
       render_view_->historyBackListCount() < 1 &&
       render_view_->historyForwardListCount() < 1 &&

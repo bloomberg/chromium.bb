@@ -368,7 +368,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
 // Makes sure index is updated when a node is removed.
 TEST_F(BookmarkIndexTest, Remove) {
   const char* titles[] = { "a", "b" };
-  const char* urls[] = { kAboutBlankURL, kAboutBlankURL };
+  const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
   AddBookmarks(titles, urls, ARRAYSIZE_UNSAFE(titles));
 
   // Remove the node and make sure we don't get back any results.
@@ -379,7 +379,7 @@ TEST_F(BookmarkIndexTest, Remove) {
 // Makes sure index is updated when a node's title is changed.
 TEST_F(BookmarkIndexTest, ChangeTitle) {
   const char* titles[] = { "a", "b" };
-  const char* urls[] = { kAboutBlankURL, kAboutBlankURL };
+  const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
   AddBookmarks(titles, urls, ARRAYSIZE_UNSAFE(titles));
 
   // Remove the node and make sure we don't get back any results.
@@ -391,7 +391,7 @@ TEST_F(BookmarkIndexTest, ChangeTitle) {
 // Makes sure no more than max queries is returned.
 TEST_F(BookmarkIndexTest, HonorMax) {
   const char* titles[] = { "abcd", "abcde" };
-  const char* urls[] = { kAboutBlankURL, kAboutBlankURL };
+  const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
   AddBookmarks(titles, urls, ARRAYSIZE_UNSAFE(titles));
 
   std::vector<BookmarkMatch> matches;

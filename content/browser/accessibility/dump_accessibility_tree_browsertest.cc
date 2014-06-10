@@ -135,7 +135,7 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
 
 void DumpAccessibilityTreeTest::RunTest(
     const base::FilePath::CharType* file_path) {
-  NavigateToURL(shell(), GURL(kAboutBlankURL));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Setup test paths.
   base::FilePath dir_test_data;

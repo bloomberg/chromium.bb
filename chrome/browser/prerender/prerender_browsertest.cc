@@ -2904,7 +2904,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTargetHasPopup) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
                    1);
-  OpenURLViaWindowOpen(GURL(content::kAboutBlankURL));
+  OpenURLViaWindowOpen(GURL(url::kAboutBlankURL));
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
 }
 
@@ -4009,8 +4009,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTabCrossProcess) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Navigate to about:blank so the next navigation is cross-process.
-  ui_test_utils::NavigateToURL(current_browser(),
-                               GURL(content::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(current_browser(), GURL(url::kAboutBlankURL));
 
   // Now navigate in the new tab. Set expect_swap_to_succeed to false because
   // the swap does not occur synchronously.
@@ -4063,8 +4062,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   // First entry is about:blank, second is prerender_page.html.
   EXPECT_TRUE(controller.GetPendingEntry() == NULL);
   EXPECT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(GURL(content::kAboutBlankURL),
-            controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(dest_url(), controller.GetEntryAtIndex(1)->GetURL());
 }
 
@@ -4094,7 +4092,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDoublePendingSwap) {
 
   // Open a new tab to navigate in.
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      current_browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Fire off two navigations, without running the event loop between them.
@@ -4118,8 +4118,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDoublePendingSwap) {
   EXPECT_TRUE(controller.GetPendingEntry() == NULL);
   EXPECT_LE(2, controller.GetEntryCount());
   EXPECT_GE(3, controller.GetEntryCount());
-  EXPECT_EQ(GURL(content::kAboutBlankURL),
-            controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(
       controller.GetEntryCount() - 1)->GetURL());
 }
@@ -4134,7 +4133,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Open a new tab to navigate in.
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      current_browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Navigate to the URL. Wait for DidStartLoading, just so it's definitely
@@ -4150,9 +4151,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Navigate somewhere else. This should succeed and abort the pending swap.
   TestNavigationObserver nav_observer(GetActiveWebContents());
-  current_browser()->OpenURL(OpenURLParams(
-      GURL(content::kAboutBlankURL), Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+  current_browser()->OpenURL(OpenURLParams(GURL(url::kAboutBlankURL),
+                                           Referrer(),
+                                           CURRENT_TAB,
+                                           content::PAGE_TRANSITION_TYPED,
+                                           false));
   nav_observer.Wait();
 }
 
