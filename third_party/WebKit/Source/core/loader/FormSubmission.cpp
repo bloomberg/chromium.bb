@@ -83,10 +83,9 @@ static void appendMailtoPostFormDataToURL(KURL& url, const FormData& data, const
     url.setQuery(query.toString());
 }
 
-void FormSubmission::Attributes::parseAction(const String& action)
+void FormSubmission::Attributes::parseAction(const Document& document, const String& action)
 {
-    // FIXME: Can we parse into a KURL?
-    m_action = stripLeadingAndTrailingHTMLSpaces(action);
+    m_action = action.isEmpty() ? KURL() : document.completeURL(stripLeadingAndTrailingHTMLSpaces(action));
 }
 
 AtomicString FormSubmission::Attributes::parseEncodingType(const String& type)
@@ -180,7 +179,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     if (submitButton) {
         AtomicString attributeValue;
         if (!(attributeValue = submitButton->fastGetAttribute(formactionAttr)).isNull())
-            copiedAttributes.parseAction(attributeValue);
+            copiedAttributes.parseAction(form->document(), attributeValue);
         if (!(attributeValue = submitButton->fastGetAttribute(formenctypeAttr)).isNull())
             copiedAttributes.updateEncodingType(attributeValue);
         if (!(attributeValue = submitButton->fastGetAttribute(formmethodAttr)).isNull())
@@ -196,7 +195,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     }
 
     Document& document = form->document();
-    KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().string() : copiedAttributes.action());
+    KURL actionURL = copiedAttributes.action().isEmpty() ? document.url() : copiedAttributes.action();
     bool isMailtoForm = actionURL.protocolIs("mailto");
     bool isMultiPartForm = false;
     AtomicString encodingType = copiedAttributes.encodingType();

@@ -37,6 +37,10 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -46,12 +50,10 @@
 #include "core/html/forms/FormController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
+#include "wtf/text/AtomicString.h"
 
 using namespace std;
 
@@ -392,7 +394,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     }
 
     if (protocolIsJavaScript(submission->action())) {
-        if (!document().contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
+        if (!document().contentSecurityPolicy()->allowFormAction(submission->action()))
             return;
         document().frame()->script().executeScriptIfJavaScriptURL(submission->action());
         return;
@@ -408,6 +410,14 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     }
     if (!targetFrame->page())
         return;
+
+    if (MixedContentChecker::isMixedContent(document().securityOrigin(), submission->action())) {
+        UseCounter::count(document(), UseCounter::MixedContentFormsSubmitted);
+        if (!document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), submission->action()))
+            return;
+    } else {
+        UseCounter::count(document(), UseCounter::FormsSubmitted);
+    }
 
     submission->setReferrer(Referrer(document().outgoingReferrer(), document().referrerPolicy()));
     submission->setOrigin(document().outgoingOrigin());
@@ -476,9 +486,14 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 
 void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == actionAttr)
-        m_attributes.parseAction(value);
-    else if (name == targetAttr)
+    if (name == actionAttr) {
+        m_attributes.parseAction(document(), value);
+        // If the new action attribute is pointing to insecure "action" location from a secure page
+        // it is marked as "passive" mixed content.
+        KURL actionURL = m_attributes.action().isEmpty() ? document().url() : m_attributes.action();
+        if (MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
+            document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), actionURL);
+    } else if (name == targetAttr)
         m_attributes.setTarget(value);
     else if (name == methodAttr)
         m_attributes.updateMethodType(value);
