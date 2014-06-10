@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.0",
+  "version": "6.1",
   "entries": [
     {
       "id": 1,
@@ -952,14 +952,10 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 LONG_STRING_CONST(
     {
       "id": 74,
-      "cr_bugs": [278606],
-      "description": "Testing EGL sync fences is broken on Qualcomm before Android 4.4",
+      "cr_bugs": [278606, 382686],
+      "description": "Testing EGL sync fences is broken on most Qualcomm drivers",
       "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
+        "type": "android"
       },
       "gl_vendor": {
         "op": "beginwith",
