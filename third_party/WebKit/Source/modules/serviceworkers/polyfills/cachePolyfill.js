@@ -64,8 +64,17 @@
         });
     };
 
-    // FIXME: Implement this.
-    Cache.prototype.add = Promise.reject.bind(Promise, 'Cache.prototype.add() not implemented.');
+    Cache.prototype.add = function(request) {
+        var that = this;
+        request = _castToRequest(request);
+        return new Promise(function (resolve, reject) {
+            fetch(request).then(
+                function(response) {
+                    that.put(request, response).then(resolve);
+                },
+                reject);
+        });
+    };
 
     // FIXME: Add QueryParams argument.
     Cache.prototype.delete = function(request) {

@@ -31,6 +31,7 @@
 #include "ServiceWorkerGlobalScope.h"
 
 #include "CachePolyfill.h"
+#include "FetchPolyfill.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
@@ -49,6 +50,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
 
+    context->script()->evaluate(String(fetchPolyfillJs, sizeof(fetchPolyfillJs)));
     context->script()->evaluate(String(cachePolyfillJs, sizeof(cachePolyfillJs)));
 
     return context.release();

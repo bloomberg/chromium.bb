@@ -60,6 +60,31 @@
     ],
     'actions': [
       {
+        'action_name': 'FetchPolyfill',
+        'process_outputs_as_sources': 1,
+        'variables': {
+            'resources': [
+                 'serviceworkers/polyfills/fetchPolyfill.js',
+            ],
+        },
+        'inputs': [
+            '../build/scripts/make-file-arrays.py',
+            '<@(resources)',
+        ],
+        'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FetchPolyfill.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/FetchPolyfill.cpp',
+        ],
+        'action': [
+            'python',
+            '../build/scripts/make-file-arrays.py',
+            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/FetchPolyfill.h',
+            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/FetchPolyfill.cpp',
+            '--namespace=WebCore',
+            '<@(resources)',
+        ],
+      },
+      {
         'action_name': 'CachePolyfill',
         'process_outputs_as_sources': 1,
         'variables': {
