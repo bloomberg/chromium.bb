@@ -60,10 +60,12 @@ GIT_REPOS = {
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
+GIT_PUSH_URL = 'ssh://gerrit.chromium.org/native_client/'
 GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
-KNOWN_MIRRORS = [('http://git.chromium.org/native_client/',
-                  'https://chromium.googlesource.com/native_client/')]
+KNOWN_MIRRORS = [('http://git.chromium.org/native_client/', GIT_BASE_URL)]
+PUSH_MIRRORS = [('http://git.chromium.org/native_client/', GIT_PUSH_URL),
+                (GIT_BASE_URL, GIT_PUSH_URL)]
 
 # TODO(dschuff): Some of this mingw logic duplicates stuff in command.py
 BUILD_CROSS_MINGW = False
@@ -215,6 +217,7 @@ def GetGitSyncCmdsCallback(revisions):
   """
   def GetGitSyncCmds(component):
     git_url = GIT_BASE_URL + GIT_REPOS[component]
+    git_push_url = GIT_PUSH_URL + GIT_REPOS[component]
 
     # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
     # the newlib repo on checkout (while silently blowing away any local
@@ -222,8 +225,10 @@ def GetGitSyncCmdsCallback(revisions):
     is_newlib = component == 'nacl-newlib'
     return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[component],
                                     clean=is_newlib,
+                                    git_cache='%(git_cache_dir)s',
+                                    push_url=git_push_url,
                                     known_mirrors=KNOWN_MIRRORS,
-                                    git_cache='%(git_cache_dir)s') +
+                                    push_mirrors=PUSH_MIRRORS) +
             [command.Runnable(None,
                               pnacl_commands.CmdCheckoutGitBundleForTrybot,
                               component, '%(output)s')])

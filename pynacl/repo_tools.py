@@ -88,7 +88,7 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
 
 
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None, git_cache=None):
+                pathspec=None, git_cache=None, push_url=None):
   """Sync an individual git repo.
 
   Args:
@@ -125,7 +125,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
       if (fetch_url != url and IsURLInRemoteRepoList(url, destination,
                                                      include_fetch=True,
                                                      include_push=False)):
-        GitSetRemoteRepo(fetch_url, destination, push_url=url)
+        GitSetRemoteRepo(fetch_url, destination, push_url=push_url)
       else:
         logging.error('Git Repo (%s) does not track URL: %s',
                       destination, fetch_url)
@@ -143,7 +143,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     log_tools.CheckCall(git + clone_args + [fetch_url, '.'], cwd=destination)
 
     if fetch_url != url:
-      GitSetRemoteRepo(fetch_url, destination, push_url=url)
+      GitSetRemoteRepo(fetch_url, destination, push_url=push_url)
 
   elif clean:
     log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)

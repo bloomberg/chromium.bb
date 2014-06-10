@@ -304,8 +304,9 @@ def WriteData(data, dst, run_cond=None):
 
 
 def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
-                    reclone=False, clean=False, pathspec=None, known_mirrors=[],
-                    git_cache=None, run_cond=None):
+                    reclone=False, clean=False, pathspec=None, git_cache=None,
+                    push_url=None, known_mirrors=[], push_mirrors=[],
+                    run_cond=None):
   """Returns a list of commands to sync and validate a git repo.
 
   Args:
@@ -321,34 +322,58 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
               branches.
     known_mirrors: List of tuples specifying known mirrors for a subset of the
                    git URL. IE: [('http://mirror.com/mirror', 'http://git.com')]
+    push_mirrors: List of tuples specifying known push mirrors, see
+                  known_mirrors argument for the format.
     git_cache: If not None, will use git_cache directory as a cache for the git
                repository and share the objects with any other destination with
                the same URL.
+    push_url: If not None, specifies what the push URL should be set to.
     run_cond: Run condition for when to sync the git repo.
 
   Returns:
     List of commands, this is a little different from the other command funcs.
   """
-  def update_valid_mirrors(subst, url, directory, known_mirrors):
+  def update_valid_mirrors(subst, url, push_url, directory,
+                           known_mirrors, push_mirrors):
+    if push_url is None:
+      push_url = url
+
     abs_dir = subst.SubstituteAbsPaths(directory)
     git_dir = os.path.join(abs_dir, '.git')
-    if known_mirrors and os.path.exists(git_dir):
-      repos_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
+    if os.path.exists(git_dir):
+      fetch_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
+                                                       include_fetch=True,
                                                        include_push=False)
-      tracked_url = dict(repos_list).get('origin', 'None')
-      if tracked_url == url:
-        return
+      tracked_fetch_url = dict(fetch_list).get('origin', 'None')
 
-      updated_url = tracked_url
-      for mirror, url_subset in known_mirrors:
-        if mirror in updated_url:
-          updated_url = updated_url.replace(mirror, url_subset)
+      push_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
+                                                      include_fetch=False,
+                                                      include_push=True)
+      tracked_push_url = dict(push_list).get('origin', 'None')
 
-      if updated_url != tracked_url:
-        logging.warn('Your git repository is using an old mirror: %s', abs_dir)
-        logging.warn('Updating git repo using known mirror: %s -> %s',
-                     tracked_url, updated_url)
-        pynacl.repo_tools.GitSetRemoteRepo(updated_url, abs_dir)
+      if ((known_mirrors and tracked_fetch_url != url) or
+          (push_mirrors and tracked_push_url != push_url)):
+        updated_fetch_url = tracked_fetch_url
+        for mirror, url_subset in known_mirrors:
+          if mirror in updated_fetch_url:
+            updated_fetch_url = updated_fetch_url.replace(mirror, url_subset)
+
+        updated_push_url = tracked_push_url
+        for mirror, url_subset in push_mirrors:
+          if mirror in updated_push_url:
+            updated_push_url = updated_push_url.replace(mirror, url_subset)
+
+        if ((updated_fetch_url != tracked_fetch_url) or
+            (updated_push_url != tracked_push_url)):
+          logging.warn('Your git repo is using an old mirror: %s', abs_dir)
+          logging.warn('Updating git repo using known mirror:')
+          logging.warn('  [FETCH] %s -> %s',
+                       tracked_fetch_url, updated_fetch_url)
+          logging.warn('  [PUSH] %s -> %s',
+                       tracked_push_url, updated_push_url)
+          pynacl.repo_tools.GitSetRemoteRepo(updated_fetch_url, abs_dir,
+                                             push_url=updated_push_url)
+
 
   def populate_cache(subst, git_cache, url):
     if git_cache:
@@ -367,7 +392,8 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                                       subst.SubstituteAbsPaths(directory),
                                       clobber_mismatch=True)
 
-  def sync(subst, url, dest, revision, reclone, clean, pathspec, git_cache):
+  def sync(subst, url, dest, revision, reclone, clean, pathspec, git_cache,
+           push_url):
     abs_dest = subst.SubstituteAbsPaths(dest)
     if git_cache:
       git_cache = subst.SubstituteAbsPaths(git_cache)
@@ -375,7 +401,8 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
     try:
       pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision,
                                     reclone=reclone, clean=clean,
-                                    pathspec=pathspec, git_cache=git_cache)
+                                    pathspec=pathspec, git_cache=git_cache,
+                                    push_url=push_url)
     except pynacl.repo_tools.InvalidRepoException, e:
       remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest))
       tracked_url = remote_repos.get('origin', 'None')
@@ -403,12 +430,12 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
   if git_cache:
     commands.append(Runnable(run_cond, populate_cache, git_cache, url))
 
-  commands.extend([Runnable(run_cond, update_valid_mirrors, url, destination,
-                            known_mirrors),
+  commands.extend([Runnable(run_cond, update_valid_mirrors, url, push_url,
+                            destination, known_mirrors, push_mirrors),
                    Runnable(ClobberInvalidRepoCondition, validate, url,
                             destination, git_cache),
                    Runnable(run_cond, sync, url, destination, revision, reclone,
-                            clean, pathspec, git_cache)])
+                            clean, pathspec, git_cache, push_url)])
   return commands
 
 

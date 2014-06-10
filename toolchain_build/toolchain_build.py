@@ -73,13 +73,22 @@ TAR_FILES = {
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
+GIT_PUSH_URL = 'ssh://gerrit.chromium.org/native_client'
 
-KNOWN_MIRRORS = [('http://git.chromium.org/native_client/',
-                  'https://chromium.googlesource.com/native_client/')]
+KNOWN_MIRRORS = [('http://git.chromium.org/native_client', GIT_BASE_URL)]
 
-def GitUrl(package):
+PUSH_MIRRORS = [('http://git.chromium.org/native_client', GIT_PUSH_URL),
+                (GIT_BASE_URL, GIT_PUSH_URL)]
+
+
+def GitUrl(package, push_url=False):
   repo = GIT_REVISIONS[package].get('repo', package)
-  return '%s/nacl-%s.git' % (GIT_BASE_URL, repo)
+  if push_url:
+    base_url = GIT_PUSH_URL
+  else:
+    base_url = GIT_BASE_URL
+
+  return '%s/nacl-%s.git' % (base_url, repo)
 
 
 def CollectSources():
@@ -110,8 +119,10 @@ def CollectSources():
         'type': 'source',
         'commands': command.SyncGitRepoCmds(GitUrl(package), '%(output)s',
                                             info['rev'],
+                                            git_cache='%(git_cache_dir)s',
+                                            push_url=GitUrl(package, True),
                                             known_mirrors=KNOWN_MIRRORS,
-                                            git_cache='%(git_cache_dir)s'),
+                                            push_mirrors=PUSH_MIRRORS),
         }
     patch_packages.append(package)
     patch_info = {'name': package}
