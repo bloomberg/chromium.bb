@@ -274,7 +274,7 @@ private:
     bool passMouseMoveEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe, HitTestResult* hoveredNode = 0);
     bool passMouseReleaseEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe);
 
-    bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&, Scrollbar*);
+    bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&);
 
     bool passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults&);
 

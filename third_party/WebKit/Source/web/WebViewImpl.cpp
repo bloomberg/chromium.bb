@@ -480,14 +480,16 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
 
     m_lastMouseDownPoint = WebPoint(event.x, event.y);
 
-    if (event.button == WebMouseEvent::ButtonLeft) {
-        IntPoint point(event.x, event.y);
+    // Take capture on a mouse down on a plugin so we can send it mouse events.
+    // If the hit node is a plugin but a scrollbar is over it don't start mouse
+    // capture because it will interfere with the scrollbar receiving events.
+    IntPoint point(event.x, event.y);
+    if (event.button == WebMouseEvent::ButtonLeft && !m_page->mainFrame()->view()->scrollbarAtPoint(point)) {
         point = m_page->mainFrame()->view()->windowToContents(point);
         HitTestResult result(m_page->mainFrame()->eventHandler().hitTestResultAtPoint(point));
         Node* hitNode = result.innerNonSharedNode();
 
-        // Take capture on a mouse down on a plugin so we can send it mouse events.
-        if (hitNode && hitNode->renderer() && hitNode->renderer()->isEmbeddedObject()) {
+        if (!result.scrollbar() && hitNode && hitNode->renderer() && hitNode->renderer()->isEmbeddedObject()) {
             m_mouseCaptureNode = hitNode;
             TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
         }

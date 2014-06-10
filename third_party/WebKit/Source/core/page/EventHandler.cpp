@@ -1307,26 +1307,14 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     if (swallowEvent) {
         // scrollbars should get events anyway, even disabled controls might be scrollable
-        Scrollbar* scrollbar = mev.scrollbar();
-
-        updateLastScrollbarUnderMouse(scrollbar, true);
-
-        if (scrollbar)
-            passMousePressEventToScrollbar(mev, scrollbar);
+        passMousePressEventToScrollbar(mev);
     } else {
         if (shouldRefetchEventTarget(mev)) {
             HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
             mev = m_frame->document()->prepareMouseEvent(request, documentPoint, mouseEvent);
         }
 
-        FrameView* view = m_frame->view();
-        Scrollbar* scrollbar = view ? view->scrollbarAtPoint(mouseEvent.position()) : 0;
-        if (!scrollbar)
-            scrollbar = mev.scrollbar();
-
-        updateLastScrollbarUnderMouse(scrollbar, true);
-
-        if (scrollbar && passMousePressEventToScrollbar(mev, scrollbar))
+        if (passMousePressEventToScrollbar(mev))
             swallowEvent = true;
         else
             swallowEvent = handleMousePressEvent(mev);
@@ -3338,8 +3326,18 @@ void EventHandler::setFrameWasScrolledByUser()
         view->setWasScrolledByUser(true);
 }
 
-bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev, Scrollbar* scrollbar)
+bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev)
 {
+    // First try to use the frame scrollbar.
+    FrameView* view = m_frame->view();
+    Scrollbar* scrollbar = view ? view->scrollbarAtPoint(mev.event().position()) : 0;
+
+    // Then try the scrollbar in the hit test.
+    if (!scrollbar)
+        scrollbar = mev.scrollbar();
+
+    updateLastScrollbarUnderMouse(scrollbar, true);
+
     if (!scrollbar || !scrollbar->enabled())
         return false;
     setFrameWasScrolledByUser();
