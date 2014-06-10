@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -17,13 +18,25 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::WebContents;
 
 namespace extensions {
+
+namespace {
+// This extension ID is used for tests require a stable ID over multiple
+// extension installs.
+const char kId[] = "pgoakhfeplldmjheffidklpoklkppipp";
+
+// Default keybinding to use for emulating user-defined shortcut overrides. The
+// test extensions use Alt+Shift+F and Alt+Shift+H.
+const char kAltShiftG[] = "Alt+Shift+G";
+}
 
 class CommandsApiTest : public ExtensionApiTest {
  public:
@@ -293,6 +306,300 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_AllowDuplicatedMediaKeys) {
   // We should get two success result.
   ASSERT_TRUE(catcher.GetNextResult());
   ASSERT_TRUE(catcher.GetNextResult());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ShortcutAddedOnUpdate) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1_unassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1_unassigned"),
+      scoped_temp_dir.path().AppendASCII("v1_unassigned.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2"),
+      scoped_temp_dir.path().AppendASCII("v2.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension without keybinding assigned.
+  ASSERT_TRUE(InstallExtension(path_v1_unassigned, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it is set to nothing.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
+
+  // Update to version 2 with keybinding.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+F.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ShortcutChangedOnUpdate) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2_reassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2_reassigned"),
+      scoped_temp_dir.path().AppendASCII("v2_reassigned.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+F.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+
+  // Update to version 2 with different keybinding assigned.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2_reassigned, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+H.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_H, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ShortcutRemovedOnUpdate) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2_unassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2_unassigned"),
+      scoped_temp_dir.path().AppendASCII("v2_unassigned.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+F.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+
+  // Update to version 2 without keybinding assigned.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2_unassigned, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify the keybinding gets set to nothing.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       ShortcutAddedOnUpdateAfterBeingAssignedByUser) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1_unassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1_unassigned"),
+      scoped_temp_dir.path().AppendASCII("v1_unassigned.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2"),
+      scoped_temp_dir.path().AppendASCII("v2.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension without keybinding assigned.
+  ASSERT_TRUE(InstallExtension(path_v1_unassigned, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it is set to nothing.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
+
+  // Simulate the user setting the keybinding to Alt+Shift+G.
+  command_service->UpdateKeybindingPrefs(
+      kId, manifest_values::kBrowserActionCommandEvent, kAltShiftG);
+
+  // Update to version 2 with keybinding.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify the previously-set keybinding is still set.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_G, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       ShortcutChangedOnUpdateAfterBeingReassignedByUser) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2_reassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2_reassigned"),
+      scoped_temp_dir.path().AppendASCII("v2_reassigned.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+F.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+
+  // Simulate the user setting the keybinding to Alt+Shift+G.
+  command_service->UpdateKeybindingPrefs(
+      kId, manifest_values::kBrowserActionCommandEvent, kAltShiftG);
+
+  // Update to version 2 with different keybinding assigned.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2_reassigned, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+G.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_G, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       ShortcutRemovedOnUpdateAfterBeingReassignedByUser) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v1"),
+      scoped_temp_dir.path().AppendASCII("v1.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2_unassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("v2_unassigned"),
+      scoped_temp_dir.path().AppendASCII("v2_unassigned.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+F.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+
+  // Simulate the user reassigning the keybinding to Alt+Shift+G.
+  command_service->UpdateKeybindingPrefs(
+      kId, manifest_values::kBrowserActionCommandEvent, kAltShiftG);
+
+  // Update to version 2 without keybinding assigned.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2_unassigned, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify the keybinding is still set.
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_G, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
 }
 
 }  // namespace extensions
