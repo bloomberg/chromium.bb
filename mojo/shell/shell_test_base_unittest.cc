@@ -19,7 +19,8 @@ namespace {
 
 typedef ShellTestBase ShellTestBaseTest;
 
-void PingCallback(base::MessageLoop* message_loop) {
+void PingCallback(base::MessageLoop* message_loop, bool* was_run) {
+  *was_run = true;
   VLOG(2) << "Ping callback";
   message_loop->QuitWhenIdle();
 }
@@ -37,15 +38,47 @@ TEST_F(ShellTestBaseTest, LaunchServiceInProcess) {
                            mp.handle1.Pass());
   }
 
+  bool was_run = false;
   test_service->Ping(base::Bind(&PingCallback,
-                                base::Unretained(message_loop())));
+                                base::Unretained(message_loop()),
+                                base::Unretained(&was_run)));
   message_loop()->Run();
+  EXPECT_TRUE(was_run);
+  EXPECT_FALSE(test_service.encountered_error());
 
   test_service.reset();
 
   // This will run until the test service has actually quit (which it will,
   // since we killed the only connection to it).
   message_loop()->Run();
+}
+
+// Tests that launching a service in process fails properly if the service
+// doesn't exist.
+TEST_F(ShellTestBaseTest, LaunchServiceInProcessInvalidService) {
+  InitMojo();
+
+  InterfacePtr<mojo::test::ITestService> test_service;
+
+  {
+    MessagePipe mp;
+    test_service.Bind(mp.handle0.Pass());
+    LaunchServiceInProcess(GURL("mojo:non_existent_service"),
+                           mojo::test::ITestService::Name_,
+                           mp.handle1.Pass());
+  }
+
+  bool was_run = false;
+  test_service->Ping(base::Bind(&PingCallback,
+                                base::Unretained(message_loop()),
+                                base::Unretained(&was_run)));
+
+  // This will quit because there's nothing running.
+  message_loop()->Run();
+  EXPECT_FALSE(was_run);
+  EXPECT_TRUE(test_service.encountered_error());
+
+  test_service.reset();
 }
 
 }  // namespace
