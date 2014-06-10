@@ -228,8 +228,8 @@ int raii_main(int argc, char* argv[]) {
   NaClLog(4, "sel_universal: launcher_factory ctor() okay\n");
 
   // Start sel_ldr with the given application and arguments.
-  nacl::SelLdrLauncherStandalone* launcher =
-      launcher_factory.MakeSelLdrLauncherStandalone();
+  nacl::scoped_ptr<nacl::SelLdrLauncherStandalone> launcher(
+      launcher_factory.MakeSelLdrLauncherStandalone());
   NaClLog(4, "sel_universal: MakeSelLdrLauncherStandalone() okay\n");
   nacl::DescWrapperFactory factory;  // DescWrapper "namespace"
 
@@ -256,7 +256,7 @@ int raii_main(int argc, char* argv[]) {
   delete host_file;
 
   if (uses_reverse_service) {
-    ReverseEmulateInit(&command_channel, launcher, &launcher_factory,
+    ReverseEmulateInit(&command_channel, launcher.get(), &launcher_factory,
         command_prefix, sel_ldr_argv);
   }
 

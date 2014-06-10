@@ -26,6 +26,7 @@ class NaClCommandLoop {
   NaClCommandLoop(NaClSrpcService* service,
                   NaClSrpcChannel* channel,
                   NaClSrpcImcDescType default_socket_address);
+  ~NaClCommandLoop();
 
   void SetVariable(string name, string value);
   string GetVariable(string name) const;
