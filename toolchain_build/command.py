@@ -159,9 +159,12 @@ class Runnable(object):
 
     return '\n'.join(values)
 
-  def Invoke(self, cmd_options, subst):
+  def CheckRunCond(self, cmd_options):
     if self._run_cond and not self._run_cond(cmd_options):
       return False
+    return True
+
+  def Invoke(self, subst):
     return self._func(subst, *self._args, **self._kwargs)
 
 

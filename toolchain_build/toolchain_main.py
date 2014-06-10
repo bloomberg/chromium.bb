@@ -171,7 +171,7 @@ class PackageBuilder(object):
       raise Exception('package %s does not have a type' % package)
     type_text = package_info['type']
     if type_text not in ('source', 'build'):
-      raise Execption('package %s has unrecognized type: %s' %
+      raise Exception('package %s has unrecognized type: %s' %
                       (package, type_text))
     is_source_target = type_text == 'source'
 

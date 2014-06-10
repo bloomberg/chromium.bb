@@ -252,13 +252,19 @@ class Once(object):
       if subdir:
         assert subdir.startswith(output)
 
+      # Filter out commands that have a run condition of False.
+      # This must be done before any commands are invoked in case the run
+      # conditions rely on any pre-existing states.
+      commands = [command for command in commands
+                  if command.CheckRunCond(cmd_options)]
+
       for command in commands:
         paths = inputs.copy()
         paths.update(self._extra_paths)
         paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
-        command.Invoke(cmd_options, subst)
+        command.Invoke(subst)
 
     # Confirm that we aren't hitting something we've cached.
     for path in self._path_hash_cache:
