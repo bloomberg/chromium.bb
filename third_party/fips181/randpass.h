@@ -33,19 +33,9 @@
 #ifndef APG_RANDPASS_H
 #define APG_RANDPASS_H	1
 
-#ifndef APG_RND_H
-#include "rnd.h"
-#endif
-
 #ifndef APG_OWN_TYPES_H
 #include "owntypes.h"
 #endif
-
-#define S_NB	0x01 /* Numeric */
-#define S_SS	0x02 /* Special */
-#define S_CL	0x04 /* Capital */
-#define S_SL	0x08 /* Small   */
-#define S_RS    0x10 /* Restricted Symbol*/
 
 struct sym
  {

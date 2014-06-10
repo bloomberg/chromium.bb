@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
+#include "third_party/fips181/fips181.h"
 
 const int kMinUpper = 65;  // First upper case letter 'A'
 const int kMaxUpper = 90;  // Last upper case letter 'Z'
@@ -17,13 +18,6 @@ const int kMinLower = 97;  // First lower case letter 'a'
 const int kMaxLower = 122; // Last lower case letter 'z'
 const int kMinDigit = 48;  // First digit '0'
 const int kMaxDigit = 57;  // Last digit '9'
-// Copy of the other printable symbols from the ASCII table since they are
-// disjointed.
-const char kOtherSymbols[] =
-    {'!', '\"', '#', '$', '%', '&', '\'', '(',
-     ')', '*', '+', ',', '-', '.', '/', ':',
-     ';', '<', '=', '>', '?', '@', '[', '\\',
-     ']', '^', '_', '`', '{', '|', '}', '~'};
 const int kMinPasswordLength = 4;
 const int kMaxPasswordLength = 15;
 
@@ -38,35 +32,42 @@ int GetLengthFromHint(int max_length, int default_length) {
     return default_length;
 }
 
-void InitializeAlphaNumericCharacters(std::vector<char>* characters) {
-  for (int i = kMinDigit; i <= kMaxDigit; ++i)
-    characters->push_back(static_cast<char>(i));
-  for (int i = kMinUpper; i <= kMaxUpper; ++i)
-    characters->push_back(static_cast<char>(i));
-  for (int i = kMinLower; i <= kMaxLower; ++i)
-    characters->push_back(static_cast<char>(i));
+// We want the password to have uppercase, lowercase, and at least one number.
+bool VerifyPassword(const std::string& password) {
+  int num_lower_case = 0;
+  int num_upper_case = 0;
+  int num_digits = 0;
+
+  for (size_t i = 0; i < password.size(); ++i) {
+    if (password[i] >= kMinUpper && password[i] <= kMaxUpper)
+      ++num_upper_case;
+    if (password[i] >= kMinLower && password[i] <= kMaxLower)
+      ++num_lower_case;
+    if (password[i] >= kMinDigit && password[i] <= kMaxDigit)
+      ++num_digits;
+  }
+
+  return num_lower_case && num_upper_case && num_digits;
 }
 
-// Classic algorithm to randomly select |num_select| elements out of
-// |num_total| elements. One description can be found at:
-// "http://stackoverflow.com/questions/48087/select-a-random-n-elements-from-listt-in-c-sharp/48089#48089"
-void GetRandomSelection(int num_to_select,
-                        int num_total,
-                        std::vector<int>* selections) {
-  DCHECK_GE(num_total, num_to_select);
-  int num_left = num_total;
-  int num_needed = num_to_select;
-  for (int i = 0; i < num_total && num_needed > 0; ++i) {
-    // we have probability = |num_needed| / |num_left| to select
-    // this position.
-    int probability = base::RandInt(0, num_left - 1);
-    if (probability < num_needed) {
-      selections->push_back(i);
-      --num_needed;
+// Make sure that there is at least one upper case and one number in the
+// password. Assume that there already exists a lower case letter as it's the
+// default from gen_pron_pass.
+void ForceFixPassword(std::string* password) {
+  for (std::string::iterator iter = password->begin();
+       iter != password->end(); ++iter) {
+    if (islower(*iter)) {
+      *iter = base::ToUpperASCII(*iter);
+      break;
     }
-    --num_left;
   }
-  DCHECK_EQ(num_to_select, static_cast<int>(selections->size()));
+  for (std::string::reverse_iterator iter = password->rbegin();
+       iter != password->rend(); ++iter) {
+    if (islower(*iter)) {
+      *iter = base::RandInt(kMinDigit, kMaxDigit);
+      break;
+    }
+  }
 }
 
 }  // namespace
@@ -80,46 +81,29 @@ PasswordGenerator::PasswordGenerator(int max_length)
 PasswordGenerator::~PasswordGenerator() {}
 
 std::string PasswordGenerator::Generate() const {
-  std::string ret;
-  CR_DEFINE_STATIC_LOCAL(std::vector<char>, alphanumeric_characters, ());
-  if (alphanumeric_characters.empty())
-    InitializeAlphaNumericCharacters(&alphanumeric_characters);
+  char password[255];
+  char unused_hypenated_password[255];
+  // Generate passwords that have numbers and upper and lower case letters.
+  // No special characters included for now.
+  unsigned int mode = S_NB | S_CL | S_SL;
 
-  // First, randomly select 4 positions to hold one upper case letter,
-  // one lower case letter, one digit, and one other symbol respectively,
-  // to make sure at least one of each category of characters will be
-  // included in the password.
-  std::vector<int> positions;
-  GetRandomSelection(4, password_length_, &positions);
-
-  // To enhance the strengh of the password, we random suffle the positions so
-  // that the 4 catagories can be put at a random position in it.
-  std::random_shuffle(positions.begin(), positions.end());
-
-  // Next, generate each character of the password.
-  for (int i = 0; i < password_length_; ++i) {
-    if (i == positions[0]) {
-      // Generate random upper case letter.
-      ret.push_back(static_cast<char>(base::RandInt(kMinUpper, kMaxUpper)));
-    } else if (i == positions[1]) {
-      // Generate random lower case letter.
-      ret.push_back(static_cast<char>(base::RandInt(kMinLower, kMaxLower)));
-    } else if (i == positions[2]) {
-      // Generate random digit.
-      ret.push_back(static_cast<char>(base::RandInt(kMinDigit, kMaxDigit)));
-    } else if (i == positions[3]) {
-      // Generate random other symbol.
-      ret.push_back(
-          kOtherSymbols[base::RandInt(0, arraysize(kOtherSymbols) - 1)]);
-    } else {
-      // Generate random alphanumeric character. We don't use other symbols
-      // here as most sites don't allow a lot of non-alphanumeric characters.
-      ret.push_back(
-          alphanumeric_characters.at(
-              base::RandInt(0, alphanumeric_characters.size() - 1)));
-    }
+  // gen_pron_pass() doesn't guarantee that it includes all of the type given
+  // in mode, so regenerate a few times if neccessary.
+  // TODO(gcasto): Is it worth regenerating at all?
+  for (int i = 0; i < 10; ++i) {
+    gen_pron_pass(password, unused_hypenated_password,
+                  password_length_, password_length_, mode);
+    if (VerifyPassword(password))
+      break;
   }
-  return ret;
+
+  // If the password still isn't conforming after a few iterations, force it
+  // to be so. This may change a syllable in the password.
+  std::string str_password(password);
+  if (!VerifyPassword(str_password)) {
+    ForceFixPassword(&str_password);
+  }
+  return str_password;
 }
 
 }  // namespace autofill

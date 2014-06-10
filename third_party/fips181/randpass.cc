@@ -34,13 +34,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#if !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32) && !defined(__WIN32__)
-#include <pwd.h>
-#endif
-#include <unistd.h>
-#include "randpass.h"
 
+#include "base/rand_util.h"
 #include "owntypes.h"
+#include "randpass.h"
 #include "smbl.h"
 
 /*
@@ -69,8 +66,8 @@ gen_rand_pass (char *password_string, int minl, int maxl, unsigned int pass_mode
   if (minl > APG_MAX_PASSWORD_LENGTH || maxl > APG_MAX_PASSWORD_LENGTH ||
       minl < 1 || maxl < 1 || minl > maxl)
       return (-1);
-  for (i = 0; i <= 93; i++) random_weight[i] = 0; 
-  length = minl + randint(maxl-minl+1);
+  for (i = 0; i <= 93; i++) random_weight[i] = 0;
+  length = base::RandInt(minl, maxl);
   str_pointer = password_string;
 
   for (i = 0; i < length; i++)
@@ -79,7 +76,7 @@ gen_rand_pass (char *password_string, int minl, int maxl, unsigned int pass_mode
       for (j = 0; j <= 93 ; j++)
          if ( ( (pass_mode & smbl[j].type) > 0) &&
 	     !( (S_RS & smbl[j].type) > 0))
-	    random_weight[j] = 1 + randint(20000);
+           random_weight[j] = base::RandInt(1, 20000);
       j = 0;
 /* Find an element with maximum weight */
       for (j = 0; j <= 93; j++)
@@ -125,7 +122,7 @@ gen_rand_symbol (char *symbol, unsigned int mode)
   for (j = 0; j <= 93 ; j++)
      if ( ( (mode & smbl[j].type) > 0) &&
          !( (S_RS & smbl[j].type) > 0))
-	   random_weight[j] = 1 + randint(20000);
+          random_weight[j] = base::RandInt(1, 20000);
   j = 0;
 /* Find an element with maximum weight */
   for (j = 0; j <= 93; j++)

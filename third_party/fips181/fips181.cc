@@ -42,10 +42,10 @@
 #endif
 #include <time.h>
 #include <sys/types.h>
-#include "pronpass.h"
+#include "base/rand_util.h"
+#include "fips181.h"
 #include "randpass.h"
 #include "convert.h"
-#include "errs.h"
 
 struct unit
 {
@@ -1293,7 +1293,8 @@ gen_pron_pass (char *word, char *hyphenated_word, USHORT minlen,
  /* 
   * Find password.
   */
-    pwlen = gen_word (word, hyphenated_word, get_random (minlen, maxlen), pass_mode);
+    pwlen = gen_word (word, hyphenated_word, base::RandInt(minlen, maxlen),
+                      pass_mode);
     return (pwlen);
 }
 
@@ -1364,7 +1365,7 @@ gen_word (char *word, char *hyphenated_word, USHORT pwlen, unsigned int pass_mod
       * Get the syllable and find its length.
       */
      (void) gen_syllable (new_syllable, pwlen - word_length, syllable_units, &syllable_size);
-     syllable_length = strlen (new_syllable);
+     syllable_length = (USHORT) strlen (new_syllable);
      
      /*
       * Append the syllable units to the word units.
@@ -1394,7 +1395,7 @@ gen_word (char *word, char *hyphenated_word, USHORT pwlen, unsigned int pass_mod
           ** Modify syllable for numeric or capital symbols required
           ** Should be done after word quality check. 
           */
-	  dsd = randint(2);
+          dsd = base::RandInt(0, 1);
           if ( ((pass_mode & S_NB) > 0) && (syllable_length == 1) && dsd == 0)
             {
              numerize(new_syllable);
@@ -1428,7 +1429,7 @@ gen_word (char *word, char *hyphenated_word, USHORT pwlen, unsigned int pass_mod
           ** Modify syllable for numeric or capital symbols required
           ** Should be done after word quality check.
           */
-	  dsd = randint(2);
+          dsd = base::RandInt(0, 1);
           if ( ((pass_mode & S_NB) > 0) && (syllable_length == 1) && (dsd == 0))
             {
              numerize(new_syllable);
@@ -1734,7 +1735,7 @@ gen_syllable (char *syllable, USHORT pwlen, USHORT *units_in_syllable,
                    vowel_count++;
                current_unit++;
                (void) strcpy (syllable, rules[saved_pair[1]].unit_code);
-               length_left -= strlen (syllable);
+               length_left -= (short) strlen (syllable);
               }
 
               /* 
@@ -2249,42 +2250,19 @@ random_unit (USHORT type)
 {
      USHORT number;
 
-    /* 
+    /*
      * Sometimes, we are asked to explicitly get a vowel (i.e., if
      * a digram pair expects one following it).  This is a shortcut
      * to do that and avoid looping with rejected consonants.
      */
     if (type & VOWEL)
-     number = vowel_numbers[get_random (0, (sizeof (vowel_numbers) / sizeof (USHORT))-1)];
+      number = vowel_numbers[
+          base::RandInt(0, (sizeof (vowel_numbers) / sizeof (USHORT))-1)];
     else
-     /* 
+     /*
       * Get any letter according to the English distribution.
       */
-     number = numbers[get_random (0, (sizeof (numbers) / sizeof (USHORT))-1)];
+      number = numbers[
+          base::RandInt(0, (sizeof (numbers) / sizeof (USHORT))-1)];
     return (number);
-}
-
-
-/*
-** get_random() -
-** This routine should return a uniformly distributed Random number between
-** minlen and maxlen inclusive.  The Electronic Code Book form of CAST is
-** used to produce the Random number.  The inputs to CAST are the old pass-
-** word and a pseudoRandom key generated according to the procedure out-
-** lined in Appendix C of ANSI X9.17.
-** INPUT:
-**   USHORT - minimum
-**   USHORT - maximum
-** OUTPUT:
-**   USHORT - random number
-** NOTES:
-**   none.
-*/
-
-USHORT
-get_random (USHORT minlen, USHORT maxlen)
-{
- USHORT ret = 0;
- ret = minlen + (USHORT) randint ((int) (maxlen - minlen + 1));
- return (ret);
 }

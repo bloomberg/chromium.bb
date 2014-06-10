@@ -6,6 +6,7 @@ include_rules = [
   "+google_apis/google_api_keys.h",
   "+net",
   "+sql",
+  "+third_party/fips181",
   "+third_party/libjingle",
   "+third_party/libaddressinput", # For address i18n.
   "+third_party/libphonenumber",  # For phone number i18n.

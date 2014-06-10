@@ -94,6 +94,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
+        '../third_party/fips181/fips181.gyp:fips181',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',

@@ -33,10 +33,11 @@
 #include <strings.h>
 #endif
 #ifndef APGBFM
-# include "errs.h"
-# include "randpass.h"
+#include "fips181.h"
+#include "randpass.h"
 #endif
 
+#include "base/rand_util.h"
 #include "convert.h"
 
 /*
@@ -77,7 +78,7 @@ decapitalize (char *word)
 {
  int i = 0; /* counter */
  int j = 0; /* counter */
- int str_len = strlen(word);
+ int str_len = (int) strlen(word);
  for(j = 0; j < str_len; j++)
   for(i=0; i < 26; i++)
    if(word[j] == clet[i])
@@ -102,7 +103,7 @@ capitalize (char *syllable)
 {
  char tmp = 0x00;
  int i = 0;
- if ( randint(2) == TRUE)
+ if (base::RandInt(0, 1) == 1)
   {
    (void)memcpy((void *)&tmp, (void *)syllable, sizeof(tmp));
    for(i=0; i < 26; i++)
@@ -128,9 +129,7 @@ capitalize (char *syllable)
 void
 numerize (char *syllable)
 {
- char *tmp;
- if ( (tmp = (char *)calloc(1, 4)) == NULL)
-    err_sys_fatal("calloc");
+ char *tmp = (char *)calloc(1, 4);
  if ( strlen (syllable) == 1 )
       {
        (void) gen_rand_symbol(tmp, S_NB);
@@ -154,9 +153,7 @@ numerize (char *syllable)
 void
 specialize (char *syllable)
 {
- char *tmp;
- if ( (tmp = (char *)calloc(1, 4)) == NULL)
-    err_sys_fatal("calloc");
+ char *tmp = (char *)calloc(1, 4);
  if ( strlen (syllable) == 1 )
       {
        (void) gen_rand_symbol(tmp, S_SS);
@@ -180,9 +177,9 @@ symb2name(char * syllable, char * h_syllable)
  struct ssymb_names
   {
    char symbol;
-   char *name;
+   const char * name;
   };
- static struct ssymb_names ssn[42] =
+ static const struct ssymb_names ssn[42] =
   {
    {'1',"ONE"},
    {'2',"TWO"},
@@ -262,7 +259,7 @@ spell_word(char * word, char * spelled_word)
  struct char_spell
   {
    char symbol;
-   char *name;
+   const char *name;
   };
  static struct char_spell cs[94] =
   {
@@ -364,7 +361,7 @@ spell_word(char * word, char * spelled_word)
   int s_length = 0;
   int i = 0;
   int j = 0;
-  int word_len = strlen(word);
+  int word_len = (int) strlen(word);
   char * tmp_ptr;
   char hyphen = '-';
   char zero   = 0x00;
@@ -374,7 +371,7 @@ spell_word(char * word, char * spelled_word)
    for (j=0; j < 94; j++)
     if (word[i] == cs[j].symbol)
      {
-      s_length = s_length + strlen(cs[j].name) + 1;
+      s_length = s_length + (int) strlen(cs[j].name) + 1;
       continue;
      }
 

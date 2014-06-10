@@ -28,6 +28,9 @@
 */
 #ifndef APG_SMBL_H
 #define APG_SMBL_H    1
+
+#include "fips181.h"
+
 struct sym smbl[94] = 
 {
  {'a', S_SL}, {'b', S_SL}, {'c', S_SL}, {'d', S_SL}, {'e', S_SL}, {'f', S_SL},

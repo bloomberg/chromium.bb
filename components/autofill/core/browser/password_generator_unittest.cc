@@ -4,6 +4,7 @@
 
 #include <locale>
 
+#include "base/logging.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +32,6 @@ TEST(PasswordGeneratorTest, PasswordPattern) {
   int num_upper_case_letters = 0;
   int num_lower_case_letters = 0;
   int num_digits = 0;
-  int num_other_symbols = 0;
   for (size_t i = 0; i < password.size(); i++) {
     if (isupper(password[i]))
       ++num_upper_case_letters;
@@ -39,13 +39,10 @@ TEST(PasswordGeneratorTest, PasswordPattern) {
       ++num_lower_case_letters;
     else if (isdigit(password[i]))
       ++num_digits;
-    else
-      ++num_other_symbols;
   }
-  EXPECT_GT(num_upper_case_letters, 0);
-  EXPECT_GT(num_lower_case_letters, 0);
-  EXPECT_GT(num_digits, 0);
-  EXPECT_EQ(num_other_symbols, 1);
+  EXPECT_GT(num_upper_case_letters, 0) << password;
+  EXPECT_GT(num_lower_case_letters, 0) << password;
+  EXPECT_GT(num_digits, 0) << password;
 }
 
 TEST(PasswordGeneratorTest, Printable) {

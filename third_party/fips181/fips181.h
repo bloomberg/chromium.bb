@@ -41,10 +41,6 @@
 #include "owntypes.h"
 #endif /* APG_OWN_TYPES_H */
 
-#ifndef APG_RND_H
-#include "rnd.h"
-#endif /* APG_RND_H */
-
 #define RULE_SIZE             (sizeof(rules)/sizeof(struct unit))
 #define ALLOWED(flag)         (digram[units_in_syllable[current_unit -1]][unit] & (flag))
 
@@ -67,17 +63,21 @@
 #define NOT_END               01
 #define ANY_COMBINATION       0
 
-extern int gen_pron_pass (char *word, char *hyphenated_word, USHORT minlen,
-               USHORT maxlen, unsigned int pass_mode);
+#define S_NB    0x01 /* Numeric */
+#define S_SS    0x02 /* Special */
+#define S_CL    0x04 /* Capital */
+#define S_SL    0x08 /* Small   */
+#define S_RS    0x10 /* Restricted Symbol*/
 
+extern int gen_pron_pass (char *word, char* hypenated_word,
+                          USHORT minlen, USHORT maxlen, unsigned int pass_mode);
 USHORT  random_unit (USHORT type);
 USHORT  get_random (USHORT minlen, USHORT maxlen);
 boolean have_initial_y (USHORT *units, USHORT unit_size);
 boolean illegal_placement (USHORT *units, USHORT pwlen);
 boolean improper_word (USHORT *units, USHORT word_size);
 boolean have_final_split (USHORT *units, USHORT unit_size);
-int gen_word (char *word, char *hyphenated_word, USHORT pwlen,
-              unsigned int pass_mode);
+int gen_word (char *word, char *hyphenated_word, USHORT pwlen, unsigned int pass_mode);
 char   	*gen_syllable(char *syllable, USHORT pwlen, USHORT *units_in_syllable,
                       USHORT *syllable_length);
 
