@@ -155,11 +155,11 @@ chrome.bluetooth.onDeviceRemoved.addListener(function(device) {
 
 <p>
   You should call $(ref:bluetooth.startDiscovery) whenever your
-  app needs to discover nearby devices. Do not check the
-  <code>discovering</code> property of $(ref:bluetooth.AdapterState). The call
-  to start discovery will succeed even if another app is discovering nearby
-  devices, and will ensure the adapter continues to perform discovery after
-  that other app has stopped.
+  app needs to discover nearby devices. Do not make the call conditional on
+  the <code>discovering</code> property of $(ref:bluetooth.AdapterState). The
+  call will succeed even if another app is discovering nearby devices, and will
+  ensure the adapter continues to perform discovery after that other app has
+  stopped.
 </p>
 
 <p>
@@ -294,7 +294,7 @@ chrome.bluetooth.getDevices(function(devices) {
 
 <p>
   Chrome Apps may make connections to any device that supports RFCOMM or
-  L2CAP services. This includes the majority of class Bluetooth devices on
+  L2CAP services. This includes the majority of classic Bluetooth devices on
   the market.
 </p>
 
@@ -327,7 +327,7 @@ chrome.bluetooth.getDevices(function(devices) {
 var uuid = '1105';
 var onConnectedCallback = function() {
   if (chrome.runtime.lastError) {
-    console.log("Connection failed: " + chrome.runtime.lastError);
+    console.log("Connection failed: " + chrome.runtime.lastError.message);
   } else {
     // Profile implementation here.
   }
@@ -351,7 +351,7 @@ chrome.bluetoothSocket.create(function(createInfo) {
   objects. To learn about ArrayBuffers, check out the overview,
   <a href="https://developer.mozilla.org/en-US/docs/JavaScript_typed_arrays">JavaScript typed arrays</a>,
   and the tutorial,
-  <a href="http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String">How to convert ArrayBuffer to and from String</a>.\
+  <a href="http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String">How to convert ArrayBuffer to and from String</a>.
 </p>
 
 <p>
@@ -362,7 +362,7 @@ chrome.bluetoothSocket.create(function(createInfo) {
 <pre>
 chrome.bluetoothSocket.send(socketId, arrayBuffer, function(bytes_sent) {
   if (chrome.runtime.lastError) {
-    console.log("Send failed: " + chrome.runtime.lastError);
+    console.log("Send failed: " + chrome.runtime.lastError.message);
   } else {
     console.log("Sent " + bytes_sent + " bytes")
   }
@@ -421,49 +421,35 @@ chrome.bluetoothSocket.disconnect(socketId);
 <h3 id="listening">Listening on a socket</h3>
 
 <p>
-  Three types of published service are supported. RFCOMM is the most commonly
+  Two types of published service are supported. RFCOMM is the most commonly
   used and covers the majority of devices and profiles:
 </p>
 
 <pre>
 var uuid = '1105';
-var channel = 0; // Automatic channel selection.
 chrome.bluetoothSocket.create(function(createInfo) {
   chrome.bluetoothSocket.listenUsingRfcomm(createInfo.socketId,
-    uuid, channel, onListenCallback);
+    uuid, onListenCallback);
 });
 </pre>
 
 <p>
-  Insecure RFCOMM is an option for Bluetooth 1.0 and Bluetooth 2.0 devices that
-  do not support encryption. For all other device types this is no different
-  to using $(ref:bluetoothSocket.listenUsingRfcomm).
-</p>
-
-<pre>
-chrome.bluetoothSocket.create(function(createInfo) {
-  chrome.bluetoothSocket.listenUsingInsecureRfcomm(createInfo.socketId,
-    uuid, channel, onListenCallback);
-});
-</pre>
-
-<p>
-  Finally L2CAP covers other device types and vendor-specific uses such as
-  firmware uploading.
+  L2CAP is the other and covers other device types and vendor-specific uses
+  such as firmware uploading.
 </p>
 
 <pre>
 var uuid = '0b87367c-f188-47cd-bc20-a5f4f70973c6';
-var psm = 0; // Automatic PSM selection.
 chrome.bluetoothSocket.create(function(createInfo) {
   chrome.bluetoothSocket.listenUsingL2cap(createInfo.socketId,
-    uuid, psm, onListenCallback);
+    uuid, onListenCallback);
 });
 </pre>
 
 <p>
-  In all three cases the callback indicates error through
-  <code>chrome.runtime.lastError</code> and success otherwise.
+  In both cases an optional $(ref:bluetoothSocket.ListenOptions) may be
+  passed to allocate a specific channel or PSM. The callback indicates error
+  through <code>chrome.runtime.lastError</code> and success otherwise.
   Keep a handle to the socketId so that you can later accept connections
   ($(ref:bluetoothSocket.onAccept)) from this socket.
 </p>

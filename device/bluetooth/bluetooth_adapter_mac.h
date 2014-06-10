@@ -61,7 +61,6 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
       int channel,
-      bool insecure,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
   virtual void CreateL2capService(

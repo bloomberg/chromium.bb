@@ -159,7 +159,6 @@ bool BluetoothAdapterMac::IsDiscovering() const {
 void BluetoothAdapterMac::CreateRfcommService(
     const BluetoothUUID& uuid,
     int channel,
-    bool insecure,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();

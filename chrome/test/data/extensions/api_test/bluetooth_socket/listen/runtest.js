@@ -58,7 +58,7 @@ function secondStage() {
 
       // Check for error conditions.
       chrome.bluetoothSocket.listenUsingRfcomm(
-          1234, uuid, 0,
+          1234, uuid,
           function() {
             expectError("Socket not found");
 
@@ -66,12 +66,12 @@ function secondStage() {
               function(socket) {
                 failOnError();
                 chrome.bluetoothSocket.listenUsingRfcomm(
-                  socket.socketId, 'not a valid uuid', 0,
+                  socket.socketId, 'not a valid uuid',
                   function() {
                     expectError("Invalid UUID");
 
                     chrome.bluetoothSocket.listenUsingRfcomm(
-                      socket.socketId, '1234', 0,
+                      socket.socketId, '1234',
                       function() {
                         expectError("Permission denied");
 
@@ -102,7 +102,7 @@ chrome.bluetoothSocket.create(
       });
 
     chrome.bluetoothSocket.listenUsingRfcomm(
-      socket.socketId, uuid, 0,
+      socket.socketId, uuid,
       function() {
         failOnError();
 

@@ -53,17 +53,14 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   // Listens using this socket using a service published on |adapter|. The
   // service is either RFCOMM or L2CAP depending on |socket_type| and published
   // as UUID |uuid|. The |psm_or_channel| argument is interpreted according to
-  // |socket_type|. The |insecure| argument, if true, permits incoming
-  // connections from unpaired Bluetooth 1.0 and 2.0 devices.
-  // |success_callback| will be called if the service is successfully
-  // registered, |error_callback| on failure with a message explaining the
-  // cause.
+  // |socket_type|. |success_callback| will be called if the service is
+  // successfully registered, |error_callback| on failure with a message
+  // explaining the cause.
   enum SocketType { kRfcomm, kL2cap };
   virtual void Listen(scoped_refptr<device::BluetoothAdapter> adapter,
                       SocketType socket_type,
                       const device::BluetoothUUID& uuid,
                       int psm_or_channel,
-                      bool insecure,
                       const base::Closure& success_callback,
                       const ErrorCompletionCallback& error_callback);
 

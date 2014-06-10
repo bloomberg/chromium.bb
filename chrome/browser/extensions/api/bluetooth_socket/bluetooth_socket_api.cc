@@ -18,6 +18,7 @@
 
 using content::BrowserThread;
 using extensions::BluetoothApiSocket;
+using extensions::api::bluetooth_socket::ListenOptions;
 using extensions::api::bluetooth_socket::SocketInfo;
 using extensions::api::bluetooth_socket::SocketProperties;
 
@@ -327,53 +328,19 @@ void BluetoothSocketListenUsingRfcommFunction::CreateService(
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
-  int channel = params_->channel;
-  if (!channel)
-    channel = device::BluetoothAdapter::kChannelAuto;
+  int channel = device::BluetoothAdapter::kChannelAuto;
 
-  adapter->CreateRfcommService(uuid, channel, false, callback, error_callback);
+  ListenOptions* options = params_->options.get();
+  if (options) {
+    if (options->channel.get())
+      channel = *(options->channel);
+  }
+
+  adapter->CreateRfcommService(uuid, channel, callback, error_callback);
 }
 
 void BluetoothSocketListenUsingRfcommFunction::CreateResults() {
   results_ = bluetooth_socket::ListenUsingRfcomm::Results::Create();
-}
-
-BluetoothSocketListenUsingInsecureRfcommFunction::
-    BluetoothSocketListenUsingInsecureRfcommFunction() {}
-
-BluetoothSocketListenUsingInsecureRfcommFunction::
-    ~BluetoothSocketListenUsingInsecureRfcommFunction() {}
-
-int BluetoothSocketListenUsingInsecureRfcommFunction::socket_id() const {
-  return params_->socket_id;
-}
-
-const std::string&
-BluetoothSocketListenUsingInsecureRfcommFunction::uuid() const {
-  return params_->uuid;
-}
-
-bool BluetoothSocketListenUsingInsecureRfcommFunction::CreateParams() {
-  params_ = bluetooth_socket::ListenUsingInsecureRfcomm::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params_.get());
-  return true;
-}
-
-void BluetoothSocketListenUsingInsecureRfcommFunction::CreateService(
-    scoped_refptr<device::BluetoothAdapter> adapter,
-    const device::BluetoothUUID& uuid,
-    const device::BluetoothAdapter::CreateServiceCallback& callback,
-    const device::BluetoothAdapter::CreateServiceErrorCallback&
-        error_callback) {
-  int channel = params_->channel;
-  if (!channel)
-    channel = device::BluetoothAdapter::kChannelAuto;
-
-  adapter->CreateRfcommService(uuid, channel, true, callback, error_callback);
-}
-
-void BluetoothSocketListenUsingInsecureRfcommFunction::CreateResults() {
-  results_ = bluetooth_socket::ListenUsingInsecureRfcomm::Results::Create();
 }
 
 BluetoothSocketListenUsingL2capFunction::
@@ -402,9 +369,13 @@ void BluetoothSocketListenUsingL2capFunction::CreateService(
     const device::BluetoothAdapter::CreateServiceCallback& callback,
     const device::BluetoothAdapter::CreateServiceErrorCallback&
         error_callback) {
-  int psm = params_->psm;
-  if (!psm)
-    psm = device::BluetoothAdapter::kPsmAuto;
+  int psm = device::BluetoothAdapter::kPsmAuto;
+
+  ListenOptions* options = params_->options.get();
+  if (options) {
+    if (options->psm.get())
+      psm = *(options->psm);
+  }
 
   adapter->CreateL2capService(uuid, psm, callback, error_callback);
 }

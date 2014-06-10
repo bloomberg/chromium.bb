@@ -215,8 +215,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // Creates an RFCOMM service on this adapter advertised with UUID |uuid|,
   // listening on channel |channel|, which may be the constant |kChannelAuto|
-  // to automatically allocate one. The socket will require encryption unless
-  // |insecure| is set to true. |callback| will be called on success with a
+  // to automatically allocate one. |callback| will be called on success with a
   // BluetoothSocket instance that is to be owned by the received.
   // |error_callback| will be called on failure with a message indicating the
   // cause.
@@ -228,7 +227,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
       int channel,
-      bool insecure,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) = 0;
 

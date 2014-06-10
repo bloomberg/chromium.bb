@@ -144,10 +144,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
       = new testing::StrictMock<MockBluetoothSocket>();
   EXPECT_CALL(*mock_adapter_,
               CreateRfcommService(service_uuid,
-                                  BluetoothAdapter::kPsmAuto,
-                                  false,
+                                  BluetoothAdapter::kChannelAuto,
                                   testing::_, testing::_))
-      .WillOnce(InvokeCallbackArgument<3>(mock_server_socket));
+      .WillOnce(InvokeCallbackArgument<2>(mock_server_socket));
 
   // Since the socket is unpaused, expect a call to Accept() from the socket
   // dispatcher. We'll immediately send back another mock socket to represent

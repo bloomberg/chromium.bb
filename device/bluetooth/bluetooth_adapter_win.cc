@@ -164,10 +164,8 @@ void BluetoothAdapterWin::DiscoveryStopped() {
 void BluetoothAdapterWin::CreateRfcommService(
     const BluetoothUUID& uuid,
     int channel,
-    bool insecure,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
-  // Note that |insecure| is ignored.
   scoped_refptr<BluetoothSocketWin> socket =
       BluetoothSocketWin::CreateBluetoothSocket(
           ui_task_runner_,

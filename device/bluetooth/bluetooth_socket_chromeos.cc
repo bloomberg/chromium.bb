@@ -121,7 +121,6 @@ void BluetoothSocketChromeOS::Listen(
     SocketType socket_type,
     const BluetoothUUID& uuid,
     int psm_or_channel,
-    bool insecure,
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -153,9 +152,6 @@ void BluetoothSocketChromeOS::Listen(
     default:
       NOTREACHED();
   }
-
-  if (insecure)
-    options_->require_authentication.reset(new bool(false));
 
   RegisterProfile(success_callback, error_callback);
 }

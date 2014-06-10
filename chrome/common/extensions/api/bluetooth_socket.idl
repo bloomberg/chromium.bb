@@ -43,8 +43,26 @@ namespace bluetoothSocket {
   // Callback from the <code>setPaused</code> method.
   callback SetPausedCallback = void ();
 
-  // Callback from the <code>listenUsingRfcomm</code>,
-  // <code>listenUsingInsecureRfcomm</code> and
+  // Options that may be passed to the <code>listenUsingRfcomm</code> and
+  // <code>listenUsingL2cap</code> methods. Each property is optional with a
+  // default being used if not specified.
+  dictionary ListenOptions {
+    // The RFCOMM Channel used by <code>listenUsingRfcomm</code>. If specified,
+    // this channel must not be previously in use or the method call will fail.
+    // When not specified, an unused channel will be automatically allocated.
+    long? channel;
+
+    // The L2CAP PSM used by <code>listenUsingL2cap</code>. If specified, this
+    // PSM must not be previously in use or the method call with fail. When
+    // not specified, an unused PSM will be automatically allocated.
+    long? psm;
+
+    // Length of the socket's listen queue. The default value depends on the
+    // operating system's host subsystem.
+    long? backlog;
+  };
+
+  // Callback from the <code>listenUsingRfcomm</code> and
   // <code>listenUsingL2cap</code> methods.
   callback ListenCallback = void ();
 
@@ -205,45 +223,21 @@ namespace bluetoothSocket {
     // Listen for connections using the RFCOMM protocol.
     // |socketId| : The socket identifier.
     // |uuid| : Service UUID to listen on.
-    // |channel| : RFCOMM channel id to listen on. Zero may be specified to
-    // allocate an unused channel.
-    // |backlog| : Length of the socket's listen queue. The default value
-    // depends on the operating system's host subsystem.
+    // |options| : Optional additional options for the service.
     // |callback| : Called when listen operation completes.
     static void listenUsingRfcomm(long socketId,
                                   DOMString uuid,
-                                  long channel,
-                                  optional long backlog,
+                                  optional ListenOptions options,
                                   ListenCallback callback);
-
-    // Listens for connections from Bluetooth 1.0 and 2.0 devices using the
-    // RFCOMM protocol without requiring encryption or authentication on the
-    // socket.
-    // |socketId| : The socket identifier.
-    // |uuid| : Service UUID to listen on.
-    // |channel| : RFCOMM channel id to listen on. Zero may be specified to
-    // allocate an unused channel.
-    // |backlog| : Length of the socket's listen queue. The default value
-    // depends on the operating system's host subsystem.
-    // |callback| : Called when listen operation completes.
-    static void listenUsingInsecureRfcomm(long socketId,
-                                          DOMString uuid,
-                                          long channel,
-                                          optional long backlog,
-                                          ListenCallback callback);
 
     // Listen for connections using the L2CAP protocol.
     // |socketId| : The socket identifier.
     // |uuid| : Service UUID to listen on.
-    // |psm| : L2CAP PSM to listen on. Zero may be specified to allocate an
-    // unused PSM.
-    // |backlog| : Length of the socket's listen queue. The default value
-    // depends on the operating system's host subsystem.
+    // |options| : Optional additional options for the service.
     // |callback| : Called when listen operation completes.
     static void listenUsingL2cap(long socketId,
                                  DOMString uuid,
-                                 long psm,
-                                 optional long backlog,
+                                 optional ListenOptions options,
                                  ListenCallback callback);
 
     // Connects the socket to a remote Bluetooth device. When the

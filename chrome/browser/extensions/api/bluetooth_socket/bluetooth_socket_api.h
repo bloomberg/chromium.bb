@@ -177,34 +177,6 @@ class BluetoothSocketListenUsingRfcommFunction
   scoped_ptr<bluetooth_socket::ListenUsingRfcomm::Params> params_;
 };
 
-class BluetoothSocketListenUsingInsecureRfcommFunction
-    : public BluetoothSocketListenFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingInsecureRfcomm",
-                             BLUETOOTHSOCKET_LISTENUSINGINSECURERFCOMM);
-
-  BluetoothSocketListenUsingInsecureRfcommFunction();
-
-  // BluetoothSocketListenFunction:
-  virtual int socket_id() const OVERRIDE;
-  virtual const std::string& uuid() const OVERRIDE;
-
-  virtual bool CreateParams() OVERRIDE;
-  virtual void CreateService(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID& uuid,
-      const device::BluetoothAdapter::CreateServiceCallback& callback,
-      const device::BluetoothAdapter::CreateServiceErrorCallback&
-          error_callback) OVERRIDE;
-  virtual void CreateResults() OVERRIDE;
-
- protected:
-  virtual ~BluetoothSocketListenUsingInsecureRfcommFunction();
-
- private:
-  scoped_ptr<bluetooth_socket::ListenUsingInsecureRfcomm::Params> params_;
-};
-
 class BluetoothSocketListenUsingL2capFunction
     : public BluetoothSocketListenFunction {
  public:
