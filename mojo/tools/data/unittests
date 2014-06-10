@@ -1,6 +1,7 @@
 # This file contains a list of Mojo gtest unit tests.
 # Prepend * to indicate that results shouldn't be cached (e.g., if the test has
 # other data dependencies).
+# TODO(vtl): Add a way of specifying data dependencies instead.
 
 # System tests:
 mojo_system_unittests
@@ -20,3 +21,6 @@ mojo_view_manager_unittests
 # JavaScript tests:
 *mojo_apps_js_unittests
 *mojo_js_unittests
+
+# Shell integration tests:
+*mojo_shell_tests
