@@ -91,7 +91,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
     MessageCenterView* message_center_view,
     MessageCenter* message_center,
     NotifierSettingsProvider* notifier_settings_provider,
-    bool settings_initially_visible)
+    bool settings_initially_visible,
+    const base::string16& title)
     : message_center_view_(message_center_view),
       message_center_(message_center),
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -120,8 +121,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   title_arrow_->SetFocusable(false);
   AddChildView(title_arrow_);
 
-  notification_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE));
+  notification_label_ = new views::Label(title);
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetEnabledColor(kRegularTextColor);

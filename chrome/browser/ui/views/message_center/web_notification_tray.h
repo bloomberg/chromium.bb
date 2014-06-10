@@ -121,6 +121,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   bool should_update_tray_content_;
   bool last_quiet_mode_state_;
+  base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

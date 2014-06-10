@@ -32,14 +32,16 @@ MessageCenterWidgetDelegate::MessageCenterWidgetDelegate(
     WebNotificationTray* tray,
     MessageCenterTray* mc_tray,
     bool initially_settings_visible,
-    const PositionInfo& pos_info)
+    const PositionInfo& pos_info,
+    const base::string16& title)
     : MessageCenterView(tray->message_center(),
                         mc_tray,
                         pos_info.max_height,
                         initially_settings_visible,
                         pos_info.message_center_alignment &
-                            ALIGNMENT_TOP),  // Show buttons on top if message
-                                             // center is top aligned
+                            ALIGNMENT_TOP,  // Show buttons on top if message
+                                            // center is top aligned
+                        title),
       pos_info_(pos_info),
       tray_(tray) {
   // A WidgetDelegate should be deleted on DeleteDelegate.

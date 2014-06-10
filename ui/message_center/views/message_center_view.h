@@ -48,7 +48,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                     MessageCenterTray* tray,
                     int max_height,
                     bool initially_settings_visible,
-                    bool top_down);
+                    bool top_down,
+                    const base::string16& title);
   virtual ~MessageCenterView();
 
   void SetNotifications(const NotificationList::Notifications& notifications);

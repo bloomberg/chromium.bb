@@ -96,8 +96,9 @@ void MessageCenterBubble::InitializeContents(
       tray(),
       max_height(),
       initially_settings_visible_,
-      false /* MessageCenterBubble should be used only on ChromeOS.
-               Message center is never shown top down in ChromeOS. */);
+      false, /* MessageCenterBubble should be used only on ChromeOS.
+              Message center is never shown top down in ChromeOS. */
+      title_);
   bubble_view()->AddChildView(new ContentsView(this, message_center_view_));
   // Resize the content of the bubble view to the given bubble size. This is
   // necessary in case of the bubble border forcing a bigger size then the

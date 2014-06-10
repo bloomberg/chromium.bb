@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center.h"
@@ -54,7 +55,8 @@ class MessageCenterWidgetDelegate : public views::WidgetDelegate,
   MessageCenterWidgetDelegate(WebNotificationTray* tray,
                               MessageCenterTray* mc_tray,
                               bool initially_settings_visible,
-                              const PositionInfo& pos_info);
+                              const PositionInfo& pos_info,
+                              const base::string16& title);
   virtual ~MessageCenterWidgetDelegate();
 
   // WidgetDelegate overrides:

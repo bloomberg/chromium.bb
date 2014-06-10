@@ -144,8 +144,9 @@ void MessageCenterViewTest::SetUp() {
   notifications.insert(&notification);
 
   // Then create a new MessageCenterView with that single notification.
+  base::string16 title;
   message_center_view_.reset(new MessageCenterView(
-      &message_center_, NULL, 100, false, /*top_down =*/false));
+      &message_center_, NULL, 100, false, /*top_down =*/false, title));
   message_center_view_->SetNotifications(notifications);
 
   // Remove and delete the NotificationView now owned by the MessageCenterView's

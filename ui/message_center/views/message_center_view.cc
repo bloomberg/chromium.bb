@@ -535,7 +535,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      MessageCenterTray* tray,
                                      int max_height,
                                      bool initially_settings_visible,
-                                     bool top_down)
+                                     bool top_down,
+                                     const base::string16& title)
     : message_center_(message_center),
       tray_(tray),
       scroller_(NULL),
@@ -559,7 +560,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   button_bar_ = new MessageCenterButtonBar(this,
                                            message_center,
                                            notifier_settings_provider,
-                                           initially_settings_visible);
+                                           initially_settings_visible,
+                                           title);
 
   const int button_height = button_bar_->GetPreferredSize().height();
 

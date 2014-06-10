@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -145,6 +146,9 @@ WebNotificationTray::WebNotificationTray(PrefService* local_state)
                                   local_state);
   }
 #endif
+  title_ = l10n_util::GetStringFUTF16(
+      IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE,
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -174,7 +178,8 @@ bool WebNotificationTray::ShowMessageCenter() {
       new MessageCenterWidgetDelegate(this,
                                       message_center_tray_.get(),
                                       false,  // settings initally invisible
-                                      GetPositionInfo());
+                                      GetPositionInfo(),
+                                      title_);
 
   return true;
 }
@@ -196,7 +201,8 @@ bool WebNotificationTray::ShowNotifierSettings() {
       new MessageCenterWidgetDelegate(this,
                                       message_center_tray_.get(),
                                       true,  // settings initally visible
-                                      GetPositionInfo());
+                                      GetPositionInfo(),
+                                      title_);
 
   return true;
 }

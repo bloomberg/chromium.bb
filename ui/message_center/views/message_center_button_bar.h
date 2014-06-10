@@ -30,7 +30,8 @@ class MessageCenterButtonBar : public views::View,
   MessageCenterButtonBar(MessageCenterView* message_center_view,
                          MessageCenter* message_center,
                          NotifierSettingsProvider* notifier_settings_provider,
-                         bool settings_initially_visible);
+                         bool settings_initially_visible,
+                         const base::string16& title);
   virtual ~MessageCenterButtonBar();
 
   // Enables or disables all of the buttons in the center.  This is used to
