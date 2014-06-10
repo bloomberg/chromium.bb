@@ -50,6 +50,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_ANDROID)
+#include "content/public/common/content_descriptors.h"
+#endif
+
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #if defined(TYPE_PROFILING)
@@ -703,7 +707,16 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     RegisterPathProvider();
     RegisterContentSchemes(true);
 
+#if defined(OS_ANDROID)
+    int icudata_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
+        kAndroidICUDataDescriptor);
+    if (icudata_fd != -1)
+      CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd));
+    else
+      CHECK(base::i18n::InitializeICU());
+#else
     CHECK(base::i18n::InitializeICU());
+#endif
 
     InitializeStatsTable(command_line);
 

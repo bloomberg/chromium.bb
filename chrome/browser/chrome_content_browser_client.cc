@@ -2638,6 +2638,18 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     }
   }
 
+  base::FilePath app_data_path;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
+  DCHECK(!app_data_path.empty());
+
+  flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::FilePath icudata_path =
+      app_data_path.AppendASCII("icudtl.dat");
+  base::File icudata_file(icudata_path, flags);
+  DCHECK(icudata_file.IsValid());
+  mappings->push_back(FileDescriptorInfo(kAndroidICUDataDescriptor,
+                                         FileDescriptor(icudata_file.Pass())));
+
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {

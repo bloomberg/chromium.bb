@@ -15,6 +15,7 @@ enum {
 
 #if defined(OS_ANDROID)
   kAndroidPropertyDescriptor,
+  kAndroidICUDataDescriptor,
 #endif
 
   // The first key that embedders can use to register descriptors (see
