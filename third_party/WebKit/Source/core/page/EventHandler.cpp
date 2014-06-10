@@ -89,6 +89,7 @@
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
+#include "platform/TraceEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Image.h"

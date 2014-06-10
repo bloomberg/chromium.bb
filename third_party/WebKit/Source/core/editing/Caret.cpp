@@ -32,6 +32,7 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderView.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

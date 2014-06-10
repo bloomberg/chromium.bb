@@ -37,6 +37,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/Decimal.h"
 #include "platform/LayoutUnit.h"
+#include "platform/fonts/FontMetrics.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"

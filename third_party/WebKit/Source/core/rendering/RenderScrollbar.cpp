@@ -32,6 +32,7 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderScrollbarTheme.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

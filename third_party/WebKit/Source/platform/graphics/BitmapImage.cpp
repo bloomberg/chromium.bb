@@ -28,6 +28,7 @@
 #include "platform/graphics/BitmapImage.h"
 
 #include "platform/Timer.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageObserver.h"

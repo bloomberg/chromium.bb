@@ -47,6 +47,7 @@
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/LengthFunctions.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"

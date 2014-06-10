@@ -36,6 +36,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"

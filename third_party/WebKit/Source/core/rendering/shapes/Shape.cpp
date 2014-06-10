@@ -39,6 +39,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/WindRule.h"
 #include "wtf/MathExtras.h"

@@ -31,6 +31,8 @@
 
 namespace WebCore {
 
+class Pattern;
+
 class PLATFORM_EXPORT ScrollbarThemeMacCommon : public ScrollbarTheme {
 public:
     virtual ~ScrollbarThemeMacCommon();

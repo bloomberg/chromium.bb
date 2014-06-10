@@ -17,14 +17,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/GraphicsContext.h"
-#include "wtf/Noncopyable.h"
-
+#include "platform/PlatformExport.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "wtf/Noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
 
 namespace WebCore {
+
+class GraphicsContext;
 
 // This class automatically saves and restores the current NSGraphicsContext for
 // functions which call out into AppKit and rely on the currentContext being set

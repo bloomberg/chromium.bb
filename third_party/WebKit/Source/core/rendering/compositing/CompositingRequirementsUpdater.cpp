@@ -31,6 +31,7 @@
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 

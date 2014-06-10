@@ -26,6 +26,7 @@
 #ifndef ScrollbarThemeOverlay_h
 #define ScrollbarThemeOverlay_h
 
+#include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {

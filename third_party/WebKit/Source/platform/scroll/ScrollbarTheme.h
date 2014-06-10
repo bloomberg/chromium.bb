@@ -28,11 +28,11 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
 
+class GraphicsContext;
 class PlatformMouseEvent;
 class ScrollbarThemeClient;
 class ScrollView;

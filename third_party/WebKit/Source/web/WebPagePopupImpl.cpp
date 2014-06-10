@@ -43,6 +43,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"

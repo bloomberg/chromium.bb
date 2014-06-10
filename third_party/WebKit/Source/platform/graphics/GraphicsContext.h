@@ -29,7 +29,6 @@
 #define GraphicsContext_h
 
 #include "platform/PlatformExport.h"
-#include "platform/TraceEvent.h"
 #include "platform/fonts/Font.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DashArray.h"

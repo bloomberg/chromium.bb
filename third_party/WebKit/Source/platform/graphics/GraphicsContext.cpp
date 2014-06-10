@@ -27,6 +27,7 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContext.h"
 
+#include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/BitmapImage.h"
@@ -1817,7 +1818,7 @@ const SkPMColor GraphicsContext::antiColors2(int index)
 void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
 {
     if (m_trackTextRegion) {
-        TRACE_EVENT0("skia", "PlatformContextSkia::trackTextRegion");
+        TRACE_EVENT0("skia", "GraphicsContext::didDrawTextInRect");
         m_textRegion.join(textRect);
     }
 }

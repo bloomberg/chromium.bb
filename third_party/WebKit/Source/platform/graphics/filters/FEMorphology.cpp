@@ -26,6 +26,8 @@
 #include "platform/graphics/filters/FEMorphology.h"
 
 #include "SkMorphologyImageFilter.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Image.h"
 #include "platform/graphics/filters/ParallelJobs.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"

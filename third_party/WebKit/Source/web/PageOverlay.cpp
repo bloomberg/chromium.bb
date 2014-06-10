@@ -31,6 +31,7 @@
 
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "public/platform/WebLayer.h"

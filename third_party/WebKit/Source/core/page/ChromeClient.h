@@ -34,7 +34,6 @@
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
 #include "platform/PopupMenuClient.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -57,6 +56,7 @@ class Element;
 class FileChooser;
 class FloatRect;
 class Frame;
+class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class HitTestResult;

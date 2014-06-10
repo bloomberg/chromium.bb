@@ -36,6 +36,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/WebPoint.h"
 
 namespace WebCore {

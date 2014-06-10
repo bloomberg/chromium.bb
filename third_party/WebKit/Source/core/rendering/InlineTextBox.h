@@ -25,7 +25,6 @@
 
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 
@@ -33,6 +32,7 @@ namespace WebCore {
 
 struct CompositionUnderline;
 class DocumentMarker;
+class GraphicsContext;
 
 const unsigned short cNoTruncation = USHRT_MAX;
 const unsigned short cFullTruncation = USHRT_MAX - 1;

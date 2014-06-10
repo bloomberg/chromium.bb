@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include "core/rendering/svg/RenderSVGRect.h"
+#include "platform/graphics/GraphicsContext.h"
 
 #include "SVGNames.h"
 

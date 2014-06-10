@@ -48,6 +48,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
+#include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"

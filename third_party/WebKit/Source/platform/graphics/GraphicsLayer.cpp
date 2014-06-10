@@ -32,6 +32,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
+#include "platform/graphics/Image.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/scroll/ScrollableArea.h"

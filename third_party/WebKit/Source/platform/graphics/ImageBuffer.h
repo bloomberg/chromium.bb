@@ -33,7 +33,6 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/ColorSpace.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
@@ -54,6 +53,7 @@ class WebGraphicsContext3D;
 namespace WebCore {
 
 class DrawingBuffer;
+class GraphicsContext;
 class Image;
 class ImageBufferClient;
 class IntPoint;

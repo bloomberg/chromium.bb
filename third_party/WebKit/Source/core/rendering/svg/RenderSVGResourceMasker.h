@@ -25,7 +25,6 @@
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 
 #include "wtf/HashMap.h"
@@ -34,6 +33,7 @@
 namespace WebCore {
 
 class DisplayList;
+class GraphicsContext;
 
 class RenderSVGResourceMasker FINAL : public RenderSVGResourceContainer {
 public:

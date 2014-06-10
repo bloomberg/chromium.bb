@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/StdLibExtras.h"
 

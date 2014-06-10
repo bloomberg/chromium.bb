@@ -50,6 +50,7 @@
 #include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/OverscrollTheme.h"
+#include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"
 

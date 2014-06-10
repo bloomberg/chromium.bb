@@ -34,6 +34,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "platform/graphics/BitmapImage.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"

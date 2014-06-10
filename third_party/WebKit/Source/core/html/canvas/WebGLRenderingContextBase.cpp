@@ -77,6 +77,7 @@
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"

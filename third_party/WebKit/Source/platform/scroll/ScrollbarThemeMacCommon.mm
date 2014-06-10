@@ -34,6 +34,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/Pattern.h"
 #include "platform/mac/ColorMac.h"
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/NSScrollerImpDetails.h"
@@ -67,10 +68,6 @@ static ScrollbarSet& scrollbarSet()
     DEFINE_STATIC_LOCAL(ScrollbarSet, set, ());
     return set;
 }
-
-}
-
-namespace WebCore {
 
 static float gInitialButtonDelay = 0.5f;
 static float gAutoscrollButtonDelay = 0.05f;
