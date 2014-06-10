@@ -78,7 +78,8 @@ static jint WaitMany(JNIEnv* env,
 static jobject CreateMessagePipe(JNIEnv* env, jobject jcaller) {
   MojoHandle handle1;
   MojoHandle handle2;
-  MojoResult result = MojoCreateMessagePipe(&handle1, &handle2);
+  // TODO(vtl): Add support for the options struct.
+  MojoResult result = MojoCreateMessagePipe(NULL, &handle1, &handle2);
   return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2)
       .Release();
 }

@@ -58,7 +58,7 @@ const char* MinimalCTest(void) {
                      MOJO_DEADLINE_INDEFINITE));
 
   handle1 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&handle0, &handle1));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
 
   wait_flags = MOJO_WAIT_FLAG_READABLE;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,

@@ -9,8 +9,35 @@
 #ifndef MOJO_PUBLIC_C_SYSTEM_MESSAGE_PIPE_H_
 #define MOJO_PUBLIC_C_SYSTEM_MESSAGE_PIPE_H_
 
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
+
+// |MojoCreateMessagePipeOptions|: Used to specify creation parameters for a
+// message pipe to |MojoCreateMessagePipe()|.
+//   |uint32_t struct_size|: Set to the size of the
+//       |MojoCreateMessagePipeOptions| struct. (Used to allow for future
+//       extensions.)
+//   |MojoCreateMessagePipeOptionsFlags flags|: Reserved for future use.
+//       |MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE|: No flags; default mode.
+
+typedef uint32_t MojoCreateMessagePipeOptionsFlags;
+
+#ifdef __cplusplus
+const MojoCreateMessagePipeOptionsFlags
+    MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE = 0;
+#else
+#define MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE \
+    ((MojoCreateMessagePipeOptionsFlags) 0)
+#endif
+
+MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
+struct MOJO_ALIGNAS(8) MojoCreateMessagePipeOptions {
+  uint32_t struct_size;
+  MojoCreateMessagePipeOptionsFlags flags;
+};
+MOJO_COMPILE_ASSERT(sizeof(MojoCreateMessagePipeOptions) == 8,
+                    MojoCreateMessagePipeOptions_has_wrong_size);
 
 // |MojoWriteMessageFlags|: Used to specify different modes to
 // |MojoWriteMessage()|.
@@ -50,8 +77,12 @@ extern "C" {
 
 // Creates a message pipe, which is a bidirectional communication channel for
 // framed data (i.e., messages). Messages can contain plain data and/or Mojo
-// handles. On success, |*message_pipe_handle0| and |*message_pipe_handle1| are
-// set to handles for the two endpoints (ports) for the message pipe.
+// handles.
+//
+// |options| may be set to null for a message pipe with the default options.
+//
+// On success, |*message_pipe_handle0| and |*message_pipe_handle1| are set to
+// handles for the two endpoints (ports) for the message pipe.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
@@ -62,6 +93,7 @@ extern "C" {
 //
 // TODO(vtl): Add an options struct pointer argument.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
+    const struct MojoCreateMessagePipeOptions* options,  // Optional.
     MojoHandle* message_pipe_handle0,  // Out.
     MojoHandle* message_pipe_handle1);  // Out.
 

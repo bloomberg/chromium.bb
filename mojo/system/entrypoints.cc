@@ -52,9 +52,11 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
   return g_core->WaitMany(handles, flags, num_handles, deadline);
 }
 
-MojoResult MojoCreateMessagePipe(MojoHandle* message_pipe_handle0,
+MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                                 MojoHandle* message_pipe_handle0,
                                  MojoHandle* message_pipe_handle1) {
-  return g_core->CreateMessagePipe(message_pipe_handle0, message_pipe_handle1);
+  return g_core->CreateMessagePipe(
+      options, message_pipe_handle0, message_pipe_handle1);
 }
 
 MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,

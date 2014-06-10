@@ -138,15 +138,24 @@ MojoResult Core::WaitMany(const MojoHandle* handles,
   return WaitManyInternal(handles, flags, num_handles, deadline);
 }
 
-MojoResult Core::CreateMessagePipe(MojoHandle* message_pipe_handle0,
+MojoResult Core::CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                                   MojoHandle* message_pipe_handle0,
                                    MojoHandle* message_pipe_handle1) {
+  MojoCreateMessagePipeOptions validated_options = {};
+  // This will verify the |options| pointer.
+  MojoResult result = MessagePipeDispatcher::ValidateCreateOptions(
+      options, &validated_options);
+  if (result != MOJO_RESULT_OK)
+    return result;
   if (!VerifyUserPointer<MojoHandle>(message_pipe_handle0))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_refptr<MessagePipeDispatcher> dispatcher0(new MessagePipeDispatcher());
-  scoped_refptr<MessagePipeDispatcher> dispatcher1(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> dispatcher0(
+      new MessagePipeDispatcher(validated_options));
+  scoped_refptr<MessagePipeDispatcher> dispatcher1(
+      new MessagePipeDispatcher(validated_options));
 
   std::pair<MojoHandle, MojoHandle> handle_pair;
   {

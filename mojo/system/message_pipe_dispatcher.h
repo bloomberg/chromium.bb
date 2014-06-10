@@ -23,7 +23,22 @@ class MessagePipeDispatcherTransport;
 // Mojo primitive |MojoCreateMessagePipe()|). This class is thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
  public:
-  MessagePipeDispatcher();
+  // The default options to use for |MojoCreateMessagePipe()|. (Real uses
+  // should obtain this via |ValidateCreateOptions()| with a null |in_options|;
+  // this is exposed directly for testing convenience.)
+  static const MojoCreateMessagePipeOptions kDefaultCreateOptions;
+
+  MessagePipeDispatcher(
+      const MojoCreateMessagePipeOptions& /*validated_options*/);
+
+  // Validates and/or sets default options for |MojoCreateMessagePipeOptions|.
+  // If non-null, |in_options| must point to a struct of at least
+  // |in_options->struct_size| bytes. |out_options| must point to a (current)
+  // |MojoCreateMessagePipeOptions| and will be entirely overwritten on success
+  // (it may be partly overwritten on failure).
+  static MojoResult ValidateCreateOptions(
+      const MojoCreateMessagePipeOptions* in_options,
+      MojoCreateMessagePipeOptions* out_options);
 
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
@@ -34,6 +49,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Creates a |MessagePipe| with a local endpoint (at port 0) and a proxy
   // endpoint, and creates/initializes a |MessagePipeDispatcher| (attached to
   // the message pipe, port 0).
+  // TODO(vtl): This currently uses |kDefaultCreateOptions|, which is okay since
+  // there aren't any options, but eventually options should be plumbed through.
   static std::pair<scoped_refptr<MessagePipeDispatcher>,
                    scoped_refptr<MessagePipe> > CreateRemoteMessagePipe();
 

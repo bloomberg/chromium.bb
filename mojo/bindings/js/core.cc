@@ -46,7 +46,8 @@ MojoResult WaitMany(
 gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
   MojoHandle handle0 = MOJO_HANDLE_INVALID;
   MojoHandle handle1 = MOJO_HANDLE_INVALID;
-  MojoResult result = MojoCreateMessagePipe(&handle0, &handle1);
+  // TODO(vtl): Add support for the options struct.
+  MojoResult result = MojoCreateMessagePipe(NULL, &handle0, &handle1);
   CHECK(result == MOJO_RESULT_OK);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());

@@ -378,13 +378,10 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // Make a shared buffer.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
 
   // Make a mapping.

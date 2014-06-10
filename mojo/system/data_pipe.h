@@ -28,10 +28,9 @@ class WaiterList;
 class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     public base::RefCountedThreadSafe<DataPipe> {
  public:
-  // The default options to use for the constructor (and subclasses'
-  // constructors). (Real uses should obtain this via |ValidateCreateOptions()|
-  // with a null |in_options|; this is exposed directly for testing
-  // convenience.)
+  // The default options for |MojoCreateDataPipe()|. (Real uses should obtain
+  // this via |ValidateCreateOptions()| with a null |in_options|; this is
+  // exposed directly for testing convenience.)
   static const MojoCreateDataPipeOptions kDefaultCreateOptions;
 
   // Validates and/or sets default options for |MojoCreateDataPipeOptions|. If

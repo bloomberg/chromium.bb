@@ -187,11 +187,11 @@ TEST_F(CoreTest, InvalidArguments) {
   {
     MojoHandle h;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->CreateMessagePipe(NULL, NULL));
+              core()->CreateMessagePipe(NULL, NULL, NULL));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->CreateMessagePipe(&h, NULL));
+              core()->CreateMessagePipe(NULL, &h, NULL));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->CreateMessagePipe(NULL, &h));
+              core()->CreateMessagePipe(NULL, NULL, &h));
   }
 
   // |WriteMessage()|:
@@ -325,7 +325,7 @@ TEST_F(CoreTest, InvalidArguments) {
 TEST_F(CoreTest, MessagePipe) {
   MojoHandle h[2];
 
-  EXPECT_EQ(MOJO_RESULT_OK, core()->CreateMessagePipe(&h[0], &h[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->CreateMessagePipe(NULL, &h[0], &h[1]));
   // Should get two distinct, valid handles.
   EXPECT_NE(h[0], MOJO_HANDLE_INVALID);
   EXPECT_NE(h[1], MOJO_HANDLE_INVALID);
@@ -438,7 +438,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   MojoHandle h_passing[2];
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(&h_passing[0], &h_passing[1]));
+            core()->CreateMessagePipe(NULL, &h_passing[0], &h_passing[1]));
 
   // Make sure that |h_passing[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -474,7 +474,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   MojoHandle h_passed[2];
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(&h_passed[0], &h_passed[1]));
+            core()->CreateMessagePipe(NULL, &h_passed[0], &h_passed[1]));
 
   // Make sure that |h_passed[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -686,7 +686,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
 
   MojoHandle h_passing[2];
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(&h_passing[0], &h_passing[1]));
+            core()->CreateMessagePipe(NULL, &h_passing[0], &h_passing[1]));
 
   MojoHandle ph, ch;
   EXPECT_EQ(MOJO_RESULT_OK,

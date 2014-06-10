@@ -48,7 +48,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       const MojoWaitFlags* flags,
                       uint32_t num_handles,
                       MojoDeadline deadline);
-  MojoResult CreateMessagePipe(MojoHandle* message_pipe_handle0,
+  MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                               MojoHandle* message_pipe_handle0,
                                MojoHandle* message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
                           const void* bytes,

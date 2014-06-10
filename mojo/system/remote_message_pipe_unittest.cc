@@ -453,7 +453,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   ConnectMessagePipes(mp0, mp1);
 
   // We'll try to pass this dispatcher.
-  scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher(
+      MessagePipeDispatcher::kDefaultCreateOptions));
   scoped_refptr<MessagePipe> local_mp(new MessagePipe());
   dispatcher->Init(local_mp, 0);
 
@@ -583,13 +584,10 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // We'll try to pass this dispatcher.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  MojoCreateSharedBufferOptions validated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::ValidateCreateOptions(NULL,
-                                                          &validated_options));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(validated_options, 100,
-                                           &dispatcher));
+            SharedBufferDispatcher::Create(
+                SharedBufferDispatcher::kDefaultCreateOptions, 100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
 
   // Make a mapping.

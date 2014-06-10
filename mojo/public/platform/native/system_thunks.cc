@@ -35,10 +35,12 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
   return g_thunks.WaitMany(handles, flags, num_handles, deadline);
 }
 
-MojoResult MojoCreateMessagePipe(MojoHandle* message_pipe_handle0,
+MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                                 MojoHandle* message_pipe_handle0,
                                  MojoHandle* message_pipe_handle1) {
   assert(g_thunks.CreateMessagePipe);
-  return g_thunks.CreateMessagePipe(message_pipe_handle0, message_pipe_handle1);
+  return g_thunks.CreateMessagePipe(options, message_pipe_handle0,
+                                    message_pipe_handle1);
 }
 
 MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,

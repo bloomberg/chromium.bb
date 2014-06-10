@@ -270,7 +270,9 @@ inline MojoResult CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
   assert(message_pipe1);
   MessagePipeHandle handle0;
   MessagePipeHandle handle1;
-  MojoResult rv = MojoCreateMessagePipe(handle0.mutable_value(),
+  // TODO(vtl): Add support for the options struct.
+  MojoResult rv = MojoCreateMessagePipe(NULL,
+                                        handle0.mutable_value(),
                                         handle1.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).

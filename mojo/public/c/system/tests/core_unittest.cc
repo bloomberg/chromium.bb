@@ -83,7 +83,7 @@ TEST(CoreTest, BasicMessagePipe) {
 
   h0 = MOJO_HANDLE_INVALID;
   h1 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&h0, &h1));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &h0, &h1));
   EXPECT_NE(h0, MOJO_HANDLE_INVALID);
   EXPECT_NE(h1, MOJO_HANDLE_INVALID);
 

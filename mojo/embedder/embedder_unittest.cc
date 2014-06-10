@@ -174,7 +174,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
 
     MojoHandle h0, h1;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&h0, &h1));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &h0, &h1));
 
     // Write a message to |h0| (attaching nothing).
     const char kHello[] = "hello";
@@ -333,7 +333,7 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
 
     // Create a new message pipe (endpoints |mp0| and |mp1|).
     MojoHandle mp0, mp1;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&mp0, &mp1));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &mp0, &mp1));
 
     // 3. Write something to |mp0|.
     const char kFoo[] = "FOO";
@@ -461,7 +461,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
     // Create a new message pipe (endpoints |mp2| and |mp3|).
     MojoHandle mp2, mp3;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&mp2, &mp3));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &mp2, &mp3));
 
     // 7. Write a message to |mp3|.
     const char kBaz[] = "baz";
