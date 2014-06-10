@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/values.h"
+#include "chrome/browser/local_discovery/gcd_api_flow_impl.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -59,8 +61,8 @@ class GCDApiFlowTest : public testing::Test {
     EXPECT_CALL(*mock_delegate_, GetURL())
         .WillRepeatedly(Return(
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
-    gcd_flow_.reset(
-        new GCDApiFlow(request_context_.get(), &token_service_, account_id_));
+    gcd_flow_.reset(new GCDApiFlowImpl(
+        request_context_.get(), &token_service_, account_id_));
     gcd_flow_->Start(delegate.PassAs<GCDApiFlow::Request>());
   }
   base::MessageLoopForUI loop_;
@@ -69,7 +71,7 @@ class GCDApiFlowTest : public testing::Test {
   net::TestURLFetcherFactory fetcher_factory_;
   FakeOAuth2TokenService token_service_;
   std::string account_id_;
-  scoped_ptr<GCDApiFlow> gcd_flow_;
+  scoped_ptr<GCDApiFlowImpl> gcd_flow_;
   MockDelegate* mock_delegate_;
 };
 

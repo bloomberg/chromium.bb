@@ -7,17 +7,14 @@
 
 #include <string>
 
-#include "chrome/browser/local_discovery/privet_constants.h"
-#include "chrome/browser/local_discovery/privet_http.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace local_discovery {
 
 // API flow for communicating with cloud print and cloud devices.
-class GCDApiFlowInterface {
+class GCDApiFlow {
  public:
   // TODO(noamsml): Better error model for this class.
   enum Status {
@@ -29,7 +26,7 @@ class GCDApiFlowInterface {
     ERROR_MALFORMED_RESPONSE
   };
 
-  // Provides GCDApiFlow with parameters required to make request.
+  // Provides GCDApiFlowImpl with parameters required to make request.
   // Parses results of requests.
   class Request {
    public:
@@ -56,52 +53,21 @@ class GCDApiFlowInterface {
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  GCDApiFlowInterface();
-  virtual ~GCDApiFlowInterface();
+  GCDApiFlow();
+  virtual ~GCDApiFlow();
+
+  static scoped_ptr<GCDApiFlow> Create(
+      net::URLRequestContextGetter* request_context,
+      OAuth2TokenService* token_service,
+      const std::string& account_id);
 
   virtual void Start(scoped_ptr<Request> request) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GCDApiFlowInterface);
-};
-
-class GCDApiFlow : public GCDApiFlowInterface,
-                   public net::URLFetcherDelegate,
-                   public OAuth2TokenService::Consumer {
- public:
-  // Create an OAuth2-based confirmation.
-  GCDApiFlow(net::URLRequestContextGetter* request_context,
-             OAuth2TokenService* token_service,
-             const std::string& account_id);
-
-  virtual ~GCDApiFlow();
-
-  virtual void Start(scoped_ptr<Request> request) OVERRIDE;
-
-  // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) OVERRIDE;
-
- private:
-  void CreateRequest(const GURL& url);
-
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<OAuth2TokenService::Request> oauth_request_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  OAuth2TokenService* token_service_;
-  std::string account_id_;
-  scoped_ptr<Request> request_;
-
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlow);
 };
 
-class GCDApiFlowRequest : public GCDApiFlowInterface::Request {
+class GCDApiFlowRequest : public GCDApiFlow::Request {
  public:
   GCDApiFlowRequest();
   virtual ~GCDApiFlowRequest();
@@ -114,7 +80,7 @@ class GCDApiFlowRequest : public GCDApiFlowInterface::Request {
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowRequest);
 };
 
-class CloudPrintApiFlowRequest : public GCDApiFlowInterface::Request {
+class CloudPrintApiFlowRequest : public GCDApiFlow::Request {
  public:
   CloudPrintApiFlowRequest();
   virtual ~CloudPrintApiFlowRequest();

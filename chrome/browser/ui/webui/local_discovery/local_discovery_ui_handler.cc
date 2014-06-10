@@ -247,12 +247,11 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
 
   if (cloud_print_printer_list_) {
     cloud_print_printer_list_->Start(
-        make_scoped_ptr<GCDApiFlowInterface::Request>(
-            new CloudPrintPrinterList(this)));
+        make_scoped_ptr<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
   }
   if (cloud_device_list_) {
-    cloud_device_list_->Start(make_scoped_ptr<GCDApiFlowInterface::Request>(
-        new CloudDeviceList(this)));
+    cloud_device_list_->Start(
+        make_scoped_ptr<GCDApiFlow::Request>(new CloudDeviceList(this)));
   }
   CheckListingDone();
 }
@@ -318,8 +317,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     SendRegisterError();
     return;
   }
-  confirm_api_call_flow_->Start(make_scoped_ptr<GCDApiFlowInterface::Request>(
-      new PrivetConfirmApiCallFlow(
+  confirm_api_call_flow_->Start(
+      make_scoped_ptr<GCDApiFlow::Request>(new PrivetConfirmApiCallFlow(
           token,
           base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                      base::Unretained(this)))));
@@ -531,22 +530,21 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
   cloud_device_list_.reset();
 }
 
-scoped_ptr<GCDApiFlowInterface> LocalDiscoveryUIHandler::CreateApiFlow() {
+scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
-    return scoped_ptr<GCDApiFlowInterface>();
+    return scoped_ptr<GCDApiFlow>();
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service)
-    return scoped_ptr<GCDApiFlowInterface>();
+    return scoped_ptr<GCDApiFlow>();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
-    return scoped_ptr<GCDApiFlowInterface>();
-  return make_scoped_ptr<GCDApiFlowInterface>(
-      new GCDApiFlow(profile->GetRequestContext(),
-                     token_service,
-                     signin_manager->GetAuthenticatedAccountId()));
+    return scoped_ptr<GCDApiFlow>();
+  return GCDApiFlow::Create(profile->GetRequestContext(),
+                            token_service,
+                            signin_manager->GetAuthenticatedAccountId());
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)

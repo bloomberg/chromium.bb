@@ -959,6 +959,8 @@
         'browser/local_discovery/device_description.h',
         'browser/local_discovery/gcd_api_flow.cc',
         'browser/local_discovery/gcd_api_flow.h',
+        'browser/local_discovery/gcd_api_flow_impl.cc',
+        'browser/local_discovery/gcd_api_flow_impl.h',
         'browser/local_discovery/gcd_constants.cc',
         'browser/local_discovery/gcd_constants.h',
         'browser/local_discovery/gcd_registration_ticket_request.cc',

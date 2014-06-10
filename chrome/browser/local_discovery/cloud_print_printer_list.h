@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 
@@ -18,7 +19,7 @@ class CloudPrintPrinterList : public CloudPrintApiFlowRequest {
   explicit CloudPrintPrinterList(CloudDeviceListDelegate* delegate);
   virtual ~CloudPrintPrinterList();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
 
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;

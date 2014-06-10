@@ -114,7 +114,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
-  void OnConfirmDone(GCDApiFlowInterface::Status status);
+  void OnConfirmDone(GCDApiFlow::Status status);
 
   // Signal to the web interface an error has ocurred while registering.
   void SendRegisterError();
@@ -141,7 +141,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   void CheckListingDone();
 
-  scoped_ptr<GCDApiFlowInterface> CreateApiFlow();
+  scoped_ptr<GCDApiFlow> CreateApiFlow();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();
@@ -179,7 +179,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<PrivetRegisterOperation> current_register_operation_;
 
   // The current confirm call used during the registration flow.
-  scoped_ptr<GCDApiFlowInterface> confirm_api_call_flow_;
+  scoped_ptr<GCDApiFlow> confirm_api_call_flow_;
 
   // The device lister used to list devices on the local network.
   scoped_ptr<PrivetDeviceLister> privet_lister_;
@@ -188,8 +188,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   bool is_visible_;
 
   // List of printers from cloud print.
-  scoped_ptr<GCDApiFlowInterface> cloud_print_printer_list_;
-  scoped_ptr<GCDApiFlowInterface> cloud_device_list_;
+  scoped_ptr<GCDApiFlow> cloud_print_printer_list_;
+  scoped_ptr<GCDApiFlow> cloud_device_list_;
   std::vector<Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;

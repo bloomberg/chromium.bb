@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 
@@ -21,7 +22,7 @@ class CloudDeviceList : public GCDApiFlowRequest {
   explicit CloudDeviceList(CloudDeviceListDelegate* delegate);
   virtual ~CloudDeviceList();
 
-  virtual void OnGCDAPIFlowError(GCDApiFlowInterface::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) OVERRIDE;
 
   virtual void OnGCDAPIFlowComplete(
       const base::DictionaryValue& value) OVERRIDE;

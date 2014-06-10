@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
+#include "chrome/browser/local_discovery/privet_http.h"
 
 namespace local_discovery {
 
@@ -30,8 +31,8 @@ class PrivetV3SetupFlow {
 
     virtual ~Delegate();
 
-    // Creates |GCDApiFlow| for making requests to GCD server.
-    virtual scoped_ptr<GCDApiFlowInterface> CreateApiFlow() = 0;
+    // Creates |GCDApiFlowImpl| for making requests to GCD server.
+    virtual scoped_ptr<GCDApiFlow> CreateApiFlow() = 0;
 
     // Requests WiFi credentials.
     virtual void GetWiFiCredentials(const CredentialsCallback& callback) = 0;
