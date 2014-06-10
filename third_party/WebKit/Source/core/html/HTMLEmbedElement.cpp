@@ -102,7 +102,7 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
         if (renderer() && isImageType()) {
             if (!m_imageLoader)
-                m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+                m_imageLoader = HTMLImageLoader::create(this);
             m_imageLoader->updateFromElementIgnoringPreviousError();
         }
     } else {

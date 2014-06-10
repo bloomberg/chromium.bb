@@ -82,6 +82,12 @@ HTMLPlugInElement::~HTMLPlugInElement()
     }
 }
 
+void HTMLPlugInElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_imageLoader);
+    HTMLFrameOwnerElement::trace(visitor);
+}
+
 bool HTMLPlugInElement::canProcessDrag() const
 {
     return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->canProcessDrag();
@@ -120,7 +126,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 
     if (isImageType()) {
         if (!m_imageLoader)
-            m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+            m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
     } else if (needsWidgetUpdate()
         && renderEmbeddedObject()

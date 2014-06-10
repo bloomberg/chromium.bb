@@ -57,10 +57,10 @@ public:
 
     CompositeOperator compositeOperator() const { return m_compositeOperator; }
 
-    ImageResource* cachedImage() const { return m_imageLoader.image(); }
-    void setImageResource(ImageResource* i) { m_imageLoader.setImage(i); };
+    ImageResource* cachedImage() const { return imageLoader().image(); }
+    void setImageResource(ImageResource* i) { imageLoader().setImage(i); };
 
-    void setLoadManually(bool loadManually) { m_imageLoader.setLoadManually(loadManually); }
+    void setLoadManually(bool loadManually) { imageLoader().setLoadManually(loadManually); }
 
     const AtomicString& alt() const;
 
@@ -77,12 +77,12 @@ public:
 
     bool complete() const;
 
-    bool hasPendingActivity() const { return m_imageLoader.hasPendingActivity(); }
+    bool hasPendingActivity() const { return imageLoader().hasPendingActivity(); }
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
-    void addClient(ImageLoaderClient* client) { m_imageLoader.addClient(client); }
-    void removeClient(ImageLoaderClient* client) { m_imageLoader.removeClient(client); }
+    void addClient(ImageLoaderClient* client) { imageLoader().addClient(client); }
+    void removeClient(ImageLoaderClient* client) { imageLoader().removeClient(client); }
 
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
@@ -135,8 +135,9 @@ private:
     void resetFormOwner();
     ImageCandidate findBestFitImageFromPictureParent();
     void setBestFitURLAndDPRFromImageCandidate(const ImageCandidate&);
+    HTMLImageLoader& imageLoader() const { return *m_imageLoader; }
 
-    HTMLImageLoader m_imageLoader;
+    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
 #if ENABLE(OILPAN)
     Member<HTMLFormElement> m_form;
 #else

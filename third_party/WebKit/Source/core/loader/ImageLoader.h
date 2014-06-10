@@ -55,10 +55,11 @@ class RenderImageResource;
 template<typename T> class EventSender;
 typedef EventSender<ImageLoader> ImageEventSender;
 
-class ImageLoader : public ImageResourceClient {
+class ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
 public:
     explicit ImageLoader(Element*);
     virtual ~ImageLoader();
+    void trace(Visitor*);
 
     enum LoadType {
         LoadNormally,
@@ -133,8 +134,12 @@ private:
 
     void willRemoveClient(ImageLoaderClient&);
 
-    Element* m_element;
+    RawPtrWillBeMember<Element> m_element;
     ResourcePtr<ImageResource> m_image;
+    // FIXME: Oilpan: We might be able to remove this Persistent hack when
+    // ImageResourceClient is traceable.
+    GC_PLUGIN_IGNORE("http://crbug.com/353083")
+    RefPtrWillBePersistent<Element> m_keepAlive;
 #if ENABLE(OILPAN)
     class ImageLoaderClientRemover {
     public:
@@ -146,6 +151,9 @@ private:
         ImageLoaderClient& m_client;
     };
     friend class ImageLoaderClientRemover;
+    // Oilpan: This ImageLoader object must outlive its clients because they
+    // need to call ImageLoader::willRemoveClient before they die.
+    GC_PLUGIN_IGNORE("http://crbug.com/353083")
     PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> > m_clients;
 #else
     HashSet<ImageLoaderClient*> m_clients;

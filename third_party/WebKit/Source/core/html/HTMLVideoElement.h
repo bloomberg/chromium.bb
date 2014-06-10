@@ -41,6 +41,7 @@ class HTMLImageLoader;
 class HTMLVideoElement FINAL : public HTMLMediaElement, public CanvasImageSource {
 public:
     static PassRefPtrWillBeRawPtr<HTMLVideoElement> create(Document&);
+    virtual void trace(Visitor*) OVERRIDE;
 
     unsigned videoWidth() const;
     unsigned videoHeight() const;
@@ -95,7 +96,7 @@ private:
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
     virtual void setDisplayMode(DisplayMode) OVERRIDE;
 
-    OwnPtr<HTMLImageLoader> m_imageLoader;
+    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
 
     AtomicString m_defaultPosterURL;
 };

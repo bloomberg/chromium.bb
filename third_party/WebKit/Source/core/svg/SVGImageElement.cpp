@@ -39,7 +39,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
-    , m_imageLoader(this)
+    , m_imageLoader(SVGImageLoader::create(this))
     , m_needsLoaderURIUpdate(true)
 {
     ScriptWrappable::init(this);
@@ -52,6 +52,12 @@ inline SVGImageElement::SVGImageElement(Document& document)
 }
 
 DEFINE_NODE_FACTORY(SVGImageElement)
+
+void SVGImageElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_imageLoader);
+    SVGGraphicsElement::trace(visitor);
+}
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {
@@ -139,7 +145,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         if (inDocument())
-            m_imageLoader.updateFromElementIgnoringPreviousError();
+            imageLoader().updateFromElementIgnoringPreviousError();
         else
             m_needsLoaderURIUpdate = true;
         return;
@@ -178,7 +184,7 @@ RenderObject* SVGImageElement::createRenderer(RenderStyle*)
 
 bool SVGImageElement::haveLoadedRequiredResources()
 {
-    return !m_needsLoaderURIUpdate && !m_imageLoader.hasPendingActivity();
+    return !m_needsLoaderURIUpdate && !imageLoader().hasPendingActivity();
 }
 
 void SVGImageElement::attach(const AttachContext& context)
@@ -189,7 +195,7 @@ void SVGImageElement::attach(const AttachContext& context)
         if (imageObj->imageResource()->hasImage())
             return;
 
-        imageObj->imageResource()->setImageResource(m_imageLoader.image());
+        imageObj->imageResource()->setImageResource(imageLoader().image());
     }
 }
 
@@ -202,13 +208,13 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
     // We can only resolve base URIs properly after tree insertion - hence, URI mutations while
     // detached are deferred until this point.
     if (m_needsLoaderURIUpdate) {
-        m_imageLoader.updateFromElementIgnoringPreviousError();
+        imageLoader().updateFromElementIgnoringPreviousError();
         m_needsLoaderURIUpdate = false;
     } else {
         // A previous loader update may have failed to actually fetch the image if the document
         // was inactive. In that case, force a re-update (but don't clear previous errors).
-        if (!m_imageLoader.image())
-            m_imageLoader.updateFromElement();
+        if (!imageLoader().image())
+            imageLoader().updateFromElement();
     }
 
     return InsertionDone;
@@ -221,7 +227,7 @@ const AtomicString SVGImageElement::imageSourceURL() const
 
 void SVGImageElement::didMoveToNewDocument(Document& oldDocument)
 {
-    m_imageLoader.elementDidMoveToNewDocument();
+    imageLoader().elementDidMoveToNewDocument();
     SVGGraphicsElement::didMoveToNewDocument(oldDocument);
 }
 

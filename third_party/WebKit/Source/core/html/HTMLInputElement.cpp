@@ -142,13 +142,14 @@ void HTMLInputElement::trace(Visitor* visitor)
     visitor->trace(m_inputType);
     visitor->trace(m_inputTypeView);
     visitor->trace(m_listAttributeTargetObserver);
+    visitor->trace(m_imageLoader);
     HTMLTextFormControlElement::trace(visitor);
 }
 
 HTMLImageLoader* HTMLInputElement::imageLoader()
 {
     if (!m_imageLoader)
-        m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+        m_imageLoader = HTMLImageLoader::create(this);
     return m_imageLoader.get();
 }
 

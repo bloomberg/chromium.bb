@@ -44,6 +44,7 @@ enum PreferPlugInsForImagesOption {
 class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
+    virtual void trace(Visitor*) OVERRIDE;
 
     void resetInstance();
     SharedPersistent<v8::Object>* pluginWrapper();
@@ -88,7 +89,7 @@ protected:
     String m_serviceType;
     String m_url;
     KURL m_loadedUrl;
-    OwnPtr<HTMLImageLoader> m_imageLoader;
+    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
     bool m_isDelayingLoadEvent;
 
 private:

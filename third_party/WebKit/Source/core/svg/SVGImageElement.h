@@ -35,6 +35,7 @@ class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGURIReference {
 public:
     DECLARE_NODE_FACTORY(SVGImageElement);
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool currentFrameHasSingleSecurityOrigin() const;
 
@@ -66,6 +67,7 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+    SVGImageLoader& imageLoader() { return *m_imageLoader; }
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
@@ -73,7 +75,7 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 
-    SVGImageLoader m_imageLoader;
+    OwnPtrWillBeMember<SVGImageLoader> m_imageLoader;
     bool m_needsLoaderURIUpdate : 1;
 };
 

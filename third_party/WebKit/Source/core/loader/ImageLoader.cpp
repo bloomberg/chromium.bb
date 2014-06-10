@@ -122,11 +122,11 @@ ImageLoader::~ImageLoader()
     ASSERT(m_hasPendingErrorEvent || !errorEventSender().hasPendingEvents(this));
     if (m_hasPendingErrorEvent)
         errorEventSender().cancelEvent(this);
+}
 
-    // If the ImageLoader is being destroyed but it is still protecting its image-loading Element,
-    // remove that protection here.
-    if (m_elementIsProtected)
-        m_element->deref();
+void ImageLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
 }
 
 void ImageLoader::setImage(ImageResource* newImage)
@@ -416,7 +416,7 @@ void ImageLoader::updatedHasPendingEvent()
         if (m_derefElementTimer.isActive())
             m_derefElementTimer.stop();
         else
-            m_element->ref();
+            m_keepAlive = m_element;
     } else {
         ASSERT(!m_derefElementTimer.isActive());
         m_derefElementTimer.startOneShot(0, FROM_HERE);
@@ -425,7 +425,7 @@ void ImageLoader::updatedHasPendingEvent()
 
 void ImageLoader::timerFired(Timer<ImageLoader>*)
 {
-    m_element->deref();
+    m_keepAlive.clear();
 }
 
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)

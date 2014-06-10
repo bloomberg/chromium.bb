@@ -61,6 +61,12 @@ PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& docu
     return video.release();
 }
 
+void HTMLVideoElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_imageLoader);
+    HTMLMediaElement::trace(visitor);
+}
+
 bool HTMLVideoElement::rendererIsNeeded(const RenderStyle& style)
 {
     return HTMLElement::rendererIsNeeded(style);
@@ -78,7 +84,7 @@ void HTMLVideoElement::attach(const AttachContext& context)
     updateDisplayState();
     if (shouldDisplayPosterImage()) {
         if (!m_imageLoader)
-            m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+            m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
         if (renderer())
             toRenderImage(renderer())->imageResource()->setImageResource(m_imageLoader->image());
@@ -110,7 +116,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         updateDisplayState();
         if (shouldDisplayPosterImage()) {
             if (!m_imageLoader)
-                m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+                m_imageLoader = HTMLImageLoader::create(this);
             m_imageLoader->updateFromElementIgnoringPreviousError();
         } else {
             if (renderer())

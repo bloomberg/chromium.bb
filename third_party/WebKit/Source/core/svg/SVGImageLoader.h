@@ -28,9 +28,13 @@ class SVGImageElement;
 
 class SVGImageLoader FINAL : public ImageLoader {
 public:
-    SVGImageLoader(SVGImageElement*);
+    static PassOwnPtrWillBeRawPtr<SVGImageLoader> create(SVGImageElement* element)
+    {
+        return adoptPtrWillBeNoop(new SVGImageLoader(element));
+    }
 
 private:
+    explicit SVGImageLoader(SVGImageElement*);
     virtual void dispatchLoadEvent() OVERRIDE;
     virtual String sourceURI(const AtomicString&) const OVERRIDE;
 };

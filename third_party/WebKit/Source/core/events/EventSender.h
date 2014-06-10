@@ -54,8 +54,8 @@ private:
 
     AtomicString m_eventType;
     Timer<EventSender<T> > m_timer;
-    Vector<T*> m_dispatchSoonList;
-    Vector<T*> m_dispatchingList;
+    WillBePersistentHeapVector<RawPtrWillBeMember<T> > m_dispatchSoonList;
+    WillBePersistentHeapVector<RawPtrWillBeMember<T> > m_dispatchingList;
 };
 
 template<typename T> EventSender<T>::EventSender(const AtomicString& eventType)
@@ -78,12 +78,12 @@ template<typename T> void EventSender<T>::cancelEvent(T* sender)
     size_t size = m_dispatchSoonList.size();
     for (size_t i = 0; i < size; ++i) {
         if (m_dispatchSoonList[i] == sender)
-            m_dispatchSoonList[i] = 0;
+            m_dispatchSoonList[i] = nullptr;
     }
     size = m_dispatchingList.size();
     for (size_t i = 0; i < size; ++i) {
         if (m_dispatchingList[i] == sender)
-            m_dispatchingList[i] = 0;
+            m_dispatchingList[i] = nullptr;
     }
 }
 
@@ -101,7 +101,7 @@ template<typename T> void EventSender<T>::dispatchPendingEvents()
     size_t size = m_dispatchingList.size();
     for (size_t i = 0; i < size; ++i) {
         if (T* sender = m_dispatchingList[i]) {
-            m_dispatchingList[i] = 0;
+            m_dispatchingList[i] = nullptr;
             sender->dispatchPendingEvent(this);
         }
     }
