@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <gbm.h>
 
+#include "base/at_exit.h"
 #include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -17,6 +18,7 @@
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -60,7 +62,10 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
 
 class OzonePlatformGbm : public OzonePlatform {
  public:
-  OzonePlatformGbm() {}
+  OzonePlatformGbm() {
+     base::AtExitManager::RegisterTask(
+        base::Bind(&base::DeletePointer<OzonePlatformGbm>, this));
+  }
   virtual ~OzonePlatformGbm() {}
 
   // OzonePlatform:
@@ -85,6 +90,7 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 #endif
   virtual void InitializeUI() OVERRIDE {
+    vt_manager_.reset(new VirtualTerminalManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(NULL, NULL, NULL));
@@ -107,9 +113,9 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
  private:
+  scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
   scoped_ptr<GbmSurfaceGenerator> surface_generator_;
-  // TODO(dnicoara) Move ownership of |screen_manager_| to NDD.
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 

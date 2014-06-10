@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/ozone_platform_dri.h"
 
+#include "base/at_exit.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -14,6 +15,7 @@
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
@@ -48,11 +50,15 @@ class DriSurfaceGenerator : public ScanoutSurfaceGenerator {
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
+      : vt_manager_(new VirtualTerminalManager()),
+        dri_(new DriWrapper(kDefaultGraphicsCardPath)),
         surface_generator_(new DriSurfaceGenerator(dri_.get())),
         screen_manager_(new ScreenManager(dri_.get(),
                                           surface_generator_.get())),
-        device_manager_(CreateDeviceManager()) {}
+        device_manager_(CreateDeviceManager()) {
+    base::AtExitManager::RegisterTask(
+        base::Bind(&base::DeletePointer<OzonePlatformDri>, this));
+  }
   virtual ~OzonePlatformDri() {}
 
   // OzonePlatform:
@@ -89,9 +95,9 @@ class OzonePlatformDri : public OzonePlatform {
   virtual void InitializeGPU() OVERRIDE {}
 
  private:
+  scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
   scoped_ptr<DriSurfaceGenerator> surface_generator_;
-  // TODO(dnicoara) Move ownership of |screen_manager_| to NDD.
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 
