@@ -189,7 +189,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
     original_sys_path = sys.path
     try:
         sys.path = sys.path + [input_api.os_path.realpath(input_api.os_path.join(
-                input_api.PresubmitLocalPath(), '..', '..', 'tools', 'checkdeps'))]
+                input_api.PresubmitLocalPath(), '..', '..', 'buildtools', 'checkdeps'))]
         import checkdeps
         from cpp_checker import CppChecker
         from rules import Rule
