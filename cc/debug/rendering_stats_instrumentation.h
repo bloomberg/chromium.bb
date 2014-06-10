@@ -59,11 +59,10 @@ class CC_EXPORT RenderingStatsInstrumentation {
   RenderingStatsInstrumentation();
 
  private:
-  // TODO(ernstm): rename to *_thread_rendering_stats_*
-  MainThreadRenderingStats main_stats_;
-  MainThreadRenderingStats main_stats_accu_;
-  ImplThreadRenderingStats impl_stats_;
-  ImplThreadRenderingStats impl_stats_accu_;
+  MainThreadRenderingStats main_thread_rendering_stats_;
+  MainThreadRenderingStats main_thread_rendering_stats_accu_;
+  ImplThreadRenderingStats impl_thread_rendering_stats_;
+  ImplThreadRenderingStats impl_thread_rendering_stats_accu_;
 
   bool record_rendering_stats_;
 

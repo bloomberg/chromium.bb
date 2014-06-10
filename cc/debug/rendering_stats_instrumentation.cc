@@ -21,35 +21,35 @@ RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}
 MainThreadRenderingStats
 RenderingStatsInstrumentation::main_thread_rendering_stats() {
   base::AutoLock scoped_lock(lock_);
-  return main_stats_;
+  return main_thread_rendering_stats_;
 }
 
 ImplThreadRenderingStats
 RenderingStatsInstrumentation::impl_thread_rendering_stats() {
   base::AutoLock scoped_lock(lock_);
-  return impl_stats_;
+  return impl_thread_rendering_stats_;
 }
 
 RenderingStats RenderingStatsInstrumentation::GetRenderingStats() {
   base::AutoLock scoped_lock(lock_);
   RenderingStats rendering_stats;
-  rendering_stats.main_stats = main_stats_accu_;
-  rendering_stats.main_stats.Add(main_stats_);
-  rendering_stats.impl_stats = impl_stats_accu_;
-  rendering_stats.impl_stats.Add(impl_stats_);
+  rendering_stats.main_stats = main_thread_rendering_stats_accu_;
+  rendering_stats.main_stats.Add(main_thread_rendering_stats_);
+  rendering_stats.impl_stats = impl_thread_rendering_stats_accu_;
+  rendering_stats.impl_stats.Add(impl_thread_rendering_stats_);
   return rendering_stats;
 }
 
 void RenderingStatsInstrumentation::AccumulateAndClearMainThreadStats() {
   base::AutoLock scoped_lock(lock_);
-  main_stats_accu_.Add(main_stats_);
-  main_stats_ = MainThreadRenderingStats();
+  main_thread_rendering_stats_accu_.Add(main_thread_rendering_stats_);
+  main_thread_rendering_stats_ = MainThreadRenderingStats();
 }
 
 void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
   base::AutoLock scoped_lock(lock_);
-  impl_stats_accu_.Add(impl_stats_);
-  impl_stats_ = ImplThreadRenderingStats();
+  impl_thread_rendering_stats_accu_.Add(impl_thread_rendering_stats_);
+  impl_thread_rendering_stats_ = ImplThreadRenderingStats();
 }
 
 base::TimeTicks RenderingStatsInstrumentation::StartRecording() const {
@@ -78,9 +78,9 @@ void RenderingStatsInstrumentation::IncrementFrameCount(int64 count,
 
   base::AutoLock scoped_lock(lock_);
   if (main_thread)
-    main_stats_.frame_count += count;
+    main_thread_rendering_stats_.frame_count += count;
   else
-    impl_stats_.frame_count += count;
+    impl_thread_rendering_stats_.frame_count += count;
 }
 
 void RenderingStatsInstrumentation::AddPaint(base::TimeDelta duration,
@@ -89,8 +89,8 @@ void RenderingStatsInstrumentation::AddPaint(base::TimeDelta duration,
     return;
 
   base::AutoLock scoped_lock(lock_);
-  main_stats_.paint_time += duration;
-  main_stats_.painted_pixel_count += pixels;
+  main_thread_rendering_stats_.paint_time += duration;
+  main_thread_rendering_stats_.painted_pixel_count += pixels;
 }
 
 void RenderingStatsInstrumentation::AddRecord(base::TimeDelta duration,
@@ -99,8 +99,8 @@ void RenderingStatsInstrumentation::AddRecord(base::TimeDelta duration,
     return;
 
   base::AutoLock scoped_lock(lock_);
-  main_stats_.record_time += duration;
-  main_stats_.recorded_pixel_count += pixels;
+  main_thread_rendering_stats_.record_time += duration;
+  main_thread_rendering_stats_.recorded_pixel_count += pixels;
 }
 
 void RenderingStatsInstrumentation::AddRaster(base::TimeDelta duration,
@@ -109,8 +109,8 @@ void RenderingStatsInstrumentation::AddRaster(base::TimeDelta duration,
     return;
 
   base::AutoLock scoped_lock(lock_);
-  impl_stats_.rasterize_time += duration;
-  impl_stats_.rasterized_pixel_count += pixels;
+  impl_thread_rendering_stats_.rasterize_time += duration;
+  impl_thread_rendering_stats_.rasterized_pixel_count += pixels;
 }
 
 void RenderingStatsInstrumentation::AddAnalysis(base::TimeDelta duration,
@@ -119,7 +119,7 @@ void RenderingStatsInstrumentation::AddAnalysis(base::TimeDelta duration,
     return;
 
   base::AutoLock scoped_lock(lock_);
-  impl_stats_.analysis_time += duration;
+  impl_thread_rendering_stats_.analysis_time += duration;
 }
 
 void RenderingStatsInstrumentation::AddVisibleContentArea(int64 area) {
@@ -127,7 +127,7 @@ void RenderingStatsInstrumentation::AddVisibleContentArea(int64 area) {
     return;
 
   base::AutoLock scoped_lock(lock_);
-  impl_stats_.visible_content_area += area;
+  impl_thread_rendering_stats_.visible_content_area += area;
 }
 
 void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
@@ -136,7 +136,7 @@ void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
     return;
 
   base::AutoLock scoped_lock(lock_);
-  impl_stats_.approximated_visible_content_area += area;
+  impl_thread_rendering_stats_.approximated_visible_content_area += area;
 }
 
 }  // namespace cc
