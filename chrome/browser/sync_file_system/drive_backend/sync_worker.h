@@ -140,6 +140,7 @@ class SyncWorker : public SyncTaskManager::Client {
   void DetachFromSequence();
 
  private:
+  friend class DriveBackendSyncTest;
   friend class SyncWorkerTest;
 
   void DoDisableApp(const std::string& app_id,

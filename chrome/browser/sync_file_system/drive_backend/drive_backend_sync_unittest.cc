@@ -16,6 +16,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -568,10 +569,11 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
  private:
-  // NOTE: Member functions of MetadataDatabase class must not be called
-  // directly through this method.  Call them via PostTask.
+  // MetadataDatabase is normally used on the worker thread.
+  // Use this only when there is no task running on the worker.
   MetadataDatabase* metadata_database() {
-    return remote_sync_service_->sync_worker_->GetMetadataDatabase();
+    return remote_sync_service_->sync_worker_
+        ->context_->metadata_database_.get();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

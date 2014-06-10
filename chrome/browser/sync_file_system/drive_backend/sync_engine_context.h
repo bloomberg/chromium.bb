@@ -59,6 +59,8 @@ class SyncEngineContext {
   void DetachFromSequence();
 
  private:
+  friend class DriveBackendSyncTest;
+
   scoped_ptr<drive::DriveServiceInterface> drive_service_;
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   base::WeakPtr<TaskLogger> task_logger_;
