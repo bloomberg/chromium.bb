@@ -440,6 +440,20 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     self.assertTrue(ex_str)
 
 
+class TestConstants(cros_test_lib.TestCase):
+  """Test values of constants."""
+
+  def testSilentTimeout(self):
+    """Verify the silent timeout is small enough."""
+    # Enforce that the default timeout is less than 9000, the default timeout
+    # set in build/scripts/master/factory/chromeos_factory.py:ChromiteFactory
+    # in the Chrome buildbot source code.
+    self.assertLess(parallel._BackgroundTask.SILENT_TIMEOUT, 9000,
+        'Do not increase this timeout. Instead, print regular progress '
+        'updates, so that buildbot (and cbuildbot) will will know that your '
+        'program has not hung.')
+
+
 if __name__ == '__main__':
   # Run the tests.
   cros_test_lib.main(level=logging.INFO)

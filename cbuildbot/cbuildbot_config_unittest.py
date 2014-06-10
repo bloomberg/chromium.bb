@@ -18,7 +18,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import parallel
 
 CHROMIUM_WATCHING_URL = ('http://src.chromium.org/chrome/trunk/tools/build/'
     'masters/master.chromium.chromiumos/master_chromiumos_cros_cfg.py')
@@ -223,18 +222,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             config['upload_hw_test_artifacts'],
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
-
-  def testHWTestTimeout(self):
-    """Verify that hw test timeout is in a reasonable range."""
-    # The parallel library will kill the process if it's silent for longer
-    # than the silent timeout.
-    # pylint: disable=W0212
-    max_timeout = parallel._BackgroundTask.SILENT_TIMEOUT
-    for build_name, config in cbuildbot_config.config.iteritems():
-      for test_config in config['hw_tests']:
-        self.assertTrue(test_config.timeout < max_timeout,
-            '%s has a hw_tests_timeout of %s that is too large. Expected %s' %
-            (build_name, test_config.timeout, max_timeout))
 
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""

@@ -117,9 +117,11 @@ class _BackgroundTask(multiprocessing.Process):
   STARTUP_TIMEOUT = 60 * 5
   EXIT_TIMEOUT = 60 * 10
 
-  # TODO: crbug.com/360063
-  # The time we allow processes to be silent.
-  SILENT_TIMEOUT = 60 * 230
+  # The time we allow processes to be silent. This is in place so that we
+  # eventually catch hanging processes, and print the remainder of our output.
+  # Do not increase this. Instead, adjust your program to print regular progress
+  # updates, so that cbuildbot (and buildbot) can know that it has not hung.
+  SILENT_TIMEOUT = 60 * 145
 
   # The amount by which we reduce the SILENT_TIMEOUT every time we launch
   # a subprocess. This helps ensure that children get a chance to enforce the

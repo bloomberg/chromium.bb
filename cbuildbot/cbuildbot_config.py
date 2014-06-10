@@ -628,8 +628,6 @@ class HWTestConfig(object):
 
   Members:
     timeout: Number of seconds to wait before timing out waiting for results.
-             Defaults to 2 hours and ten minutes. This must be less than
-             lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
     pool: Pool to use for hw testing.
     async: Fire-and-forget suite.
     warn_only: Failure on HW tests warns only (does not generate error). If set,
