@@ -23196,6 +23196,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.EnabledSettingChanged" enum="BooleanEnabled">
+  <owner>feng@chromium.org</owner>
+  <summary>
+    Records the user action that enables/disables safe browsing feature in the
+    Settings page on Android.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -23995,6 +24003,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="SB2.UpdateSize" units="bytes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The size of all the chunk URLs in an update response.</summary>
+</histogram>
+
+<histogram name="SB2.UpdateSizeBackground" units="bytes">
+  <owner>feng@chromium.org</owner>
+  <summary>
+    The size of all the chunk URLs in an update response when Chrome is in the
+    foreground.
+  </summary>
+</histogram>
+
+<histogram name="SB2.UpdateSizeForeground" units="bytes">
+  <owner>feng@chromium.org</owner>
+  <summary>
+    The size of all the chunk URLs in an update response when Chrome is in the
+    background.
+  </summary>
 </histogram>
 
 <histogram name="SB2.UpdateUrls">
