@@ -9,6 +9,7 @@ import sys
 import tempfile
 
 from chrome_profiler import controllers
+from chrome_profiler import ui
 
 from pylib import android_commands
 from pylib import constants
@@ -128,6 +129,22 @@ class PerfProfilerController(controllers.BaseController):
       return
     self._perf_instance.SignalAndWait()
 
+  @staticmethod
+  def _GetInteractivePerfCommand(perfhost_path, perf_profile, symfs_dir,
+                                 required_libs, kallsyms):
+    cmd = '%s report -n -i %s --symfs %s --kallsyms %s' % (
+        os.path.relpath(perfhost_path, '.'), perf_profile, symfs_dir, kallsyms)
+    for lib in required_libs:
+      lib = os.path.join(symfs_dir, lib[1:])
+      if not os.path.exists(lib):
+        continue
+      objdump_path = android_profiling_helper.GetToolchainBinaryPath(
+          lib, 'objdump')
+      if objdump_path:
+        cmd += ' --objdump %s' % os.path.relpath(objdump_path, '.')
+        break
+    return cmd
+
   def PullTrace(self):
     symfs_dir = os.path.join(tempfile.gettempdir(),
                              os.path.expandvars('$USER-perf-symfs'))
@@ -149,9 +166,14 @@ class PerfProfilerController(controllers.BaseController):
                                                     symfs_dir,
                                                     required_libs,
                                                     use_symlinks=False)
-    # Convert the perf profile into JSON.
     perfhost_path = os.path.abspath(support_binaries.FindPath(
         'perfhost', 'linux'))
+
+    ui.PrintMessage('\nNote: to view the profile in perf, run:')
+    ui.PrintMessage('  ' + self._GetInteractivePerfCommand(perfhost_path,
+        perf_profile, symfs_dir, required_libs, kallsyms))
+
+    # Convert the perf profile into JSON.
     perf_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
         'tools', 'telemetry', 'telemetry', 'core', 'platform', 'profiler',
         'perf_vis', 'perf_to_tracing.py')
