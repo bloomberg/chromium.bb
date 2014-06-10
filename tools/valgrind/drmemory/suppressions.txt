@@ -584,3 +584,19 @@ name=http://crbug.com/382784
 *!media::AudioInputDevice::AudioThreadCallback::Process
 *!media::AudioDeviceThread::Thread::Run
 *!media::AudioDeviceThread::Thread::ThreadMain
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/382789
+...
+*!base::debug::TraceEvent::AppendValueAsJSON
+*!base::debug::TraceEvent::AppendAsJSON
+*!base::debug::TraceLog::ConvertTraceEventsToTraceFormat
+*!base::debug::TraceLog::FinishFlush
+*!base::internal::Invoker<>::Run
+*!base::MessageLoop::RunTask
+*!base::MessageLoop::DeferOrRunPendingTask
+*!base::MessageLoop::DoWork
+*!base::MessagePumpForIO::DoRunLoop
+*!base::MessagePumpWin::Run
+*!base::MessageLoop::RunHandler
+*!base::Thread::Run
