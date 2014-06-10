@@ -27,7 +27,7 @@ class MediaKeys;
 namespace content {
 
 class CdmSessionAdapter;
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 class RendererCdmManager;
 #endif
 class WebContentDecryptionModuleSessionImpl;
@@ -38,7 +38,7 @@ class WebContentDecryptionModuleImpl
   static WebContentDecryptionModuleImpl* Create(
 #if defined(ENABLE_PEPPER_CDMS)
       blink::WebLocalFrame* frame,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       RendererCdmManager* manager,
 #endif
       const blink::WebSecurityOrigin& security_origin,
@@ -52,11 +52,11 @@ class WebContentDecryptionModuleImpl
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   media::Decryptor* GetDecryptor();
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
   // CDM ID is associated, such as when Clear Key is used.
   int GetCdmId() const;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
   // blink::WebContentDecryptionModule implementation.
   virtual blink::WebContentDecryptionModuleSession* createSession(

@@ -17,7 +17,7 @@
 namespace content {
 
 CdmSessionAdapter::CdmSessionAdapter() :
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
     cdm_id_(0),
 #endif
     weak_ptr_factory_(this) {}
@@ -27,7 +27,7 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 bool CdmSessionAdapter::Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
     RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const std::string& key_system,
@@ -38,7 +38,7 @@ bool CdmSessionAdapter::Initialize(
       security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
       create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       manager,
       &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -100,11 +100,11 @@ media::Decryptor* CdmSessionAdapter::GetDecryptor() {
   return media_keys_->GetDecryptor();
 }
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 int CdmSessionAdapter::GetCdmId() const {
   return cdm_id_;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
                                          const std::vector<uint8>& message,

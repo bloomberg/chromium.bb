@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/browser_cdm_manager.h"
+#include "content/browser/media/cdm/browser_cdm_manager.h"
 
 #include "base/command_line.h"
 #include "base/stl_util.h"

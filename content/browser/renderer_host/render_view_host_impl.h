@@ -391,11 +391,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   void DidCancelPopupMenu();
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   MediaWebContentsObserver* media_web_contents_observer() {
     return media_web_contents_observer_.get();
   }
+#endif
 
+#if defined(OS_ANDROID)
   void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
   void DidCancelPopupMenu();
 #endif
@@ -620,9 +622,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Set to true if we requested the on screen keyboard to be displayed.
   bool virtual_keyboard_requested_;
 
-#if defined(OS_ANDROID)
-  // Manages all the android mediaplayer managers and forwards IPCs to the
-  // managers.
+#if defined(ENABLE_BROWSER_CDMS)
+  // Manages all the media player and CDM managers and forwards IPCs to them.
   scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
 #endif
 

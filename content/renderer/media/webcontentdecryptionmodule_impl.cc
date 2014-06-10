@@ -29,14 +29,14 @@ namespace content {
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
 #if defined(ENABLE_PEPPER_CDMS)
     blink::WebLocalFrame* frame,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
     RendererCdmManager* manager,
 #endif
     const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system) {
 #if defined(ENABLE_PEPPER_CDMS)
   DCHECK(frame);
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
   DCHECK(manager);
 #endif
   DCHECK(!security_origin.isNull());
@@ -65,7 +65,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   if (!adapter->Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
           base::Bind(&PepperCdmWrapperImpl::Create, frame),
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
           manager,
 #endif
           key_system_ascii,
@@ -94,10 +94,10 @@ media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
   return adapter_->GetDecryptor();
 }
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 int WebContentDecryptionModuleImpl::GetCdmId() const {
   return adapter_->GetCdmId();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 }  // namespace content

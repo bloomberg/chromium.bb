@@ -91,10 +91,12 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
-#elif defined(OS_ANDROID)
-#include "content/browser/media/android/media_web_contents_observer.h"
 #elif defined(OS_WIN)
 #include "base/win/win_util.h"
+#endif
+
+#if defined(ENABLE_BROWSER_CDMS)
+#include "content/browser/media/media_web_contents_observer.h"
 #endif
 
 using base::TimeDelta;
@@ -223,7 +225,7 @@ RenderViewHostImpl::RenderViewHostImpl(
                    GetProcess()->GetID(), GetRoutingID()));
   }
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
 #endif
 

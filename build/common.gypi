@@ -1871,6 +1871,12 @@
         'enable_pepper_cdms%': 0,
       }],
 
+      ['OS=="android"', {
+        'enable_browser_cdms%': 1,
+      }, {
+        'enable_browser_cdms%': 0,
+      }],
+
       # Native Client glibc toolchain is enabled
       # by default except on arm and mips.
       ['target_arch=="arm" or target_arch=="mipsel"', {
@@ -2467,6 +2473,9 @@
       }],
       ['enable_pepper_cdms==1', {
         'defines': ['ENABLE_PEPPER_CDMS'],
+      }],
+      ['enable_browser_cdms==1', {
+        'defines': ['ENABLE_BROWSER_CDMS'],
       }],
       ['configuration_policy==1', {
         'defines': ['ENABLE_CONFIGURATION_POLICY'],

@@ -35,7 +35,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/browser/media/android/media_web_contents_observer.h"
+#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"

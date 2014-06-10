@@ -5,13 +5,14 @@
 #ifndef MEDIA_BASE_BROWSER_CDM_H_
 #define MEDIA_BASE_BROWSER_CDM_H_
 
+#include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 #include "media/base/player_tracker.h"
 
 namespace media {
 
 // Interface for browser side CDMs.
-class BrowserCdm : public PlayerTracker {
+class MEDIA_EXPORT BrowserCdm : public PlayerTracker {
  public:
   // TODO(jrummell): Update this to actually derive from MediaKeys
   // (Use web_session_id rather than session_id).

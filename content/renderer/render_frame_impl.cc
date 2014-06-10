@@ -127,6 +127,9 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#endif
+
+#if defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif
 
@@ -416,6 +419,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       web_user_media_client_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
+#endif
+#if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
 #endif
       geolocation_dispatcher_(NULL),
@@ -441,10 +446,10 @@ RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 
-#if defined(VIDEO_HOLE)
+#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
   if (media_player_manager_)
     render_view_->UnregisterVideoHoleFrame(this);
-#endif  // defined(VIDEO_HOLE)
+#endif
 
   render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
@@ -1422,7 +1427,7 @@ RenderFrameImpl::createContentDecryptionModule(
   return WebContentDecryptionModuleImpl::Create(
 #if defined(ENABLE_PEPPER_CDMS)
       frame,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       GetCdmManager(),
 #endif
       security_origin,
@@ -3571,12 +3576,14 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
   return media_player_manager_;
 }
 
+#endif  // defined(OS_ANDROID)
+
+#if defined(ENABLE_BROWSER_CDMS)
 RendererCdmManager* RenderFrameImpl::GetCdmManager() {
   if (!cdm_manager_)
     cdm_manager_ = new RendererCdmManager(this);
   return cdm_manager_;
 }
-
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 }  // namespace content

@@ -11,7 +11,7 @@
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/proxy_media_keys.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -23,7 +23,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const GURL& security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
     RendererCdmManager* manager,
     int* cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -36,7 +36,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
   // check the security origin before calling.
   // DCHECK(security_origin.is_valid());
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   *cdm_id = RendererCdmManager::kInvalidCdmId;
 #endif
 
@@ -53,7 +53,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                              session_ready_cb,
                              session_closed_cb,
                              session_error_cb));
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys =
       ProxyMediaKeys::Create(key_system,
                              security_origin,

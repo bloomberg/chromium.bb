@@ -18,7 +18,9 @@ class GURL;
 
 namespace content {
 
+#if defined(ENABLE_BROWSER_CDMS)
 class RendererCdmManager;
+#endif
 
 class ContentDecryptionModuleFactory {
  public:
@@ -29,7 +31,7 @@ class ContentDecryptionModuleFactory {
       const GURL& security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       RendererCdmManager* manager,
       int* cdm_id,  // Output parameter indicating the CDM ID of the MediaKeys.
 #endif  // defined(ENABLE_PEPPER_CDMS)

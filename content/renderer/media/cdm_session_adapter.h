@@ -23,9 +23,10 @@ class GURL;
 
 namespace content {
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 class RendererCdmManager;
 #endif
+
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.
@@ -40,7 +41,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   bool Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       RendererCdmManager* manager,
 #endif
       const std::string& key_system,
@@ -87,7 +88,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   media::Decryptor* GetDecryptor();
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with the |media_keys_|. May be kInvalidCdmId
   // if no CDM ID is associated.
   int GetCdmId() const;
@@ -120,7 +121,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   SessionMap sessions_;
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   int cdm_id_;
 #endif
 

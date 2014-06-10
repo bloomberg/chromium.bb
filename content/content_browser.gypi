@@ -783,8 +783,6 @@
       'browser/loader/upload_data_stream_builder.h',
       'browser/mach_broker_mac.h',
       'browser/mach_broker_mac.mm',
-      'browser/media/android/browser_cdm_manager.cc',
-      'browser/media/android/browser_cdm_manager.h',
       'browser/media/android/browser_demuxer_android.cc',
       'browser/media/android/browser_demuxer_android.h',
       'browser/media/android/browser_media_player_manager.cc',
@@ -793,8 +791,6 @@
       'browser/media/android/media_drm_credential_manager.h',
       'browser/media/android/media_resource_getter_impl.cc',
       'browser/media/android/media_resource_getter_impl.h',
-      'browser/media/android/media_web_contents_observer.cc',
-      'browser/media/android/media_web_contents_observer.h',
       'browser/media/capture/audio_mirroring_manager.cc',
       'browser/media/capture/audio_mirroring_manager.h',
       'browser/media/capture/content_video_capture_device_core.cc',
@@ -1764,6 +1760,15 @@
     }, {  # OS != "linux" or use_dbus==0
       'sources!': [
         'browser/geolocation/wifi_data_provider_linux.cc',
+      ],
+    }],
+    ['enable_browser_cdms==1', {
+      'sources': [
+        'browser/media/cdm/browser_cdm_manager.cc',
+        'browser/media/cdm/browser_cdm_manager.h',
+        # This works on Android because enable_browser_cdms==1 on Android.
+        'browser/media/media_web_contents_observer.cc',
+        'browser/media/media_web_contents_observer.h',
       ],
     }],
   ],

@@ -762,6 +762,8 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
           // Create() must be called synchronously as |frame_| may not be
           // valid afterwards.
           base::Bind(&PepperCdmWrapperImpl::Create, frame_),
+#elif defined(ENABLE_BROWSER_CDMS)
+#error Browser side CDM in WMPI for prefixed EME API not supported yet.
 #endif
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),

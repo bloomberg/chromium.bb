@@ -19,9 +19,9 @@
 #include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 namespace content {
 
@@ -33,7 +33,7 @@ const int kSessionClosedSystemCode = 29127;
 ProxyDecryptor::ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
     RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const KeyAddedCB& key_added_cb,
@@ -42,7 +42,7 @@ ProxyDecryptor::ProxyDecryptor(
     :
 #if defined(ENABLE_PEPPER_CDMS)
       create_pepper_cdm_cb_(create_pepper_cdm_cb),
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       manager_(manager),
       cdm_id_(RendererCdmManager::kInvalidCdmId),
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -68,7 +68,7 @@ media::Decryptor* ProxyDecryptor::GetDecryptor() {
   return media_keys_ ? media_keys_->GetDecryptor() : NULL;
 }
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 int ProxyDecryptor::GetCdmId() {
   return cdm_id_;
 }
@@ -212,7 +212,7 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
       create_pepper_cdm_cb_,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       manager_,
       &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)

@@ -611,6 +611,13 @@
             'filters/vpx_video_decoder.h',
           ],
         }],
+        ['enable_browser_cdms==1', {
+          'sources': [
+            'base/browser_cdm.cc',
+            'base/browser_cdm.h',
+            'base/browser_cdm_factory.h',
+          ],
+        }],
         ['OS=="android"', {
           'dependencies': [
             'media_android_jni_headers',
@@ -1598,9 +1605,6 @@
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
             'base/android/webaudio_media_codec_info.h',
-            'base/browser_cdm.cc',
-            'base/browser_cdm.h',
-            'base/browser_cdm_factory.h',
           ],
           'dependencies': [
             '../base/base.gyp:base',

@@ -23,9 +23,9 @@ class GURL;
 
 namespace content {
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
 class RendererCdmManager;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
@@ -49,7 +49,7 @@ class ProxyDecryptor {
   ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
       RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const KeyAddedCB& key_added_cb,
@@ -61,7 +61,7 @@ class ProxyDecryptor {
   // Decryptor is associated.
   media::Decryptor* GetDecryptor();
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
   // CDM ID is associated, such as when Clear Key is used.
   int GetCdmId();
@@ -102,7 +102,7 @@ class ProxyDecryptor {
 #if defined(ENABLE_PEPPER_CDMS)
   // Callback to create the Pepper plugin.
   CreatePepperCdmCB create_pepper_cdm_cb_;
-#elif defined(OS_ANDROID)
+#elif defined(ENABLE_BROWSER_CDMS)
   RendererCdmManager* manager_;
   int cdm_id_;
 #endif  // defined(ENABLE_PEPPER_CDMS)

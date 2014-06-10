@@ -255,10 +255,6 @@
       'renderer/media/crypto/ppapi_decryptor.h',
       'renderer/media/crypto/proxy_decryptor.cc',
       'renderer/media/crypto/proxy_decryptor.h',
-      'renderer/media/crypto/proxy_media_keys.cc',
-      'renderer/media/crypto/proxy_media_keys.h',
-      'renderer/media/crypto/renderer_cdm_manager.cc',
-      'renderer/media/crypto/renderer_cdm_manager.h',
       'renderer/media/media_stream_audio_level_calculator.cc',
       'renderer/media/media_stream_audio_level_calculator.h',
       'renderer/media/media_stream_audio_renderer.cc',
@@ -826,6 +822,14 @@
       'sources!': [
         'renderer/media/crypto/ppapi_decryptor.cc',
         'renderer/media/crypto/ppapi_decryptor.h',
+      ],
+    }],
+    ['enable_browser_cdms==1', {
+      'sources': [
+        'renderer/media/crypto/proxy_media_keys.cc',
+        'renderer/media/crypto/proxy_media_keys.h',
+        'renderer/media/crypto/renderer_cdm_manager.cc',
+        'renderer/media/crypto/renderer_cdm_manager.h',
       ],
     }],
   ],

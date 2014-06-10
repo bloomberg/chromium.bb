@@ -24,7 +24,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
-#include "content/browser/media/android/media_web_contents_observer.h"
+#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
