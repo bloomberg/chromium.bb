@@ -64,17 +64,7 @@ void RouteStdioToConsole() {
   // stdout/stderr on startup (before the handle IDs can be reused).
   // _fileno(stdout) will return -2 (_NO_CONSOLE_FILENO) if stdout was
   // invalid.
-
-  // TODO(scottmg):
-  // Unfortunately _fileno was broken in VS2012, and is still broken in VS2013.
-  //   https://connect.microsoft.com/VisualStudio/feedback/details/785119/
-  //   http://crbug.com/358267
-  // It never returns -2 as it is documented to do (and per above) when in a
-  // windowed application without a console. As a result, we have to use
-  // GetStdHandle, even though it's not strictly correct. Hopefully this can
-  // be removed after a future revision of the CRT.
-  if ((_fileno(stdout) >= 0 && GetStdHandle(STD_OUTPUT_HANDLE) != NULL) ||
-      (_fileno(stderr) >= 0 && GetStdHandle(STD_ERROR_HANDLE)) != NULL)
+  if (_fileno(stdout) >= 0 || _fileno(stderr) >= 0)
     return;
 
   if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
