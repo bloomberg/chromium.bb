@@ -1005,10 +1005,8 @@ void ProfileSyncService::UpdateBackendInitUMA(bool success) {
 }
 
 void ProfileSyncService::PostBackendInitialization() {
-  if (backend_mode_ == BACKUP || backend_mode_ == ROLLBACK) {
-    ConfigureDataTypeManager();
-    return;
-  }
+  // Never get here for backup / restore.
+  DCHECK_EQ(backend_mode_, SYNC);
 
   if (protocol_event_observers_.might_have_observers()) {
     backend_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -1084,7 +1082,18 @@ void ProfileSyncService::OnBackendInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
 
-  PostBackendInitialization();
+  // Give the DataTypeControllers a handle to the now initialized backend
+  // as a UserShare.
+  for (DataTypeController::TypeMap::iterator it =
+       directory_data_type_controllers_.begin();
+       it != directory_data_type_controllers_.end(); ++it) {
+    it->second->OnUserShareReady(GetUserShare());
+  }
+
+  if (backend_mode_ == BACKUP || backend_mode_ == ROLLBACK)
+    ConfigureDataTypeManager();
+  else
+    PostBackendInitialization();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {

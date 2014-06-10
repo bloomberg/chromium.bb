@@ -7,12 +7,14 @@
 
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
 
+class Profile;
+
 namespace browser_sync {
 
 class ThemeDataTypeController : public UIDataTypeController {
  public:
   ThemeDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
+      SyncApiComponentFactory* sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
 
@@ -21,6 +23,8 @@ class ThemeDataTypeController : public UIDataTypeController {
 
   // UIDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
+
+  Profile* const profile_;
   DISALLOW_COPY_AND_ASSIGN(ThemeDataTypeController);
 };
 

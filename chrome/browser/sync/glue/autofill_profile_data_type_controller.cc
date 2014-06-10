@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -31,8 +30,8 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           profile_sync_factory,
-          profile,
           sync_service),
+      profile_(profile),
       personal_data_(NULL),
       callback_registered_(false) {}
 
@@ -57,7 +56,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   personal_data_->RemoveObserver(this);
   autofill::AutofillWebDataService* web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile(), Profile::EXPLICIT_ACCESS).get();
+          profile_, Profile::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return;
@@ -87,7 +86,7 @@ bool AutofillProfileDataTypeController::StartModels() {
   // its cache of unique IDs once it gets loaded. If we were to proceed with
   // association, the local ids in the mappings would wind up colliding.
   personal_data_ =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile());
+      autofill::PersonalDataManagerFactory::GetForProfile(profile_);
   if (!personal_data_->IsDataLoaded()) {
     personal_data_->AddObserver(this);
     return false;
@@ -95,7 +94,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 
   autofill::AutofillWebDataService* web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile(), Profile::EXPLICIT_ACCESS).get();
+          profile_, Profile::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return false;

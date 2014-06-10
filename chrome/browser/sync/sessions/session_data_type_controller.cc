@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sessions/session_data_type_controller.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,16 +18,16 @@ using content::BrowserThread;
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
+    SyncApiComponentFactory* sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           syncer::SESSIONS,
-          profile_sync_factory,
-          profile,
-          sync_service) {
+          sync_factory,
+          sync_service),
+      profile_(profile) {
 }
 
 SessionDataTypeController::~SessionDataTypeController() {}

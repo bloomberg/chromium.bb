@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -382,6 +381,11 @@ void DataTypeManagerImpl::StartNextAssociation() {
       base::Time::Now();
   model_association_manager_.StartAssociationAsync(
       association_types_queue_.front().types);
+}
+
+void DataTypeManagerImpl::OnSingleDataTypeWillStop(
+    syncer::ModelType type) {
+  configurer_->DeactivateDataType(type);
 }
 
 void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(

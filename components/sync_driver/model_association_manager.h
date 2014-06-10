@@ -25,27 +25,37 @@ class DataTypeController;
 
 // |ModelAssociationManager| association functions are async. The results of
 // those operations are passed back via this interface.
-class ModelAssociationResultProcessor {
+class ModelAssociationManagerDelegate {
  public:
+  // Called when model association (MergeDataAndStartSyncing) has completed
+  // for |type|, regardless of success or failure.
   virtual void OnSingleDataTypeAssociationDone(
       syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats) = 0;
+
+  // Called when the ModelAssociationManager has decided it must stop |type|,
+  // likely because it is no longer a desired data type or sync is shutting
+  // down.
+  virtual void OnSingleDataTypeWillStop(syncer::ModelType type) = 0;
+
+  // Called when the ModelAssociationManager has tried to perform model
+  // association for all desired types and has nothing left to do.
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) = 0;
-  virtual ~ModelAssociationResultProcessor() {}
+  virtual ~ModelAssociationManagerDelegate() {}
 };
 
 // The class that is responsible for model association.
 class ModelAssociationManager {
  public:
   ModelAssociationManager(const DataTypeController::TypeMap* controllers,
-                          ModelAssociationResultProcessor* processor);
+                          ModelAssociationManagerDelegate* delegate);
   virtual ~ModelAssociationManager();
 
   // Initializes the state to do the model association in future. This
   // should be called before communicating with sync server. A subsequent call
   // of Initialize is only allowed if the ModelAssociationManager has invoked
-  // |OnModelAssociationDone| on the |ModelAssociationResultProcessor|. After
+  // |OnModelAssociationDone| on the |ModelAssociationManagerDelegate|. After
   // this call, there should be several calls to StartAssociationAsync()
   // to associate subset of |desired_types|.
   void Initialize(syncer::ModelTypeSet desired_types);
@@ -101,8 +111,11 @@ class ModelAssociationManager {
   void AppendToFailedDatatypesAndLogError(const syncer::SyncError& error);
 
   // Called when all requested types are associated or association times out.
-  // Notify |result_processor_| of configuration results.
+  // Notify |delegate_| of configuration results.
   void ModelAssociationDone();
+
+  // A helper to stop an individual datatype.
+  void StopDatatype(DataTypeController* dtc);
 
   State state_;
 
@@ -143,7 +156,7 @@ class ModelAssociationManager {
   const DataTypeController::TypeMap* controllers_;
 
   // The processor in charge of handling model association results.
-  ModelAssociationResultProcessor* result_processor_;
+  ModelAssociationManagerDelegate* delegate_;
 
   // Timer to track and limit how long a datatype takes to model associate.
   base::OneShotTimer<ModelAssociationManager> timer_;

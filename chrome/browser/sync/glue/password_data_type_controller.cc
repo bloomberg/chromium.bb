@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,8 +25,8 @@ PasswordDataTypeController::PasswordDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           profile_sync_factory,
-          profile,
-          sync_service) {
+          sync_service),
+      profile_(profile) {
 }
 
 syncer::ModelType PasswordDataTypeController::type() const {
@@ -52,7 +53,7 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
   password_store_ = PasswordStoreFactory::GetForProfile(
-      profile(), Profile::EXPLICIT_ACCESS);
+      profile_, Profile::EXPLICIT_ACCESS);
   return !!password_store_;
 }
 

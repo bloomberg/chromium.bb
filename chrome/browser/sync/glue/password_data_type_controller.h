@@ -10,7 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 
-class ProfileSyncServicePasswordTest;
+class Profile;
+class ProfileSyncComponentsFactory;
 
 namespace password_manager {
 class PasswordStore;
@@ -40,6 +41,7 @@ class PasswordDataTypeController : public NonUIDataTypeController {
   virtual bool StartModels() OVERRIDE;
 
  private:
+  Profile* const profile_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDataTypeController);

@@ -21,6 +21,7 @@
 
 namespace syncer {
 class SyncError;
+struct UserShare;
 }
 
 namespace browser_sync {
@@ -96,6 +97,11 @@ class DataTypeController
   // Synchronously stops the data type. If StartAssociating has already been
   // called but is not done yet it will be aborted. Similarly if LoadModels
   // has not completed it will also be aborted.
+  // NOTE: Stop() should be called after sync backend machinery has stopped
+  // routing changes to this data type. Stop() should ensure the data type
+  // logic shuts down gracefully by flushing remaining changes and calling
+  // StopSyncing on the SyncableService. This assumes no changes will ever
+  // propagate from sync again from point where Stop() is called.
   virtual void Stop() = 0;
 
   // Unique model type for this data type controller.
@@ -123,6 +129,10 @@ class DataTypeController
       const std::string& message,
       syncer::ModelType type) OVERRIDE;
 
+  // Called when the sync backend has initialized. |share| is the
+  // UserShare handle to associate model data with.
+  void OnUserShareReady(syncer::UserShare* share);
+
  protected:
   friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;
   friend class base::DeleteHelper<DataTypeController>;
@@ -144,7 +154,11 @@ class DataTypeController
       const tracked_objects::Location& from_here,
       const std::string& message);
 
+  syncer::UserShare* user_share() const;
+
  private:
+  syncer::UserShare* user_share_;
+
   // The callback that will be invoked when an unrecoverable error occurs.
   base::Closure error_callback_;
 };

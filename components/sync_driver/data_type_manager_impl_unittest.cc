@@ -74,8 +74,12 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
 
   virtual void ActivateDataType(
       syncer::ModelType type, syncer::ModelSafeGroup group,
-      ChangeProcessor* change_processor) OVERRIDE {}
-  virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE {}
+      ChangeProcessor* change_processor) OVERRIDE {
+    activated_types_.Put(type);
+  }
+  virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE {
+    activated_types_.Remove(type);
+  }
 
   base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task() const {
     return last_ready_task_;
@@ -85,9 +89,12 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     expected_configure_types_ = types;
   }
 
+  const syncer::ModelTypeSet activated_types() { return activated_types_; }
+
  private:
   base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task_;
   syncer::ModelTypeSet expected_configure_types_;
+  syncer::ModelTypeSet activated_types_;
 };
 
 // Mock DataTypeManagerObserver implementation.
@@ -292,9 +299,11 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
 
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
 
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with a single controller, configure it, but stop it
@@ -315,6 +324,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
   }
 
   configurer_.last_ready_task().Run(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with a single controller, configure it, finish
@@ -341,6 +351,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
   }
 
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with a single controller, configure it, finish
@@ -361,6 +372,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
     FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
     FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+    EXPECT_TRUE(configurer_.activated_types().Empty());
 
     dtm_->Stop();
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
@@ -368,6 +380,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
   }
 
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with a single controller.  Then:
@@ -453,10 +466,12 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   // Step 6.
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(2U, configurer_.activated_types().Size());
 
   // Step 7.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -504,10 +519,12 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   // Step 6.
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
 
   // Step 7.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -551,10 +568,12 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   // Step 6.
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(2U, configurer_.activated_types().Size());
 
   // Step 7.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with one controller.  Then configure, finish
@@ -572,10 +591,12 @@ TEST_F(SyncDataTypeManagerImplTest, OneFailingController) {
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 
   GetController(BOOKMARKS)->FinishStart(
       DataTypeController::UNRECOVERABLE_ERROR);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -654,10 +675,12 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
 
   // Step 6.
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
 // Set up a DTM with two controllers.  Then:

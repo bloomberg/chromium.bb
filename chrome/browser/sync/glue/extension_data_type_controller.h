@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "components/sync_driver/generic_change_processor.h"
 
+class Profile;
+
 namespace browser_sync {
 
 // TODO(zea): Rename this and ExtensionSettingsDTC to ExtensionOrApp*, since
@@ -19,7 +21,7 @@ class ExtensionDataTypeController : public UIDataTypeController {
  public:
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
-      ProfileSyncComponentsFactory* profile_sync_factory,
+      SyncApiComponentFactory* sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
 
@@ -28,6 +30,8 @@ class ExtensionDataTypeController : public UIDataTypeController {
 
   // DataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
+
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataTypeController);
 };

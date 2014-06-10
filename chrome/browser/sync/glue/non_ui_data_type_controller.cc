@@ -6,11 +6,10 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -29,15 +28,12 @@ NonUIDataTypeController::CreateSharedChangeProcessor() {
 NonUIDataTypeController::NonUIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
+    SyncApiComponentFactory* sync_factory,
     ProfileSyncService* sync_service)
     : DataTypeController(ui_thread, error_callback),
-      profile_sync_factory_(profile_sync_factory),
-      profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING),
-      user_share_(NULL) {
+      sync_factory_(sync_factory),
+      state_(NOT_RUNNING) {
 }
 
 void NonUIDataTypeController::LoadModels(
@@ -59,7 +55,6 @@ void NonUIDataTypeController::LoadModels(
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
-  user_share_ = sync_service_->GetUserShare();
   model_load_callback_ = model_load_callback;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -162,10 +157,6 @@ void NonUIDataTypeController::Stop() {
       break;
   }
 
-  // Deactivate the DataType on the UI thread. We dont want to listen
-  // for any more changes or process them from the server.
-  sync_service_->DeactivateDataType(type());
-
   // Stop the local service and release our references to it and the
   // shared change processor (posts a task to the datatype's thread).
   StopLocalServiceAsync();
@@ -195,9 +186,7 @@ void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
 
 NonUIDataTypeController::NonUIDataTypeController()
     : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
-      profile_sync_factory_(NULL),
-      profile_(NULL),
-      sync_service_(NULL) {}
+      sync_service_(NULL), sync_factory_(NULL) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
 
@@ -340,9 +329,9 @@ void NonUIDataTypeController::
   // point on are through it.
   GenericChangeProcessorFactory factory;
   local_service_ = shared_change_processor->Connect(
-      profile_sync_factory_,
+      sync_factory_,
       &factory,
-      user_share_,
+      user_share(),
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());

@@ -103,7 +103,6 @@ class NonUIDataTypeControllerFake
           base::MessageLoopProxy::current(),
           base::Closure(),
           profile_sync_factory,
-          profile,
           sync_service),
         blocked_(false),
         mock_(mock),
@@ -255,7 +254,6 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_.get(), StopModels());
     EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
-    EXPECT_CALL(service_, DeactivateDataType(_));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
@@ -425,7 +423,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
                                    AUTOFILL_PROFILE)));
   EXPECT_CALL(*change_processor_.get(), Disconnect())
       .WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
-  EXPECT_CALL(service_, DeactivateDataType(_));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   wait_for_db_thread_pause.Wait();
@@ -445,7 +442,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   // have been set.
   EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
   EXPECT_CALL(*dtc_mock_.get(), StopModels());
-  EXPECT_CALL(service_, DeactivateDataType(_));
   EXPECT_CALL(*dtc_mock_.get(),
               RecordStartFailure(DataTypeController::ABORTED));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _, _));

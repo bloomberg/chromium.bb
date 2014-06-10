@@ -28,7 +28,6 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           profile_sync_factory,
-          profile,
           profile_sync_service),
       type_(type),
       profile_(profile),

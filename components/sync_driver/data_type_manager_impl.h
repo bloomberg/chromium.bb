@@ -37,7 +37,7 @@ class FailedDataTypesHandler;
 typedef std::queue<syncer::ModelTypeSet> TypeSetPriorityList;
 
 class DataTypeManagerImpl : public DataTypeManager,
-                            public ModelAssociationResultProcessor {
+                            public ModelAssociationManagerDelegate {
  public:
   DataTypeManagerImpl(
       const base::Closure& unrecoverable_error_method,
@@ -62,12 +62,13 @@ class DataTypeManagerImpl : public DataTypeManager,
   virtual void Stop() OVERRIDE;
   virtual State state() const OVERRIDE;
 
-  // |ModelAssociationResultProcessor| implementation.
+  // |ModelAssociationManagerDelegate| implementation.
   virtual void OnSingleDataTypeAssociationDone(
       syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats) OVERRIDE;
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) OVERRIDE;
+  virtual void OnSingleDataTypeWillStop(syncer::ModelType type) OVERRIDE;
 
   // Used by unit tests. TODO(sync) : This would go away if we made
   // this class be able to do Dependency injection. crbug.com/129212.

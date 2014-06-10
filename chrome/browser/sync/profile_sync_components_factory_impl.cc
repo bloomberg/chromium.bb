@@ -201,7 +201,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::HISTORY_DELETE_DIRECTIVES,
             this,
-            profile_,
             pss));
   }
 
@@ -223,7 +222,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::FAVICON_IMAGES,
             this,
-            profile_,
             pss));
     pss->RegisterDataTypeController(
         new UIDataTypeController(
@@ -231,7 +229,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::FAVICON_TRACKING,
             this,
-            profile_,
             pss));
   }
 
@@ -250,7 +247,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::ARTICLES,
             this,
-            profile_,
             pss));
   }
 
@@ -262,7 +258,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::MANAGED_USER_SETTINGS,
             this,
-            profile_,
             pss));
   } else {
     pss->RegisterDataTypeController(
@@ -271,7 +266,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::MANAGED_USERS,
             this,
-            profile_,
             pss));
   }
   pss->RegisterDataTypeController(
@@ -280,7 +274,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::MANAGED_USER_SHARED_SETTINGS,
             this,
-            profile_,
             pss));
 #endif
 }
@@ -312,7 +305,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::PREFERENCES,
             this,
-            profile_,
             pss));
 
   }
@@ -324,7 +316,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::PRIORITY_PREFERENCES,
             this,
-            profile_,
             pss));
   }
 
@@ -367,7 +358,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::APP_LIST,
             this,
-            profile_,
             pss));
   }
 #endif
@@ -380,7 +370,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
               base::Bind(&ChromeReportUnrecoverableError),
               syncer::SYNCED_NOTIFICATIONS,
               this,
-              profile_,
               pss));
 
     // Synced Notification App Infos are enabled by default on Dev and Canary
@@ -395,7 +384,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
           base::Bind(&ChromeReportUnrecoverableError),
           syncer::SYNCED_NOTIFICATION_APP_INFO,
           this,
-          profile_,
           pss));
     }
   }
@@ -409,7 +397,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::DICTIONARY,
             this,
-            profile_,
             pss));
   }
 #endif

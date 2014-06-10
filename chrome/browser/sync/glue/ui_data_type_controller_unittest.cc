@@ -44,7 +44,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
                                  base::Closure(),
                                  type_,
                                  profile_sync_factory_.get(),
-                                 &profile_,
                                  &profile_sync_service_);
     SetStartExpectations();
   }
@@ -67,10 +66,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_, GetSyncableServiceForType(type_)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
-  }
-
-  void SetStopExpectations() {
-    EXPECT_CALL(profile_sync_service_, DeactivateDataType(type_));
   }
 
   void Start() {
@@ -115,7 +110,6 @@ TEST_F(SyncUIDataTypeControllerTest, Start) {
 // Start and then stop the DTC. Verify that the service started and stopped
 // syncing, and that the DTC went from RUNNING to NOT_RUNNING.
 TEST_F(SyncUIDataTypeControllerTest, StartStop) {
-  SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -131,7 +125,6 @@ TEST_F(SyncUIDataTypeControllerTest, StartStop) {
 // Start the DTC when no user nodes are created. Verify that the callback
 // is called with OK_FIRST_RUN. Stop the DTC.
 TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
-  SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   change_processor_->set_sync_model_has_user_created_nodes(false);
 
@@ -149,7 +142,6 @@ TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
 // is called with ASSOCIATION_FAILED, the DTC goes to state DISABLED, and the
 // service is not syncing. Then stop the DTC.
 TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
-  SetStopExpectations();
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
@@ -190,7 +182,6 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   EXPECT_CALL(profile_sync_service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
                                  &UIDataTypeController::Stop));
-  SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());

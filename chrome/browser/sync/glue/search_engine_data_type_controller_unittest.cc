@@ -69,11 +69,6 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
         WillOnce(Return(syncable_service_.AsWeakPtr()));
   }
 
-  void SetStopExpectations() {
-    EXPECT_CALL(*service_.get(),
-                DeactivateDataType(syncer::SEARCH_ENGINES));
-  }
-
   void Start() {
     search_engine_dtc_->LoadModels(
         base::Bind(&ModelLoadCallbackMock::Run,
@@ -128,7 +123,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   PreloadTemplateURLService();
-  SetStopExpectations();
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
@@ -148,7 +142,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
 TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   SetStartExpectations();
   PreloadTemplateURLService();
-  SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
@@ -168,7 +161,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
   EXPECT_CALL(*service_.get(), DisableBrokenDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(search_engine_dtc_.get(),
                                  &SearchEngineDataTypeController::Stop));
-  SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();

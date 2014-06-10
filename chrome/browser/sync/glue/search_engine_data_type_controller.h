@@ -15,12 +15,14 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Profile;
+
 namespace browser_sync {
 
 class SearchEngineDataTypeController : public UIDataTypeController {
  public:
   SearchEngineDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
+      SyncApiComponentFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
 
@@ -33,6 +35,7 @@ class SearchEngineDataTypeController : public UIDataTypeController {
   void OnTemplateURLServiceLoaded();
 
   scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineDataTypeController);
 };

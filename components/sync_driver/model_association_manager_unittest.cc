@@ -11,14 +11,15 @@
 
 using ::testing::_;
 namespace browser_sync {
-class MockModelAssociationResultProcessor :
-    public ModelAssociationResultProcessor {
+class MockModelAssociationManagerDelegate :
+    public ModelAssociationManagerDelegate {
  public:
-  MockModelAssociationResultProcessor() {}
-  ~MockModelAssociationResultProcessor() {}
+  MockModelAssociationManagerDelegate() {}
+  ~MockModelAssociationManagerDelegate() {}
   MOCK_METHOD2(OnSingleDataTypeAssociationDone,
-               void(syncer::ModelType type,
-                    const syncer::DataTypeAssociationStats& association_stats));
+      void(syncer::ModelType type,
+      const syncer::DataTypeAssociationStats& association_stats));
+  MOCK_METHOD1(OnSingleDataTypeWillStop, void(syncer::ModelType));
   MOCK_METHOD1(OnModelAssociationDone, void(
       const DataTypeManager::ConfigureResult& result));
 };
@@ -62,7 +63,7 @@ class SyncModelAssociationManagerTest : public testing::Test {
 
  protected:
   base::MessageLoopForUI ui_loop_;
-  MockModelAssociationResultProcessor result_processor_;
+  MockModelAssociationManagerDelegate delegate_;
   DataTypeController::TypeMap controllers_;
 };
 
@@ -74,7 +75,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
   controllers_[syncer::APPS] =
       new FakeDataTypeController(syncer::APPS);
   ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+                                                    &delegate_);
   syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::OK,
@@ -82,7 +83,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
       std::map<syncer::ModelType, syncer::SyncError>(),
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
   EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
@@ -116,7 +117,7 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
       new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(
       &controllers_,
-      &result_processor_);
+      &delegate_);
 
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -135,8 +136,10 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
       syncer::ModelTypeSet(syncer::BOOKMARKS),
       syncer::ModelTypeSet());
 
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
+  EXPECT_CALL(delegate_,
+              OnSingleDataTypeWillStop(syncer::BOOKMARKS));
 
   model_association_manager.Initialize(types);
   model_association_manager.StartAssociationAsync(types);
@@ -154,7 +157,7 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
       new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(
       &controllers_,
-      &result_processor_);
+      &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result(
@@ -163,8 +166,10 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
       std::map<syncer::ModelType, syncer::SyncError>(),
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
+  EXPECT_CALL(delegate_,
+              OnSingleDataTypeWillStop(syncer::BOOKMARKS));
 
   model_association_manager.Initialize(types);
   model_association_manager.StartAssociationAsync(types);
@@ -185,7 +190,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
       new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(
       &controllers_,
-      &result_processor_);
+      &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
@@ -200,7 +205,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
       errors,
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
   model_association_manager.Initialize(types);
@@ -220,7 +225,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       new FakeDataTypeController(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(
       &controllers_,
-      &result_processor_);
+      &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
@@ -235,7 +240,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       errors,
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
   model_association_manager.Initialize(types);
@@ -255,7 +260,7 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
       new FakeDataTypeController(syncer::APPS);
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+                                                    &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   types.Put(syncer::APPS);
@@ -276,7 +281,7 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
       expected_types_unfinished,
       syncer::ModelTypeSet());
 
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_partially_done));
 
   model_association_manager.Initialize(types);
@@ -296,7 +301,7 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
   controllers_[syncer::APPS] =
       new FakeDataTypeController(syncer::APPS);
   ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+                                                    &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   types.Put(syncer::APPS);
@@ -313,7 +318,7 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
       std::map<syncer::ModelType, syncer::SyncError>(),
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
       Times(2).
       WillOnce(VerifyResult(result_1st)).
       WillOnce(VerifyResult(result_2nd));
@@ -357,7 +362,7 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
                         "", syncer::BOOKMARKS));
   ModelAssociationManager model_association_manager(
       &controllers_,
-      &result_processor_);
+      &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
@@ -372,7 +377,7 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
       errors,
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
   model_association_manager.Initialize(types);

@@ -12,6 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 
+class Profile;
+class ProfileSyncComponentsFactory;
+
 namespace autofill {
 class AutofillWebDataService;
 }  // namespace autofill
@@ -51,6 +54,8 @@ class AutofillDataTypeController
 
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();
+
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

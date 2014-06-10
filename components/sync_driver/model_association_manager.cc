@@ -110,10 +110,10 @@ syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
 
 ModelAssociationManager::ModelAssociationManager(
     const DataTypeController::TypeMap* controllers,
-    ModelAssociationResultProcessor* processor)
+    ModelAssociationManagerDelegate* processor)
     : state_(IDLE),
       controllers_(controllers),
-      result_processor_(processor),
+      delegate_(processor),
       weak_ptr_factory_(this),
       configure_status_(DataTypeManager::UNKNOWN) {
   // Ensure all data type controllers are stopped.
@@ -150,6 +150,15 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   LoadEnabledTypes();
 }
 
+void ModelAssociationManager::StopDatatype(DataTypeController* dtc) {
+  // First tell the sync backend that we no longer want to listen to
+  // changes for this type.
+  delegate_->OnSingleDataTypeWillStop(dtc->type());
+
+  // Then tell all data type specific logic to shut down.
+  dtc->Stop();
+}
+
 void ModelAssociationManager::StopDisabledTypes() {
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
@@ -159,8 +168,7 @@ void ModelAssociationManager::StopDisabledTypes() {
         (!desired_types_.Has(dtc->type()) ||
             failed_data_types_info_.count(dtc->type()) > 0)) {
       DVLOG(1) << "ModelTypeToString: stop " << dtc->name();
-      dtc->Stop();
-
+      StopDatatype(dtc);
       loaded_types_.Remove(dtc->type());
       associated_types_.Remove(dtc->type());
     }
@@ -261,7 +269,7 @@ void ModelAssociationManager::Stop() {
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING) {
-      dtc->Stop();
+      StopDatatype(dtc);
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
@@ -353,7 +361,7 @@ void ModelAssociationManager::TypeStartCallback(
     // enabled.
     DataTypeController* dtc = controllers_->find(type)->second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING)
-      dtc->Stop();
+      StopDatatype(dtc);
     loaded_types_.Remove(type);
   } else {
     // Record error in CONFIGURING or INITIALIZED_TO_CONFIGURE mode. The error
@@ -389,7 +397,7 @@ void ModelAssociationManager::TypeStartCallback(
                                               syncer_merge_result,
                                               association_wait_time,
                                               association_time);
-    result_processor_->OnSingleDataTypeAssociationDone(type, stats);
+    delegate_->OnSingleDataTypeAssociationDone(type, stats);
   }
 
   // Update configuration result.
@@ -440,12 +448,12 @@ void ModelAssociationManager::ModelAssociationDone() {
                                           associating_types_,
                                           needs_crypto_types_);
 
-  // Reset state before notifying |result_processor_| because that might
+  // Reset state before notifying |delegate_| because that might
   // trigger a new round of configuration.
   ResetForNextAssociation();
   state_ = IDLE;
 
-  result_processor_->OnModelAssociationDone(result);
+  delegate_->OnModelAssociationDone(result);
 }
 
 base::OneShotTimer<ModelAssociationManager>*

@@ -9,6 +9,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Profile;
+
 namespace browser_sync {
 
 // Overrides StartModels to avoid sync contention with sessions during
@@ -16,7 +18,7 @@ namespace browser_sync {
 class SessionDataTypeController : public UIDataTypeController,
                                   public content::NotificationObserver {
  public:
-  SessionDataTypeController(ProfileSyncComponentsFactory* factory,
+  SessionDataTypeController(SyncApiComponentFactory* factory,
                             Profile* profile,
                             ProfileSyncService* service);
 
@@ -31,6 +33,7 @@ class SessionDataTypeController : public UIDataTypeController,
   virtual void StopModels() OVERRIDE;
 
  private:
+  Profile* const profile_;
   content::NotificationRegistrar notification_registrar_;
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };

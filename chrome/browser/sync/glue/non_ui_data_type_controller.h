@@ -14,9 +14,7 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
 
-class Profile;
 class ProfileSyncService;
-class ProfileSyncComponentsFactory;
 
 namespace syncer {
 class SyncableService;
@@ -24,13 +22,14 @@ class SyncableService;
 
 namespace browser_sync {
 
+class SyncApiComponentFactory;
+
 class NonUIDataTypeController : public DataTypeController {
  public:
   NonUIDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       const base::Closure& error_callback,
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
+      SyncApiComponentFactory* sync_factory,
       ProfileSyncService* sync_service);
 
   // DataTypeController interface.
@@ -104,8 +103,6 @@ class NonUIDataTypeController : public DataTypeController {
   // and shutdown, use a factory method to create the SharedChangeProcessor.
   virtual SharedChangeProcessor* CreateSharedChangeProcessor();
 
-  Profile* profile() const { return profile_; }
-
  private:
 
   // Posted on the backend thread by StartAssociationAsync().
@@ -133,9 +130,8 @@ class NonUIDataTypeController : public DataTypeController {
   void DisableImpl(const tracked_objects::Location& from_here,
                    const std::string& message);
 
-  ProfileSyncComponentsFactory* const profile_sync_factory_;
-  Profile* const profile_;
   ProfileSyncService* const sync_service_;
+  SyncApiComponentFactory* const sync_factory_;
 
   // State of this datatype controller.
   State state_;
@@ -158,10 +154,6 @@ class NonUIDataTypeController : public DataTypeController {
   // since we call Disconnect() before releasing the UI thread
   // reference).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-
-  // The UserShare to connect the SharedChangeProcessor to. NULL until set in
-  // LoadModels.
-  syncer::UserShare* user_share_;
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object, and it is only safe to access on the

@@ -14,16 +14,16 @@ using content::BrowserThread;
 namespace browser_sync {
 
 ThemeDataTypeController::ThemeDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
+    SyncApiComponentFactory* sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           syncer::THEMES,
-          profile_sync_factory,
-          profile,
-          sync_service) {
+          sync_factory,
+          sync_service),
+      profile_(profile) {
 }
 
 ThemeDataTypeController::~ThemeDataTypeController() {}

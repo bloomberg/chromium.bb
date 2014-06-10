@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
@@ -23,8 +21,7 @@ namespace browser_sync {
 
 UIDataTypeController::UIDataTypeController()
     : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
-      profile_sync_factory_(NULL),
-      profile_(NULL),
+      sync_factory_(NULL),
       sync_service_(NULL),
       state_(NOT_RUNNING),
       type_(syncer::UNSPECIFIED) {
@@ -34,19 +31,16 @@ UIDataTypeController::UIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
     syncer::ModelType type,
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
+    SyncApiComponentFactory* sync_factory,
     ProfileSyncService* sync_service)
     : DataTypeController(ui_thread, error_callback),
-      profile_sync_factory_(profile_sync_factory),
-      profile_(profile),
+      sync_factory_(sync_factory),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
       type_(type),
       processor_factory_(new GenericChangeProcessorFactory()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_sync_factory);
-  DCHECK(profile);
+  DCHECK(sync_factory);
   DCHECK(sync_service);
   DCHECK(syncer::IsRealDataType(type_));
 }
@@ -136,9 +130,9 @@ void UIDataTypeController::Associate() {
   // Connect |shared_change_processor_| to the syncer and get the
   // syncer::SyncableService associated with type().
   local_service_ = shared_change_processor_->Connect(
-      profile_sync_factory_,
+      sync_factory_,
       processor_factory_.get(),
-      sync_service_->GetUserShare(),
+      user_share(),
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());
@@ -301,8 +295,6 @@ void UIDataTypeController::Stop() {
   DCHECK(start_callback_.is_null());
 
   StopModels();
-
-  sync_service_->DeactivateDataType(type());
 
   if (local_service_.get()) {
     local_service_->StopSyncing(type());
