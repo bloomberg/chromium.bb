@@ -152,74 +152,35 @@
     # Global constructors for global objects in modules (ServiceWorker)
     # but interfaces in core.
     'target_name': 'modules_core_global_constructors_idls',
-    'type': 'none',
     'dependencies': [
-        'modules_global_objects',
+      'modules_global_objects',
     ],
-    'actions': [{
-      'action_name': 'generate_modules_core_global_constructors_idls',
-      'inputs': [
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only includes main IDL files (exclude dependencies and testing,
-        # which should not appear on global objects).
-        '<(core_idl_files_list)',
-        '<@(core_idl_files)',
+    'variables': {
+      'idl_files': '<(core_idl_files)',
+      'global_objects_file':
         '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
+      'global_names_idl_files': [
+        'ServiceWorkerGlobalScope',
+        '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
       ],
       'outputs': [
         '<@(modules_core_global_constructors_generated_idl_files)',
         '<@(modules_core_global_constructors_generated_header_files)',
       ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '--idl-files-list',
-        '<(core_idl_files_list)',
-        '--global-objects-file',
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        'ServiceWorkerGlobalScope',
-        '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
-       ],
-       'message':
-         'Generating IDL files for constructors for interfaces in core, on global objects from modules',
-      }]
+    },
+    'includes': ['../../bindings/scripts/global_constructors.gypi'],
   },
 ################################################################################
   {
     'target_name': 'modules_global_constructors_idls',
-    'type': 'none',
     'dependencies': [
       'modules_global_objects',
     ],
-    'actions': [{
-      'action_name': 'generate_modules_global_constructors_idls',
-      'inputs': [
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only includes main IDL files (exclude dependencies and testing,
-        # which should not appear on global objects).
-        '<(modules_idl_files_list)',
-        '<@(modules_idl_files)',
+    'variables': {
+      'idl_files': '<(modules_idl_files)',
+      'global_objects_file':
         '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-      ],
-      'outputs': [
-        '<@(modules_global_constructors_generated_idl_files)',
-        '<@(modules_global_constructors_generated_header_files)',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '--idl-files-list',
-        '<(modules_idl_files_list)',
-        '--global-objects-file',
-        '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
+      'global_names_idl_files': [
         'Window',
         '<(blink_modules_output_dir)/WindowModulesConstructors.idl',
         'SharedWorkerGlobalScope',
@@ -228,10 +189,13 @@
         '<(blink_modules_output_dir)/DedicatedWorkerGlobalScopeModulesConstructors.idl',
         'ServiceWorkerGlobalScope',
         '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeModulesConstructors.idl',
-       ],
-       'message':
-         'Generating IDL files for constructors on global objects from modules',
-      }]
+      ],
+      'outputs': [
+        '<@(modules_global_constructors_generated_idl_files)',
+        '<@(modules_global_constructors_generated_header_files)',
+      ],
+    },
+    'includes': ['../../bindings/scripts/global_constructors.gypi'],
   },
 ################################################################################
   {

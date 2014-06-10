@@ -19,7 +19,7 @@
 # Required variables:
 #  idl_files - List of .idl files that will be searched in.
 #    This should *only* contain main IDL files, excluding dependencies and
-#    testing, which should not define global objects).
+#    testing, which should not define global objects.
 #  output_file - Pickle file of output.
 #
 # Optional variables:
@@ -37,7 +37,7 @@
     'message': 'Computing global objects for <(_target_name)',
     'variables': {
       'input_files%': [],
-      'idl_files_list': '<|(idl_files_list.tmp <@(idl_files))',
+      'idl_files_list': '<|(<(_target_name)_idl_files_list.tmp <@(idl_files))',
     },
     'includes': ['scripts.gypi'],
     'inputs': [

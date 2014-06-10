@@ -29,45 +29,27 @@
 ################################################################################
   {
     'target_name': 'core_global_constructors_idls',
-    'type': 'none',
     'dependencies': [
-        'core_global_objects',
+      'core_global_objects',
     ],
-    'actions': [{
-      'action_name': 'generate_core_global_constructors_idls',
-      'inputs': [
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        # Only includes main IDL files (exclude dependencies and testing,
-        # which should not appear on global objects).
-        '<(core_idl_files_list)',
-        '<@(core_idl_files)',
+    'variables': {
+      'idl_files': '<(core_idl_files)',
+      'global_objects_file':
         '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
-      ],
-      'outputs': [
-        '<@(core_global_constructors_generated_idl_files)',
-        '<@(core_global_constructors_generated_header_files)',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/generate_global_constructors.py',
-        '--idl-files-list',
-        '<(core_idl_files_list)',
-        '--global-objects-file',
-        '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
+      'global_names_idl_files': [
         'Window',
         '<(blink_core_output_dir)/WindowCoreConstructors.idl',
         'SharedWorkerGlobalScope',
         '<(blink_core_output_dir)/SharedWorkerGlobalScopeCoreConstructors.idl',
         'DedicatedWorkerGlobalScope',
         '<(blink_core_output_dir)/DedicatedWorkerGlobalScopeCoreConstructors.idl',
-       ],
-       'message':
-         'Generating IDL files for constructors on global objects from core',
-      }]
+      ],
+      'outputs': [
+        '<@(core_global_constructors_generated_idl_files)',
+        '<@(core_global_constructors_generated_header_files)',
+      ],
+    },
+    'includes': ['../../bindings/scripts/global_constructors.gypi'],
   },
 ################################################################################
   {
