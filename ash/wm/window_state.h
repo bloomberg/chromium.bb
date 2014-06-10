@@ -78,7 +78,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
-  explicit WindowState(aura::Window* window);
+  // Call GetWindowState() to instantiate this class.
   virtual ~WindowState();
 
   aura::Window* window() { return window_; }
@@ -306,7 +306,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   friend class DefaultState;
   friend class ash::LockWindowState;
   friend class ash::MaximizeModeWindowState;
+  friend ASH_EXPORT WindowState* GetWindowState(aura::Window*);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
+
+  explicit WindowState(aura::Window* window);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
 

@@ -81,24 +81,6 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
 
 }  // namespace
 
-WindowState::WindowState(aura::Window* window)
-    : window_(window),
-      window_position_managed_(false),
-      bounds_changed_by_user_(false),
-      panel_attached_(true),
-      ignored_by_shelf_(false),
-      can_consume_system_keys_(false),
-      top_row_keys_are_function_keys_(false),
-      unminimize_to_restore_bounds_(false),
-      in_immersive_fullscreen_(false),
-      hide_shelf_when_fullscreen_(true),
-      minimum_visibility_(false),
-      can_be_dragged_(true),
-      ignore_property_change_(false),
-      current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
-  window_->AddObserver(this);
-}
-
 WindowState::~WindowState() {
   // WindowState is registered as an owned property of |window_|, and window
   // unregisters all of its observers in its d'tor before destroying its
@@ -316,16 +298,34 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+WindowState::WindowState(aura::Window* window)
+    : window_(window),
+      window_position_managed_(false),
+      bounds_changed_by_user_(false),
+      panel_attached_(true),
+      ignored_by_shelf_(false),
+      can_consume_system_keys_(false),
+      top_row_keys_are_function_keys_(false),
+      unminimize_to_restore_bounds_(false),
+      in_immersive_fullscreen_(false),
+      hide_shelf_when_fullscreen_(true),
+      minimum_visibility_(false),
+      can_be_dragged_(true),
+      ignore_property_change_(false),
+      current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
+  window_->AddObserver(this);
+}
+
+ui::WindowShowState WindowState::GetShowState() const {
+  return window_->GetProperty(aura::client::kShowStateKey);
+}
+
 void WindowState::SetBoundsInScreen(
     const gfx::Rect& bounds_in_screen) {
   gfx::Rect bounds_in_parent =
       ScreenUtil::ConvertRectFromScreen(window_->parent(),
                                        bounds_in_screen);
   window_->SetBounds(bounds_in_parent);
-}
-
-ui::WindowShowState WindowState::GetShowState() const {
-  return window_->GetProperty(aura::client::kShowStateKey);
 }
 
 void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
