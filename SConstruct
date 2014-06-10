@@ -1822,6 +1822,10 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
       # The bug appears to be harmless, but trips an ASan report.  So
       # tell ASan to suppress memcmp checks.
       asan_options.append('strict_memcmp=0')
+    # TODO(mcgrathr): Remove this when we clean up all the crufty old
+    # code to be leak-free.
+    # https://code.google.com/p/nativeclient/issues/detail?id=3874
+    asan_options.append('detect_leaks=0')
     # Note that the ASan runtime doesn't use : specifically as a separator.
     # It actually just looks for "foo=" anywhere in the string with strstr,
     # so any separator will do.  The most obvious choices, ' ', ',', and ';'
