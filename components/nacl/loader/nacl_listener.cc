@@ -483,8 +483,7 @@ IPC::ChannelHandle NaClListener::CreateTrustedListener(
   IPC::ChannelHandle trusted_renderer_handle =
       IPC::Channel::GenerateVerifiedChannelID("nacl");
   trusted_listener_ = new NaClTrustedListener(
-      trusted_renderer_handle, io_thread_.message_loop_proxy(),
-      &shutdown_event_);
+      trusted_renderer_handle, io_thread_.message_loop_proxy().get());
 #if defined(OS_POSIX)
   trusted_renderer_handle.socket = base::FileDescriptor(
       trusted_listener_->TakeClientFileDescriptor(), true);

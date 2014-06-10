@@ -138,49 +138,12 @@ bool IsValidChannelHandle(const IPC::ChannelHandle& channel_handle) {
   return true;
 }
 
-// Callback invoked when an IPC channel connection is established.
-// As we will establish multiple IPC channels, this takes the number
-// of expected invocations and a callback. When all channels are established,
-// the given callback will be invoked on the main thread. Its argument will be
-// PP_OK if all the connections are successfully established. Otherwise,
-// the first error code will be passed, and remaining errors will be ignored.
-// Note that PP_CompletionCallback is designed to be called exactly once.
-class ChannelConnectedCallback {
- public:
-  ChannelConnectedCallback(int num_expect_calls,
-                           PP_CompletionCallback callback)
-      : num_remaining_calls_(num_expect_calls),
-        callback_(callback),
-        result_(PP_OK) {
-  }
-
-  ~ChannelConnectedCallback() {
-  }
-
-  void Run(int32_t result) {
-    if (result_ == PP_OK && result != PP_OK) {
-      // This is the first error, so remember it.
-      result_ = result;
-    }
-
-    --num_remaining_calls_;
-    if (num_remaining_calls_ > 0) {
-      // There still are some pending or on-going tasks. Wait for the results.
-      return;
-    }
-
-    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_.func, callback_.user_data, result_));
-  }
-
- private:
-  int num_remaining_calls_;
-  PP_CompletionCallback callback_;
-  int32_t result_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelConnectedCallback);
-};
+void PostPPCompletionCallback(PP_CompletionCallback callback,
+                              int32_t status) {
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(callback.func, callback.user_data, status));
+}
 
 // Thin adapter from PPP_ManifestService to ManifestServiceChannel::Delegate.
 // Note that user_data is managed by the caller of LaunchSelLdr. Please see
@@ -361,6 +324,7 @@ void LaunchSelLdr(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
     return;
   }
+
   if (!error_message_string.empty()) {
     if (PP_ToBool(main_service_runtime)) {
       NexeLoadManager* load_manager = GetNexeLoadManager(instance);
@@ -387,32 +351,25 @@ void LaunchSelLdr(PP_Instance instance,
 
   *(static_cast<NaClHandle*>(imc_handle)) = ToNativeHandle(result_socket);
 
-  // Here after, we starts to establish connections for TrustedPluginChannel
-  // and ManifestServiceChannel in parallel. The invocation of the callback
-  // is delegated to their connection completion callback.
-  base::Callback<void(int32_t)> connected_callback = base::Bind(
-      &ChannelConnectedCallback::Run,
-      base::Owned(new ChannelConnectedCallback(
-          2, // For TrustedPluginChannel and ManifestServiceChannel.
-          callback)));
-
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
-
-  // Stash the trusted handle as well.
-  if (load_manager &&
-      IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
-    scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
-        new TrustedPluginChannel(
-            launch_result.trusted_ipc_channel_handle,
-            connected_callback,
-            content::RenderThread::Get()->GetShutdownEvent()));
-    load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
-  } else {
-    connected_callback.Run(PP_ERROR_FAILED);
+  if (!load_manager) {
+    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
+    return;
   }
 
-  // Stash the manifest service handle as well.
+  // Create the trusted plugin channel.
+  if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
+    scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
+        new TrustedPluginChannel(
+            launch_result.trusted_ipc_channel_handle));
+    load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
+  } else {
+    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
+    return;
+  }
+
+  // Create the manifest service handle as well.
   // For security hardening, disable the IPCs for open_resource() when they
   // aren't needed.  PNaCl doesn't expose open_resource(), and the new
   // open_resource() IPCs are currently only used for Non-SFI NaCl so far,
@@ -426,7 +383,7 @@ void LaunchSelLdr(PP_Instance instance,
     scoped_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
-            connected_callback,
+            base::Bind(&PostPPCompletionCallback, callback),
             manifest_service_proxy.Pass(),
             content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_manifest_service_channel(
@@ -435,7 +392,7 @@ void LaunchSelLdr(PP_Instance instance,
     // Currently, manifest service works only on linux/non-SFI mode.
     // On other platforms, the socket will not be created, and thus this
     // condition needs to be handled as success.
-    connected_callback.Run(PP_OK);
+    PostPPCompletionCallback(callback, PP_OK);
   }
 }
 

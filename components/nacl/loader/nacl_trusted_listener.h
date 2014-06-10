@@ -6,18 +6,19 @@
 #define COMPONENTS_NACL_LOADER_NACL_TRUSTED_LISTENER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_sync_channel.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
                             public IPC::Listener {
  public:
   NaClTrustedListener(const IPC::ChannelHandle& handle,
-                      base::MessageLoopProxy* message_loop_proxy,
-                      base::WaitableEvent* shutdown_event);
+                      base::SingleThreadTaskRunner* ipc_task_runner);
 
 #if defined(OS_POSIX)
   int TakeClientFileDescriptor();
@@ -25,7 +26,6 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
 
   // Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
   bool Send(IPC::Message* msg);
@@ -33,7 +33,7 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
  private:
   friend class base::RefCounted<NaClTrustedListener>;
   virtual ~NaClTrustedListener();
-  scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_ptr<IPC::ChannelProxy> channel_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClTrustedListener);
 };

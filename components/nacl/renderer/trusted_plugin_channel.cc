@@ -6,47 +6,29 @@
 
 #include "base/callback_helpers.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace nacl {
 
 TrustedPluginChannel::TrustedPluginChannel(
-    const IPC::ChannelHandle& handle,
-    const base::Callback<void(int32_t)>& connected_callback,
-    base::WaitableEvent* waitable_event)
-    : connected_callback_(connected_callback),
-      channel_(IPC::SyncChannel::Create(
-          handle,
-          IPC::Channel::MODE_CLIENT,
-          this,
-          content::RenderThread::Get()->GetIOMessageLoopProxy(),
-          true,
-          waitable_event)) {
+    const IPC::ChannelHandle& handle) {
+  channel_proxy_ = IPC::ChannelProxy::Create(
+      handle,
+      IPC::Channel::MODE_CLIENT,
+      this,
+      content::RenderThread::Get()->GetIOMessageLoopProxy()).Pass();
 }
 
 TrustedPluginChannel::~TrustedPluginChannel() {
-  if (!connected_callback_.is_null())
-    base::ResetAndReturn(&connected_callback_).Run(PP_ERROR_FAILED);
 }
 
 bool TrustedPluginChannel::Send(IPC::Message* message) {
-  return channel_->Send(message);
+  return channel_proxy_->Send(message);
 }
 
 bool TrustedPluginChannel::OnMessageReceived(const IPC::Message& message) {
   return false;
-}
-
-void TrustedPluginChannel::OnChannelConnected(int32 peer_pid) {
-  if (!connected_callback_.is_null())
-    base::ResetAndReturn(&connected_callback_).Run(PP_OK);
-}
-
-void TrustedPluginChannel::OnChannelError() {
-  if (!connected_callback_.is_null())
-    base::ResetAndReturn(&connected_callback_).Run(PP_ERROR_FAILED);
 }
 
 }  // namespace nacl

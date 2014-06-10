@@ -4,16 +4,16 @@
 
 #include "components/nacl/loader/nacl_trusted_listener.h"
 
+#include "base/single_thread_task_runner.h"
+
 NaClTrustedListener::NaClTrustedListener(
     const IPC::ChannelHandle& handle,
-    base::MessageLoopProxy* message_loop_proxy,
-    base::WaitableEvent* shutdown_event) {
-  channel_ = IPC::SyncChannel::Create(handle,
-                                      IPC::Channel::MODE_SERVER,
-                                      this,
-                                      message_loop_proxy,
-                                      true,
-                                      shutdown_event);
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  channel_proxy_ = IPC::ChannelProxy::Create(
+      handle,
+      IPC::Channel::MODE_SERVER,
+      this,
+      ipc_task_runner).Pass();
 }
 
 NaClTrustedListener::~NaClTrustedListener() {
@@ -21,7 +21,7 @@ NaClTrustedListener::~NaClTrustedListener() {
 
 #if defined(OS_POSIX)
 int NaClTrustedListener::TakeClientFileDescriptor() {
-  return channel_->TakeClientFileDescriptor();
+  return channel_proxy_->TakeClientFileDescriptor();
 }
 #endif
 
@@ -29,13 +29,10 @@ bool NaClTrustedListener::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void NaClTrustedListener::OnChannelConnected(int32 peer_pid) {
-}
-
 void NaClTrustedListener::OnChannelError() {
-  channel_->Close();
+  channel_proxy_->Close();
 }
 
 bool NaClTrustedListener::Send(IPC::Message* msg) {
-  return channel_->Send(msg);
+  return channel_proxy_->Send(msg);
 }

@@ -14,31 +14,25 @@ class WaitableEvent;
 }  // namespace base
 
 namespace IPC {
+class ChannelProxy;
 struct ChannelHandle;
 class Message;
-class SyncChannel;
 }  // namespace IPC
 
 namespace nacl {
 
 class TrustedPluginChannel : public IPC::Listener {
  public:
-  TrustedPluginChannel(
-      const IPC::ChannelHandle& handle,
-      const base::Callback<void(int32_t)>& connected_callback,
-      base::WaitableEvent* waitable_event);
+  explicit TrustedPluginChannel(const IPC::ChannelHandle& handle);
   virtual ~TrustedPluginChannel();
 
   bool Send(IPC::Message* message);
 
   // Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
 
  private:
-  base::Callback<void(int32_t)> connected_callback_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_ptr<IPC::ChannelProxy> channel_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedPluginChannel);
 };
