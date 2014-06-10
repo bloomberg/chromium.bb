@@ -265,10 +265,10 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
     RenderGeometryMap geometryMap(UseTransforms);
     if (this != rootLayer)
         geometryMap.pushMappingsToAncestor(parent(), 0);
-    updateLayerPositions(&geometryMap, rootLayer->renderer()->containerForRepaint(), flags);
+    updateLayerPositionRecursive(&geometryMap, rootLayer->renderer()->containerForRepaint(), flags);
 }
 
-void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, const RenderLayerModelObject* paintInvalidationContainer, UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositionRecursive(RenderGeometryMap* geometryMap, const RenderLayerModelObject* paintInvalidationContainer, UpdateLayerPositionsFlags flags)
 {
     // For performance reasons we only check if the RenderObject has moved if we
     // have a geometryMap. If not, blank out the paint invalidation container so we
@@ -333,7 +333,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, const Ren
         flags |= UpdatePagination;
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositions(geometryMap, newPaintInvalidationContainer, flags);
+        child->updateLayerPositionRecursive(geometryMap, newPaintInvalidationContainer, flags);
 
     if ((flags & NeedsFullRepaintInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor())
         compositedLayerMapping()->setContentsNeedDisplay();
@@ -1492,7 +1492,7 @@ void RenderLayer::removeOnlyThisLayer()
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;
 
-        current->updateLayerPositions(0, 0); // FIXME: use geometry map.
+        current->updateLayerPositionRecursive(0, 0); // FIXME: use geometry map.
         current = next;
     }
 
@@ -2524,8 +2524,8 @@ void RenderLayer::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsCont
     }
 
     // It is possible for paintLayer() to be called after the child layer ceases to be paginated but before
-    // updateLayerPositions() is called and resets the isPaginated() flag, see <rdar://problem/10098679>.
-    // If this is the case, just bail out, since the upcoming call to updateLayerPositions() will repaint the layer.
+    // updateLayerPositionRecursive() is called and resets the isPaginated() flag, see <rdar://problem/10098679>.
+    // If this is the case, just bail out, since the upcoming call to updateLayerPositionRecursive() will repaint the layer.
     if (!columnLayers.size())
         return;
 

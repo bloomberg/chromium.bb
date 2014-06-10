@@ -142,7 +142,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 DisableCompositingQueryAsserts disabler;
                 // There is only one layer to update, it is not worth using |cachedOffset| since
                 // we are not sure the value will be used.
-                layer()->updateLayerPositions(0, 0);
+                layer()->updateLayerPositionRecursive(0, 0);
             }
         }
     } else if (layer() && layer()->parent()) {
