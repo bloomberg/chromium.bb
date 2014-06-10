@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
@@ -885,6 +886,19 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   EXPECT_TRUE(ContainsKey(purgeable_ids_out, 2));
   EXPECT_TRUE(ContainsKey(purgeable_ids_out, 3));
   EXPECT_TRUE(ContainsKey(purgeable_ids_out, 4));
+}
+
+TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {
+  base::ScopedTempDir database_dir;
+  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+  scoped_ptr<ServiceWorkerDatabase> database(
+      CreateDatabase(database_dir.path()));
+
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
+  ASSERT_TRUE(base::DirectoryExists(database_dir.path()));
+
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->DestroyDatabase());
+  ASSERT_FALSE(base::DirectoryExists(database_dir.path()));
 }
 
 }  // namespace content

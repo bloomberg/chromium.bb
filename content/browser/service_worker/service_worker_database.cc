@@ -720,6 +720,13 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
   return WriteBatch(&batch);
 }
 
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  Disable(FROM_HERE, STATUS_OK);
+  return LevelDBStatusToStatus(
+      leveldb::DestroyDB(path_.AsUTF8Unsafe(), leveldb::Options()));
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
     bool create_if_missing) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -1064,9 +1071,11 @@ bool ServiceWorkerDatabase::IsOpen() {
 void ServiceWorkerDatabase::Disable(
     const tracked_objects::Location& from_here,
     Status status) {
-  DLOG(ERROR) << "Failed at: " << from_here.ToString()
-              << " with error: " << StatusToString(status);
-  DLOG(ERROR) << "ServiceWorkerDatabase is disabled.";
+  if (status != STATUS_OK) {
+    DLOG(ERROR) << "Failed at: " << from_here.ToString()
+                << " with error: " << StatusToString(status);
+    DLOG(ERROR) << "ServiceWorkerDatabase is disabled.";
+  }
   state_ = DISABLED;
   db_.reset();
 }

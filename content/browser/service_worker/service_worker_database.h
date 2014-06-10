@@ -187,6 +187,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const GURL& origin,
       std::vector<int64>* newly_purgeable_resources);
 
+  // Completely deletes the contents of the database.
+  // Be careful using this function.
+  Status DestroyDatabase();
+
  private:
   // Opens the database at the |path_|. This is lazily called when the first
   // database API is called. Returns OK if the database is successfully opened.
@@ -310,6 +314,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DatabaseVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };
