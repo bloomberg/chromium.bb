@@ -438,9 +438,10 @@ void ResourceEntry::RegisterJSONConverter(
   // ImageMediaMetadata fields are not supported by WAPI.
 }
 
-std::string ResourceEntry::GetHostedDocumentExtension() const {
+// static
+std::string ResourceEntry::GetHostedDocumentExtension(DriveEntryKind kind) {
   for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
-    if (kEntryKindMap[i].kind == kind_) {
+    if (kEntryKindMap[i].kind == kind) {
       if (kEntryKindMap[i].extension)
         return std::string(kEntryKindMap[i].extension);
       else

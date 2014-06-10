@@ -14,12 +14,9 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 namespace test_util {
@@ -283,9 +280,8 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   std::string parent_resource_id;
-  bool converted = ConvertToResourceEntry(
-      *util::ConvertFileResourceToResourceEntry(*gdata_entry),
-      entry.get(), &parent_resource_id);
+  bool converted = ConvertFileResourceToResourceEntry(
+      *gdata_entry, entry.get(), &parent_resource_id);
   DCHECK(converted);
   entry->set_parent_local_id(parent_resource_id);
 
@@ -376,9 +372,8 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
   for (size_t i = 0; i < entries.size(); ++i) {
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
     std::string parent_resource_id;
-    bool converted = ConvertToResourceEntry(
-        *util::ConvertFileResourceToResourceEntry(*entries[i]), entry.get(),
-        &parent_resource_id);
+    bool converted = ConvertFileResourceToResourceEntry(
+        *entries[i], entry.get(), &parent_resource_id);
     DCHECK(converted);
     entry->set_parent_local_id(parent_resource_id);
 

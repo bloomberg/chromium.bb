@@ -10,14 +10,15 @@
 #include "base/files/file.h"
 
 namespace google_apis {
-class ResourceEntry;
+class ChangeResource;
+class FileResource;
 }
 
 namespace drive {
 
 class ResourceEntry;
 
-// Converts a google_apis::ResourceEntry into a drive::ResourceEntry.
+// Converts a google_apis::ChangeResource into a drive::ResourceEntry.
 // If the conversion succeeded, return true and sets the result to |out_entry|.
 // |out_parent_resource_id| will be set to the resource ID of the parent entry.
 // If failed, it returns false and keeps output arguments untouched.
@@ -31,9 +32,17 @@ class ResourceEntry;
 //
 // 2) Entries with multiple parents are allowed on drive.google.com. For these
 // entries, the first parent is chosen.
-bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
-                            ResourceEntry* out_entry,
-                            std::string* out_parent_resource_id);
+bool ConvertChangeResourceToResourceEntry(
+    const google_apis::ChangeResource& input,
+    ResourceEntry* out_entry,
+    std::string* out_parent_resource_id);
+
+// Converts a google_apis::FileResource into a drive::ResourceEntry.
+// Also see the comment for ConvertChangeResourceToResourceEntry above.
+bool ConvertFileResourceToResourceEntry(
+    const google_apis::FileResource& input,
+    ResourceEntry* out_entry,
+    std::string* out_parent_resource_id);
 
 // Converts the resource entry to the platform file info.
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,

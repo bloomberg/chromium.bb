@@ -19,7 +19,6 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 using content::BrowserThread;
 
@@ -169,9 +168,8 @@ FileError UpdateLocalStateForServerSideOperation(
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  if (!ConvertToResourceEntry(
-          *util::ConvertFileResourceToResourceEntry(*file_resource),
-          &entry, &parent_resource_id) ||
+  if (!ConvertFileResourceToResourceEntry(*file_resource, &entry,
+                                          &parent_resource_id) ||
       parent_resource_id.empty())
     return FILE_ERROR_NOT_A_FILE;
 

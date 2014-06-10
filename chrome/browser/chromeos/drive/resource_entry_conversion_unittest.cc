@@ -4,164 +4,117 @@
 
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
-#include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
+#include "chrome/browser/drive/drive_api_util.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 
-TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile("gdata/file_entry.json");
-  ASSERT_TRUE(value.get());
+namespace {
 
-  scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(gdata_resource_entry.get());
+base::Time GetTestTime() {
+  // 2011-12-14-T00:40:47.330Z
+  base::Time::Exploded exploded;
+  exploded.year = 2011;
+  exploded.month = 12;
+  exploded.day_of_month = 14;
+  exploded.day_of_week = 2;  // Tuesday
+  exploded.hour = 0;
+  exploded.minute = 40;
+  exploded.second = 47;
+  exploded.millisecond = 330;
+  return base::Time::FromUTCExploded(exploded);
+}
+
+}  // namespace
+
+TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
+  google_apis::FileResource file_resource;
+  file_resource.set_title("File 1.mp3");
+  file_resource.set_file_id("resource_id");
+  file_resource.set_created_date(GetTestTime());
+  file_resource.set_modified_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_mime_type("audio/mpeg");
+  file_resource.set_alternate_link(GURL("https://file_link_alternate"));
+  file_resource.set_file_size(892721);
+  file_resource.set_md5_checksum("3b4382ebefec6e743578c76bbd0575ce");
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
-                                     &parent_resource_id));
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
 
-  EXPECT_EQ("File 1.mp3", entry.title());
-  EXPECT_EQ("File 1.mp3", entry.base_name());
-  EXPECT_EQ("file:2_file_resource_id", entry.resource_id());
+  EXPECT_EQ(file_resource.title(), entry.title());
+  EXPECT_EQ(file_resource.title(), entry.base_name());
+  EXPECT_EQ(file_resource.file_id(), entry.resource_id());
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
-  base::Time expected_creation_time;
-  base::Time expected_modified_time;
-
-  {
-    // 2011-12-14T00:40:47.330Z
-    base::Time::Exploded exploded;
-    exploded.year = 2011;
-    exploded.month = 12;
-    exploded.day_of_month = 13;
-    exploded.day_of_week = 2;  // Tuesday
-    exploded.hour = 0;
-    exploded.minute = 40;
-    exploded.second = 47;
-    exploded.millisecond = 330;
-    expected_creation_time = base::Time::FromUTCExploded(exploded);
-  }
-
-  {
-    // 2011-12-13T00:40:47.330Z
-    base::Time::Exploded exploded;
-    exploded.year = 2011;
-    exploded.month = 12;
-    exploded.day_of_month = 14;
-    exploded.day_of_week = 3;  // Wednesday
-    exploded.hour = 0;
-    exploded.minute = 40;
-    exploded.second = 47;
-    exploded.millisecond = 330;
-    expected_modified_time = base::Time::FromUTCExploded(exploded);
-  }
-
-  EXPECT_EQ(expected_modified_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
   // Last accessed value equal to 0 means that the file has never been viewed.
   EXPECT_EQ(0, entry.file_info().last_accessed());
-  EXPECT_EQ(expected_creation_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
 
-  EXPECT_EQ("audio/mpeg",
+  EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_FALSE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("https://file_link_alternate/",
+  EXPECT_EQ(file_resource.alternate_link().spec(),
             entry.file_specific_info().alternate_url());
 
   // Regular file specific fields.
-  EXPECT_EQ(892721, entry.file_info().size());
-  EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce",
-            entry.file_specific_info().md5());
+  EXPECT_EQ(file_resource.file_size(), entry.file_info().size());
+  EXPECT_EQ(file_resource.md5_checksum(), entry.file_specific_info().md5());
   EXPECT_FALSE(entry.file_info().is_directory());
 }
 
 TEST(ResourceEntryConversionTest,
-     ConvertToResourceEntry_HostedDocument) {
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile(
-          "gdata/hosted_document_entry.json");
-  ASSERT_TRUE(value.get());
-
-  scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(gdata_resource_entry.get());
+     ConvertFileResourceToResourceEntry_HostedDocument) {
+  google_apis::FileResource file_resource;
+  file_resource.set_title("Document 1");
+  file_resource.set_file_id("resource_id");
+  file_resource.set_created_date(GetTestTime());
+  file_resource.set_modified_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_last_viewed_by_me_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(20));
+  file_resource.set_mime_type(util::kGoogleDocumentMimeType);
+  file_resource.set_alternate_link(GURL("https://file_link_alternate"));
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
-                                     &parent_resource_id));
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
 
-  EXPECT_EQ("Document 1", entry.title());
-  EXPECT_EQ("Document 1.gdoc", entry.base_name());  // The suffix added.
+  EXPECT_EQ(file_resource.title(), entry.title());
+  EXPECT_EQ(file_resource.title() + ".gdoc",
+            entry.base_name());  // The suffix added.
   EXPECT_EQ(".gdoc", entry.file_specific_info().document_extension());
-  EXPECT_EQ("document:5_document_resource_id", entry.resource_id());
+  EXPECT_EQ(file_resource.file_id(), entry.resource_id());
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
-  // 2011-12-12T23:28:52.783Z
-  base::Time::Exploded exploded;
-  exploded.year = 2011;
-  exploded.month = 12;
-  exploded.day_of_month = 12;
-  exploded.day_of_week = 1;  // Monday
-  exploded.hour = 23;
-  exploded.minute = 28;
-  exploded.second = 52;
-  exploded.millisecond = 783;
-  const base::Time expected_last_modified_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2011-12-12T23:28:46.686Z
-  exploded.year = 2011;
-  exploded.month = 12;
-  exploded.day_of_month = 12;
-  exploded.day_of_week = 1;  // Monday
-  exploded.hour = 23;
-  exploded.minute = 28;
-  exploded.second = 46;
-  exploded.millisecond = 686;
-  const base::Time expected_creation_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2011-12-13T02:12:18.527Z
-  exploded.year = 2011;
-  exploded.month = 12;
-  exploded.day_of_month = 13;
-  exploded.day_of_week = 2;  // Tuesday
-  exploded.hour = 2;
-  exploded.minute = 12;
-  exploded.second = 18;
-  exploded.millisecond = 527;
-  const base::Time expected_last_accessed_time =
-      base::Time::FromUTCExploded(exploded);
-
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
-  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
-  EXPECT_EQ(expected_creation_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
 
-  EXPECT_EQ("text/html",
+  EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("https://3_document_alternate_link/",
+  EXPECT_EQ(file_resource.alternate_link().spec(),
             entry.file_specific_info().alternate_url());
 
   // The size should be 0 for a hosted document.
@@ -170,172 +123,177 @@ TEST(ResourceEntryConversionTest,
 }
 
 TEST(ResourceEntryConversionTest,
-     ConvertToResourceEntry_Directory) {
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile(
-          "gdata/directory_entry.json");
-  ASSERT_TRUE(value.get());
+     ConvertFileResourceToResourceEntry_Directory) {
+  google_apis::FileResource file_resource;
+  file_resource.set_title("Folder");
+  file_resource.set_file_id("resource_id");
+  file_resource.set_created_date(GetTestTime());
+  file_resource.set_modified_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_last_viewed_by_me_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(20));
+  file_resource.set_mime_type(util::kDriveFolderMimeType);
 
-  scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(gdata_resource_entry.get());
+  google_apis::ParentReference parent;
+  parent.set_file_id("parent_resource_id");
+  file_resource.mutable_parents()->push_back(parent);
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
-                                     &parent_resource_id));
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
 
-  EXPECT_EQ("Sub Directory Folder", entry.title());
-  EXPECT_EQ("Sub Directory Folder", entry.base_name());
-  EXPECT_EQ("folder:sub_dir_folder_resource_id", entry.resource_id());
+  EXPECT_EQ(file_resource.title(), entry.title());
+  EXPECT_EQ(file_resource.title(), entry.base_name());
+  EXPECT_EQ(file_resource.file_id(), entry.resource_id());
   // The parent resource ID should be obtained as this is a sub directory
   // under a non-root directory.
-  EXPECT_EQ("folder:1_folder_resource_id", parent_resource_id);
+  EXPECT_EQ(parent.file_id(), parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
-  // 2011-04-01T18:34:08.234Z
-  base::Time::Exploded exploded;
-  exploded.year = 2011;
-  exploded.month = 04;
-  exploded.day_of_month = 01;
-  exploded.day_of_week = 5;  // Friday
-  exploded.hour = 18;
-  exploded.minute = 34;
-  exploded.second = 8;
-  exploded.millisecond = 234;
-  const base::Time expected_last_modified_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2010-11-07T05:03:54.719Z
-  exploded.year = 2010;
-  exploded.month = 11;
-  exploded.day_of_month = 7;
-  exploded.day_of_week = 0;  // Sunday
-  exploded.hour = 5;
-  exploded.minute = 3;
-  exploded.second = 54;
-  exploded.millisecond = 719;
-  const base::Time expected_creation_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2011-11-02T04:37:38.469Z
-  exploded.year = 2011;
-  exploded.month = 11;
-  exploded.day_of_month = 2;
-  exploded.day_of_week = 2;  // Tuesday
-  exploded.hour = 4;
-  exploded.minute = 37;
-  exploded.second = 38;
-  exploded.millisecond = 469;
-  const base::Time expected_last_accessed_time =
-      base::Time::FromUTCExploded(exploded);
-
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
-  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
-  EXPECT_EQ(expected_creation_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
 
   EXPECT_TRUE(entry.file_info().is_directory());
 }
 
 TEST(ResourceEntryConversionTest,
-     ConvertToResourceEntry_DeletedHostedDocument) {
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile(
-          "gdata/deleted_hosted_document_entry.json");
-  ASSERT_TRUE(value.get());
-
-  scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(gdata_resource_entry.get());
+     ConvertFileResourceToResourceEntry_DeletedHostedDocument) {
+  google_apis::FileResource file_resource;
+  file_resource.set_title("Document 1");
+  file_resource.set_file_id("resource_id");
+  file_resource.set_created_date(GetTestTime());
+  file_resource.set_modified_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_last_viewed_by_me_date(
+      GetTestTime() + base::TimeDelta::FromSeconds(20));
+  file_resource.set_mime_type(util::kGoogleDocumentMimeType);
+  file_resource.set_alternate_link(GURL("https://file_link_alternate"));
+  file_resource.mutable_labels()->set_trashed(true);
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
-                                     &parent_resource_id));
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
 
-  EXPECT_EQ("Deleted document", entry.title());
-  EXPECT_EQ("Deleted document.gdoc", entry.base_name());
-  EXPECT_EQ("document:deleted_in_root_id", entry.resource_id());
+  EXPECT_EQ(file_resource.title(), entry.title());
+  EXPECT_EQ(file_resource.title() + ".gdoc", entry.base_name());
+  EXPECT_EQ(file_resource.file_id(), entry.resource_id());
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_TRUE(entry.deleted());  // The document was deleted.
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
-  // 2012-04-10T22:50:55.797Z
-  base::Time::Exploded exploded;
-  exploded.year = 2012;
-  exploded.month = 04;
-  exploded.day_of_month = 10;
-  exploded.day_of_week = 2;  // Tuesday
-  exploded.hour = 22;
-  exploded.minute = 50;
-  exploded.second = 55;
-  exploded.millisecond = 797;
-  const base::Time expected_last_modified_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2012-04-10T22:50:53.237Z
-  exploded.year = 2012;
-  exploded.month = 04;
-  exploded.day_of_month = 10;
-  exploded.day_of_week = 2;  // Tuesday
-  exploded.hour = 22;
-  exploded.minute = 50;
-  exploded.second = 53;
-  exploded.millisecond = 237;
-  const base::Time expected_creation_time =
-      base::Time::FromUTCExploded(exploded);
-
-  // 2012-04-10T22:50:55.797Z
-  exploded.year = 2012;
-  exploded.month = 04;
-  exploded.day_of_month = 10;
-  exploded.day_of_week = 2;  // Tuesday
-  exploded.hour = 22;
-  exploded.minute = 50;
-  exploded.second = 55;
-  exploded.millisecond = 797;
-  const base::Time expected_last_accessed_time =
-      base::Time::FromUTCExploded(exploded);
-
-  EXPECT_EQ(expected_last_modified_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
-  EXPECT_EQ(expected_last_accessed_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
-  EXPECT_EQ(expected_creation_time.ToInternalValue(),
+  EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
 
-  EXPECT_EQ("text/html",
+  EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ("https://alternate/document%3Adeleted_in_root_id/edit",
+  EXPECT_EQ(file_resource.alternate_link().spec(),
             entry.file_specific_info().alternate_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0, entry.file_info().size());
 }
 
-TEST(ResourceEntryConversionTest,
-     ConvertToResourceEntry_SharedWithMeEntry) {
-  scoped_ptr<base::Value> value = google_apis::test_util::LoadJSONFile(
-      "gdata/shared_with_me_entry.json");
-  ASSERT_TRUE(value.get());
+TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
+  google_apis::ChangeResource change_resource;
+  change_resource.set_file(make_scoped_ptr(new google_apis::FileResource));
+  change_resource.set_file_id("resource_id");
+  change_resource.set_modification_date(GetTestTime());
 
-  scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(gdata_resource_entry.get());
+  google_apis::FileResource* file_resource = change_resource.mutable_file();
+  file_resource->set_title("File 1.mp3");
+  file_resource->set_file_id("resource_id");
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
-                                     &parent_resource_id));
+  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
+      change_resource, &entry, &parent_resource_id));
+
+  EXPECT_EQ(change_resource.file_id(), entry.resource_id());
+  EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
+            entry.modification_date());
+
+  EXPECT_EQ(file_resource->title(), entry.title());
+  EXPECT_EQ(file_resource->title(), entry.base_name());
+  EXPECT_EQ("", parent_resource_id);
+
+  EXPECT_FALSE(entry.deleted());
+}
+
+TEST(ResourceEntryConversionTest,
+     ConvertChangeResourceToResourceEntry_Trashed) {
+  google_apis::ChangeResource change_resource;
+  change_resource.set_file(make_scoped_ptr(new google_apis::FileResource));
+  change_resource.set_file_id("resource_id");
+  change_resource.set_modification_date(GetTestTime());
+
+  google_apis::FileResource* file_resource = change_resource.mutable_file();
+  file_resource->set_title("File 1.mp3");
+  file_resource->set_file_id("resource_id");
+  file_resource->mutable_labels()->set_trashed(true);
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
+      change_resource, &entry, &parent_resource_id));
+
+  EXPECT_EQ(change_resource.file_id(), entry.resource_id());
+  EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
+            entry.modification_date());
+
+  EXPECT_EQ(file_resource->title(), entry.title());
+  EXPECT_EQ(file_resource->title(), entry.base_name());
+  EXPECT_EQ("", parent_resource_id);
+
+  EXPECT_TRUE(entry.deleted());
+}
+
+TEST(ResourceEntryConversionTest,
+     ConvertChangeResourceToResourceEntry_Deleted) {
+  google_apis::ChangeResource change_resource;
+  change_resource.set_deleted(true);
+  change_resource.set_file_id("resource_id");
+  change_resource.set_modification_date(GetTestTime());
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
+      change_resource, &entry, &parent_resource_id));
+
+  EXPECT_EQ(change_resource.file_id(), entry.resource_id());
+  EXPECT_EQ("", parent_resource_id);
+
+  EXPECT_TRUE(entry.deleted());
+
+  EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
+            entry.modification_date());
+}
+
+TEST(ResourceEntryConversionTest,
+     ConvertFileResourceToResourceEntry_SharedWithMeEntry) {
+  google_apis::FileResource file_resource;
+  file_resource.set_shared(true);
+  file_resource.set_shared_with_me_date(GetTestTime());
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
   EXPECT_TRUE(entry.shared_with_me());
   EXPECT_TRUE(entry.shared());
 }
@@ -362,28 +320,25 @@ TEST(ResourceEntryConversionTest, ToPlatformFileInfo) {
             file_info.last_accessed);
 }
 
-TEST(ResourceEntryConversionTest, ConvertToResourceEntry_ImageMediaMetadata) {
-  google_apis::ResourceEntry entry_all_fields;
-  google_apis::ResourceEntry entry_zero_fields;
-  google_apis::ResourceEntry entry_no_fields;
+TEST(ResourceEntryConversionTest,
+     ConvertFileResourceToResourceEntry_ImageMediaMetadata) {
+  google_apis::FileResource entry_all_fields;
+  google_apis::FileResource entry_zero_fields;
+  google_apis::FileResource entry_no_fields;
 
-  entry_all_fields.set_image_width(640);
-  entry_all_fields.set_image_height(480);
-  entry_all_fields.set_image_rotation(90);
-  entry_all_fields.set_kind(google_apis::ENTRY_KIND_FILE);
+  entry_all_fields.mutable_image_media_metadata()->set_width(640);
+  entry_all_fields.mutable_image_media_metadata()->set_height(480);
+  entry_all_fields.mutable_image_media_metadata()->set_rotation(90);
 
-  entry_zero_fields.set_image_width(0);
-  entry_zero_fields.set_image_height(0);
-  entry_zero_fields.set_image_rotation(0);
-  entry_zero_fields.set_kind(google_apis::ENTRY_KIND_FILE);
-
-  entry_no_fields.set_kind(google_apis::ENTRY_KIND_FILE);
+  entry_zero_fields.mutable_image_media_metadata()->set_width(0);
+  entry_zero_fields.mutable_image_media_metadata()->set_height(0);
+  entry_zero_fields.mutable_image_media_metadata()->set_rotation(0);
 
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertToResourceEntry(entry_all_fields, &entry,
-                                       &parent_resource_id));
+    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+        entry_all_fields, &entry, &parent_resource_id));
     EXPECT_EQ(640, entry.file_specific_info().image_width());
     EXPECT_EQ(480, entry.file_specific_info().image_height());
     EXPECT_EQ(90, entry.file_specific_info().image_rotation());
@@ -391,8 +346,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_ImageMediaMetadata) {
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertToResourceEntry(entry_zero_fields, &entry,
-                                       &parent_resource_id));
+    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+        entry_zero_fields, &entry, &parent_resource_id));
     EXPECT_TRUE(entry.file_specific_info().has_image_width());
     EXPECT_TRUE(entry.file_specific_info().has_image_height());
     EXPECT_TRUE(entry.file_specific_info().has_image_rotation());
@@ -403,8 +358,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_ImageMediaMetadata) {
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertToResourceEntry(entry_no_fields, &entry,
-                                       &parent_resource_id));
+    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+        entry_no_fields, &entry, &parent_resource_id));
     EXPECT_FALSE(entry.file_specific_info().has_image_width());
     EXPECT_FALSE(entry.file_specific_info().has_image_height());
     EXPECT_FALSE(entry.file_specific_info().has_image_rotation());

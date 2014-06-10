@@ -19,7 +19,6 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -52,9 +51,8 @@ FileError ResolveSearchResultOnBlockingPool(
 
     if (error == FILE_ERROR_NOT_FOUND) {
       std::string original_parent_id;
-      if (!ConvertToResourceEntry(
-              *util::ConvertFileResourceToResourceEntry(*entries[i]),
-              &entry, &original_parent_id))
+      if (!ConvertFileResourceToResourceEntry(*entries[i], &entry,
+                                              &original_parent_id))
         continue;  // Skip non-file entries.
 
       // The result is absent in local resource metadata. This can happen if

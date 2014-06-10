@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 namespace drive {
 namespace internal {
@@ -81,8 +80,8 @@ ChangeList::ChangeList(const google_apis::ChangeList& change_list)
   parent_resource_ids_.resize(items.size());
   size_t entries_index = 0;
   for (size_t i = 0; i < items.size(); ++i) {
-    if (ConvertToResourceEntry(
-            *util::ConvertChangeResourceToResourceEntry(*items[i]),
+    if (ConvertChangeResourceToResourceEntry(
+            *items[i],
             &entries_[entries_index],
             &parent_resource_ids_[entries_index])) {
       ++entries_index;
@@ -100,8 +99,8 @@ ChangeList::ChangeList(const google_apis::FileList& file_list)
   parent_resource_ids_.resize(items.size());
   size_t entries_index = 0;
   for (size_t i = 0; i < items.size(); ++i) {
-    if (ConvertToResourceEntry(
-            *util::ConvertFileResourceToResourceEntry(*items[i]),
+    if (ConvertFileResourceToResourceEntry(
+            *items[i],
             &entries_[entries_index],
             &parent_resource_ids_[entries_index])) {
       ++entries_index;

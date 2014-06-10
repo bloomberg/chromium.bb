@@ -420,7 +420,7 @@ class ResourceEntry : public CommonMetadata {
 
   // Returns preferred file extension for hosted documents. If entry is not
   // a hosted document, this call returns an empty string.
-  std::string GetHostedDocumentExtension() const;
+  static std::string GetHostedDocumentExtension(DriveEntryKind kind);
 
   // True if resource entry is remotely hosted.
   bool is_hosted_document() const {
