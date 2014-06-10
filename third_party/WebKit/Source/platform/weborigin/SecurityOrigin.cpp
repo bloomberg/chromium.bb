@@ -34,6 +34,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOriginCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "url/url_canon_ip.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -375,6 +376,12 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
     return true;
 }
 
+bool SecurityOrigin::canAccessFeatureRequiringSecureOrigin() const
+{
+    ASSERT(m_protocol != "data");
+    return SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost();
+}
+
 SecurityOrigin::Policy SecurityOrigin::canShowNotifications() const
 {
     if (m_universalAccess)
@@ -407,6 +414,29 @@ void SecurityOrigin::enforceFilePathSeparation()
 bool SecurityOrigin::isLocal() const
 {
     return SchemeRegistry::shouldTreatURLSchemeAsLocal(m_protocol);
+}
+
+bool SecurityOrigin::isLocalhost() const
+{
+    if (m_host == "localhost")
+        return true;
+
+    if (m_host == "[::1]")
+        return true;
+
+    // Test if m_host matches 127.0.0.1/8
+    ASSERT(m_host.containsOnlyASCII());
+    CString hostAscii = m_host.ascii();
+    Vector<uint8, 4> ipNumber;
+    ipNumber.resize(4);
+
+    int numComponents;
+    url::Component hostComponent(0, hostAscii.length());
+    url::CanonHostInfo::Family family = url::IPv4AddressToNumber(
+        hostAscii.data(), hostComponent, &(ipNumber)[0], &numComponents);
+    if (family != url::CanonHostInfo::IPV4)
+        return false;
+    return ipNumber[0] == 127;
 }
 
 String SecurityOrigin::toString() const

@@ -113,6 +113,13 @@ public:
     // display content from the user's files system.
     bool canDisplay(const KURL&) const;
 
+    // A "secure origin" as defined by [1] are those that load resources either
+    // from the local machine (necessarily trusted) or over the network from a
+    // cryptographically-authenticated server.
+    //
+    // [1] http://www.chromium.org/Home/chromium-security/security-faq#TOC-Which-origins-are-secure-
+    bool canAccessFeatureRequiringSecureOrigin() const;
+
     // Returns true if this SecurityOrigin can load local resources, such
     // as images, iframes, and style sheets, and can link to local URLs.
     // For example, call this function before creating an iframe to a
@@ -131,7 +138,7 @@ public:
     //       with older versions of WebKit.
     void grantLoadLocalResources();
 
-    // Explicitly grant the ability to access very other SecurityOrigin.
+    // Explicitly grant the ability to access every other SecurityOrigin.
     //
     // WARNING: This is an extremely powerful ability. Use with caution!
     void grantUniversalAccess();
@@ -153,6 +160,9 @@ public:
     // The local SecurityOrigin can script any document, navigate to local
     // resources, and can set arbitrary headers on XMLHttpRequests.
     bool isLocal() const;
+
+    // Returns true if the host is one of 127.0.0.1/8, ::1/128, or "localhost".
+    bool isLocalhost() const;
 
     // The origin is a globally unique identifier assigned when the Document is
     // created. http://www.whatwg.org/specs/web-apps/current-work/#sandboxOrigin

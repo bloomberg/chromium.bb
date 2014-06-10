@@ -60,5 +60,80 @@ TEST(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
     }
 }
 
+TEST(SecurityOriginTest, CanAccessFeatureRequringSecureOrigin)
+{
+    struct TestCase {
+        bool accessGranted;
+        const char* url;
+    };
+
+    TestCase inputs[] = {
+        // Access is granted to webservers running on localhost.
+        { true, "http://localhost" },
+        { true, "http://LOCALHOST" },
+        { true, "http://localhost:100" },
+        { true, "http://127.0.0.1" },
+        { true, "http://127.0.0.2" },
+        { true, "http://127.1.0.2" },
+        { true, "http://0177.00.00.01" },
+        { true, "http://[::1]" },
+        { true, "http://[0:0::1]" },
+        { true, "http://[0:0:0:0:0:0:0:1]" },
+        { true, "http://[::1]:21" },
+        { true, "http://127.0.0.1:8080" },
+        { true, "ftp://127.0.0.1" },
+        { true, "ftp://127.0.0.1:443" },
+        { true, "ws://127.0.0.1" },
+
+        // Access is denied to non-localhost over HTTP
+        { false, "http://[1::]" },
+        { false, "http://[::2]" },
+        { false, "http://[1::1]" },
+        { false, "http://[1:2::3]" },
+        { false, "http://[::127.0.0.1]" },
+        { false, "http://a.127.0.0.1" },
+        { false, "http://127.0.0.1.b" },
+        { false, "http://localhost.a" },
+        { false, "http://a.localhost" },
+
+        // Access is granted to all secure transports.
+        { true, "https://foobar.com" },
+        { true, "wss://foobar.com" },
+
+        // Access is denied to insecure transports.
+        { false, "ftp://foobar.com" },
+        { false, "http://foobar.com" },
+        { false, "http://foobar.com:443" },
+        { false, "ws://foobar.com" },
+
+        // Access is granted to local files
+        { true, "file:///home/foobar/index.html" },
+
+        // blob: URLs must look to the inner URL's origin, and apply the same
+        // rules as above. Spot check some of them
+        { true, "blob:http://localhost:1000/578223a1-8c13-17b3-84d5-eca045ae384a" },
+        { true, "blob:https://foopy:99/578223a1-8c13-17b3-84d5-eca045ae384a" },
+        { false, "blob:http://baz:99/578223a1-8c13-17b3-84d5-eca045ae384a" },
+        { false, "blob:ftp://evil:99/578223a1-8c13-17b3-84d5-eca045ae384a" },
+
+        // filesystem: URLs work the same as blob: URLs, and look to the inner
+        // URL for security origin.
+        { true, "filesystem:http://localhost:1000/foo" },
+        { true, "filesystem:https://foopy:99/foo" },
+        { false, "filesystem:http://baz:99/foo" },
+        { false, "filesystem:ftp://evil:99/foo" },
+    };
+
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(inputs); ++i) {
+        SCOPED_TRACE(i);
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(inputs[i].url);
+        EXPECT_EQ(inputs[i].accessGranted, origin->canAccessFeatureRequiringSecureOrigin());
+    }
+
+    // Unique origins are not considered secure.
+    RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
+    EXPECT_FALSE(uniqueOrigin->canAccessFeatureRequiringSecureOrigin());
+}
+
 } // namespace
 

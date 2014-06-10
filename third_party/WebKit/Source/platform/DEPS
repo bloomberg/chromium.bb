@@ -5,6 +5,7 @@ include_rules = [
     "+skia/ext",
     "+third_party/khronos",
     "+third_party/skia",
+    "+url",
     "+webp",
     "+heap",
     "-bindings",

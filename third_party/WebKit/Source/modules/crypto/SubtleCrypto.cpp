@@ -32,6 +32,7 @@
 #include "modules/crypto/SubtleCrypto.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/crypto/Key.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
@@ -73,10 +74,24 @@ bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::
     return success;
 }
 
+static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
+{
+    const SecurityOrigin* origin = scriptState->executionContext()->securityOrigin();
+    if (!origin->canAccessFeatureRequiringSecureOrigin()) {
+        result->completeWithError(blink::WebCryptoErrorTypeNotSupported, "WebCrypto is only supported over secure origins. See http://crbug.com/373032");
+        return false;
+    }
+
+    return true;
+}
+
 static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, blink::WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
 
     bool requiresKey = operationType != blink::WebCryptoOperationDigest;
 
@@ -156,6 +171,9 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictiona
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
+
     blink::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
@@ -172,6 +190,9 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
 
     if (!ensureNotNull(keyData, "keyData", result.get()))
         return promise;
@@ -197,6 +218,9 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
+
     if (!ensureNotNull(key, "key", result.get()))
         return promise;
 
@@ -217,6 +241,9 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
 
     if (!ensureNotNull(key, "key", result.get()))
         return promise;
@@ -248,6 +275,9 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
 
     if (!ensureNotNull(wrappedKey, "wrappedKey", result.get()))
         return promise;
