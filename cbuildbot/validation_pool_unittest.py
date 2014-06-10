@@ -26,6 +26,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -38,7 +39,6 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
-from chromite.lib import timeout_util
 
 
 import mock
@@ -84,8 +84,8 @@ class Base(cros_test_lib.MockTestCase):
     self.build_root = 'fakebuildroot'
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
-    self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
-    self.PatchObject(timeout_util, 'WaitForTreeStatus',
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,

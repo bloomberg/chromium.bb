@@ -24,6 +24,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import tree_status
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1219,7 +1220,6 @@ class ValidationPool(object):
   GLOBAL_DRYRUN = False
   MAX_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
-  STATUS_URL = 'https://chromiumos-status.appspot.com/current?format=json'
   STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
   STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
   STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
@@ -1497,16 +1497,16 @@ class ValidationPool(object):
       time_left = end_time - time.time()
 
       # Wait until the tree becomes open (or throttled, if |throttled_ok|,
-      # and record the tree status in tree_status).
+      # and record the tree status).
       if check_tree_open:
         try:
-          tree_status = timeout_util.WaitForTreeStatus(
-              cls.STATUS_URL, cls.SLEEP_TIMEOUT, timeout=time_left,
+          status = tree_status.WaitForTreeStatus(
+              period=cls.SLEEP_TIMEOUT, timeout=time_left,
               throttled_ok=throttled_ok)
         except timeout_util.TimeoutError:
           raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
       else:
-        tree_status = constants.TREE_OPEN
+        status = constants.TREE_OPEN
 
       waiting_for = 'new CLs'
 
@@ -1515,7 +1515,7 @@ class ValidationPool(object):
       using_default_query = (changes_query is None)
       if not using_default_query:
         query = changes_query
-      elif tree_status == constants.TREE_THROTTLED:
+      elif status == constants.TREE_THROTTLED:
         query = constants.THROTTLED_CQ_READY_QUERY
         waiting_for = 'new CQ+2 CLs or the tree to open'
       else:
@@ -1973,9 +1973,9 @@ class ValidationPool(object):
     parallel.RunTasksInProcessPool(self.UpdateCLStatus, inputs)
 
     if (check_tree_open and not self.dryrun and not
-       timeout_util.IsTreeOpen(self.STATUS_URL, self.SLEEP_TIMEOUT,
-                               timeout=self.MAX_TIMEOUT,
-                               throttled_ok=throttled_ok)):
+       tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
+                              timeout=self.MAX_TIMEOUT,
+                              throttled_ok=throttled_ok)):
       raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.

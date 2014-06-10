@@ -18,6 +18,7 @@ from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -183,13 +184,13 @@ class BaseCQTest(generic_stages_unittest.StageTest):
     self.PatchObject(gerrit.GerritHelper, 'Query',
                      return_value=my_patches, autospec=True)
     if tree_throttled:
-      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+      self.PatchObject(tree_status, 'WaitForTreeStatus',
                        return_value=constants.TREE_THROTTLED, autospec=True)
     elif tree_open:
-      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+      self.PatchObject(tree_status, 'WaitForTreeStatus',
                        return_value=constants.TREE_OPEN, autospec=True)
     else:
-      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+      self.PatchObject(tree_status, 'WaitForTreeStatus',
                        side_effect=timeout_util.TimeoutError())
 
     exit_it = itertools.chain([False] * runs, itertools.repeat(True))

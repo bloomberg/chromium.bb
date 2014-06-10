@@ -17,6 +17,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
@@ -26,7 +27,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
-from chromite.lib import timeout_util
 
 
 PRE_CQ = validation_pool.PRE_CQ
@@ -953,8 +953,7 @@ class PreCQLauncherStage(SyncStage):
     verified by either the Pre-CQ or CQ.
     """
     # Submit non-manifest changes if we can.
-    if timeout_util.IsTreeOpen(
-        validation_pool.ValidationPool.STATUS_URL):
+    if tree_status.IsTreeOpen():
       pool.SubmitNonManifestChanges(check_tree_open=False)
 
     # Launch trybots for manifest changes.

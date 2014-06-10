@@ -15,13 +15,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import tree_status
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-from chromite.lib import timeout_util
 
 from chromite.scripts import cros_best_revision
 
@@ -119,7 +119,7 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     self.committer._lkgm = '4.0.0'
-    self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
