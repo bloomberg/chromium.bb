@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_util_proxy.h"
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
@@ -63,10 +63,10 @@ void ScopedFile::Reset() {
   }
 
   if (scope_out_policy_ == DELETE_ON_SCOPE_OUT) {
-    base::FileUtilProxy::DeleteFile(file_task_runner_.get(),
-                                    path_,
-                                    false /* recursive */,
-                                    base::FileUtilProxy::StatusCallback());
+    file_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&base::DeleteFile),
+                   path_, false /* recursive */));
   }
 
   // Clear all fields.
