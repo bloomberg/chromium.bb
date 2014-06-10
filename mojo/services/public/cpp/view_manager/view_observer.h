@@ -25,7 +25,7 @@ class ViewObserver {
 
   virtual void OnViewDestroy(View* view, DispositionChangePhase phase) {}
 
-  virtual void OnViewInputEvent(View* view, EventPtr event) {}
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) {}
 
  protected:
   virtual ~ViewObserver() {}

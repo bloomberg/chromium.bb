@@ -711,7 +711,7 @@ void ViewManagerSynchronizer::OnViewInputEvent(
   if (view) {
     FOR_EACH_OBSERVER(ViewObserver,
                       *ViewPrivate(view).observers(),
-                      OnViewInputEvent(view, event.Pass()));
+                      OnViewInputEvent(view, event));
   }
   ack_callback.Run();
 }

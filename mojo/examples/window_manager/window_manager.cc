@@ -66,7 +66,7 @@ class WindowManager : public Application,
   }
 
     // Overridden from ViewObserver:
-  virtual void OnViewInputEvent(View* view, EventPtr event) OVERRIDE {
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED) {
       if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
         CreateWindow("mojo:mojo_embedded_app");

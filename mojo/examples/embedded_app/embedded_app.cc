@@ -66,7 +66,7 @@ class EmbeddedApp : public Application,
   }
 
   // Overridden from ViewObserver:
-  virtual void OnViewInputEvent(View* view, EventPtr event) OVERRIDE {
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED)
       window_manager_->CloseWindow(view->node()->id());
   }
