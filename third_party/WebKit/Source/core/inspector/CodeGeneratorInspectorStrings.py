@@ -53,8 +53,8 @@ $methodCode
         reportProtocolError(&callId, InvalidParams, String::format(InvalidParamsFormatString, commandName($commandNameIndex)), protocolErrors);
         return;
     }
-    ErrorString error;
-    $agentField->$methodName(&error$agentCallParams);
+$agentCallParamsDeclaration
+    $agentField->$methodName($agentCallParams);
 $responseCook
     sendResponse(callId, $sendResponseCallParams);
 }

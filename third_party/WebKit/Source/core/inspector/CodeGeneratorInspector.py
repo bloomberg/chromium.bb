@@ -1915,7 +1915,8 @@ class Generator:
         method_in_code = ""
         method_out_code = ""
         result_object_declaration = ""
-        agent_call_param_list = []
+        agent_call_param_list = ["&error"]
+        agent_call_params_declaration_list = ["    ErrorString error;"]
         send_response_call_params_list = ["error"]
         request_message_param = ""
         normal_response_cook_text = ""
@@ -1925,7 +1926,7 @@ class Generator:
             error_type_binding = Generator.resolve_type_and_generate_ad_hoc(json_error, json_command_name + "Error", json_command_name, domain_name, ad_hoc_type_writer, agent_interface_name + "::")
             error_type_model = error_type_binding.get_type_model().get_optional()
             error_annotated_type = error_type_model.get_command_return_pass_model().get_output_parameter_type()
-            agent_call_param_list.append(", %serrorData" % error_type_model.get_command_return_pass_model().get_output_argument_prefix())
+            agent_call_param_list.append("%serrorData" % error_type_model.get_command_return_pass_model().get_output_argument_prefix())
             backend_agent_interface_list.append(", %s errorData" % error_annotated_type)
             method_in_code += "    %s errorData;\n" % error_type_model.get_command_return_pass_model().get_return_var_type()
             send_response_call_params_list.append("errorData")
@@ -1955,13 +1956,13 @@ class Generator:
                     code = ("    bool %s_valueFound = false;\n"
                             "    %s in_%s = get%s(paramsContainerPtr, \"%s\", &%s_valueFound, protocolErrors);\n" %
                            (json_param_name, non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name, getter_name, json_param_name, json_param_name))
-                    param = ", %s_valueFound ? &in_%s : 0" % (json_param_name, json_param_name)
+                    param = "%s_valueFound ? &in_%s : 0" % (json_param_name, json_param_name)
                     # FIXME: pass optional refptr-values as PassRefPtr
                     formal_param_type_pattern = "const %s*"
                 else:
                     code = ("    %s in_%s = get%s(paramsContainerPtr, \"%s\", 0, protocolErrors);\n" %
                             (non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name, getter_name, json_param_name))
-                    param = ", in_%s" % json_param_name
+                    param = "in_%s" % json_param_name
                     # FIXME: pass not-optional refptr-values as NonNullPassRefPtr
                     if param_raw_type.is_heavy_value():
                         formal_param_type_pattern = "const %s&"
@@ -2009,7 +2010,7 @@ class Generator:
             ad_hoc_type_output.append(callback_output)
 
             method_out_code += "    RefPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRef(new " + agent_interface_name + "::" + callback_name + "(this, callId));\n"
-            agent_call_param_list.append(", callback")
+            agent_call_param_list.append("callback")
             normal_response_cook_text += "    if (!error.length()) \n"
             normal_response_cook_text += "        return;\n"
             normal_response_cook_text += "    callback->disable();\n"
@@ -2017,7 +2018,7 @@ class Generator:
         else:
             if "returns" in json_command:
                 method_out_code += "\n"
-                result_object_declaration = "\n    RefPtr<JSONObject> result = JSONObject::create();"
+                agent_call_params_declaration_list.append("    RefPtr<JSONObject> result = JSONObject::create();")
                 send_response_call_params_list.append("result")
                 response_cook_list = []
                 for json_return in json_command["returns"]:
@@ -2037,7 +2038,7 @@ class Generator:
                         type_model = type_model.get_optional()
 
                     code = "    %s out_%s;\n" % (type_model.get_command_return_pass_model().get_return_var_type(), json_return_name)
-                    param = ", %sout_%s" % (type_model.get_command_return_pass_model().get_output_argument_prefix(), json_return_name)
+                    param = "%sout_%s" % (type_model.get_command_return_pass_model().get_output_argument_prefix(), json_return_name)
                     var_name = "out_%s" % json_return_name
                     setter_argument = type_model.get_command_return_pass_model().get_output_to_raw_expression() % var_name
                     if return_type_binding.get_setter_value_expression_pattern():
@@ -2075,8 +2076,9 @@ class Generator:
         Generator.backend_method_implementation_list.append(Templates.backend_method.substitute(None,
             domainName=domain_name, methodName=json_command_name,
             agentField=agent_field,
-            methodCode="".join([method_in_code, method_out_code, result_object_declaration]),
-            agentCallParams="".join(agent_call_param_list),
+            methodCode="".join([method_in_code, method_out_code]),
+            agentCallParamsDeclaration="\n".join(agent_call_params_declaration_list),
+            agentCallParams=", ".join(agent_call_param_list),
             requestMessageObject=request_message_param,
             responseCook=normal_response_cook_text,
             sendResponseCallParams=", ".join(send_response_call_params_list),
