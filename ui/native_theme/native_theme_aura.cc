@@ -208,6 +208,30 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* sk_canvas,
                thumb_rect);
 }
 
+void NativeThemeAura::PaintScrollbarThumbStateTransition(
+    SkCanvas* canvas,
+    State startState,
+    State endState,
+    double progress,
+    const gfx::Rect& rect) const {
+  // Only Overlay scrollbars should have state transition animation.
+  DCHECK(IsOverlayScrollbarEnabled());
+  if (!scrollbar_overlay_thumb_painter_) {
+    scrollbar_overlay_thumb_painter_ =
+        CreateDualPainter(kScrollbarOverlayThumbFillImages,
+                          kScrollbarOverlayThumbFillAlphas,
+                          kScrollbarOverlayThumbStrokeImages,
+                          kScrollbarOverlayThumbStrokeAlphas);
+  }
+
+  PaintDualPainterTransition(scrollbar_overlay_thumb_painter_.get(),
+                             canvas,
+                             rect,
+                             startState,
+                             endState,
+                             progress);
+}
+
 void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
                                            State state,
                                            const gfx::Rect& rect) const {
@@ -267,6 +291,28 @@ void NativeThemeAura::PaintDualPainter(
       canvas.get(), rect, dual_painter->fill_alphas[state]);
   dual_painter->stroke_painter->Paint(
       canvas.get(), rect, dual_painter->stroke_alphas[state]);
+}
+
+void NativeThemeAura::PaintDualPainterTransition(
+    NativeThemeAura::DualPainter* dual_painter,
+    SkCanvas* sk_canvas,
+    const gfx::Rect& rect,
+    State startState,
+    State endState,
+    double progress) const {
+  DCHECK(dual_painter);
+  scoped_ptr<gfx::Canvas> canvas(CreateCanvas(sk_canvas));
+  uint8 fill_alpha = dual_painter->fill_alphas[startState] +
+                     (dual_painter->fill_alphas[endState] -
+                      dual_painter->fill_alphas[startState]) *
+                         progress;
+  uint8 stroke_alpha = dual_painter->stroke_alphas[startState] +
+                       (dual_painter->stroke_alphas[endState] -
+                        dual_painter->stroke_alphas[startState]) *
+                           progress;
+
+  dual_painter->fill_painter->Paint(canvas.get(), rect, fill_alpha);
+  dual_painter->stroke_painter->Paint(canvas.get(), rect, stroke_alpha);
 }
 
 NativeThemeAura::DualPainter::DualPainter(

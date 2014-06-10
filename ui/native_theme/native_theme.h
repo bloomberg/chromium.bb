@@ -223,6 +223,15 @@ class NATIVE_THEME_EXPORT NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const = 0;
 
+  // Paint part during state transition, used for overlay scrollbar state
+  // transition animation.
+  virtual void PaintStateTransition(SkCanvas* canvas,
+                                    Part part,
+                                    State startState,
+                                    State endState,
+                                    double progress,
+                                    const gfx::Rect& rect) const { }
+
   // Supports theme specific colors.
   void SetScrollbarColors(unsigned inactive_color,
                           unsigned active_color,

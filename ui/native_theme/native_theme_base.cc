@@ -156,6 +156,31 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
   return gfx::Size();
 }
 
+void NativeThemeBase::PaintStateTransition(SkCanvas* canvas,
+                                           Part part,
+                                           State startState,
+                                           State endState,
+                                           double progress,
+                                           const gfx::Rect& rect) const {
+  if (rect.IsEmpty())
+    return;
+
+  // Currently state transition is animation only working for overlay scrollbars
+  // on Aura platforms.
+  switch (part) {
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+      PaintScrollbarThumbStateTransition(
+          canvas, startState, endState, progress, rect);
+      break;
+    default:
+      NOTREACHED() << "Does not support state transition for this part:"
+                   << part;
+      break;
+  }
+  return;
+}
+
 void NativeThemeBase::Paint(SkCanvas* canvas,
                             Part part,
                             State state,

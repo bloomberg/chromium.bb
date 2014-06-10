@@ -19,6 +19,12 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
       blink::WebThemeEngine::State state,
       const blink::WebRect& rect,
       const blink::WebThemeEngine::ExtraParams* extra_params);
+  virtual void paintStateTransition(blink::WebCanvas* canvas,
+                                    blink::WebThemeEngine::Part part,
+                                    blink::WebThemeEngine::State startState,
+                                    blink::WebThemeEngine::State endState,
+                                    double progress,
+                                    const blink::WebRect& rect);
 };
 
 }  // namespace content

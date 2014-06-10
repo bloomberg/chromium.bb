@@ -52,6 +52,13 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
                                     State state,
                                     const gfx::Rect& rect) const OVERRIDE;
 
+  virtual void PaintScrollbarThumbStateTransition(SkCanvas* canvas,
+                                                  State startState,
+                                                  State endState,
+                                                  double progress,
+                                                  const gfx::Rect& rect) const
+      OVERRIDE;
+
   // Returns the NineImagePainter used to paint the specified state, creating if
   // necessary. If no image is provided for the specified state the normal state
   // images are used.
@@ -104,6 +111,13 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
                         SkCanvas* sk_canvas,
                         const gfx::Rect& rect,
                         State state) const;
+
+  void PaintDualPainterTransition(DualPainter* dual_painter,
+                                  SkCanvas* sk_canvas,
+                                  const gfx::Rect& rect,
+                                  State startState,
+                                  State endState,
+                                  double progress) const;
 
   mutable scoped_ptr<DualPainter> scrollbar_overlay_thumb_painter_;
 

@@ -184,4 +184,19 @@ void WebThemeEngineImpl::paint(
       native_theme_extra_params);
 }
 
+void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
+                                              WebThemeEngine::Part part,
+                                              WebThemeEngine::State startState,
+                                              WebThemeEngine::State endState,
+                                              double progress,
+                                              const blink::WebRect& rect) {
+  ui::NativeTheme::instance()->PaintStateTransition(
+      canvas,
+      NativeThemePart(part),
+      NativeThemeState(startState),
+      NativeThemeState(endState),
+      progress,
+      gfx::Rect(rect));
+}
+
 }  // namespace content

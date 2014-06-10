@@ -33,6 +33,13 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const OVERRIDE;
 
+  virtual void PaintStateTransition(SkCanvas* canvas,
+                                    Part part,
+                                    State startState,
+                                    State endState,
+                                    double progress,
+                                    const gfx::Rect& rect) const OVERRIDE;
+
  protected:
   NativeThemeBase();
   virtual ~NativeThemeBase();
@@ -129,6 +136,13 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       State state,
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
+
+  virtual void PaintScrollbarThumbStateTransition(
+      SkCanvas* canvas,
+      State startState,
+      State endState,
+      double progress,
+      const gfx::Rect& rect) const {}
 
   void set_scrollbar_button_length(unsigned int length) {
     scrollbar_button_length_ = length;
