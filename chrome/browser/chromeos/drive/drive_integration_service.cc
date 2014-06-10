@@ -526,13 +526,12 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
       download_handler_->ObserveIncognitoDownloadManager(
           BrowserContext::GetDownloadManager(
               profile_->GetOffTheRecordProfile()));
-    } else {
-      profile_notification_registrar_.reset(new content::NotificationRegistrar);
-      profile_notification_registrar_->Add(
-          this,
-          chrome::NOTIFICATION_PROFILE_CREATED,
-          content::NotificationService::AllSources());
     }
+    profile_notification_registrar_.reset(new content::NotificationRegistrar);
+    profile_notification_registrar_->Add(
+        this,
+        chrome::NOTIFICATION_PROFILE_CREATED,
+        content::NotificationService::AllSources());
   }
 
   // Register for Google Drive invalidation notifications.
@@ -578,10 +577,6 @@ void DriveIntegrationService::Observe(
         created_profile->IsSameProfile(profile_)) {
       download_handler_->ObserveIncognitoDownloadManager(
           BrowserContext::GetDownloadManager(created_profile));
-      profile_notification_registrar_->Remove(
-          this,
-          chrome::NOTIFICATION_PROFILE_CREATED,
-          content::NotificationService::AllSources());
     }
   }
 }

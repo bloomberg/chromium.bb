@@ -148,7 +148,6 @@ void DownloadHandler::Initialize(
 
 void DownloadHandler::ObserveIncognitoDownloadManager(
     DownloadManager* download_manager) {
-  DCHECK(!notifier_incognito_);
   notifier_incognito_.reset(new AllDownloadItemNotifier(download_manager,
                                                         this));
 }
