@@ -223,9 +223,6 @@ char kTSanDefaultSuppressions[] =
 "race:webrtc::VCMCodecDataBase::DeregisterReceiveCodec\n"
 "race:webrtc::GainControlImpl::set_stream_analog_level\n"
 
-// http://crbug.com/345251
-"race:cc::s_next_layer_id\n"
-
 // http://crbug.com/345618
 "race:WebCore::AudioDestinationNode::render\n"
 
