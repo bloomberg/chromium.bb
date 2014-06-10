@@ -1723,7 +1723,7 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyAfterAbortedCommit) {
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
 }
 
-TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyForSmoothness) {
+TEST(SchedulerStateMachineTest, TestSmoothnessTakesPriority) {
   SchedulerSettings settings;
   settings.impl_side_painting = true;
   StateMachine state(settings);
@@ -1735,18 +1735,57 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyForSmoothness) {
 
   // This test ensures that impl-draws are prioritized over main thread updates
   // in prefer smoothness mode.
-  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
   state.SetNeedsRedraw(true);
   state.SetNeedsCommit();
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  // The deadline is not triggered early until we enter prefer smoothness mode.
+  // Verify the deadline is not triggered early until we enter
+  // prefer smoothness mode.
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
   state.SetSmoothnessTakesPriority(true);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+
+  // Trigger the deadline.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  state.DidSwapBuffers();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.DidSwapBuffersComplete();
+
+  // Finish the previous commit and initiate another one.
+  state.SetNeedsCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Trigger another BeginFrame.
+  // Since we are in prefer smoothness mode, we do not start the next
+  // BeginMainFrame until after we draw.
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Trigger the deadline and verify we send the BeginMainFrame after we
+  // draw, even if we are swap throttled.
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  state.DidSwapBuffers();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyOnLostOutputSurface) {
