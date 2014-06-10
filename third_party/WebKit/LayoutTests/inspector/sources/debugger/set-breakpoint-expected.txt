@@ -1,6 +1,5 @@
 Tests setting breakpoints.
 
-Debugger was enabled.
 
 Running: testSetBreakpoint
 Script source was shown.
@@ -24,5 +23,4 @@ Call stack:
     0) oneLineTestFunction2 (set-breakpoint.html:11)
 
 Running: testSetBreakpointOnTheSameLine
-Debugger was disabled.
 

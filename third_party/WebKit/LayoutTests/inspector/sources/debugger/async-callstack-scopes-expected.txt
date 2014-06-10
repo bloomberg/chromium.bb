@@ -1,7 +1,6 @@
 
 Test that sections representing scopes are expandable and contain correct data for async call frames.
 
-Debugger was enabled.
 Set timer for test function.
 Dumping call frames with scope chains:
 
@@ -76,5 +75,4 @@ Local
 WindowGlobal
     <section collapsed>
 
-Debugger was disabled.
 

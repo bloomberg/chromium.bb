@@ -1,6 +1,5 @@
 Tests that Linkifier works correctly.
 
-Debugger was enabled.
 The string "at triggerError (http://localhost/show/:22:11) " linkifies to url: http://localhost/show/
 The lineNumber is 21 with type number
 The columnNumber is 10 with type number
@@ -9,5 +8,4 @@ original location: linkifier.html:9
 pretty printed location: linkifier.html:formatted:14
 reverted location: linkifier.html:9
 listeners removed from raw source code: 1
-Debugger was disabled.
 

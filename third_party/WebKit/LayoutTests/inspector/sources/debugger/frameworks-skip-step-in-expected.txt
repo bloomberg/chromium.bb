@@ -1,7 +1,6 @@
 
 Tests the skip stack frames feature when stepping.
 
-Debugger was enabled.
 Set timer for test function.
 Call stack:
     0) test1 (frameworks-skip-step-in.html:23)
@@ -30,5 +29,4 @@ Call stack:
     4) test5 (frameworks-skip-step-in.html:46)
     5) testFunction (frameworks-skip-step-in.html:11)
 
-Debugger was disabled.
 

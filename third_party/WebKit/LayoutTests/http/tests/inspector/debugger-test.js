@@ -2,53 +2,20 @@ var initialize_DebuggerTest = function() {
 
 InspectorTest.startDebuggerTest = function(callback, quiet)
 {
+    console.assert(WebInspector.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
     WebInspector.inspectorView.showPanel("sources");
 
-    if (WebInspector.debuggerModel.debuggerEnabled())
-        startTest();
-    else {
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasEnabled", startTest);
-        WebInspector.debuggerModel.enableDebugger();
-    }
-
-    function startTest()
-    {
-        InspectorTest.addResult("Debugger was enabled.");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_pausedScript", InspectorTest._pausedScript, true);
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_resumedScript", InspectorTest._resumedScript, true);
-        InspectorTest.safeWrap(callback)();
-    }
-};
-
-InspectorTest.finishDebuggerTest = function(callback)
-{
-    var sourcesPanel = WebInspector.panels.sources;
-
-    WebInspector.debuggerModel.setBreakpointsActive(true);
-    InspectorTest.resumeExecution(disableDebugger);
-
-    function disableDebugger()
-    {
-        if (!WebInspector.debuggerModel.debuggerEnabled())
-            completeTest();
-        else {
-            InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasDisabled", debuggerDisabled);
-            WebInspector.debuggerModel.disableDebugger();
-        }
-    }
-
-    function debuggerDisabled()
-    {
-        InspectorTest.addResult("Debugger was disabled.");
-        callback();
-    }
+    InspectorTest.addSniffer(WebInspector.debuggerModel, "_pausedScript", InspectorTest._pausedScript, true);
+    InspectorTest.addSniffer(WebInspector.debuggerModel, "_resumedScript", InspectorTest._resumedScript, true);
+    InspectorTest.safeWrap(callback)();
 };
 
 InspectorTest.completeDebuggerTest = function()
 {
-    InspectorTest.finishDebuggerTest(InspectorTest.completeTest.bind(InspectorTest));
+    WebInspector.debuggerModel.setBreakpointsActive(true);
+    InspectorTest.resumeExecution(InspectorTest.completeTest.bind(InspectorTest));
 };
 
 InspectorTest.runDebuggerTestSuite = function(testSuite)

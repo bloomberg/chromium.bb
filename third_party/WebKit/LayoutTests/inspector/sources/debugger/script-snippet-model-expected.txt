@@ -1,6 +1,5 @@
 Tests script snippet model.
 
-Debugger was enabled.
 
 Running: testCreateEditRenameRemove
 UISourceCodeAdded: Script snippet #1
@@ -66,5 +65,4 @@ Snippet execution result: undefined
 Running: testEvaluateEditReload
 Snippet execution result: undefined
 Page reloaded.
-Debugger was disabled.
 

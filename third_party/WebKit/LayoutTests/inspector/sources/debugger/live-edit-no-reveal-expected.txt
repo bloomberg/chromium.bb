@@ -1,6 +1,5 @@
 Tests live edit feature.
 
-Debugger was enabled.
 
 Running: testLiveEditWhenPausedDoesNotCauseCursorMove
 Script execution paused.
@@ -9,5 +8,4 @@ Committing live edit.
 Script execution paused.
 Script execution resumed.
 Cursor position is: (0, 0).
-Debugger was disabled.
 

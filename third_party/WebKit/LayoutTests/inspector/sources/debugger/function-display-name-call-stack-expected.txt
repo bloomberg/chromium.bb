@@ -1,6 +1,5 @@
 Tests that we display function's "displayName" property in the call stack. CrBug 17356
 
-Debugger was enabled.
 Set timer for test function.
 Script execution paused.
 Call stack:
@@ -13,5 +12,4 @@ Call stack:
     6) <anonymous_inside_testFunction> (function-display-name-call-stack.html:37)
     7) <InspectorTest::testFunction> (function-display-name-call-stack.html:38)
 Script execution resumed.
-Debugger was disabled.
 

@@ -1,6 +1,5 @@
 Tests asynchronous call stacks for XHRs.
 
-Debugger was enabled.
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
@@ -64,5 +63,4 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
 
-Debugger was disabled.
 

@@ -60,7 +60,6 @@ log: Extension server error: Object does not support requested operation: Resour
 content committed for resource .../audits-style1.css (type: stylesheet), new content: div.test { width: 220px; height: 42px; }
 Revision content: div.test { width: 220px; height: 42px; }
 RUNNING TEST: extension_testOnResourceAdded
-Debugger was enabled.
 resource added:
 {
     0 : {
@@ -70,7 +69,6 @@ resource added:
         url : data:application/javascript...
     }
 }
-Debugger was disabled.
 RUNNING TEST: extension_testOpenResourceHandler
 handleOpenResource() invoked [this should only appear once!]: 
 {

@@ -1,6 +1,5 @@
 Tests that evals with sourceURL comment are shown in scripts panel.
 
-Debugger was enabled.
 
 Running: testSourceURLCommentInInlineScript
 
@@ -31,5 +30,4 @@ hasSourceURL: true
 Running: testNonRelativeURL
 function relativeURLScript() {}
 hasSourceURL: true
-Debugger was disabled.
 

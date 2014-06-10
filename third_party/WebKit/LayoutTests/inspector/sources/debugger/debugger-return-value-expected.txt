@@ -1,9 +1,7 @@
 Tests function's return value reported from backend.
 
-Debugger was enabled.
 Set timer for test function.
 Call stack:
     0) testFunction (debugger-return-value.html:17)
        <return>: 10
-Debugger was disabled.
 

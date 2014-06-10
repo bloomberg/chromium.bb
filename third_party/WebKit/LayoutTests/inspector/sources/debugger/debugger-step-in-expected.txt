@@ -1,6 +1,5 @@
 Tests "step in" functionality in debugger.
 
-Debugger was enabled.
 Set timer for test function.
 Script execution paused.
 Call stack:
@@ -17,5 +16,4 @@ Call stack:
     0) d (debugger-step-in.html:9)
     1) testFunction (debugger-step-in.html:15)
 Script execution resumed.
-Debugger was disabled.
 

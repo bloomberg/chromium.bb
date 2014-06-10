@@ -1,7 +1,6 @@
 CONSOLE ERROR: line 11: Test message.
 Tests that the script formatting changes console line numbers.
 
-Debugger was enabled.
 
 Running: testConsoleMessagesForFormattedScripts
 script-formatter-console.html:11
@@ -12,5 +11,4 @@ script-formatter-console.html:formatted:16
 Post-format row message list:
 ["15"]
 ["15"]
-Debugger was disabled.
 

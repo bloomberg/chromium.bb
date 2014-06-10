@@ -2,7 +2,6 @@ CONSOLE ERROR: line 11: Uncaught ReferenceError: unknown_var is not defined
 CONSOLE ERROR: line 11: Uncaught ReferenceError: unknown_var is not defined
 Tests that certain user actions in scripts panel reveal execution line.
 
-Debugger was enabled.
 
 Running: testRevealAfterPausedOnException
 Showing script1 source...
@@ -26,5 +25,4 @@ Script source was shown for 'script1.js'.
 Formatting...
 Script source was shown for 'script1.js:formatted'.
 Script execution resumed.
-Debugger was disabled.
 

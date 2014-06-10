@@ -11,7 +11,6 @@ CONSOLE ERROR: line 2: Uncaught SyntaxError: Unexpected identifier
 CONSOLE ERROR: The preprocessor must compile to a function.
 Tests script preprocessor (ability to preprocess all scripts upon reload).
 
-Debugger was enabled.
 Page reloaded.
 sourceURLs[0]=inspector-test.js
 sourceURLs[1]=debugger-test.js
@@ -24,5 +23,4 @@ Page reloaded.
 Page reloaded.
 Page reloaded.
 Page reloaded.
-Debugger was disabled.
 

@@ -1,6 +1,5 @@
 Tests that all inlined scripts from the same document are shown in the same source frame with html script tags. Bug 54544.
 
-Debugger was enabled.
 window.location: #hash
 Script source was shown.
 Script execution paused.
@@ -97,5 +96,4 @@ Tests that all inlined scripts from the same document are shown in the same sour
 
 ==Source frame contents end==
 Page reloaded.
-Debugger was disabled.
 

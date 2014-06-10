@@ -1,7 +1,6 @@
 
 Tests the async call stacks and framework black-boxing features working together.
 
-Debugger was enabled.
 Set timer for test function.
 Call stack:
     0) callback2 (frameworks-with-async-callstack.html:30)
@@ -34,5 +33,4 @@ Call stack:
     1) timeout1 (frameworks-with-async-callstack.html:20)
     [setTimeout]
     0) testFunction (frameworks-with-async-callstack.html:15)
-Debugger was disabled.
 

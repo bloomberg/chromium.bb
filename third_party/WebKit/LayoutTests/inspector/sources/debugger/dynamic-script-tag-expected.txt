@@ -4,7 +4,6 @@ CONSOLE MESSAGE: line 2: DYNAMIC document.write()
 CONSOLE MESSAGE: line 2: DYNAMIC <script>
 Tests that inline scripts and document.write scripts get different uiSourceCodes with different URLs. Bug 87119
 
-Debugger was enabled.
 
 Running: testOpenDevToolsAfterLoad
 Both dynamic scripts were loaded.
@@ -14,5 +13,4 @@ Running: testOpenDevToolsThenReload
 Reloading page.
 The first script with document url as a sourceURL to be seen is inline script.
 Page reloaded.
-Debugger was disabled.
 

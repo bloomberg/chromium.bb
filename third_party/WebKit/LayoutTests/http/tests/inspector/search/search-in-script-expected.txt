@@ -1,7 +1,6 @@
 Tests script search in inspector debugger agent.
 
 Bug 69015  
-Debugger was enabled.
 http://127.0.0.1:8000/inspector/search/resources/search.js
 Search matches: 
 lineNumber: 0, line: 'function searchTestUniqueString()'
@@ -29,5 +28,4 @@ lineNumber: 3, line: '    // searchTestUniqueString two occurences on the same l
 lineNumber: 4, line: '    // searchTestUniqueString on the next line.'
 lineNumber: 10, line: '    searchTestUniqueString();'
 
-Debugger was disabled.
 

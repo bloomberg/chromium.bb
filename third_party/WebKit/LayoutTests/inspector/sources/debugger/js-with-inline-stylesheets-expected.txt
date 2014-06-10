@@ -1,6 +1,5 @@
 Tests that JS sourcemapping for inline scripts followed by inline stylesheets does not break.
 
-Debugger was enabled.
 
 Running: testSetBreakpoint
 Script source was shown.
@@ -14,5 +13,4 @@ Breakpoint sidebar pane
 Breakpoint sidebar pane 
 
 Script execution resumed.
-Debugger was disabled.
 

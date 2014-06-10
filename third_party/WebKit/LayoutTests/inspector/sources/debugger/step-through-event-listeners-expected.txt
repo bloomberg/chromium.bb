@@ -1,7 +1,6 @@
 Test that debugger will pause in all event listeners when corresponding breakpoint is set. Bug 77331.
 
 
-Debugger was enabled.
 
 Running: testClickBreakpoint
 Script execution paused.
@@ -28,5 +27,4 @@ Call stack:
     1) addListenerAndClick (step-through-event-listeners.html:26)
     2)  (:1)
 Script execution resumed.
-Debugger was disabled.
 

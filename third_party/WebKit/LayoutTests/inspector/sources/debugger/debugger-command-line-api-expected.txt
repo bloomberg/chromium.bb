@@ -1,6 +1,5 @@
 Tests that inspect() command line api works while on breakpoint.
 
-Debugger was enabled.
 Set timer for test function.
 Script execution paused.
 WebInspector.inspect called with: p#p1
@@ -8,5 +7,4 @@ WebInspector.inspect's hints are: []
 inspect($('#p1')) = 
 Selected node id: 'p1'.
 Script execution resumed.
-Debugger was disabled.
 

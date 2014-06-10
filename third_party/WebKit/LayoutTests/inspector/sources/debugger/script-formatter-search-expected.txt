@@ -1,6 +1,5 @@
 Tests that search across files works with formatted scripts.
 
-Debugger was enabled.
 Pre-format search results:
 Search matches: 
 lineNumber: 25, line: '        scriptSource.searchInContent("magic-string", true, false, dump1);'

@@ -1,6 +1,5 @@
 Tests DOM breakpoints. Bug 42886
 
-Debugger was enabled.
 
 Running: testInsertChild
 Test that 'Subtree Modified' breakpoint is hit when appending a child.
@@ -138,5 +137,4 @@ Call stack:
     1)  (:1)
 Paused on a "Subtree Modified" breakpoint set on div#outerElement, because a new child was added to that node.
 Script execution resumed.
-Debugger was disabled.
 

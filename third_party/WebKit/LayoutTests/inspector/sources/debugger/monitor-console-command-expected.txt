@@ -4,7 +4,6 @@ CONSOLE MESSAGE: line 1: function simpleTestFunction called with arguments: 1, 2
 CONSOLE MESSAGE: line 1: function simpleTestFunction3 called
 Tests traceCalls(fn) console command.
 
-Debugger was enabled.
 
 Running: testSimpleMonitor
 Start monitoring function.
@@ -31,5 +30,4 @@ Console message received: function simpleTestFunction3 called
 Stop monitoring.
 
 Running: testUnmonitorFuntionNotMonitored
-Debugger was disabled.
 

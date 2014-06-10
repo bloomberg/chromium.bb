@@ -161,7 +161,7 @@ function extension_testOnResourceAdded(nextTest)
         dumpObject(Array.prototype.slice.call(arguments), { url: "url" });
         webInspector.inspectedWindow.onResourceAdded.removeListener(onResourceAdded);
 
-        evaluateOnFrontend("InspectorTest.finishDebuggerTest(reply);", nextTest);
+        evaluateOnFrontend("InspectorTest.resumeExecution(reply);", nextTest);
     }
 }
 

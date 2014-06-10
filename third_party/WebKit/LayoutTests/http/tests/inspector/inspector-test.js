@@ -696,9 +696,7 @@ function didEvaluateForTestInFrontend(callId)
     delete window.completeTestCallId;
     if (outputElement && window.quietUntilDone)
         outputElementParent.appendChild(outputElement);
-    // Close inspector asynchrously to allow caller of this
-    // function send response before backend dispatcher and frontend are destroyed.
-    setTimeout(closeInspectorAndNotifyDone, 0);
+    closeInspectorAndNotifyDone();
 }
 
 function closeInspectorAndNotifyDone()

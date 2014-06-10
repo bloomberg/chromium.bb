@@ -1,6 +1,5 @@
 Tests XHR breakpoints.
 
-Debugger was enabled.
 
 Running: testXHRBreakpoint
 Script execution paused.
@@ -18,5 +17,4 @@ Script execution resumed.
 Running: testDisableBreakpoint
 Script execution paused.
 Script execution resumed.
-Debugger was disabled.
 

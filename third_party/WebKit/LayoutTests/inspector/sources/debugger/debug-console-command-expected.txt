@@ -1,6 +1,5 @@
 Tests debug(fn) console command.
 
-Debugger was enabled.
 
 Running: testSetSimpleBreakpoint
 Breakpoint added.
@@ -35,5 +34,4 @@ Script execution resumed.
 Running: testRemoveBreakpoint
 Script execution paused.
 Reason for pause: debugger statement.
-Debugger was disabled.
 

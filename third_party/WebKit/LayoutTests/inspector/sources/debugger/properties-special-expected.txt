@@ -1,6 +1,5 @@
 Tests how debugger presents special properties of closures, bound functions and object wrappers.
 
-Debugger was enabled.
 Script source was shown.
 Set timer for test function.
 Watch expressions updated.
@@ -29,5 +28,4 @@ Nodes are expanded.
     '[[TargetFunction]]' => 'function (a,b) { return a + b; }'
     '[[BoundThis]]' => 'Object'
     '[[BoundArgs]]' => 'Array[1]'
-Debugger was disabled.
 

@@ -1,6 +1,5 @@
 Tests that Debugger.getFunctionDetails command returns correct location. Bug 71808
 
-Debugger was enabled.
 
 Running: testGetFirstLineFunctionDetails
 firstLineFunction type = function
@@ -68,5 +67,4 @@ scopeChain #0: catch; ex: <no string representation>
 scopeChain #1: with; __proto__: <no string representation>,e: 7,f: 5,u: <no value>,v: <no value>
 scopeChain #2: closure; arguments: <no string representation>,o: <no string representation>,p: <no string representation>
 scopeChain #3: global; <global object properties omitted>
-Debugger was disabled.
 

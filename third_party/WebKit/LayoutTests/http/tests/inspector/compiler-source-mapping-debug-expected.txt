@@ -2,7 +2,6 @@ CONSOLE MESSAGE: line 2: button clicked!
 Tests installing compiler source map in scripts panel.
 
 
-Debugger was enabled.
 
 Running: testSetBreakpoint
 Page reloaded.
@@ -14,5 +13,4 @@ Call stack:
 
 Running: testNo404InConsole
 Script execution resumed.
-Debugger was disabled.
 

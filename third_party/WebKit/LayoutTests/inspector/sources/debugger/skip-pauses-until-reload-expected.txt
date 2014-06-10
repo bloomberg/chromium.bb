@@ -7,7 +7,6 @@ CONSOLE MESSAGE: line 25: End
 CONSOLE ERROR: line 36: Uncaught Error: error message
 Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload.
 
-Debugger was enabled.
 Script source was shown.
 Set up breakpoints.
 Set up to pause on all exceptions.
@@ -23,5 +22,4 @@ Reloading the page...
 Script execution resumed.
 Page reloaded.
 PASS: Reloaded without hitting breakpoints.
-Debugger was disabled.
 

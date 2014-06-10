@@ -1,6 +1,5 @@
 Tests that capturing asynchronous call stacks in debugger works if started after some time since the page loads.
 
-Debugger was enabled.
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
@@ -11,5 +10,4 @@ Call stack:
     [setTimeout]
     0) timeoutOffCapturing (async-callstack-middle-run.html:16)
 
-Debugger was disabled.
 

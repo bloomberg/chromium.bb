@@ -23,8 +23,11 @@ function test()
         {
             InspectorTest.showScriptSource("pause-in-internal-script.html", didShowScriptSource);
 
+            var breakpointFunctionFrame = null;
+
             function didShowScriptSource(sourceFrame)
             {
+                breakpointFunctionFrame = sourceFrame;
                 InspectorTest.addResult("Script source was shown.");
                 InspectorTest.setBreakpoint(sourceFrame, 13, "", true);
                 InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
@@ -33,6 +36,7 @@ function test()
             function didPause(callFrames)
             {
                 InspectorTest.captureStackTrace(callFrames);
+                InspectorTest.removeBreakpoint(breakpointFunctionFrame, 13);
                 next();
             }
         }

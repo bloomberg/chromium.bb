@@ -1,9 +1,7 @@
 CONSOLE ERROR: line 9: Uncaught ReferenceError: unknown_var is not defined
 Tests that loading external resources works when inspected page is paused.
 
-Debugger was enabled.
 Script execution paused.
 Resource content loaded: Hello world
 Script execution resumed.
-Debugger was disabled.
 

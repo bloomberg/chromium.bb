@@ -1,6 +1,5 @@
 Tests that scripts panel does not create too many source frames.
 
-Debugger was enabled.
 
 Running: testSourceFramesCount
 Page reloaded.
@@ -8,5 +7,4 @@ Number of breakpoint-added event listeners is 3
 Dumping SourceFrames listening for breakpoint-added event:
     script1.js
     script2.js
-Debugger was disabled.
 

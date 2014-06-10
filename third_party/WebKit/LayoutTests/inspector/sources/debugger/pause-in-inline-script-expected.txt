@@ -1,6 +1,5 @@
 Tests that main resource script text is correct when paused in inline script on reload. Bug 77548.
 
-Debugger was enabled.
 Did load front-end
 Paused: false
 didPauseAfterReload
@@ -14,5 +13,4 @@ Script execution resumed.
 didResume
 Page reloaded.
 didReload
-Debugger was disabled.
 

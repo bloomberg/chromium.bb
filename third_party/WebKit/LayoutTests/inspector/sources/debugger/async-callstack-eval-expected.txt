@@ -1,6 +1,5 @@
 Tests evaluation in an async call frame.
 
-Debugger was enabled.
 Set timer for test function.
 Call stack:
     0) timeout (async-callstack-eval.html:24)
@@ -10,5 +9,4 @@ Call stack:
 Select call frame: inner
 a = "PASS"
 b = "PASS"
-Debugger was disabled.
 

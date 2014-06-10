@@ -1,7 +1,6 @@
 Tests breakpoints are correctly dimmed and restored in JavaScriptSourceFrame during live edit.
 
 Bug 99598
-Debugger was enabled.
 
 Running: testEditUndo
 Setting breakpoint:
@@ -254,5 +253,4 @@ Finally removing breakpoint:
     Dumping breakpoint storage
     Dumping breakpoint locations
     Dumping breakpoints
-Debugger was disabled.
 

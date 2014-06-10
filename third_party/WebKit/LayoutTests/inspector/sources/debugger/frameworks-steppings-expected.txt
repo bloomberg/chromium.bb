@@ -1,7 +1,6 @@
 
 Tests stepping into/over/out with framework black-boxing.
 
-Debugger was enabled.
 Set timer for test function.
 Call stack:
     0) testFunction (frameworks-steppings.html:10)
@@ -129,5 +128,4 @@ Call stack:
   * 1) Framework.safeRun (framework.js:8)
     2) testFunction (frameworks-steppings.html:11)
 
-Debugger was disabled.
 

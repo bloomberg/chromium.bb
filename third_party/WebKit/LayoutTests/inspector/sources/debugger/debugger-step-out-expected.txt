@@ -1,6 +1,5 @@
 Tests "step out" functionality in debugger.
 
-Debugger was enabled.
 Set timer for test function.
 Script execution paused.
 Call stack:
@@ -12,5 +11,4 @@ Script execution paused.
 Call stack:
     0) testFunction (debugger-step-out.html:15)
 Script execution resumed.
-Debugger was disabled.
 

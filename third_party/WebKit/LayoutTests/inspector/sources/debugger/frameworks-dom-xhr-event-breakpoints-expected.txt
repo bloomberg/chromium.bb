@@ -1,7 +1,6 @@
 Tests framework black-boxing on DOM, XHR and Event breakpoints.
 
 
-Debugger was enabled.
 
 Running: testDOMBreakpoint
 Call stack:
@@ -25,5 +24,4 @@ Call stack:
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:35)
     4)  (:1)
 Paused on a "click" Event Listener.
-Debugger was disabled.
 

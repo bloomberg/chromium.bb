@@ -2,7 +2,6 @@ CONSOLE ERROR: line 9: Uncaught ReferenceError: unknown_var is not defined
 CONSOLE ERROR: line 23: Uncaught TypeError: undefined is not a function
 Tests that anti-breakpoint works.
 
-Debugger was enabled.
 Script source was shown.
 Script execution paused.
 Call stack:
@@ -14,5 +13,4 @@ Script execution paused.
 Call stack:
     0) handleClick2 (debugger-no-pause-on-antibreakpoint.html:23)
 Script execution resumed.
-Debugger was disabled.
 

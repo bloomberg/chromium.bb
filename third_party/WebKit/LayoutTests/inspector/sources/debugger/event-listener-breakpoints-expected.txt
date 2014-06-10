@@ -1,7 +1,6 @@
 Tests event listener breakpoints.
 
 
-Debugger was enabled.
 
 Running: testClickBreakpoint
 Script execution paused.
@@ -16,5 +15,4 @@ Script execution paused.
 Call stack:
     0) timerFired (event-listener-breakpoints.html:19)
 Script execution resumed.
-Debugger was disabled.
 

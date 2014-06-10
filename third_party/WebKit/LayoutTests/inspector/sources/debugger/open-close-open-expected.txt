@@ -1,6 +1,5 @@
 Tests that scripts panel displays resource content correctly after the open - close - open sequence. Bug 56747
 
-Debugger was enabled.
 
 Running: testSourceFrameContent
 ==Source frame contents start==
@@ -34,5 +33,4 @@ function test()
 
 </script>
 ==Source frame contents end==
-Debugger was disabled.
 

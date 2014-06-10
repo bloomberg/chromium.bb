@@ -1,6 +1,5 @@
 Test that completions in the context of the call frame will result in names of its scope variables.
 
-Debugger was enabled.
 Set timer for test function.
 Script execution paused.
 var1
@@ -13,5 +12,4 @@ toExponential
 $
 window
 Script execution resumed.
-Debugger was disabled.
 

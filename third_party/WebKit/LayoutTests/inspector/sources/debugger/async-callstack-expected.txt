@@ -1,6 +1,5 @@
 Tests asynchronous call stacks in debugger.
 
-Debugger was enabled.
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
@@ -58,5 +57,4 @@ Call stack:
     [setTimeout]
     0) longTail4 (:4)
 
-Debugger was disabled.
 
