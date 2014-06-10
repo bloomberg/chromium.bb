@@ -59,8 +59,7 @@ class SuiteTimedOut(failures_lib.TestLabFailure):
 # =========================== Command Helpers =================================
 
 
-def RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
-                   **kwargs):
+def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
   This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
@@ -79,8 +78,6 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
     cmd: The command to run.
     chromite_cmd: Whether the command should be evaluated relative to the
       chromite/bin subdir of the |buildroot|.
-    possibly_flaky: Whether this failure is likely to fail occasionally due
-      to flakiness (e.g. network flakiness).
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
   """
   assert not kwargs.get('shell', False), 'Cannot execute shell commands'
@@ -121,8 +118,7 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
           raise failures_lib.PackageBuildFailure(ex, cmd[0], failed_packages)
 
       # Looks like a generic failure. Raise a BuildScriptFailure.
-      raise failures_lib.BuildScriptFailure(ex, cmd[0],
-                                           possibly_flaky=possibly_flaky)
+      raise failures_lib.BuildScriptFailure(ex, cmd[0])
 
 
 def GetInput(prompt):
@@ -525,10 +521,8 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
       with open(results_dir_in_chroot + '/failed_test_command', 'w') as failed:
         failed.write(error)
-    # We already retry VMTest inline, so we can assume that failures in VMTest
-    # are not flaky.
-    raise TestFailure('** VMTests failed with code %d **'
-                      % result.returncode, possibly_flaky=False)
+
+    raise TestFailure('** VMTests failed with code %d **' % result.returncode)
 
 
 def RunDevModeTest(buildroot, board, image_dir):
@@ -789,8 +783,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     elif result.returncode in timeout_codes:
       raise SuiteTimedOut('** Suite timed out before completion **')
     elif result.returncode != 0:
-      raise TestFailure('** HWTest failed (code %d) **' % result.returncode,
-                        possibly_flaky=True)
+      raise TestFailure('** HWTest failed (code %d) **' % result.returncode)
 
 
 def _GetAbortCQHWTestsURL(version, suite):

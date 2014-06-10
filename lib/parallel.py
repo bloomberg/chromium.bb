@@ -30,7 +30,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
-from chromite.lib import timeout_util
 
 _BUFSIZE = 1024
 
@@ -227,13 +226,12 @@ class _BackgroundTask(multiprocessing.Process):
       with open(self._output.name, 'r') as output:
         pos = 0
         running, exited_cleanly, task_errors, all_errors = (True, False, [], [])
-        possibly_flaky = False
         while running:
           # Check whether the process is still alive.
           running = self.is_alive()
 
           try:
-            errors, results, possibly_flaky = \
+            errors, results = \
                 self._queue.get(True, self.PRINT_INTERVAL)
             if errors:
               task_errors.extend(errors)
@@ -254,11 +252,8 @@ class _BackgroundTask(multiprocessing.Process):
                   failures_lib.CreateExceptInfo(ProcessExitTimeout(msg), ''))
               self._KillChildren([self])
             elif not exited_cleanly:
-              # Treat SIGKILL signals as potentially flaky.
-              if self.exitcode == -signal.SIGKILL:
-                possibly_flaky = True
-              msg = ('%r exited unexpectedly with code %s' %
-                     (self, self.exitcode))
+              msg = ('%r exited unexpectedly with code %s'
+                     % (self, self.exitcode))
               all_errors.extend(
                   failures_lib.CreateExceptInfo(ProcessUnexpectedExit(msg), ''))
 
@@ -274,9 +269,6 @@ class _BackgroundTask(multiprocessing.Process):
             all_errors.extend(
                 failures_lib.CreateExceptInfo(ProcessSilentTimeout(msg), ''))
             self._KillChildren([self])
-
-            # Timeouts are possibly flaky.
-            possibly_flaky = True
 
             # Read remaining output from the process.
             output.seek(pos)
@@ -309,7 +301,7 @@ class _BackgroundTask(multiprocessing.Process):
       self.Cleanup(silent=True)
 
     # If an error occurred, return it.
-    return all_errors, possibly_flaky
+    return all_errors
 
   def start(self):
     """Invoke multiprocessing.Process.start after flushing output/err."""
@@ -330,14 +322,13 @@ class _BackgroundTask(multiprocessing.Process):
 
     errors = failures_lib.CreateExceptInfo(
         UnexpectedException('Unexpected exception in %r' % self), '')
-    possibly_flaky = False
     pid = os.getpid()
     try:
-      errors, possibly_flaky = self._Run()
+      errors = self._Run()
     finally:
       if not self._killing.is_set() and os.getpid() == pid:
         results = results_lib.Results.Get()
-        self._queue.put((errors, results, possibly_flaky))
+        self._queue.put((errors, results))
         if self._semaphore is not None:
           self._semaphore.release()
 
@@ -354,7 +345,6 @@ class _BackgroundTask(multiprocessing.Process):
     sys.stdout.flush()
     sys.stderr.flush()
     errors = []
-    possibly_flaky = False
     # Send all output to a named temporary file.
     with open(self._output.name, 'w', 0) as output:
       # Back up sys.std{err,out}. These aren't used, but we keep a copy so
@@ -382,18 +372,16 @@ class _BackgroundTask(multiprocessing.Process):
       except failures_lib.StepFailure as ex:
         errors.extend(failures_lib.CreateExceptInfo(
             ex, traceback.format_exc()))
-        possibly_flaky = ex.possibly_flaky
       except BaseException as ex:
         errors.extend(failures_lib.CreateExceptInfo(
             ex, traceback.format_exc()))
-        possibly_flaky = isinstance(ex, timeout_util.TimeoutError)
         if self._killing.is_set():
           traceback.print_exc()
       finally:
         sys.stdout.flush()
         sys.stderr.flush()
 
-    return errors, possibly_flaky
+    return errors
 
   @classmethod
   def _KillChildren(cls, bg_tasks, log_level=logging.WARNING):
@@ -459,7 +447,6 @@ class _BackgroundTask(multiprocessing.Process):
     """
 
     semaphore = None
-    possibly_flaky = False
     if max_parallel is not None:
       semaphore = multiprocessing.Semaphore(max_parallel)
 
@@ -476,12 +463,10 @@ class _BackgroundTask(multiprocessing.Process):
       finally:
         # Wait for each step to complete.
         errors = []
-        flaky_tasks = []
         while bg_tasks:
           task = bg_tasks.popleft()
-          task_errors, possibly_flaky = task.Wait()
+          task_errors = task.Wait()
           if task_errors:
-            flaky_tasks.append(possibly_flaky)
             errors.extend(task_errors)
             if halt_on_error:
               break
@@ -492,9 +477,7 @@ class _BackgroundTask(multiprocessing.Process):
 
         # Propagate any exceptions.
         if errors:
-          possibly_flaky = flaky_tasks and all(flaky_tasks)
-          raise BackgroundFailure(exc_infos=errors,
-                                  possibly_flaky=possibly_flaky)
+          raise BackgroundFailure(exc_infos=errors)
 
   @staticmethod
   def TaskRunner(queue, task, onexit=None, task_args=None, task_kwargs=None):

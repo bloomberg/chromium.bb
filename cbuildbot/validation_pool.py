@@ -1083,19 +1083,6 @@ class CalculateSuspects(object):
     return suspects
 
   @classmethod
-  def _MightBeFlakyFailure(cls, messages):
-    """Check if there is a good chance this is a flaky failure.
-
-    Args:
-        messages: A list of build failure messages, of type
-                  BuildFailureMessage or of type NoneType.
-    """
-    # We consider a failed commit queue run to be flaky if only one builder
-    # failed, and that failure is flaky.
-    return (len(messages) == 1 and messages[0] and
-            messages[0].MightBeFlakyFailure())
-
-  @classmethod
   def _FindPreviouslyFailedChanges(cls, candidates):
     """Find what changes that have previously failed the CQ.
 
@@ -1213,8 +1200,6 @@ class CalculateSuspects(object):
            for message in messages):
       # If we are here, there are no None messages.
       suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
-    elif cls._MightBeFlakyFailure(messages):
-      suspects = cls._FindPreviouslyFailedChanges(changes)
     else:
       suspects.update(candidates)
 

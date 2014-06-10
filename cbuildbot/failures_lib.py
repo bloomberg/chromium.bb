@@ -10,7 +10,6 @@ import traceback
 
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
-from chromite.lib import timeout_util
 
 
 class StepFailure(Exception):
@@ -24,16 +23,14 @@ class StepFailure(Exception):
     3) __str__() should be brief enough to include in a Commit Queue
        failure message.
   """
-  def __init__(self, message='', possibly_flaky=False):
+  def __init__(self, message=''):
     """Constructor.
 
     Args:
       message: An error message.
-      possibly_flaky: Whether this failure might be flaky.
     """
     Exception.__init__(self, message)
-    self.possibly_flaky = possibly_flaky
-    self.args = (message, possibly_flaky)
+    self.args = (message,)
 
   def __str__(self):
     """Stringify the message."""
@@ -69,21 +66,19 @@ def CreateExceptInfo(exception, tb):
 class CompoundFailure(StepFailure):
   """An exception that contains a list of ExceptInfo objects."""
 
-  def __init__(self, message='', exc_infos=None, possibly_flaky=False):
+  def __init__(self, message='', exc_infos=None):
     """Initializes an CompoundFailure instance.
 
     Args:
       message: A string describing the failure.
       exc_infos: A list of ExceptInfo objects.
-      possibly_flaky: Whether this failure might be flaky.
     """
     self.exc_infos = exc_infos if exc_infos else []
     if not message:
       # By default, print the type and string of each ExceptInfo object.
       message = '\n'.join(['%s: %s' % (e.type, e.str) for e in self.exc_infos])
 
-    super(CompoundFailure, self).__init__(message=message,
-                                          possibly_flaky=possibly_flaky)
+    super(CompoundFailure, self).__init__(message=message)
 
   def ToFullMessage(self):
     """Returns a string with all information in self.exc_infos."""
@@ -178,19 +173,18 @@ class BuildScriptFailure(StepFailure):
   commands (e.g. build_packages) fail.
   """
 
-  def __init__(self, exception, shortname, possibly_flaky=False):
+  def __init__(self, exception, shortname):
     """Construct a BuildScriptFailure object.
 
     Args:
       exception: A RunCommandError object.
       shortname: Short name for the command we're running.
-      possibly_flaky: Whether this failure might be flaky.
     """
-    StepFailure.__init__(self, possibly_flaky=possibly_flaky)
+    StepFailure.__init__(self)
     assert isinstance(exception, cros_build_lib.RunCommandError)
     self.exception = exception
     self.shortname = shortname
-    self.args = (exception, shortname, possibly_flaky)
+    self.args = (exception, shortname)
 
   def __str__(self):
     """Summarize a build command failure briefly."""
@@ -291,19 +285,6 @@ class BuildFailureMessage(object):
 
   def __str__(self):
     return self.message
-
-  def MightBeFlakyFailure(self):
-    """Check if there is a good chance this is a flaky failure."""
-    # We only consider a failed build to be flaky if there is only one failure,
-    # and that failure is a flaky failure.
-    flaky = False
-    if len(self.tracebacks) == 1:
-      # TimeoutErrors are often flaky.
-      exc = self.tracebacks[0].exception
-      if (isinstance(exc, StepFailure) and exc.possibly_flaky or
-          isinstance(exc, timeout_util.TimeoutError)):
-        flaky = True
-    return flaky
 
   def MatchesFailureType(self, cls):
     """Check if all of the tracebacks match the specified failure type."""

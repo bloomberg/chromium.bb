@@ -194,4 +194,4 @@ def _UploadPrebuilts(buildroot, board, extra_args):
     cmd.extend(['--board', board])
 
   cmd.extend(extra_args)
-  commands.RunBuildScript(buildroot, cmd, cwd=cwd, possibly_flaky=True)
+  commands.RunBuildScript(buildroot, cmd, cwd=cwd)
