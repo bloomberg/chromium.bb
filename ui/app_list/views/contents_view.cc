@@ -26,11 +26,6 @@ namespace app_list {
 
 namespace {
 
-// Indexes of interesting views in ViewModel of ContentsView.
-const int kIndexAppsContainer = 0;
-const int kIndexSearchResults = 1;
-const int kIndexStartPage = 2;
-
 const int kMinMouseWheelToSwitchPage = 20;
 const int kMinScrollToSwitchPage = 20;
 const int kMinHorizVelocityToSwitchPage = 800;
@@ -42,27 +37,23 @@ const double kFinishTransitionThreshold = 0.33;
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListModel* model,
                            AppListViewDelegate* view_delegate)
-    : show_state_(SHOW_APPS),
-      start_page_view_(NULL),
+    : start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
 
-  apps_container_view_ = new AppsContainerView(app_list_main_view, model);
-  AddChildView(apps_container_view_);
-  view_model_->Add(apps_container_view_, kIndexAppsContainer);
-
   search_results_view_ =
       new SearchResultListView(app_list_main_view, view_delegate);
-  AddChildView(search_results_view_);
-  view_model_->Add(search_results_view_, kIndexSearchResults);
+  AddLauncherPage(search_results_view_, NAMED_PAGE_SEARCH_RESULTS);
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     start_page_view_ = new StartPageView(app_list_main_view, view_delegate);
-    AddChildView(start_page_view_);
-    view_model_->Add(start_page_view_, kIndexStartPage);
+    AddLauncherPage(start_page_view_, NAMED_PAGE_START);
   }
+
+  apps_container_view_ = new AppsContainerView(app_list_main_view, model);
+  active_page_ = AddLauncherPage(apps_container_view_, NAMED_PAGE_APPS);
 
   search_results_view_->SetResults(model->results());
 }
@@ -86,24 +77,44 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
   apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-void ContentsView::SetShowState(ShowState show_state) {
-  if (show_state_ == show_state)
+void ContentsView::SetActivePage(int page_index) {
+  if (active_page_ == page_index)
     return;
 
-  show_state_ = show_state;
-  ShowStateChanged();
+  active_page_ = page_index;
+  ActivePageChanged();
 }
 
-void ContentsView::ShowStateChanged() {
+bool ContentsView::IsNamedPageActive(NamedPage named_page) const {
+  std::map<NamedPage, int>::const_iterator it =
+      named_page_to_view_.find(named_page);
+  if (it == named_page_to_view_.end())
+    return false;
+  return it->second == active_page_;
+}
+
+int ContentsView::GetPageIndexForNamedPage(NamedPage named_page) const {
+  // Find the index of the view corresponding to the given named_page.
+  std::map<NamedPage, int>::const_iterator it =
+      named_page_to_view_.find(named_page);
+  // GetPageIndexForNamedPage should never be called on a named_page that does
+  // not have a corresponding view.
+  DCHECK(it != named_page_to_view_.end());
+  return it->second;
+}
+
+void ContentsView::ActivePageChanged() {
   // TODO(xiyuan): Highlight default match instead of the first.
-  if (show_state_ == SHOW_SEARCH_RESULTS && search_results_view_->visible())
+  if (IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS) &&
+      search_results_view_->visible()) {
     search_results_view_->SetSelectedIndex(0);
+  }
   search_results_view_->UpdateAutoLaunchState();
 
-  // Notify parent AppListMainView of show state change.
-  app_list_main_view_->OnContentsViewShowStateChanged();
+  // Notify parent AppListMainView of the page change.
+  app_list_main_view_->OnContentsViewActivePageChanged();
 
-  if (show_state_ == SHOW_START_PAGE)
+  if (IsNamedPageActive(NAMED_PAGE_START))
     start_page_view_->Reset();
 
   AnimateToIdealBounds();
@@ -115,29 +126,13 @@ void ContentsView::CalculateIdealBounds() {
     return;
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
-    int incoming_view_index = 0;
-    switch (show_state_) {
-      case SHOW_APPS:
-        incoming_view_index = kIndexAppsContainer;
-        break;
-      case SHOW_SEARCH_RESULTS:
-        incoming_view_index = kIndexSearchResults;
-        break;
-      case SHOW_START_PAGE:
-        incoming_view_index = kIndexStartPage;
-        break;
-      default:
-        NOTREACHED();
-    }
-
     gfx::Rect incoming_target(rect);
     gfx::Rect outgoing_target(rect);
     outgoing_target.set_x(-outgoing_target.width());
 
     for (int i = 0; i < view_model_->view_size(); ++i) {
-      view_model_->set_ideal_bounds(i,
-                                    i == incoming_view_index ? incoming_target
-                                                             : outgoing_target);
+      view_model_->set_ideal_bounds(
+          i, i == active_page_ ? incoming_target : outgoing_target);
     }
     return;
   }
@@ -145,24 +140,21 @@ void ContentsView::CalculateIdealBounds() {
   gfx::Rect container_frame(rect);
   gfx::Rect results_frame(rect);
 
-  // Offsets apps grid and result list based on |show_state_|.
+  // Offsets apps grid and result list based on |active_page_|.
   // SearchResultListView is on top of apps grid. Visible view is left in
   // visible area and invisible ones is put out of the visible area.
   int contents_area_height = rect.height();
-  switch (show_state_) {
-    case SHOW_APPS:
-      results_frame.Offset(0, -contents_area_height);
-      break;
-    case SHOW_SEARCH_RESULTS:
-      container_frame.Offset(0, contents_area_height);
-      break;
-    default:
-      NOTREACHED() << "Unknown show_state_ " << show_state_;
-      break;
-  }
+  if (IsNamedPageActive(NAMED_PAGE_APPS))
+    results_frame.Offset(0, -contents_area_height);
+  else if (IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS))
+    container_frame.Offset(0, contents_area_height);
+  else
+    NOTREACHED() << "Page " << active_page_ << " invalid in current app list.";
 
-  view_model_->set_ideal_bounds(kIndexAppsContainer, container_frame);
-  view_model_->set_ideal_bounds(kIndexSearchResults, results_frame);
+  view_model_->set_ideal_bounds(GetPageIndexForNamedPage(NAMED_PAGE_APPS),
+                                container_frame);
+  view_model_->set_ideal_bounds(
+      GetPageIndexForNamedPage(NAMED_PAGE_SEARCH_RESULTS), results_frame);
 }
 
 void ContentsView::AnimateToIdealBounds() {
@@ -178,7 +170,8 @@ PaginationModel* ContentsView::GetAppsPaginationModel() {
 }
 
 void ContentsView::ShowSearchResults(bool show) {
-  SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
+  NamedPage new_named_page = show ? NAMED_PAGE_SEARCH_RESULTS : NAMED_PAGE_APPS;
+  SetActivePage(GetPageIndexForNamedPage(new_named_page));
 }
 
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
@@ -189,6 +182,19 @@ void ContentsView::Prerender() {
   const int selected_page =
       std::max(0, GetAppsPaginationModel()->selected_page());
   apps_container_view_->apps_grid_view()->Prerender(selected_page);
+}
+
+int ContentsView::AddLauncherPage(views::View* view) {
+  int page_index = view_model_->view_size();
+  AddChildView(view);
+  view_model_->Add(view, page_index);
+  return page_index;
+}
+
+int ContentsView::AddLauncherPage(views::View* view, NamedPage named_page) {
+  int page_index = AddLauncherPage(view);
+  named_page_to_view_.insert(std::pair<NamedPage, int>(named_page, page_index));
+  return page_index;
 }
 
 gfx::Size ContentsView::GetPreferredSize() const {
@@ -207,21 +213,11 @@ void ContentsView::Layout() {
 }
 
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
-  switch (show_state_) {
-    case SHOW_APPS:
-      return apps_container_view_->OnKeyPressed(event);
-    case SHOW_SEARCH_RESULTS:
-      return search_results_view_->OnKeyPressed(event);
-    case SHOW_START_PAGE:
-      return start_page_view_->OnKeyPressed(event);
-    default:
-      NOTREACHED() << "Unknown show state " << show_state_;
-  }
-  return false;
+  return view_model_->view_at(active_page_)->OnKeyPressed(event);
 }
 
 bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (show_state_ != SHOW_APPS)
+  if (!IsNamedPageActive(NAMED_PAGE_APPS))
     return false;
 
   int offset;
@@ -241,7 +237,7 @@ bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void ContentsView::OnGestureEvent(ui::GestureEvent* event) {
-  if (show_state_ != SHOW_APPS)
+  if (!IsNamedPageActive(NAMED_PAGE_APPS))
     return;
 
   switch (event->type()) {
@@ -277,7 +273,7 @@ void ContentsView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (show_state_ != SHOW_APPS ||
+  if (!IsNamedPageActive(NAMED_PAGE_APPS) ||
       event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     return;
   }

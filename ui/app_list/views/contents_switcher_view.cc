@@ -27,18 +27,24 @@ ContentsSwitcherView::ContentsSwitcherView(ContentsView* contents_view)
 
   buttons_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
-  AddSwitcherButton(IDR_APP_LIST_SEARCH_ICON, ContentsView::SHOW_START_PAGE);
-  AddSwitcherButton(IDR_APP_LIST_APPS_ICON, ContentsView::SHOW_APPS);
+  // TODO(mgiuca): Dynamically generate these buttons from the subviews of
+  // |contents_view|.
+  AddSwitcherButton(
+      IDR_APP_LIST_SEARCH_ICON,
+      contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_START));
+  AddSwitcherButton(
+      IDR_APP_LIST_APPS_ICON,
+      contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
 }
 
 ContentsSwitcherView::~ContentsSwitcherView() {}
 
-void ContentsSwitcherView::AddSwitcherButton(int resource_id, int tag) {
+void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
   views::ImageButton* button = new views::ImageButton(this);
   button->SetImage(
       views::CustomButton::STATE_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
-  button->set_tag(tag);
+  button->set_tag(page_index);
   buttons_->AddChildView(button);
 }
 
@@ -60,8 +66,7 @@ void ContentsSwitcherView::Layout() {
 
 void ContentsSwitcherView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  contents_view_->SetShowState(
-      static_cast<ContentsView::ShowState>(sender->tag()));
+  contents_view_->SetActivePage(sender->tag());
 }
 
 }  // namespace app_list

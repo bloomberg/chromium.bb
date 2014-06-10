@@ -283,20 +283,21 @@ void AppListViewTestContext::RunStartPageTest() {
   if (test_type_ == EXPERIMENTAL) {
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
 
-    main_view->contents_view()->SetShowState(ContentsView::SHOW_START_PAGE);
-    main_view->contents_view()->Layout();
+    ContentsView* contents_view = main_view->contents_view();
+    contents_view->SetActivePage(contents_view->GetPageIndexForNamedPage(
+        ContentsView::NAMED_PAGE_START));
+    contents_view->Layout();
     EXPECT_FALSE(main_view->search_box_view()->visible());
     EXPECT_TRUE(IsViewAtOrigin(start_page_view));
-    EXPECT_FALSE(
-        IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->apps_container_view()));
     EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
 
-    main_view->contents_view()->SetShowState(ContentsView::SHOW_APPS);
-    main_view->contents_view()->Layout();
+    contents_view->SetActivePage(
+        contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
+    contents_view->Layout();
     EXPECT_TRUE(main_view->search_box_view()->visible());
     EXPECT_FALSE(IsViewAtOrigin(start_page_view));
-    EXPECT_TRUE(
-        IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
 
     // Check tiles hide and show on deletion and addition.
     model->CreateAndAddItem("Test app");

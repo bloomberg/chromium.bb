@@ -168,9 +168,9 @@ void AppListMainView::ModelChanged() {
   Layout();
 }
 
-void AppListMainView::OnContentsViewShowStateChanged() {
-  search_box_view_->SetVisible(contents_view_->show_state() !=
-                               ContentsView::SHOW_START_PAGE);
+void AppListMainView::OnContentsViewActivePageChanged() {
+  search_box_view_->SetVisible(
+      !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
 }
 
 void AppListMainView::OnStartPageSearchButtonPressed() {
