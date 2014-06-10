@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,9 @@ import java.util.List;
  */
 @JNINamespace("gcm")
 public final class GCMDriver {
+    // The instance of GCMDriver currently owned by a C++ GCMDriverAndroid, if any.
+    private static GCMDriver sInstance = null;
+
     private long mNativeGCMDriverAndroid;
     private final Context mContext;
 
@@ -37,7 +41,10 @@ public final class GCMDriver {
     @CalledByNative
     private static GCMDriver create(long nativeGCMDriverAndroid,
                                     Context context) {
-        return new GCMDriver(nativeGCMDriverAndroid, context);
+        if (sInstance != null)
+            throw new IllegalStateException("Already instantiated");
+        sInstance = new GCMDriver(nativeGCMDriverAndroid, context);
+        return sInstance;
     }
 
     /**
@@ -46,6 +53,8 @@ public final class GCMDriver {
      */
     @CalledByNative
     private void destroy() {
+        assert sInstance == this;
+        sInstance = null;
         mNativeGCMDriverAndroid = 0;
     }
 
@@ -60,36 +69,56 @@ public final class GCMDriver {
         nativeOnUnregisterFinished(mNativeGCMDriverAndroid, appId, false);
     }
 
-    public void onRegistered(String appId, String registrationId) {
-        nativeOnRegisterFinished(mNativeGCMDriverAndroid, appId, registrationId, true);
+    public static void onRegistered(String appId, String registrationId) {
+        ThreadUtils.assertOnUiThread();
+        // TODO(johnme): Update registrations cache?
+        if (sInstance != null)
+            sInstance.nativeOnRegisterFinished(sInstance.mNativeGCMDriverAndroid, appId,
+                                               registrationId, true);
     }
 
-    public void onUnregistered(String appId) {
-        nativeOnUnregisterFinished(mNativeGCMDriverAndroid, appId, true);
+    public static void onUnregistered(String appId) {
+        ThreadUtils.assertOnUiThread();
+        // TODO(johnme): Update registrations cache?
+        if (sInstance != null)
+            sInstance.nativeOnUnregisterFinished(sInstance.mNativeGCMDriverAndroid, appId, true);
     }
 
-    public void onMessageReceived(String appId, Bundle extras) {
-        final String BUNDLE_SENDER_ID = "from";
-        final String BUNDLE_COLLAPSE_KEY = "collapse_key";
+    public static void onMessageReceived(final String appId, final Bundle extras) {
+        // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
+        ThreadUtils.assertOnUiThread();
+        launchNativeThen(new Runnable() {
+            @Override public void run() {
+                final String BUNDLE_SENDER_ID = "from";
+                final String BUNDLE_COLLAPSE_KEY = "collapse_key";
 
-        String senderId = extras.getString(BUNDLE_SENDER_ID);
-        String collapseKey = extras.getString(BUNDLE_COLLAPSE_KEY);
+                String senderId = extras.getString(BUNDLE_SENDER_ID);
+                String collapseKey = extras.getString(BUNDLE_COLLAPSE_KEY);
 
-        List<String> dataKeysAndValues = new ArrayList<String>();
-        for (String key : extras.keySet()) {
-            // TODO(johnme): Check there aren't other default keys that we need to exclude.
-            if (key == BUNDLE_SENDER_ID || key == BUNDLE_COLLAPSE_KEY)
-                continue;
-            dataKeysAndValues.add(key);
-            dataKeysAndValues.add(extras.getString(key));
-        }
+                List<String> dataKeysAndValues = new ArrayList<String>();
+                for (String key : extras.keySet()) {
+                    // TODO(johnme): Check there aren't other default keys that we need to exclude.
+                    if (key == BUNDLE_SENDER_ID || key == BUNDLE_COLLAPSE_KEY)
+                        continue;
+                    dataKeysAndValues.add(key);
+                    dataKeysAndValues.add(extras.getString(key));
+                }
 
-        nativeOnMessageReceived(mNativeGCMDriverAndroid, appId, senderId, collapseKey,
-                                dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
+                sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
+                        appId, senderId, collapseKey,
+                        dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
+            }
+        });
     }
 
-    public void onMessagesDeleted(String appId) {
-        nativeOnMessagesDeleted(mNativeGCMDriverAndroid, appId);
+    public static void onMessagesDeleted(final String appId) {
+        // TODO(johnme): Store event and redeliver later if Chrome is killed before delivery.
+        ThreadUtils.assertOnUiThread();
+        launchNativeThen(new Runnable() {
+            @Override public void run() {
+                sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid, appId);
+            }
+        });
     }
 
     private native void nativeOnRegisterFinished(long nativeGCMDriverAndroid, String appId,
@@ -99,4 +128,13 @@ public final class GCMDriver {
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
             String senderId, String collapseKey, String[] dataKeysAndValues);
     private native void nativeOnMessagesDeleted(long nativeGCMDriverAndroid, String appId);
+
+    private static void launchNativeThen(Runnable task) {
+        if (sInstance != null) {
+            task.run();
+            return;
+        }
+
+        throw new UnsupportedOperationException("Native startup not yet implemented");
+    }
 }

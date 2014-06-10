@@ -89,4 +89,13 @@ In particular, ~ at the start of a string means it's a regex.
     <Method name="onCreate" />
     <Bug code="Dm" />
   </Match>
+  <!--
+  Ignore write to static field in GCMDriver, as it's the cleanest way to mark
+  the singleton as null when the native counterpart is destroyed.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.components\.gcm_driver\..*\.GCMDriver" />
+    <Method name="destroy" />
+    <Bug code="ST" />
+  </Match>
 </FindBugsFilter>
