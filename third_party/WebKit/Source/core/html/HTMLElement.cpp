@@ -314,7 +314,7 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     } else {
         const AtomicString& eventName = eventNameForAttributeName(name);
         if (!eventName.isNull())
-            setAttributeEventListener(eventName, createAttributeEventListener(this, name, value));
+            setAttributeEventListener(eventName, createAttributeEventListener(this, name, value, eventParameterName()));
     }
 }
 
@@ -948,6 +948,12 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
         dispatchSimulatedClick(event);
         event->setDefaultHandled();
     }
+}
+
+const AtomicString& HTMLElement::eventParameterName()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event", AtomicString::ConstructFromLiteral));
+    return eventString;
 }
 
 } // namespace WebCore

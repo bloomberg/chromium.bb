@@ -487,9 +487,9 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
     else if (name == accept_charsetAttr)
         m_attributes.setAcceptCharset(value);
     else if (name == onautocompleteAttr)
-        setAttributeEventListener(EventTypeNames::autocomplete, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::autocomplete, createAttributeEventListener(this, name, value, eventParameterName()));
     else if (name == onautocompleteerrorAttr)
-        setAttributeEventListener(EventTypeNames::autocompleteerror, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::autocompleteerror, createAttributeEventListener(this, name, value, eventParameterName()));
     else
         HTMLElement::parseAttribute(name, value);
 }

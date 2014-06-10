@@ -669,7 +669,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // FIXME: ignore for the moment
     } else if (name == onsearchAttr) {
         // Search field and slider attributes all just cause updateFromElement to be called through style recalcing.
-        setAttributeEventListener(EventTypeNames::search, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::search, createAttributeEventListener(this, name, value, eventParameterName()));
     } else if (name == resultsAttr) {
         int oldResults = m_maxResults;
         m_maxResults = !value.isNull() ? std::min(value.toInt(), maxSavedResults) : -1;

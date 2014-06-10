@@ -68,7 +68,7 @@ void SVGScriptElement::parseAttribute(const QualifiedName& name, const AtomicStr
         return;
 
     if (name == HTMLNames::onerrorAttr) {
-        setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value, eventParameterName()));
     } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else {
         ASSERT_NOT_REACHED();

@@ -539,11 +539,11 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         if (inDocument())
             connectSyncBaseConditions();
     } else if (name == SVGNames::onbeginAttr) {
-        setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value, eventParameterName()));
     } else if (name == SVGNames::onendAttr) {
-        setAttributeEventListener(EventTypeNames::endEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::endEvent, createAttributeEventListener(this, name, value, eventParameterName()));
     } else if (name == SVGNames::onrepeatAttr) {
-        setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value, eventParameterName()));
     } else
         SVGElement::parseAttribute(name, value);
 }

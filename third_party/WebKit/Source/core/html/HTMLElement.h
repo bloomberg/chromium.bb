@@ -91,6 +91,8 @@ public:
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
     virtual bool matchesReadWritePseudoClass() const OVERRIDE;
 
+    static const AtomicString& eventParameterName();
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 

@@ -43,8 +43,8 @@ namespace WebCore {
     class Node;
     class QualifiedName;
 
-    PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value);
-    PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value);
+    PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
+    PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
     String eventListenerHandlerBody(Document*, EventListener*);
     ScriptValue eventListenerHandler(Document*, EventListener*);
     ScriptState* eventListenerHandlerScriptState(LocalFrame*, EventListener*);

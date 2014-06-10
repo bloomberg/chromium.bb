@@ -675,7 +675,7 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         // standard events
         const AtomicString& eventName = HTMLElement::eventNameForAttributeName(name);
         if (!eventName.isNull())
-            setAttributeEventListener(eventName, createAttributeEventListener(this, name, value));
+            setAttributeEventListener(eventName, createAttributeEventListener(this, name, value, eventParameterName()));
         else
             Element::parseAttribute(name, value);
     }
@@ -1174,6 +1174,12 @@ void SVGElement::trace(Visitor* visitor)
     visitor->trace(m_elementsWithRelativeLengths);
     visitor->trace(m_SVGRareData);
     Element::trace(visitor);
+}
+
+const AtomicString& SVGElement::eventParameterName()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, evtString, ("evt", AtomicString::ConstructFromLiteral));
+    return evtString;
 }
 
 }

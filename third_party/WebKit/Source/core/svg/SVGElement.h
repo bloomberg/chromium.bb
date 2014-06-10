@@ -182,6 +182,8 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    static const AtomicString& eventParameterName();
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 

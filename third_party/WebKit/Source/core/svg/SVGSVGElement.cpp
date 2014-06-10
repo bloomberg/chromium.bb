@@ -220,13 +220,13 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
 
         // Only handle events if we're the outermost <svg> element
         if (name == HTMLNames::onunloadAttr)
-            document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value));
+            document().setWindowAttributeEventListener(EventTypeNames::unload, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         else if (name == HTMLNames::onresizeAttr)
-            document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value));
+            document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         else if (name == HTMLNames::onscrollAttr)
-            document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value));
+            document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         else if (name == SVGNames::onzoomAttr)
-            document().setWindowAttributeEventListener(EventTypeNames::zoom, createAttributeEventListener(document().frame(), name, value));
+            document().setWindowAttributeEventListener(EventTypeNames::zoom, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         else
             setListener = false;
 
@@ -235,9 +235,9 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
     }
 
     if (name == HTMLNames::onabortAttr) {
-        document().setWindowAttributeEventListener(EventTypeNames::abort, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::abort, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (name == HTMLNames::onerrorAttr) {
-        document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value));
+        document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::yAttr) {

@@ -44,14 +44,7 @@
 
 namespace WebCore {
 
-static const AtomicString& eventParameterName(bool isSVGEvent)
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event"));
-    DEFINE_STATIC_LOCAL(const AtomicString, evtString, ("evt"));
-    return isSVGEvent ? evtString : eventString;
-}
-
-PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const QualifiedName& name, const AtomicString& value)
+PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
 {
     ASSERT(node);
     if (value.isNull())
@@ -73,10 +66,10 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
         isolate = v8::Isolate::GetCurrent();
     }
 
-    return V8LazyEventListener::create(name.localName(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, isolate);
+    return V8LazyEventListener::create(name.localName(), eventParameterName, value, sourceURL, position, node, isolate);
 }
 
-PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame* frame, const QualifiedName& name, const AtomicString& value)
+PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame* frame, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
 {
     if (!frame)
         return nullptr;
@@ -91,7 +84,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame* frame, 
     TextPosition position = scriptController.eventHandlerPosition();
     String sourceURL = frame->document()->url().string();
 
-    return V8LazyEventListener::create(name.localName(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0, toIsolate(frame));
+    return V8LazyEventListener::create(name.localName(), eventParameterName, value, sourceURL, position, 0, toIsolate(frame));
 }
 
 static v8::Handle<v8::Function> eventListenerEffectiveFunction(v8::Isolate* isolate, v8::Handle<v8::Object> listenerObject)

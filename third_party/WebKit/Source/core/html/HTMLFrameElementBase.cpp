@@ -127,7 +127,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
         // FIXME: If we are already attached, this has no effect.
     } else if (name == onbeforeunloadAttr) {
         // FIXME: should <frame> elements have beforeunload handlers?
-        setAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(this, name, value));
+        setAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(this, name, value, eventParameterName()));
     } else
         HTMLFrameOwnerElement::parseAttribute(name, value);
 }
