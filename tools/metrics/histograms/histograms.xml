@@ -5028,6 +5028,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.IOSPolicies">
+  <owner>joaodasilva@chromium.org</owner>
+  <summary>
+    Number of policies loaded at startup on iOS, and when a change is detected
+    at runtime.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.ONC.PolicyValidation" enum="BooleanSuccess">
   <owner>joaodasilva@chromium.org</owner>
   <summary>Result of the OpenNetworkConfiguration policy validation.</summary>

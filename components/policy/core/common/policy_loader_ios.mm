@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/mac_util.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -145,6 +146,10 @@ scoped_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
       }
     }
   }
+
+  const PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, std::string());
+  size_t count = bundle->Get(chrome_ns).size();
+  UMA_HISTOGRAM_COUNTS_100("Enterprise.IOSPolicies", count);
 
   return bundle.Pass();
 }
