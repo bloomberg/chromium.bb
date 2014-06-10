@@ -99,9 +99,6 @@ deps = {
   "src/third_party/angle":
     Var("chromium_git") + "/angle/angle.git@" + Var("angle_revision"),
 
-  "src/third_party/colorama/src":
-    Var("chromium_git") + "/external/colorama.git@799604a104",
-
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@1281",
 

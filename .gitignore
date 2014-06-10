@@ -233,7 +233,6 @@ v8.log
 /third_party/clang_format/script
 !/third_party/clang_format/bin/*/*.sha1
 /third_party/cld_2/src
-/third_party/colorama/src
 /third_party/cros
 /third_party/cros_system_api
 /third_party/cygwin
