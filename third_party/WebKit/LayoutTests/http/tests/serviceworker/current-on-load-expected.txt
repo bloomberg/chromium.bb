@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL current is set for a controlled document assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
-Harness: the test ran to completion.
-
