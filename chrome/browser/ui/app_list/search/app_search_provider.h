@@ -7,21 +7,22 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class AppListControllerDelegate;
 class Profile;
 
 namespace extensions {
+class ExtensionRegistry;
 class ExtensionSet;
 }
 
 namespace app_list {
 
 class AppSearchProvider : public SearchProvider,
-                          public content::NotificationObserver {
+                          public extensions::ExtensionRegistryObserver {
  public:
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller);
@@ -39,14 +40,20 @@ class AppSearchProvider : public SearchProvider,
   void AddApps(const extensions::ExtensionSet& extensions);
   void RefreshApps();
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver overrides:
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
-  content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   Apps apps_;
 

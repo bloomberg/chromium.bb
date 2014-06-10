@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -15,8 +14,6 @@
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -44,17 +41,12 @@ class AppSearchProvider::App {
   DISALLOW_COPY_AND_ASSIGN(App);
 };
 
-AppSearchProvider::AppSearchProvider(
-    Profile* profile,
-    AppListControllerDelegate* list_controller)
+AppSearchProvider::AppSearchProvider(Profile* profile,
+                                     AppListControllerDelegate* list_controller)
     : profile_(profile),
-      list_controller_(list_controller) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+      list_controller_(list_controller),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   RefreshApps();
 }
 
@@ -104,17 +96,16 @@ void AppSearchProvider::RefreshApps() {
   AddApps(registry->terminated_extensions());
 }
 
-void AppSearchProvider::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& detaila) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      RefreshApps();
-      break;
-    default:
-      NOTREACHED();
-  }
+void AppSearchProvider::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  RefreshApps();
+}
+
+void AppSearchProvider::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  RefreshApps();
 }
 
 }  // namespace app_list
