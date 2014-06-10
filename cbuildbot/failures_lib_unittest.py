@@ -72,10 +72,10 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
     self.assertTrue('bar1' in str(exc))
     self.assertTrue('bar2' in str(exc))
-    self.assertTrue('foo1' in str(exc))
-    self.assertTrue('foo2' in str(exc))
     self.assertTrue('KeyError' in str(exc))
     self.assertTrue('ValueError' in str(exc))
+    self.assertTrue('foo1' in exc.ToFullMessage())
+    self.assertTrue('foo2' in exc.ToFullMessage())
 
 
 class SetFailureTypeTest(cros_test_lib.TestCase):
@@ -144,8 +144,8 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
       self.assertEqual(e.exc_infos, org_infos)
       # All essential inforamtion should be included in the message of
       # the new excpetion.
-      self.assertTrue(tb1 in str(e))
-      self.assertTrue(tb2 in str(e))
+      self.assertTrue(tb1 in e.ToFullMessage())
+      self.assertTrue(tb2 in e.ToFullMessage())
       self.assertTrue(str(ValueError) in str(e))
       self.assertTrue(str(OSError) in str(e))
       self.assertTrue(str('No taco') in str(e))

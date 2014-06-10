@@ -351,8 +351,8 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
           ex_str = str(ex)
 
       self.assertTrue(exc_type in [x.type for x in ex.exc_infos])
-      self.assertTrue('Traceback' in ex_str)
       self.assertEqual(output_str, _GREETING)
+      self.assertTrue(str(exc_type) in ex_str)
 
   def testExceptionRaising(self):
     """Tests the exceptions are raised correctly."""
