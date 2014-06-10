@@ -183,6 +183,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
 
   if (flags & FLAG_CREATE_ALWAYS) {
     DCHECK(!open_flags);
+    DCHECK(flags & FLAG_WRITE);
     open_flags = O_CREAT | O_TRUNC;
   }
 

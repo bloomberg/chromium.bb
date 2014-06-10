@@ -78,7 +78,7 @@ TEST(FileTest, Create) {
   {
     // Create or overwrite a file.
     File file(file_path,
-              base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ);
+              base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     EXPECT_TRUE(file.IsValid());
     EXPECT_TRUE(file.created());
     EXPECT_EQ(base::File::FILE_OK, file.error_details());

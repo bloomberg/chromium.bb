@@ -101,7 +101,7 @@ TEST(PlatformFile, CreatePlatformFile) {
   error_code = PLATFORM_FILE_OK;
   file = CreatePlatformFile(
       file_path,
-      PLATFORM_FILE_CREATE_ALWAYS | PLATFORM_FILE_READ,
+      PLATFORM_FILE_CREATE_ALWAYS | PLATFORM_FILE_WRITE,
       &created,
       &error_code);
   EXPECT_NE(kInvalidPlatformFileValue, file);

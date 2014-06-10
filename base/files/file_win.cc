@@ -34,6 +34,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
 
   if (flags & FLAG_CREATE_ALWAYS) {
     DCHECK(!disposition);
+    DCHECK(flags & FLAG_WRITE);
     disposition = CREATE_ALWAYS;
   }
 
