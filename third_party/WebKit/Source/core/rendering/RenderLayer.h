@@ -436,8 +436,6 @@ public:
 
     bool scrollsOverflow() const;
 
-    bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
-
     CompositingReasons styleDeterminedCompositingReasons() const { return m_styleDeterminedCompositingReasons; }
     void setStyleDeterminedCompositingReasons(CompositingReasons reasons) { ASSERT(reasons == (reasons & CompositingReasonComboAllStyleDeterminedReasons)); m_styleDeterminedCompositingReasons = reasons; }
 

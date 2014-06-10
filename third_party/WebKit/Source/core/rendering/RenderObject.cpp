@@ -2000,9 +2000,6 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
-    // FIXME: The calls to hasDirectReasonsForCompositing are using state that may not be up to date.
-    DisableCompositingQueryAsserts disabler;
-
     if (contextSensitiveProperties & ContextSensitivePropertyTransform && isSVG())
         diff.setNeedsFullLayout();
 
@@ -2010,7 +2007,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
+        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->styleDeterminedCompositingReasons()))
             diff.setNeedsRepaintLayer();
         else
             diff.setNeedsRecompositeLayer();
@@ -2019,7 +2016,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
     if (contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) {
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
+        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->styleDeterminedCompositingReasons()))
             diff.setNeedsRepaintLayer();
         else
             diff.setNeedsRecompositeLayer();
@@ -2028,7 +2025,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to repaint.
     if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
-        if (!layer->hasDirectReasonsForCompositing() || layer->paintsWithFilters())
+        if (!layer->styleDeterminedCompositingReasons() || layer->paintsWithFilters())
             diff.setNeedsRepaintLayer();
         else
             diff.setNeedsRecompositeLayer();
