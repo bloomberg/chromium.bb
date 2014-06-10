@@ -8,11 +8,19 @@ Call stack:
     0) testElementClicked (event-listener-breakpoints.html:7)
     1) addListenerAndClick (event-listener-breakpoints.html:16)
     2)  (:1)
+Event target: Node
 Script execution resumed.
 
 Running: testTimerFiredBreakpoint
 Script execution paused.
 Call stack:
     0) timerFired (event-listener-breakpoints.html:19)
+Script execution resumed.
+
+Running: testLoadBreakpointOnXHR
+Script execution paused.
+Call stack:
+    0) loadCallback (event-listener-breakpoints.html:42)
+Event target: XMLHttpRequest
 Script execution resumed.
 

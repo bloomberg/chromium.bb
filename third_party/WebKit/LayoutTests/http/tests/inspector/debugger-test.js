@@ -223,7 +223,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), callFrames), reason, breakpointIds, asyncStackTrace];
+    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
