@@ -296,13 +296,6 @@ const char kArgs_Help[] =
 const char kCflags[] = "cflags";
 const char kCflags_HelpShort[] =
     "cflags: [string list] Flags passed to all C compiler variants.";
-// Avoid writing long help for each variant.
-#define COMMON_FLAGS_HELP \
-    "\n"\
-    "  Flags are never quoted. If your flag includes a string that must be\n"\
-    "  quoted, you must do it yourself. This also means that you can\n"\
-    "  specify more than one flag in a string if necessary (\"--foo --bar\")\n"\
-    "  and have them be seen as separate by the tool.\n"
 const char kCommonCflagsHelp[] =
     "cflags*: Flags passed to the C compiler.\n"
     "\n"
@@ -314,7 +307,6 @@ const char kCommonCflagsHelp[] =
     "  To target one of these variants individually, use \"cflags_c\",\n"
     "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\", respectively.\n"
     "  These variant-specific versions will be appended to the \"cflags\".\n"
-    COMMON_FLAGS_HELP
     COMMON_ORDERING_HELP;
 const char* kCflags_Help = kCommonCflagsHelp;
 
@@ -559,8 +551,7 @@ const char kLdflags_Help[] =
     "  ldflags are NOT pushed to dependents, so applying ldflags to source\n"
     "  sets or static libraries will be a no-op. If you want to apply ldflags\n"
     "  to dependent targets, put them in a config and set it in the\n"
-    "  all_dependent_configs or direct_dependent_configs.\n"
-    COMMON_FLAGS_HELP;
+    "  all_dependent_configs or direct_dependent_configs.\n";
 
 #define COMMON_LIB_INHERITANCE_HELP \
     "\n" \

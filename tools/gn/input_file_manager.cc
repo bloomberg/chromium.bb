@@ -46,8 +46,9 @@ bool DoLoadFile(const LocationRange& origin,
           build_settings->GetFullPathSecondary(name);
       if (!file->Load(secondary_path)) {
         *err = Err(origin, "Can't load input file.",
-                   "Unable to load either \n" +
-                   FilePathToUTF8(primary_path) + " or \n" +
+                   "Unable to load:\n  " +
+                   FilePathToUTF8(primary_path) + "\n"
+                   "I also checked in the secondary tree for:\n  " +
                    FilePathToUTF8(secondary_path));
         return false;
       }

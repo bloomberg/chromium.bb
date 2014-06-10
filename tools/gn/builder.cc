@@ -258,15 +258,17 @@ BuilderRecord* Builder::GetOrCreateRecordOfType(const Label& label,
 
   // Check types.
   if (record->type() != type) {
-    *err = Err(request_from, "Item type does not match.",
-        "The item \"" + label.GetUserVisibleName(false) +
-        "\"\nwas expected to be a " +
-        BuilderRecord::GetNameForType(type) +
-        " but was previously referenced as a " +
-        BuilderRecord::GetNameForType(record->type()));
+    std::string msg =
+        "The type of " + label.GetUserVisibleName(false) +
+        "\nhere is a " + BuilderRecord::GetNameForType(type) +
+        " but was previously seen as a " +
+        BuilderRecord::GetNameForType(record->type()) + ".\n\n"
+        "The most common cause is that the label of a config was put in the\n"
+        "in the deps section of a target (or vice-versa).";
+    *err = Err(request_from, "Item type does not match.", msg);
     if (record->originally_referenced_from()) {
       err->AppendSubErr(Err(record->originally_referenced_from(),
-                            "The previous reference was here."));
+                            std::string()));
     }
     return NULL;
   }
@@ -361,7 +363,9 @@ void Builder::RecursiveSetShouldGenerate(BuilderRecord* record,
 }
 
 void Builder::ScheduleItemLoadIfNecessary(BuilderRecord* record) {
-  loader_->Load(record->label());
+  const ParseNode* origin = record->originally_referenced_from();
+  loader_->Load(record->label(),
+                origin ? origin->GetRange() : LocationRange());
 }
 
 bool Builder::ResolveItem(BuilderRecord* record, Err* err) {

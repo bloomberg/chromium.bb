@@ -19,6 +19,20 @@
 #include "tools/gn/source_file.h"
 #include "tools/gn/trace.h"
 
+namespace {
+
+struct SourceFileAndOrigin {
+  SourceFileAndOrigin(const SourceFile& f, const LocationRange& o)
+      : file(f),
+        origin(o) {
+  }
+
+  SourceFile file;
+  LocationRange origin;
+};
+
+}  // namespace
+
 // Identifies one time a file is loaded in a given toolchain so we don't load
 // it more than once.
 struct LoaderImpl::LoadID {
@@ -60,7 +74,7 @@ struct LoaderImpl::ToolchainRecord {
   bool is_toolchain_loaded;
   bool is_config_loaded;
 
-  std::vector<SourceFile> waiting_on_me;
+  std::vector<SourceFileAndOrigin> waiting_on_me;
 };
 
 // -----------------------------------------------------------------------------
@@ -73,8 +87,8 @@ Loader::Loader() {
 Loader::~Loader() {
 }
 
-void Loader::Load(const Label& label) {
-  Load(BuildFileForLabel(label), label.GetToolchainLabel());
+void Loader::Load(const Label& label, const LocationRange& origin) {
+  Load(BuildFileForLabel(label), origin, label.GetToolchainLabel());
 }
 
 // static
@@ -96,7 +110,8 @@ LoaderImpl::~LoaderImpl() {
 }
 
 void LoaderImpl::Load(const SourceFile& file,
-    const Label& in_toolchain_name) {
+                      const LocationRange& origin,
+                      const Label& in_toolchain_name) {
   const Label& toolchain_name = in_toolchain_name.is_null()
       ? default_toolchain_label_ : in_toolchain_name;
   LoadID load_id(file, toolchain_name);
@@ -117,7 +132,7 @@ void LoaderImpl::Load(const SourceFile& file,
     // toolchain name is.
     record->is_toolchain_loaded = true;
 
-    record->waiting_on_me.push_back(file);
+    record->waiting_on_me.push_back(SourceFileAndOrigin(file, origin));
     ScheduleLoadBuildConfig(&record->settings, Scope::KeyValueMap());
     return;
   }
@@ -137,13 +152,13 @@ void LoaderImpl::Load(const SourceFile& file,
     toolchain_records_[toolchain_name] = record;
 
     // Schedule a load of the toolchain using the default one.
-    Load(BuildFileForLabel(toolchain_name), default_toolchain_label_);
+    Load(BuildFileForLabel(toolchain_name), origin, default_toolchain_label_);
   }
 
   if (record->is_config_loaded)
-    ScheduleLoadFile(&record->settings, file);
+    ScheduleLoadFile(&record->settings, origin, file);
   else
-    record->waiting_on_me.push_back(file);
+    record->waiting_on_me.push_back(SourceFileAndOrigin(file, origin));
 }
 
 void LoaderImpl::ToolchainLoaded(const Toolchain* toolchain) {
@@ -188,10 +203,11 @@ const Settings* LoaderImpl::GetToolchainSettings(const Label& label) const {
 }
 
 void LoaderImpl::ScheduleLoadFile(const Settings* settings,
+                                  const LocationRange& origin,
                                   const SourceFile& file) {
   Err err;
   pending_loads_++;
-  if (!AsyncLoadFile(LocationRange(), settings->build_settings(), file,
+  if (!AsyncLoadFile(origin, settings->build_settings(), file,
                      base::Bind(&LoaderImpl::BackgroundLoadFile, this,
                                 settings, file),
                      &err)) {
@@ -374,8 +390,10 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
   record->is_config_loaded = true;
 
   // Schedule all waiting file loads.
-  for (size_t i = 0; i < record->waiting_on_me.size(); i++)
-    ScheduleLoadFile(&record->settings, record->waiting_on_me[i]);
+  for (size_t i = 0; i < record->waiting_on_me.size(); i++) {
+    ScheduleLoadFile(&record->settings, record->waiting_on_me[i].origin,
+                     record->waiting_on_me[i].file);
+  }
   record->waiting_on_me.clear();
 
   DecrementPendingLoads();

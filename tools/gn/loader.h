@@ -18,6 +18,7 @@ class MessageLoop;
 }
 
 class BuildSettings;
+class LocationRange;
 class Settings;
 class SourceFile;
 class Toolchain;
@@ -37,6 +38,7 @@ class Loader : public base::RefCountedThreadSafe<Loader> {
   // empty toolchain name, which will trigger the load of the default build
   // config.
   virtual void Load(const SourceFile& file,
+                    const LocationRange& origin,
                     const Label& toolchain_name) = 0;
 
   // Notification that the given toolchain has loaded. This will unblock files
@@ -52,7 +54,7 @@ class Loader : public base::RefCountedThreadSafe<Loader> {
 
   // Helper function that extracts the file and toolchain name from the given
   // label, and calls Load().
-  void Load(const Label& label);
+  void Load(const Label& label, const LocationRange& origin);
 
   // Returns the build file that the given label references.
   static SourceFile BuildFileForLabel(const Label& label);
@@ -81,6 +83,7 @@ class LoaderImpl : public Loader {
 
   // Loader implementation.
   virtual void Load(const SourceFile& file,
+                    const LocationRange& origin,
                     const Label& toolchain_name) OVERRIDE;
   virtual void ToolchainLoaded(const Toolchain* toolchain) OVERRIDE;
   virtual Label GetDefaultToolchain() const OVERRIDE;
@@ -116,6 +119,7 @@ class LoaderImpl : public Loader {
 
   // Schedules the input file manager to load the given file.
   void ScheduleLoadFile(const Settings* settings,
+                        const LocationRange& origin,
                         const SourceFile& file);
   void ScheduleLoadBuildConfig(
       Settings* settings,

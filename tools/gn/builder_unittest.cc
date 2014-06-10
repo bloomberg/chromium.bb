@@ -18,6 +18,7 @@ class MockLoader : public Loader {
 
   // Loader implementation:
   virtual void Load(const SourceFile& file,
+                    const LocationRange& origin,
                     const Label& toolchain_name) OVERRIDE {
     files_.push_back(file);
   }

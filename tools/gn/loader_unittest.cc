@@ -146,7 +146,7 @@ TEST_F(LoaderTest, Foo) {
   // Request the root build file be loaded. This should kick off the default
   // build config loading.
   SourceFile root_build("//BUILD.gn");
-  loader->Load(root_build, Label());
+  loader->Load(root_build, LocationRange(), Label());
   EXPECT_TRUE(mock_ifm_.HasOnePending(build_config));
 
   // Completing the build config load should kick off the root build file load.
@@ -161,7 +161,7 @@ TEST_F(LoaderTest, Foo) {
   // Schedule some other file to load in another toolchain.
   Label second_tc(SourceDir("//tc2/"), "tc2");
   SourceFile second_file("//foo/BUILD.gn");
-  loader->Load(second_file, second_tc);
+  loader->Load(second_file, LocationRange(), second_tc);
   EXPECT_TRUE(mock_ifm_.HasOnePending(SourceFile("//tc2/BUILD.gn")));
 
   // Running the toolchain file should schedule the build config file to load
@@ -179,7 +179,7 @@ TEST_F(LoaderTest, Foo) {
   // Scheduling a second file to load in that toolchain should not make it
   // pending yet (it's waiting for the build config).
   SourceFile third_file("//bar/BUILD.gn");
-  loader->Load(third_file, second_tc);
+  loader->Load(third_file, LocationRange(), second_tc);
   EXPECT_TRUE(mock_ifm_.HasOnePending(build_config));
 
   // Running the build config file should make our third file pending.

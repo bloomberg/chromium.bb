@@ -163,7 +163,7 @@ CommonSetup::~CommonSetup() {
 
 void CommonSetup::RunPreMessageLoop() {
   // Load the root build file.
-  loader_->Load(root_build_file_, Label());
+  loader_->Load(root_build_file_, LocationRange(), Label());
 
   // Will be decremented with the loader is drained.
   g_scheduler->IncrementWorkCount();
