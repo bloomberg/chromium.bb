@@ -46,6 +46,9 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -57,6 +60,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -3231,3 +3235,56 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_GZipWithNoContent) {
   DownloadAndWait(browser(), url);
   DownloadAndWait(browser(), url);
 }
+
+#if defined(FULL_SAFE_BROWSING)
+IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
+  // Make a dangerous file.
+  base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
+  GURL download_url(content::URLRequestMockHTTPJob::GetMockUrl(file));
+  scoped_ptr<content::DownloadTestObserverInterrupted> observer(
+      new content::DownloadTestObserverInterrupted(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(download_url),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  observer->WaitForFinished();
+
+  // Get the download from the DownloadManager.
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  EXPECT_TRUE(downloads[0]->IsDangerous());
+
+  // Save fake pings for the download.
+  safe_browsing::ClientDownloadReport fake_metadata;
+  fake_metadata.mutable_download_request()->set_url("http://test");
+  fake_metadata.mutable_download_request()->set_length(1);
+  fake_metadata.mutable_download_request()->mutable_digests()->set_sha1("hi");
+  fake_metadata.mutable_download_response()->set_verdict(
+      safe_browsing::ClientDownloadResponse::UNCOMMON);
+  std::string ping_request(
+      fake_metadata.download_request().SerializeAsString());
+  std::string ping_response(
+      fake_metadata.download_response().SerializeAsString());
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  safe_browsing::DownloadProtectionService* download_protection_service =
+      sb_service->download_protection_service();
+  download_protection_service->feedback_service()->MaybeStorePingsForDownload(
+      safe_browsing::DownloadProtectionService::UNCOMMON,
+      downloads[0],
+      ping_request,
+      ping_response);
+  ASSERT_TRUE(safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
+      *(downloads[0])));
+
+  // Begin feedback and check that the file is "stolen".
+  download_protection_service->feedback_service()->BeginFeedbackForDownload(
+      downloads[0]);
+  std::vector<DownloadItem*> updated_downloads;
+  GetDownloads(browser(), &updated_downloads);
+  ASSERT_TRUE(updated_downloads.empty());
+}
+#endif
