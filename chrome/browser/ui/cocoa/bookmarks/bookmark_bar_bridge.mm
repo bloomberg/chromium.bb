@@ -76,7 +76,7 @@ void BookmarkBarBridge::BookmarkNodeRemoved(
     [controller_ nodeRemoved:model parent:parent index:old_index];
 }
 
-void BookmarkBarBridge::BookmarkAllNodesRemoved(
+void BookmarkBarBridge::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   [controller_ loaded:model];

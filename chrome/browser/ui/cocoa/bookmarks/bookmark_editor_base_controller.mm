@@ -151,7 +151,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       [controller_ modelChangedPreserveSelection:NO];
   }
 
-  virtual void BookmarkAllNodesRemoved(
+  virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) OVERRIDE {
     [controller_ modelChangedPreserveSelection:NO];
