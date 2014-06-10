@@ -210,7 +210,8 @@ ProxyMediaKeys::ProxyMediaKeys(
       session_message_cb_(session_message_cb),
       session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb) {
+      session_error_cb_(session_error_cb),
+      next_session_id_(1) {
   cdm_id_ = manager->RegisterMediaKeys(this);
 }
 
