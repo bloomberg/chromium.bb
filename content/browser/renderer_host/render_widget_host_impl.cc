@@ -1611,6 +1611,9 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
 
 void RenderWidgetHostImpl::OnSetTouchEventEmulationEnabled(
     bool enabled, bool allow_pinch) {
+  if (delegate_)
+    delegate_->OnTouchEmulationEnabled(enabled);
+
   if (enabled) {
     if (!touch_emulator_)
       touch_emulator_.reset(new TouchEmulator(this));

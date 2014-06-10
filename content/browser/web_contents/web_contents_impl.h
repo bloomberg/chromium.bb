@@ -506,6 +506,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool HandleGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
+  virtual void OnTouchEmulationEnabled(bool enabled) OVERRIDE;
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
 #endif
@@ -1121,6 +1122,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Whether this WebContents is responsible for displaying a subframe in a
   // different process from its parent page.
   bool is_subframe_;
+
+  // Whether touch emulation is enabled in RenderWidgetHost.
+  bool touch_emulation_enabled_;
 
   // Whether the last JavaScript dialog shown was suppressed. Used for testing.
   bool last_dialog_suppressed_;
