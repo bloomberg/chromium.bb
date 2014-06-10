@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/sysroot.gni")
+import("//build/config/ui.gni")
 
 config("sdk") {
   if (sysroot != "") {
@@ -50,6 +51,16 @@ pkg_config("udev") {
 
 pkg_config("dbus") {
   packages = [ "dbus-1" ]
+}
+
+if (use_evdev_gestures) {
+  pkg_config("libevdev-cros") {
+    packages = [ "libevdev-cros" ]
+  }
+
+  pkg_config("libgestures") {
+    packages = [ "libgestures" ]
+  }
 }
 
 config("x11") {

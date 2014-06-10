@@ -8,6 +8,8 @@
 # you add a new build file, there must be some path of dependencies from this
 # file to your new one or GN won't know about it.
 
+import("//build/config/ui.gni")
+
 # In GN, a "group" is a dummy target that just lists other targets.
 group("root") {
   # Note that some dependencies are commented out. These are things that are
@@ -136,6 +138,13 @@ group("root") {
       # Not tested on Android yet:
       "//webkit/browser:storage",
       "//webkit/child",
+    ]
+  }
+
+  if (use_ozone) {
+    deps += [
+      "//ui/events/ozone:events_ozone",
+      "//ui/events/ozone:events_ozone_evdev",
     ]
   }
 }

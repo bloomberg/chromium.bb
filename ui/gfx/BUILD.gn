@@ -324,23 +324,6 @@ component("gfx") {
       "ozone/overlay_candidates_ozone.h",
     ]
   }
-  if (use_ozone && ozone_platform_dri) {
-    sources += [
-      "ozone/dri/dri_skbitmap.cc",
-      "ozone/dri/dri_skbitmap.h",
-      "ozone/dri/dri_surface.cc",
-      "ozone/dri/dri_surface.h",
-      "ozone/dri/dri_surface_factory.cc",
-      "ozone/dri/dri_surface_factory.h",
-      "ozone/dri/dri_vsync_provider.cc",
-      "ozone/dri/dri_vsync_provider.h",
-      "ozone/dri/dri_wrapper.cc",
-      "ozone/dri/dri_wrapper.h",
-      "ozone/dri/hardware_display_controller.cc",
-      "ozone/dri/hardware_display_controller.h",
-    ]
-    configs += [ "//build/config/linux:dridrm" ]
-  }
 
   if (!use_aura) {
     sources -= [
