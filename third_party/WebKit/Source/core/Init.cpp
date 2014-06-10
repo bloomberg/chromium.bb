@@ -74,7 +74,7 @@ void CoreInitializer::registerEventFactory()
         return;
     isRegistered = true;
 
-    Document::registerEventFactory(new EventFactory());
+    Document::registerEventFactory(EventFactory::create());
 }
 
 void CoreInitializer::init()

@@ -3915,9 +3915,9 @@ Document::EventFactorySet& Document::eventFactories()
     return s_eventFactory;
 }
 
-void Document::registerEventFactory(EventFactoryBase* eventFactory)
+void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 {
-    ASSERT(!eventFactories().contains(eventFactory));
+    ASSERT(!eventFactories().contains(eventFactory.get()));
     eventFactories().add(eventFactory);
 }
 

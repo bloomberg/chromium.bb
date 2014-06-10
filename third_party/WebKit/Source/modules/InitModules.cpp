@@ -28,7 +28,7 @@ void ModulesInitializer::initEventTargetNames()
 void ModulesInitializer::registerEventFactory()
 {
     CoreInitializer::registerEventFactory();
-    Document::registerEventFactory(new EventModulesFactory());
+    Document::registerEventFactory(EventModulesFactory::create());
 }
 
 } // namespace WebCore

@@ -691,7 +691,7 @@ public:
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
-    static void registerEventFactory(EventFactoryBase*);
+    static void registerEventFactory(PassOwnPtr<EventFactoryBase>);
     static PassRefPtrWillBeRawPtr<Event> createEvent(const String& eventType, ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
@@ -1187,7 +1187,7 @@ private:
     void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
     Node* hoverNode() const { return m_hoverNode.get(); }
 
-    typedef HashSet<EventFactoryBase*> EventFactorySet;
+    typedef HashSet<OwnPtr<EventFactoryBase> > EventFactorySet;
     static EventFactorySet& eventFactories();
 
     DocumentLifecycle m_lifecycle;

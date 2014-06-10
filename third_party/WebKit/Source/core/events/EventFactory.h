@@ -37,10 +37,19 @@ class Event;
 class EventFactoryBase {
 public:
     virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) = 0;
+    virtual ~EventFactoryBase() { }
+
+protected:
+    EventFactoryBase() { }
 };
 
-class EventFactory : public EventFactoryBase {
+class EventFactory FINAL : public EventFactoryBase {
 public:
+    static PassOwnPtr<EventFactory> create()
+    {
+        return adoptPtr(new EventFactory());
+    }
+
     virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) OVERRIDE;
 };
 

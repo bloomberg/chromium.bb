@@ -14,8 +14,13 @@ namespace WebCore {
 
 class Event;
 
-class EventModulesFactory : public EventFactoryBase {
+class EventModulesFactory FINAL : public EventFactoryBase {
 public:
+    static PassOwnPtr<EventModulesFactory> create()
+    {
+        return adoptPtr(new EventModulesFactory());
+    }
+
     virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) OVERRIDE;
 };
 
