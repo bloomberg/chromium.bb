@@ -45,6 +45,8 @@ fileapi::FileSystemURL URL(const GURL& origin,
       origin, base::FilePath::FromUTF8Unsafe(path));
 }
 
+const int kRetryLimit = 100;
+
 }  // namespace
 
 class LocalToRemoteSyncerTest : public testing::Test {
@@ -409,9 +411,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
 }
 
-// This is failing and overloading the try servers.
-// http://crbug.com/382648
-TEST_F(LocalToRemoteSyncerTest, DISABLED_Conflict_UpdateDeleteOnFile) {
+TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
@@ -422,12 +422,14 @@ TEST_F(LocalToRemoteSyncerTest, DISABLED_Conflict_UpdateDeleteOnFile) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
 
   SyncStatusCode status;
+  int retry_count = 0;
   do {
+    if (retry_count++ > kRetryLimit)
+      break;
     status = RunRemoteToLocalSyncer();
-    EXPECT_TRUE(status == SYNC_STATUS_OK ||
-                status == SYNC_STATUS_RETRY ||
-                status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
-  } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  } while (status == SYNC_STATUS_OK ||
+           status == SYNC_STATUS_RETRY);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
 
   DeleteResource(file_id);
 
@@ -458,12 +460,14 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
   const std::string file_id = CreateRemoteFile(app_root, "foo", "data");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   SyncStatusCode status;
+  int retry_count = 0;
   do {
+    if (retry_count++ > kRetryLimit)
+      break;
     status = RunRemoteToLocalSyncer();
-    EXPECT_TRUE(status == SYNC_STATUS_OK ||
-                status == SYNC_STATUS_RETRY ||
-                status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
-  } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  } while (status == SYNC_STATUS_OK ||
+           status == SYNC_STATUS_RETRY);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
 
   DeleteResource(file_id);
 
@@ -523,12 +527,14 @@ TEST_F(LocalToRemoteSyncerTest, AppRootDeletion) {
   DeleteResource(app_root);
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   SyncStatusCode status;
+  int retry_count = 0;
   do {
+    if (retry_count++ > kRetryLimit)
+      break;
     status = RunRemoteToLocalSyncer();
-    EXPECT_TRUE(status == SYNC_STATUS_OK ||
-                status == SYNC_STATUS_RETRY ||
-                status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
-  } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  } while (status == SYNC_STATUS_OK ||
+           status == SYNC_STATUS_RETRY);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
 
   EXPECT_EQ(SYNC_STATUS_UNKNOWN_ORIGIN, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
