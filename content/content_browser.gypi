@@ -323,6 +323,8 @@
       'browser/battery_status/battery_status_message_filter.h',
       'browser/battery_status/battery_status_service.cc',
       'browser/battery_status/battery_status_service.h',
+      'browser/bootstrap_sandbox_mac.cc',
+      'browser/bootstrap_sandbox_mac.h',
       'browser/browser_child_process_host_impl.cc',
       'browser/browser_child_process_host_impl.h',
       'browser/browser_context.cc',
@@ -1485,7 +1487,7 @@
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
     }],
-    ['OS!="mac" and OS!="ios"', {
+    ['OS!="ios"', {
       'dependencies': [
         '../sandbox/sandbox.gyp:sandbox',
       ],

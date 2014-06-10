@@ -85,6 +85,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/browser/bootstrap_sandbox_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #endif
 
@@ -1038,7 +1039,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
-#endif
+  if (ShouldEnableBootstrapSandbox()) {
+    TRACE_EVENT0("startup",
+        "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");
+    CHECK(GetBootstrapSandbox());
+  }
+#endif  // defined(OS_MACOSX)
+
 #endif  // !defined(OS_IOS)
 
   return result_code_;

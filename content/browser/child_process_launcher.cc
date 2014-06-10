@@ -28,7 +28,9 @@
 #include "content/common/sandbox_win.h"
 #include "content/public/common/sandbox_init.h"
 #elif defined(OS_MACOSX)
+#include "content/browser/bootstrap_sandbox_mac.h"
 #include "content/browser/mach_broker_mac.h"
+#include "sandbox/mac/bootstrap_sandbox.h"
 #elif defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "content/browser/android/child_process_launcher_android.h"
@@ -282,11 +284,25 @@ class ChildProcessLauncher::Context
       // Make sure the MachBroker is running, and inform it to expect a
       // check-in from the new process.
       broker->EnsureRunning();
+
+      const int bootstrap_sandbox_policy = delegate->GetSandboxType();
+      if (ShouldEnableBootstrapSandbox() &&
+          bootstrap_sandbox_policy != SANDBOX_TYPE_INVALID) {
+        GetBootstrapSandbox()->PrepareToForkWithPolicy(
+            bootstrap_sandbox_policy);
+      }
 #endif  // defined(OS_MACOSX)
 
       bool launched = base::LaunchProcess(*cmd_line, options, &handle);
+      if (!launched)
+        handle = base::kNullProcessHandle;
 
 #if defined(OS_MACOSX)
+      if (ShouldEnableBootstrapSandbox() &&
+          bootstrap_sandbox_policy != SANDBOX_TYPE_INVALID) {
+        GetBootstrapSandbox()->FinishedFork(handle);
+      }
+
       if (launched)
         broker->AddPlaceholderForPid(handle);
 
@@ -294,9 +310,6 @@ class ChildProcessLauncher::Context
       // messasge be processed on the broker's thread.
       broker->GetLock().Release();
 #endif  // defined(OS_MACOSX)
-
-      if (!launched)
-        handle = base::kNullProcessHandle;
     }
 #endif  // else defined(OS_POSIX)
 #if !defined(OS_ANDROID)

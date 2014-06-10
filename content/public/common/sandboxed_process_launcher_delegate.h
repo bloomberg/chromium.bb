@@ -10,6 +10,10 @@
 
 #include "content/common/content_export.h"
 
+#if defined(OS_MACOSX)
+#include "content/public/common/sandbox_type_mac.h"
+#endif
+
 namespace base {
 class FilePath;
 }
@@ -61,6 +65,12 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
 
   // Return the file descriptor for the IPC channel.
   virtual int GetIpcFd() = 0;
+
+#if defined(OS_MACOSX)
+  // Gets the Mac SandboxType to enforce on the process. Return
+  // SANDBOX_TYPE_INVALID for no sandbox policy.
+  virtual SandboxType GetSandboxType();
+#endif
 
 #endif
 };

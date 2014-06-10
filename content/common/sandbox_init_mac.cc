@@ -76,4 +76,7 @@ bool InitializeSandbox() {
   return InitializeSandbox(sandbox_type, allowed_dir);
 }
 
+extern const char kBootstrapPortNameForNPAPIPlugins[] =
+    "org.chromium.sandbox.real_bootstrap_server";
+
 }  // namespace content

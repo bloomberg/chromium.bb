@@ -11,6 +11,9 @@ namespace content {
 // additional sandbox types with IDs starting with SANDBOX_TYPE_AFTER_LAST_TYPE.
 
 enum SandboxType {
+  // Not a valid sandbox type.
+  SANDBOX_TYPE_INVALID = -1,
+
   SANDBOX_TYPE_FIRST_TYPE = 0,  // Placeholder to ease iteration.
 
   SANDBOX_TYPE_RENDERER = SANDBOX_TYPE_FIRST_TYPE,
@@ -30,6 +33,10 @@ enum SandboxType {
 
   // The PPAPI plugin process.
   SANDBOX_TYPE_PPAPI,
+
+  // The NPAPI plugin process. This does not use a Seatbelt/.sb sandbox policy,
+  // but it uses a bootstrap sandbox.
+  SANDBOX_TYPE_NPAPI,
 
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };

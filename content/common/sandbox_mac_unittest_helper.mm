@@ -56,6 +56,9 @@ bool MacSandboxTest::RunTestInAllSandboxTypes(const char* test_name,
   for(int i = static_cast<int>(SANDBOX_TYPE_FIRST_TYPE);
       i < SANDBOX_TYPE_AFTER_LAST_TYPE;
       ++i) {
+    // This sandbox type is not enforced using a Seatbelt policy.
+    if (i == SANDBOX_TYPE_NPAPI)
+      continue;
 
     if (!RunTestInSandbox(static_cast<SandboxType>(i),
             test_name, test_data)) {

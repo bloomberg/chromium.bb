@@ -60,7 +60,7 @@ void BootstrapSandbox::RegisterSandboxPolicy(
     int sandbox_policy_id,
     const BootstrapSandboxPolicy& policy) {
   CHECK(IsPolicyValid(policy));
-  CHECK_GT(sandbox_policy_id, 0);
+  CHECK_GT(sandbox_policy_id, kNotAPolicy);
   base::AutoLock lock(lock_);
   DCHECK(policies_.find(sandbox_policy_id) == policies_.end());
   policies_.insert(std::make_pair(sandbox_policy_id, policy));
@@ -102,8 +102,8 @@ void BootstrapSandbox::FinishedFork(base::ProcessHandle handle) {
 void BootstrapSandbox::ChildDied(base::ProcessHandle handle) {
   base::AutoLock lock(lock_);
   const auto& it = sandboxed_processes_.find(handle);
-  CHECK(it != sandboxed_processes_.end());
-  sandboxed_processes_.erase(it);
+  if (it != sandboxed_processes_.end())
+    sandboxed_processes_.erase(it);
 }
 
 const BootstrapSandboxPolicy* BootstrapSandbox::PolicyForProcess(

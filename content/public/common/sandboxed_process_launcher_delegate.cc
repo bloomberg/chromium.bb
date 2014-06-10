@@ -7,21 +7,28 @@
 namespace content {
 
 #if defined(OS_WIN)
-  bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
-    return false;
-  }
+bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
+  return false;
+}
 
-  bool SandboxedProcessLauncherDelegate::ShouldSandbox() {
-    return true;
-  }
+bool SandboxedProcessLauncherDelegate::ShouldSandbox() {
+  return true;
+}
 
 #elif(OS_POSIX)
-  bool SandboxedProcessLauncherDelegate::ShouldUseZygote() {
-    return false;
-  }
+bool SandboxedProcessLauncherDelegate::ShouldUseZygote() {
+  return false;
+}
 
-  base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
-    return base::EnvironmentMap();
-  }
+base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
+  return base::EnvironmentMap();
+}
+
+#if defined(OS_MACOSX)
+SandboxType SandboxedProcessLauncherDelegate::GetSandboxType() {
+  return SANDBOX_TYPE_INVALID;
+}
+#endif
+
 #endif
 }  // namespace content
