@@ -771,16 +771,14 @@ gfx::Image CreateFavicon(SkColor color) {
       FaviconUtil::GetFaviconScaleFactors();
   gfx::ImageSkia favicon;
   for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
-    float scale = ui::GetImageScale(favicon_scale_factors[i]);
+    float scale = ui::GetScaleForScaleFactor(favicon_scale_factors[i]);
     int pixel_width = dip_width * scale;
     int pixel_height = dip_height * scale;
     SkBitmap bmp;
     bmp.setConfig(SkBitmap::kARGB_8888_Config, pixel_width, pixel_height);
     bmp.allocPixels();
     bmp.eraseColor(color);
-    favicon.AddRepresentation(
-        gfx::ImageSkiaRep(bmp,
-                          ui::GetImageScale(favicon_scale_factors[i])));
+    favicon.AddRepresentation(gfx::ImageSkiaRep(bmp, scale));
   }
   return gfx::Image(favicon);
 }

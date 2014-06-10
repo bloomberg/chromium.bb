@@ -125,7 +125,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
 
     bool is_fallback = PNGContainsFallbackMarker(data->front(), data->size());
     // Create the image from the data.
-    CGFloat target_scale = ui::GetImageScale(scale_factor);
+    CGFloat target_scale = ui::GetScaleForScaleFactor(scale_factor);
     CGFloat source_scale = is_fallback ? 1.0 : target_scale;
     base::scoped_nsobject<UIImage> ui_image(
         [[UIImage alloc] initWithData:ns_data scale:source_scale]);

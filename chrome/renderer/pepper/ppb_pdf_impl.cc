@@ -34,7 +34,6 @@
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using ppapi::PpapiGlobals;
@@ -368,10 +367,6 @@ PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
 PP_Resource GetResourceImageForScale(PP_Instance instance_id,
                                      PP_ResourceImage image_id,
                                      float scale) {
-  ui::ScaleFactor supported_scale_factor = ui::GetSupportedScaleFactor(scale);
-  DCHECK(supported_scale_factor != ui::SCALE_FACTOR_NONE);
-  float supported_scale = ui::GetImageScale(supported_scale_factor);
-
   int res_id = 0;
   for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
     if (kResourceImageMap[i].pp_id == image_id) {
@@ -394,7 +389,7 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
   if (!res_image_skia)
     return 0;
 
-  return instance->CreateImage(res_image_skia, supported_scale);
+  return instance->CreateImage(res_image_skia, scale);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,

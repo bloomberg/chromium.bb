@@ -106,10 +106,10 @@ SkBitmap SimpleThumbnailCrop::GetClippedBitmap(const SkBitmap& bitmap,
 // the copied pixels should be as small as possible.
 //
 // When the scale factor of the primary monitor is ui::SCALE_FACTOR_100P,
-// we still copy the pixels with the same size as ui::SCALE_FACTOR_200P because
-// the resampling method used in RenderWidgetHost::CopyFromBackingStore is not
-// good enough for the resampled image to be used directly for the thumbnail
-// (http://crbug.com/141235). We assume this is not an issue in case of
+// we still copy the pixels with the same size as ui::SCALE_FACTOR_200P (2.0f)
+// because the resampling method used in RenderWidgetHost::CopyFromBackingStore
+// is not good enough for the resampled image to be used directly for the
+// thumbnail (http://crbug.com/141235). We assume this is not an issue in case of
 // ui::SCALE_FACTOR_200P because the high resolution thumbnail on high density
 // display alleviates the aliasing.
 // TODO(mazda): Copy the pixels with the smaller size in the case of
@@ -121,8 +121,7 @@ gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
   gfx::Size copy_size(thumbnail_size);
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
-      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
-          copy_size, ui::GetImageScale(ui::SCALE_FACTOR_200P)));
+      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(copy_size, 2.0f));
       break;
     case ui::SCALE_FACTOR_200P:
       // Use the size as-is.

@@ -34,6 +34,7 @@ namespace {
 // in |Dispatch()|.
 const int64 kConfigureDelayMs = 500;
 
+// TODO(oshima): Consider using gtk-xft-dpi instead.
 float GetDeviceScaleFactor(int screen_pixels, int screen_mm) {
   const int kCSSDefaultDPI = 96;
   const float kInchInMm = 25.4f;
@@ -42,7 +43,7 @@ float GetDeviceScaleFactor(int screen_pixels, int screen_mm) {
   float screen_dpi = screen_pixels / screen_inches;
   float scale = screen_dpi / kCSSDefaultDPI;
 
-  return ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
+  return ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
 }
 
 std::vector<gfx::Display> GetFallbackDisplayList() {
