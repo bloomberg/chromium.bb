@@ -7,11 +7,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_RLZ)
@@ -574,6 +576,43 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
     TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
     search_terms_args.cursor_position = test_data[i].cursor_position;
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(test_data[i].expected_result, result.spec());
+  }
+}
+
+// Tests replacing input type (&oit=).
+TEST_F(TemplateURLTest, ReplaceInputType) {
+  struct TestData {
+    const base::string16 search_term;
+    AutocompleteInput::Type input_type;
+    const std::string url;
+    const std::string expected_result;
+  } test_data[] = {
+    { ASCIIToUTF16("foo"),
+      metrics::OmniboxInputType::UNKNOWN,
+      "{google:baseURL}?{searchTerms}&{google:inputType}",
+      "http://www.google.com/?foo&oit=1&" },
+    { ASCIIToUTF16("foo"),
+      metrics::OmniboxInputType::URL,
+      "{google:baseURL}?{searchTerms}&{google:inputType}",
+      "http://www.google.com/?foo&oit=3&" },
+    { ASCIIToUTF16("foo"),
+      metrics::OmniboxInputType::FORCED_QUERY,
+      "{google:baseURL}?{searchTerms}&{google:inputType}",
+      "http://www.google.com/?foo&oit=5&" },
+  };
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    data.SetURL(test_data[i].url);
+    TemplateURL url(NULL, data);
+    EXPECT_TRUE(url.url_ref().IsValid());
+    ASSERT_TRUE(url.url_ref().SupportsReplacement());
+    TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
+    search_terms_args.input_type = test_data[i].input_type;
     GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(test_data[i].expected_result, result.spec());

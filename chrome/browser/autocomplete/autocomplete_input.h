@@ -20,7 +20,7 @@ class AutocompleteInput {
   typedef metrics::OmniboxInputType::Type Type;
 
   // The type of page currently displayed.
-  // Note: when adding an element to this enum, please add it at the end
+  // Warning: when adding an element to this enum, please add it at the end
   // and update omnibox_event.proto::PageClassification and
   // omnibox_edit_model.cc::ClassifyPage() too.
   enum PageClassification {

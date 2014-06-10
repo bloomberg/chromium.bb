@@ -76,6 +76,9 @@ class TemplateURLRef {
     // The original (input) query.
     base::string16 original_query;
 
+    // The type the original input query was identified as.
+    AutocompleteInput::Type input_type;
+
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
     // at the query submission time.  For privacy reasons, we require the
@@ -262,12 +265,13 @@ class TemplateURLRef {
     GOOGLE_BOOKMARK_BAR_PINNED,
     GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
+    GOOGLE_FORCE_INSTANT_RESULTS,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
     GOOGLE_IMAGE_ORIGINAL_WIDTH,
     GOOGLE_IMAGE_SEARCH_SOURCE,
     GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
-    GOOGLE_FORCE_INSTANT_RESULTS,
+    GOOGLE_INPUT_TYPE,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_OMNIBOX_START_MARGIN,

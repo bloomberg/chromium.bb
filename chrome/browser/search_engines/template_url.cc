@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -67,6 +68,7 @@ const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
 const char kGoogleCurrentPageUrlParameter[] = "google:currentPageUrl";
 const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleForceInstantResultsParameter[] = "google:forceInstantResults";
+const char kGoogleInputTypeParameter[] = "google:inputType";
 const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
 const char kGoogleInstantExtendedEnabledKey[] =
@@ -201,6 +203,7 @@ bool ShowingSearchTermsOnSRP() {
 TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
     const base::string16& search_terms)
     : search_terms(search_terms),
+      input_type(metrics::OmniboxInputType::INVALID),
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(base::string16::npos),
       omnibox_start_margin(-1),
@@ -566,6 +569,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_CURRENT_PAGE_URL, start));
   } else if (parameter == kGoogleCursorPositionParameter) {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
+  } else if (parameter == kGoogleForceInstantResultsParameter) {
+    replacements->push_back(Replacement(GOOGLE_FORCE_INSTANT_RESULTS, start));
   } else if (parameter == kGoogleImageOriginalHeight) {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_HEIGHT, start));
@@ -580,8 +585,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleImageURLParameter) {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
-  } else if (parameter == kGoogleForceInstantResultsParameter) {
-    replacements->push_back(Replacement(GOOGLE_FORCE_INSTANT_RESULTS, start));
+  } else if (parameter == kGoogleInputTypeParameter) {
+    replacements->push_back(Replacement(TemplateURLRef::GOOGLE_INPUT_TYPE,
+                                        start));
   } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
                                         start));
@@ -900,6 +906,12 @@ std::string TemplateURLRef::HandleReplacements(
                               search_terms_args.force_instant_results),
                           *i,
                           &url);
+        break;
+
+      case GOOGLE_INPUT_TYPE:
+        DCHECK(!i->is_post_param);
+        HandleReplacement(
+            "oit", base::IntToString(search_terms_args.input_type), *i, &url);
         break;
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:

@@ -641,6 +641,7 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
 
   // Bail if the suggestion URL is invalid with the given replacements.
   TemplateURLRef::SearchTermsArgs search_term_args(input.text());
+  search_term_args.input_type = input.type();
   search_term_args.cursor_position = input.cursor_position();
   search_term_args.page_classification = input.current_page_classification();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
