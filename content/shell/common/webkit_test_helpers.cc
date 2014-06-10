@@ -99,8 +99,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->accelerated_2d_canvas_enabled =
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
-  prefs->force_compositing_mode =
-      command_line.HasSwitch(switches::kForceCompositingMode);
   prefs->accelerated_compositing_for_video_enabled = false;
   prefs->mock_scrollbars_enabled = false;
   prefs->smart_insert_delete_enabled = true;

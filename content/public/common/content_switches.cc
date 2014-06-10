@@ -552,9 +552,6 @@ const char kEnableZeroCopy[]                = "enable-zero-copy";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// Enable force_compositing_mode in layout tests.
-const char kForceCompositingMode[]          = "force-compositing-mode";
-
 // Some field trials may be randomized in the browser, and the randomly selected
 // outcome needs to be propagated to the renderer. For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to

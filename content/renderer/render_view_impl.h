@@ -541,7 +541,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void OnWasHidden() OVERRIDE;
   virtual void OnWasShown(bool needs_repainting) OVERRIDE;
   virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
-  virtual bool ForceCompositingModeEnabled() OVERRIDE;
   virtual void OnImeSetComposition(
       const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,

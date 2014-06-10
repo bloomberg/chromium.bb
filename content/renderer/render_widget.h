@@ -413,8 +413,6 @@ class CONTENT_EXPORT RenderWidget
 
   virtual GURL GetURLForGraphicsContext3D();
 
-  virtual bool ForceCompositingModeEnabled();
-
   // Gets the scroll offset of this widget, if this widget has a notion of
   // scroll offset.
   virtual gfx::Vector2d GetScrollOffset();

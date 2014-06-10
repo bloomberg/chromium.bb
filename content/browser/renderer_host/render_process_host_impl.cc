@@ -1167,7 +1167,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLImageChromium,
     switches::kEnableWebMIDI,
     switches::kEnableZeroCopy,
-    switches::kForceCompositingMode,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
     switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,

@@ -3352,10 +3352,6 @@ GURL RenderViewImpl::GetURLForGraphicsContext3D() {
     return GURL("chrome://gpu/RenderViewImpl::CreateGraphicsContext3D");
 }
 
-bool RenderViewImpl::ForceCompositingModeEnabled() {
-  return webkit_preferences_.force_compositing_mode;
-}
-
 void RenderViewImpl::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
 

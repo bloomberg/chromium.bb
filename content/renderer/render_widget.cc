@@ -808,10 +808,6 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
   return GURL();
 }
 
-bool RenderWidget::ForceCompositingModeEnabled() {
-  return false;
-}
-
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::OutputSurface.
