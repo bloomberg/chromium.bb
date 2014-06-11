@@ -38,7 +38,7 @@ BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;
 // profile |profile|. Returns a pointer to the node that was added.
 const BookmarkNode* AddURL(
     int profile,
-    const std::wstring& title,
+    const std::string& title,
     const GURL& url) WARN_UNUSED_RESULT;
 
 // Adds a URL with address |url| and title |title| to the bookmark bar of
@@ -47,7 +47,7 @@ const BookmarkNode* AddURL(
 const BookmarkNode* AddURL(
     int profile,
     int index,
-    const std::wstring& title,
+    const std::string& title,
     const GURL& url) WARN_UNUSED_RESULT;
 
 // Adds a URL with address |url| and title |title| under the node |parent| of
@@ -57,21 +57,21 @@ const BookmarkNode* AddURL(
     int profile,
     const BookmarkNode* parent,
     int index,
-    const std::wstring& title,
+    const std::string& title,
     const GURL& url) WARN_UNUSED_RESULT;
 
 // Adds a folder named |title| to the bookmark bar of profile |profile|.
 // Returns a pointer to the folder that was added.
 const BookmarkNode* AddFolder(
     int profile,
-    const std::wstring& title) WARN_UNUSED_RESULT;
+    const std::string& title) WARN_UNUSED_RESULT;
 
 // Adds a folder named |title| to the bookmark bar of profile |profile| at
 // position |index|. Returns a pointer to the folder that was added.
 const BookmarkNode* AddFolder(
     int profile,
     int index,
-    const std::wstring& title) WARN_UNUSED_RESULT;
+    const std::string& title) WARN_UNUSED_RESULT;
 
 // Adds a folder named |title| to the node |parent| in the bookmark model of
 // profile |profile| at position |index|. Returns a pointer to the node that
@@ -80,13 +80,13 @@ const BookmarkNode* AddFolder(
     int profile,
     const BookmarkNode* parent,
     int index,
-    const std::wstring& title) WARN_UNUSED_RESULT;
+    const std::string& title) WARN_UNUSED_RESULT;
 
 // Changes the title of the node |node| in the bookmark model of profile
 // |profile| to |new_title|.
 void SetTitle(int profile,
                      const BookmarkNode* node,
-                     const std::wstring& new_title);
+                     const std::string& new_title);
 
 // The source of the favicon.
 enum FaviconSource {
@@ -172,13 +172,13 @@ const BookmarkNode* GetUniqueNodeByURL(
 // whose titles match the string |title|.
 int CountBookmarksWithTitlesMatching(
     int profile,
-    const std::wstring& title) WARN_UNUSED_RESULT;
+    const std::string& title) WARN_UNUSED_RESULT;
 
 // Returns the number of bookmark folders in the bookmark model of profile
 // |profile| whose titles contain the query string |title|.
 int CountFoldersWithTitlesMatching(
     int profile,
-    const std::wstring& title) WARN_UNUSED_RESULT;
+    const std::string& title) WARN_UNUSED_RESULT;
 
 // Creates a favicon of |color| with image reps of the platform's supported
 // scale factors (eg MacOS) in addition to 1x.
@@ -191,16 +191,16 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path);
 std::string IndexedURL(int i);
 
 // Returns a URL title identifiable by |i|.
-std::wstring IndexedURLTitle(int i);
+std::string IndexedURLTitle(int i);
 
 // Returns a folder name identifiable by |i|.
-std::wstring IndexedFolderName(int i);
+std::string IndexedFolderName(int i);
 
 // Returns a subfolder name identifiable by |i|.
-std::wstring IndexedSubfolderName(int i);
+std::string IndexedSubfolderName(int i);
 
 // Returns a subsubfolder name identifiable by |i|.
-std::wstring IndexedSubsubfolderName(int i);
+std::string IndexedSubsubfolderName(int i);
 
 }  // namespace bookmarks_helper
 

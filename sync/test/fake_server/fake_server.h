@@ -70,6 +70,9 @@ class FakeServer {
   // authentication error.
   void SetUnauthenticated();
 
+  // Return |error_type| on next sync request.
+  void TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
+
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
   void AddObserver(Observer* observer);
@@ -141,6 +144,8 @@ class FakeServer {
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
+
+  sync_pb::SyncEnums::ErrorType error_type_;
 
   // FakeServer's observers.
   ObserverList<Observer, true> observers_;

@@ -80,7 +80,7 @@ class SyncAuthTest : public SyncTest {
   // error, false if the bookmark is committed successfully.
   bool AttemptToTriggerAuthError() {
     int bookmark_index = GetNextBookmarkIndex();
-    std::wstring title = base::StringPrintf(L"Bookmark %d", bookmark_index);
+    std::string title = base::StringPrintf("Bookmark %d", bookmark_index);
     GURL url = GURL(base::StringPrintf("http://www.foo%d.com", bookmark_index));
     EXPECT_TRUE(AddURL(0, title, url) != NULL);
 

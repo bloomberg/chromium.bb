@@ -91,22 +91,22 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Add an item, wait for sync, and trigger a birthday error on the server.
-  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
-  SetTitle(0, node1, L"new_title1");
+  const BookmarkNode* node1 = AddFolder(0, 0, "title1");
+  SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(GetFakeServer()->SetNewStoreBirthday("new store birthday"));
 
   // Now make one more change so we will do another sync.
-  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
-  SetTitle(0, node2, L"new_title2");
+  const BookmarkNode* node2 = AddFolder(0, 0, "title2");
+  SetTitle(0, node2, "new_title2");
   ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
 }
 
 IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, ActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
-  SetTitle(0, node1, L"new_title1");
+  const BookmarkNode* node1 = AddFolder(0, 0, "title1");
+  SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   syncer::SyncProtocolError protocol_error;
@@ -117,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, ActionableErrorTest) {
   TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
 
   // Now make one more change so we will do another sync.
-  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
-  SetTitle(0, node2, L"new_title2");
+  const BookmarkNode* node2 = AddFolder(0, 0, "title2");
+  SetTitle(0, node2, "new_title2");
 
   // Wait until an actionable error is encountered.
   ActionableErrorChecker actionable_error_checker(GetSyncService((0)));
@@ -169,8 +169,8 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
     BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
-  SetTitle(0, node1, L"new_title1");
+  const BookmarkNode* node1 = AddFolder(0, 0, "title1");
+  SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   syncer::SyncProtocolError protocol_error;
@@ -181,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
   TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
 
   // Now make one more change so we will do another sync.
-  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
-  SetTitle(0, node2, L"new_title2");
+  const BookmarkNode* node2 = AddFolder(0, 0, "title2");
+  SetTitle(0, node2, "new_title2");
   ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
   ProfileSyncService::Status status;
   GetSyncService((0))->QueryDetailedSyncStatus(&status);
@@ -206,8 +206,8 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
   synced_datatypes = GetSyncService((0))->GetPreferredDataTypes();
   ASSERT_FALSE(synced_datatypes.Has(syncer::TYPED_URLS));
 
-  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
-  SetTitle(0, node1, L"new_title1");
+  const BookmarkNode* node1 = AddFolder(0, 0, "title1");
+  SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   // TODO(lipalani)" Verify initial sync ended for typed url is false.
 }

@@ -2378,6 +2378,7 @@
         'browser/sync/test/integration/sessions_helper.h',
         'browser/sync/test/integration/single_client_app_list_sync_test.cc',
         'browser/sync/test/integration/single_client_apps_sync_test.cc',
+        'browser/sync/test/integration/single_client_backup_rollback_test.cc',
         'browser/sync/test/integration/single_client_bookmarks_sync_test.cc',
         'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
         'browser/sync/test/integration/single_client_extensions_sync_test.cc',

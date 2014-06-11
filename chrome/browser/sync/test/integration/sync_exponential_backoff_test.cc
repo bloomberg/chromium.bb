@@ -67,14 +67,14 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Add an item and ensure that sync is successful.
-  ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
+  ASSERT_TRUE(AddFolder(0, 0, "folder1"));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   // Trigger a network error at the client side.
   DisableNetwork(GetProfile(0));
 
   // Add a new item to trigger another sync cycle.
-  ASSERT_TRUE(AddFolder(0, 0, L"folder2"));
+  ASSERT_TRUE(AddFolder(0, 0, "folder2"));
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
@@ -95,14 +95,14 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Add an item and ensure that sync is successful.
-  ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
+  ASSERT_TRUE(AddFolder(0, 0, "folder1"));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   // Trigger a transient error on the server.
   TriggerTransientError();
 
   // Add a new item to trigger another sync cycle.
-  ASSERT_TRUE(AddFolder(0, 0, L"folder2"));
+  ASSERT_TRUE(AddFolder(0, 0, "folder2"));
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.

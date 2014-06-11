@@ -27,7 +27,7 @@ class CrossPlatformSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformSyncTest, DISABLED_AddBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.co.uk")));
+  ASSERT_TRUE(AddURL(0, "Google", GURL("http://www.google.co.uk")));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }

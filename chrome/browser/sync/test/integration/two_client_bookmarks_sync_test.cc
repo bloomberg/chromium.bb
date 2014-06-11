@@ -44,10 +44,10 @@ using sync_integration_test_util::AwaitPassphraseAccepted;
 using sync_integration_test_util::AwaitPassphraseRequired;
 
 const std::string kGenericURL = "http://www.host.ext:1234/path/filename";
-const std::wstring kGenericURLTitle = L"URL Title";
-const std::wstring kGenericFolderName = L"Folder Name";
-const std::wstring kGenericSubfolderName = L"Subfolder Name";
-const std::wstring kGenericSubsubfolderName = L"Subsubfolder Name";
+const std::string kGenericURLTitle = "URL Title";
+const std::string kGenericFolderName = "Folder Name";
+const std::string kGenericSubfolderName = "Subfolder Name";
+const std::string kGenericSubsubfolderName = "Subsubfolder Name";
 const char* kValidPassphrase = "passphrase!";
 
 class TwoClientBookmarksSyncTest : public SyncTest {
@@ -73,21 +73,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   GURL google_url("http://www.google.com");
-  ASSERT_TRUE(AddURL(0, L"Google", google_url) != NULL);
+  ASSERT_TRUE(AddURL(0, "Google", google_url) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AddURL(1, L"Yahoo", GURL("http://www.yahoo.com")) != NULL);
+  ASSERT_TRUE(AddURL(1, "Yahoo", GURL("http://www.yahoo.com")) != NULL);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  const BookmarkNode* new_folder = AddFolder(0, 2, L"New Folder");
+  const BookmarkNode* new_folder = AddFolder(0, 2, "New Folder");
   Move(0, GetUniqueNodeByURL(0, google_url), new_folder, 0);
-  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), L"Yahoo!!");
-  ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 1, L"CNN",
+  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Yahoo!!");
+  ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 1, "CNN",
       GURL("http://www.cnn.com")) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(AddURL(1, L"Facebook", GURL("http://www.facebook.com")) != NULL);
+  ASSERT_TRUE(AddURL(1, "Facebook", GURL("http://www.facebook.com")) != NULL);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -96,8 +96,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   DisableVerifier();
-  SetTitle(0, GetUniqueNodeByURL(0, google_url), L"Google++");
-  SetTitle(1, GetUniqueNodeByURL(1, google_url), L"Google--");
+  SetTitle(0, GetUniqueNodeByURL(0, google_url), "Google++");
+  SetTitle(1, GetUniqueNodeByURL(1, google_url), "Google--");
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 }
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
   GURL initial_url("http://www.google.com");
   GURL second_url("http://www.google.com/abc");
   GURL third_url("http://www.google.com/def");
-  std::wstring title = L"Google";
+  std::string title = "Google";
 
   ASSERT_TRUE(AddURL(0, title, initial_url) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 
-  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), L"Google1");
+  SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Google1");
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatch());
 }
@@ -213,8 +213,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(
-      0, L"FTP URL", GURL("ftp://user:password@host:1234/path")) != NULL);
-  ASSERT_TRUE(AddURL(0, L"File URL", GURL("file://host/path")) != NULL);
+      0, "FTP UR", GURL("ftp://user:password@host:1234/path")) != NULL);
+  ASSERT_TRUE(AddURL(0, "File UR", GURL("file://host/path")) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   for (int i = 0; i < 20; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     ASSERT_TRUE(AddURL(
@@ -258,16 +258,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   for (int i = 0; i < 15; ++i) {
     if (base::RandDouble() > 0.6) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedFolderName(i);
+      std::string title = IndexedFolderName(i);
       const BookmarkNode* folder = AddFolder(0, i, title);
       ASSERT_TRUE(folder != NULL);
       if (base::RandDouble() > 0.4) {
         for (int i = 0; i < 20; ++i) {
-          std::wstring title = IndexedURLTitle(i);
+          std::string title = IndexedURLTitle(i);
           GURL url = GURL(IndexedURL(i));
           ASSERT_TRUE(
               AddURL(0, folder, i, title, url) != NULL);
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     }
   }
   for (int i = 0; i < 10; i++) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, GetOtherNode(0), i, title, url) != NULL);
   }
@@ -304,8 +304,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title0 = IndexedURLTitle(0);
-  std::wstring title1 = IndexedURLTitle(1);
+  std::string title0 = IndexedURLTitle(0);
+  std::string title1 = IndexedURLTitle(1);
   ASSERT_TRUE(AddURL(0, title0, GURL(kGenericURL)) != NULL);
   ASSERT_TRUE(AddURL(0, title1, GURL(kGenericURL)) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -317,13 +317,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title = IndexedURLTitle(1);
+  std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
   ASSERT_TRUE(bookmark != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedURLTitle(2);
+  std::string new_title = IndexedURLTitle(2);
   SetTitle(0, bookmark, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -353,13 +353,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title = IndexedURLTitle(1);
+  std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
   ASSERT_TRUE(bookmark != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedURLTitle(2);
+  std::string new_title = IndexedURLTitle(2);
   SetTitle(0, bookmark, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -396,14 +396,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title = IndexedFolderName(1);
+  std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
   ASSERT_TRUE(AddURL(
       0, folder, 0, kGenericURLTitle, GURL(kGenericURL)) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedFolderName(2);
+  std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -414,12 +414,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameEmptyBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title = IndexedFolderName(1);
+  std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedFolderName(2);
+  std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -431,23 +431,23 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring title = IndexedFolderName(1);
+  std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 120; ++i) {
     if (base::RandDouble() > 0.15) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedSubfolderName(i);
+      std::string title = IndexedSubfolderName(i);
       ASSERT_TRUE(AddFolder(0, folder, i, title) != NULL);
     }
   }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedFolderName(2);
+  std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -462,26 +462,26 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 1; i < 15; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
-  std::wstring title = IndexedSubfolderName(1);
+  std::string title = IndexedSubfolderName(1);
   const BookmarkNode* subfolder = AddFolder(0, folder, 0, title);
   for (int i = 0; i < 120; ++i) {
     if (base::RandDouble() > 0.15) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, subfolder, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedSubsubfolderName(i);
+      std::string title = IndexedSubsubfolderName(i);
       ASSERT_TRUE(AddFolder(0, subfolder, i, title) != NULL);
     }
   }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  std::wstring new_title = IndexedSubfolderName(2);
+  std::string new_title = IndexedSubfolderName(2);
   SetTitle(0, subfolder, new_title);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -493,14 +493,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMNameAndURL) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   GURL url = GURL(IndexedURL(1));
-  std::wstring title = IndexedURLTitle(1);
+  std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, url);
   ASSERT_TRUE(bookmark != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   GURL new_url = GURL(IndexedURL(2));
-  std::wstring new_title = IndexedURLTitle(2);
+  std::string new_title = IndexedURLTitle(2);
   bookmark = SetURL(0, bookmark, new_url);
   ASSERT_TRUE(bookmark != NULL);
   SetTitle(0, bookmark, new_title);
@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   for (int i = 0; i < 20; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -654,11 +654,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AddFolder(0, kGenericFolderName) != NULL);
   for (int i = 1; i < 15; ++i) {
     if (base::RandDouble() > 0.6) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedFolderName(i);
+      std::string title = IndexedFolderName(i);
       ASSERT_TRUE(AddFolder(0, i, title) != NULL);
     }
   }
@@ -681,16 +681,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(folder != NULL);
   for (int i = 2; i < 10; ++i) {
     if (base::RandDouble() > 0.6) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedFolderName(i);
+      std::string title = IndexedFolderName(i);
       ASSERT_TRUE(AddFolder(0, i, title) != NULL);
     }
   }
   for (int i = 0; i < 15; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -713,33 +713,33 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(folder != NULL);
   for (int i = 2; i < 10; ++i) {
     if (base::RandDouble() > 0.6) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedFolderName(i);
+      std::string title = IndexedFolderName(i);
       ASSERT_TRUE(AddFolder(0, i, title) != NULL);
     }
   }
   for (int i = 0; i < 10; ++i) {
     if (base::RandDouble() > 0.6) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedSubfolderName(i);
+      std::string title = IndexedSubfolderName(i);
       const BookmarkNode* subfolder =
           AddFolder(0, folder, i, title);
       ASSERT_TRUE(subfolder != NULL);
       if (base::RandDouble() > 0.3) {
         for (int j = 0; j < 10; ++j) {
           if (base::RandDouble() > 0.6) {
-            std::wstring title = IndexedURLTitle(j);
+            std::string title = IndexedURLTitle(j);
             GURL url = GURL(IndexedURL(j));
             ASSERT_TRUE(AddURL(
                 0, subfolder, j, title, url) != NULL);
           } else {
-            std::wstring title = IndexedSubsubfolderName(j);
+            std::string title = IndexedSubsubfolderName(j);
             ASSERT_TRUE(AddFolder(
                 0, subfolder, j, title) != NULL);
           }
@@ -764,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 1; i < 11; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
@@ -773,11 +773,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(subfolder != NULL);
   for (int i = 0; i < 30; ++i) {
     if (base::RandDouble() > 0.2) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, subfolder, i, title, url) != NULL);
     } else {
-      std::wstring title = IndexedSubsubfolderName(i);
+      std::string title = IndexedSubsubfolderName(i);
       ASSERT_TRUE(AddFolder(0, subfolder, i, title) != NULL);
     }
   }
@@ -797,8 +797,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   GURL url0 = GURL(IndexedURL(0));
   GURL url1 = GURL(IndexedURL(1));
-  std::wstring title0 = IndexedURLTitle(0);
-  std::wstring title1 = IndexedURLTitle(1);
+  std::string title0 = IndexedURLTitle(0);
+  std::string title1 = IndexedURLTitle(1);
   const BookmarkNode* bookmark0 = AddURL(0, 0, title0, url0);
   const BookmarkNode* bookmark1 = AddURL(0, 1, title1, url1);
   ASSERT_TRUE(bookmark0 != NULL);
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 2; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
@@ -866,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, 1, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -890,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -898,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       AddFolder(0, folder, 3, kGenericSubfolderName);
   ASSERT_TRUE(subfolder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i + 3);
+    std::string title = IndexedURLTitle(i + 3);
     GURL url = GURL(IndexedURL(i + 3));
     ASSERT_TRUE(AddURL(0, subfolder, i, title, url) != NULL);
   }
@@ -922,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -930,7 +930,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       AddFolder(0, folder, 3, kGenericSubfolderName);
   ASSERT_TRUE(subfolder != NULL);
   for (int i = 0; i < 5; ++i) {
-    std::wstring title = IndexedURLTitle(i + 3);
+    std::string title = IndexedURLTitle(i + 3);
     GURL url = GURL(IndexedURL(i + 3));
     ASSERT_TRUE(AddURL(0, subfolder, i, title, url) != NULL);
   }
@@ -956,18 +956,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
   for (int level = 0; level < 15; ++level) {
     int num_bookmarks = base::RandInt(0, 9);
     for (int i = 0; i < num_bookmarks; ++i) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
-    std::wstring title = IndexedFolderName(level);
+    std::string title = IndexedFolderName(level);
     folder = AddFolder(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 0) folder_L0 = folder;
     if (level == 10) folder_L10 = folder;
   }
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i + 10);
+    std::string title = IndexedURLTitle(i + 10);
     GURL url = GURL(IndexedURL(i + 10));
     ASSERT_TRUE(AddURL(0, folder_L10, i, title, url) != NULL);
   }
@@ -997,18 +997,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SinkBMs10LevelDown) {
   for (int level = 0; level < 15; ++level) {
     int num_bookmarks = base::RandInt(0, 9);
     for (int i = 0; i < num_bookmarks; ++i) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
-    std::wstring title = IndexedFolderName(level);
+    std::string title = IndexedFolderName(level);
     folder = AddFolder(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 0) folder_L0 = folder;
     if (level == 10) folder_L10 = folder;
   }
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i + 10);
+    std::string title = IndexedURLTitle(i + 10);
     GURL url = GURL(IndexedURL(i + 10));
     ASSERT_TRUE(AddURL(0, folder_L0, 0, title, url) != NULL);
   }
@@ -1036,11 +1036,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   for (int level = 0; level < 15; ++level) {
     int num_bookmarks = base::RandInt(0, 9);
     for (int i = 0; i < num_bookmarks; ++i) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
-    std::wstring title = IndexedFolderName(level);
+    std::string title = IndexedFolderName(level);
     folder = AddFolder(
         0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
@@ -1068,11 +1068,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   for (int level = 0; level < 6; ++level) {
     int num_bookmarks = base::RandInt(0, 9);
     for (int i = 0; i < num_bookmarks; ++i) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
-    std::wstring title = IndexedFolderName(level);
+    std::string title = IndexedFolderName(level);
     folder = AddFolder(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 5) folder_L5 = folder;
@@ -1081,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       0, GetBookmarkBarNode(0)->child_count(), kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -1104,11 +1104,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   for (int level = 0; level < 6; ++level) {
     int num_bookmarks = base::RandInt(0, 9);
     for (int i = 0; i < num_bookmarks; ++i) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
-    std::wstring title = IndexedFolderName(level);
+    std::string title = IndexedFolderName(level);
     folder = AddFolder(
         0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
@@ -1118,7 +1118,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       0, folder_L5, folder_L5->child_count(), kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
   }
@@ -1137,11 +1137,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   for (int i = 0; i < 2; ++i) {
-    std::wstring title = IndexedFolderName(i);
+    std::string title = IndexedFolderName(i);
     const BookmarkNode* folder = AddFolder(0, i, title);
     ASSERT_TRUE(folder != NULL);
     for (int j = 0; j < 10; ++j) {
-      std::wstring title = IndexedURLTitle(j);
+      std::string title = IndexedURLTitle(j);
       GURL url = GURL(IndexedURL(j));
       ASSERT_TRUE(AddURL(0, folder, j, title, url) != NULL);
     }
@@ -1161,11 +1161,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   for (int i = 0; i < 10; ++i) {
-    std::wstring title = IndexedFolderName(i);
+    std::string title = IndexedFolderName(i);
     const BookmarkNode* folder = AddFolder(0, i, title);
     ASSERT_TRUE(folder != NULL);
     for (int j = 0; j < 10; ++j) {
-      std::wstring title = IndexedURLTitle(1000 * i + j);
+      std::string title = IndexedURLTitle(1000 * i + j);
       GURL url = GURL(IndexedURL(j));
       ASSERT_TRUE(AddURL(0, folder, j, title, url) != NULL);
     }
@@ -1186,10 +1186,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   DisableVerifier();
   for (int i = 0; i < 2; ++i) {
-    std::wstring title0 = IndexedURLTitle(2*i);
+    std::string title0 = IndexedURLTitle(2*i);
     GURL url0 = GURL(IndexedURL(2*i));
     ASSERT_TRUE(AddURL(0, title0, url0) != NULL);
-    std::wstring title1 = IndexedURLTitle(2*i+1);
+    std::string title1 = IndexedURLTitle(2*i+1);
     GURL url1 = GURL(IndexedURL(2*i+1));
     ASSERT_TRUE(AddURL(1, title1, url1) != NULL);
   }
@@ -1208,7 +1208,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   // for duplicates to exist after sync completes. See http://crbug.com/19769.
   DisableVerifier();
   for (int i = 0; i < 2; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, title, url) != NULL);
     ASSERT_TRUE(AddURL(1, title, url) != NULL);
@@ -1231,17 +1231,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
-  const BookmarkNode* folder0 = AddFolder(0, L"Folder");
+  const BookmarkNode* folder0 = AddFolder(0, "Folder");
   ASSERT_TRUE(folder0 != NULL);
-  ASSERT_TRUE(AddURL(0, folder0, 0, L"Bookmark 0", GURL(kGenericURL)) != NULL);
-  ASSERT_TRUE(AddURL(0, folder0, 1, L"Bookmark 1", GURL(kGenericURL)) != NULL);
-  ASSERT_TRUE(AddURL(0, folder0, 2, L"Bookmark 2", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(0, folder0, 0, "Bookmark 0", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(0, folder0, 1, "Bookmark 1", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(0, folder0, 2, "Bookmark 2", GURL(kGenericURL)) != NULL);
 
-  const BookmarkNode* folder1 = AddFolder(1, L"fOlDeR");
+  const BookmarkNode* folder1 = AddFolder(1, "fOlDeR");
   ASSERT_TRUE(folder1 != NULL);
-  ASSERT_TRUE(AddURL(1, folder1, 0, L"bOoKmArK 0", GURL(kGenericURL)) != NULL);
-  ASSERT_TRUE(AddURL(1, folder1, 1, L"BooKMarK 1", GURL(kGenericURL)) != NULL);
-  ASSERT_TRUE(AddURL(1, folder1, 2, L"bOOKMARK 2", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(1, folder1, 0, "bOoKmArK 0", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(1, folder1, 1, "BooKMarK 1", GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(AddURL(1, folder1, 2, "bOOKMARK 2", GURL(kGenericURL)) != NULL);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
@@ -1256,17 +1256,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     ASSERT_TRUE(AddURL(1, i, title, url) != NULL);
   }
 
   for (int i = 3; i < 10; ++i) {
-    std::wstring title0 = IndexedURLTitle(i);
+    std::string title0 = IndexedURLTitle(i);
     GURL url0 = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title0, url0) != NULL);
-    std::wstring title1 = IndexedURLTitle(i+7);
+    std::string title1 = IndexedURLTitle(i+7);
     GURL url1 = GURL(IndexedURL(i+7));
     ASSERT_TRUE(AddURL(1, i, title1, url1) != NULL);
   }
@@ -1284,14 +1284,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     ASSERT_TRUE(AddURL(1, i, title, url) != NULL);
   }
 
   for (int i = 3; i < 10; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(1, i, title, url) != NULL);
   }
@@ -1309,7 +1309,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
     ASSERT_TRUE(AddURL(1, i, title, url) != NULL);
@@ -1332,10 +1332,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder1 = AddFolder(1, kGenericFolderName);
   ASSERT_TRUE(folder1 != NULL);
   for (int i = 0; i < 2; ++i) {
-    std::wstring title0 = IndexedURLTitle(2*i);
+    std::string title0 = IndexedURLTitle(2*i);
     GURL url0 = GURL(IndexedURL(2*i));
     ASSERT_TRUE(AddURL(0, folder0, i, title0, url0) != NULL);
-    std::wstring title1 = IndexedURLTitle(2*i+1);
+    std::string title1 = IndexedURLTitle(2*i+1);
     GURL url1 = GURL(IndexedURL(2*i+1));
     ASSERT_TRUE(AddURL(1, folder1, i, title1, url1) != NULL);
   }
@@ -1352,31 +1352,31 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 25; ++i) {
-    std::wstring title0 = IndexedURLTitle(i);
+    std::string title0 = IndexedURLTitle(i);
     GURL url0 = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title0, url0) != NULL);
-    std::wstring title1 = IndexedURLTitle(i+50);
+    std::string title1 = IndexedURLTitle(i+50);
     GURL url1 = GURL(IndexedURL(i+50));
     ASSERT_TRUE(AddURL(1, i, title1, url1) != NULL);
   }
   for (int i = 25; i < 30; ++i) {
-    std::wstring title0 = IndexedFolderName(i);
+    std::string title0 = IndexedFolderName(i);
     const BookmarkNode* folder0 = AddFolder(0, i, title0);
     ASSERT_TRUE(folder0 != NULL);
-    std::wstring title1 = IndexedFolderName(i+50);
+    std::string title1 = IndexedFolderName(i+50);
     const BookmarkNode* folder1 = AddFolder(1, i, title1);
     ASSERT_TRUE(folder1 != NULL);
     for (int j = 0; j < 5; ++j) {
-      std::wstring title0 = IndexedURLTitle(i+5*j);
+      std::string title0 = IndexedURLTitle(i+5*j);
       GURL url0 = GURL(IndexedURL(i+5*j));
       ASSERT_TRUE(AddURL(0, folder0, j, title0, url0) != NULL);
-      std::wstring title1 = IndexedURLTitle(i+5*j+50);
+      std::string title1 = IndexedURLTitle(i+5*j+50);
       GURL url1 = GURL(IndexedURL(i+5*j+50));
       ASSERT_TRUE(AddURL(1, folder1, j, title1, url1) != NULL);
     }
   }
   for (int i = 100; i < 125; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, title, url) != NULL);
     ASSERT_TRUE(AddURL(1, title, url) != NULL);
@@ -1398,11 +1398,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     ASSERT_TRUE(folder != NULL);
     for (int j = 0; j < 4; ++j) {
       if (base::RandDouble() < 0.5) {
-        std::wstring title = IndexedURLTitle(j);
+        std::string title = IndexedURLTitle(j);
         GURL url = GURL(IndexedURL(j));
         ASSERT_TRUE(AddURL(i, folder, j, title, url) != NULL);
       } else {
-        std::wstring title = IndexedFolderName(j);
+        std::string title = IndexedFolderName(j);
         ASSERT_TRUE(AddFolder(i, folder, j, title) != NULL);
       }
     }
@@ -1420,13 +1420,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 4; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
 
   for (int j = 0; j < 2; ++j) {
-    std::wstring title = IndexedURLTitle(j);
+    std::string title = IndexedURLTitle(j);
     GURL url = GURL(IndexedURL(j));
     ASSERT_TRUE(AddURL(1, j, title, url) != NULL);
   }
@@ -1509,13 +1509,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   DisableVerifier();
 
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i+1);
+    std::string title = IndexedURLTitle(i+1);
     GURL url = GURL(IndexedURL(i+1));
     ASSERT_TRUE(AddURL(0, i, title, url) != NULL);
   }
 
   for (int j = 0; j < 3; ++j) {
-    std::wstring title = IndexedURLTitle(j+4);
+    std::string title = IndexedURLTitle(j+4);
     GURL url = GURL(IndexedURL(j+4));
     ASSERT_TRUE(AddURL(0, j, title, url) != NULL);
   }
@@ -1536,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   int node_index = 0;
   for (int i = 1; i < 5 ; ++i) {
     for (int j = 0; j < i; ++j) {
-      std::wstring title = IndexedURLTitle(i);
+      std::string title = IndexedURLTitle(i);
       GURL url = GURL(IndexedURL(i));
       ASSERT_TRUE(AddURL(0, node_index, title, url) != NULL);
       ++node_index;
@@ -1544,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
   // Let's add a set of bookmarks {1,2,3,4} to client1.
   for (int i = 0; i < 4; ++i) {
-    std::wstring title = IndexedURLTitle(i+1);
+    std::string title = IndexedURLTitle(i+1);
     GURL url = GURL(IndexedURL(i+1));
     ASSERT_TRUE(AddURL(1, i, title, url) != NULL);
   }
@@ -1602,10 +1602,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DuplicateFolders) {
   const BookmarkNode* folder1 = AddFolder(1, kGenericFolderName);
   ASSERT_TRUE(folder1 != NULL);
   for (int i = 0; i < 5; ++i) {
-    std::wstring title0 = IndexedURLTitle(i);
+    std::string title0 = IndexedURLTitle(i);
     GURL url0 = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder0, i, title0, url0) != NULL);
-    std::wstring title1 = IndexedURLTitle(i+5);
+    std::string title1 = IndexedURLTitle(i+5);
     GURL url1 = GURL(IndexedURL(i+5));
     ASSERT_TRUE(AddURL(1, folder1, i, title1, url1) != NULL);
   }
@@ -1624,8 +1624,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   const GURL bar_url("http://example.com/bar");
   const GURL other_url("http://example.com/other");
 
-  ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, L"bar", bar_url) != NULL);
-  ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, L"other", other_url) != NULL);
+  ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, "bar", bar_url) != NULL);
+  ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, "other", other_url) != NULL);
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
@@ -1658,7 +1658,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder0 = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder0 != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder0, i, title, url) != NULL);
   }
@@ -1668,8 +1668,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   DisableVerifier();
   GURL url(IndexedURL(0));
-  SetTitle(0, GetUniqueNodeByURL(0, url), L"Title++");
-  SetTitle(1, GetUniqueNodeByURL(1, url), L"Title--");
+  SetTitle(0, GetUniqueNodeByURL(0, url), "Title++");
+  SetTitle(1, GetUniqueNodeByURL(1, url), "Title--");
 
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
@@ -1685,7 +1685,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder0 = AddFolder(0, kGenericFolderName);
   ASSERT_TRUE(folder0 != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folder0, i, title, url) != NULL);
   }
@@ -1728,7 +1728,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   folderB[1] = AddFolder(1, IndexedFolderName(1));
   ASSERT_TRUE(folderB[1] != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring title = IndexedURLTitle(i);
+    std::string title = IndexedURLTitle(i);
     GURL url = GURL(IndexedURL(i));
     ASSERT_TRUE(AddURL(0, folderB[0], i, title, url) != NULL);
   }
@@ -1739,11 +1739,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   folderC[1] = AddFolder(1, IndexedFolderName(2));
   ASSERT_TRUE(folderC[1] != NULL);
   for (int i = 0; i < 3; ++i) {
-    std::wstring folder_name = IndexedSubfolderName(i);
+    std::string folder_name = IndexedSubfolderName(i);
     const BookmarkNode* subfolder = AddFolder(0, folderC[0], i, folder_name);
     ASSERT_TRUE(subfolder != NULL);
     for (int j = 0; j < 3; ++j) {
-      std::wstring title = IndexedURLTitle(j);
+      std::string title = IndexedURLTitle(j);
       GURL url = GURL(IndexedURL(j));
       ASSERT_TRUE(AddURL(0, subfolder, j, title, url) != NULL);
     }
@@ -1755,22 +1755,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder A on both clients.
-  SetTitle(0, folderA[0], L"Folder A++");
-  SetTitle(1, folderA[1], L"Folder A--");
+  SetTitle(0, folderA[0], "Folder A++");
+  SetTitle(1, folderA[1], "Folder A--");
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder B on both clients.
-  SetTitle(0, folderB[0], L"Folder B++");
-  SetTitle(1, folderB[1], L"Folder B--");
+  SetTitle(0, folderB[0], "Folder B++");
+  SetTitle(1, folderB[1], "Folder B--");
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder C on both clients.
-  SetTitle(0, folderC[0], L"Folder C++");
-  SetTitle(1, folderC[1], L"Folder C--");
+  SetTitle(0, folderC[0], "Folder C++");
+  SetTitle(1, folderC[1], "Folder C--");
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
@@ -1967,7 +1967,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
 
   // Add a bookmark on Client 0 and ensure it syncs over. This will also trigger
   // both clients downloading the new Synced Bookmarks folder.
-  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
+  ASSERT_TRUE(AddURL(0, "Google", GURL("http://www.google.com")));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 
@@ -1975,7 +1975,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
   // over.
   const BookmarkNode* synced_bookmarks = GetSyncedBookmarksNode(0);
   ASSERT_TRUE(synced_bookmarks);
-  ASSERT_TRUE(AddURL(0, synced_bookmarks, 0, L"Google2",
+  ASSERT_TRUE(AddURL(0, synced_bookmarks, 0, "Google2",
                      GURL("http://www.google2.com")));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatch());
@@ -2002,21 +2002,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   //    -> http://yahoo.com
   // -> http://gmail.com
 
-  const BookmarkNode* folder0 = AddFolder(0, GetOtherNode(0), 0, L"folder0");
-  const BookmarkNode* tier1_a = AddFolder(0, folder0, 0, L"tier1_a");
-  ASSERT_TRUE(AddURL(0, folder0, 1, L"News", GURL("http://news.google.com")));
-  ASSERT_TRUE(AddURL(0, folder0, 2, L"Yahoo", GURL("http://www.yahoo.com")));
-  ASSERT_TRUE(AddURL(0, tier1_a, 0, L"Gmail", GURL("http://mail.google.com")));
-  ASSERT_TRUE(AddURL(0, tier1_a, 1, L"Google", GURL("http://www.google.com")));
+  const BookmarkNode* folder0 = AddFolder(0, GetOtherNode(0), 0, "folder0");
+  const BookmarkNode* tier1_a = AddFolder(0, folder0, 0, "tier1_a");
+  ASSERT_TRUE(AddURL(0, folder0, 1, "News", GURL("http://news.google.com")));
+  ASSERT_TRUE(AddURL(0, folder0, 2, "Yahoo", GURL("http://www.yahoo.com")));
+  ASSERT_TRUE(AddURL(0, tier1_a, 0, "Gmai", GURL("http://mail.google.com")));
+  ASSERT_TRUE(AddURL(0, tier1_a, 1, "Google", GURL("http://www.google.com")));
   ASSERT_TRUE(
-      AddURL(0, GetOtherNode(0), 1, L"CNN", GURL("http://www.cnn.com")));
+      AddURL(0, GetOtherNode(0), 1, "CNN", GURL("http://www.cnn.com")));
 
-  ASSERT_TRUE(AddFolder(0, GetBookmarkBarNode(0), 0, L"empty_folder"));
+  ASSERT_TRUE(AddFolder(0, GetBookmarkBarNode(0), 0, "empty_folder"));
   const BookmarkNode* folder1 =
-      AddFolder(0, GetBookmarkBarNode(0), 1, L"folder1");
-  ASSERT_TRUE(AddURL(0, folder1, 0, L"Yahoo", GURL("http://www.yahoo.com")));
+      AddFolder(0, GetBookmarkBarNode(0), 1, "folder1");
+  ASSERT_TRUE(AddURL(0, folder1, 0, "Yahoo", GURL("http://www.yahoo.com")));
   ASSERT_TRUE(
-      AddURL(0, GetBookmarkBarNode(0), 2, L"Gmail", GURL("http://gmail.com")));
+      AddURL(0, GetBookmarkBarNode(0), 2, "Gmai", GURL("http://gmail.com")));
 
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());

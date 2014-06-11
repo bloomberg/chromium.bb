@@ -41,7 +41,7 @@ class BookmarksSyncPerfTest : public SyncTest {
   std::string NextIndexedURL();
 
   // Returns a new unique bookmark title.
-  std::wstring NextIndexedURLTitle();
+  std::string NextIndexedURLTitle();
 
   int url_number_;
   int url_title_number_;
@@ -79,7 +79,7 @@ std::string BookmarksSyncPerfTest::NextIndexedURL() {
   return IndexedURL(url_number_++);
 }
 
-std::wstring BookmarksSyncPerfTest::NextIndexedURLTitle() {
+std::string BookmarksSyncPerfTest::NextIndexedURLTitle() {
   return IndexedURLTitle(url_title_number_++);
 }
 
