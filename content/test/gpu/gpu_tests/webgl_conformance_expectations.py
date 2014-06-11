@@ -27,10 +27,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
         bug=351396)
-    self.Fail('conformance/glsl/misc/boolean_precision.html',
-        bug=368874)
-    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
-        bug=368910)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -49,6 +45,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'], bug=372511)
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
+
+    # Mac failures
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+        ['mac'], bug=368910)
 
     # Mac / Intel failures
     # Radar 13499466
