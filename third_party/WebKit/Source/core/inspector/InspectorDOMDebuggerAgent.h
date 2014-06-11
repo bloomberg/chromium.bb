@@ -68,8 +68,8 @@ public:
     // DOMDebugger API for InspectorFrontend
     virtual void setXHRBreakpoint(ErrorString*, const String& url) OVERRIDE;
     virtual void removeXHRBreakpoint(ErrorString*, const String& url) OVERRIDE;
-    virtual void setEventListenerBreakpoint(ErrorString*, const String& eventName) OVERRIDE;
-    virtual void removeEventListenerBreakpoint(ErrorString*, const String& eventName) OVERRIDE;
+    virtual void setEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) OVERRIDE;
+    virtual void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) OVERRIDE;
     virtual void setInstrumentationBreakpoint(ErrorString*, const String& eventName) OVERRIDE;
     virtual void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) OVERRIDE;
     virtual void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) OVERRIDE;
@@ -104,7 +104,7 @@ private:
     InspectorDOMDebuggerAgent(InspectorDOMAgent*, InspectorDebuggerAgent*);
 
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
-    PassRefPtr<JSONObject> preparePauseOnNativeEventData(bool isDOMEvent, const String& eventName);
+    PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const AtomicString* targetName);
 
     // InspectorDOMAgent::Listener implementation.
     virtual void domAgentWasEnabled() OVERRIDE;
@@ -120,8 +120,8 @@ private:
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
     bool hasBreakpoint(Node*, int type);
-    void setBreakpoint(ErrorString*, const String& eventName);
-    void removeBreakpoint(ErrorString*, const String& eventName);
+    void setBreakpoint(ErrorString*, const String& eventName, const String* targetName);
+    void removeBreakpoint(ErrorString*, const String& eventName, const String* targetName);
 
     void clear();
 

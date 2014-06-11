@@ -189,6 +189,8 @@ crbug.com/347186 [ Snowleopard Debug ] inspector/console/console-format.html [ S
 crbug.com/347186 [ Snowleopard Debug ] inspector/elements/styles/pseudo-elements.html [ Skip ]
 crbug.com/347186 [ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ Skip ]
 
+crbug.com/381470 [ Snowleopard Debug ] inspector/sources/debugger/event-listener-breakpoints.html [ Skip ]
+
 crbug.com/380217 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
