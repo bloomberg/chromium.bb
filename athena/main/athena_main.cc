@@ -5,12 +5,19 @@
 #include "apps/shell/app/shell_main_delegate.h"
 #include "apps/shell/browser/shell_browser_main_delegate.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
+#include "apps/shell/browser/shell_extension_system.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
+#include "base/command_line.h"
+#include "base/file_util.h"
 #include "content/public/app/content_main.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/visibility_controller.h"
+
+namespace {
+const std::string kAppSwitch = "app";
+}  // namespace
 
 class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
  public:
@@ -22,6 +29,15 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
     athena::StartAthena(
         apps::ShellDesktopController::instance()->host()->window(),
         new athena::ContentActivityFactory());
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(kAppSwitch)) {
+      base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
+      base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
+      extensions::ShellExtensionSystem* extension_system =
+          static_cast<extensions::ShellExtensionSystem*>(
+              extensions::ExtensionSystem::Get(context));
+      extension_system->LoadApp(app_absolute_dir);
+    }
     CreateTestPages(context);
   }
 

@@ -29,7 +29,9 @@ void DefaultShellBrowserMainDelegate::Start(
     extensions::ShellExtensionSystem* extension_system =
         static_cast<extensions::ShellExtensionSystem*>(
             extensions::ExtensionSystem::Get(browser_context));
-    extension_system->LoadAndLaunchApp(app_absolute_dir);
+    if (!extension_system->LoadApp(app_absolute_dir))
+      return;
+    extension_system->LaunchApp();
   } else {
     LOG(ERROR) << "--" << kAppSwitch << " unset; boredom is in your future";
   }

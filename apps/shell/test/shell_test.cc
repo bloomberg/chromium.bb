@@ -47,7 +47,10 @@ void AppShellTest::RunTestOnMainThreadLoop() {
 }
 
 bool AppShellTest::LoadAndLaunchApp(const base::FilePath& app_dir) {
-  return extension_system_->LoadAndLaunchApp(app_dir);
+  bool loaded = extension_system_->LoadApp(app_dir);
+  if (loaded)
+    extension_system_->LaunchApp();
+  return loaded;
 }
 
 }  // namespace apps
