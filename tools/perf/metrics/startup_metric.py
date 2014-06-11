@@ -55,9 +55,10 @@ class StartupMetric(Metric):
     for i in xrange(len(browser.tabs)):
       try:
         tab = browser.tabs[i]
-        tab.WaitForDocumentReadyStateToBeComplete()
-        result = json.loads(tab.EvaluateJavaScript(
-            'statsCollectionController.tabLoadTiming()'))
+        tab_load_timing_js = 'statsCollectionController.tabLoadTiming()'
+        util.WaitFor(lambda: 'load_duration_ms' in json.loads(
+            tab.EvaluateJavaScript(tab_load_timing_js)), 60)
+        result = json.loads(tab.EvaluateJavaScript(tab_load_timing_js))
         load_time = result['load_start_ms'] + result['load_duration_ms']
         all_tabs_load_time = max(all_tabs_load_time, load_time)
         if tab == browser.foreground_tab:
