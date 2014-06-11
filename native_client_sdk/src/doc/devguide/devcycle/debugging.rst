@@ -222,7 +222,10 @@ If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must have a copy of the pexe from **before** running
 ``pnacl-finalize``. The ``pnacl-finalize`` tool converts LLVM bitcode
 to the stable PNaCl bitcode format, but it also strips out debug
-metadata, which we need for debugging.
+metadata, which we need for debugging. In this section we'll give the
+LLVM bitcode file a ``.bc`` file extension, and the PNaCl bitcode file
+a ``.pexe`` file extension. The actual extension should not matter, but
+it helps distinguish between the two types of files.
 
 **Note** unlike the finalized copy of the pexe, the non-finalized debug copy
 is not considered stable. This means that a debug copy of the PNaCl

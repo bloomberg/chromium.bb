@@ -216,7 +216,10 @@ and <code>glibc</code> toolchains both contain the same version of GDB.</p>
 toolchain, you must have a copy of the pexe from <strong>before</strong> running
 <code>pnacl-finalize</code>. The <code>pnacl-finalize</code> tool converts LLVM bitcode
 to the stable PNaCl bitcode format, but it also strips out debug
-metadata, which we need for debugging.</p>
+metadata, which we need for debugging. In this section we&#8217;ll give the
+LLVM bitcode file a <code>.bc</code> file extension, and the PNaCl bitcode file
+a <code>.pexe</code> file extension. The actual extension should not matter, but
+it helps distinguish between the two types of files.</p>
 <p><strong>Note</strong> unlike the finalized copy of the pexe, the non-finalized debug copy
 is not considered stable. This means that a debug copy of the PNaCl
 application created by a Pepper N SDK is only guaranteed to run
