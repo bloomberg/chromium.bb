@@ -248,7 +248,7 @@ private:
     const OwnPtr<FocusController> m_focusController;
     const OwnPtr<ContextMenuController> m_contextMenuController;
     const OwnPtr<InspectorController> m_inspectorController;
-    const OwnPtr<PointerLockController> m_pointerLockController;
+    const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
     const OwnPtr<UndoStack> m_undoStack;
 

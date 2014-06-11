@@ -41,9 +41,9 @@ PointerLockController::PointerLockController(Page* page)
 {
 }
 
-PassOwnPtr<PointerLockController> PointerLockController::create(Page* page)
+PassOwnPtrWillBeRawPtr<PointerLockController> PointerLockController::create(Page* page)
 {
-    return adoptPtr(new PointerLockController(page));
+    return adoptPtrWillBeNoop(new PointerLockController(page));
 }
 
 void PointerLockController::requestPointerLock(Element* target)
@@ -164,6 +164,13 @@ void PointerLockController::enqueueEvent(const AtomicString& type, Document* doc
 {
     if (document && document->domWindow())
         document->domWindow()->enqueueDocumentEvent(Event::create(type));
+}
+
+void PointerLockController::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    visitor->trace(m_element);
+    visitor->trace(m_documentOfRemovedElementWhileWaitingForUnlock);
 }
 
 } // namespace WebCore

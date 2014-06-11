@@ -37,11 +37,11 @@ class Page;
 class PlatformMouseEvent;
 class VoidCallback;
 
-class PointerLockController {
+class PointerLockController FINAL : public NoBaseWillBeGarbageCollected<PointerLockController> {
     WTF_MAKE_NONCOPYABLE(PointerLockController);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<PointerLockController> create(Page*);
+    static PassOwnPtrWillBeRawPtr<PointerLockController> create(Page*);
 
     void requestPointerLock(Element* target);
     void requestPointerUnlock();
@@ -55,16 +55,18 @@ public:
     void didLosePointerLock();
     void dispatchLockedMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType);
 
+    void trace(Visitor*);
+
 private:
     explicit PointerLockController(Page*);
     void clearElement();
     void enqueueEvent(const AtomicString& type, Element*);
     void enqueueEvent(const AtomicString& type, Document*);
 
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
     bool m_lockPending;
-    RefPtrWillBePersistent<Element> m_element;
-    RefPtrWillBePersistent<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
+    RefPtrWillBeMember<Element> m_element;
+    RefPtrWillBeMember<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
 };
 
 } // namespace WebCore

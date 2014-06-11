@@ -586,6 +586,7 @@ void Page::trace(Visitor* visitor)
 {
     visitor->trace(m_dragCaretController);
     visitor->trace(m_dragController);
+    visitor->trace(m_pointerLockController);
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
     WillBeHeapSupplementable<Page>::trace(visitor);
