@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 #include "base/logging.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
@@ -22,13 +23,18 @@ ConstrainedWindowMac::ConstrainedWindowMac(
     content::WebContents* web_contents,
     id<ConstrainedWindowSheet> sheet)
     : delegate_(delegate),
-      web_contents_(web_contents),
+      web_contents_(NULL),
       sheet_([sheet retain]),
       shown_(false) {
   DCHECK(web_contents);
+  WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(web_contents);
+  // For embedded WebContents, use the embedder's WebContents for constrained
+  // window.
+  web_contents_ = web_view_guest && web_view_guest->embedder_web_contents() ?
+                      web_view_guest->embedder_web_contents() : web_contents;
   DCHECK(sheet_.get());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
   web_contents_modal_dialog_manager->ShowModalDialog(this);
 }
 

@@ -33,8 +33,9 @@ void UpdateBrowserModalDialogPosition(
     web_modal::ModalDialogHost* dialog_host);
 
 // Calls CreateWebModalDialogViews, shows the dialog, and returns its widget.
-views::Widget* ShowWebModalDialogViews(views::WidgetDelegate* dialog,
-                                       content::WebContents* web_contents);
+views::Widget* ShowWebModalDialogViews(
+    views::WidgetDelegate* dialog,
+    content::WebContents* initiator_web_contents);
 
 // Create a widget for |dialog| that is modal to |web_contents|.
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,

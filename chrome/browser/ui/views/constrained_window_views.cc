@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -120,8 +121,16 @@ void UpdateBrowserModalDialogPosition(views::Widget* widget,
                             widget->GetRootView()->GetPreferredSize());
 }
 
-views::Widget* ShowWebModalDialogViews(views::WidgetDelegate* dialog,
-                                       content::WebContents* web_contents) {
+views::Widget* ShowWebModalDialogViews(
+    views::WidgetDelegate* dialog,
+    content::WebContents* initiator_web_contents) {
+  WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(
+      initiator_web_contents);
+  // For embedded WebContents, use the embedder's WebContents for constrained
+  // window.
+  content::WebContents* web_contents =
+      web_view_guest && web_view_guest->embedder_web_contents() ?
+          web_view_guest->embedder_web_contents() : initiator_web_contents;
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)->
       ShowModalDialog(widget->GetNativeWindow());
