@@ -75,6 +75,7 @@ class ThreadProxyForTest : public ThreadProxy {
   }
 
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE {
+    test_hooks_->ScheduledActionWillSendBeginMainFrame();
     ThreadProxy::ScheduledActionSendBeginMainFrame();
     test_hooks_->ScheduledActionSendBeginMainFrame();
   }

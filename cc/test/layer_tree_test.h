@@ -80,6 +80,7 @@ class TestHooks : public AnimationDelegate {
 
   // Hooks for SchedulerClient.
   virtual void ScheduledActionBeginOutputSurfaceCreation() {}
+  virtual void ScheduledActionWillSendBeginMainFrame() {}
   virtual void ScheduledActionSendBeginMainFrame() {}
   virtual void ScheduledActionCommit() {}
   virtual void ScheduledActionDrawAndSwapIfPossible() {}

@@ -1473,5 +1473,64 @@ class LayerTreeHostContextTestSurfaceCreateCallback
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestSurfaceCreateCallback);
 
+class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
+    : public LayerTreeHostContextTest {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    deferred_ = false;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void ScheduledActionWillSendBeginMainFrame() OVERRIDE {
+    if (deferred_)
+      return;
+    deferred_ = true;
+
+    // Defer commits before the BeginFrame arrives, causing it to be delayed.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                       DeferCommitsOnMainThread,
+                   base::Unretained(this),
+                   true));
+    // Meanwhile, lose the context while we are in defer commits.
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                       LoseContextOnImplThread,
+                   base::Unretained(this)));
+  }
+
+  void LoseContextOnImplThread() {
+    LoseContext();
+
+    // After losing the context, stop deferring commits.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                       DeferCommitsOnMainThread,
+                   base::Unretained(this),
+                   false));
+  }
+
+  void DeferCommitsOnMainThread(bool defer_commits) {
+    layer_tree_host()->SetDeferCommits(defer_commits);
+  }
+
+  virtual void WillBeginMainFrame() OVERRIDE {
+    // Don't begin a frame with a lost surface.
+    EXPECT_FALSE(layer_tree_host()->output_surface_lost());
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE { EndTest(); }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  bool deferred_;
+};
+
+// TODO(danakj): We don't use scheduler with SingleThreadProxy yet.
+MULTI_THREAD_TEST_F(LayerTreeHostContextTestLoseAfterSendingBeginMainFrame);
+
 }  // namespace
 }  // namespace cc
