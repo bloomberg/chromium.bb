@@ -209,9 +209,12 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // in the renderer on POSIX due to the sandbox.
   void OnAllocateSharedMemory(uint32 buffer_size,
                               base::SharedMemoryHandle* handle);
+  void AllocateSharedBitmapOnFileThread(uint32 buffer_size,
+                                        const cc::SharedBitmapId& id,
+                                        IPC::Message* reply_msg);
   void OnAllocateSharedBitmap(uint32 buffer_size,
                               const cc::SharedBitmapId& id,
-                              base::SharedMemoryHandle* handle);
+                              IPC::Message* reply_msg);
   void OnAllocatedSharedBitmap(size_t buffer_size,
                                const base::SharedMemoryHandle& handle,
                                const cc::SharedBitmapId& id);

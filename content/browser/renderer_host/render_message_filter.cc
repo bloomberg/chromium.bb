@@ -331,10 +331,10 @@ RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(plugin_host_clients_.empty());
+  HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
 }
 
 void RenderMessageFilter::OnChannelClosing() {
-  HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
 #if defined(ENABLE_PLUGINS)
   for (std::set<OpenChannelToNpapiPluginCallback*>::iterator it =
        plugin_host_clients_.begin(); it != plugin_host_clients_.end(); ++it) {
@@ -409,8 +409,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                         OnAllocateSharedMemory)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedBitmap,
-                        OnAllocateSharedBitmap)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChildProcessHostMsg_SyncAllocateSharedBitmap, OnAllocateSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_AllocatedSharedBitmap,
                         OnAllocatedSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
@@ -900,12 +900,29 @@ void RenderMessageFilter::OnAllocateSharedMemory(
       buffer_size, PeerHandle(), handle);
 }
 
-void RenderMessageFilter::OnAllocateSharedBitmap(
+void RenderMessageFilter::AllocateSharedBitmapOnFileThread(
     uint32 buffer_size,
     const cc::SharedBitmapId& id,
-    base::SharedMemoryHandle* handle) {
+    IPC::Message* reply_msg) {
+  base::SharedMemoryHandle handle;
   HostSharedBitmapManager::current()->AllocateSharedBitmapForChild(
-      PeerHandle(), buffer_size, id, handle);
+      PeerHandle(), buffer_size, id, &handle);
+  ChildProcessHostMsg_SyncAllocateSharedBitmap::WriteReplyParams(reply_msg,
+                                                                 handle);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::OnAllocateSharedBitmap(uint32 buffer_size,
+                                                 const cc::SharedBitmapId& id,
+                                                 IPC::Message* reply_msg) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING,
+      FROM_HERE,
+      base::Bind(&RenderMessageFilter::AllocateSharedBitmapOnFileThread,
+                 this,
+                 buffer_size,
+                 id,
+                 reply_msg));
 }
 
 void RenderMessageFilter::OnAllocatedSharedBitmap(
