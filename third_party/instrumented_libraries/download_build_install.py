@@ -250,6 +250,10 @@ def build_and_install(parsed_arguments, environment, install_prefix):
     prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libpci3':
     libpci3_make_install(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'custom_libappindicator1':
+    environment['CSC'] = '/usr/bin/mono-csc'
+    destdir_configure_make_install(
+        parsed_arguments, environment, install_prefix)
   else:
     raise Exception('Unrecognized build method: %s' %
                     parsed_arguments.build_method)

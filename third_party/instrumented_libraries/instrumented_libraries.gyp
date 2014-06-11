@@ -92,6 +92,9 @@
         '<(_sanitizer_type)-libdbusmenu-glib4',
         '<(_sanitizer_type)-liboverlay-scrollbar-0.2-0',
         '<(_sanitizer_type)-libgconf-2-4',
+        '<(_sanitizer_type)-libappindicator1',
+        '<(_sanitizer_type)-libdbusmenu',
+        '<(_sanitizer_type)-atk1.0',
       ],
       'conditions': [
         ['asan==1', {
@@ -503,6 +506,38 @@
           # From debian/rules. (Even though --with-gtk=3.0 doesn't make sense.)
           '--with-gtk=3.0',
           '--disable-orbit',
+          # See above.
+          '--disable-introspection',
+      ],
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libappindicator1',
+      'extra_configure_flags': [
+          # See above.
+          '--disable-introspection',
+      ],
+      'dependencies=': [],
+      'build_method': 'custom_libappindicator1',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libdbusmenu',
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--disable-scrollkeeper',
+          '--with-gtk=2',
+          # See above.
+          '--disable-introspection',
+          '--disable-vala',
+      ],
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'atk1.0',
+      'extra_configure_flags': [
           # See above.
           '--disable-introspection',
       ],
