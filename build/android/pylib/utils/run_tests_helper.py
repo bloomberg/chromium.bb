@@ -26,8 +26,8 @@ class CustomFormatter(logging.Formatter):
     msg = logging.Formatter.format(self, record)
     if 'MainThread' in msg[:19]:
       msg = msg.replace('MainThread', 'Main', 1)
-    timediff = str(int(time.time() - self._creation_time))
-    return '%s %ss %s' % (record.levelname[0], timediff.rjust(4), msg)
+    timediff = time.time() - self._creation_time
+    return '%s %8.3fs %s' % (record.levelname[0], timediff, msg)
 
 
 def SetLogLevel(verbose_count):
