@@ -473,6 +473,11 @@ void URLRequestHttpJob::AddExtraHeaders() {
   if (!request_info_.extra_headers.HasHeader(
       HttpRequestHeaders::kAcceptEncoding)) {
     bool advertise_sdch = SdchManager::Global() &&
+        // We don't support SDCH responses to POST as there is a possibility
+        // of having SDCH encoded responses returned (e.g. by the cache)
+        // which we cannot decode, and in those situations, we will need
+        // to retransmit the request without SDCH, which is illegal for a POST.
+        request()->method() != "POST" &&
         SdchManager::Global()->IsInSupportedDomain(request_->url());
     std::string avail_dictionaries;
     if (advertise_sdch) {
