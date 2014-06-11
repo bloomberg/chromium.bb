@@ -72,9 +72,11 @@ class NET_EXPORT StreamListenSocket
   void Send(const std::string& str, bool append_linefeed = false);
 
   // Copies the local address to |address|. Returns a network error code.
-  int GetLocalAddress(IPEndPoint* address);
+  // This method is virtual to support unit testing.
+  virtual int GetLocalAddress(IPEndPoint* address);
   // Copies the peer address to |address|. Returns a network error code.
-  int GetPeerAddress(IPEndPoint* address);
+  // This method is virtual to support unit testing.
+  virtual int GetPeerAddress(IPEndPoint* address);
 
   static const int kSocketError;
 
