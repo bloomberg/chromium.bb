@@ -21,6 +21,20 @@
       ],
     },
     {
+      'target_name': 'history_core_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'history/core/common/thumbnail_score.cc',
+        'history/core/common/thumbnail_score.h',
+      ],
+    },
+    {
       'target_name': 'history_core_test_support',
       'type': 'static_library',
       'include_dirs': [

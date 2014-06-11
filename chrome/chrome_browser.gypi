@@ -41,6 +41,7 @@
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:google_core_browser',
         '../components/components.gyp:history_core_browser',
+        '../components/components.gyp:history_core_common',
         '../components/components.gyp:infobars_core',
         '../components/components.gyp:invalidation',
         '../components/components.gyp:metrics',

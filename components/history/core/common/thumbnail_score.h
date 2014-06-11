@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_THUMBNAIL_SCORE_H_
-#define CHROME_COMMON_THUMBNAIL_SCORE_H_
+#ifndef COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_
+#define COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_
 
 #include <string>
 #include "base/time/time.h"
@@ -20,8 +20,7 @@ struct ThumbnailScore {
   ThumbnailScore(double score, bool clipping, bool top);
 
   // Builds a ThumbnailScore with the passed in values.
-  ThumbnailScore(double score, bool clipping, bool top,
-                 const base::Time& time);
+  ThumbnailScore(double score, bool clipping, bool top, const base::Time& time);
   ~ThumbnailScore();
 
   // Tests for equivalence between two ThumbnailScore objects.
@@ -109,4 +108,4 @@ struct ThumbnailScore {
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
                                 const ThumbnailScore& replacement);
 
-#endif  // CHROME_COMMON_THUMBNAIL_SCORE_H_
+#endif  // COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_

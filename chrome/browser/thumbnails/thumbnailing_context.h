@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
-#include "chrome/common/thumbnail_score.h"
+#include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 
@@ -57,6 +57,6 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
   friend class base::RefCountedThreadSafe<ThumbnailingContext>;
 };
 
-}
+}  // namespace thumbnails
 
 #endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_

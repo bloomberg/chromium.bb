@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/thumbnail_score.h"
+#include "components/history/core/common/thumbnail_score.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -48,7 +48,9 @@ ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top)
       redirect_hops_from_dest(0) {
 }
 
-ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top,
+ThumbnailScore::ThumbnailScore(double score,
+                               bool clipping,
+                               bool top,
                                const Time& time)
     : boring_score(score),
       good_clipping(clipping),
@@ -63,10 +65,9 @@ ThumbnailScore::~ThumbnailScore() {
 
 bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
   return boring_score == rhs.boring_score &&
-      good_clipping == rhs.good_clipping &&
-      at_top == rhs.at_top &&
-      time_at_snapshot == rhs.time_at_snapshot &&
-      redirect_hops_from_dest == rhs.redirect_hops_from_dest;
+         good_clipping == rhs.good_clipping && at_top == rhs.at_top &&
+         time_at_snapshot == rhs.time_at_snapshot &&
+         redirect_hops_from_dest == rhs.redirect_hops_from_dest;
 }
 
 std::string ThumbnailScore::ToString() const {
@@ -90,7 +91,7 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
     // If we have a better class of thumbnail, add it if it meets
     // certain minimum boringness.
     return replacement.boring_score <
-        ThumbnailScore::kThumbnailMaximumBoringness;
+           ThumbnailScore::kThumbnailMaximumBoringness;
   } else if (replacement_type == current_type) {
     // It's much easier to do the scaling below when we're dealing with "higher
     // is better." Then we can decrease the score by dividing by a fraction.
@@ -102,8 +103,7 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
     // Degrade the score of each thumbnail to account for how many redirects
     // they are away from the destination. 1/(x+1) gives a scaling factor of
     // one for x = 0, and asymptotically approaches 0 for larger values of x.
-    current_interesting_score *=
-        1.0 / (current.redirect_hops_from_dest + 1);
+    current_interesting_score *= 1.0 / (current.redirect_hops_from_dest + 1);
     replacement_interesting_score *=
         1.0 / (replacement.redirect_hops_from_dest + 1);
 
@@ -113,7 +113,7 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
     TimeDelta time_between_thumbnails =
         replacement.time_at_snapshot - current.time_at_snapshot;
     current_interesting_score -= time_between_thumbnails.InHours() *
-         ThumbnailScore::kThumbnailDegradePerHour;
+                                 ThumbnailScore::kThumbnailDegradePerHour;
 
     if (current_interesting_score < kThumbnailMinimumInterestingness)
       current_interesting_score = kThumbnailMinimumInterestingness;
@@ -125,7 +125,7 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
   // requirements, but the replacement does, always replace the
   // current one even if we're using a worse thumbnail type.
   return current.boring_score >= ThumbnailScore::kThumbnailMaximumBoringness &&
-      replacement.boring_score < ThumbnailScore::kThumbnailMaximumBoringness;
+         replacement.boring_score < ThumbnailScore::kThumbnailMaximumBoringness;
 }
 
 bool ThumbnailScore::ShouldConsiderUpdating() {

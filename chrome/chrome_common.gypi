@@ -298,8 +298,6 @@
         'common/spellcheck_result.h',
         'common/switch_utils.cc',
         'common/switch_utils.h',
-        'common/thumbnail_score.cc',
-        'common/thumbnail_score.h',
         'common/tts_messages.h',
         'common/tts_utterance_request.cc',
         'common/tts_utterance_request.h',

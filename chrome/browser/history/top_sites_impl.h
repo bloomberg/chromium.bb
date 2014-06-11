@@ -25,7 +25,7 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_backend.h"
-#include "chrome/common/thumbnail_score.h"
+#include "components/history/core/common/thumbnail_score.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"

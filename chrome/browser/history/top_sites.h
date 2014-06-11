@@ -12,7 +12,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/common/thumbnail_score.h"
+#include "components/history/core/common/thumbnail_score.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 

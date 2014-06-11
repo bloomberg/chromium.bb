@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/common/thumbnail_score.h"
+#include "components/history/core/common/thumbnail_score.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
