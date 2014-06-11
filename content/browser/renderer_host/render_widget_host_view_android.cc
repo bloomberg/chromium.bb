@@ -1103,11 +1103,6 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
   gesture_provider_.OnTouchEventAck(event_consumed);
 }
 
-void RenderWidgetHostViewAndroid::SetScrollOffsetPinning(
-    bool is_pinned_to_left, bool is_pinned_to_right) {
-  // intentionally empty, like RenderWidgetHostViewViews
-}
-
 void RenderWidgetHostViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

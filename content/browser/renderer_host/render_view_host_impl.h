@@ -494,8 +494,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnDidChangeScrollOffset();
-  void OnDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
-                                                  bool is_pinned_to_right);
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);

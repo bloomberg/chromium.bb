@@ -106,14 +106,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
   return [historySwiper_ handleEvent:event];
 }
 
-// Notification of scroll offset pinning.
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-}
-
-// Notification of whether the view has a horizontal scrollbar.
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
-}
-
 // NSWindow events.
 
 - (void)beginGestureWithEvent:(NSEvent*)event {

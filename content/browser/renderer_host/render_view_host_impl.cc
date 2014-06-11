@@ -991,8 +991,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffset,
                         OnDidChangeScrollOffset)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
-                        OnDidChangeScrollOffsetPinningForMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnRouteMessageEvent)
@@ -1218,12 +1216,6 @@ void RenderViewHostImpl::OnRenderAutoResized(const gfx::Size& new_size) {
 void RenderViewHostImpl::OnDidChangeScrollOffset() {
   if (view_)
     view_->ScrollOffsetChanged();
-}
-
-void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
-    bool is_pinned_to_left, bool is_pinned_to_right) {
-  if (view_)
-    view_->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
 }
 
 void RenderViewHostImpl::OnRouteCloseEvent() {

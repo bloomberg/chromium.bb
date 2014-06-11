@@ -365,12 +365,6 @@ void RenderWidgetHostViewGuest::SetBackgroundOpaque(bool opaque) {
   platform_view_->SetBackgroundOpaque(opaque);
 }
 
-void RenderWidgetHostViewGuest::SetScrollOffsetPinning(
-    bool is_pinned_to_left, bool is_pinned_to_right) {
-  platform_view_->SetScrollOffsetPinning(
-      is_pinned_to_left, is_pinned_to_right);
-}
-
 bool RenderWidgetHostViewGuest::LockMouse() {
   return platform_view_->LockMouse();
 }

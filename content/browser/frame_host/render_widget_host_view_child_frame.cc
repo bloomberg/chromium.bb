@@ -324,10 +324,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewChildFrame::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
-void RenderWidgetHostViewChildFrame::SetScrollOffsetPinning(
-    bool is_pinned_to_left, bool is_pinned_to_right) {
-}
-
 #if defined(OS_WIN)
 void RenderWidgetHostViewChildFrame::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {

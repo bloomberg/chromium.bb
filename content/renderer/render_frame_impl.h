@@ -351,8 +351,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                         v8::Handle<v8::Context> context,
                                         int world_id);
   virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
-  virtual void didChangeContentsSize(blink::WebLocalFrame* frame,
-                                     const blink::WebSize& size);
   virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
   virtual void willInsertBody(blink::WebLocalFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,

@@ -31,12 +31,6 @@ class WebMouseWheelEvent;
 // normal processing should take place.
 - (BOOL)handleEvent:(NSEvent*)event;
 
-// Notification of scroll offset pinning.
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
-
-// Notification of whether the view has a horizontal scrollbar.
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
-
 // Provides validation of user interface items. If the return value is NO, then
 // the delegate is unaware of that item and |valid| is undefined.  Otherwise,
 // |valid| contains the validity of the specified item.

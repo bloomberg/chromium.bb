@@ -142,8 +142,6 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
 
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
@@ -631,8 +629,6 @@ bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollbarsForMainFrame,
-                        OnDidChangeScrollbarsForMainFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1822,12 +1818,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
 }
 
-void RenderWidgetHostViewMac::SetScrollOffsetPinning(
-    bool is_pinned_to_left, bool is_pinned_to_right) {
-  [cocoa_view_ scrollOffsetPinnedToLeft:is_pinned_to_left
-                                toRight:is_pinned_to_right];
-}
-
 bool RenderWidgetHostViewMac::LockMouse() {
   if (mouse_locked_)
     return true;
@@ -2052,11 +2042,6 @@ void RenderWidgetHostViewMac::OnPluginFocusChanged(bool focused,
 
 void RenderWidgetHostViewMac::OnStartPluginIme() {
   [cocoa_view_ setPluginImeActive:YES];
-}
-
-void RenderWidgetHostViewMac::OnDidChangeScrollbarsForMainFrame(
-    bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
-  [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
@@ -2341,22 +2326,6 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed {
   [responderDelegate_ rendererHandledWheelEvent:event consumed:consumed];
-}
-
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(scrollOffsetPinnedToLeft:toRight:)]) {
-    [responderDelegate_ scrollOffsetPinnedToLeft:left toRight:right];
-  }
-}
-
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(setHasHorizontalScrollbar:)]) {
-    [responderDelegate_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
-  }
 }
 
 - (BOOL)respondsToSelector:(SEL)selector {

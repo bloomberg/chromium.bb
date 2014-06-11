@@ -650,8 +650,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #if defined(OS_ANDROID)
       top_controls_constraints_(cc::BOTH),
 #endif
-      cached_is_main_frame_pinned_to_left_(false),
-      cached_is_main_frame_pinned_to_right_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       push_messaging_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
@@ -2226,22 +2224,6 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
 }
 
 void RenderViewImpl::UpdateScrollState(WebFrame* frame) {
-  WebSize offset = frame->scrollOffset();
-  WebSize minimum_offset = frame->minimumScrollOffset();
-  WebSize maximum_offset = frame->maximumScrollOffset();
-
-  bool is_pinned_to_left = offset.width <= minimum_offset.width;
-  bool is_pinned_to_right = offset.width >= maximum_offset.width;
-
-  if (is_pinned_to_left != cached_is_main_frame_pinned_to_left_ ||
-      is_pinned_to_right != cached_is_main_frame_pinned_to_right_) {
-    Send(new ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame(
-          routing_id_, is_pinned_to_left, is_pinned_to_right));
-
-    cached_is_main_frame_pinned_to_left_ = is_pinned_to_left;
-    cached_is_main_frame_pinned_to_right_ = is_pinned_to_right;
-  }
-
   Send(new ViewHostMsg_DidChangeScrollOffset(routing_id_));
 }
 

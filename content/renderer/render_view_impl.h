@@ -1034,11 +1034,6 @@ class CONTENT_EXPORT RenderViewImpl
   // states for the sizes).
   base::OneShotTimer<RenderViewImpl> check_preferred_size_timer_;
 
-  // These store the "is main frame is scrolled all the way to the left
-  // or right" state that was last sent to the browser.
-  bool cached_is_main_frame_pinned_to_left_;
-  bool cached_is_main_frame_pinned_to_right_;
-
   // Bookkeeping to suppress redundant scroll and focus requests for an already
   // scrolled and focused editable node.
   bool has_scrolled_focused_editable_node_into_rect_;

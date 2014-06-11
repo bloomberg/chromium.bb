@@ -327,8 +327,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
-  virtual void SetScrollOffsetPinning(
-      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
@@ -553,8 +551,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // IPC message handlers.
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
-  void OnDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
-                                         bool has_vertical_scrollbar);
 
   // Convert |rect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.

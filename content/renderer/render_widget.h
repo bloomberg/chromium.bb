@@ -274,11 +274,6 @@ class CONTENT_EXPORT RenderWidget
   void UpdateCompositionInfo(bool should_update_range);
 #endif
 
-#if defined(OS_MACOSX)
-  void DidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
-                                       bool has_vertical_scrollbar);
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_ANDROID)
   void DidChangeBodyBackgroundColor(SkColor bg_color);
 #endif
@@ -692,12 +687,6 @@ class CONTENT_EXPORT RenderWidget
   // have the actual content.
   SkColor body_background_color_;
 #endif
-
-#if defined(OS_MACOSX)
-  // These store the "has scrollbars" state last sent to the browser.
-  bool cached_has_main_frame_horizontal_scrollbar_;
-  bool cached_has_main_frame_vertical_scrollbar_;
-#endif  // defined(OS_MACOSX)
 
   scoped_ptr<ScreenMetricsEmulator> screen_metrics_emulator_;
 
