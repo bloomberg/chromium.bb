@@ -64,8 +64,7 @@ void Scheduler::SyntheticBeginFrameSource::OnTimerTick() {
 BeginFrameArgs
 Scheduler::SyntheticBeginFrameSource::CreateSyntheticBeginFrameArgs(
     base::TimeTicks frame_time) {
-  base::TimeTicks deadline =
-      time_source_->NextTickTime() - scheduler_->EstimatedParentDrawTime();
+  base::TimeTicks deadline = time_source_->NextTickTime();
   return BeginFrameArgs::Create(
       frame_time, deadline, scheduler_->VSyncInterval());
 }
@@ -399,6 +398,9 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", ToTrace(args));
   DCHECK(settings_.throttle_frame_production);
 
+  BeginFrameArgs adjusted_args(args);
+  adjusted_args.deadline -= EstimatedParentDrawTime();
+
   bool should_defer_begin_frame;
   if (settings_.using_synchronous_renderer_compositor) {
     should_defer_begin_frame = false;
@@ -411,13 +413,13 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   }
 
   if (should_defer_begin_frame) {
-    begin_retro_frame_args_.push_back(args);
+    begin_retro_frame_args_.push_back(adjusted_args);
     TRACE_EVENT_INSTANT0(
         "cc", "Scheduler::BeginFrame deferred", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
-  BeginImplFrame(args);
+  BeginImplFrame(adjusted_args);
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
