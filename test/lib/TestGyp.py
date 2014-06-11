@@ -151,6 +151,9 @@ class TestGypBase(TestCommon.TestCommon):
     # Clear $GYP_DEFINES for the same reason.
     if 'GYP_DEFINES' in os.environ:
       del os.environ['GYP_DEFINES']
+    # Override the user's language settings, which could
+    # otherwise make the output vary from what is expected.
+    os.environ['LC_ALL'] = 'C'
 
   def built_file_must_exist(self, name, type=None, **kw):
     """
