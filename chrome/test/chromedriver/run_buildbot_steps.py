@@ -383,7 +383,10 @@ def _CleanTmpDir():
 def _WaitForLatestSnapshot(revision):
   util.MarkBuildStepStart('wait_for_snapshot')
   while True:
-    snapshot_revision = archive.GetLatestRevision(archive.Site.BLINK_SNAPSHOT)
+    download_site = archive.Site.BLINK_SNAPSHOT
+    if util.IsLinux() and platform.architecture()[0] == '32bit':
+      download_site = archive.Site.CHROMIUM_SNAPSHOT
+    snapshot_revision = archive.GetLatestRevision(download_site)
     if int(snapshot_revision) >= int(revision):
       break
     util.PrintAndFlush('Waiting for snapshot >= %s, found %s' %
