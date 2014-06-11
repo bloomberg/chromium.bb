@@ -7,18 +7,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
-#include "chrome/browser/drive/drive_api_service.h"
-#include "chrome/browser/drive/drive_notification_manager.h"
-#include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -27,25 +17,13 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_change_processor_on_worker.h"
-#include "chrome/browser/sync_file_system/drive_backend/remote_change_processor_wrapper.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
-#include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_system_provider.h"
-#include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extension.h"
-#include "google_apis/drive/drive_api_url_generator.h"
-#include "google_apis/drive/gdata_wapi_url_generator.h"
-#include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
@@ -292,33 +270,6 @@ void SyncWorker::PromoteDemotedChanges() {
   }
 }
 
-SyncStatusCode SyncWorker::SetDefaultConflictResolutionPolicy(
-    ConflictResolutionPolicy policy) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  default_conflict_resolution_policy_ = policy;
-  return SYNC_STATUS_OK;
-}
-
-SyncStatusCode SyncWorker::SetConflictResolutionPolicy(
-    const GURL& origin,
-    ConflictResolutionPolicy policy) {
-  NOTIMPLEMENTED();
-  default_conflict_resolution_policy_ = policy;
-  return SYNC_STATUS_OK;
-}
-
-ConflictResolutionPolicy SyncWorker::GetDefaultConflictResolutionPolicy()
-    const {
-  return default_conflict_resolution_policy_;
-}
-
-ConflictResolutionPolicy SyncWorker::GetConflictResolutionPolicy(
-    const GURL& origin) const {
-  NOTIMPLEMENTED();
-  return default_conflict_resolution_policy_;
-}
-
 void SyncWorker::ApplyLocalChange(
     const FileChange& local_change,
     const base::FilePath& local_path,
@@ -452,13 +403,17 @@ SyncTaskManager* SyncWorker::GetSyncTaskManager() {
   return task_manager_.get();
 }
 
+void SyncWorker::DetachFromSequence() {
+  context_->DetachFromSequence();
+  sequence_checker_.DetachFromSequence();
+}
+
 void SyncWorker::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void SyncWorker::DetachFromSequence() {
-  context_->DetachFromSequence();
-  sequence_checker_.DetachFromSequence();
+void SyncWorker::SetHasRefreshToken(bool has_refresh_token) {
+  has_refresh_token_ = has_refresh_token;
 }
 
 void SyncWorker::DoDisableApp(const std::string& app_id,

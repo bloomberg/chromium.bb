@@ -157,6 +157,10 @@ class SyncEngineTest
     return sync_engine_->sync_worker_->GetMetadataDatabase();
   }
 
+  void SetHasRefreshToken(bool has_refresh_token) {
+    sync_engine_->sync_worker_->SetHasRefreshToken(has_refresh_token);
+  }
+
  private:
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir profile_dir_;

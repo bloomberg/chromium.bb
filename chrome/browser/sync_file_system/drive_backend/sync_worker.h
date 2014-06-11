@@ -5,32 +5,35 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_WORKER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_WORKER_H_
 
-#include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/drive/drive_notification_observer.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
-#include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_worker_interface.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
+class GURL;
 
 namespace base {
-class SequencedTaskRunner;
+class ListValue;
 }
 
 namespace drive {
 class DriveServiceInterface;
-class DriveNotificationManager;
 class DriveUploaderInterface;
+}
+
+namespace fileapi {
+class FileSystemURL;
 }
 
 namespace leveldb {
@@ -39,7 +42,8 @@ class Env;
 
 namespace sync_file_system {
 
-class RemoteChangeProcessor;
+class FileChange;
+class SyncFileMetadata;
 
 namespace drive_backend {
 
@@ -50,7 +54,8 @@ class RemoteToLocalSyncer;
 class SyncEngineContext;
 class SyncEngineInitializer;
 
-class SyncWorker : public SyncTaskManager::Client {
+class SyncWorker : public SyncWorkerInterface,
+                   public SyncTaskManager::Client {
  public:
   enum AppStatus {
     APP_STATUS_ENABLED,
@@ -81,7 +86,7 @@ class SyncWorker : public SyncTaskManager::Client {
 
   virtual ~SyncWorker();
 
-  void Initialize();
+  virtual void Initialize() OVERRIDE;
 
   // SyncTaskManager::Client overrides
   virtual void MaybeScheduleNextTask() OVERRIDE;
@@ -89,59 +94,59 @@ class SyncWorker : public SyncTaskManager::Client {
       SyncStatusCode sync_status, bool used_network) OVERRIDE;
   virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) OVERRIDE;
 
-  void RegisterOrigin(const GURL& origin, const SyncStatusCallback& callback);
-  void EnableOrigin(const GURL& origin, const SyncStatusCallback& callback);
-  void DisableOrigin(const GURL& origin, const SyncStatusCallback& callback);
-  void UninstallOrigin(
-      const GURL& origin,
-      RemoteFileSyncService::UninstallFlag flag,
-      const SyncStatusCallback& callback);
-  void ProcessRemoteChange(const SyncFileCallback& callback);
-  void SetRemoteChangeProcessor(
-      RemoteChangeProcessorOnWorker* remote_change_processor_on_worker);
-  RemoteServiceState GetCurrentState() const;
-  void GetOriginStatusMap(
-      const RemoteFileSyncService::StatusMapCallback& callback);
-  scoped_ptr<base::ListValue> DumpFiles(const GURL& origin);
-  scoped_ptr<base::ListValue> DumpDatabase();
-  void SetSyncEnabled(bool enabled);
-  void PromoteDemotedChanges();
-  SyncStatusCode SetDefaultConflictResolutionPolicy(
-      ConflictResolutionPolicy policy);
-  SyncStatusCode SetConflictResolutionPolicy(
-      const GURL& origin,
-      ConflictResolutionPolicy policy);
-  ConflictResolutionPolicy GetDefaultConflictResolutionPolicy()
-      const;
-  ConflictResolutionPolicy GetConflictResolutionPolicy(
-      const GURL& origin) const;
+  // SyncWorkerInterface overrides
+  virtual void RegisterOrigin(const GURL& origin,
+                              const SyncStatusCallback& callback) OVERRIDE;
+  virtual void EnableOrigin(const GURL& origin,
+                            const SyncStatusCallback& callback) OVERRIDE;
+  virtual void DisableOrigin(const GURL& origin,
+                             const SyncStatusCallback& callback) OVERRIDE;
+  virtual void UninstallOrigin(const GURL& origin,
+                               RemoteFileSyncService::UninstallFlag flag,
+                               const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
+  virtual void SetRemoteChangeProcessor(
+      RemoteChangeProcessorOnWorker* remote_change_processor_on_worker)
+      OVERRIDE;
+  virtual RemoteServiceState GetCurrentState() const OVERRIDE;
+  virtual void GetOriginStatusMap(
+      const RemoteFileSyncService::StatusMapCallback& callback) OVERRIDE;
+  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
+  virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
+  virtual void SetSyncEnabled(bool enabled) OVERRIDE;
+  virtual void PromoteDemotedChanges() OVERRIDE;
 
-  void ApplyLocalChange(
+  virtual void ApplyLocalChange(
       const FileChange& local_change,
       const base::FilePath& local_path,
       const SyncFileMetadata& local_metadata,
       const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback);
+      const SyncStatusCallback& callback) OVERRIDE;
 
-  void OnNotificationReceived();
+  virtual void OnNotificationReceived() OVERRIDE;
 
-  void OnReadyToSendRequests(const std::string& account_id);
-  void OnRefreshTokenInvalid();
+  virtual void OnReadyToSendRequests(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenInvalid() OVERRIDE;
 
-  void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type);
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  drive::DriveServiceInterface* GetDriveService();
-  drive::DriveUploaderInterface* GetDriveUploader();
-  MetadataDatabase* GetMetadataDatabase();
-  SyncTaskManager* GetSyncTaskManager();
+  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
+  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
+  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
+  virtual SyncTaskManager* GetSyncTaskManager() OVERRIDE;
+
+  virtual void DetachFromSequence() OVERRIDE;
 
   void AddObserver(Observer* observer);
-
-  void DetachFromSequence();
 
  private:
   friend class DriveBackendSyncTest;
   friend class SyncWorkerTest;
+
+  // SyncWorkerInterface overrides.
+  // TODO(peria): Remove this interface after making FakeSyncWorker class.
+  virtual void SetHasRefreshToken(bool has_refresh_token) OVERRIDE;
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);

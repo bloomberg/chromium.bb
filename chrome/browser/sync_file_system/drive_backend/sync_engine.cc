@@ -317,19 +317,21 @@ void SyncEngine::InitializeInternal(
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
-  sync_worker_.reset(new SyncWorker(
+  scoped_ptr<SyncWorker> worker(new SyncWorker(
       sync_file_system_dir_,
       extension_service_weak_ptr,
       sync_engine_context.Pass(),
       env_override_));
 
-  sync_worker_->AddObserver(worker_observer_.get());
+  worker->AddObserver(worker_observer_.get());
+  sync_worker_ = worker.PassAs<SyncWorkerInterface>();
+
   if (remote_change_processor_)
     SetRemoteChangeProcessor(remote_change_processor_);
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::Initialize,
+      base::Bind(&SyncWorkerInterface::Initialize,
                  base::Unretained(sync_worker_.get())));
 
   if (notification_manager_)
@@ -358,7 +360,7 @@ void SyncEngine::RegisterOrigin(const GURL& origin,
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::RegisterOrigin,
+      base::Bind(&SyncWorkerInterface::RegisterOrigin,
                  base::Unretained(sync_worker_.get()),
                  origin, relayed_callback));
 }
@@ -370,7 +372,7 @@ void SyncEngine::EnableOrigin(
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::EnableOrigin,
+      base::Bind(&SyncWorkerInterface::EnableOrigin,
                  base::Unretained(sync_worker_.get()),
                  origin, relayed_callback));
 }
@@ -382,7 +384,7 @@ void SyncEngine::DisableOrigin(
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::DisableOrigin,
+      base::Bind(&SyncWorkerInterface::DisableOrigin,
                  base::Unretained(sync_worker_.get()),
                  origin,
                  relayed_callback));
@@ -396,7 +398,7 @@ void SyncEngine::UninstallOrigin(
       FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::UninstallOrigin,
+      base::Bind(&SyncWorkerInterface::UninstallOrigin,
                  base::Unretained(sync_worker_.get()),
                  origin, flag, relayed_callback));
 }
@@ -409,7 +411,7 @@ void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
       FROM_HERE, tracked_callback);
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::ProcessRemoteChange,
+      base::Bind(&SyncWorkerInterface::ProcessRemoteChange,
                  base::Unretained(sync_worker_.get()),
                  relayed_callback));
 }
@@ -425,7 +427,7 @@ void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::SetRemoteChangeProcessor,
+      base::Bind(&SyncWorkerInterface::SetRemoteChangeProcessor,
                  base::Unretained(sync_worker_.get()),
                  remote_change_processor_on_worker_.get()));
 }
@@ -449,7 +451,7 @@ void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::GetOriginStatusMap,
+      base::Bind(&SyncWorkerInterface::GetOriginStatusMap,
                  base::Unretained(sync_worker_.get()),
                  relayed_callback));
 }
@@ -464,7 +466,7 @@ void SyncEngine::DumpFiles(const GURL& origin,
   PostTaskAndReplyWithResult(
       worker_task_runner_,
       FROM_HERE,
-      base::Bind(&SyncWorker::DumpFiles,
+      base::Bind(&SyncWorkerInterface::DumpFiles,
                  base::Unretained(sync_worker_.get()),
                  origin),
       tracked_callback);
@@ -479,7 +481,7 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
   PostTaskAndReplyWithResult(
       worker_task_runner_,
       FROM_HERE,
-      base::Bind(&SyncWorker::DumpDatabase,
+      base::Bind(&SyncWorkerInterface::DumpDatabase,
                  base::Unretained(sync_worker_.get())),
       tracked_callback);
 }
@@ -488,7 +490,7 @@ void SyncEngine::SetSyncEnabled(bool sync_enabled) {
   sync_enabled_ = sync_enabled;
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::SetSyncEnabled,
+      base::Bind(&SyncWorkerInterface::SetSyncEnabled,
                  base::Unretained(sync_worker_.get()),
                  sync_enabled));
 }
@@ -496,7 +498,7 @@ void SyncEngine::SetSyncEnabled(bool sync_enabled) {
 void SyncEngine::PromoteDemotedChanges() {
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::PromoteDemotedChanges,
+      base::Bind(&SyncWorkerInterface::PromoteDemotedChanges,
                  base::Unretained(sync_worker_.get())));
 }
 
@@ -510,7 +512,7 @@ void SyncEngine::ApplyLocalChange(
       FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::ApplyLocalChange,
+      base::Bind(&SyncWorkerInterface::ApplyLocalChange,
                  base::Unretained(sync_worker_.get()),
                  local_change,
                  local_path,
@@ -522,7 +524,7 @@ void SyncEngine::ApplyLocalChange(
 void SyncEngine::OnNotificationReceived() {
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::OnNotificationReceived,
+      base::Bind(&SyncWorkerInterface::OnNotificationReceived,
                  base::Unretained(sync_worker_.get())));
 }
 
@@ -536,7 +538,7 @@ void SyncEngine::OnReadyToSendRequests() {
 
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::OnReadyToSendRequests,
+      base::Bind(&SyncWorkerInterface::OnReadyToSendRequests,
                  base::Unretained(sync_worker_.get()),
                  account_id));
 }
@@ -544,7 +546,7 @@ void SyncEngine::OnReadyToSendRequests() {
 void SyncEngine::OnRefreshTokenInvalid() {
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::OnRefreshTokenInvalid,
+      base::Bind(&SyncWorkerInterface::OnRefreshTokenInvalid,
                  base::Unretained(sync_worker_.get())));
 }
 
@@ -552,7 +554,7 @@ void SyncEngine::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWorker::OnNetworkChanged,
+      base::Bind(&SyncWorkerInterface::OnNetworkChanged,
                  base::Unretained(sync_worker_.get()),
                  type));
 }

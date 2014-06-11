@@ -54,7 +54,7 @@ class MetadataDatabase;
 class RemoteChangeProcessorOnWorker;
 class RemoteChangeProcessorWrapper;
 class SyncTaskManager;
-class SyncWorker;
+class SyncWorkerInterface;
 
 class SyncEngine : public RemoteFileSyncService,
                    public LocalChangeProcessor,
@@ -194,7 +194,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   // Delete them on worker.
   scoped_ptr<WorkerObserver> worker_observer_;
-  scoped_ptr<SyncWorker> sync_worker_;
+  scoped_ptr<SyncWorkerInterface> sync_worker_;
 
   ObserverList<SyncServiceObserver> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

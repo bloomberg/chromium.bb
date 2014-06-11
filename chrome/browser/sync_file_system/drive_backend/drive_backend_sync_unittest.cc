@@ -583,8 +583,9 @@ class DriveBackendSyncTest : public testing::Test,
   // MetadataDatabase is normally used on the worker thread.
   // Use this only when there is no task running on the worker.
   MetadataDatabase* metadata_database() {
-    return remote_sync_service_->sync_worker_
-        ->context_->metadata_database_.get();
+    SyncWorker* worker = static_cast<SyncWorker*>(
+        remote_sync_service_->sync_worker_.get());
+    return worker->context_->metadata_database_.get();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
