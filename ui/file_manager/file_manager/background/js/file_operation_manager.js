@@ -401,9 +401,10 @@ FileOperationManager.Task = function(
 
   /**
    * Total number of bytes to be processed. Filled in initialize().
+   * Use 1 as an initial value to indicate that the task is not completed.
    * @type {number}
    */
-  this.totalBytes = 0;
+  this.totalBytes = 1;
 
   /**
    * Total number of already processed bytes. Updated periodically.
@@ -1120,10 +1121,10 @@ FileOperationManager.prototype.queueCopy_ = function(
     targetDirEntry, entries, isMove) {
   var createTask = function(task) {
     task.taskId = this.generateTaskId_();
+    this.eventRouter_.sendProgressEvent(
+        'BEGIN', task.getStatus(), task.taskId);
     task.initialize(function() {
       this.copyTasks_.push(task);
-      this.eventRouter_.sendProgressEvent(
-          'BEGIN', task.getStatus(), task.taskId);
       if (this.copyTasks_.length === 1)
         this.serviceAllTasks_();
     }.bind(this));
@@ -1329,11 +1330,11 @@ FileOperationManager.prototype.zipSelection = function(
       selectionEntries, dirEntry, dirEntry);
   zipTask.taskId = this.generateTaskId_(this.copyTasks_);
   zipTask.zip = true;
+  this.eventRouter_.sendProgressEvent('BEGIN',
+                                      zipTask.getStatus(),
+                                      zipTask.taskId);
   zipTask.initialize(function() {
     this.copyTasks_.push(zipTask);
-    this.eventRouter_.sendProgressEvent('BEGIN',
-                                        zipTask.getStatus(),
-                                        zipTask.taskId);
     if (this.copyTasks_.length == 1)
       this.serviceAllTasks_();
   }.bind(this));

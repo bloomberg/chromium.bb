@@ -192,6 +192,7 @@ FileOperationHandler.prototype.onCopyProgress_ = function(event) {
         return;
       }
       item.message = FileOperationHandler.getMessage_(event);
+      item.progressMax = event.status.totalBytes;
       item.progressValue = event.status.processedBytes;
       progressCenter.updateItem(item);
       break;
