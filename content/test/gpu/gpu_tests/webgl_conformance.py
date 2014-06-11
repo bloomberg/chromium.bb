@@ -54,6 +54,13 @@ conformance_harness_script = r"""
   window.webglTestHarness = testHarness;
   window.parent.webglTestHarness = testHarness;
   window.console.log = testHarness.log;
+  window.onerror = function(message, url, line) {
+    testHarness._failures++;
+    if (message) {
+      testHarness.log(message);
+    }
+    testHarness.notifyFinished(null);
+  };
 """
 
 def _DidWebGLTestSucceed(tab):
