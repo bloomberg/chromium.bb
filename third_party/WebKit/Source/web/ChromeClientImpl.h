@@ -183,6 +183,8 @@ public:
     virtual void willSetInputMethodState() OVERRIDE;
     virtual void didUpdateTextOfFocusedElementByNonUserInput() OVERRIDE;
 
+    virtual bool usesGpuRasterization() OVERRIDE;
+
 private:
     virtual bool isChromeClientImpl() const OVERRIDE { return true; }
 

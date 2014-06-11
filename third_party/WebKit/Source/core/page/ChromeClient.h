@@ -238,6 +238,8 @@ public:
     virtual void willSetInputMethodState() { }
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
 
+    virtual bool usesGpuRasterization() = 0;
+
 protected:
     virtual ~ChromeClient() { }
 };

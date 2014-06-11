@@ -882,6 +882,11 @@ void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
         m_webView->autofillClient()->openTextDataListChooser(WebInputElement(&input));
 }
 
+bool ChromeClientImpl::usesGpuRasterization()
+{
+    return m_webView->layerTreeView()->usesGpuRasterization();
+}
+
 PassOwnPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebViewImpl* webView)
 {
     return adoptPtr(new NavigatorContentUtilsClientImpl(webView));
@@ -906,5 +911,6 @@ void NavigatorContentUtilsClientImpl::unregisterProtocolHandler(const String& sc
 {
     m_webView->client()->unregisterProtocolHandler(scheme, baseURL, url);
 }
+
 
 } // namespace blink
