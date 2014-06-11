@@ -49,7 +49,7 @@ PersistentPrefStore::PrefReadError IntToPrefReadError(int error) {
 } // namespace
 
 struct LevelDBPrefStore::ReadingResults {
-  ReadingResults() : error(0) {}
+  ReadingResults() : no_dir(true), error(0) {}
   bool no_dir;
   scoped_ptr<leveldb::DB> db;
   scoped_ptr<PrefValueMap> value_map;
