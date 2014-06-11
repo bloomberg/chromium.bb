@@ -85,6 +85,16 @@ void EnsureMethodsLoaded() {
 
   g_attempted_load = true;
 
+  // Only use libappindicator where it is needed to support dbus based status
+  // icons. In particular, libappindicator does not support a click action.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  base::nix::DesktopEnvironment environment =
+      base::nix::GetDesktopEnvironment(env.get());
+  if (environment != base::nix::DESKTOP_ENVIRONMENT_KDE4 &&
+      environment != base::nix::DESKTOP_ENVIRONMENT_UNITY) {
+    return;
+  }
+
   void* indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
   if (!indicator_lib) {
     indicator_lib = dlopen("libappindicator.so.1", RTLD_LAZY);
