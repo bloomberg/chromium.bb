@@ -125,11 +125,6 @@ void WebRuntimeFeatures::enableGamepad(bool enable)
     RuntimeEnabledFeatures::setGamepadEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableLazyLayout(bool enable)
-{
-    // FIXME: Remove this once Chromium stops calling this.
-}
-
 void WebRuntimeFeatures::enableLocalStorage(bool enable)
 {
     RuntimeEnabledFeatures::setLocalStorageEnabled(enable);
@@ -213,12 +208,6 @@ void WebRuntimeFeatures::enableTouch(bool enable)
 void WebRuntimeFeatures::enableTouchIconLoading(bool enable)
 {
     RuntimeEnabledFeatures::setTouchIconLoadingEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableWebAnimationsCSS(bool enable)
-{
-    // FIXME: Remove this method once the runtime flags are removed from Chromium.
-    ASSERT(enable);
 }
 
 void WebRuntimeFeatures::enableWebAnimationsSVG(bool enable)

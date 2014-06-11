@@ -66,8 +66,6 @@ public:
 
     BLINK_EXPORT static void enableGamepad(bool);
 
-    BLINK_EXPORT static void enableLazyLayout(bool);
-
     BLINK_EXPORT static void enableLocalStorage(bool);
 
     BLINK_EXPORT static void enableMediaPlayer(bool);
@@ -102,7 +100,6 @@ public:
 
     BLINK_EXPORT static void enableTouchIconLoading(bool);
 
-    BLINK_EXPORT static void enableWebAnimationsCSS(bool);
     BLINK_EXPORT static void enableWebAnimationsSVG(bool);
 
     BLINK_EXPORT static void enableWebAudio(bool);
