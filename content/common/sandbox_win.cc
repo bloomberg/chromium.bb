@@ -333,7 +333,6 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 #endif  // NDEBUG
 
   AddGenericDllEvictionPolicy(policy);
-
   return true;
 }
 
@@ -614,8 +613,13 @@ base::ProcessHandle StartSandboxedProcess(
      type_str == switches::kRendererProcess &&
      browser_command_line.HasSwitch(
         switches::kEnableWin32kRendererLockDown)) {
-   mitigations |= sandbox::MITIGATION_WIN32K_DISABLE;
- }
+    if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
+                        sandbox::TargetPolicy::FAKE_USER_GDI_INIT,
+                        NULL) != sandbox::SBOX_ALL_OK) {
+      return 0;
+    }
+    mitigations |= sandbox::MITIGATION_WIN32K_DISABLE;
+  }
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return 0;

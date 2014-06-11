@@ -8,6 +8,7 @@
 #include "sandbox/win/src/filesystem_interception.h"
 #include "sandbox/win/src/named_pipe_interception.h"
 #include "sandbox/win/src/policy_target.h"
+#include "sandbox/win/src/process_mitigations_win32k_interception.h"
 #include "sandbox/win/src/process_thread_interception.h"
 #include "sandbox/win/src/registry_interception.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
@@ -249,6 +250,29 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenEvent64(
       NtOpenEventFunction>(g_originals[OPEN_EVENT_ID]);
   return TargetNtOpenEvent(orig_fn, event_handle, desired_access,
                            object_attributes);
+}
+
+// -----------------------------------------------------------------------
+
+SANDBOX_INTERCEPT BOOL WINAPI TargetGdiDllInitialize64(
+    HANDLE dll,
+    DWORD reason) {
+  GdiDllInitializeFunction orig_fn = reinterpret_cast<
+      GdiDllInitializeFunction>(g_originals[GDIINITIALIZE_ID]);
+  return TargetGdiDllInitialize(orig_fn, dll, reason);
+}
+
+SANDBOX_INTERCEPT HGDIOBJ WINAPI TargetGetStockObject64(int object) {
+  GetStockObjectFunction orig_fn = reinterpret_cast<
+      GetStockObjectFunction>(g_originals[GETSTOCKOBJECT_ID]);
+  return TargetGetStockObject(orig_fn, object);
+}
+
+SANDBOX_INTERCEPT ATOM WINAPI TargetRegisterClassW64(
+    const WNDCLASS* wnd_class) {
+  RegisterClassWFunction orig_fn = reinterpret_cast<
+      RegisterClassWFunction>(g_originals[REGISTERCLASSW_ID]);
+  return TargetRegisterClassW(orig_fn, wnd_class);
 }
 
 }  // namespace sandbox

@@ -154,6 +154,20 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenEvent64(
     PHANDLE event_handle, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes);
 
+// -----------------------------------------------------------------------
+// Interceptors handled by the process mitigations win32k lockdown code.
+
+// Interceptor for the GdiDllInitialize function.
+SANDBOX_INTERCEPT BOOL WINAPI TargetGdiDllInitialize64(
+    HANDLE dll,
+    DWORD reason);
+
+// Interceptor for the GetStockObject function.
+SANDBOX_INTERCEPT HGDIOBJ WINAPI TargetGetStockObject64(int object);
+
+// Interceptor for the RegisterClassW function.
+SANDBOX_INTERCEPT ATOM WINAPI TargetRegisterClassW64(const WNDCLASS* wnd_class);
+
 }  // extern "C"
 
 }  // namespace sandbox

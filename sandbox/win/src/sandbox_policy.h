@@ -26,7 +26,8 @@ class TargetPolicy {
     SUBSYS_PROCESS,           // Creation of child processes.
     SUBSYS_REGISTRY,          // Creation and opening of registry keys.
     SUBSYS_SYNC,              // Creation of named sync objects.
-    SUBSYS_HANDLES            // Duplication of handles to other processes.
+    SUBSYS_HANDLES,           // Duplication of handles to other processes.
+    SUBSYS_WIN32K_LOCKDOWN    // Win32K Lockdown related policy.
   };
 
   // Allowable semantics when a rule is matched.
@@ -52,7 +53,10 @@ class TargetPolicy {
     EVENTS_ALLOW_ANY,      // Allows the creation of an event with full access.
     EVENTS_ALLOW_READONLY, // Allows opening an even with synchronize access.
     REG_ALLOW_READONLY,    // Allows readonly access to a registry key.
-    REG_ALLOW_ANY          // Allows read and write access to a registry key.
+    REG_ALLOW_ANY,         // Allows read and write access to a registry key.
+    FAKE_USER_GDI_INIT     // Fakes user32 and gdi32 initialization. This can
+                           // be used to allow the DLLs to load and initialize
+                           // even if the process cannot access that subsystem.
   };
 
   // Increments the reference count of this object. The reference count must

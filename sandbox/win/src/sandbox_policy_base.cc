@@ -21,6 +21,8 @@
 #include "sandbox/win/src/policy_broker.h"
 #include "sandbox/win/src/policy_engine_processor.h"
 #include "sandbox/win/src/policy_low_level.h"
+#include "sandbox/win/src/process_mitigations_win32k_dispatcher.h"
+#include "sandbox/win/src/process_mitigations_win32k_policy.h"
 #include "sandbox/win/src/process_thread_dispatcher.h"
 #include "sandbox/win/src/process_thread_policy.h"
 #include "sandbox/win/src/registry_dispatcher.h"
@@ -125,6 +127,11 @@ PolicyBase::PolicyBase()
 
   dispatcher = new HandleDispatcher(this);
   ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG] = dispatcher;
+
+  dispatcher = new ProcessMitigationsWin32KDispatcher(this);
+  ipc_targets_[IPC_GDI_GDIDLLINITIALIZE_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETSTOCKOBJECT_TAG] = dispatcher;
+  ipc_targets_[IPC_USER_REGISTERCLASSW_TAG] = dispatcher;
 }
 
 PolicyBase::~PolicyBase() {
@@ -425,6 +432,16 @@ ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
       }
       break;
     }
+
+    case SUBSYS_WIN32K_LOCKDOWN: {
+      if (!ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
+              pattern, semantics,policy_maker_)) {
+        NOTREACHED();
+        return SBOX_ERROR_BAD_PARAMS;
+      }
+      break;
+    }
+
     default: {
       return SBOX_ERROR_UNSUPPORTED;
     }
