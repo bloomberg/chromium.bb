@@ -129,6 +129,7 @@ void FilePathWatcherImpl::Cancel() {
 }
 
 void FilePathWatcherImpl::CancelOnMessageLoopThread() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
   set_cancelled();
 
   if (handle_ != INVALID_HANDLE_VALUE)

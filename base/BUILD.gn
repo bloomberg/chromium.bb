@@ -184,8 +184,12 @@ component("base") {
     "files/file_path_constants.cc",
     "files/file_path_watcher.cc",
     "files/file_path_watcher.h",
+    "files/file_path_watcher_fsevents.cc",
+    "files/file_path_watcher_fsevents.h",
     "files/file_path_watcher_kqueue.cc",
+    "files/file_path_watcher_kqueue.h",
     "files/file_path_watcher_linux.cc",
+    "files/file_path_watcher_mac.cc",
     "files/file_path_watcher_win.cc",
     "files/file_proxy.cc",
     "files/file_proxy.h",
@@ -836,7 +840,12 @@ component("base") {
     deps += [ "//third_party/mach_override" ]
   } else {
     # Non-Mac.
-    sources -= [ "files/file_path_watcher_kqueue.cc" ]
+    sources -= [
+      "files/file_path_watcher_fsevents.cc",
+      "files/file_path_watcher_fsevents.h",
+      "files/file_path_watcher_kqueue.cc",
+      "files/file_path_watcher_kqueue.h",
+    ]
   }
 
   # Linux.

@@ -10,6 +10,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace base {
 
 FilePathWatcher::~FilePathWatcher() {
@@ -20,6 +24,19 @@ FilePathWatcher::~FilePathWatcher() {
 void FilePathWatcher::CancelWatch(
     const scoped_refptr<PlatformDelegate>& delegate) {
   delegate->CancelOnMessageLoopThread();
+}
+
+// static
+bool FilePathWatcher::RecursiveWatchAvailable() {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // FSEvents isn't available on iOS and is broken on OSX 10.6 and earlier.
+  // See http://crbug.com/54822#c31
+  return mac::IsOSLionOrLater();
+#elif defined(OS_WIN) || defined(OS_LINUX)
+  return true;
+#else
+  return false;
+#endif
 }
 
 FilePathWatcher::PlatformDelegate::PlatformDelegate(): cancelled_(false) {
