@@ -284,7 +284,7 @@ void SpdySessionPool::OnIPAddressChanged() {
 // to a generated TCP reset.
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
     (*it)->MakeUnavailable();
-    (*it)->StartGoingAway(kLastStreamId, OK);
+    (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
     (*it)->MaybeFinishGoingAway();
 #else
     (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,

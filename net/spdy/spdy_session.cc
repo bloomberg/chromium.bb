@@ -1598,7 +1598,12 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.OtherErrors",
                               total_bytes_received_, 1, 100000000, 50);
 
-  StartGoingAway(0, err);
+  if (err == OK) {
+    // We ought to be going away already, as this is a graceful close.
+    DcheckGoingAway();
+  } else {
+    StartGoingAway(0, err);
+  }
   DcheckDraining();
   MaybePostWriteLoop();
 }
@@ -1639,6 +1644,7 @@ SpdyStreamId SpdySession::GetNewStreamId() {
 
 void SpdySession::CloseSessionOnError(Error err,
                                       const std::string& description) {
+  DCHECK_LT(err, ERR_IO_PENDING);
   DoDrainSession(err, description);
 }
 

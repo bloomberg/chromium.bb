@@ -537,6 +537,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
       test_host_port_pairA, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> sessionA =
       CreateInsecureSpdySession(http_session_, keyA, BoundNetLog());
+
   GURL urlA(kTestHostA);
   base::WeakPtr<SpdyStream> spdy_streamA = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, sessionA, urlA, MEDIUM, BoundNetLog());
@@ -555,7 +556,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(sessionA->IsGoingAway());
   EXPECT_FALSE(delegateA.StreamIsClosed());
 
-  // Set up session B: Available, but idle.
+  // Set up session B: Available, with a created stream.
   const std::string kTestHostB("http://www.b.com");
   HostPortPair test_host_port_pairB(kTestHostB, 80);
   SpdySessionKey keyB(
@@ -563,6 +564,12 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   base::WeakPtr<SpdySession> sessionB =
       CreateInsecureSpdySession(http_session_, keyB, BoundNetLog());
   EXPECT_TRUE(sessionB->IsAvailable());
+
+  GURL urlB(kTestHostB);
+  base::WeakPtr<SpdyStream> spdy_streamB = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, sessionB, urlB, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegateB(spdy_streamB);
+  spdy_streamB->SetDelegate(&delegateB);
 
   // Set up session C: Draining.
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -583,8 +590,12 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(sessionB->IsDraining());
   EXPECT_TRUE(sessionC->IsDraining());
 
-  EXPECT_EQ(1u, sessionA->num_active_streams());  // Stream is still active.
+  EXPECT_EQ(1u,
+            sessionA->num_active_streams());  // Active stream is still active.
   EXPECT_FALSE(delegateA.StreamIsClosed());
+
+  EXPECT_TRUE(delegateB.StreamIsClosed());  // Created stream was closed.
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
 
   sessionA->CloseSessionOnError(ERR_ABORTED, "Closing");
   sessionB->CloseSessionOnError(ERR_ABORTED, "Closing");
@@ -596,8 +607,11 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(sessionB->IsDraining());
   EXPECT_TRUE(sessionC->IsDraining());
 
+  // Both streams were closed with an error.
   EXPECT_TRUE(delegateA.StreamIsClosed());
   EXPECT_EQ(ERR_NETWORK_CHANGED, delegateA.WaitForClose());
+  EXPECT_TRUE(delegateB.StreamIsClosed());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
 }
 
