@@ -76,6 +76,11 @@ const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
 // debugging in case the process hangs anyway.
 const int kOutputTimeoutSeconds = 15;
 
+// Limit of output snippet lines when printing to stdout.
+// Avoids flooding the logs with amount of output that gums up
+// the infrastructure.
+const size_t kOutputSnippetLinesLimit = 50;
+
 // Set of live launch test processes with corresponding lock (it is allowed
 // for callers to launch processes on different threads).
 LazyInstance<std::map<ProcessHandle, CommandLine> > g_live_processes
@@ -451,7 +456,16 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
                  << ": " << print_test_stdio;
   }
   if (print_snippet) {
-    fprintf(stdout, "%s", result.output_snippet.c_str());
+    std::vector<std::string> snippet_lines;
+    SplitString(result.output_snippet, '\n', &snippet_lines);
+    if (snippet_lines.size() > kOutputSnippetLinesLimit) {
+      size_t truncated_size = snippet_lines.size() - kOutputSnippetLinesLimit;
+      snippet_lines.erase(
+          snippet_lines.begin(),
+          snippet_lines.begin() + truncated_size);
+      snippet_lines.insert(snippet_lines.begin(), "<truncated>");
+    }
+    fprintf(stdout, "%s", JoinString(snippet_lines, "\n").c_str());
     fflush(stdout);
   }
 
