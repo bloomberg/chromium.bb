@@ -31,6 +31,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInline.h"

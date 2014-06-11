@@ -24,6 +24,7 @@
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
 #include "SVGNames.h"
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"

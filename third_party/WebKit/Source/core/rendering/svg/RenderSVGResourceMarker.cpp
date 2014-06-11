@@ -23,6 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"

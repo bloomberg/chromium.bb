@@ -64,6 +64,7 @@
 #include "core/svg/SVGRadialGradientElement.h"
 #include "core/svg/SVGRectElement.h"
 #include "core/svg/SVGStopElement.h"
+#include "platform/graphics/DashArray.h"
 #include "platform/graphics/GraphicsTypes.h"
 
 #include <math.h>
