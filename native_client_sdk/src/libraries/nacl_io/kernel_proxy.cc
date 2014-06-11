@@ -424,7 +424,6 @@ Error KernelProxy::MountInternal(const char* source,
   // Create a map of settings
   StringMap_t smap;
   smap["SOURCE"] = source;
-  smap["TARGET"] = abs_path;
 
   if (data) {
     std::vector<std::string> elements;

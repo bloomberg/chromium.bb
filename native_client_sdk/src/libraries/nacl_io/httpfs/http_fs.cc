@@ -321,7 +321,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode = S_IFCHR;
           break;
         default:
-          LOG_ERROR("Unable to parse type %s for %s.\n",
+          LOG_ERROR("Unable to parse type %s for %s.",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;
@@ -334,7 +334,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode |= S_IRUSR | S_IRGRP | S_IROTH;
           break;
         default:
-          LOG_ERROR("Unable to parse read %s for %s.\n",
+          LOG_ERROR("Unable to parse read %s for %s.",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;
@@ -347,7 +347,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode |= S_IWUSR | S_IWGRP | S_IWOTH;
           break;
         default:
-          LOG_ERROR("Unable to parse write %s for %s.\n",
+          LOG_ERROR("Unable to parse write %s for %s.",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;

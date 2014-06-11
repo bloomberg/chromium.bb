@@ -29,16 +29,22 @@ class Html5Fs : public Filesystem {
   PP_Resource filesystem_resource() { return filesystem_resource_; }
 
  protected:
+  static const int REMOVE_DIR = 1;
+  static const int REMOVE_FILE = 2;
+  static const int REMOVE_ALL = REMOVE_DIR | REMOVE_FILE;
+
   Html5Fs();
 
   virtual Error Init(const FsInitArgs& args);
   virtual void Destroy();
 
+  virtual Error RemoveInternal(const Path& path, int remove_type);
   Error BlockUntilFilesystemOpen();
 
  private:
   static void FilesystemOpenCallbackThunk(void* user_data, int32_t result);
   void FilesystemOpenCallback(int32_t result);
+  Path GetFullPath(const Path& path);
 
   PP_Resource filesystem_resource_;
   bool filesystem_open_has_result_;  // protected by lock_.
@@ -46,6 +52,7 @@ class Html5Fs : public Filesystem {
 
   pthread_cond_t filesystem_open_cond_;
   sdk_util::SimpleLock filesysem_open_lock_;
+  std::string prefix_;
 
   friend class TypedFsFactory<Html5Fs>;
 };

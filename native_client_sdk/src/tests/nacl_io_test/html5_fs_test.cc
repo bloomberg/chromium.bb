@@ -149,6 +149,17 @@ TEST_F(Html5FsTest, PassFilesystemResource) {
   }
 }
 
+TEST_F(Html5FsTest, MountSubtree) {
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo/bar",
+                                                               NULL));
+  StringMap_t map;
+  map["SOURCE"] = "/foo";
+  ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
+
+  ASSERT_EQ(0, fs->Access(Path("/bar"), R_OK | W_OK | X_OK));
+  ASSERT_EQ(ENOENT, fs->Access(Path("/foo/bar"), F_OK));
+}
+
 TEST_F(Html5FsTest, Access) {
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo", NULL));
 
@@ -189,9 +200,7 @@ TEST_F(Html5FsTest, Remove) {
   EXPECT_EQ(ENOENT, fs->Access(path, F_OK));
 }
 
-// Unlink + Rmdir forward to Remove unconditionally, which will not fail if the
-// file type is wrong.
-TEST_F(Html5FsTest, DISABLED_Unlink) {
+TEST_F(Html5FsTest, Unlink) {
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/file", NULL));
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
 
@@ -204,9 +213,7 @@ TEST_F(Html5FsTest, DISABLED_Unlink) {
   EXPECT_EQ(0, fs->Access(Path("/dir"), F_OK));
 }
 
-// Unlink + Rmdir forward to Remove unconditionally, which will not fail if the
-// file type is wrong.
-TEST_F(Html5FsTest, DISABLED_Rmdir) {
+TEST_F(Html5FsTest, Rmdir) {
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/file", NULL));
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
 

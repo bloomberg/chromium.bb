@@ -249,14 +249,6 @@ Error Html5FsNode::GetSize(off_t* out_size) {
   return 0;
 }
 
-bool Html5FsNode::IsaDir() {
-  return !fileio_resource_;
-}
-
-bool Html5FsNode::IsaFile() {
-  return fileio_resource_;
-}
-
 Html5FsNode::Html5FsNode(Filesystem* filesystem, PP_Resource fileref_resource)
     : Node(filesystem),
       fileref_resource_(fileref_resource),

@@ -200,15 +200,15 @@ void Node::SetType(int type) {
 }
 
 bool Node::IsaDir() {
-  return (stat_.st_mode & S_IFDIR) != 0;
+  return GetType() == S_IFDIR;
 }
 
 bool Node::IsaFile() {
-  return (stat_.st_mode & S_IFREG) != 0;
+  return GetType() == S_IFREG;
 }
 
 bool Node::IsaSock() {
-  return (stat_.st_mode & S_IFSOCK) != 0;
+  return GetType() == S_IFSOCK;
 }
 
 Error Node::Isatty() {

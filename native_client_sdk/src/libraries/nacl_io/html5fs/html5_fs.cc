@@ -42,7 +42,7 @@ Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
     return error;
 
   PP_Resource fileref = ppapi()->GetFileRefInterface()->Create(
-      filesystem_resource_, path.Join().c_str());
+      filesystem_resource_, GetFullPath(path).Join().c_str());
   if (!fileref)
     return ENOENT;
 
@@ -55,8 +55,14 @@ Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   return 0;
 }
 
+Path Html5Fs::GetFullPath(const Path& path) {
+  Path full_path(path);
+  full_path.Prepend(prefix_);
+  return full_path;
+}
+
 Error Html5Fs::Unlink(const Path& path) {
-  return Remove(path);
+  return RemoveInternal(path, REMOVE_FILE);
 }
 
 Error Html5Fs::Mkdir(const Path& path, int permissions) {
@@ -72,7 +78,7 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
   ScopedResource fileref_resource(
       ppapi(),
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             path.Join().c_str()));
+                                             GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
@@ -85,10 +91,14 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
 }
 
 Error Html5Fs::Rmdir(const Path& path) {
-  return Remove(path);
+  return RemoveInternal(path, REMOVE_DIR);
 }
 
 Error Html5Fs::Remove(const Path& path) {
+  return RemoveInternal(path, REMOVE_ALL);
+}
+
+Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
   Error error = BlockUntilFilesystemOpen();
   if (error)
     return error;
@@ -96,9 +106,33 @@ Error Html5Fs::Remove(const Path& path) {
   ScopedResource fileref_resource(
       ppapi(),
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             path.Join().c_str()));
+                                             GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
+
+  // Check file type
+  if (remove_type != REMOVE_ALL) {
+    PP_FileInfo file_info;
+    int32_t query_result = ppapi()->GetFileRefInterface()->Query(
+        fileref_resource.pp_resource(), &file_info, PP_BlockUntilComplete());
+    if (query_result != PP_OK) {
+      LOG_ERROR("Error querying file type");
+      return EINVAL;
+    }
+    switch (file_info.type) {
+      case PP_FILETYPE_DIRECTORY:
+        if (!(remove_type & REMOVE_DIR))
+          return EISDIR;
+        break;
+      case PP_FILETYPE_REGULAR:
+        if (!(remove_type & REMOVE_FILE))
+          return ENOTDIR;
+        break;
+      default:
+        LOG_ERROR("Invalid file type: %d", file_info.type);
+        return EINVAL;
+    }
+  }
 
   int32_t result = ppapi()->GetFileRefInterface()->Delete(
       fileref_resource.pp_resource(), PP_BlockUntilComplete());
@@ -113,17 +147,19 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
   if (error)
     return error;
 
+  const char* oldpath_full = GetFullPath(path).Join().c_str();
   ScopedResource fileref_resource(
       ppapi(),
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             path.Join().c_str()));
+                                             oldpath_full));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
+  const char* newpath_full = GetFullPath(newpath).Join().c_str();
   ScopedResource new_fileref_resource(
       ppapi(),
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             newpath.Join().c_str()));
+                                             newpath_full));
   if (!new_fileref_resource.pp_resource())
     return ENOENT;
 
@@ -164,6 +200,11 @@ Error Html5Fs::Init(const FsInitArgs& args) {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
       } else if (iter->second == "TEMPORARY") {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALTEMPORARY;
+      } else if (iter->second == "") {
+        filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
+      } else {
+        LOG_ERROR("html5fs: unknown type: '%s'", iter->second.c_str());
+        return EINVAL;
       }
     } else if (iter->first == "expected_size") {
       expected_size = strtoull(iter->second.c_str(), NULL, 10);
@@ -174,6 +215,11 @@ Error Html5Fs::Init(const FsInitArgs& args) {
 
       filesystem_resource_ = resource;
       ppapi_->AddRefResource(filesystem_resource_);
+    } else if (iter->first == "SOURCE") {
+      prefix_ = iter->second;
+    } else {
+      LOG_ERROR("html5fs: bad param: %s", iter->first.c_str());
+      return EINVAL;
     }
   }
 

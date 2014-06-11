@@ -42,6 +42,7 @@ class HttpFs : public Filesystem {
   NodeMap_t* GetNodeCacheForTesting() { return &node_cache_; }
 
  private:
+
   // Gets the URL to fetch for |path|.
   // |path| is relative to the mount point for the HTTP filesystem.
   std::string MakeUrl(const Path& path);
