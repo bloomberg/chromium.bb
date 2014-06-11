@@ -200,6 +200,10 @@ const char* WebUILoginView::GetClassName() const {
   return kViewClassName;
 }
 
+void WebUILoginView::RequestFocus() {
+  webui_login_->RequestFocus();
+}
+
 web_modal::WebContentsModalDialogHost*
     WebUILoginView::GetWebContentsModalDialogHost() {
   return this;

@@ -21,6 +21,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
@@ -333,4 +334,21 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
   // delgated to the base Textfield class.
   omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
   EXPECT_FALSE(textfield_test_api.touch_selection_controller());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FocusedTextInputClient) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kEnableTextInputFocusManager);
+
+  // TODO(yukishiino): The following call to FocusLocationBar is not necessary
+  // if the flag is enabled by default.  Remove the call once the transition to
+  // TextInputFocusManager completes.
+  chrome::FocusLocationBar(browser());
+  OmniboxView* view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
+  ui::TextInputFocusManager* text_input_focus_manager =
+      ui::TextInputFocusManager::GetInstance();
+  EXPECT_EQ(omnibox_view_views->GetTextInputClient(),
+            text_input_focus_manager->GetFocusedTextInputClient());
 }

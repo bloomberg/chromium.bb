@@ -57,6 +57,7 @@ class WebUILoginView : public views::View,
   virtual bool AcceleratorPressed(
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual void RequestFocus() OVERRIDE;
 
   // Overridden from ChromeWebModalDialogManagerDelegate:
   virtual web_modal::WebContentsModalDialogHost*
