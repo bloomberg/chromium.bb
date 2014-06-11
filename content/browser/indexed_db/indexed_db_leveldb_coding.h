@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_LEVELDB_CODING_H_
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"

@@ -170,7 +170,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 
 class TestIDBFactory : public IndexedDBFactory {
  public:
-  TestIDBFactory(IndexedDBContextImpl* idb_context)
+  explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactory(idb_context) {}
 
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(

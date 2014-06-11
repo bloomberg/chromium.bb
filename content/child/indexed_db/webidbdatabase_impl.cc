@@ -4,6 +4,7 @@
 
 #include "content/child/indexed_db/webidbdatabase_impl.h"
 
+#include <string>
 #include <vector>
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"

@@ -4,6 +4,7 @@
 
 // Message definition file, included multiple times, hence no include guard.
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -418,10 +419,10 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
 
 // WebIDBCursor::advance() message.
 IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_CursorAdvance,
-                     int32, /* ipc_cursor_id */
-                     int32, /* ipc_thread_id */
-                     int32, /* ipc_callbacks_id */
-                     unsigned long) /* count */
+                     int32,  /* ipc_cursor_id */
+                     int32,  /* ipc_thread_id */
+                     int32,  /* ipc_callbacks_id */
+                     uint32) /* count */
 
 // WebIDBCursor::continue() message.
 IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_CursorContinue,

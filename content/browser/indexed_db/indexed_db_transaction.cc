@@ -209,7 +209,8 @@ void IndexedDBTransaction::Start() {
 
 class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
  public:
-  BlobWriteCallbackImpl(scoped_refptr<IndexedDBTransaction> transaction)
+  explicit BlobWriteCallbackImpl(
+      scoped_refptr<IndexedDBTransaction> transaction)
       : transaction_(transaction) {}
   virtual void Run(bool succeeded) OVERRIDE {
     transaction_->BlobWriteComplete(succeeded);
@@ -255,9 +256,9 @@ void IndexedDBTransaction::Commit() {
 
   state_ = COMMITTING;
 
-  if (!used_)
+  if (!used_) {
     CommitPhaseTwo();
-  else {
+  } else {
     scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback(
         new BlobWriteCallbackImpl(this));
     // CommitPhaseOne will call the callback synchronously if there are no blobs

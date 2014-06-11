@@ -79,6 +79,6 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
 
   ObjectStoreMap object_stores;
 };
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_METADATA_H_

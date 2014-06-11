@@ -244,7 +244,6 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
            web_metadata.object_stores.begin();
        iter != web_metadata.object_stores.end();
        ++iter) {
-
     const content::IndexedDBObjectStoreMetadata& web_store_metadata =
         iter->second;
     ::IndexedDBObjectStoreMetadata idb_store_metadata;
@@ -902,7 +901,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
     int32 ipc_cursor_id,
     int32 ipc_thread_id,
     int32 ipc_callbacks_id,
-    unsigned long count) {
+    uint32 count) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBCursor* idb_cursor =

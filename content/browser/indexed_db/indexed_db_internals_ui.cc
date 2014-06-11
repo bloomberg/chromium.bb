@@ -263,7 +263,7 @@ void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
       "indexeddb.onForcedClose",
       base::StringValue(partition_path.value()),
       base::StringValue(origin_url.spec()),
-      base::FundamentalValue(double(connection_count)));
+      base::FundamentalValue(static_cast<double>(connection_count)));
 }
 
 void IndexedDBInternalsUI::OnDownloadDataReady(
@@ -355,7 +355,7 @@ void IndexedDBInternalsUI::OnDownloadStarted(
       "indexeddb.onOriginDownloadReady",
       base::StringValue(partition_path.value()),
       base::StringValue(origin_url.spec()),
-      base::FundamentalValue(double(connection_count)));
+      base::FundamentalValue(static_cast<double>(connection_count)));
 }
 
 }  // namespace content

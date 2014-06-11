@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_VALUE_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_VALUE_H_
 
+#include <algorithm>
+#include <string>
 #include <vector>
+
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/common/content_export.h"
 

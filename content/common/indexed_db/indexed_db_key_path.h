@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_PATH_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_PATH_H_
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"

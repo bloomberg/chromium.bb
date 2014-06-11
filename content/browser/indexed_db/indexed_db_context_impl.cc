@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -197,7 +198,6 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
       for (IndexedDBFactory::OriginDBMapIterator it = range.first;
            it != range.second;
            ++it) {
-
         const IndexedDBDatabase* db = it->second;
         scoped_ptr<base::DictionaryValue> db_info(new base::DictionaryValue());
 
@@ -217,7 +217,6 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
                  transactions.begin();
              trans_it != transactions.end();
              ++trans_it) {
-
           const IndexedDBTransaction* transaction = *trans_it;
           scoped_ptr<base::DictionaryValue> transaction_info(
               new base::DictionaryValue());

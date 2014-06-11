@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_factory.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -302,7 +304,6 @@ void IndexedDBFactory::HandleBackingStoreCorruption(
 
 bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,
                                       const base::string16& name) const {
-
   return !!database_map_.count(IndexedDBDatabase::Identifier(origin_url, name));
 }
 

@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_PARAM_TRAITS_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_PARAM_TRAITS_H_
 
+#include <string>
+
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
 
@@ -40,6 +42,6 @@ struct ParamTraits<content::IndexedDBKeyPath> {
   static void Log(const param_type& p, std::string* l);
 };
 
-} // namespace IPC
+}  // namespace IPC
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_PARAM_TRAITS_H_

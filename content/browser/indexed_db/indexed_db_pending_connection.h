@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_PENDING_CONNECTION_H_
-#define CONTENT_BROWSER_INDEXED_DB_PENDING_CONNECTION_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_PENDING_CONNECTION_H_
+#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_PENDING_CONNECTION_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -33,4 +33,4 @@ struct CONTENT_EXPORT IndexedDBPendingConnection {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_PENDING_CONNECTION_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_PENDING_CONNECTION_H_

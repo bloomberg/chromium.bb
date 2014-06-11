@@ -28,7 +28,7 @@ namespace {
 
 class MockDispatcher : public IndexedDBDispatcher {
  public:
-  MockDispatcher(ThreadSafeSender* thread_safe_sender)
+  explicit MockDispatcher(ThreadSafeSender* thread_safe_sender)
       : IndexedDBDispatcher(thread_safe_sender),
         prefetch_calls_(0),
         last_prefetch_count_(0),
@@ -103,7 +103,6 @@ class MockContinueCallbacks : public WebIDBCallbacks {
                          const WebIDBKey& primaryKey,
                          const WebData& value,
                          const WebVector<WebBlobInfo>& webBlobInfo) OVERRIDE {
-
     if (key_)
       *key_ = IndexedDBKeyBuilder::Build(key);
     if (webBlobInfo_)
@@ -140,7 +139,6 @@ class WebIDBCursorImplTest : public testing::Test {
 };
 
 TEST_F(WebIDBCursorImplTest, PrefetchTest) {
-
   const int64 transaction_id = 1;
   {
     WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
@@ -164,7 +162,6 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
     int last_prefetch_count = 0;
     for (int repetitions = 0; repetitions < kPrefetchRepetitions;
          ++repetitions) {
-
       // Initiate the prefetch
       cursor.continueFunction(null_key_, new MockContinueCallbacks());
       EXPECT_EQ(continue_calls, dispatcher_->continue_calls());
@@ -212,7 +209,6 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
 }
 
 TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
-
   const int64 transaction_id = 1;
   WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
                           transaction_id,

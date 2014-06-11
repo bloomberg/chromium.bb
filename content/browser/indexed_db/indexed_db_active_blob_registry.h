@@ -20,7 +20,7 @@ class IndexedDBBackingStore;
 
 class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
  public:
-  IndexedDBActiveBlobRegistry(IndexedDBBackingStore* backing_store);
+  explicit IndexedDBActiveBlobRegistry(IndexedDBBackingStore* backing_store);
   ~IndexedDBActiveBlobRegistry();
 
   // Most methods of this class, and the closure returned by

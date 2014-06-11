@@ -28,7 +28,8 @@ namespace {
 
 class MockIDBFactory : public IndexedDBFactory {
  public:
-  MockIDBFactory(IndexedDBContextImpl* context) : IndexedDBFactory(context) {}
+  explicit MockIDBFactory(IndexedDBContextImpl* context)
+      : IndexedDBFactory(context) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
@@ -198,7 +199,8 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 
 class DiskFullFactory : public IndexedDBFactory {
  public:
-  DiskFullFactory(IndexedDBContextImpl* context) : IndexedDBFactory(context) {}
+  explicit DiskFullFactory(IndexedDBContextImpl* context)
+      : IndexedDBFactory(context) {}
 
  private:
   virtual ~DiskFullFactory() {}

@@ -135,7 +135,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {
    public:
-    FakeTransaction(leveldb::Status phase_two_result);
+    explicit FakeTransaction(leveldb::Status phase_two_result);
     virtual void Begin() OVERRIDE;
     virtual leveldb::Status CommitPhaseOne(
         scoped_refptr<BlobWriteCallback>) OVERRIDE;

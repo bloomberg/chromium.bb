@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DISPATCHER_HOST_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -240,7 +241,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnAdvance(int32 ipc_object_store_id,
                    int32 ipc_thread_id,
                    int32 ipc_callbacks_id,
-                   unsigned long count);
+                   uint32 count);
     void OnContinue(int32 ipc_object_store_id,
                     int32 ipc_thread_id,
                     int32 ipc_callbacks_id,

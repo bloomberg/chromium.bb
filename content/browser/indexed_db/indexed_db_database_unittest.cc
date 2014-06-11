@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_database.h"
 
+#include <set>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -14,7 +16,6 @@
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -160,7 +161,7 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
   virtual void OnBlocked(int64 existing_version) OVERRIDE {
     blocked_called_ = true;
   }
-  virtual void OnSuccess(int64) OVERRIDE { success_called_ = true; }
+  virtual void OnSuccess(int64 result) OVERRIDE { success_called_ = true; }
 
   bool blocked_called() const { return blocked_called_; }
   bool success_called() const { return success_called_; }
@@ -408,7 +409,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   RunPostedTasks();
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 
-  transaction_->Commit(); // Cleans up the object hierarchy.
+  transaction_->Commit();  // Cleans up the object hierarchy.
 }
 
 }  // namespace content

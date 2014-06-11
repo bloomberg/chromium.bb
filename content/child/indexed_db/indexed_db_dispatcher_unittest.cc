@@ -45,7 +45,8 @@ class MockCallbacks : public WebIDBCallbacks {
 
 class MockDispatcher : public IndexedDBDispatcher {
  public:
-  MockDispatcher(ThreadSafeSender* sender) : IndexedDBDispatcher(sender) {}
+  explicit MockDispatcher(ThreadSafeSender* sender)
+      : IndexedDBDispatcher(sender) {}
 
   virtual bool Send(IPC::Message* msg) OVERRIDE {
     delete msg;
@@ -133,7 +134,8 @@ namespace {
 
 class CursorCallbacks : public WebIDBCallbacks {
  public:
-  CursorCallbacks(scoped_ptr<WebIDBCursor>* cursor) : cursor_(cursor) {}
+  explicit CursorCallbacks(scoped_ptr<WebIDBCursor>* cursor)
+      : cursor_(cursor) {}
 
   virtual void onSuccess(const WebData&,
                          const WebVector<WebBlobInfo>&) OVERRIDE {}

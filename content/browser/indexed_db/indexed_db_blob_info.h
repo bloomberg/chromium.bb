@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BLOB_INFO_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BLOB_INFO_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"

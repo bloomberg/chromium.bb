@@ -4,6 +4,10 @@
 
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 

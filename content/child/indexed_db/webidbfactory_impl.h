@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
-#define CONTENT_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
+#ifndef CONTENT_CHILD_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
+#define CONTENT_CHILD_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
@@ -42,4 +42,4 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
+#endif  // CONTENT_CHILD_INDEXED_DB_WEBIDBFACTORY_IMPL_H_

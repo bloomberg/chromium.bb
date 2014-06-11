@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"

@@ -125,6 +125,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     base::MessageLoop::current()->RunUntilIdle();
     return disk_usage_;
   }
+
  private:
   virtual void DidGetDiskUsage(int64 bytes) {
     EXPECT_GT(bytes, 0);

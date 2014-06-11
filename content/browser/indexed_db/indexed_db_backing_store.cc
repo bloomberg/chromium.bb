@@ -162,8 +162,8 @@ static void RecordInternalError(const char* type,
 // Use to signal conditions that usually indicate developer error, but
 // could be caused by data corruption.  A macro is used instead of an
 // inline function so that the assert and log report the line number.
-// TODO: Improve test coverage so that all error conditions are "tested" and
-//       then delete this macro.
+// TODO(cmumford): Improve test coverage so that all error conditions are
+// "tested" and then delete this macro.
 #define REPORT_ERROR_UNTESTED(type, location)             \
   do {                                                    \
     LOG(ERROR) << "IndexedDB " type " Error: " #location; \
@@ -864,7 +864,6 @@ leveldb::Status IndexedDBBackingStore::DestroyBackingStore(
 bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
                                                const GURL& origin_url,
                                                std::string& message) {
-
   const base::FilePath info_path =
       path_base.Append(ComputeCorruptionFileName(origin_url));
 
@@ -2252,8 +2251,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     if (write_status == FileWriterDelegate::SUCCESS_IO_PENDING)
       return;  // We don't care about progress events.
     if (rv == base::File::FILE_OK) {
-      DCHECK(bytes >= 0);
-      DCHECK(write_status == FileWriterDelegate::SUCCESS_COMPLETED);
+      DCHECK_GE(bytes, 0);
+      DCHECK_EQ(write_status, FileWriterDelegate::SUCCESS_COMPLETED);
       bytes_written_ = bytes;
     } else {
       DCHECK(write_status == FileWriterDelegate::ERROR_WRITE_STARTED ||

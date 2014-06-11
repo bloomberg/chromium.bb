@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -182,10 +183,10 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   }
 
   template <typename T>
-  void init_params(T& params, blink::WebIDBCallbacks* callbacks_ptr) {
+  void init_params(T* params, blink::WebIDBCallbacks* callbacks_ptr) {
     scoped_ptr<blink::WebIDBCallbacks> callbacks(callbacks_ptr);
-    params.ipc_thread_id = CurrentWorkerId();
-    params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
+    params->ipc_thread_id = CurrentWorkerId();
+    params->ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   }
 
   // IDBCallback message handlers.
