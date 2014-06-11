@@ -170,14 +170,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   var DOUBLE_CLICK_TIMEOUT = 200;
 
   /**
-   * Update the element to display the information about remaining space for
+   * Updates the element to display the information about remaining space for
    * the storage.
+   *
+   * @param {!Object<string, number>} sizeStatsResult Map containing remaining
+   *     space information.
    * @param {!Element} spaceInnerBar Block element for a percentage bar
-   *                                 representing the remaining space.
+   *     representing the remaining space.
    * @param {!Element} spaceInfoLabel Inline element to contain the message.
    * @param {!Element} spaceOuterBar Block element around the percentage bar.
    */
-   var updateSpaceInfo = function(
+  var updateSpaceInfo = function(
       sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
     spaceInnerBar.removeAttribute('pending');
     if (sizeStatsResult) {
@@ -1275,7 +1278,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             ThumbnailLoader.LoaderType.CANVAS,
             metadata,
             undefined,  // Media type.
-            // TODO(mtomasz): Use Entry instead of paths.
             locationInfo.isDriveBased ?
                 ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
                 ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
@@ -2313,6 +2315,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (!this.currentVolumeInfo_)
       return;
 
+    var volumeSpaceInfo =
+        this.dialogDom_.querySelector('#volume-space-info');
+    var volumeSpaceInfoSeparator =
+        this.dialogDom_.querySelector('#volume-space-info-separator');
     var volumeSpaceInfoLabel =
         this.dialogDom_.querySelector('#volume-space-info-label');
     var volumeSpaceInnerBar =
@@ -2320,6 +2326,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var volumeSpaceOuterBar =
         this.dialogDom_.querySelector('#volume-space-info-bar').parentNode;
 
+    var currentVolumeInfo = this.currentVolumeInfo_;
+
+    // TODO(mtomasz): Add support for remaining space indication for provided
+    // file systems.
+    if (currentVolumeInfo.volumeType ==
+        VolumeManagerCommon.VolumeType.PROVIDED) {
+      volumeSpaceInfo.hidden = true;
+      volumeSpaceInfoSeparator.hidden = true;
+      return;
+    }
+
+    volumeSpaceInfo.hidden = false;
+    volumeSpaceInfoSeparator.hidden = false;
     volumeSpaceInnerBar.setAttribute('pending', '');
 
     if (showLoadingCaption) {
@@ -2327,7 +2346,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       volumeSpaceInnerBar.style.width = '100%';
     }
 
-    var currentVolumeInfo = this.currentVolumeInfo_;
     chrome.fileBrowserPrivate.getSizeStats(
         currentVolumeInfo.volumeId, function(result) {
           var volumeInfo = this.volumeManager_.getVolumeInfo(
