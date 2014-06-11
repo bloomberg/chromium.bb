@@ -8,5 +8,5 @@
 ] interface FetchEvent : Event {
     readonly attribute Request request;
 
-    void respondWith(any value);
+    [CallWith=ScriptState] void respondWith(any value);
 };

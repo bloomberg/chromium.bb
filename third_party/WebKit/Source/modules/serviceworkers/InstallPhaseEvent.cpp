@@ -50,9 +50,9 @@ InstallPhaseEvent::~InstallPhaseEvent()
 {
 }
 
-void InstallPhaseEvent::waitUntil(const ScriptValue& value)
+void InstallPhaseEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value)
 {
-    m_observer->waitUntil(value);
+    m_observer->waitUntil(scriptState, value);
 }
 
 InstallPhaseEvent::InstallPhaseEvent()

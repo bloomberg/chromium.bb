@@ -41,12 +41,29 @@ ScriptValue::~ScriptValue()
 {
 }
 
+v8::Handle<v8::Value> ScriptValue::v8Value() const
+{
+    if (isEmpty())
+        return v8::Handle<v8::Value>();
+
+    ASSERT(isolate()->InContext());
+
+    // This is a check to validate that you don't return a ScriptValue to a world different
+    // from the world that created the ScriptValue.
+    // Probably this could be:
+    //   if (&m_scriptState->world() == &DOMWrapperWorld::current(isolate()))
+    //       return v8::Handle<v8::Value>();
+    // instead of triggering RELEASE_ASSERT.
+    RELEASE_ASSERT(&m_scriptState->world() == &DOMWrapperWorld::current(isolate()));
+    return m_value->newLocal(isolate());
+}
+
 bool ScriptValue::toString(String& result) const
 {
     if (isEmpty())
         return false;
 
-    v8::HandleScope handleScope(isolate());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Value> string = v8Value();
     if (string.IsEmpty() || !string->IsString())
         return false;

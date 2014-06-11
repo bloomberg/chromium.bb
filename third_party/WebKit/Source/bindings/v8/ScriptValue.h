@@ -57,6 +57,7 @@ public:
         , m_scriptState(scriptState)
         , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, scriptState->isolate()))
     {
+        ASSERT(isEmpty() || m_scriptState);
     }
 
     ScriptValue(const ScriptValue& value)
@@ -64,6 +65,7 @@ public:
         , m_scriptState(value.m_scriptState)
         , m_value(value.m_value)
     {
+        ASSERT(isEmpty() || m_scriptState);
     }
 
     ScriptState* scriptState() const
@@ -144,10 +146,7 @@ public:
         m_value = nullptr;
     }
 
-    v8::Handle<v8::Value> v8Value() const
-    {
-        return m_value.get() ? m_value->newLocal(isolate()) : v8::Handle<v8::Value>();
-    }
+    v8::Handle<v8::Value> v8Value() const;
 
     bool toString(String&) const;
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
