@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -51,9 +50,6 @@ void InProcessDynamicServiceRunner::Start(
 void InProcessDynamicServiceRunner::Run() {
   DVLOG(2) << "Loading/running Mojo app in process from library: "
            << app_path_.value();
-
-  base::ScopedClosureRunner app_deleter(
-      base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
 
   do {
     base::NativeLibraryLoadError error;

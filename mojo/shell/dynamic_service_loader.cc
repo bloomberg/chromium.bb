@@ -117,6 +117,11 @@ class NetworkLoader : public Loader, public URLLoaderClient {
   }
 
  private:
+  virtual ~NetworkLoader() {
+    if (!file_.empty())
+      base::DeleteFile(file_, false);
+  }
+
   // URLLoaderClient methods:
   virtual void OnReceivedRedirect(URLResponsePtr response,
                                   const String& new_url,
