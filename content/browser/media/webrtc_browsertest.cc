@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
 #if defined (OS_ANDROID)
   // This test fails on Nexus 5 devices.
-  // TODO: see http://crbug.com/362437 and http://crbug.com/359389
+  // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
   // for details.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableWebRtcHWDecoding);
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
 #if defined (OS_ANDROID)
   // This test fails on Nexus 5 devices.
-  // TODO: see http://crbug.com/362437 and http://crbug.com/359389
+  // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
   // for details.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableWebRtcHWDecoding);
@@ -252,9 +252,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, NegotiateOfferWithBLine) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240373
 #define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
-#elif defined (OS_ANDROID) || defined(THREAD_SANITIZER)
-// Flaky on TSAN v2 and Android Tests (dbg): http://crbug.com/373637
-#define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
 #else
 #define MAYBE_CanSetupLegacyCall CanSetupLegacyCall
 #endif
@@ -276,9 +273,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallWithSctpDataOnly) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
-#elif defined(THREAD_SANITIZER)
-// Flaky on TSAN v2: http://crbug.com/373637
 #define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
 #else
 #define MAYBE_CallWithDataAndMedia CallWithDataAndMedia
