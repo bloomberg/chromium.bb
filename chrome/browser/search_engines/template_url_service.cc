@@ -26,6 +26,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
@@ -965,6 +966,9 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchProviderType",
         TemplateURLPrepopulateData::GetEngineType(*default_search_provider_),
         SEARCH_ENGINE_MAX);
+    rappor::SampleDomainAndRegistryFromHost(
+        "Search.DefaultSearchProvider",
+        default_search_provider_->url_ref().GetHost());
   }
 }
 

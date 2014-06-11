@@ -1110,6 +1110,7 @@
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/plugin_metrics_provider_unittest.cc',
         'browser/metrics/profiler_metrics_provider_unittest.cc',
+        'browser/metrics/rappor/sampling_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/thread_watcher_android_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',

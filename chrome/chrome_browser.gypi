@@ -1248,6 +1248,8 @@
         'browser/metrics/plugin_metrics_provider.h',
         'browser/metrics/profiler_metrics_provider.cc',
         'browser/metrics/profiler_metrics_provider.h',
+        'browser/metrics/rappor/sampling.cc',
+        'browser/metrics/rappor/sampling.h',
         'browser/metrics/thread_watcher.cc',
         'browser/metrics/thread_watcher.h',
         'browser/metrics/thread_watcher_android.cc',

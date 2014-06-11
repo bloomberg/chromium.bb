@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
@@ -22,7 +23,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/rappor/rappor_service.h"
 #include "crypto/hmac.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -80,13 +80,8 @@ void PrefMetricsService::RecordLaunchPrefs() {
           "Settings.HomePageEngineType",
           TemplateURLPrepopulateData::GetEngineType(homepage_url),
           SEARCH_ENGINE_MAX);
-      if (g_browser_process->rappor_service()) {
-        g_browser_process->rappor_service()->RecordSample(
-            "Settings.HomePage2",
-            rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-            net::registry_controlled_domains::GetDomainAndRegistry(homepage_url,
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-      }
+      rappor::SampleDomainAndRegistryFromGURL("Settings.HomePage2",
+                                              homepage_url);
     }
   }
 
@@ -108,6 +103,10 @@ void PrefMetricsService::RecordLaunchPrefs() {
               "Settings.StartupPageEngineTypes",
               TemplateURLPrepopulateData::GetEngineType(start_url),
               SEARCH_ENGINE_MAX);
+          if (i == 0) {
+            rappor::SampleDomainAndRegistryFromGURL("Settings.FirstStartupPage",
+                                                    start_url);
+          }
         }
       }
     }
@@ -165,7 +164,7 @@ void PrefMetricsService::OnPrefChanged(
       from_sync ? ".PulledFromSync" : ".PushedToSync");
   std::string histogram_name("Settings." + histogram_name_prefix + source_name);
   callback.Run(histogram_name, pref->GetValue());
-};
+}
 
 void PrefMetricsService::LogBooleanPrefChange(const std::string& histogram_name,
                                               const base::Value* value) {
