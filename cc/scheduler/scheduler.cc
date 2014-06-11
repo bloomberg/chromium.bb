@@ -137,6 +137,7 @@ void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
 }
 
 void Scheduler::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
+  DCHECK_GE(draw_time.ToInternalValue(), 0);
   estimated_parent_draw_time_ = draw_time;
 }
 

@@ -2006,7 +2006,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // TODO(brianderson): Don't use a hard-coded parent draw time.
   base::TimeDelta parent_draw_time =
       output_surface_->capabilities().adjust_deadline_for_parent
-          ? BeginFrameArgs::DefaultDeadlineAdjustment()
+          ? BeginFrameArgs::DefaultEstimatedParentDrawTime()
           : base::TimeDelta();
   client_->SetEstimatedParentDrawTime(parent_draw_time);
 

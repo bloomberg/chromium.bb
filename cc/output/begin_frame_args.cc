@@ -52,8 +52,8 @@ BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor(
 // produce output, the Renderer Impl thread the middle 1/3 of a frame to produce
 // ouput, and the Renderer Main thread the first 1/3 of a frame to produce
 // output.
-base::TimeDelta BeginFrameArgs::DefaultDeadlineAdjustment() {
-  return base::TimeDelta::FromMicroseconds(-16666 / 3);
+base::TimeDelta BeginFrameArgs::DefaultEstimatedParentDrawTime() {
+  return base::TimeDelta::FromMicroseconds(16666 / 3);
 }
 
 base::TimeDelta BeginFrameArgs::DefaultInterval() {

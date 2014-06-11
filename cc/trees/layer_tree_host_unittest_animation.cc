@@ -1305,13 +1305,14 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
-    // The third frame is when both animations have started. Check that both
-    // have a valid start time.
-    if (++num_swap_buffers_ == 3) {
+    // After both animations have started, verify that they have valid
+    // start times.
+    num_swap_buffers_++;
+    AnimationRegistrar::AnimationControllerMap copy =
+        host_impl->animation_registrar()->active_animation_controllers();
+    if (copy.size() == 2u) {
       EndTest();
-      AnimationRegistrar::AnimationControllerMap copy =
-          host_impl->animation_registrar()->active_animation_controllers();
-      EXPECT_EQ(2u, copy.size());
+      EXPECT_GE(num_swap_buffers_, 3);
       for (AnimationRegistrar::AnimationControllerMap::iterator iter =
                copy.begin();
            iter != copy.end();

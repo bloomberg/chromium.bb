@@ -25,7 +25,7 @@ struct CC_EXPORT BeginFrameArgs {
 
   // This is the default delta that will be used to adjust the deadline when
   // proper draw-time estimations are not yet available.
-  static base::TimeDelta DefaultDeadlineAdjustment();
+  static base::TimeDelta DefaultEstimatedParentDrawTime();
 
   // This is the default interval to use to avoid sprinkling the code with
   // magic numbers.
