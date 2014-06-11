@@ -61,6 +61,10 @@ void Scheduler::SyntheticBeginFrameSource::OnTimerTick() {
   scheduler_->BeginFrame(begin_frame_args);
 }
 
+scoped_ptr<base::Value> Scheduler::SyntheticBeginFrameSource::AsValue() const {
+  return time_source_->AsValue();
+}
+
 BeginFrameArgs
 Scheduler::SyntheticBeginFrameSource::CreateSyntheticBeginFrameArgs(
     base::TimeTicks frame_time) {
@@ -679,6 +683,9 @@ bool Scheduler::WillDrawIfNeeded() const {
 scoped_ptr<base::Value> Scheduler::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
   state->Set("state_machine", state_machine_.AsValue().release());
+  if (synthetic_begin_frame_source_)
+    state->Set("synthetic_begin_frame_source_",
+               synthetic_begin_frame_source_->AsValue().release());
 
   scoped_ptr<base::DictionaryValue> scheduler_state(new base::DictionaryValue);
   scheduler_state->SetDouble(

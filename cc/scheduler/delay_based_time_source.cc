@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -105,9 +106,11 @@ base::TimeTicks DelayBasedTimeSource::SetActive(bool active) {
 
 bool DelayBasedTimeSource::Active() const { return active_; }
 
-base::TimeTicks DelayBasedTimeSource::LastTickTime() { return last_tick_time_; }
+base::TimeTicks DelayBasedTimeSource::LastTickTime() const {
+  return last_tick_time_;
+}
 
-base::TimeTicks DelayBasedTimeSource::NextTickTime() {
+base::TimeTicks DelayBasedTimeSource::NextTickTime() const {
   return Active() ? current_parameters_.tick_target : base::TimeTicks();
 }
 
@@ -276,6 +279,41 @@ void DelayBasedTimeSource::PostNextTickTask(base::TimeTicks now) {
 
   next_parameters_.tick_target = new_tick_target;
   current_parameters_ = next_parameters_;
+}
+
+std::string DelayBasedTimeSource::TypeString() const {
+  return "DelayBasedTimeSource";
+}
+
+std::string DelayBasedTimeSourceHighRes::TypeString() const {
+  return "DelayBasedTimeSourceHighRes";
+}
+
+scoped_ptr<base::Value> DelayBasedTimeSource::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+  state->SetString("type", TypeString());
+  state->SetDouble("last_tick_time_us", LastTickTime().ToInternalValue());
+  state->SetDouble("next_tick_time_us", NextTickTime().ToInternalValue());
+
+  scoped_ptr<base::DictionaryValue> state_current_parameters(
+      new base::DictionaryValue);
+  state_current_parameters->SetDouble(
+      "interval_us", current_parameters_.interval.InMicroseconds());
+  state_current_parameters->SetDouble(
+      "tick_target_us", current_parameters_.tick_target.ToInternalValue());
+  state->Set("current_parameters", state_current_parameters.release());
+
+  scoped_ptr<base::DictionaryValue> state_next_parameters(
+      new base::DictionaryValue);
+  state_next_parameters->SetDouble("interval_us",
+                                   next_parameters_.interval.InMicroseconds());
+  state_next_parameters->SetDouble(
+      "tick_target_us", next_parameters_.tick_target.ToInternalValue());
+  state->Set("next_parameters", state_next_parameters.release());
+
+  state->SetBoolean("active", active_);
+
+  return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

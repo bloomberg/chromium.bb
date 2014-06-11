@@ -5,7 +5,10 @@
 #ifndef CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_
 #define CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "cc/base/cc_export.h"
 #include "cc/scheduler/time_source.h"
 
@@ -32,16 +35,20 @@ class CC_EXPORT DelayBasedTimeSource : public TimeSource {
 
   // Get the last and next tick times. NextTickTime() returns null when
   // inactive.
-  virtual base::TimeTicks LastTickTime() OVERRIDE;
-  virtual base::TimeTicks NextTickTime() OVERRIDE;
+  virtual base::TimeTicks LastTickTime() const OVERRIDE;
+  virtual base::TimeTicks NextTickTime() const OVERRIDE;
 
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
+
+  virtual scoped_ptr<base::Value> AsValue() const;
 
  protected:
   DelayBasedTimeSource(base::TimeDelta interval,
                        base::SingleThreadTaskRunner* task_runner);
   virtual ~DelayBasedTimeSource();
+
+  virtual std::string TypeString() const;
 
   base::TimeTicks NextTickTarget(base::TimeTicks now);
   void PostNextTickTask(base::TimeTicks now);
@@ -85,6 +92,8 @@ class DelayBasedTimeSourceHighRes : public DelayBasedTimeSource {
   DelayBasedTimeSourceHighRes(base::TimeDelta interval,
                               base::SingleThreadTaskRunner* task_runner);
   virtual ~DelayBasedTimeSourceHighRes();
+
+  virtual std::string TypeString() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSourceHighRes);

@@ -36,8 +36,8 @@ class CC_EXPORT TimeSource : public base::RefCounted<TimeSource> {
   virtual bool Active() const = 0;
   virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
                                       base::TimeDelta interval) = 0;
-  virtual base::TimeTicks LastTickTime() = 0;
-  virtual base::TimeTicks NextTickTime() = 0;
+  virtual base::TimeTicks LastTickTime() const = 0;
+  virtual base::TimeTicks NextTickTime() const = 0;
 
  protected:
   virtual ~TimeSource() {}

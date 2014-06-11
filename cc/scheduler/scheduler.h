@@ -14,10 +14,10 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
-#include "cc/scheduler/time_source.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -164,11 +164,13 @@ class CC_EXPORT Scheduler {
     // TimeSourceClient implementation of OnTimerTick triggers a BeginFrame.
     virtual void OnTimerTick() OVERRIDE;
 
+    scoped_ptr<base::Value> AsValue() const;
+
    private:
     BeginFrameArgs CreateSyntheticBeginFrameArgs(base::TimeTicks frame_time);
 
     Scheduler* scheduler_;
-    scoped_refptr<TimeSource> time_source_;
+    scoped_refptr<DelayBasedTimeSource> time_source_;
   };
 
   Scheduler(
