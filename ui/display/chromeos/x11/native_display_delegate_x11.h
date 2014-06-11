@@ -108,10 +108,14 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
                                           RRCrtc* last_used_crtc,
                                           int index);
 
-  // Destroys unused CRTCs and parks used CRTCs in a way which allows a
-  // framebuffer resize. This is faster than turning them off, resizing,
-  // then turning them back on.
-  void DestroyUnusedCrtcs(const gfx::Size& new_size);
+  // Destroys unused CRTCs.
+  void DestroyUnusedCrtcs();
+
+  // Parks used CRTCs in a way which allows a framebuffer resize. This is faster
+  // than turning them off, resizing, then turning them back on.
+  // |min_screen_size| represent the smallest size between the current
+  // framebuffer size and the requested framebuffer size.
+  void UpdateCrtcsForNewFramebuffer(const gfx::Size& min_screen_size);
 
   bool ConfigureCrtc(RRCrtc crtc, RRMode mode, RROutput output, int x, int y);
 

@@ -22,6 +22,7 @@
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -292,15 +293,21 @@ bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
 
 void NativeDisplayDelegateX11::CreateFrameBuffer(const gfx::Size& size) {
   CHECK(screen_) << "Server not grabbed";
-  int current_width = DisplayWidth(display_, DefaultScreen(display_));
-  int current_height = DisplayHeight(display_, DefaultScreen(display_));
-  VLOG(1) << "CreateFrameBuffer: new=" << size.width() << "x" << size.height()
-          << " current=" << current_width << "x" << current_height;
+  gfx::Size current_screen_size(
+      DisplayWidth(display_, DefaultScreen(display_)),
+      DisplayHeight(display_, DefaultScreen(display_)));
 
-  DestroyUnusedCrtcs(size);
+  VLOG(1) << "CreateFrameBuffer: new=" << size.ToString()
+          << " current=" << current_screen_size.ToString();
 
-  if (size.width() == current_width && size.height() == current_height)
+  DestroyUnusedCrtcs();
+
+  if (size == current_screen_size)
     return;
+
+  gfx::Size min_screen_size(current_screen_size);
+  min_screen_size.SetToMin(size);
+  UpdateCrtcsForNewFramebuffer(min_screen_size);
 
   int mm_width = size.width() * kPixelsToMmScale;
   int mm_height = size.height() * kPixelsToMmScale;
@@ -522,12 +529,33 @@ bool NativeDisplayDelegateX11::SetHDCPState(const DisplaySnapshot& output,
   }
 }
 
-void NativeDisplayDelegateX11::DestroyUnusedCrtcs(const gfx::Size& new_size) {
+void NativeDisplayDelegateX11::DestroyUnusedCrtcs() {
+  CHECK(screen_) << "Server not grabbed";
+
+  for (int i = 0; i < screen_->ncrtc; ++i) {
+    bool in_use = false;
+    for (ScopedVector<DisplaySnapshot>::const_iterator it =
+             cached_outputs_.begin();
+         it != cached_outputs_.end();
+         ++it) {
+      DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
+      if (screen_->crtcs[i] == x11_output->crtc()) {
+        in_use = true;
+        break;
+      }
+    }
+
+    if (!in_use)
+      ConfigureCrtc(screen_->crtcs[i], None, None, 0, 0);
+  }
+}
+
+void NativeDisplayDelegateX11::UpdateCrtcsForNewFramebuffer(
+    const gfx::Size& min_screen_size) {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
   // This function tries to be smart to avoid too many off/on cycles:
-  // - We disable all the CRTCs we won't need after the FB resize.
   // - We set the new modes on CRTCs, if they fit in both the old and new
   //   FBs, and park them at (0,0)
   // - We disable the CRTCs we will need but don't fit in the old FB. Those
@@ -535,42 +563,30 @@ void NativeDisplayDelegateX11::DestroyUnusedCrtcs(const gfx::Size& new_size) {
   // We don't worry about the cached state of the outputs here since we are
   // not interested in the state we are setting - we just try to get the CRTCs
   // out of the way so we can rebuild the frame buffer.
-  for (int i = 0; i < screen_->ncrtc; ++i) {
-    // Default config is to disable the crtcs.
-    RRCrtc crtc = screen_->crtcs[i];
+  gfx::Rect fb_rect(min_screen_size);
+  for (ScopedVector<DisplaySnapshot>::const_iterator it =
+           cached_outputs_.begin();
+       it != cached_outputs_.end();
+       ++it) {
+    DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
+    const DisplayMode* mode_info = x11_output->current_mode();
+    RROutput output = x11_output->output();
     RRMode mode = None;
-    RROutput output = None;
-    const DisplayMode* mode_info = NULL;
-    for (ScopedVector<DisplaySnapshot>::const_iterator it =
-             cached_outputs_.begin();
-         it != cached_outputs_.end();
-         ++it) {
-      DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
-      if (crtc == x11_output->crtc()) {
-        mode_info = x11_output->current_mode();
-        output = x11_output->output();
-        break;
-      }
-    }
 
     if (mode_info) {
       mode = static_cast<const DisplayModeX11*>(mode_info)->mode_id();
-      // In case our CRTC doesn't fit in common area of our current and about
-      // to be resized framebuffer, disable it.
-      // It'll get reenabled after we resize the framebuffer.
-      int max_width = std::min(DisplayWidth(display_,
-                               DefaultScreen(display_)), new_size.width());
-      int max_height = std::min(DisplayHeight(display_,
-                                DefaultScreen(display_)), new_size.height());
-      if (mode_info->size().width() > max_width ||
-          mode_info->size().height() > max_height) {
+
+      if (!fb_rect.Contains(gfx::Rect(mode_info->size()))) {
+        // In case our CRTC doesn't fit in common area of our current and about
+        // to be resized framebuffer, disable it.
+        // It'll get reenabled after we resize the framebuffer.
         mode = None;
         output = None;
         mode_info = NULL;
       }
     }
 
-    ConfigureCrtc(crtc, mode, output, 0, 0);
+    ConfigureCrtc(x11_output->crtc(), mode, output, 0, 0);
   }
 }
 
