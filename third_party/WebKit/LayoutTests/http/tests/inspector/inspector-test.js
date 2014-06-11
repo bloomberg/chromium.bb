@@ -321,7 +321,7 @@ InspectorTest.runTestSuite = function(testSuite)
         var nextTest = testSuiteTests.shift();
         InspectorTest.addResult("");
         InspectorTest.addResult("Running: " + /function\s([^(]*)/.exec(nextTest)[1]);
-        InspectorTest.safeWrap(nextTest)(runner, runner);
+        InspectorTest.safeWrap(nextTest)(runner);
     }
     runner();
 }
@@ -567,6 +567,42 @@ InspectorTest.dumpLoadedModules = function(next)
     }
     if (next)
         next();
+}
+
+InspectorTest.TimeoutMock = function()
+{
+    this._timeoutId = 0;
+    this._timeoutIdToProcess = {};
+    this._timeoutIdToMillis = {};
+    this.setTimeout = this.setTimeout.bind(this);
+    this.clearTimeout = this.clearTimeout.bind(this);
+}
+InspectorTest.TimeoutMock.prototype = {
+    setTimeout: function(operation, timeout)
+    {
+        this._timeoutIdToProcess[++this._timeoutId] = operation;
+        this._timeoutIdToMillis[this._timeoutId] = timeout;
+        return this._timeoutId;
+    },
+
+    clearTimeout: function(timeoutId)
+    {
+        delete this._timeoutIdToProcess[timeoutId];
+        delete this._timeoutIdToMillis[timeoutId];
+    },
+
+    activeTimersTimeouts: function()
+    {
+        return Object.values(this._timeoutIdToMillis);
+    },
+
+    fireAllTimers: function()
+    {
+        for (var timeoutId in this._timeoutIdToProcess)
+            this._timeoutIdToProcess[timeoutId].call(window);
+        this._timeoutIdToProcess = {};
+        this._timeoutIdToMillis = {};
+    }
 }
 
 WebInspector.TempFile = InspectorTest.TempFileMock;

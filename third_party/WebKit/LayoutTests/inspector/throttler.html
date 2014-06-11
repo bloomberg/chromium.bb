@@ -1,0 +1,184 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var ProcessMock = function(name, runnable)
+    {
+        this._runnable = runnable;
+        this._processName = name;
+        this._call = this._call.bind(this);
+        this._call.finish = this._finish.bind(this);
+        this._call.processName = name;
+    }
+
+    ProcessMock.create = function(name, runnable)
+    {
+        var processMock = new ProcessMock(name, runnable);
+        return processMock._call;
+    }
+
+    ProcessMock.prototype = {
+        _call: function(finishCallback)
+        {
+            InspectorTest.addResult("Process '" + this._processName + "' STARTED.");
+            this._finishCallback = finishCallback;
+            if (this._runnable)
+                this._runnable.call(null);
+        },
+
+        _finish: function()
+        {
+            InspectorTest.addResult("Process '" + this._processName + "' FINISHED.");
+            this._finishCallback();
+            delete this._finishCallback();
+        },
+    }
+
+    var throttler = new WebInspector.Throttler(1989);
+    var timeoutMock = new InspectorTest.TimeoutMock();
+    throttler._setTimeout = timeoutMock.setTimeout;
+    throttler._clearTimeout = timeoutMock.clearTimeout;
+    InspectorTest.addSniffer(throttler, "schedule", logSchedule, true);
+
+    function testSimpleSchedule(next, runningProcess)
+    {
+        assertThrottlerIdle();
+        throttler.schedule(ProcessMock.create("operation #1"), false);
+        var process = ProcessMock.create("operation #2");
+        throttler.schedule(process);
+        if (runningProcess)
+            runningProcess.finish();
+
+        assertThrottlerTimeout();
+        timeoutMock.fireAllTimers();
+        process.finish();
+        next();
+    }
+
+    function testAsSoonAsPossibleOverrideTimeout(next, runningProcess)
+    {
+        assertThrottlerIdle();
+        throttler.schedule(ProcessMock.create("operation #1"));
+        var process = ProcessMock.create("operation #2");
+        throttler.schedule(process, true);
+        if (runningProcess)
+            runningProcess.finish();
+
+        assertThrottlerTimeout();
+        timeoutMock.fireAllTimers();
+        process.finish();
+        next();
+    }
+
+    function testAlwaysExecuteLastScheduled(next, runningProcess)
+    {
+        assertThrottlerIdle();
+        var process = null;
+        for (var i = 0; i < 4; ++i) {
+            process = ProcessMock.create("operation #" + i);
+            throttler.schedule(process, i % 2 === 0);
+        }
+        if (runningProcess)
+            runningProcess.finish();
+
+        assertThrottlerTimeout();
+        timeoutMock.fireAllTimers();
+        process.finish();
+        next();
+    }
+
+    InspectorTest.runTestSuite([
+        testSimpleSchedule,
+
+        testAsSoonAsPossibleOverrideTimeout,
+
+        testAlwaysExecuteLastScheduled,
+
+        function testSimpleScheduleDuringProcess(next)
+        {
+            var runningProcess = throttlerToRunningState();
+            testSimpleSchedule(next, runningProcess);
+        },
+
+        function testAsSoonAsPossibleOverrideDuringProcess(next)
+        {
+            var runningProcess = throttlerToRunningState();
+            testAsSoonAsPossibleOverrideTimeout(next, runningProcess);
+        },
+
+        function testAlwaysExecuteLastScheduledDuringProcess(next)
+        {
+            var runningProcess = throttlerToRunningState();
+            testAlwaysExecuteLastScheduled(next, runningProcess);
+        },
+
+        function testScheduleFromProcess(next)
+        {
+            var nextProcess;
+            assertThrottlerIdle();
+            var process = ProcessMock.create("operation #1", processBody);
+            throttler.schedule(process);
+            assertThrottlerTimeout();
+            timeoutMock.fireAllTimers();
+            process.finish();
+            assertThrottlerTimeout();
+            timeoutMock.fireAllTimers();
+            nextProcess.finish();
+            next();
+
+            function processBody()
+            {
+                nextProcess = ProcessMock.create("operation #2");
+                throttler.schedule(nextProcess, false);
+            }
+        },
+    ]);
+
+    function throttlerToRunningState()
+    {
+        assertThrottlerIdle();
+        var process = ProcessMock.create("long operation");
+        throttler.schedule(process);
+        assertThrottlerTimeout();
+        timeoutMock.fireAllTimers();
+        return process;
+    }
+
+    function assertThrottlerIdle()
+    {
+        var timeouts = timeoutMock.activeTimersTimeouts();
+        if (timeouts.length !== 0) {
+            InspectorTest.addResult("ERROR: throttler is not in idle state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.addResult("Throttler is in IDLE state (doesn't have any timers set up)");
+    }
+
+    function assertThrottlerTimeout()
+    {
+        var timeouts = timeoutMock.activeTimersTimeouts();
+        if (timeouts.length === 0) {
+            InspectorTest.addResult("ERROR: throttler is not in timeout state. Scheduled timers timeouts are empty!");
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.addResult("Throttler is in TIMEOUT state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
+    }
+
+    function logSchedule(operation, asSoonAsPossible)
+    {
+        InspectorTest.addResult("SCHEDULED: '" + operation.processName + "' asSoonAsPossible: " + asSoonAsPossible);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>This test verifies throttler behavior.</p>
+</body>
+</html>

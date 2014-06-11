@@ -27,14 +27,19 @@ InspectorTest.clickOnURL = function()
 
 InspectorTest.waitForStyleSheetChangedEvent = function(reply)
 {
-    var oldUpdateTimeout = WebInspector.StyleFile.updateTimeout;
-    WebInspector.StyleFile.updateTimeout = 0;
+    var originalSetTimeout = WebInspector.Throttler.prototype._setTimeout;
+    WebInspector.Throttler.prototype._setTimeout = innerSetTimeout;
     InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
 
     function onStyleSheetChanged()
     {
-        WebInspector.StyleFile.updateTimeout = oldUpdateTimeout;
+        WebInspector.Throttler.prototype._setTimeout = originalSetTimeout;
         reply();
+    }
+
+    function innerSetTimeout(operation, timeout)
+    {
+        return originalSetTimeout.call(this, operation, 0);
     }
 }
 
