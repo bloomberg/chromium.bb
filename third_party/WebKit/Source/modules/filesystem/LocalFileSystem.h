@@ -31,7 +31,6 @@
 #ifndef LocalFileSystem_h
 #define LocalFileSystem_h
 
-#include "core/page/Page.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
 #include "wtf/Forward.h"
@@ -43,8 +42,10 @@ class AsyncFileSystemCallbacks;
 class CallbackWrapper;
 class FileSystemClient;
 class ExecutionContext;
+class KURL;
+class LocalFrame;
 
-class LocalFileSystem FINAL : public NoBaseWillBeGarbageCollectedFinalized<LocalFileSystem>, public WillBeHeapSupplement<Page>, public WillBeHeapSupplement<WorkerClients> {
+class LocalFileSystem FINAL : public NoBaseWillBeGarbageCollectedFinalized<LocalFileSystem>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
@@ -62,7 +63,7 @@ public:
 
     virtual void trace(Visitor* visitor) OVERRIDE
     {
-        WillBeHeapSupplement<Page>::trace(visitor);
+        WillBeHeapSupplement<LocalFrame>::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);
     }
 

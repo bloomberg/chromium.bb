@@ -182,6 +182,7 @@
 #include "web/EventListenerWrapper.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/GeolocationClientProxy.h"
+#include "web/LocalFileSystemClient.h"
 #include "web/MIDIClientProxy.h"
 #include "web/PageOverlay.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
@@ -1643,6 +1644,7 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
         provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : 0));
         if (RuntimeEnabledFeatures::screenOrientationEnabled())
             ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : 0);
+        provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     }
 }
 

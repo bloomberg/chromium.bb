@@ -36,10 +36,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
-#include "core/inspector/InspectorController.h"
+#include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/FileSystemClient.h"
-#include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/PermissionCallbacks.h"
 #include "public/platform/Platform.h"
@@ -174,16 +173,15 @@ const char* LocalFileSystem::supplementName()
 LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
 {
     if (context.isDocument()) {
-        return static_cast<LocalFileSystem*>(WillBeHeapSupplement<Page>::from(toDocument(context).page(), supplementName()));
+        return static_cast<LocalFileSystem*>(WillBeHeapSupplement<LocalFrame>::from(toDocument(context).frame(), supplementName()));
     }
     ASSERT(context.isWorkerGlobalScope());
     return static_cast<LocalFileSystem*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context).clients(), supplementName()));
 }
 
-void provideLocalFileSystemTo(Page& page, PassOwnPtr<FileSystemClient> client)
+void provideLocalFileSystemTo(LocalFrame& frame, PassOwnPtr<FileSystemClient> client)
 {
-    page.provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
-    page.inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(&page));
+    frame.provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
 }
 
 void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSystemClient> client)

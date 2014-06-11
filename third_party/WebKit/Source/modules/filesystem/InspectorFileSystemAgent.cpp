@@ -41,6 +41,7 @@
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorState.h"
+#include "core/page/Page.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
