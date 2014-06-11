@@ -41,4 +41,15 @@ function sharedSetup() {
   document.addEventListener('keypress', keyPressHandler);
 }
 
+// This applies SSL-specific styling to the V2 security interstitials.
+function applySSLStyle() {
+  $('explanation-paragraph').innerHTML =
+      loadTimeData.getString('explanationParagraph');
+  $('explanation-paragraph').classList.toggle('hidden');
+  $('final-paragraph').innerHTML = loadTimeData.getString('finalParagraph');
+  $('final-paragraph').classList.toggle('hidden');
+
+  $('body').classList.add('ssl');
+}
+
 document.addEventListener('DOMContentLoaded', sharedSetup);

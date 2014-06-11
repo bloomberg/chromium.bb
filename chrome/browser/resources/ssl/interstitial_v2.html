@@ -9,22 +9,28 @@
     <script src="../../../../ui/webui/resources/js/util.js"></script>
     <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
     <script src="ssl_errors_common.js"></script>
+    <script src="../safe_browsing/safe_browsing_v3.js"></script>
     <script src="interstitial_v2.js"></script>
   </head>
-<body i18n-values=".style.fontFamily:fontfamily">
+<body id="body" i18n-values=".style.fontFamily:fontfamily">
   <div class="interstitial-wrapper">
-    <div class="icon"></div>
+    <div class="icon" id="icon"></div>
     <div id="main-message">
       <h1 i18n-content="heading"></h1>
       <p i18n-values=".innerHTML:primaryParagraph"></p>
+      <p id="second-paragraph" class="hidden"></p>
+      <p id="third-paragraph" class="hidden"></p>
     </div>
     <div class="nav-wrapper">
       <button i18n-content="primaryButtonText" id="primary-button"></button>
       <a href="#" id="details-button" i18n-content="openDetails"></a>
     </div>
     <div id="details" class="hidden">
+
       <p i18n-values=".innerHTML:explanationParagraph"></p>
       <p i18n-values=".innerHTML:finalParagraph"></p>
+      <p id="explanation-paragraph" class="hidden"></p>
+      <p id="final-paragraph" class="hidden"></p>
       <p id="error-code" class="hidden"></p>
     </div>
   </div>

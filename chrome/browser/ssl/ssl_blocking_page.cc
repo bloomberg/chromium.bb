@@ -423,6 +423,7 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
   webui::SetFontAndTextDirection(&load_time_data);
 
   // Shared values for both the overridable and non-overridable versions.
+  load_time_data.SetBoolean("ssl", true);
   load_time_data.SetBoolean(
       "overridable", overridable_ && !strict_enforcement_);
   load_time_data.SetString(

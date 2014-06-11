@@ -12,6 +12,11 @@ body {
   font-size: 125%;
 }
 
+body.safe-browsing {
+  background: rgb(217, 69, 61);
+  color: rgb(255, 255, 255);
+}
+
 button {
   background: rgb(76, 142, 250);
   border: 0;
@@ -63,13 +68,10 @@ h1 {
 }
 
 .icon {
-  background: -webkit-image-set(
-      url('images/1x/brokenssl_red.png') 1x,
-      url('images/2x/brokenssl_red.png') 2x);
   background-repeat: no-repeat;
   background-size: 100%;
   height: 72px;
-  margin: 0 0 45px;
+  margin: 0 0 40px;
   width: 72px;
 }
 
@@ -95,6 +97,26 @@ h1 {
 
 #details p:not(:first-of-type) {
   margin-top: 39px;
+}
+
+.safe-browsing a {
+  color: rgb(255, 255, 255);
+}
+
+.safe-browsing button {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.safe-browsing .icon {
+  background: -webkit-image-set(
+      url('../safe_browsing/images/1x/stop_sign.png') 1x,
+      url('../safe_browsing/images/2x/stop_sign.png') 2x);
+}
+
+.ssl .icon {
+  background: -webkit-image-set(
+      url('images/1x/brokenssl_red.png') 1x,
+      url('images/2x/brokenssl_red.png') 2x);
 }
 
 @media (max-width: 700px) {
