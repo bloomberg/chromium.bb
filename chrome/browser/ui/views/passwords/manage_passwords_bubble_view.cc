@@ -373,8 +373,10 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
-  views::View* anchor_view = is_fullscreen ?
-      NULL : browser_view->GetLocationBarView()->manage_passwords_icon_view();
+  ManagePasswordsIconView* anchor_view =
+      is_fullscreen
+          ? NULL
+          : browser_view->GetLocationBarView()->manage_passwords_icon_view();
   manage_passwords_bubble_ = new ManagePasswordsBubbleView(
       web_contents, anchor_view, reason);
 
@@ -390,7 +392,6 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
     manage_passwords_bubble_->AdjustForFullscreen(
         browser_view->GetBoundsInScreen());
   }
-
   manage_passwords_bubble_->GetWidget()->Show();
   manage_passwords_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 }
@@ -410,18 +411,24 @@ bool ManagePasswordsBubbleView::IsShowing() {
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
-    views::View* anchor_view,
+    ManagePasswordsIconView* anchor_view,
     DisplayReason reason)
     : ManagePasswordsBubble(web_contents, reason),
       BubbleDelegateView(anchor_view,
                          anchor_view ? views::BubbleBorder::TOP_RIGHT
-                                     : views::BubbleBorder::NONE) {
+                                     : views::BubbleBorder::NONE),
+      anchor_view_(anchor_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
   set_notify_enter_exit_on_child(true);
+  if (anchor_view)
+    anchor_view->SetActive(true);
 }
 
-ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
+ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
+  if (anchor_view_)
+    anchor_view_->SetActive(false);
+}
 
 void ManagePasswordsBubbleView::AdjustForFullscreen(
     const gfx::Rect& screen_bounds) {

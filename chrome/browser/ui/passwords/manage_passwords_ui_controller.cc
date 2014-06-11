@@ -109,10 +109,8 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
     if (it->type() == password_manager::PasswordStoreChange::REMOVE) {
       password_form_map_.erase(changed_form.username_value);
-      if (changed_form.blacklisted_by_user) {
-        DCHECK(state_ == password_manager::ui::BLACKLIST_STATE);
+      if (changed_form.blacklisted_by_user)
         state_ = password_manager::ui::MANAGE_STATE;
-      }
     } else {
       new_password_forms_.push_back(new autofill::PasswordForm(changed_form));
       password_form_map_[changed_form.username_value] =

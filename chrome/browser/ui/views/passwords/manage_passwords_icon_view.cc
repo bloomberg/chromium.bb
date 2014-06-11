@@ -41,10 +41,11 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
 
   // Otherwise, start with the correct values for MANAGE_STATE, and adjust
   // things accordingly if we're either in BLACKLIST_STATE or PENDING_STATE.
-  icon_id_ = IDR_SAVE_PASSWORD;
+  icon_id_ = active() ? IDR_SAVE_PASSWORD_ACTIVE : IDR_SAVE_PASSWORD_INACTIVE;
   tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
   if (state() == password_manager::ui::BLACKLIST_STATE)
-    icon_id_ = IDR_SAVE_PASSWORD_BLACKLISTED;
+    icon_id_ = active() ? IDR_SAVE_PASSWORD_DISABLED_ACTIVE
+                        : IDR_SAVE_PASSWORD_DISABLED_INACTIVE;
   else if (password_manager::ui::IsPendingState(state()))
     tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
 
