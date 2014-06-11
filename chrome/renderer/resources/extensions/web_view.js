@@ -828,7 +828,12 @@ WebViewInternal.prototype.setupEventProperty = function(eventName) {
  */
 WebViewInternal.prototype.getPermissionTypes = function() {
   var permissions =
-      ['media', 'geolocation', 'pointerLock', 'download', 'loadplugin'];
+      ['media',
+      'geolocation',
+      'pointerLock',
+      'download',
+      'loadplugin',
+      'filesystem'];
   return permissions.concat(this.maybeGetExperimentalPermissions());
 };
 

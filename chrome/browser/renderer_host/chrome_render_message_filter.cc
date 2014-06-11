@@ -12,6 +12,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,8 +69,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessSync,
-                        OnRequestFileSystemAccessSync)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChromeViewHostMsg_RequestFileSystemAccessSync,
+        OnRequestFileSystemAccessSync)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessAsync,
                         OnRequestFileSystemAccessAsync)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
@@ -192,14 +195,35 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
     int render_frame_id,
     const GURL& origin_url,
     const GURL& top_origin_url,
-    bool* allowed) {
-  *allowed =
+    IPC::Message* reply_msg) {
+  bool allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
-  // Record access to file system for potential display in UI.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
-                 render_process_id_, render_frame_id, origin_url, !*allowed));
+
+  bool is_web_view_guest =
+      ExtensionRendererState::GetInstance()->IsWebViewRenderer(
+          render_process_id_);
+  if (!is_web_view_guest) {
+    ChromeViewHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg,
+                                                                    allowed);
+    Send(reply_msg);
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
+                   render_process_id_,
+                   render_frame_id,
+                   origin_url,
+                   !allowed));
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&WebViewGuest::FileSystemAccessedSync,
+                                     render_process_id_,
+                                     render_frame_id,
+                                     origin_url,
+                                     !allowed,
+                                     reply_msg));
 }
 
 void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
@@ -211,20 +235,31 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
 
   bool allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
-  // Record access to file system for potential display in UI.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &TabSpecificContentSettings::FileSystemAccessed,
-          render_process_id_,
-          render_frame_id,
-          origin_url,
-          !allowed));
 
-  Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
-      render_frame_id,
-      request_id,
-      allowed));
+  bool is_web_view_guest =
+      ExtensionRendererState::GetInstance()->IsWebViewRenderer(
+          render_process_id_);
+  if (!is_web_view_guest) {
+    Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
+        render_frame_id, request_id, allowed));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
+                   render_process_id_,
+                   render_frame_id,
+                   origin_url,
+                   !allowed));
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&WebViewGuest::FileSystemAccessedAsync,
+                                     render_process_id_,
+                                     render_frame_id,
+                                     request_id,
+                                     origin_url,
+                                     !allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,

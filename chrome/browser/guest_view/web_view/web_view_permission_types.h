@@ -11,6 +11,8 @@ enum WebViewPermissionType {
 
   WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
 
+  WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
+
   WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
 
   // JavaScript Dialogs: prompt, alert, confirm
