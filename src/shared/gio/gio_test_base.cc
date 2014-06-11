@@ -1,7 +1,7 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -59,6 +59,8 @@ void GioReadTestWithOffset(struct Gio* my_file,
   // mf_curpos = 32, 0 left, read 16
   ret_code = my_file->vtbl->Read(my_file, out_buffer, 16);
   EXPECT_EQ(0, ret_code);
+
+  free(out_buffer);
 }
 
 /** Should be given a scratch file that can be written to without worry. */
@@ -128,6 +130,8 @@ void GioWriteTest(struct Gio* my_file,
     ret_code = my_file->vtbl->Write(my_file, in_buffer, 20);
     EXPECT_RETCODE(0, ret_code);
   }
+
+  free(in_buffer);
 }
 
 void GioSeekTestWithOffset(struct Gio* my_file,

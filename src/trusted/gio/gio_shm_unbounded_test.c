@@ -192,6 +192,8 @@ int main(int ac, char **av) {
 
   nerrs += TestWithDataGenerators(&ngsu);
 
+  (*ngsu.base.vtbl->Dtor)(&ngsu.base);
+
  unrecoverable:
   NaClNrdAllModulesFini();
 

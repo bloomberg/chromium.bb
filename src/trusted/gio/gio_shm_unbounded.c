@@ -283,6 +283,7 @@ static int NaClGioShmUnboundedClose(struct Gio *vself) {
       return -1;
     }
     (*self->ngsp->base.vtbl->Dtor)(&self->ngsp->base);
+    free(self->ngsp);
     self->ngsp = NULL;
   }
   return 0;

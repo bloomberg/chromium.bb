@@ -1,7 +1,7 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -220,6 +220,12 @@ int main(int ac,
     return -5;
   }
 
+  /*
+   * The NaClGioNaClDesc now owns the NaClDescIoDesc.
+   */
+  NaClDescUnref(&src->base);
+  NaClDescUnref(&dst->base);
+
   num_errors += GioCopy((struct Gio *) &gsrc, (struct Gio *) &gdst);
   num_errors += ComparePosixFiles(av[1], av[2]);
 
@@ -248,6 +254,8 @@ int main(int ac,
     fprintf(stderr, "NaClGioNaClDescCtor faied for destination file\n");
     return -7;
   }
+
+  NaClDescUnref(&dst->base);
 
   /*
    * We run GioRevCopy twice because if Seek failed to move the file
