@@ -1756,17 +1756,17 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
   // Check if an extension is overriding the Search Engine.
   const extensions::Extension* extension =
       extensions::GetExtensionOverridingSearchEngine(
-          Profile::FromWebUI(web_ui()), NULL);
+          Profile::FromWebUI(web_ui()));
   AppendExtensionData("searchEngine", extension, &extension_controlled);
 
   // Check if an extension is overriding the Home page.
   extension = extensions::GetExtensionOverridingHomepage(
-      Profile::FromWebUI(web_ui()), NULL);
+      Profile::FromWebUI(web_ui()));
   AppendExtensionData("homePage", extension, &extension_controlled);
 
   // Check if an extension is overriding the Startup pages.
   extension = extensions::GetExtensionOverridingStartupPages(
-      Profile::FromWebUI(web_ui()), NULL);
+      Profile::FromWebUI(web_ui()));
   AppendExtensionData("startUpPage", extension, &extension_controlled);
 
   // Check if an extension is overriding the NTP page.

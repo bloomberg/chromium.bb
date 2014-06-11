@@ -348,8 +348,7 @@ bool ExtensionMessageBubbleFactory::MaybeShowStartupOverrideExtensionsBubble(
 #else
   DCHECK(!shown_startup_override_extensions_bubble_);
 
-  const Extension* extension =
-      GetExtensionOverridingStartupPages(profile_, NULL);
+  const Extension* extension = GetExtensionOverridingStartupPages(profile_);
   if (!extension)
     return false;
 

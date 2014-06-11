@@ -13,10 +13,13 @@
 
 namespace extensions {
 
-const SettingsOverrides* FindOverridingExtension(
+namespace {
+
+// Returns which |extension| (if any) is overriding a particular |type| of
+// setting.
+const Extension* FindOverridingExtension(
     content::BrowserContext* browser_context,
-    SettingsApiOverrideType type,
-    const Extension** extension) {
+    SettingsApiOverrideType type) {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context)->enabled_extensions();
 
@@ -51,55 +54,29 @@ const SettingsOverrides* FindOverridingExtension(
           !preference_api->DoesExtensionControlPref((*it)->id(), key, NULL))
         continue;  // Not primary.
 
-      // Found the primary extension, return its setting.
-      *extension = *it;
-      return settings;
+      // Found the primary extension.
+      return *it;
     }
   }
 
   return NULL;
 }
 
-const Extension* GetExtensionOverridingHomepage(
-    content::BrowserContext* browser_context, GURL* home_page_url) {
-  const Extension* extension = NULL;
-  const SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_HOME_PAGE, &extension);
+}  // namespace
 
-  if (settings && home_page_url)
-    *home_page_url = *settings->homepage;
-  return extension;
+const Extension* GetExtensionOverridingHomepage(
+    content::BrowserContext* browser_context) {
+  return FindOverridingExtension(browser_context, BUBBLE_TYPE_HOME_PAGE);
 }
 
 const Extension* GetExtensionOverridingStartupPages(
-    content::BrowserContext* browser_context,
-    std::vector<GURL>* startup_pages) {
-  const Extension* extension = NULL;
-  const SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_STARTUP_PAGES, &extension);
-  if (settings && startup_pages) {
-    startup_pages->clear();
-    for (std::vector<GURL>::const_iterator it = settings->startup_pages.begin();
-         it != settings->startup_pages.end();
-         ++it)
-      startup_pages->push_back(GURL(*it));
-  }
-  return extension;
+    content::BrowserContext* browser_context) {
+  return FindOverridingExtension(browser_context, BUBBLE_TYPE_STARTUP_PAGES);
 }
 
 const Extension* GetExtensionOverridingSearchEngine(
-    content::BrowserContext* browser_context,
-    api::manifest_types::ChromeSettingsOverrides::Search_provider*
-        search_provider) {
-  const Extension* extension = NULL;
-  const SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_SEARCH_ENGINE, &extension);
-  if (settings && search_provider)
-    search_provider = settings->search_engine.get();
-  return extension;
+    content::BrowserContext* browser_context) {
+  return FindOverridingExtension(browser_context, BUBBLE_TYPE_SEARCH_ENGINE);
 }
 
 const Extension* GetExtensionOverridingProxy(

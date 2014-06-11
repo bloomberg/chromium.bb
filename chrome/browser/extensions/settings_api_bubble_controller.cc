@@ -95,14 +95,14 @@ bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
 
   const Extension* override = NULL;
   switch (type_) {
-    case BUBBLE_TYPE_HOME_PAGE:
-      override = GetExtensionOverridingHomepage(profile_, NULL);
+    case extensions::BUBBLE_TYPE_HOME_PAGE:
+      override = extensions::GetExtensionOverridingHomepage(profile_);
       break;
-    case BUBBLE_TYPE_STARTUP_PAGES:
-      override = GetExtensionOverridingStartupPages(profile_, NULL);
+    case extensions::BUBBLE_TYPE_STARTUP_PAGES:
+      override = extensions::GetExtensionOverridingStartupPages(profile_);
       break;
-    case BUBBLE_TYPE_SEARCH_ENGINE:
-      override = GetExtensionOverridingSearchEngine(profile_, NULL);
+    case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
+      override = extensions::GetExtensionOverridingSearchEngine(profile_);
       break;
   }
 

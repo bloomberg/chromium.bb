@@ -52,7 +52,7 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 #endif
 
   const Extension* extension =
-      GetExtensionOverridingHomepage(browser->profile(), NULL);
+      GetExtensionOverridingHomepage(browser->profile());
   if (extension) {
     // The bubble will try to anchor itself against the home button
     views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)->
@@ -75,8 +75,7 @@ void MaybeShowExtensionControlledSearchNotification(
 
   if (AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
-    const Extension* extension =
-        GetExtensionOverridingSearchEngine(profile, NULL);
+    const Extension* extension = GetExtensionOverridingSearchEngine(profile);
     if (extension) {
       ToolbarView* toolbar =
           BrowserView::GetBrowserViewForBrowser(
