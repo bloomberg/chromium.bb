@@ -34,7 +34,6 @@ include_rules = [
   "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_manager.h",
-  "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/signin/oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service_factory.h",

@@ -38,7 +38,6 @@ specific_include_rules = {
     "!chrome/browser/history/history_database.h",
     "!chrome/browser/search_engines/search_terms_data.h",
     "!chrome/browser/search_engines/template_url.h",
-    "!chrome/browser/search_engines/template_url_id.h",
     "!chrome/browser/search_engines/template_url_service.h",
   ],
 

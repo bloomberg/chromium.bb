@@ -10,8 +10,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
-#include "base/guid.h"
-#include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -1063,39 +1061,6 @@ std::string TemplateURLRef::HandleReplacements(
     EncodeFormData(post_params_, post_content);
 
   return url;
-}
-
-
-// TemplateURLData ------------------------------------------------------------
-
-TemplateURLData::TemplateURLData()
-    : show_in_default_list(false),
-      safe_for_autoreplace(false),
-      id(0),
-      date_created(base::Time::Now()),
-      last_modified(base::Time::Now()),
-      created_by_policy(false),
-      usage_count(0),
-      prepopulate_id(0),
-      sync_guid(base::GenerateGUID()),
-      keyword_(base::ASCIIToUTF16("dummy")),
-      url_("x") {
-}
-
-TemplateURLData::~TemplateURLData() {
-}
-
-void TemplateURLData::SetKeyword(const base::string16& keyword) {
-  DCHECK(!keyword.empty());
-
-  // Case sensitive keyword matching is confusing. As such, we force all
-  // keywords to be lower case.
-  keyword_ = base::i18n::ToLower(keyword);
-}
-
-void TemplateURLData::SetURL(const std::string& url) {
-  DCHECK(!url.empty());
-  url_ = url;
 }
 
 

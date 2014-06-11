@@ -11,7 +11,7 @@
 
 #include "chrome/browser/history/history_details.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url_id.h"
+#include "components/search_engines/template_url_id.h"
 #include "url/gurl.h"
 
 namespace history {

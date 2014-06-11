@@ -11,9 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/search_engines/default_search_manager.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/search_engines/template_url_data.h"
 
 namespace {
 

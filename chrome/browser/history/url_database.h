@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/search_engines/template_url_id.h"
 #include "components/query_parser/query_parser.h"
+#include "components/search_engines/template_url_id.h"
 #include "sql/statement.h"
 
 class GURL;
