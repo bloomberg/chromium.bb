@@ -69,31 +69,34 @@ struct IsGarbageCollectedMixin {
     static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsAlive<T>(0)));
 };
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                                          \
-    do {                                                                                                              \
-        typedef typename WTF::RemoveConst<T>::Type NonConstType;                                                      \
-        typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;                   \
-        typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;                                  \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                            \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;                \
-        typedef WTF::IsSubclassOfTemplateTypenameSizeTypename<NonConstType, HeapListHashSet> HeapListHashSetSubclass; \
-        typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                            \
-        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;                   \
-        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;                     \
-        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;              \
-        typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass;             \
-        COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                             \
-            GarbageCollectedMixinSubclass::value ||                                                                   \
-            HeapHashSetSubclass::value ||                                                                             \
-            HeapLinkedHashSetSubclass::value ||                                                                       \
-            HeapListHashSetSubclass::value ||                                                                         \
-            HeapHashMapSubclass::value ||                                                                             \
-            HeapVectorSubclass::value ||                                                                              \
-            HeapDequeSubclass::value ||                                                                               \
-            HeapHashCountedSetSubclass::value ||                                                                      \
-            HeapTerminatedArraySubclass::value,                                                                       \
-            ErrorMessage);                                                                                            \
-    } while (0)
+template <typename T>
+struct IsGarbageCollectedType {
+    typedef typename WTF::RemoveConst<T>::Type NonConstType;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;
+    typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;
+    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;
+    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;
+    typedef WTF::IsSubclassOfTemplateTypenameSizeTypename<NonConstType, HeapListHashSet> HeapListHashSetSubclass;
+    typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;
+    typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;
+    typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;
+    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass;
+    static const bool value =
+        GarbageCollectedSubclass::value
+        || GarbageCollectedMixinSubclass::value
+        || HeapHashSetSubclass::value
+        || HeapLinkedHashSetSubclass::value
+        || HeapListHashSetSubclass::value
+        || HeapHashMapSubclass::value
+        || HeapVectorSubclass::value
+        || HeapDequeSubclass::value
+        || HeapHashCountedSetSubclass::value
+        || HeapTerminatedArraySubclass::value;
+};
+
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
+    COMPILE_ASSERT(IsGarbageCollectedType<T>::value, ErrorMessage)
 
 template<typename T> class Member;
 
@@ -1160,31 +1163,28 @@ struct NeedsTracing<ListHashSetNode<T, WebCore::HeapListHashSetAllocator<T, inli
 // For wtf/Functional.h
 template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
 
-template<typename T> struct PointerParamStorageTraits<T*, false> {
+template<typename T>
+struct PointerParamStorageTraits<T*, false> {
     typedef T* StorageType;
 
     static StorageType wrap(T* value) { return value; }
     static T* unwrap(const StorageType& value) { return value; }
 };
 
-template<typename T> struct PointerParamStorageTraits<T*, true> {
+template<typename T>
+struct PointerParamStorageTraits<T*, true> {
     typedef WebCore::CrossThreadPersistent<T> StorageType;
 
     static StorageType wrap(T* value) { return value; }
     static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
-// FIXME: This doesn't support collections and const types. See
-// COMPILE_ASSERT_IS_GARBAGE_COLLECTED.
-template<typename T> struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, WTF::IsSubclassOfTemplate<T, WebCore::GarbageCollected>::value || WebCore::IsGarbageCollectedMixin<T>::value> {
+template<typename T>
+struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, WebCore::IsGarbageCollectedType<T>::value> {
 };
 
-// We assume RawPtr<T> is used only for garbage-collected types.
-template<typename T> struct ParamStorageTraits<RawPtr<T> > {
-    typedef WebCore::CrossThreadPersistent<T> StorageType;
-
-    static StorageType wrap(RawPtr<T> value) { return value.get(); }
-    static T* unwrap(const StorageType& value) { return value.get(); }
+template<typename T>
+struct ParamStorageTraits<RawPtr<T> > : public PointerParamStorageTraits<T*, WebCore::IsGarbageCollectedType<T>::value> {
 };
 
 } // namespace WTF

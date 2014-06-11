@@ -341,6 +341,7 @@ public:
     bool operator==(const OffHeapInt& other) const { return other.value() == value(); }
 
     unsigned hash() { return IntHash<int>::hash(m_x); }
+    void voidFunction() { }
 
 protected:
     OffHeapInt(int x) : m_x(x) { }
@@ -3989,6 +3990,8 @@ TEST(HeapTest, Bind)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(2u, Bar::s_live);
+    // RawPtr<OffHeapInt> should not make Persistent.
+    Closure closure3 = bind(&OffHeapInt::voidFunction, RawPtr<OffHeapInt>(OffHeapInt::create(1).get()));
 
     UseMixin::s_traceCount = 0;
     Mixin* mixin = UseMixin::create();
