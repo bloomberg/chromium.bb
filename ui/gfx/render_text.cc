@@ -412,11 +412,16 @@ RenderText::~RenderText() {
 }
 
 RenderText* RenderText::CreateInstance() {
+#if defined(OS_MACOSX) && defined(TOOLKIT_VIEWS)
+  // Use the more complete HarfBuzz implementation for Views controls on Mac.
+  return new RenderTextHarfBuzz;
+#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHarfBuzzRenderText)) {
     return new RenderTextHarfBuzz;
   }
   return CreateNativeInstance();
+#endif
 }
 
 void RenderText::SetText(const base::string16& text) {
