@@ -54,12 +54,12 @@ void WebMIDIClientMock::resetMock()
 
 void WebMIDIClientMock::requestSysexPermission(const WebMIDIPermissionRequest& request)
 {
-    m_clientMock->requestSysexPermission(request.midiAccess());
+    m_clientMock->requestSysexPermission(request.midiAccessInitializer());
 }
 
 void WebMIDIClientMock::cancelSysexPermissionRequest(const WebMIDIPermissionRequest& request)
 {
-    m_clientMock->cancelSysexPermissionRequest(request.midiAccess());
+    m_clientMock->cancelSysexPermissionRequest(request.midiAccessInitializer());
 }
 
 void WebMIDIClientMock::reset()

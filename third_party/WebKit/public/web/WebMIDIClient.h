@@ -38,10 +38,17 @@ class WebMIDIClient {
 public:
     virtual ~WebMIDIClient() { }
 
-    // Request a permission to use system exclusive messages. Called when MIDIOptions.sysex is true.
-    virtual void requestSysexPermission(const WebMIDIPermissionRequest&) = 0;
-    // Cancel the request since the requesting frame may be moving to a new page.
-    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest&) = 0;
+    // Request a permission to use system exclusive messages. Called when
+    // MIDIOptions.sysex is true.
+    // Once the request is done, any WebMIDIPermissionRequest instances equal to
+    // |request| must not be accessed after that.
+    virtual void requestSysexPermission(const WebMIDIPermissionRequest& /* request */) = 0;
+
+    // Cancel the request since the requesting frame may be moving to
+    // a new page.
+    // Once canceled, any WebMIDIPermissionRequest instances equal to
+    // |request| must not be accessed after that.
+    virtual void cancelSysexPermissionRequest(const WebMIDIPermissionRequest& /* request */) = 0;
 };
 
 } // namespace blink

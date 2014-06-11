@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
+#include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIController.h"
 #include "modules/webmidi/MIDIOptions.h"
@@ -48,24 +49,6 @@
 
 namespace WebCore {
 
-class MIDIAccess::PostAction : public ScriptFunction {
-public:
-    static PassOwnPtr<MIDIAccess::PostAction> create(v8::Isolate* isolate, WeakPtr<MIDIAccess> owner, State state) { return adoptPtr(new PostAction(isolate, owner, state)); }
-
-private:
-    PostAction(v8::Isolate* isolate, WeakPtr<MIDIAccess> owner, State state): ScriptFunction(isolate), m_owner(owner), m_state(state) { }
-    virtual ScriptValue call(ScriptValue value) OVERRIDE
-    {
-        if (!m_owner.get())
-            return value;
-        m_owner->doPostAction(m_state);
-        return value;
-    }
-
-    WeakPtr<MIDIAccess> m_owner;
-    State m_state;
-};
-
 ScriptPromise MIDIAccess::request(const MIDIOptions& options, ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(options, scriptState->executionContext())));
@@ -73,8 +56,8 @@ ScriptPromise MIDIAccess::request(const MIDIOptions& options, ScriptState* scrip
     // Create a wrapper to expose this object to the V8 GC so that
     // hasPendingActivity takes effect.
     toV8NoInline(midiAccess.get(), scriptState->context()->Global(), scriptState->isolate());
-    // Now this object is retained because m_state equals to Requesting.
-    return midiAccess->startRequest(scriptState);
+    // Now this object is retained because hasPending returns true.
+    return midiAccess->m_initializer->initialize(scriptState);
 }
 
 MIDIAccess::~MIDIAccess()
@@ -83,146 +66,80 @@ MIDIAccess::~MIDIAccess()
 
 MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
     : ActiveDOMObject(context)
-    , m_state(Requesting)
-    , m_weakPtrFactory(this)
-    , m_options(options)
-    , m_sysexEnabled(false)
+    , m_initializer(MIDIAccessInitializer::create(options, this))
 {
     ScriptWrappable::init(this);
-    m_accessor = MIDIAccessor::create(this);
-}
-
-void MIDIAccess::setSysexEnabled(bool enable)
-{
-    m_sysexEnabled = enable;
-    if (enable) {
-        m_accessor->startSession();
-    } else {
-        m_resolver->reject(DOMError::create("SecurityError"));
-    }
 }
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(isMainThread());
-
     m_inputs.append(MIDIInput::create(this, id, manufacturer, name, version));
 }
 
 void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(isMainThread());
-
     unsigned portIndex = m_outputs.size();
     m_outputs.append(MIDIOutput::create(this, portIndex, id, manufacturer, name, version));
-}
-
-void MIDIAccess::didStartSession(bool success, const String& error, const String& message)
-{
-    ASSERT(isMainThread());
-    if (success)
-        m_resolver->resolve(this);
-    else
-        m_resolver->reject(DOMError::create(error, message));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
     ASSERT(isMainThread());
+    if (portIndex >= m_inputs.size())
+        return;
 
-    if (m_state == Resolved && portIndex < m_inputs.size()) {
-        // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
-        // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
-        // This is how timestamps are defined in the Web MIDI spec.
-        Document* document = toDocument(executionContext());
-        ASSERT(document);
+    // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
+    // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
+    // This is how timestamps are defined in the Web MIDI spec.
+    Document* document = toDocument(executionContext());
+    ASSERT(document);
 
-        double timeStampInMilliseconds = 1000 * document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(timeStamp);
+    double timeStampInMilliseconds = 1000 * document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(timeStamp);
 
-        m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStampInMilliseconds);
-    }
+    m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStampInMilliseconds);
 }
 
 void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds)
 {
-    if (m_state == Resolved && portIndex < m_outputs.size() && data && length > 0) {
-        // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
-        // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
-        double timeStamp;
+    if (!data || !length || portIndex >= m_outputs.size())
+        return;
+    // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
+    // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
+    double timeStamp;
 
-        if (!timeStampInMilliseconds) {
-            // We treat a value of 0 (which is the default value) as special, meaning "now".
-            // We need to translate it exactly to 0 seconds.
-            timeStamp = 0;
-        } else {
-            Document* document = toDocument(executionContext());
-            ASSERT(document);
-            double documentStartTime = document->loader()->timing()->referenceMonotonicTime();
-            timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
-        }
-
-        m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
+    if (!timeStampInMilliseconds) {
+        // We treat a value of 0 (which is the default value) as special, meaning "now".
+        // We need to translate it exactly to 0 seconds.
+        timeStamp = 0;
+    } else {
+        Document* document = toDocument(executionContext());
+        ASSERT(document);
+        double documentStartTime = document->loader()->timing()->referenceMonotonicTime();
+        timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
     }
+
+    m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
 void MIDIAccess::stop()
 {
-    if (m_state == Stopped)
-        return;
     m_accessor.clear();
-    m_weakPtrFactory.revokeAll();
-    if (m_state == Requesting) {
-        Document* document = toDocument(executionContext());
-        ASSERT(document);
-        MIDIController* controller = MIDIController::from(document->frame());
-        ASSERT(controller);
-        controller->cancelSysexPermissionRequest(this);
-    }
-    m_state = Stopped;
+    m_initializer->cancel();
 }
 
 bool MIDIAccess::hasPendingActivity() const
 {
-    return m_state == Requesting;
+    return m_initializer->hasPendingActivity();
 }
 
-void MIDIAccess::permissionDenied()
+void MIDIAccess::initialize(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled)
 {
-    ASSERT(isMainThread());
-    m_resolver->reject(DOMError::create("SecurityError"));
-}
-
-ScriptPromise MIDIAccess::startRequest(ScriptState* scriptState)
-{
-    m_resolver = ScriptPromiseResolverWithContext::create(scriptState);
-    ScriptPromise promise = m_resolver->promise();
-    promise.then(PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Resolved),
-        PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Stopped));
-
-    if (!m_options.sysex) {
-        m_accessor->startSession();
-        return promise;
-    }
-    Document* document = toDocument(executionContext());
-    ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->frame());
-    if (controller) {
-        controller->requestSysexPermission(this);
-    } else {
-        m_resolver->reject(DOMError::create("SecurityError"));
-    }
-    return promise;
-}
-
-void MIDIAccess::doPostAction(State state)
-{
-    ASSERT(m_state == Requesting);
-    ASSERT(state == Resolved || state == Stopped);
-    if (state == Stopped) {
-        m_accessor.clear();
-    }
-    m_weakPtrFactory.revokeAll();
-    m_state = state;
+    ASSERT(accessor);
+    m_accessor = accessor;
+    m_accessor->setClient(this);
+    m_sysexEnabled = sysexEnabled;
 }
 
 void MIDIAccess::trace(Visitor* visitor)

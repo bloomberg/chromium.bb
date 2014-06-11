@@ -31,43 +31,30 @@
 #include "config.h"
 #include "public/web/WebMIDIPermissionRequest.h"
 
-#include "core/dom/Document.h"
-#include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIAccessInitializer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace WebCore;
-
 namespace blink {
 
-WebMIDIPermissionRequest::WebMIDIPermissionRequest(const PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>& midi)
-    : m_private(midi)
+WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccessInitializer* initializer)
+    : m_initializer(initializer)
 {
-}
-
-void WebMIDIPermissionRequest::reset()
-{
-    m_private.reset();
-}
-
-void WebMIDIPermissionRequest::assign(const WebMIDIPermissionRequest& other)
-{
-    m_private = other.m_private;
 }
 
 bool WebMIDIPermissionRequest::equals(const WebMIDIPermissionRequest& n) const
 {
-    return m_private.get() == n.m_private.get();
+    return m_initializer == n.m_initializer;
 }
 
 WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 {
-    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
+    return WebSecurityOrigin(m_initializer->securityOrigin());
 }
 
 void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
 {
-    m_private->setSysexEnabled(allowed);
+    m_initializer->setSysexEnabled(allowed);
 }
 
 } // namespace blink

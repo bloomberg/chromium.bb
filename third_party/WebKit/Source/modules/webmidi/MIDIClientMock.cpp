@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/webmidi/MIDIClientMock.h"
 
-#include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIAccessInitializer.h"
 
 namespace WebCore {
 
@@ -54,12 +54,12 @@ void MIDIClientMock::resetMock()
     m_allowed = false;
 }
 
-void MIDIClientMock::requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
+void MIDIClientMock::requestSysexPermission(MIDIAccessInitializer* initializer)
 {
-    access->setSysexEnabled(m_allowed);
+    initializer->setSysexEnabled(m_allowed);
 }
 
-void MIDIClientMock::cancelSysexPermissionRequest(MIDIAccess*)
+void MIDIClientMock::cancelSysexPermissionRequest(MIDIAccessInitializer*)
 {
 }
 

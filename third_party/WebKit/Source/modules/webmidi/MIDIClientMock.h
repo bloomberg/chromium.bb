@@ -46,8 +46,8 @@ public:
     void resetMock();
 
     // MIDIClient
-    virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>) OVERRIDE;
-    virtual void cancelSysexPermissionRequest(MIDIAccess*) OVERRIDE;
+    virtual void requestSysexPermission(MIDIAccessInitializer*) OVERRIDE;
+    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) OVERRIDE;
 
 private:
     bool m_allowed;

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
-class MIDIAccess;
+class MIDIAccessInitializer;
 }
 
 namespace blink {
@@ -50,8 +50,8 @@ public:
     }
 
     // WebCore::MIDIClient
-    virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>) OVERRIDE;
-    virtual void cancelSysexPermissionRequest(WebCore::MIDIAccess*) OVERRIDE;
+    virtual void requestSysexPermission(WebCore::MIDIAccessInitializer*) OVERRIDE;
+    virtual void cancelSysexPermissionRequest(WebCore::MIDIAccessInitializer*) OVERRIDE;
 
 private:
     explicit MIDIClientProxy(WebMIDIClient*);

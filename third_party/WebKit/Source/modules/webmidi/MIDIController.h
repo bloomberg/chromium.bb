@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class MIDIAccess;
+class MIDIAccessInitializer;
 class MIDIClient;
 
 class MIDIController FINAL : public NoBaseWillBeGarbageCollectedFinalized<MIDIController>, public WillBeHeapSupplement<LocalFrame> {
@@ -44,8 +44,8 @@ class MIDIController FINAL : public NoBaseWillBeGarbageCollectedFinalized<MIDICo
 public:
     virtual ~MIDIController();
 
-    void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
-    void cancelSysexPermissionRequest(MIDIAccess*);
+    void requestSysexPermission(MIDIAccessInitializer*);
+    void cancelSysexPermissionRequest(MIDIAccessInitializer*);
 
     static PassOwnPtrWillBeRawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();

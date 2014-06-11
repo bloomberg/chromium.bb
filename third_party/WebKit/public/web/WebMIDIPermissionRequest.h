@@ -32,41 +32,37 @@
 #define WebMIDIPermissionRequest_h
 
 #include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
 
 namespace WebCore {
-class MIDIAccess;
+class MIDIAccessInitializer;
 }
 
 namespace blink {
 
 class WebSecurityOrigin;
 
-// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
-// a request from WebCore for permissions.
-// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
-// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
-// WebMIDIClient::cancelPermissionRequest (request canceled).
+// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccessInitializer
+// object and represents a request from WebCore for permissions.
+// The request must not outlive the underlying initializer object.
+// In other words, the request must be canceled when the underlying
+// initializer dies while requesting,
 class WebMIDIPermissionRequest {
 public:
-    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
-    ~WebMIDIPermissionRequest() { reset(); };
-
+    BLINK_EXPORT WebMIDIPermissionRequest(const WebMIDIPermissionRequest& other)
+        : m_initializer(other.m_initializer) { }
     BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
     BLINK_EXPORT void setIsAllowed(bool);
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebMIDIPermissionRequest&);
     BLINK_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>&);
+    explicit WebMIDIPermissionRequest(WebCore::MIDIAccessInitializer*);
 
-    WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
+    WebCore::MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MIDIAccess> m_private;
+    WebCore::MIDIAccessInitializer* m_initializer;
 };
 
 inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)

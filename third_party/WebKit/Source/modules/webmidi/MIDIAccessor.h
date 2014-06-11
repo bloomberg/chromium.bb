@@ -48,6 +48,10 @@ public:
 
     void startSession();
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+    // MIDIAccessInitializer and MIDIAccess are both MIDIAccessClient.
+    // MIDIAccessInitializer is the first client and MIDIAccess takes over it
+    // once the initialization successfully finishes.
+    void setClient(MIDIAccessorClient* client) { m_client = client; }
 
     // blink::WebMIDIAccessorClient
     virtual void didAddInputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;

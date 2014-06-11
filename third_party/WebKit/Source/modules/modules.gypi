@@ -894,6 +894,8 @@
       'webdatabase/sqlite/SQLiteTransaction.h',
       'webmidi/MIDIAccess.cpp',
       'webmidi/MIDIAccess.h',
+      'webmidi/MIDIAccessInitializer.cpp',
+      'webmidi/MIDIAccessInitializer.h',
       'webmidi/MIDIAccessor.cpp',
       'webmidi/MIDIAccessor.h',
       'webmidi/MIDIAccessorClient.h',

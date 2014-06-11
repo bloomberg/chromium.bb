@@ -32,14 +32,12 @@
 #define MIDIAccess_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIOutput.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
@@ -50,6 +48,8 @@
 namespace WebCore {
 
 class ExecutionContext;
+class MIDIAccessInitializer;
+struct MIDIOptions;
 
 class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     REFCOUNTED_EVENT_TARGET(MIDIAccess);
@@ -65,7 +65,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
-    void setSysexEnabled(bool);
     bool sysexEnabled() const { return m_sysexEnabled; }
 
     // EventTarget
@@ -79,38 +78,32 @@ public:
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
     virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didStartSession(bool success, const String& error, const String& message) OVERRIDE;
+    virtual void didStartSession(bool success, const String& error, const String& message) OVERRIDE
+    {
+        // This method is for MIDIAccess initialization: MIDIAccessInitializer
+        // has the implementation.
+        ASSERT_NOT_REACHED();
+    }
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
+    // Initialize this object before exposing it to JavaScript.
+    void initialize(PassOwnPtr<MIDIAccessor>, bool sysexEnabled);
+
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    class PostAction;
-    enum State {
-        Requesting,
-        Resolved,
-        Stopped,
-    };
-
     MIDIAccess(const MIDIOptions&, ExecutionContext*);
-    ScriptPromise startRequest(ScriptState*);
 
-    void permissionDenied();
-
-    // Called when the promise is resolved or rejected.
-    void doPostAction(State);
-
-    State m_state;
-    WeakPtrFactory<MIDIAccess> m_weakPtrFactory;
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;
     OwnPtr<MIDIAccessor> m_accessor;
-    MIDIOptions m_options;
     bool m_sysexEnabled;
-    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
+
+    // FIXME: Stop owning initializer in this class.
+    OwnPtr<MIDIAccessInitializer> m_initializer;
 };
 
 } // namespace WebCore
