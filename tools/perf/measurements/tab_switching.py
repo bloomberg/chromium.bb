@@ -58,7 +58,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     util.WaitFor(tab.HasReachedQuiescence, 60)
 
     self._power_metric.Start(page, tab)
-    time.sleep(5)
+    time.sleep(60)
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results,)
 
