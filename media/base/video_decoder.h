@@ -25,16 +25,24 @@ class MEDIA_EXPORT VideoDecoder {
   enum Status {
     kOk,  // Everything went as planned.
     kAborted,  // Decode was aborted as a result of Reset() being called.
-    kNotEnoughData,  // Not enough data to produce a video frame.
     kDecodeError,  // Decoding error happened.
     kDecryptError  // Decrypting error happened.
   };
+
+  // Callback to return decode frames.
+  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> OutputCB;
+
+  // Callback type for Decode(). Called after the decoder has completed decoding
+  // corresponding DecoderBuffer, indicating that it's ready to accept another
+  // buffer to decode.
+  typedef base::Callback<void(Status status)> DecodeCB;
 
   VideoDecoder();
   virtual ~VideoDecoder();
 
   // Initializes a VideoDecoder with the given |config|, executing the
-  // |status_cb| upon completion.
+  // |status_cb| upon completion. |output_cb| is called for each output frame
+  // decoded by Decode().
   //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
@@ -44,7 +52,8 @@ class MEDIA_EXPORT VideoDecoder {
   //    |status_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
-                          const PipelineStatusCB& status_cb) = 0;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded
   // frame are returned via the provided callback. Some decoders may allow
@@ -58,25 +67,18 @@ class MEDIA_EXPORT VideoDecoder {
   // Decode() calls (i.e. |decode_cb| will be called even Decode() is never
   // called again).
   //
-  // If the returned status is kOk:
-  // - Non-EOS (end of stream) frame contains decoded video data.
-  // - EOS frame indicates the end of the stream.
-  // Otherwise the returned frame must be NULL.
-  typedef base::Callback<void(Status,
-                              const scoped_refptr<VideoFrame>&)> DecodeCB;
+  // After decoding is finished the decoder calls |output_cb| specified in
+  // Initialize() for each decoded frame. |output_cb| may be called before or
+  // after |decode_cb|.
+  //
+  // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
+  // |output_cb| must be called for each frame pending in the queue and
+  // |decode_cb| must be called after that.
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) = 0;
 
-  // Some VideoDecoders may queue up multiple VideoFrames from a single
-  // DecoderBuffer, if we have any such queued frames this will return the next
-  // one. Otherwise we return a NULL VideoFrame.
-  //
-  // TODO(xhwang): Revisit this method.
-  virtual scoped_refptr<VideoFrame> GetDecodeOutput();
-
-  // Resets decoder state, fulfilling all pending DecodeCB and dropping extra
-  // queued decoded data. After this call, the decoder is back to an initialized
-  // clean state.
+  // Resets decoder state. All pending Decode() requests will be finished or
+  // aborted before |closure| is called.
   // Note: No VideoDecoder calls should be made before |closure| is executed.
   virtual void Reset(const base::Closure& closure) = 0;
 

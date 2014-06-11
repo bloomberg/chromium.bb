@@ -44,10 +44,10 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   // AudioDecoder implementation.
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
-  virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
@@ -90,15 +90,15 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Resets decoder and calls |reset_cb_|.
   void DoReset();
 
-  // Sets timestamp and duration for |queued_audio_frames_| to make sure the
-  // renderer always receives continuous frames without gaps and overlaps.
-  void EnqueueFrames(const Decryptor::AudioBuffers& frames);
+  // Sets timestamps for |frames| and then passes them to |output_cb_|.
+  void ProcessDecodedFrames(const Decryptor::AudioBuffers& frames);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   State state_;
 
   PipelineStatusCB init_cb_;
+  OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
   base::Closure stop_cb_;
@@ -120,8 +120,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // decrypting/decoding again in case the newly added key is the correct
   // decryption key.
   bool key_added_while_decode_pending_;
-
-  Decryptor::AudioBuffers queued_audio_frames_;
 
   scoped_ptr<AudioTimestampHelper> timestamp_helper_;
 

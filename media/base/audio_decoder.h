@@ -26,45 +26,51 @@ class MEDIA_EXPORT AudioDecoder {
   enum Status {
     kOk,  // We're all good.
     kAborted,  // We aborted as a result of Stop() or Reset().
-    kNotEnoughData,  // Not enough data to produce a video frame.
     kDecodeError,  // A decoding error occurred.
     kDecryptError  // Decrypting error happened.
   };
+
+  // Callback to return decoded buffers.
+  typedef base::Callback<void(const scoped_refptr<AudioBuffer>&)> OutputCB;
+
+  // Callback for Decode(). Called after the decoder has completed decoding
+  // corresponding DecoderBuffer, indicating that it's ready to accept another
+  // buffer to decode.
+  typedef base::Callback<void(Status)> DecodeCB;
 
   AudioDecoder();
   virtual ~AudioDecoder();
 
   // Initializes an AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
-  // statistics_cb is used to update global pipeline statistics.
+  //  |statistics_cb| is used to update global pipeline statistics.
+  //  |output_cb| is called for decoded audio buffers (see Decode()).
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const PipelineStatusCB& status_cb) = 0;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) = 0;
 
-  // Requests samples to be decoded and returned via the provided callback.
-  // Only one decode may be in flight at any given time.
+  // Requests samples to be decoded. Only one decode may be in flight at any
+  // given time. Once the buffer is decoded the decoder calls |decode_cb|.
+  // |output_cb| specified in Initialize() is called for each decoded buffer,
+  // before or after |decode_cb|.
   //
-  // Implementations guarantee that the callback will not be called from within
+  // Implementations guarantee that the callbacks will not be called from within
   // this method.
   //
-  // Non-NULL sample buffer pointers will contain decoded audio data or may
-  // indicate the end of the stream. A NULL buffer pointer indicates an aborted
-  // Decode().
-  typedef base::Callback<void(Status, const scoped_refptr<AudioBuffer>&)>
-      DecodeCB;
+  // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
+  // |output_cb| must be called for each frame pending in the queue and
+  // |decode_cb| must be called after that.
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) = 0;
 
-  // Some AudioDecoders will queue up multiple AudioBuffers from a single
-  // DecoderBuffer, if we have any such queued buffers this will return the next
-  // one. Otherwise we return a NULL AudioBuffer.
-  virtual scoped_refptr<AudioBuffer> GetDecodeOutput();
-
-  // Resets decoder state, dropping any queued encoded data.
+  // Resets decoder state. All pending Decode() requests will be finished or
+  // aborted before |closure| is called.
   virtual void Reset(const base::Closure& closure) = 0;
 
   // Stops decoder, fires any pending callbacks and sets the decoder to an
   // uninitialized state. An AudioDecoder cannot be re-initialized after it has
-  // been stopped.
+  // been stopped. DecodeCB and OutputCB may still be called for older buffers
+  // if they were scheduled before this method is called.
   // Note that if Initialize() is pending or has finished successfully, Stop()
   // must be called before destructing the decoder.
   virtual void Stop() = 0;

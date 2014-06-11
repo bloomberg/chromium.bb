@@ -20,8 +20,9 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::Initialize(
     DecoderType* decoder,
     const DecoderConfigType& config,
     bool low_delay,
-    const PipelineStatusCB& status_cb) {
-  decoder->Initialize(config, status_cb);
+    const PipelineStatusCB& status_cb,
+    const OutputCB& output_cb) {
+  decoder->Initialize(config, status_cb, output_cb);
 }
 
 bool DecoderStreamTraits<DemuxerStream::AUDIO>::FinishInitialization(
@@ -59,8 +60,9 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::Initialize(
     DecoderType* decoder,
     const DecoderConfigType& config,
     bool low_delay,
-    const PipelineStatusCB& status_cb) {
-  decoder->Initialize(config, low_delay, status_cb);
+    const PipelineStatusCB& status_cb,
+    const OutputCB& output_cb) {
+  decoder->Initialize(config, low_delay, status_cb, output_cb);
 }
 
 bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(

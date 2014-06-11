@@ -29,7 +29,8 @@ class FFmpegAudioDecoderTest : public testing::Test {
       : decoder_(new FFmpegAudioDecoder(message_loop_.message_loop_proxy(),
                                         LogCB())),
         pending_decode_(false),
-        pending_reset_(false) {
+        pending_reset_(false),
+        last_decode_status_(AudioDecoder::kOk) {
     FFmpegGlue::InitializeFFmpeg();
 
     vorbis_extradata_ = ReadTestDataFile("vorbis-extradata");
@@ -69,7 +70,9 @@ class FFmpegAudioDecoderTest : public testing::Test {
                               vorbis_extradata_->data_size(),
                               false);  // Not encrypted.
     decoder_->Initialize(config,
-                         NewExpectedStatusCB(PIPELINE_OK));
+                         NewExpectedStatusCB(PIPELINE_OK),
+                         base::Bind(&FFmpegAudioDecoderTest::OnDecoderOutput,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -85,6 +88,8 @@ class FFmpegAudioDecoderTest : public testing::Test {
                      base::Bind(&FFmpegAudioDecoderTest::DecodeFinished,
                                 base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(pending_decode_);
+    EXPECT_EQ(AudioDecoder::kOk, last_decode_status_);
   }
 
   void Reset() {
@@ -99,27 +104,15 @@ class FFmpegAudioDecoderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void DecodeFinished(AudioDecoder::Status status,
-                      const scoped_refptr<AudioBuffer>& buffer) {
+  void OnDecoderOutput(const scoped_refptr<AudioBuffer>& buffer) {
+    decoded_audio_.push_back(buffer);
+  }
+
+  void DecodeFinished(AudioDecoder::Status status) {
     EXPECT_TRUE(pending_decode_);
     pending_decode_ = false;
 
-    if (status == AudioDecoder::kNotEnoughData) {
-      EXPECT_TRUE(buffer.get() == NULL);
-      Decode();
-      return;
-    }
-
-    decoded_audio_.push_back(buffer);
-
-    // If we hit a NULL buffer or have a pending reset, we expect an abort.
-    if (buffer.get() == NULL || pending_reset_) {
-      EXPECT_TRUE(buffer.get() == NULL);
-      EXPECT_EQ(status, AudioDecoder::kAborted);
-      return;
-    }
-
-    EXPECT_EQ(status, AudioDecoder::kOk);
+    last_decode_status_ = status;
   }
 
   void ResetFinished() {
@@ -151,6 +144,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   std::deque<scoped_refptr<DecoderBuffer> > encoded_audio_;
   std::deque<scoped_refptr<AudioBuffer> > decoded_audio_;
+  AudioDecoder::Status last_decode_status_;
 };
 
 TEST_F(FFmpegAudioDecoderTest, Initialize) {
@@ -172,6 +166,7 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
   Decode();
   Decode();
   Decode();
+  Decode();
 
   ASSERT_EQ(3u, decoded_audio_.size());
   ExpectDecodedAudio(0, 0, 2902);
@@ -180,18 +175,8 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
 
   // Call one more time to trigger EOS.
   Decode();
-  ASSERT_EQ(4u, decoded_audio_.size());
+  ASSERT_EQ(5u, decoded_audio_.size());
   ExpectEndOfStream(3);
-  Stop();
-}
-
-TEST_F(FFmpegAudioDecoderTest, DecodeAbort) {
-  encoded_audio_.clear();
-  encoded_audio_.push_back(NULL);
-  Decode();
-
-  EXPECT_EQ(decoded_audio_.size(), 1u);
-  EXPECT_TRUE(decoded_audio_[0].get() ==  NULL);
   Stop();
 }
 

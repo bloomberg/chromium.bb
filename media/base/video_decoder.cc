@@ -12,10 +12,6 @@ VideoDecoder::VideoDecoder() {}
 
 VideoDecoder::~VideoDecoder() {}
 
-scoped_refptr<VideoFrame> VideoDecoder::GetDecodeOutput() {
-  return NULL;
-}
-
 bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;
 }

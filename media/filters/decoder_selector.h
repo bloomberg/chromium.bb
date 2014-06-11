@@ -64,7 +64,8 @@ class MEDIA_EXPORT DecoderSelector {
   // the |select_decoder_cb|.
   void SelectDecoder(DemuxerStream* stream,
                      bool low_delay,
-                     const SelectDecoderCB& select_decoder_cb);
+                     const SelectDecoderCB& select_decoder_cb,
+                     const typename Decoder::OutputCB& output_cb);
 
   // Aborts pending Decoder selection and fires |select_decoder_cb| with
   // NULL and NULL immediately if it's pending.
@@ -84,6 +85,7 @@ class MEDIA_EXPORT DecoderSelector {
   DemuxerStream* input_stream_;
   bool low_delay_;
   SelectDecoderCB select_decoder_cb_;
+  typename Decoder::OutputCB output_cb_;
 
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;

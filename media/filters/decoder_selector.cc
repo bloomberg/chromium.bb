@@ -69,7 +69,8 @@ template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::SelectDecoder(
     DemuxerStream* stream,
     bool low_delay,
-    const SelectDecoderCB& select_decoder_cb) {
+    const SelectDecoderCB& select_decoder_cb,
+    const typename Decoder::OutputCB& output_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
@@ -85,6 +86,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
 
   input_stream_ = stream;
   low_delay_ = low_delay;
+  output_cb_ = output_cb;
 
   if (!IsStreamEncrypted(input_stream_)) {
     InitializeDecoder();
@@ -105,7 +107,8 @@ void DecoderSelector<StreamType>::SelectDecoder(
       StreamTraits::GetDecoderConfig(*input_stream_),
       low_delay_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      output_cb_);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -200,7 +203,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
       StreamTraits::GetDecoderConfig(*input_stream_),
       low_delay_,
       base::Bind(&DecoderSelector<StreamType>::DecoderInitDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      output_cb_);
 }
 
 template <DemuxerStream::Type StreamType>

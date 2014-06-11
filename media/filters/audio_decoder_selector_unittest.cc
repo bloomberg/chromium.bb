@@ -118,7 +118,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
         demuxer_stream_.get(),
         false,
         base::Bind(&AudioDecoderSelectorTest::MockOnDecoderSelected,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput));
     message_loop_.RunUntilIdle();
   }
 
@@ -128,6 +129,10 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
     decoder_selector_->Abort();
     message_loop_.RunUntilIdle();
+  }
+
+  static void OnDecoderOutput(const scoped_refptr<AudioBuffer>& output) {
+    NOTREACHED();
   }
 
   // Fixture members.
@@ -168,7 +173,7 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_NoDecryptor_OneClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
   EXPECT_CALL(*decoder_1_, Stop());
@@ -181,7 +186,7 @@ TEST_F(AudioDecoderSelectorTest,
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _));
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
   EXPECT_CALL(*decoder_1_, Stop());
 
   SelectDecoderAndAbort();
@@ -193,9 +198,9 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_NoDecryptor_MultipleClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
-  EXPECT_CALL(*decoder_2_, Initialize(_, _))
+  EXPECT_CALL(*decoder_2_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
   EXPECT_CALL(*decoder_2_, Stop());
@@ -208,9 +213,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
-  EXPECT_CALL(*decoder_2_, Initialize(_, _));
+  EXPECT_CALL(*decoder_2_, Initialize(_, _, _));
   EXPECT_CALL(*decoder_2_, Stop());
 
   SelectDecoderAndAbort();
@@ -222,7 +227,7 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_HasDecryptor) {
   UseClearStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
   EXPECT_CALL(*decoder_1_, Stop());
@@ -234,7 +239,7 @@ TEST_F(AudioDecoderSelectorTest, Abort_ClearStream_HasDecryptor) {
   UseClearStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _));
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
   EXPECT_CALL(*decoder_1_, Stop());
 
   SelectDecoderAndAbort();
@@ -275,7 +280,7 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, NotNull()));
   EXPECT_CALL(*decoder_1_, Stop());
@@ -288,7 +293,7 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _));
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
   EXPECT_CALL(*decoder_1_, Stop());
 
   SelectDecoderAndAbort();
@@ -302,9 +307,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
-  EXPECT_CALL(*decoder_2_, Initialize(_, _))
+  EXPECT_CALL(*decoder_2_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
   EXPECT_CALL(*decoder_2_, Stop());
@@ -317,9 +322,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(_, _))
+  EXPECT_CALL(*decoder_1_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
-  EXPECT_CALL(*decoder_2_, Initialize(_, _));
+  EXPECT_CALL(*decoder_2_, Initialize(_, _, _));
   EXPECT_CALL(*decoder_2_, Stop());
 
   SelectDecoderAndAbort();

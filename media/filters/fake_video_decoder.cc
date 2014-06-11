@@ -14,10 +14,8 @@
 namespace media {
 
 FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
-                                   bool supports_get_decode_output,
                                    int max_parallel_decoding_requests)
     : decoding_delay_(decoding_delay),
-      supports_get_decode_output_(supports_get_decode_output),
       max_parallel_decoding_requests_(max_parallel_decoding_requests),
       state_(STATE_UNINITIALIZED),
       hold_decode_(false),
@@ -32,7 +30,8 @@ FakeVideoDecoder::~FakeVideoDecoder() {
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
-                                  const PipelineStatusCB& status_cb) {
+                                  const PipelineStatusCB& status_cb,
+                                  const OutputCB& output_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
   DCHECK(held_decode_callbacks_.empty())
@@ -41,6 +40,10 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   current_config_ = config;
   init_cb_.SetCallback(BindToCurrentLoop(status_cb));
+
+  // Don't need BindToCurrentLoop() because |output_cb_| is only called from
+  // RunDecodeCallback() which is posted from Decode().
+  output_cb_ = output_cb;
 
   if (!decoded_frames_.empty()) {
     DVLOG(1) << "Decoded frames dropped during reinitialization.";
@@ -64,11 +67,10 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DecodeCB wrapped_decode_cb =
       BindToCurrentLoop(base::Bind(&FakeVideoDecoder::OnFrameDecoded,
                                    weak_factory_.GetWeakPtr(),
-                                   buffer_size,
-                                   decode_cb));
+                                   buffer_size, decode_cb));
 
   if (state_ == STATE_ERROR) {
-    wrapped_decode_cb.Run(kDecodeError, scoped_refptr<VideoFrame>());
+    wrapped_decode_cb.Run(kDecodeError);
     return;
   }
 
@@ -110,15 +112,6 @@ void FakeVideoDecoder::Stop() {
 
   decoded_frames_.clear();
   state_ = STATE_UNINITIALIZED;
-}
-
-scoped_refptr<VideoFrame> FakeVideoDecoder::GetDecodeOutput() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!supports_get_decode_output_ || decoded_frames_.empty())
-    return NULL;
-  scoped_refptr<VideoFrame> out = decoded_frames_.front();
-  decoded_frames_.pop_front();
-  return out;
 }
 
 void FakeVideoDecoder::HoldNextInit() {
@@ -178,8 +171,7 @@ void FakeVideoDecoder::SimulateError() {
 
   state_ = STATE_ERROR;
   while (!held_decode_callbacks_.empty()) {
-    held_decode_callbacks_.front().Run(kDecodeError,
-                                       scoped_refptr<VideoFrame>());
+    held_decode_callbacks_.front().Run(kDecodeError);
     held_decode_callbacks_.pop_front();
   }
   decoded_frames_.clear();
@@ -189,16 +181,14 @@ int FakeVideoDecoder::GetMaxDecodeRequests() const {
   return max_parallel_decoding_requests_;
 }
 
-void FakeVideoDecoder::OnFrameDecoded(
-    int buffer_size,
-    const DecodeCB& decode_cb,
-    Status status,
-    const scoped_refptr<VideoFrame>& video_frame) {
+void FakeVideoDecoder::OnFrameDecoded(int buffer_size,
+                                      const DecodeCB& decode_cb,
+                                      Status status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (status == kOk || status == kNotEnoughData)
+  if (status == kOk)
     total_bytes_decoded_ += buffer_size;
-  decode_cb.Run(status, video_frame);
+  decode_cb.Run(status);
 }
 
 void FakeVideoDecoder::RunOrHoldDecode(const DecodeCB& decode_cb) {
@@ -217,28 +207,32 @@ void FakeVideoDecoder::RunDecodeCallback(const DecodeCB& decode_cb) {
 
   if (!reset_cb_.IsNull()) {
     DCHECK(decoded_frames_.empty());
-    decode_cb.Run(kAborted, scoped_refptr<VideoFrame>());
+    decode_cb.Run(kAborted);
     return;
   }
 
   // Make sure we leave decoding_delay_ frames in the queue and also frames for
   // all pending decode callbacks, except the current one.
-  if (decoded_frames_.size() <=
-          decoding_delay_ + held_decode_callbacks_.size() &&
-      state_ != STATE_END_OF_STREAM) {
-    decode_cb.Run(kNotEnoughData, scoped_refptr<VideoFrame>());
-    return;
+  if (decoded_frames_.size() >
+      decoding_delay_ + held_decode_callbacks_.size()) {
+    output_cb_.Run(decoded_frames_.front());
+    decoded_frames_.pop_front();
+  } else if (state_ == STATE_END_OF_STREAM) {
+    // Drain the queue if this was the last request in the stream, otherwise
+    // just pop the last frame from the queue.
+    if (held_decode_callbacks_.empty()) {
+      while (!decoded_frames_.empty()) {
+        output_cb_.Run(decoded_frames_.front());
+        decoded_frames_.pop_front();
+      }
+      output_cb_.Run(VideoFrame::CreateEOSFrame());
+    } else if (!decoded_frames_.empty()) {
+      output_cb_.Run(decoded_frames_.front());
+      decoded_frames_.pop_front();
+    }
   }
 
-  scoped_refptr<VideoFrame> frame;
-  if (decoded_frames_.empty()) {
-    DCHECK_EQ(state_, STATE_END_OF_STREAM);
-    frame = VideoFrame::CreateEOSFrame();
-  } else {
-    frame = decoded_frames_.front();
-    decoded_frames_.pop_front();
-  }
-  decode_cb.Run(kOk, frame);
+  decode_cb.Run(kOk);
 }
 
 void FakeVideoDecoder::DoReset() {

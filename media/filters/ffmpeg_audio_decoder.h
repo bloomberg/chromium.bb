@@ -37,10 +37,10 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   // AudioDecoder implementation.
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
-  virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
@@ -48,7 +48,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   enum DecoderState {
     kUninitialized,
     kNormal,
-    kFlushCodec,
     kDecodeFinished,
     kError
   };
@@ -72,6 +71,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  OutputCB output_cb_;
+
   DecoderState state_;
 
   // FFmpeg structures owned by this object.
@@ -84,10 +85,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   int av_sample_format_;
 
   scoped_ptr<AudioDiscardHelper> discard_helper_;
-
-  // Since multiple frames may be decoded from the same packet we need to queue
-  // them up.
-  std::list<scoped_refptr<AudioBuffer> > queued_audio_;
 
   LogCB log_cb_;
 

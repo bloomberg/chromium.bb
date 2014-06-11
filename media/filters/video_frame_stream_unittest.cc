@@ -27,16 +27,13 @@ namespace media {
 
 struct VideoFrameStreamTestParams {
   VideoFrameStreamTestParams(bool is_encrypted,
-                             bool enable_get_decode_output,
                              int decoding_delay,
                              int parallel_decoding)
       : is_encrypted(is_encrypted),
-        enable_get_decode_output(enable_get_decode_output),
         decoding_delay(decoding_delay),
         parallel_decoding(parallel_decoding) {}
 
   bool is_encrypted;
-  bool enable_get_decode_output;
   int decoding_delay;
   int parallel_decoding;
 };
@@ -51,7 +48,6 @@ class VideoFrameStreamTest
                                               GetParam().is_encrypted)),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_(new FakeVideoDecoder(GetParam().decoding_delay,
-                                      GetParam().enable_get_decode_output,
                                       GetParam().parallel_decoding)),
         is_initialized_(false),
         num_decoded_frames_(0),
@@ -347,33 +343,21 @@ INSTANTIATE_TEST_CASE_P(
     Clear,
     VideoFrameStreamTest,
     ::testing::Values(
-        VideoFrameStreamTestParams(false, false, 0, 1),
-        VideoFrameStreamTestParams(false, false, 3, 1),
-        VideoFrameStreamTestParams(false, false, 7, 1)));
-INSTANTIATE_TEST_CASE_P(
-    Clear_GetDecodeOutput,
-    VideoFrameStreamTest,
-    ::testing::Values(
-        VideoFrameStreamTestParams(false, true, 0, 1),
-        VideoFrameStreamTestParams(false, true, 3, 1),
-        VideoFrameStreamTestParams(false, true, 7, 1)));
+        VideoFrameStreamTestParams(false, 0, 1),
+        VideoFrameStreamTestParams(false, 3, 1),
+        VideoFrameStreamTestParams(false, 7, 1)));
 INSTANTIATE_TEST_CASE_P(
     Encrypted,
     VideoFrameStreamTest,
     ::testing::Values(
-        VideoFrameStreamTestParams(true, false, 7, 1)));
-INSTANTIATE_TEST_CASE_P(
-    Encrypted_GetDecodeOutput,
-    VideoFrameStreamTest,
-    ::testing::Values(
-        VideoFrameStreamTestParams(true, true, 7, 1)));
+        VideoFrameStreamTestParams(true, 7, 1)));
 
 INSTANTIATE_TEST_CASE_P(
     Clear_Parallel,
     VideoFrameStreamTest,
     ::testing::Values(
-        VideoFrameStreamTestParams(false, false, 0, 3),
-        VideoFrameStreamTestParams(false, false, 2, 3)));
+        VideoFrameStreamTestParams(false, 0, 3),
+        VideoFrameStreamTestParams(false, 2, 3)));
 
 
 TEST_P(VideoFrameStreamTest, Initialization) {

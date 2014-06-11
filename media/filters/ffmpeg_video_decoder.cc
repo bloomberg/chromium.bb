@@ -151,10 +151,11 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     bool low_delay,
-                                    const PipelineStatusCB& status_cb) {
+                                    const PipelineStatusCB& status_cb,
+                                    const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(decode_cb_.is_null());
   DCHECK(!config.is_encrypted());
+  DCHECK(!output_cb.is_null());
 
   FFmpegGlue::InitializeFFmpeg();
 
@@ -166,6 +167,8 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  output_cb_ = BindToCurrentLoop(output_cb);
+
   // Success!
   state_ = kNormal;
   initialize_cb.Run(PIPELINE_OK);
@@ -174,28 +177,67 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                 const DecodeCB& decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(buffer);
   DCHECK(!decode_cb.is_null());
   CHECK_NE(state_, kUninitialized);
-  CHECK(decode_cb_.is_null()) << "Overlapping decodes are not supported.";
-  decode_cb_ = BindToCurrentLoop(decode_cb);
+
+  DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError) {
-    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
+    decode_cb_bound.Run(kDecodeError);
     return;
   }
 
-  // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEOSFrame());
+    output_cb_.Run(VideoFrame::CreateEOSFrame());
+    decode_cb_bound.Run(kOk);
     return;
   }
 
-  DecodeBuffer(buffer);
+  DCHECK_EQ(state_, kNormal);
+
+  // During decode, because reads are issued asynchronously, it is possible to
+  // receive multiple end of stream buffers since each decode is acked. When the
+  // first end of stream buffer is read, FFmpeg may still have frames queued
+  // up in the decoder so we need to go through the decode loop until it stops
+  // giving sensible data.  After that, the decoder should output empty
+  // frames.  There are three states the decoder can be in:
+  //
+  //   kNormal: This is the starting state. Buffers are decoded. Decode errors
+  //            are discarded.
+  //   kDecodeFinished: All calls return empty frames.
+  //   kError: Unexpected error happened.
+  //
+  // These are the possible state transitions.
+  //
+  // kNormal -> kDecodeFinished:
+  //     When EOS buffer is received and the codec has been flushed.
+  // kNormal -> kError:
+  //     A decoding error occurs and decoding needs to stop.
+  // (any state) -> kNormal:
+  //     Any time Reset() is called.
+
+  bool has_produced_frame;
+  do {
+    has_produced_frame = false;
+    if (!FFmpegDecode(buffer, &has_produced_frame)) {
+      state_ = kError;
+      decode_cb_bound.Run(kDecodeError);
+      return;
+    }
+    // Repeat to flush the decoder after receiving EOS buffer.
+  } while (buffer->end_of_stream() && has_produced_frame);
+
+  if (buffer->end_of_stream()) {
+    output_cb_.Run(VideoFrame::CreateEOSFrame());
+    state_ = kDecodeFinished;
+  }
+
+  decode_cb_bound.Run(kOk);
 }
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(decode_cb_.is_null());
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
@@ -218,75 +260,10 @@ FFmpegVideoDecoder::~FFmpegVideoDecoder() {
   DCHECK(!av_frame_);
 }
 
-void FFmpegVideoDecoder::DecodeBuffer(
-    const scoped_refptr<DecoderBuffer>& buffer) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(state_, kUninitialized);
-  DCHECK_NE(state_, kDecodeFinished);
-  DCHECK_NE(state_, kError);
-  DCHECK(!decode_cb_.is_null());
-  DCHECK(buffer);
-
-  // During decode, because reads are issued asynchronously, it is possible to
-  // receive multiple end of stream buffers since each decode is acked. When the
-  // first end of stream buffer is read, FFmpeg may still have frames queued
-  // up in the decoder so we need to go through the decode loop until it stops
-  // giving sensible data.  After that, the decoder should output empty
-  // frames.  There are three states the decoder can be in:
-  //
-  //   kNormal: This is the starting state. Buffers are decoded. Decode errors
-  //            are discarded.
-  //   kFlushCodec: There isn't any more input data. Call avcodec_decode_video2
-  //                until no more data is returned to flush out remaining
-  //                frames. The input buffer is ignored at this point.
-  //   kDecodeFinished: All calls return empty frames.
-  //   kError: Unexpected error happened.
-  //
-  // These are the possible state transitions.
-  //
-  // kNormal -> kFlushCodec:
-  //     When buffer->end_of_stream() is first true.
-  // kNormal -> kError:
-  //     A decoding error occurs and decoding needs to stop.
-  // kFlushCodec -> kDecodeFinished:
-  //     When avcodec_decode_video2() returns 0 data.
-  // kFlushCodec -> kError:
-  //     When avcodec_decode_video2() errors out.
-  // (any state) -> kNormal:
-  //     Any time Reset() is called.
-
-  // Transition to kFlushCodec on the first end of stream buffer.
-  if (state_ == kNormal && buffer->end_of_stream()) {
-    state_ = kFlushCodec;
-  }
-
-  scoped_refptr<VideoFrame> video_frame;
-  if (!FFmpegDecode(buffer, &video_frame)) {
-    state_ = kError;
-    base::ResetAndReturn(&decode_cb_).Run(kDecodeError, NULL);
-    return;
-  }
-
-  if (!video_frame.get()) {
-    if (state_ == kFlushCodec) {
-      DCHECK(buffer->end_of_stream());
-      state_ = kDecodeFinished;
-      base::ResetAndReturn(&decode_cb_)
-          .Run(kOk, VideoFrame::CreateEOSFrame());
-      return;
-    }
-
-    base::ResetAndReturn(&decode_cb_).Run(kNotEnoughData, NULL);
-    return;
-  }
-
-  base::ResetAndReturn(&decode_cb_).Run(kOk, video_frame);
-}
-
 bool FFmpegVideoDecoder::FFmpegDecode(
     const scoped_refptr<DecoderBuffer>& buffer,
-    scoped_refptr<VideoFrame>* video_frame) {
-  DCHECK(video_frame);
+    bool* has_produced_frame) {
+  DCHECK(!*has_produced_frame);
 
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
@@ -311,7 +288,6 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
     LOG(ERROR) << "Error decoding video: " << buffer->AsHumanReadableString();
-    *video_frame = NULL;
     return false;
   }
 
@@ -325,7 +301,6 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   //   1) Decoder was recently initialized/flushed
   //   2) End of stream was reached and all internal frames have been output
   if (frame_decoded == 0) {
-    *video_frame = NULL;
     return true;
   }
 
@@ -336,16 +311,16 @@ bool FFmpegVideoDecoder::FFmpegDecode(
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
     LOG(ERROR) << "Video frame was produced yet has invalid frame data.";
-    *video_frame = NULL;
     av_frame_unref(av_frame_.get());
     return false;
   }
 
-  *video_frame =
+  scoped_refptr<VideoFrame> frame =
       reinterpret_cast<VideoFrame*>(av_buffer_get_opaque(av_frame_->buf[0]));
-
-  (*video_frame)->set_timestamp(
+  frame->set_timestamp(
       base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque));
+  *has_produced_frame = true;
+  output_cb_.Run(frame);
 
   av_frame_unref(av_frame_.get());
   return true;

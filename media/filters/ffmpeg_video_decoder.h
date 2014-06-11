@@ -38,7 +38,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
@@ -55,15 +56,13 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   enum DecoderState {
     kUninitialized,
     kNormal,
-    kFlushCodec,
     kDecodeFinished,
     kError
   };
 
   // Handles decoding an unencrypted encoded buffer.
-  void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer);
   bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer,
-                    scoped_refptr<VideoFrame>* video_frame);
+                    bool* produced_frame);
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.
@@ -77,8 +76,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   DecoderState state_;
 
-  // TODO(xhwang): Merge DecodeBuffer() into Decode() and remove this.
-  DecodeCB decode_cb_;
+  OutputCB output_cb_;
 
   // FFmpeg structures owned by this object.
   scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;

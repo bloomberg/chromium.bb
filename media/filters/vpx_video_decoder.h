@@ -34,7 +34,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
@@ -66,6 +67,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DecoderState state_;
+
+  OutputCB output_cb_;
 
   // TODO(xhwang): Merge DecodeBuffer() into Decode() and remove this.
   DecodeCB decode_cb_;

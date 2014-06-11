@@ -32,19 +32,18 @@ class FakeVideoDecoder : public VideoDecoder {
  public:
   // Constructs an object with a decoding delay of |decoding_delay| frames.
   FakeVideoDecoder(int decoding_delay,
-                   bool supports_get_decode_output,
                    int max_parallel_decoding_requests);
   virtual ~FakeVideoDecoder();
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual scoped_refptr<VideoFrame> GetDecodeOutput() OVERRIDE;
   virtual int GetMaxDecodeRequests() const OVERRIDE;
 
   // Holds the next init/decode/reset callback from firing.
@@ -76,8 +75,7 @@ class FakeVideoDecoder : public VideoDecoder {
   // Callback for updating |total_bytes_decoded_|.
   void OnFrameDecoded(int buffer_size,
                       const DecodeCB& decode_cb,
-                      Status status,
-                      const scoped_refptr<VideoFrame>& video_frame);
+                      Status status);
 
   // Runs |decode_cb| or puts it to |held_decode_callbacks_| depending on
   // current value of |hold_decode_|.
@@ -91,13 +89,14 @@ class FakeVideoDecoder : public VideoDecoder {
   base::ThreadChecker thread_checker_;
 
   const size_t decoding_delay_;
-  const bool supports_get_decode_output_;
   const int max_parallel_decoding_requests_;
 
   State state_;
 
   CallbackHolder<PipelineStatusCB> init_cb_;
   CallbackHolder<base::Closure> reset_cb_;
+
+  OutputCB output_cb_;
 
   bool hold_decode_;
   std::list<DecodeCB> held_decode_callbacks_;

@@ -32,7 +32,8 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
 
   // AudioDecoder implementation.
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const PipelineStatusCB& status_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb,
+                          const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
@@ -53,6 +54,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   AudioDecoderConfig config_;
+  OutputCB output_cb_;
   OpusMSDecoder* opus_decoder_;
 
   // When the input timestamp is |start_input_timestamp_| the decoder needs to
