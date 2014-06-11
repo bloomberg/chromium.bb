@@ -21,8 +21,6 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   // This implementation returns hardcoded colors.
 
   static const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
-  // Menu:
-  static const SkColor kMenuBackgroundColor = SK_ColorWHITE;
   // Windows:
   static const SkColor kWindowBackgroundColor = SK_ColorWHITE;
   // Dialogs:
@@ -33,32 +31,10 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   // Button:
   static const SkColor kButtonBackgroundColor = SkColorSetRGB(0xDE, 0xDE, 0xDE);
   static const SkColor kButtonEnabledColor = SkColorSetRGB(0x22, 0x22, 0x22);
-  static const SkColor kButtonDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
   static const SkColor kButtonHighlightColor = SkColorSetRGB(0, 0, 0);
   static const SkColor kButtonHoverColor = kButtonEnabledColor;
-  static const SkColor kButtonHoverBackgroundColor =
-      SkColorSetRGB(0xEA, 0xEA, 0xEA);
-  static const SkColor kBlueButtonEnabledColor = SK_ColorWHITE;
-  static const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
-  static const SkColor kBlueButtonHighlightColor = SK_ColorWHITE;
-  static const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
-  // MenuItem:
-  static const SkColor kEnabledMenuItemForegroundColor = kButtonEnabledColor;
-  static const SkColor kDisabledMenuItemForegroundColor = kButtonDisabledColor;
-  static const SkColor kFocusedMenuItemBackgroundColor =
-      SkColorSetRGB(0xF1, 0xF1, 0xF1);
-  static const SkColor kHoverMenuItemBackgroundColor =
-      SkColorSetARGB(204, 255, 255, 255);
-  static const SkColor kMenuSeparatorColor = SkColorSetRGB(0xED, 0xED, 0xED);
-  static const SkColor kEnabledMenuButtonBorderColor =
-      SkColorSetARGB(36, 0, 0, 0);
-  static const SkColor kFocusedMenuButtonBorderColor =
-      SkColorSetARGB(72, 0, 0, 0);
-  static const SkColor kHoverMenuButtonBorderColor =
-      SkColorSetARGB(72, 0, 0, 0);
   // Label:
   static const SkColor kLabelEnabledColor = kButtonEnabledColor;
-  static const SkColor kLabelDisabledColor = kButtonDisabledColor;
   static const SkColor kLabelBackgroundColor = SK_ColorWHITE;
   // Textfield:
   static const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
@@ -138,50 +114,16 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kButtonBackgroundColor;
     case kColorId_ButtonEnabledColor:
       return kButtonEnabledColor;
-    case kColorId_ButtonDisabledColor:
-      return kButtonDisabledColor;
     case kColorId_ButtonHighlightColor:
       return kButtonHighlightColor;
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
-    case kColorId_ButtonHoverBackgroundColor:
-      return kButtonHoverBackgroundColor;
-    case kColorId_BlueButtonEnabledColor:
-      return kBlueButtonEnabledColor;
-    case kColorId_BlueButtonDisabledColor:
-      return kBlueButtonDisabledColor;
-    case kColorId_BlueButtonHighlightColor:
-      return kBlueButtonHighlightColor;
-    case kColorId_BlueButtonHoverColor:
-      return kBlueButtonHoverColor;
-
-    // MenuItem
-    case kColorId_EnabledMenuItemForegroundColor:
-      return kEnabledMenuItemForegroundColor;
-    case kColorId_DisabledMenuItemForegroundColor:
-      return kDisabledMenuItemForegroundColor;
-    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
-      return SK_ColorBLACK;
-    case kColorId_SelectedMenuItemForegroundColor:
-      return kEnabledMenuItemForegroundColor;
-    case kColorId_FocusedMenuItemBackgroundColor:
-      return kFocusedMenuItemBackgroundColor;
-    case kColorId_HoverMenuItemBackgroundColor:
-      return kHoverMenuItemBackgroundColor;
-    case kColorId_MenuSeparatorColor:
-      return kMenuSeparatorColor;
-    case kColorId_EnabledMenuButtonBorderColor:
-      return kEnabledMenuButtonBorderColor;
-    case kColorId_FocusedMenuButtonBorderColor:
-      return kFocusedMenuButtonBorderColor;
-    case kColorId_HoverMenuButtonBorderColor:
-      return kHoverMenuButtonBorderColor;
 
     // Label
     case kColorId_LabelEnabledColor:
       return kLabelEnabledColor;
     case kColorId_LabelDisabledColor:
-      return kLabelDisabledColor;
+      return GetSystemColor(kColorId_ButtonDisabledColor);
     case kColorId_LabelBackgroundColor:
       return kLabelBackgroundColor;
 
@@ -264,9 +206,7 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedDivider:
       return kResultsTabSelectedDivider;
 
-    case kColorId_MenuBackgroundColor:
-      return kMenuBackgroundColor;
-    case kColorId_MenuBorderColor:
+    default:
       NOTREACHED();
       break;
   }
