@@ -9,7 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -151,18 +150,16 @@ class TabTest : public views::ViewsTestBase {
     const gfx::Rect contents_bounds = tab.GetContentsBounds();
     if (tab.ShouldShowIcon()) {
       EXPECT_LE(contents_bounds.x(), tab.favicon_bounds_.x());
-      if (tab.title_->width() > 0)
-        EXPECT_LE(tab.favicon_bounds_.right(), tab.title_->x());
+      if (tab.title_bounds_.width() > 0)
+        EXPECT_LE(tab.favicon_bounds_.right(), tab.title_bounds_.x());
       EXPECT_LE(contents_bounds.y(), tab.favicon_bounds_.y());
       EXPECT_LE(tab.favicon_bounds_.bottom(), contents_bounds.bottom());
     }
     if (tab.ShouldShowIcon() && tab.ShouldShowMediaIndicator())
       EXPECT_LE(tab.favicon_bounds_.right(), tab.media_indicator_bounds_.x());
     if (tab.ShouldShowMediaIndicator()) {
-      if (tab.title_->width() > 0) {
-        EXPECT_LE(tab.title_->bounds().right(),
-                  tab.media_indicator_bounds_.x());
-      }
+      if (tab.title_bounds_.width() > 0)
+        EXPECT_LE(tab.title_bounds_.right(), tab.media_indicator_bounds_.x());
       EXPECT_LE(tab.media_indicator_bounds_.right(), contents_bounds.right());
       EXPECT_LE(contents_bounds.y(), tab.media_indicator_bounds_.y());
       EXPECT_LE(tab.media_indicator_bounds_.bottom(), contents_bounds.bottom());
@@ -177,8 +174,8 @@ class TabTest : public views::ViewsTestBase {
     if (tab.ShouldShowCloseBox()) {
       // Note: The title bounds can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
-      if (tab.title_->width() > 0) {
-        EXPECT_LE(tab.title_->bounds().right(),
+      if (tab.title_bounds_.width() > 0) {
+        EXPECT_LE(tab.title_bounds_.right(),
                   tab.close_button_->bounds().x() +
                       tab.close_button_->GetInsets().left());
       }

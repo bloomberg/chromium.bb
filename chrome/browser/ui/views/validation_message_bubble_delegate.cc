@@ -38,7 +38,7 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
   views::Label* label = new views::Label(
       main_text, bundle.GetFontList(ui::ResourceBundle::MediumFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
+  label->set_directionality_mode(views::Label::AUTO_DETECT_DIRECTIONALITY);
   int text_start_x = kPadding + size.width() + kIconTextMargin;
   int min_available = kWindowMinWidth - text_start_x - kPadding;
   int max_available = kWindowMaxWidth - text_start_x - kPadding;
@@ -50,7 +50,8 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
   if (!sub_text.empty()) {
     sub_label = new views::Label(sub_text);
     sub_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    sub_label->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
+    sub_label->set_directionality_mode(
+        views::Label::AUTO_DETECT_DIRECTIONALITY);
     label_width = std::max(label_width, sub_label->GetPreferredSize().width());
     sub_label->SetMultiLine(true);
     AddChildView(sub_label);

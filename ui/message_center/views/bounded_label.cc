@@ -198,11 +198,8 @@ int InnerBoundedLabel::GetTextFlags() {
   if (SkColorGetA(background_color()) != 0xFF)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  if (directionality_mode() == gfx::DIRECTIONALITY_FORCE_LTR) {
-    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  } else if (directionality_mode() == gfx::DIRECTIONALITY_FORCE_RTL) {
-    flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-  } else if (directionality_mode() == gfx::DIRECTIONALITY_FROM_TEXT) {
+  if (directionality_mode() ==
+      views::Label::AUTO_DETECT_DIRECTIONALITY) {
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(text());
     if (direction == base::i18n::RIGHT_TO_LEFT)

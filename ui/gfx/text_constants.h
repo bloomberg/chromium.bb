@@ -20,7 +20,6 @@ enum HorizontalAlignment {
   ALIGN_LEFT = 0, // Align the text's left edge with that of its display area.
   ALIGN_CENTER,   // Align the text's center with that of its display area.
   ALIGN_RIGHT,    // Align the text's right edge with that of its display area.
-  ALIGN_TO_HEAD,  // Align the text to its first strong character's direction.
 };
 
 // The directionality modes used to determine the base text direction.

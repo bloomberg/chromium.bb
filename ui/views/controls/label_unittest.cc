@@ -19,13 +19,6 @@ namespace views {
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-// A test utility function to set the application default text direction.
-void SetRTL(bool rtl) {
-  // Override the current locale/direction.
-  base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
-  EXPECT_EQ(rtl, base::i18n::IsRTL());
-}
-
 TEST(LabelTest, FontPropertySymbol) {
   Label label;
   std::string font_name("symbol");
@@ -62,45 +55,38 @@ TEST(LabelTest, ColorProperty) {
 }
 
 TEST(LabelTest, AlignmentProperty) {
-  const bool was_rtl = base::i18n::IsRTL();
-
   Label label;
-  for (size_t i = 0; i < 2; ++i) {
-    // Toggle the application default text direction (to try each direction).
-    SetRTL(!base::i18n::IsRTL());
-    bool reverse_alignment = base::i18n::IsRTL();
+  bool reverse_alignment = base::i18n::IsRTL();
 
-    // The alignment should be flipped in RTL UI.
-    label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    EXPECT_EQ(reverse_alignment ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT,
-              label.GetHorizontalAlignment());
-    label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    EXPECT_EQ(reverse_alignment ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT,
-              label.GetHorizontalAlignment());
-    label.SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    EXPECT_EQ(gfx::ALIGN_CENTER, label.GetHorizontalAlignment());
+  label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  EXPECT_EQ(reverse_alignment ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT,
+            label.horizontal_alignment());
+  label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  EXPECT_EQ(reverse_alignment ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT,
+            label.horizontal_alignment());
+  label.SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  EXPECT_EQ(gfx::ALIGN_CENTER, label.horizontal_alignment());
 
-    for (size_t j = 0; j < 2; ++j) {
-      label.SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-      const bool rtl = j == 0;
-      label.SetText(rtl ? base::WideToUTF16(L"\x5d0") : ASCIIToUTF16("A"));
-      EXPECT_EQ(rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT,
-                label.GetHorizontalAlignment());
-    }
-  }
-
-  EXPECT_EQ(was_rtl, base::i18n::IsRTL());
+  // The label's alignment should not be flipped if the directionality mode is
+  // AUTO_DETECT_DIRECTIONALITY.
+  label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
+  label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  EXPECT_EQ(gfx::ALIGN_RIGHT, label.horizontal_alignment());
+  label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  EXPECT_EQ(gfx::ALIGN_LEFT, label.horizontal_alignment());
+  label.SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  EXPECT_EQ(gfx::ALIGN_CENTER, label.horizontal_alignment());
 }
 
 TEST(LabelTest, DirectionalityModeProperty) {
   Label label;
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
+  EXPECT_EQ(Label::USE_UI_DIRECTIONALITY, label.directionality_mode());
 
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_TEXT, label.directionality_mode());
+  label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
+  EXPECT_EQ(Label::AUTO_DETECT_DIRECTIONALITY, label.directionality_mode());
 
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_UI);
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
+  label.set_directionality_mode(Label::USE_UI_DIRECTIONALITY);
+  EXPECT_EQ(Label::USE_UI_DIRECTIONALITY, label.directionality_mode());
 }
 
 TEST(LabelTest, MultiLineProperty) {
@@ -331,16 +317,20 @@ TEST(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
-TEST(LabelTest, DirectionalityFromText) {
+TEST(LabelTest, AutoDetectDirectionality) {
   Label label;
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
-  label.SetBounds(0, 0, 1000, 1000);
-  base::string16 paint_text;
-  gfx::Rect text_bounds;
-  int flags = -1;
+  label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
 
   // Test text starts with RTL character.
   label.SetText(base::WideToUTF16(L"  \x5d0\x5d1\x5d2 abc"));
+  gfx::Size required_size(label.GetPreferredSize());
+  gfx::Size extra(22, 8);
+  label.SetBounds(0, 0, required_size.width() + extra.width(),
+                  required_size.height() + extra.height());
+
+  base::string16 paint_text;
+  gfx::Rect text_bounds;
+  int flags;
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
   EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY,
             flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
@@ -348,6 +338,10 @@ TEST(LabelTest, DirectionalityFromText) {
 
   // Test text starts with LTR character.
   label.SetText(base::WideToUTF16(L"ltr \x5d0\x5d1\x5d2 abc"));
+  required_size = label.GetPreferredSize();
+  label.SetBounds(0, 0, required_size.width() + extra.width(),
+                  required_size.height() + extra.height());
+
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
   EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY,
             flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
@@ -357,8 +351,10 @@ TEST(LabelTest, DirectionalityFromText) {
 TEST(LabelTest, DrawSingleLineString) {
   Label label;
   label.SetFocusable(false);
-  // Force a directionality to simplify alignment value testing.
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FORCE_LTR);
+
+  // Turn off mirroring so that we don't need to figure out if
+  // align right really means align left.
+  label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
 
   label.SetText(ASCIIToUTF16("Here's a string with no returns."));
   gfx::Size required_size(label.GetPreferredSize());
@@ -369,7 +365,7 @@ TEST(LabelTest, DrawSingleLineString) {
   // Do some basic verifications for all three alignments.
   base::string16 paint_text;
   gfx::Rect text_bounds;
-  int flags = -1;
+  int flags;
 
   // Centered text.
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
@@ -478,14 +474,16 @@ TEST(LabelTest, DrawSingleLineString) {
                      gfx::Canvas::TEXT_ALIGN_RIGHT));
 }
 
-// Pango needs a max height to elide multiline text; that is not supported here.
+// On Linux the underlying pango routines require a max height in order to
+// ellide multiline text. So until that can be resolved, we set all
+// multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineString) {
   Label label;
   label.SetFocusable(false);
-  // Force a directionality to simplify alignment value testing.
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FORCE_LTR);
-  // Set a background color to prevent gfx::Canvas::NO_SUBPIXEL_RENDERING flags.
-  label.SetBackgroundColor(SK_ColorWHITE);
+
+  // Turn off mirroring so that we don't need to figure out if
+  // align right really means align left.
+  label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
 
   label.SetText(ASCIIToUTF16("Another string\nwith returns\n\n!"));
   label.SetMultiLine(true);
@@ -498,7 +496,7 @@ TEST(LabelTest, DrawMultiLineString) {
   // Do some basic verifications for all three alignments.
   base::string16 paint_text;
   gfx::Rect text_bounds;
-  int flags = -1;
+  int flags;
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
   EXPECT_EQ(label.text(), paint_text);
   EXPECT_EQ(extra.width() / 2, text_bounds.x());
@@ -511,7 +509,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
   gfx::Rect center_bounds(text_bounds);
 
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -529,7 +527,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
 
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   paint_text.clear();
@@ -546,7 +544,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
 
   // Test multiline drawing with a border.
   gfx::Insets border(19, 92, 23, 2);
@@ -572,7 +570,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
 
   label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
   paint_text.clear();
@@ -589,7 +587,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
 
   label.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   paint_text.clear();
@@ -606,7 +604,7 @@ TEST(LabelTest, DrawMultiLineString) {
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
-  EXPECT_EQ(expected_flags, expected_flags);
+  EXPECT_EQ(expected_flags, expected_flags & flags);
 }
 
 TEST(LabelTest, DrawSingleLineStringInRTL) {
@@ -625,7 +623,7 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   // Do some basic verifications for all three alignments.
   base::string16 paint_text;
   gfx::Rect text_bounds;
-  int flags = -1;
+  int flags;
 
   // Centered text.
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
@@ -760,7 +758,7 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
   // Do some basic verifications for all three alignments.
   base::string16 paint_text;
   gfx::Rect text_bounds;
-  int flags = -1;
+  int flags;
   label.CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
   EXPECT_EQ(label.text(), paint_text);
   EXPECT_EQ(extra.width() / 2, text_bounds.x());
