@@ -56,8 +56,8 @@ class NET_EXPORT HttpUtil {
   // if "Range" exists and the first one of it is well formatted then returns
   // true, |ranges| will contain a list of valid ranges. If return
   // value is false then values in |ranges| should not be used. The format of
-  // "Range" header is defined in RFC 2616 Section 14.35.1.
-  // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35.1
+  // "Range" header is defined in RFC 7233 Section 2.1.
+  // https://tools.ietf.org/html/rfc7233#section-2.1
   static bool ParseRanges(const std::string& headers,
                           std::vector<HttpByteRange>* ranges);
 

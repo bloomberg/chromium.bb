@@ -13,8 +13,8 @@
 namespace net {
 
 // A container class that represents a "range" specified for range request
-// specified by RFC 2616 Section 14.35.1.
-// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35.1
+// specified by RFC 7233 Section 2.1.
+// https://tools.ietf.org/html/rfc7233#section-2.1
 class NET_EXPORT HttpByteRange {
  public:
   HttpByteRange();
