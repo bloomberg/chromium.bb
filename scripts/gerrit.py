@@ -223,7 +223,7 @@ def UserActVerify(opts, idx, num):
 
 
 def UserActReady(opts, idx, num):
-  """Mark CL <n> with ready status [-1,0,1]"""
+  """Mark CL <n> with ready status [0,1,2]"""
   opts.gerrit.SetReview(idx, labels={'Commit-Queue': num})
 
 
