@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/security_style.h"
@@ -1748,6 +1749,31 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByContentSettings) {
               &result));
   // The above will hang without the fix.
   ASSERT_TRUE(result);
+}
+
+// Verifies that switching tabs, while showing interstitial page, will not
+// affect the visibility of the interestitial.
+// https://crbug.com/381439
+IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("files/ssl/google.html"));
+  CheckAuthenticationBrokenState(
+      tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+
+  AddTabAtIndex(0,
+                https_server_.GetURL("files/ssl/google.html"),
+                content::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(tab, browser()->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_FALSE(tab->GetRenderWidgetHostView()->IsShowing());
+
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
 }
 
 // TODO(jcampan): more tests to do below.

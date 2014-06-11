@@ -673,8 +673,8 @@ class CONTENT_EXPORT WebContentsImpl
   void RemoveDestructionObserver(WebContentsImpl* web_contents);
 
   // Traverses all the RenderFrameHosts in the FrameTree and creates a set
-  // all the unique RenderWidgetHosts.
-  std::set<RenderWidgetHostImpl*> GetRenderWidgetHostsInTree();
+  // all the unique RenderWidgetHostViews.
+  std::set<RenderWidgetHostView*> GetRenderWidgetHostViewsInTree();
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID
   // pair to identify the RenderFrameHost that opened the dialog, because it's

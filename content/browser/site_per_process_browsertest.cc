@@ -219,10 +219,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   {
     // There should be only one RenderWidgetHost when there are no
     // cross-process iframes.
-    std::set<RenderWidgetHostImpl*> widgets_set =
+    std::set<RenderWidgetHostView*> views_set =
         static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostsInTree();
-    EXPECT_EQ(1U, widgets_set.size());
+            ->GetRenderWidgetHostViewsInTree();
+    EXPECT_EQ(1U, views_set.size());
   }
 
   // These must stay in scope with replace_host.
@@ -249,10 +249,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   {
     // There should be now two RenderWidgetHosts, one for each process
     // rendering a frame.
-    std::set<RenderWidgetHostImpl*> widgets_set =
+    std::set<RenderWidgetHostView*> views_set =
         static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostsInTree();
-    EXPECT_EQ(2U, widgets_set.size());
+            ->GetRenderWidgetHostViewsInTree();
+    EXPECT_EQ(2U, views_set.size());
   }
 
   // Load another cross-site page into the same iframe.
@@ -279,10 +279,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             child->current_frame_host()->GetProcess());
   EXPECT_NE(rph, child->current_frame_host()->GetProcess());
   {
-    std::set<RenderWidgetHostImpl*> widgets_set =
+    std::set<RenderWidgetHostView*> views_set =
         static_cast<WebContentsImpl*>(shell()->web_contents())
-            ->GetRenderWidgetHostsInTree();
-    EXPECT_EQ(2U, widgets_set.size());
+            ->GetRenderWidgetHostViewsInTree();
+    EXPECT_EQ(2U, views_set.size());
   }
 }
 

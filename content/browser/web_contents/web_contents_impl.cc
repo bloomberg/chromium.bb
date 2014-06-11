@@ -216,9 +216,13 @@ void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
   rfh->Send(message_copy);
 }
 
-void AddRenderWidgetHostToSet(std::set<RenderWidgetHostImpl*>* set,
-                              RenderFrameHost* rfh) {
-  set->insert(static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost());
+void AddRenderWidgetHostViewToSet(std::set<RenderWidgetHostView*>* set,
+                                  RenderFrameHost* rfh) {
+  RenderWidgetHostView* rwhv = static_cast<RenderFrameHostImpl*>(rfh)
+                                   ->frame_tree_node()
+                                   ->render_manager()
+                                   ->GetRenderWidgetHostView();
+  set->insert(rwhv);
 }
 
 }  // namespace
@@ -941,15 +945,14 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 
-  std::set<RenderWidgetHostImpl*> widgets = GetRenderWidgetHostsInTree();
-  for (std::set<RenderWidgetHostImpl*>::iterator iter = widgets.begin();
+  std::set<RenderWidgetHostView*> widgets = GetRenderWidgetHostViewsInTree();
+  for (std::set<RenderWidgetHostView*>::iterator iter = widgets.begin();
        iter != widgets.end();
        iter++) {
-    RenderWidgetHostView* rwhv = (*iter)->GetView();
-    if (rwhv) {
-      rwhv->Show();
+    if (*iter) {
+      (*iter)->Show();
 #if defined(OS_MACOSX)
-      rwhv->SetActive(true);
+      (*iter)->SetActive(true);
 #endif
     }
   }
@@ -979,13 +982,12 @@ void WebContentsImpl::WasHidden() {
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls WasHidden() (which
     // calls us).
-    std::set<RenderWidgetHostImpl*> widgets = GetRenderWidgetHostsInTree();
-    for (std::set<RenderWidgetHostImpl*>::iterator iter = widgets.begin();
+    std::set<RenderWidgetHostView*> widgets = GetRenderWidgetHostViewsInTree();
+    for (std::set<RenderWidgetHostView*>::iterator iter = widgets.begin();
          iter != widgets.end();
          iter++) {
-      RenderWidgetHostView* rwhv = (*iter)->GetView();
-      if (rwhv)
-        rwhv->Hide();
+      if (*iter)
+        (*iter)->Hide();
     }
   }
 
@@ -1142,9 +1144,15 @@ void WebContentsImpl::RemoveObserver(WebContentsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::set<RenderWidgetHostImpl*> WebContentsImpl::GetRenderWidgetHostsInTree() {
-  std::set<RenderWidgetHostImpl*> set;
-  ForEachFrame(base::Bind(&AddRenderWidgetHostToSet, base::Unretained(&set)));
+std::set<RenderWidgetHostView*>
+WebContentsImpl::GetRenderWidgetHostViewsInTree() {
+  std::set<RenderWidgetHostView*> set;
+  if (ShowingInterstitialPage()) {
+    set.insert(GetRenderWidgetHostView());
+  } else {
+    ForEachFrame(
+        base::Bind(&AddRenderWidgetHostViewToSet, base::Unretained(&set)));
+  }
   return set;
 }
 
