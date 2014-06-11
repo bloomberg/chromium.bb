@@ -44,11 +44,13 @@ class Text;
 
 typedef String ErrorString;
 
-class DOMEditor {
-    WTF_MAKE_NONCOPYABLE(DOMEditor); WTF_MAKE_FAST_ALLOCATED;
+class DOMEditor FINAL : public NoBaseWillBeGarbageCollected<DOMEditor> {
+    WTF_MAKE_NONCOPYABLE(DOMEditor);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit DOMEditor(InspectorHistory*);
-    ~DOMEditor();
+
+    void trace(Visitor*);
 
     bool insertBefore(Node* parentNode, PassRefPtrWillBeRawPtr<Node>, Node* anchorNode, ExceptionState&);
     bool removeChild(Node* parentNode, Node*, ExceptionState&);
@@ -77,7 +79,7 @@ private:
     class ReplaceChildNodeAction;
     class SetNodeValueAction;
 
-    InspectorHistory* m_history;
+    RawPtrWillBeMember<InspectorHistory> m_history;
 };
 
 

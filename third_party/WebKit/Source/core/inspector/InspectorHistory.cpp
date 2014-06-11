@@ -62,6 +62,10 @@ InspectorHistory::Action::~Action()
 {
 }
 
+void InspectorHistory::Action::trace(Visitor* visitor)
+{
+}
+
 String InspectorHistory::Action::toString()
 {
     return m_name;
@@ -77,13 +81,13 @@ String InspectorHistory::Action::mergeId()
     return "";
 }
 
-void InspectorHistory::Action::merge(PassRefPtr<Action>)
+void InspectorHistory::Action::merge(PassRefPtrWillBeRawPtr<Action>)
 {
 }
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-bool InspectorHistory::perform(PassRefPtr<Action> action, ExceptionState& exceptionState)
+bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionState& exceptionState)
 {
     if (!action->perform(exceptionState))
         return false;
@@ -100,7 +104,7 @@ bool InspectorHistory::perform(PassRefPtr<Action> action, ExceptionState& except
 
 void InspectorHistory::markUndoableState()
 {
-    perform(adoptRef(new UndoableStateMark()), IGNORE_EXCEPTION);
+    perform(adoptRefWillBeNoop(new UndoableStateMark()), IGNORE_EXCEPTION);
 }
 
 bool InspectorHistory::undo(ExceptionState& exceptionState)
@@ -144,6 +148,11 @@ void InspectorHistory::reset()
 {
     m_afterLastActionIndex = 0;
     m_history.clear();
+}
+
+void InspectorHistory::trace(Visitor* visitor)
+{
+    visitor->trace(m_history);
 }
 
 } // namespace WebCore

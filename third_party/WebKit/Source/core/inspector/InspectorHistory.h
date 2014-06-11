@@ -31,6 +31,7 @@
 #ifndef InspectorHistory_h
 #define InspectorHistory_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -39,18 +40,20 @@ namespace WebCore {
 
 class ExceptionState;
 
-class InspectorHistory FINAL {
-    WTF_MAKE_NONCOPYABLE(InspectorHistory); WTF_MAKE_FAST_ALLOCATED;
+class InspectorHistory FINAL : public NoBaseWillBeGarbageCollected<InspectorHistory> {
+    WTF_MAKE_NONCOPYABLE(InspectorHistory);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    class Action : public RefCounted<Action> {
-        WTF_MAKE_FAST_ALLOCATED;
+    class Action : public RefCountedWillBeGarbageCollectedFinalized<Action> {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
-        Action(const String& name);
+        explicit Action(const String& name);
         virtual ~Action();
+        virtual void trace(Visitor*);
         virtual String toString();
 
         virtual String mergeId();
-        virtual void merge(PassRefPtr<Action>);
+        virtual void merge(PassRefPtrWillBeRawPtr<Action>);
 
         virtual bool perform(ExceptionState&) = 0;
 
@@ -63,8 +66,9 @@ public:
     };
 
     InspectorHistory();
+    void trace(Visitor*);
 
-    bool perform(PassRefPtr<Action>, ExceptionState&);
+    bool perform(PassRefPtrWillBeRawPtr<Action>, ExceptionState&);
     void markUndoableState();
 
     bool undo(ExceptionState&);
@@ -72,7 +76,7 @@ public:
     void reset();
 
 private:
-    Vector<RefPtr<Action> > m_history;
+    WillBeHeapVector<RefPtrWillBeMember<Action> > m_history;
     size_t m_afterLastActionIndex;
 };
 
