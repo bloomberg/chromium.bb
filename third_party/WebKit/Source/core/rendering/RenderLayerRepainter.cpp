@@ -82,11 +82,11 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
         if (shouldCheckForRepaint) {
             if (view && !view->document().printing()) {
                 if (m_repaintStatus & NeedsFullRepaint) {
-                    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldRepaintRect), InvalidationLayer);
+                    m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldRepaintRect), InvalidationLayer);
                     if (m_repaintRect != oldRepaintRect)
-                        m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect), InvalidationLayer);
+                        m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect), InvalidationLayer);
                 } else {
-                    m_renderer.repaintAfterLayoutIfNeeded(repaintContainer, m_renderer.selfNeedsLayout(), oldRepaintRect, oldOffset, &m_repaintRect, &m_offset);
+                    m_renderer.invalidatePaintAfterLayoutIfNeeded(repaintContainer, m_renderer.selfNeedsLayout(), oldRepaintRect, oldOffset, &m_repaintRect, &m_offset);
                 }
             }
         }
@@ -154,7 +154,7 @@ void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
 
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer)
 {
-    m_renderer.repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.boundsRectForRepaint(repaintContainer)), InvalidationLayer);
+    m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.boundsRectForRepaint(repaintContainer)), InvalidationLayer);
 
     // FIXME: Repaints can be issued during style recalc at present, via RenderLayerModelObject::styleWillChange. This happens in scenarios when
     // repaint is needed but not layout.

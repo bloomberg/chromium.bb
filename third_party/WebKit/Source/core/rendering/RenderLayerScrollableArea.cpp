@@ -216,7 +216,7 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
         }
 
     } else {
-        box().repaintRectangle(intRect);
+        box().invalidatePaintRectangle(intRect);
     }
 }
 
@@ -228,9 +228,9 @@ void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
     }
 
     if (m_scrollCorner)
-        m_scrollCorner->repaintRectangle(rect);
+        m_scrollCorner->invalidatePaintRectangle(rect);
     if (m_resizer)
-        m_resizer->repaintRectangle(rect);
+        m_resizer->invalidatePaintRectangle(rect);
 }
 
 bool RenderLayerScrollableArea::isActive() const
@@ -412,9 +412,9 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
             if (box().frameView()->isInPerformLayout())
                 box().setShouldDoFullPaintInvalidationAfterLayout(true);
             else
-                box().repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousPaintInvalidationRect()), InvalidationScroll);
+                box().invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousPaintInvalidationRect()), InvalidationScroll);
         } else {
-            box().repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
+            box().invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
         }
     }
 
@@ -643,7 +643,7 @@ void RenderLayerScrollableArea::updateAfterLayout()
             box().document().setAnnotatedRegionsDirty(true);
 
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            box().repaint();
+            box().paintInvalidationForWholeRenderer();
 
         if (box().style()->overflowX() == OAUTO || box().style()->overflowY() == OAUTO) {
             if (!m_inOverflowRelayout) {

@@ -58,7 +58,7 @@ bool LayoutRepainter::repaintAfterLayout()
     // Hits in compositing/video/video-controls-layer-creation.html
     DisableCompositingQueryAsserts disabler;
 
-    return m_checkForRepaint ? m_object.repaintAfterLayoutIfNeeded(m_repaintContainer, m_object.selfNeedsLayout(), m_oldBounds, m_oldOffset) : false;
+    return m_checkForRepaint ? m_object.invalidatePaintAfterLayoutIfNeeded(m_repaintContainer, m_object.selfNeedsLayout(), m_oldBounds, m_oldOffset) : false;
 }
 
 } // namespace WebCore

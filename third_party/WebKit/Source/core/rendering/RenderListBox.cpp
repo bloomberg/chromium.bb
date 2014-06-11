@@ -175,7 +175,7 @@ void RenderListBox::updateFromElement()
 
 void RenderListBox::selectionChanged()
 {
-    repaint();
+    paintInvalidationForWholeRenderer();
     if (!m_inAutoscroll) {
         if (m_optionsChanged || needsLayout())
             m_scrollToRevealSelectionAfterLayout = true;
@@ -680,7 +680,7 @@ void RenderListBox::scrollTo(int newOffset)
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
         setShouldDoFullPaintInvalidationAfterLayout(true);
     else
-        repaint();
+        paintInvalidationForWholeRenderer();
 
     node()->document().enqueueScrollEventForNode(node());
 }
@@ -783,7 +783,7 @@ void RenderListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect&
         m_verticalBarDamage = scrollRect;
         m_hasVerticalBarDamage = true;
     } else {
-        repaintRectangle(scrollRect);
+        invalidatePaintRectangle(scrollRect);
     }
 }
 
@@ -791,7 +791,7 @@ void RenderListBox::repaintScrollbarIfNeeded()
 {
     if (!hasVerticalBarDamage())
         return;
-    repaintRectangle(verticalBarDamage());
+    invalidatePaintRectangle(verticalBarDamage());
 
     resetScrollbarDamage();
 }

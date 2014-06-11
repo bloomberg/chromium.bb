@@ -110,7 +110,7 @@ LayoutRect RenderTableCol::clippedOverflowRectForRepaint(const RenderLayerModelO
 void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Repaint only the rect the image paints in.
-    repaint();
+    paintInvalidationForWholeRenderer();
 }
 
 void RenderTableCol::clearPreferredLogicalWidthsDirtyBits()

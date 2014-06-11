@@ -191,7 +191,7 @@ void RenderTextControlSingleLine::layout()
         if (!placeholderBoxHadLayout && placeholderBox->checkForRepaintDuringLayout()) {
             // This assumes a shadow tree without floats. If floats are added, the
             // logic should be shared with RenderBlockFlow::layoutBlockChild.
-            placeholderBox->repaint();
+            placeholderBox->paintInvalidationForWholeRenderer();
         }
         // The placeholder gets layout last, after the parent text control and its other children,
         // so in order to get the correct overflow from the placeholder we need to recompute it now.
@@ -265,7 +265,7 @@ void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
 
     if (shouldDrawCapsLockIndicator != m_shouldDrawCapsLockIndicator) {
         m_shouldDrawCapsLockIndicator = shouldDrawCapsLockIndicator;
-        repaint();
+        paintInvalidationForWholeRenderer();
     }
 }
 

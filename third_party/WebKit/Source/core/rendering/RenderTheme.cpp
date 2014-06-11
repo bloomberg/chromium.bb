@@ -234,7 +234,7 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     // for that control.
     if (paintInfo.context->updatingControlTints()) {
         if (controlSupportsTints(o))
-            o->repaint();
+            o->paintInvalidationForWholeRenderer();
         return false;
     }
     ControlPart part = o->style()->appearance();
@@ -637,7 +637,7 @@ bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
         return false;
 
     // Repaint the control.
-    o->repaint();
+    o->paintInvalidationForWholeRenderer();
     return true;
 }
 

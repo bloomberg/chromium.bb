@@ -148,7 +148,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
         if ((diff.needsRepaint() || diff.needsLayout()) && node()
             && (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
-            view()->repaint();
+            view()->paintInvalidationForWholeRenderer();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
                 view()->compositor()->setNeedsUpdateFixedBackground();
@@ -159,7 +159,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         if (diff.needsFullLayout() && parent() && oldStyle->position() != newStyle.position()) {
             markContainingBlocksForLayout();
             if (oldStyle->position() == StaticPosition)
-                repaint();
+                paintInvalidationForWholeRenderer();
             else if (newStyle.hasOutOfFlowPosition())
                 parent()->setChildNeedsLayout();
             if (isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
@@ -167,8 +167,9 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         }
     // FIXME: This branch runs when !oldStyle, which means that layout was never called
     // so what's the point in invalidating the whole view that we never painted?
-    } else if (isBody())
-        view()->repaint();
+    } else if (isBody()) {
+        view()->paintInvalidationForWholeRenderer();
+    }
 
     RenderBoxModelObject::styleWillChange(diff, newStyle);
 }
@@ -292,7 +293,7 @@ void RenderBox::updateFromStyle()
                 // If we are getting an overflow clip, preemptively erase any overflowing content.
                 // FIXME: This should probably consult RenderOverflow.
                 if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-                    repaint();
+                    paintInvalidationForWholeRenderer();
             }
         }
     }
@@ -1503,7 +1504,7 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
     if ((style()->borderImage().image() && style()->borderImage().image()->data() == image) ||
         (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
-        repaint();
+        paintInvalidationForWholeRenderer();
         return;
     }
 
@@ -1559,11 +1560,11 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
             if (geometry.hasNonLocalGeometry()) {
                 // Rather than incur the costs of computing the paintContainer for renderers with fixed backgrounds
                 // in order to get the right destRect, just repaint the entire renderer.
-                layerRenderer->repaint();
+                layerRenderer->paintInvalidationForWholeRenderer();
                 return true;
             }
 
-            layerRenderer->repaintRectangle(geometry.destRect());
+            layerRenderer->invalidatePaintRectangle(geometry.destRect());
             if (geometry.destRect() == rendererRect)
                 return true;
         }
@@ -1614,20 +1615,20 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
 
     const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    bool didFullPaintInvalidation = repaintAfterLayoutIfNeeded(&newPaintInvalidationContainer,
+    bool didFullPaintInvalidation = invalidatePaintAfterLayoutIfNeeded(&newPaintInvalidationContainer,
         shouldDoFullPaintInvalidationAfterLayout(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
         &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
 
     if (!didFullPaintInvalidation)
-        repaintOverflowIfNeeded();
+        invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
     if (enclosingLayer()) {
         if (RenderLayerScrollableArea* area = enclosingLayer()->scrollableArea()) {
             if (area->hasVerticalBarDamage())
-                repaintRectangle(area->verticalBarDamage());
+                invalidatePaintRectangle(area->verticalBarDamage());
             if (area->hasHorizontalBarDamage())
-                repaintRectangle(area->horizontalBarDamage());
+                invalidatePaintRectangle(area->horizontalBarDamage());
             area->resetScrollbarDamage();
         }
     }
@@ -2126,10 +2127,10 @@ void RenderBox::repaintDuringLayoutIfMoved(const LayoutRect& oldRect)
         // The child moved.  Invalidate the object's old and new positions.  We have to do this
         // since the object may not have gotten a layout.
         m_frameRect = oldRect;
-        repaint();
+        paintInvalidationForWholeRenderer();
         repaintOverhangingFloats(true);
         m_frameRect = newRect;
-        repaint();
+        paintInvalidationForWholeRenderer();
         repaintOverhangingFloats(true);
     }
 }

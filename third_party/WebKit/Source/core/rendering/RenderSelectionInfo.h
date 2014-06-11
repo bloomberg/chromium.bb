@@ -68,7 +68,7 @@ public:
 
     void repaint()
     {
-        m_object->repaintUsingContainer(m_repaintContainer, enclosingIntRect(m_rect), InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_repaintContainer, enclosingIntRect(m_rect), InvalidationSelection);
     }
 
     LayoutRect rect() const { return m_rect; }
@@ -89,7 +89,7 @@ public:
 
     void repaint()
     {
-        m_object->repaintUsingContainer(m_repaintContainer, enclosingIntRect(m_rects), InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_repaintContainer, enclosingIntRect(m_rects), InvalidationSelection);
     }
 
     RenderBlock* block() const { return toRenderBlock(m_object); }

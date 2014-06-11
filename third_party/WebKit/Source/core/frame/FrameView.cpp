@@ -361,7 +361,7 @@ void FrameView::invalidateRect(const IntRect& rect)
     IntRect paintInvalidationRect = rect;
     paintInvalidationRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                      renderer->borderTop() + renderer->paddingTop());
-    renderer->repaintRectangle(paintInvalidationRect);
+    renderer->invalidatePaintRectangle(paintInvalidationRect);
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -1004,7 +1004,7 @@ void FrameView::layout(bool allowSubtree)
         // FIXME: This isn't really right, since the RenderView doesn't fully encompass
         // the visibleContentRect(). It just happens to work out most of the time,
         // since first layouts and printing don't have you scrolled anywhere.
-        renderView()->repaint();
+        renderView()->paintInvalidationForWholeRenderer();
     }
 
     m_doFullPaintInvalidation = false;
@@ -1424,7 +1424,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             IntRect previousRect = updateRect;
             previousRect.move(scrollDelta);
             updateRect.unite(previousRect);
-            layer->renderer()->repaintUsingContainer(repaintContainer, updateRect, InvalidationScroll);
+            layer->renderer()->invalidatePaintUsingContainer(repaintContainer, updateRect, InvalidationScroll);
         } else {
             // Coalesce the paint invalidations that will be issued to the renderView.
             updateRect = contentsToRootView(updateRect);
@@ -1472,7 +1472,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
             LayoutRect rect(frameRenderer->borderLeft() + frameRenderer->paddingLeft(),
                             frameRenderer->borderTop() + frameRenderer->paddingTop(),
                             visibleWidth(), visibleHeight());
-            frameRenderer->repaintRectangle(rect);
+            frameRenderer->invalidatePaintRectangle(rect);
             return;
         }
     }

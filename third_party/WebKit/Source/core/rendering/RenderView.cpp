@@ -485,13 +485,13 @@ void RenderView::repaintViewRectangle(const LayoutRect& repaintRect) const
 
         // FIXME: Hardcoded offsets here are not good.
         rectToRepaint.moveBy(obj->contentBoxRect().location());
-        obj->repaintRectangle(rectToRepaint);
+        obj->invalidatePaintRectangle(rectToRepaint);
     }
 }
 
 void RenderView::repaintViewAndCompositedLayers()
 {
-    repaint();
+    paintInvalidationForWholeRenderer();
 
     // The only way we know how to hit these ASSERTS below this point is via the Chromium OS login screen.
     DisableCompositingQueryAsserts disabler;

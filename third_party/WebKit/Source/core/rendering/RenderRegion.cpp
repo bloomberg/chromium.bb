@@ -159,7 +159,7 @@ void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRe
     flipForWritingMode(clippedRect);
 
     // Issue the repaint.
-    repaintRectangle(clippedRect);
+    invalidatePaintRectangle(clippedRect);
 }
 
 void RenderRegion::attachRegion()

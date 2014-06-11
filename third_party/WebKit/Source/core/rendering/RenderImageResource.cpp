@@ -87,7 +87,7 @@ void RenderImageResource::resetAnimation()
     image()->resetAnimation();
 
     if (!m_renderer->needsLayout())
-        m_renderer->repaint();
+        m_renderer->paintInvalidationForWholeRenderer();
 }
 
 void RenderImageResource::setContainerSizeForRenderer(const IntSize& imageContainerSize)

@@ -3211,7 +3211,7 @@ void RenderLayer::repaintBlockSelectionGaps()
     if (renderer()->hasClip())
         rect.intersect(toRenderBox(renderer())->clipRect(LayoutPoint()));
     if (!rect.isEmpty())
-        renderer()->repaintRectangle(rect);
+        renderer()->invalidatePaintRectangle(rect);
 }
 
 bool RenderLayer::hasBlockSelectionGapBounds() const
@@ -3804,7 +3804,7 @@ void RenderLayer::filterNeedsRepaint()
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInPerformLayout())
             renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
         else
-            renderer()->repaint();
+            renderer()->paintInvalidationForWholeRenderer();
     }
 }
 

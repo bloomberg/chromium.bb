@@ -226,7 +226,7 @@ void RenderTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth, SubtreeLa
     layouter.setNeedsLayout(this);
 
     if (!table()->selfNeedsLayout() && checkForRepaintDuringLayout())
-        repaint();
+        paintInvalidationForWholeRenderer();
 
     setLogicalWidth(tableLayoutLogicalWidth);
     setCellWidthChanged(true);

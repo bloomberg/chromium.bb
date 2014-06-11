@@ -151,7 +151,7 @@ void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client,
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
                 client->setShouldDoFullPaintInvalidationAfterLayout(true);
             else
-                client->repaint();
+                client->paintInvalidationForWholeRenderer();
         }
         break;
     case ParentOnlyInvalidation:

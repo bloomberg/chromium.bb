@@ -303,7 +303,7 @@ void FileInputType::setFiles(PassRefPtrWillBeRawPtr<FileList> files)
     input->setNeedsValidityCheck();
 
     if (input->renderer())
-        input->renderer()->repaint();
+        input->renderer()->paintInvalidationForWholeRenderer();
 
     if (pathsChanged) {
         // This call may cause destruction of this instance.

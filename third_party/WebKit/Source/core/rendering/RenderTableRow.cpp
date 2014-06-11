@@ -187,7 +187,7 @@ void RenderTableRow::layout()
                 // FIXME: Is this needed with Repaint After Layout?
                 cell->setShouldDoFullPaintInvalidationAfterLayout(true);
             } else {
-                cell->repaint();
+                cell->paintInvalidationForWholeRenderer();
             }
         }
     }
@@ -244,7 +244,7 @@ void RenderTableRow::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 void RenderTableRow::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Examine cells and repaint only the rect the image paints in.
-    repaint();
+    paintInvalidationForWholeRenderer();
 }
 
 RenderTableRow* RenderTableRow::createAnonymous(Document* document)

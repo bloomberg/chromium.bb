@@ -1226,7 +1226,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                     f->setShouldDoFullPaintInvalidationAfterLayout(true);
                 else
-                    f->repaint();
+                    f->paintInvalidationForWholeRenderer();
             }
         }
     }

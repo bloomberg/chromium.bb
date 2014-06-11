@@ -193,7 +193,7 @@ void RenderSliderContainer::layout()
         // they have special painting code in RenderMediaControls.cpp:paintMediaVolumeSlider
         // and paintMediaSlider that gets called via -webkit-appearance and RenderTheme,
         // so nothing else would otherwise invalidate the slider.
-        repaint();
+        paintInvalidationForWholeRenderer();
     }
 }
 

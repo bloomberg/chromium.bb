@@ -211,7 +211,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
             return;
 
         m_dirtyRect.unite(r);
-        ro->repaintRectangle(enclosingIntRect(m_dirtyRect));
+        ro->invalidatePaintRectangle(enclosingIntRect(m_dirtyRect));
     }
 
     notifyObserversCanvasChanged(rect);
@@ -273,7 +273,7 @@ void HTMLCanvasElement::reset()
                     renderBox()->contentChanged(CanvasChanged);
             }
             if (hadImageBuffer)
-                renderer->repaint();
+                renderer->paintInvalidationForWholeRenderer();
         }
     }
 

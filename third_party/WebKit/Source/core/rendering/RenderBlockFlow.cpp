@@ -330,7 +330,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             setShouldInvalidateOverflowForPaint(true);
         else
-            repaintOverflow();
+            invalidatePaintForOverflow();
     }
     clearNeedsLayout();
 }
@@ -638,7 +638,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
 
     if (!childHadLayout && child->checkForRepaint()) {
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            child->repaint();
+            child->paintInvalidationForWholeRenderer();
         child->repaintOverhangingFloats(true);
     }
 
@@ -1953,14 +1953,14 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                 floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
             else
-                floatingRenderer->repaint();
+                floatingRenderer->paintInvalidationForWholeRenderer();
 
             floatingRenderer->repaintOverhangingFloats(false);
         }
     }
 }
 
-void RenderBlockFlow::repaintOverflow()
+void RenderBlockFlow::invalidatePaintForOverflow()
 {
     // FIXME: We could tighten up the left and right invalidation points if we let layoutInlineChildren fill them in based off the particular lines
     // it had to lay out. We wouldn't need the hasOverflowClip() hack in that case either.
@@ -1996,9 +1996,9 @@ void RenderBlockFlow::repaintOverflow()
         // Hits in media/event-attributes.html
         DisableCompositingQueryAsserts disabler;
 
-        repaintRectangle(repaintRect); // We need to do a partial repaint of our content.
+        invalidatePaintRectangle(repaintRect); // We need to do a partial repaint of our content.
         if (hasReflection())
-            repaintRectangle(reflectedRect(repaintRect));
+            invalidatePaintRectangle(reflectedRect(repaintRect));
     }
 
     m_repaintLogicalTop = 0;

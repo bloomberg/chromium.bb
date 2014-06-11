@@ -79,7 +79,7 @@ double RenderMeter::valueRatio() const
 
 void RenderMeter::updateFromElement()
 {
-    repaint();
+    paintInvalidationForWholeRenderer();
 }
 
 } // namespace WebCore

@@ -36,7 +36,7 @@ void RemoteFrameView::invalidateRect(const IntRect& rect)
     IntRect repaintRect = rect;
     repaintRect.move(renderer->borderLeft() + renderer->paddingLeft(),
         renderer->borderTop() + renderer->paddingTop());
-    renderer->repaintRectangle(repaintRect);
+    renderer->invalidatePaintRectangle(repaintRect);
 }
 
 void RemoteFrameView::setFrameRect(const IntRect& newRect)

@@ -820,26 +820,27 @@ public:
     // Returns the rect bounds needed to repaint this object, in the coordinate space of the rendering backing of |repaintContainer|
     LayoutRect boundsRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
 
-    // Actually do the repaint of rect r for this object which has been computed in the coordinate space
-    // of repaintContainer. If repaintContainer is 0, repaint via the view.
-    void repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect&, InvalidationReason) const;
+    // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
+    // of paintInvalidationContainer. If paintInvalidationContainer is 0, invalidate paints via the view.
+    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const IntRect&, InvalidationReason) const;
 
-    // Repaint the entire object.  Called when, e.g., the color of a border changes, or when a border
+    // Invalidate the paint of the entire object. Called when, e.g., the color of a border changes, or when a border
     // style changes.
-    void repaint() const;
+    void paintInvalidationForWholeRenderer() const;
 
-    // Repaint a specific subrectangle within a given object.  The rect |r| is in the object's coordinate space.
-    void repaintRectangle(const LayoutRect&) const;
+    // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
+    void invalidatePaintRectangle(const LayoutRect&) const;
 
-    // Repaint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
-    bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
-        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromRepaintContainer, const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromRepaintContainer = 0);
+    // Invalidate the paint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
+    bool invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, bool wasSelfLayout,
+        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
+        const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromPaintInvalidationContainer = 0);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&);
 
-    virtual void repaintOverflow();
-    void repaintOverflowIfNeeded();
+    virtual void invalidatePaintForOverflow();
+    void invalidatePaintForOverflowIfNeeded();
 
     bool checkForRepaint() const;
     bool checkForRepaintDuringLayout() const;

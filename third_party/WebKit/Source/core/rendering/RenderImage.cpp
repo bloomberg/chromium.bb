@@ -251,7 +251,7 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
     {
         // FIXME: We should not be allowing repaint during layout. crbug.com/339584
         AllowPaintInvalidationScope scoper(frameView());
-        repaintRectangle(repaintRect);
+        invalidatePaintRectangle(repaintRect);
     }
 
     // Tell any potential compositing layers that the image needs updating.
@@ -438,7 +438,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     repaintRect.moveBy(-absoluteContentBox().location());
     repaintRect.inflate(outlineWidth);
 
-    repaintRectangle(repaintRect);
+    invalidatePaintRectangle(repaintRect);
 }
 
 void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)
