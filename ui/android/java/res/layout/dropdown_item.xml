@@ -17,6 +17,7 @@
         android:layout_marginEnd="10dp"
         android:ellipsize="end"
         android:singleLine="true"
+        android:textAlignment="viewStart"
         android:textSize="18sp"
         android:includeFontPadding="false"/>
     <TextView android:id="@+id/dropdown_sublabel"
@@ -28,5 +29,6 @@
         android:textColor="#8b8b8b"
         android:ellipsize="end"
         android:singleLine="true"
+        android:textAlignment="viewStart"
         android:includeFontPadding="false"/>
 </LinearLayout>
