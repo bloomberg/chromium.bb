@@ -13,9 +13,9 @@
     reportTestSuccess();
   });
 
-  function getSources() {
-    MediaStreamTrack.getSources(function(devices) {
-      document.title = 'Sources Available';
+  function getMediaDevices() {
+    navigator.getMediaDevices(function(devices) {
+      document.title = 'Media devices available';
       sendValueToTest(JSON.stringify(devices));
     });
   }
@@ -173,7 +173,7 @@
           function(stream) {
             displayIntoVideoElement(stream,
                                     function() {
-                                      stopBothVideoTracksAndVerify(stream); 
+                                      stopBothVideoTracksAndVerify(stream);
                                     },
                                     'local-view-2');
           },
@@ -183,7 +183,7 @@
     var stopBothVideoTracksAndVerify = function(streamPlayingInLocalView2) {
       streamPlayingInLocalView2.getVideoTracks()[0].stop();
       waitForVideoToStop('local-view-2');
-      // Make sure the video track in gLocalStream is still playing in 
+      // Make sure the video track in gLocalStream is still playing in
       // 'local-view1' and then stop it.
       displayAndDetectVideo(gLocalStream, stopVideoTrack);
     };
@@ -385,7 +385,7 @@
 
       if (++iterations > maxIterations) {
         clearInterval(detectorInterval);
-        // Allow maxLightGreenPixelsY = maxLightGreenPixelsX +-1 due to 
+        // Allow maxLightGreenPixelsY = maxLightGreenPixelsX +-1 due to
         // possible subpixel rendering on Mac and Android.
         if (maxLightGreenPixelsY > maxLightGreenPixelsX + 1 ||
             maxLightGreenPixelsY < maxLightGreenPixelsX -1 ||

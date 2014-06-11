@@ -1257,9 +1257,10 @@
         'browser/media/media_browsertest.h',
         'browser/media/chrome_media_stream_infobar_browsertest.cc',
         'browser/media/chrome_webrtc_apprtc_browsertest.cc',
+        'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
         'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
-        'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
+        'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
         'browser/media/chrome_webrtc_perf_browsertest.cc',
         'browser/media/chrome_webrtc_typing_detection_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
@@ -1813,7 +1814,8 @@
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc',
             'browser/media/chrome_webrtc_browsertest.cc',
             'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
-          ],
+            'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
+         ],
         }],
         ['OS=="win"', {
           'sources': [

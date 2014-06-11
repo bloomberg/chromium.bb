@@ -192,19 +192,19 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest,
     EXPECT_EQ(expected_result, ExecuteJavascriptAndReturnResult(command));
   }
 
-  void GetSources(std::vector<std::string>* audio_ids,
-                  std::vector<std::string>* video_ids) {
+  void GetInputDevices(std::vector<std::string>* audio_ids,
+                       std::vector<std::string>* video_ids) {
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
     NavigateToURL(shell(), url);
 
-    std::string sources_as_json = ExecuteJavascriptAndReturnResult(
-        "getSources()");
-    EXPECT_FALSE(sources_as_json.empty());
+    std::string devices_as_json = ExecuteJavascriptAndReturnResult(
+        "getMediaDevices()");
+    EXPECT_FALSE(devices_as_json.empty());
 
     int error_code;
     std::string error_message;
     scoped_ptr<base::Value> value(
-        base::JSONReader::ReadAndReturnError(sources_as_json,
+        base::JSONReader::ReadAndReturnError(devices_as_json,
                                              base::JSON_ALLOW_TRAILING_COMMAS,
                                              &error_code,
                                              &error_message));
@@ -219,17 +219,19 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest,
          it != values->end(); ++it) {
       const base::DictionaryValue* dict;
       std::string kind;
-      std::string id;
+      std::string device_id;
       ASSERT_TRUE((*it)->GetAsDictionary(&dict));
       ASSERT_TRUE(dict->GetString("kind", &kind));
-      ASSERT_TRUE(dict->GetString("id", &id));
-      ASSERT_FALSE(id.empty());
-      EXPECT_TRUE(kind == "audio" || kind == "video");
-      if (kind == "audio") {
-        audio_ids->push_back(id);
-      } else if (kind == "video") {
-        video_ids->push_back(id);
+      ASSERT_TRUE(dict->GetString("deviceId", &device_id));
+      ASSERT_FALSE(device_id.empty());
+      EXPECT_TRUE(kind == "audioinput" || kind == "videoinput" ||
+                  kind == "audiooutput");
+      if (kind == "audioinput") {
+        audio_ids->push_back(device_id);
+      } else if (kind == "videoinput") {
+        video_ids->push_back(device_id);
       }
+      // We ignore audio output.
     }
     ASSERT_FALSE(audio_ids->empty());
     ASSERT_FALSE(video_ids->empty());
@@ -347,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
-  GetSources(&audio_ids, &video_ids);
+  GetInputDevices(&audio_ids, &video_ids);
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -372,7 +374,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
-  GetSources(&audio_ids, &video_ids);
+  GetInputDevices(&audio_ids, &video_ids);
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -405,7 +407,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
-  GetSources(&audio_ids, &video_ids);
+  GetInputDevices(&audio_ids, &video_ids);
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 

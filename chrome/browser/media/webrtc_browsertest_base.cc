@@ -349,8 +349,8 @@ std::string WebRtcTestBase::GetStreamSize(
 bool WebRtcTestBase::HasWebcamAvailableOnSystem(
     content::WebContents* tab_contents) const {
   std::string result =
-      ExecuteJavascript("HasVideoSourceOnSystem();", tab_contents);
-  return result == "has-video-source";
+      ExecuteJavascript("hasVideoInputDeviceOnSystem();", tab_contents);
+  return result == "has-video-input-device";
 }
 
 bool WebRtcTestBase::OnWinXp() const {
