@@ -105,7 +105,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   void SetDefaultNetworkPath(const std::string& service_path) {
     DCHECK(network_portal_detector_);
     network_portal_detector_->SetDefaultNetworkPathForTesting(
-        service_path);
+        service_path,
+        service_path /* guid */);
   }
 
   void SetDetectionResults(

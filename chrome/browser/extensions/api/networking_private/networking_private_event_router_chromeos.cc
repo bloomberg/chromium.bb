@@ -159,10 +159,7 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
            networks.begin();
        iter != networks.end();
        ++iter) {
-    // TODO(gspencer): Currently the "GUID" is actually the service path. Fix
-    // this to be the real GUID once we're using
-    // ManagedNetworkConfigurationManager.
-    changes.push_back((*iter)->path());
+    changes.push_back((*iter)->guid());
   }
 
   scoped_ptr<base::ListValue> args(
@@ -185,7 +182,7 @@ void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
                 network->path());
   scoped_ptr<base::ListValue> args(
       api::networking_private::OnNetworksChanged::Create(
-          std::vector<std::string>(1, network->path())));
+          std::vector<std::string>(1, network->guid())));
   scoped_ptr<Event> extension_event(new Event(
       api::networking_private::OnNetworksChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
@@ -194,7 +191,7 @@ void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
 void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  const std::string path = network ? network->path() : std::string();
+  const std::string path = network ? network->guid() : std::string();
 
   EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router->HasEventListener(

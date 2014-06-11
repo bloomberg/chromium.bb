@@ -16,12 +16,17 @@ NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
 }
 
 void NetworkPortalDetectorTestImpl::SetDefaultNetworkPathForTesting(
-    const std::string& service_path) {
-  DVLOG(1) << "SetDefaultNetworkPathForTesting: " << service_path;
-  if (service_path.empty())
+    const std::string& service_path,
+    const std::string& guid) {
+  DVLOG(1) << "SetDefaultNetworkPathForTesting:"
+           << " service path: " << service_path
+           << " guid: " << guid;
+  if (service_path.empty()) {
     default_network_.reset();
-  else
+  } else {
     default_network_.reset(new NetworkState(service_path));
+    default_network_->SetGuid(guid);
+  }
 }
 
 void NetworkPortalDetectorTestImpl::SetDetectionResultsForTesting(

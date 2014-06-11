@@ -195,7 +195,8 @@ void ManagedUserTestBase::SetUpInProcessBrowserTestFixture() {
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
   network_portal_detector_->SetDefaultNetworkPathForTesting(
-      kStubEthernetServicePath);
+      kStubEthernetServicePath,
+      kStubEthernetServicePath /* guid */);
   network_portal_detector_->SetDetectionResultsForTesting(
       kStubEthernetServicePath, online_state);
 }

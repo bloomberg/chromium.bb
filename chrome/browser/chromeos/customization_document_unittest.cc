@@ -229,15 +229,18 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     DBusThreadManager::InitializeWithStub();
     NetworkHandler::Initialize();
     RunUntilIdle();
+    const NetworkState* default_network =
+        NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
     std::string default_network_path =
-        NetworkHandler::Get()->network_state_handler()->default_network_path();
+        default_network ? default_network->path() : "";
 
     NetworkPortalDetector::InitializeForTesting(&network_portal_detector_);
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
     network_portal_detector_.SetDefaultNetworkPathForTesting(
-        default_network_path);
+        default_network_path,
+        default_network ? default_network->guid() : "");
     network_portal_detector_.SetDetectionResultsForTesting(
         default_network_path, online_state);
 

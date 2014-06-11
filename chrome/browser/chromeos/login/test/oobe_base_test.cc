@@ -58,7 +58,8 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   network_portal_detector_ = new NetworkPortalDetectorTestImpl();
   NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
   network_portal_detector_->SetDefaultNetworkPathForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkPath);
+      FakeShillManagerClient::kFakeEthernetNetworkPath,
+      FakeShillManagerClient::kFakeEthernetNetworkPath /* guid */);
 
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }

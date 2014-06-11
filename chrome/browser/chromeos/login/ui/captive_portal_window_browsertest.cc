@@ -188,7 +188,8 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
     portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
     portal_state.response_code = 200;
     network_portal_detector_->SetDefaultNetworkPathForTesting(
-        FakeShillManagerClient::kFakeEthernetNetworkPath);
+        FakeShillManagerClient::kFakeEthernetNetworkPath,
+        FakeShillManagerClient::kFakeEthernetNetworkPath /* guid */);
     network_portal_detector_->SetDetectionResultsForTesting(
         FakeShillManagerClient::kFakeEthernetNetworkPath, portal_state);
   }

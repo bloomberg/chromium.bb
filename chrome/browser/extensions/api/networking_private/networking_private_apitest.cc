@@ -237,7 +237,7 @@ class ExtensionNetworkingPrivateApiTest
     const bool add_to_visible = true;
     // Tests need a known GUID, so use 'service_path'.
     service_test_->AddServiceWithIPConfig(
-        service_path, service_path /* guid */, name,
+        service_path, service_path + "_GUID" /* guid */, name,
         type, state, "" /* ipconfig_path */,
         add_to_visible);
   }
@@ -327,7 +327,7 @@ class ExtensionNetworkingPrivateApiTest
     AddService("stub_wifi2", "wifi2_PSK", shill::kTypeWifi, shill::kStateIdle);
     service_test_->SetServiceProperty("stub_wifi2",
                                       shill::kGuidProperty,
-                                      base::StringValue("stub_wifi2"));
+                                      base::StringValue("stub_wifi2_GUID"));
     service_test_->SetServiceProperty("stub_wifi2",
                                       shill::kSecurityProperty,
                                       base::StringValue(shill::kSecurityPsk));
@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        CaptivePortalNotification) {
-  detector()->SetDefaultNetworkPathForTesting("wifi");
+  detector()->SetDefaultNetworkPathForTesting("wifi", "wifi_GUID");
   NetworkPortalDetector::CaptivePortalState state;
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   detector()->SetDetectionResultsForTesting("wifi", state);
