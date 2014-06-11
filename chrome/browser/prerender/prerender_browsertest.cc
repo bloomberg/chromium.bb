@@ -4381,7 +4381,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxCancel) {
 }
 
 // Checks that closing the omnibox popup cancels an omnibox prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxAbandon) {
+// Disabled: flaky on all platforms. See http://crbug.com/368721.
+IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
+                       DISABLED_PrerenderOmniboxAbandon) {
   // Set the abandon timeout to something high so it does not introduce
   // flakiness if the prerender times out before the test completes.
   GetPrerenderManager()->mutable_config().abandon_time_to_live =
