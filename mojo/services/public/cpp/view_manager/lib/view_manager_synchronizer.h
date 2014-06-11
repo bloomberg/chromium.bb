@@ -82,6 +82,7 @@ class ViewManagerSynchronizer : public ViewManager,
                    ViewManagerSynchronizer*> SynchronizerMap;
 
   // Overridden from ViewManager:
+  virtual const std::string& GetEmbedderURL() const OVERRIDE;
   virtual const std::vector<ViewTreeNode*>& GetRoots() const OVERRIDE;
   virtual ViewTreeNode* GetNodeById(Id id) OVERRIDE;
   virtual View* GetViewById(Id id) OVERRIDE;
@@ -92,8 +93,9 @@ class ViewManagerSynchronizer : public ViewManager,
   // Overridden from IViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
+      const String& creator_url,
       Id next_server_change_id,
-      mojo::Array<INodePtr> nodes) OVERRIDE;
+      Array<INodePtr> nodes) OVERRIDE;
   virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(Id next_server_change_id) OVERRIDE;
   virtual void OnNodeBoundsChanged(Id node_id,
@@ -103,7 +105,7 @@ class ViewManagerSynchronizer : public ViewManager,
                                       Id new_parent_id,
                                       Id old_parent_id,
                                       Id server_change_id,
-                                      mojo::Array<INodePtr> nodes) OVERRIDE;
+                                      Array<INodePtr> nodes) OVERRIDE;
   virtual void OnNodeDeleted(Id node_id, Id server_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(Id node,
                                   Id new_view_id,
@@ -128,6 +130,8 @@ class ViewManagerSynchronizer : public ViewManager,
   ConnectionSpecificId connection_id_;
   ConnectionSpecificId next_id_;
   Id next_server_change_id_;
+
+  std::string creator_url_;
 
   Transactions pending_transactions_;
 

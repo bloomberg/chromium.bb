@@ -574,6 +574,10 @@ void ViewManagerSynchronizer::RemoveView(Id view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, ViewManager implementation:
 
+const std::string& ViewManagerSynchronizer::GetEmbedderURL() const {
+  return creator_url_;
+}
+
 const std::vector<ViewTreeNode*>& ViewManagerSynchronizer::GetRoots() const {
   return roots_;
 }
@@ -600,10 +604,12 @@ void ViewManagerSynchronizer::OnConnectionEstablished() {
 
 void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
+    const String& creator_url,
     Id next_server_change_id,
-    mojo::Array<INodePtr> nodes) {
+    Array<INodePtr> nodes) {
   connected_ = true;
   connection_id_ = connection_id;
+  creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
   next_server_change_id_ = next_server_change_id;
 
   DCHECK(pending_transactions_.empty());

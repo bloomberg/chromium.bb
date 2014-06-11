@@ -29,7 +29,8 @@ std::string RectToString(const gfx::Rect& rect) {
 std::string ChangeToDescription1(const Change& change) {
   switch (change.type) {
     case CHANGE_TYPE_CONNECTION_ESTABLISHED:
-      return "OnConnectionEstablished";
+      return base::StringPrintf("OnConnectionEstablished creator=%s",
+                                change.creator_url.data());
 
     case CHANGE_TYPE_ROOTS_ADDED:
       return "OnRootsAdded";
@@ -132,12 +133,14 @@ TestChangeTracker::~TestChangeTracker() {
 
 void TestChangeTracker::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
+    const String& creator_url,
     Id next_server_change_id,
     Array<INodePtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
   change.connection_id = connection_id;
   change.change_id = next_server_change_id;
+  change.creator_url = creator_url;
   INodesToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }

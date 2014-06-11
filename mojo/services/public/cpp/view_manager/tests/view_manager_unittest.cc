@@ -705,5 +705,12 @@ TEST_F(ViewManagerTest, MultiRoots) {
   EXPECT_EQ(embedded1, embedded2);
 }
 
+TEST_F(ViewManagerTest, EmbeddingIdentity) {
+  ViewTreeNode* node = ViewTreeNode::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(node);
+  ViewManager* embedded = Embed(window_manager(), node);
+  EXPECT_EQ(kWindowManagerURL, embedded->GetEmbedderURL());
+}
+
 }  // namespace view_manager
 }  // namespace mojo

@@ -116,6 +116,7 @@ interface IViewManagerClient {
   // id of the next change the server is expecting. |nodes| are the nodes
   // parented to the root.
   OnViewManagerConnectionEstablished(uint16 connection_id,
+                                     string creator_url,
                                      uint32 next_server_change_id,
                                      INode[] nodes);
 

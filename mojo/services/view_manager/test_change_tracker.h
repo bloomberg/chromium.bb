@@ -56,6 +56,7 @@ struct Change {
   gfx::Rect bounds;
   gfx::Rect bounds2;
   int32 event_action;
+  String creator_url;
 };
 
 // Converts Changes to string descriptions.
@@ -94,6 +95,7 @@ class TestChangeTracker {
   // Each of these functions generate a Change. There is one per
   // IViewManagerClient function.
   void OnViewManagerConnectionEstablished(ConnectionSpecificId connection_id,
+                                          const String& creator_url,
                                           Id next_server_change_id,
                                           Array<INodePtr> nodes);
   void OnRootsAdded(Array<INodePtr> nodes);

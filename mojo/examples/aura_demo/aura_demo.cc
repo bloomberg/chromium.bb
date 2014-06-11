@@ -148,6 +148,7 @@ class IViewManagerClientImpl
   // IViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
       uint16_t connection_id,
+      const String& creator_url,
       uint32_t next_server_change_id,
       mojo::Array<view_manager::INodePtr> nodes) OVERRIDE;
   virtual void OnRootsAdded(Array<view_manager::INodePtr> nodes) OVERRIDE {
@@ -288,6 +289,7 @@ class AuraDemo : public Application, public WindowTreeHostMojoDelegate {
 
 void IViewManagerClientImpl::OnViewManagerConnectionEstablished(
       uint16_t connection_id,
+      const String& creator_url,
       uint32_t next_server_change_id,
       mojo::Array<view_manager::INodePtr> nodes) {
   const uint32_t view_id = connection_id << 16 | 1;

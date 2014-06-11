@@ -43,6 +43,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
  public:
   ViewManagerConnection(RootNodeManager* root_node_manager,
                         ConnectionSpecificId creator_id,
+                        const std::string& creator_url,
                         const std::string& url);
   virtual ~ViewManagerConnection();
 
@@ -214,6 +215,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // ID of the connection that created us. If 0 it indicates either we were
   // created by the root, or the connection that created us has been destroyed.
   ConnectionSpecificId creator_id_;
+
+  // The URL of the app that embedded the app this connection was created for.
+  const std::string creator_url_;
 
   NodeMap node_map_;
 

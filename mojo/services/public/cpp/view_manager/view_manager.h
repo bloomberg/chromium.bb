@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
@@ -21,6 +22,9 @@ class ViewManager {
  public:
   // Delegate is owned by the caller.
   static void Create(Application* application, ViewManagerDelegate* delegate);
+
+  // Returns the URL of the application that embedded this application.
+  virtual const std::string& GetEmbedderURL() const = 0;
 
   // Returns all root nodes known to this connection.
   virtual const std::vector<ViewTreeNode*>& GetRoots() const = 0;

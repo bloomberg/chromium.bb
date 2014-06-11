@@ -279,10 +279,11 @@ class TestViewManagerClientConnection
   // IViewMangerClient:
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
+      const String& creator_url,
       Id next_server_change_id,
       Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnViewManagerConnectionEstablished(
-        connection_id, next_server_change_id, nodes.Pass());
+        connection_id, creator_url, next_server_change_id, nodes.Pass());
   }
   virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnRootsAdded(nodes.Pass());
@@ -441,7 +442,8 @@ class ViewManagerConnectionTest : public testing::Test {
         EstablishSecondConnectionWithRoots(BuildNodeId(1, 1), 0));
     const std::vector<Change>& changes(connection2_->changes());
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished", ChangesToDescription1(changes)[0]);
+    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
+              ChangesToDescription1(changes)[0]);
     if (create_initial_node) {
       EXPECT_EQ("[node=1,1 parent=null view=null]",
                 ChangeNodeDescription(changes));
@@ -466,7 +468,9 @@ class ViewManagerConnectionTest : public testing::Test {
 
 // Verifies client gets a valid id.
 TEST_F(ViewManagerConnectionTest, ValidId) {
-  EXPECT_EQ("OnConnectionEstablished",
+  // TODO(beng): this should really have the URL of the application that
+  //             connected to ViewManagerInit.
+  EXPECT_EQ("OnConnectionEstablished creator=",
             ChangesToDescription1(connection_->changes())[0]);
 
   // All these tests assume 1 for the client id. The only real assertion here is
@@ -480,7 +484,7 @@ TEST_F(ViewManagerConnectionTest, ValidId) {
 // Verifies two clients/connections get different ids.
 TEST_F(ViewManagerConnectionTest, TwoClientsGetDifferentConnectionIds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_EQ("OnConnectionEstablished",
+  EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
             ChangesToDescription1(connection2_->changes())[0]);
 
   // It isn't strickly necessary that the second connection gets 2, but these
@@ -1044,7 +1048,7 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
                                 BuildNodeId(1, 1), BuildNodeId(1, 3)));
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished", changes[0]);
+    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url", changes[0]);
     EXPECT_EQ("[node=1,1 parent=null view=null],"
               "[node=1,3 parent=null view=null]",
               ChangeNodeDescription(connection2_->changes()));

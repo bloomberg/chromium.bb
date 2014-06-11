@@ -200,8 +200,17 @@ ViewManagerConnection* RootNodeManager::ConnectImpl(
       ViewManagerConnection::Client::Name_,
       pipe.handle1.Pass(),
       String());
+
+  std::string creator_url;
+  ConnectionMap::const_iterator it = connection_map_.find(creator_id);
+  if (it != connection_map_.end())
+    creator_url = it->second->url();
+
   ViewManagerConnection* connection =
-      new ViewManagerConnection(this, creator_id, url.To<std::string>());
+      new ViewManagerConnection(this,
+                                creator_id,
+                                creator_url,
+                                url.To<std::string>());
   connection->SetRoots(node_ids);
   BindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);

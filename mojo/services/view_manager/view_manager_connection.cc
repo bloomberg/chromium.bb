@@ -36,11 +36,13 @@ void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
 
 ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager,
                                              ConnectionSpecificId creator_id,
+                                             const std::string& creator_url,
                                              const std::string& url)
     : root_node_manager_(root_node_manager),
       id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
       url_(url),
       creator_id_(creator_id),
+      creator_url_(creator_url),
       delete_on_connection_error_(false) {
 }
 
@@ -695,6 +697,7 @@ void ViewManagerConnection::OnConnectionEstablished() {
 
   client()->OnViewManagerConnectionEstablished(
       id_,
+      creator_url_,
       root_node_manager_->next_server_change_id(),
       NodesToINodes(to_send));
 }
