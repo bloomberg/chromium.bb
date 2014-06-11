@@ -3535,4 +3535,42 @@ TEST_F(AutofillDialogControllerTest, SwitchFromWalletWithFirstName) {
   ASSERT_NO_FATAL_FAILURE(SwitchToAutofill());
 }
 
+// Regression test for http://crbug.com/382777
+TEST_F(AutofillDialogControllerTest, WalletBillingCountry) {
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-number";
+  FormFieldData billing_country, billing_country_name, shipping_country,
+      shipping_country_name;
+  billing_country.autocomplete_attribute = "billing country";
+  billing_country_name.autocomplete_attribute = "billing country-name";
+  shipping_country.autocomplete_attribute = "shipping country";
+  shipping_country_name.autocomplete_attribute = "shipping country-name";
+
+  FormData form_data;
+  form_data.fields.push_back(cc_field);
+  form_data.fields.push_back(billing_country);
+  form_data.fields.push_back(billing_country_name);
+  form_data.fields.push_back(shipping_country);
+  form_data.fields.push_back(shipping_country_name);
+
+  SetUpControllerWithFormData(form_data);
+  AcceptAndLoadFakeFingerprint();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
+
+  ASSERT_EQ(5U, form_structure()->field_count());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            form_structure()->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("US"), form_structure()->field(1)->value);
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            form_structure()->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("United States"), form_structure()->field(2)->value);
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            form_structure()->field(3)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("US"), form_structure()->field(3)->value);
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            form_structure()->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("United States"), form_structure()->field(4)->value);
+}
+
 }  // namespace autofill

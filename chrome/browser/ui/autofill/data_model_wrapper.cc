@@ -328,10 +328,7 @@ FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
 
 base::string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type)
     const {
-  return full_wallet_->GetInfo(
-      g_browser_process->GetApplicationLocale(),
-      AutofillType(AutofillType::GetEquivalentBillingFieldType(
-          type.GetStorableType())));
+  return full_wallet_->GetInfo(g_browser_process->GetApplicationLocale(), type);
 }
 
 bool FullWalletBillingWrapper::GetDisplayText(
