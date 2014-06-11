@@ -56,9 +56,6 @@ public:
     virtual void discardAgent() { }
     virtual void didCommitLoadForMainFrame() { }
     virtual void flushPendingFrontendMessages() { }
-    virtual void profilerStarted() { }
-    virtual void profilerStopped() { }
-
 
     String name() { return m_name; }
     void appended(InstrumentingAgents*, InspectorState*);
@@ -82,8 +79,6 @@ public:
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
     void flushPendingFrontendMessages();
-    void profilerStarted();
-    void profilerStopped();
 
 private:
     InstrumentingAgents* m_instrumentingAgents;

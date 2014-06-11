@@ -58,18 +58,6 @@ InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentin
 {
 }
 
-void InspectorAgentRegistry::profilerStarted()
-{
-    for (size_t i = 0; i < m_agents.size(); i++)
-        m_agents[i]->profilerStarted();
-}
-
-void InspectorAgentRegistry::profilerStopped()
-{
-    for (size_t i = 0; i < m_agents.size(); i++)
-        m_agents[i]->profilerStopped();
-}
-
 void InspectorAgentRegistry::append(PassOwnPtr<InspectorAgent> agent)
 {
     agent->appended(m_instrumentingAgents, m_inspectorState->createAgentState(agent->name()));

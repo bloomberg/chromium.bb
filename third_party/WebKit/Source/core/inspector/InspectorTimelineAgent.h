@@ -115,9 +115,9 @@ public:
     };
 
     static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
-        InspectorOverlay* overlay, InspectorType type, InspectorClient* client, InspectorAgentRegistry* registry)
+        InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(pageAgent, layerTreeAgent, overlay, type, client, registry));
+        return adoptPtr(new InspectorTimelineAgent(pageAgent, layerTreeAgent, overlay, type, client));
     }
 
     virtual ~InspectorTimelineAgent();
@@ -231,7 +231,7 @@ private:
 
     friend class TimelineRecordStack;
 
-    InspectorTimelineAgent(InspectorPageAgent*, InspectorLayerTreeAgent*, InspectorOverlay*, InspectorType, InspectorClient*, InspectorAgentRegistry*);
+    InspectorTimelineAgent(InspectorPageAgent*, InspectorLayerTreeAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
 
     // Trace event handlers
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
@@ -318,7 +318,6 @@ private:
     bool m_mayEmitFirstPaint;
     HashSet<String> m_liveEvents;
     double m_lastProgressTimestamp;
-    InspectorAgentRegistry* m_registry;
 };
 
 } // namespace WebCore

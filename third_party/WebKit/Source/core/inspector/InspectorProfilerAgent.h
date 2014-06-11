@@ -54,7 +54,7 @@ typedef String ErrorString;
 class InspectorProfilerAgent FINAL : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*, InspectorAgentRegistry*);
+    static PassOwnPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
     void consoleProfile(const String& title, ScriptState*);
@@ -76,7 +76,7 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(InjectedScriptManager*, InspectorOverlay*, InspectorAgentRegistry*);
+    InspectorProfilerAgent(InjectedScriptManager*, InspectorOverlay*);
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
@@ -93,7 +93,6 @@ private:
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;
     double m_idleStartTime;
     InspectorOverlay* m_overlay;
-    InspectorAgentRegistry* m_registry;
 
     void idleStarted();
     void idleFinished();
