@@ -122,7 +122,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
  private:
   ManagePasswordsBubbleView(content::WebContents* web_contents,
-                            views::View* anchor_view,
+                            ManagePasswordsIconView* anchor_view,
                             DisplayReason reason);
   virtual ~ManagePasswordsBubbleView();
 
@@ -143,6 +143,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // shown on the active browser window, so there is no case in which it will be
   // shown twice at the same time.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
+
+  ManagePasswordsIconView* anchor_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };
