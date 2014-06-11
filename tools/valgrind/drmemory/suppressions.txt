@@ -600,3 +600,15 @@ name=http://crbug.com/382789
 *!base::MessagePumpWin::Run
 *!base::MessageLoop::RunHandler
 *!base::Thread::Run
+
+HANDLE LEAK
+name=http://crbug.com/383408
+system call NtCreateEvent
+...
+*!base::internal::LockImpl::Lock
+*!mojo::system::MessagePipe::RemoveWaiter
+*!mojo::system::MessagePipeDispatcher::RemoveWaiterImplNoLock
+*!mojo::system::Dispatcher::RemoveWaiter
+*!mojo::system::Core::WaitManyInternal
+*!mojo::system::Core::WaitMany
+*!MojoWaitMany
