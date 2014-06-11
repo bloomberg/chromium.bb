@@ -1944,9 +1944,12 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
     // relative to the canvas.
     RefPtr<RenderStyle> newStyle = RenderStyle::create();
-    if (RenderStyle* computedStyle = canvas()->computedStyle())
-        newStyle->setFontDescription(computedStyle->fontDescription());
-    else {
+    if (RenderStyle* computedStyle = canvas()->computedStyle()) {
+        FontDescription elementFontDescription(computedStyle->fontDescription());
+        // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
+        elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
+        newStyle->setFontDescription(elementFontDescription);
+    } else {
         FontFamily fontFamily;
         fontFamily.setFamily(defaultFontFamily);
 
