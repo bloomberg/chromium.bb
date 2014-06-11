@@ -246,6 +246,9 @@ void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
       bookmark_node_types[i],
       id_map_.find(id) != id_map_.end());
   }
+
+  // Note: the root node may have additional extra nodes. Currently their
+  // visibility is not affected by sync.
 }
 
 syncer::SyncError BookmarkModelAssociator::DisassociateModels() {
@@ -463,6 +466,9 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
         model_type());
   }
 
+  // Note: the root node may have additional extra nodes. Currently none of
+  // them are meant to sync.
+
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, syncer::kInvalidId);
@@ -615,6 +621,8 @@ int64 BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
   dfs_stack.push(bookmark_model_->other_node());
   if (expect_mobile_bookmarks_folder_)
     dfs_stack.push(bookmark_model_->mobile_node());
+  // Note: the root node may have additional extra nodes. Currently none of
+  // them are meant to sync.
 
   // Remember folders that match delete journals in first pass but don't delete
   // them in case there are bookmarks left under them. After non-folder
