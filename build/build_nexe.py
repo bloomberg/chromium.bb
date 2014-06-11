@@ -633,8 +633,11 @@ class Builder(object):
       * current data/text top addrs
     """
     cmd_line = [self.GetReadElf(), '-W', '--segments', irt_file]
+    # Put LC_ALL=C in the environment for readelf, so that its messages
+    # will reliably match what we're looking for rather than being in some
+    # other language and/or character set.
     env = dict(os.environ)
-    env.update({'LANG': 'en_US.UTF-8'})
+    env['LC_ALL'] = 'C'
     seginfo = self.Run(cmd_line, get_output=True, env=env)
     lines = seginfo.splitlines()
     ph_start = -1
