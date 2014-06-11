@@ -52,7 +52,6 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   void InitializeWithProfile(Profile* profile, app_list::AppListModel* model);
 
  private:
-  using extensions::InstallObserver::OnExtensionUninstalled;
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
 
   // Builds the model with the current profile.

@@ -11,19 +11,22 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
 class Profile;
 
 namespace extensions {
+class ExtensionRegistry;
 class InstallTracker;
 }
 
 namespace app_list {
 
 class WebstoreResult : public ChromeSearchResult,
-                       public extensions::InstallObserver {
+                       public extensions::InstallObserver,
+                       public extensions::ExtensionRegistryObserver {
  public:
   WebstoreResult(Profile* profile,
                  const std::string& app_id,
@@ -46,15 +49,25 @@ class WebstoreResult : public ChromeSearchResult,
   void StartInstall(bool launch_ephemeral_app);
   void InstallCallback(bool success, const std::string& error);
 
-  void StartObservingInstall();
+  // Start observing both InstallObserver and ExtensionRegistryObserver.
+  void StartObserving();
+
   void StopObservingInstall();
+  void StopObservingRegistry();
 
   // extensions::InstallObserver overrides:
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
-  virtual void OnExtensionInstalled(
-      const extensions::Extension* extension) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
+
+  // extensions::ExtensionRegistryObserver overides:
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
 
   Profile* profile_;
   const std::string app_id_;
@@ -66,6 +79,7 @@ class WebstoreResult : public ChromeSearchResult,
 
   AppListControllerDelegate* controller_;
   extensions::InstallTracker* install_tracker_;  // Not owned.
+  extensions::ExtensionRegistry* extension_registry_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreResult);
 };

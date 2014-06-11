@@ -52,9 +52,6 @@
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
-#include "chrome/browser/extensions/install_observer.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
@@ -1603,18 +1600,19 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   // TODO(erikkay): add tests for upgrade cases.
 }
 
-struct MockInstallObserver : public extensions::InstallObserver {
-  MockInstallObserver() {
-  }
-
-  virtual ~MockInstallObserver() {
-  }
-
-  virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {
+struct MockExtensionRegistryObserver
+    : public extensions::ExtensionRegistryObserver {
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE {
     last_extension_installed = extension->id();
   }
 
-  virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE {
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE {
     last_extension_uninstalled = extension->id();
   }
 
@@ -1622,15 +1620,15 @@ struct MockInstallObserver : public extensions::InstallObserver {
   std::string last_extension_uninstalled;
 };
 
-// Test that correct notifications are sent to InstallTracker observers on
+// Test that correct notifications are sent to ExtensionRegistryObserver on
 // extension install and uninstall.
 TEST_F(ExtensionServiceTest, InstallObserverNotified) {
   InitializeEmptyExtensionService();
 
-  extensions::InstallTracker* tracker(
-      extensions::InstallTrackerFactory::GetForProfile(profile_.get()));
-  MockInstallObserver observer;
-  tracker->AddObserver(&observer);
+  extensions::ExtensionRegistry* registry(
+      extensions::ExtensionRegistry::Get(profile_.get()));
+  MockExtensionRegistryObserver observer;
+  registry->AddObserver(&observer);
 
   // A simple extension that should install without error.
   ASSERT_TRUE(observer.last_extension_installed.empty());
@@ -1643,7 +1641,7 @@ TEST_F(ExtensionServiceTest, InstallObserverNotified) {
   UninstallExtension(good_crx, false);
   ASSERT_EQ(good_crx, observer.last_extension_uninstalled);
 
-  tracker->RemoveObserver(&observer);
+  registry->RemoveObserver(&observer);
 }
 
 // Tests that flags passed to OnExternalExtensionFileFound() make it to the
