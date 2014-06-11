@@ -28,9 +28,9 @@ bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
     MojoResult result = BeginReadDataRaw(source.get(), &buffer, &num_bytes,
                                          MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_OK) {
-      fwrite(buffer, 1, num_bytes, fp.get());
+      size_t bytes_written = fwrite(buffer, 1, num_bytes, fp.get());
       result = EndReadDataRaw(source.get(), num_bytes);
-      if (result != MOJO_RESULT_OK)
+      if (bytes_written < num_bytes || result != MOJO_RESULT_OK)
         return false;
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {
       result = Wait(source.get(),
