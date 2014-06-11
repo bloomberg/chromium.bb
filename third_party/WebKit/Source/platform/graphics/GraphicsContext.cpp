@@ -847,7 +847,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
 
     if (deviceScaleFactor == 2) {
         save();
-        scale(FloatSize(0.5, 0.5));
+        scale(0.5, 0.5);
     }
     drawRect(rect, paint);
     if (deviceScaleFactor == 2)
@@ -1470,30 +1470,30 @@ void GraphicsContext::rotate(float angleInRadians)
     m_canvas->rotate(WebCoreFloatToSkScalar(angleInRadians * (180.0f / 3.14159265f)));
 }
 
-void GraphicsContext::translate(float w, float h)
+void GraphicsContext::translate(float x, float y)
 {
     if (contextDisabled())
         return;
 
-    if (!w && !h)
+    if (!x && !y)
         return;
 
     realizeCanvasSave();
 
-    m_canvas->translate(WebCoreFloatToSkScalar(w), WebCoreFloatToSkScalar(h));
+    m_canvas->translate(WebCoreFloatToSkScalar(x), WebCoreFloatToSkScalar(y));
 }
 
-void GraphicsContext::scale(const FloatSize& size)
+void GraphicsContext::scale(float x, float y)
 {
     if (contextDisabled())
         return;
 
-    if (size.width() == 1.0f && size.height() == 1.0f)
+    if (x == 1.0f && y == 1.0f)
         return;
 
     realizeCanvasSave();
 
-    m_canvas->scale(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
+    m_canvas->scale(WebCoreFloatToSkScalar(x), WebCoreFloatToSkScalar(y));
 }
 
 void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
@@ -1523,7 +1523,7 @@ void GraphicsContext::addURLTargetAtPoint(const String& name, const IntPoint& po
     SkAnnotateNamedDestination(m_canvas, SkPoint::Make(pos.x(), pos.y()), nameData);
 }
 
-AffineTransform GraphicsContext::getCTM(IncludeDeviceScale) const
+AffineTransform GraphicsContext::getCTM() const
 {
     if (contextDisabled())
         return AffineTransform();
@@ -1630,7 +1630,7 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
     // resolution than one pixel per unit. Also set up a corresponding scale factor on the
     // graphics context.
 
-    AffineTransform transform = getCTM(DefinitelyIncludeDeviceScale);
+    AffineTransform transform = getCTM();
     IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
 
     SkAlphaType alphaType = (opacityMode == Opaque) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
@@ -1642,8 +1642,8 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
     ASSERT(surface->isValid());
     OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
 
-    buffer->context()->scale(FloatSize(static_cast<float>(scaledSize.width()) / size.width(),
-        static_cast<float>(scaledSize.height()) / size.height()));
+    buffer->context()->scale(static_cast<float>(scaledSize.width()) / size.width(),
+        static_cast<float>(scaledSize.height()) / size.height());
 
     return buffer.release();
 }

@@ -178,7 +178,7 @@ void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
     float scale = width / pageRect.width();
 
     ctx.save();
-    ctx.scale(FloatSize(scale, scale));
+    ctx.scale(scale, scale);
     ctx.translate(-pageRect.x(), -pageRect.y());
     ctx.clip(pageRect);
     m_frame->view()->paintContents(&ctx, pageRect);
@@ -354,7 +354,7 @@ void PrintContext::spoolAllPagesWithBoundaries(LocalFrame* frame, GraphicsContex
 
     graphicsContext.save();
     graphicsContext.translate(0, totalHeight);
-    graphicsContext.scale(FloatSize(1, -1));
+    graphicsContext.scale(1, -1);
 
     int currentHeight = 0;
     for (size_t pageIndex = 0; pageIndex < pageRects.size(); pageIndex++) {

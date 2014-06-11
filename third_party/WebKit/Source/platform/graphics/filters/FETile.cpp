@@ -78,7 +78,7 @@ void FETile::applySoftware()
         return;
 
     GraphicsContext* tileImageContext = tileImage->context();
-    tileImageContext->scale(FloatSize(intTileSize.width() / tileRect.width(), intTileSize.height() / tileRect.height()));
+    tileImageContext->scale(intTileSize.width() / tileRect.width(), intTileSize.height() / tileRect.height());
     tileImageContext->translate(-inMaxEffectLocation.x(), -inMaxEffectLocation.y());
 
     if (ImageBuffer* tileImageBuffer = in->asImageBuffer())

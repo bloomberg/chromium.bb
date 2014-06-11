@@ -189,6 +189,9 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
         }
     }
 
+    // See crbug.com/382491. This test is insufficient to ensure that there is no scale
+    // applied in the compositor, but it is probably adequate here. In the worst case we
+    // draw at high quality when we need not.
     if (!contextIsScaled && scaledLayoutSize == scaledImageSize) {
         // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
         removeLayer(object, innerMap, layer);

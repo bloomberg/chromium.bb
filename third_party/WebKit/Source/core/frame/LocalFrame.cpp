@@ -595,7 +595,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
     if (!buffer)
         return nullptr;
-    buffer->context()->scale(FloatSize(deviceScaleFactor, deviceScaleFactor));
+    buffer->context()->scale(deviceScaleFactor, deviceScaleFactor);
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
@@ -624,7 +624,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
     if (!buffer)
         return nullptr;
-    buffer->context()->scale(FloatSize(deviceScaleFactor, deviceScaleFactor));
+    buffer->context()->scale(deviceScaleFactor, deviceScaleFactor);
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 

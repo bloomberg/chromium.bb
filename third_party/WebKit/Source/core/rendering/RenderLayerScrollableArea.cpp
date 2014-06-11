@@ -1317,7 +1317,7 @@ void RenderLayerScrollableArea::drawPlatformResizerImage(GraphicsContext* contex
     if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
         context->save();
         context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
-        context->scale(FloatSize(-1.0, 1.0));
+        context->scale(-1.0, 1.0);
         context->drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
         context->restore();
         return;

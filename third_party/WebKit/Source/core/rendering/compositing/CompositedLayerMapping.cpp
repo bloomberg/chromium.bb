@@ -1968,7 +1968,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     // painting code.
 
     IntSize offset = paintInfo.offsetFromRenderer;
-    context->translate(-offset);
+    context->translate(-offset.width(), -offset.height());
 
     // The dirtyRect is in the coords of the painting root.
     IntRect dirtyRect(clip);
@@ -2012,7 +2012,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     ASSERT(!paintInfo.renderLayer->usedTransparency());
 
     // Manually restore the context to its original state by applying the opposite translation.
-    context->translate(offset);
+    context->translate(offset.width(), offset.height());
 }
 
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)

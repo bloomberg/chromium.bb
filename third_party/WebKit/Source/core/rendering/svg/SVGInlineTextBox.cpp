@@ -596,7 +596,7 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
         stateSaver.save();
         width *= scalingFactor;
         decorationOrigin.scale(scalingFactor, scalingFactor);
-        context->scale(FloatSize(1 / scalingFactor, 1 / scalingFactor));
+        context->scale(1 / scalingFactor, 1 / scalingFactor);
     }
 
     decorationOrigin.move(0, -scaledFontMetrics.floatAscent() + positionOffsetForDecoration(decoration, scaledFontMetrics, thickness));
@@ -632,7 +632,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
         textOrigin.scale(scalingFactor, scalingFactor);
         textSize.scale(scalingFactor);
         context->save();
-        context->scale(FloatSize(1 / scalingFactor, 1 / scalingFactor));
+        context->scale(1 / scalingFactor, 1 / scalingFactor);
     }
 
     if (hasShadow) {

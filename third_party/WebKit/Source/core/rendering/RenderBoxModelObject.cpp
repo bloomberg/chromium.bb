@@ -474,6 +474,8 @@ void RenderBoxModelObject::clipRoundedInnerRect(GraphicsContext * context, const
     }
 }
 
+// FIXME: See crbug.com/382491. The use of getCTM in this context is incorrect because the matrix returned does not
+// include scales applied at raster time, such as the device zoom.
 static LayoutRect shrinkRectByOnePixel(GraphicsContext* context, const LayoutRect& rect)
 {
     LayoutRect shrunkRect = rect;
@@ -2554,6 +2556,8 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                     if (hasOpaqueBackground) {
                         // FIXME: The function to decide on the policy based on the transform should be a named function.
                         // FIXME: It's not clear if this check is right. What about integral scale factors?
+                        // FIXME: See crbug.com/382491. The use of getCTM may also be wrong because it does not include
+                        // device zoom applied at raster time.
                         AffineTransform transform = context->getCTM();
                         if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
                             rectToClipOut.inflate(-1);
@@ -2733,6 +2737,8 @@ bool RenderBoxModelObject::shouldAntialiasLines(GraphicsContext* context)
 {
     // FIXME: We may want to not antialias when scaled by an integral value,
     // and we may want to antialias when translated by a non-integral value.
+    // FIXME: See crbug.com/382491. getCTM does not include scale factors applied at raster time, such
+    // as device zoom.
     return !context->getCTM().isIdentityOrTranslationOrFlipped();
 }
 

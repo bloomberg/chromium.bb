@@ -726,7 +726,7 @@ void CanvasRenderingContext2D::scale(float sx, float sy)
     }
 
     modifiableState().m_transform = newTransform;
-    c->scale(FloatSize(sx, sy));
+    c->scale(sx, sy);
     m_path.transform(AffineTransform().scaleNonUniform(1.0 / sx, 1.0 / sy));
 }
 
@@ -1539,7 +1539,7 @@ void CanvasRenderingContext2D::drawVideo(HTMLVideoElement* video, FloatRect srcR
     GraphicsContextStateSaver stateSaver(*c);
     c->clip(dstRect);
     c->translate(dstRect.x(), dstRect.y());
-    c->scale(FloatSize(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height()));
+    c->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
     c->translate(-srcRect.x(), -srcRect.y());
     video->paintCurrentFrameInContext(c, IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
     stateSaver.restore();
@@ -2190,7 +2190,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (useMaxWidth) {
         c->translate(location.x(), location.y());
         // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
-        c->scale(FloatSize((fontWidth > 0 ? (width / fontWidth) : 0), 1));
+        c->scale((fontWidth > 0 ? (width / fontWidth) : 0), 1);
         location = FloatPoint();
     }
 

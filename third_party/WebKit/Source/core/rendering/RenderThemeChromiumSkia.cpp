@@ -477,7 +477,7 @@ RenderThemeChromiumSkia::DirectionFlippingScope::DirectionFlippingScope(RenderOb
         return;
     m_paintInfo.context->save();
     m_paintInfo.context->translate(2 * rect.x() + rect.width(), 0);
-    m_paintInfo.context->scale(FloatSize(-1, 1));
+    m_paintInfo.context->scale(-1, 1);
 }
 
 RenderThemeChromiumSkia::DirectionFlippingScope::~DirectionFlippingScope()

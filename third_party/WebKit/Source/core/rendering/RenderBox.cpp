@@ -1127,6 +1127,8 @@ BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsCo
     if (!style->hasBackground() || !style->hasBorder() || !style->hasBorderRadius() || canRenderBorderImage())
         return BackgroundBleedNone;
 
+    // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
+    // rasterized, and should not be relied on to make decisions about bleeding.
     AffineTransform ctm = context->getCTM();
     FloatSize contextScaling(static_cast<float>(ctm.xScale()), static_cast<float>(ctm.yScale()));
 

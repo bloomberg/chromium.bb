@@ -1042,7 +1042,8 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
 }
 
-#define DISPATCH(c1, c2, op, params) do { c1.op(params); c2.op(params); } while (0);
+#define DISPATCH1(c1, c2, op, param1) do { c1.op(param1); c2.op(param1); } while (0);
+#define DISPATCH2(c1, c2, op, param1, param2) do { c1.op(param1, param2); c2.op(param1, param2); } while (0);
 
 TEST(GraphicsContextTest, RecordingTotalMatrix)
 {
@@ -1056,17 +1057,17 @@ TEST(GraphicsContextTest, RecordingTotalMatrix)
     GraphicsContext controlContext(&controlCanvas);
 
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
-    DISPATCH(context, controlContext, scale, FloatSize(2, 2));
+    DISPATCH2(context, controlContext, scale, 2, 2);
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
 
     controlContext.save();
     context.beginRecording(FloatRect(0, 0, 200, 200));
-    DISPATCH(context, controlContext, translate, FloatSize(10, 10));
+    DISPATCH2(context, controlContext, translate, 10, 10);
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
 
     controlContext.save();
     context.beginRecording(FloatRect(10, 10, 100, 100));
-    DISPATCH(context, controlContext, rotate, 45);
+    DISPATCH1(context, controlContext, rotate, 45);
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
 
     controlContext.restore();

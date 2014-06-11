@@ -169,13 +169,13 @@ void RenderWidget::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
     // not the root. In this case, shift the CTM and adjust the paintRect to be root-relative to fix plug-in drawing.
     if (!widgetPaintOffset.isZero()) {
-        paintInfo.context->translate(widgetPaintOffset);
+        paintInfo.context->translate(widgetPaintOffset.width(), widgetPaintOffset.height());
         paintRect.move(-widgetPaintOffset);
     }
     widget->paint(paintInfo.context, paintRect);
 
     if (!widgetPaintOffset.isZero())
-        paintInfo.context->translate(-widgetPaintOffset);
+        paintInfo.context->translate(-widgetPaintOffset.width(), -widgetPaintOffset.height());
 
     if (widget->isFrameView()) {
         FrameView* frameView = toFrameView(widget);

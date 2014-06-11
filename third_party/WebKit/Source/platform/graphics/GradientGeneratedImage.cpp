@@ -38,7 +38,7 @@ void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect&
     destContext->clip(destRect);
     destContext->translate(destRect.x(), destRect.y());
     if (destRect.size() != srcRect.size())
-        destContext->scale(FloatSize(destRect.width() / srcRect.width(), destRect.height() / srcRect.height()));
+        destContext->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
     destContext->translate(-srcRect.x(), -srcRect.y());
     destContext->setFillGradient(m_gradient);
     destContext->fillRect(FloatRect(FloatPoint(), m_size));

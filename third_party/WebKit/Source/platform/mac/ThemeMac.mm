@@ -290,7 +290,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
         context->translate(inflatedRect.x(), inflatedRect.y());
-        context->scale(FloatSize(zoomFactor, zoomFactor));
+        context->scale(zoomFactor, zoomFactor);
         context->translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
@@ -370,7 +370,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
         inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
         context->translate(inflatedRect.x(), inflatedRect.y());
-        context->scale(FloatSize(zoomFactor, zoomFactor));
+        context->scale(zoomFactor, zoomFactor);
         context->translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
@@ -462,7 +462,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
             inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
             inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
             context->translate(inflatedRect.x(), inflatedRect.y());
-            context->scale(FloatSize(zoomFactor, zoomFactor));
+            context->scale(zoomFactor, zoomFactor);
             context->translate(-inflatedRect.x(), -inflatedRect.y());
         }
     } 
@@ -523,7 +523,7 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
         rect.setWidth(rect.width() / zoomFactor);
         rect.setHeight(rect.height() / zoomFactor);
         context->translate(rect.x(), rect.y());
-        context->scale(FloatSize(zoomFactor, zoomFactor));
+        context->scale(zoomFactor, zoomFactor);
         context->translate(-rect.x(), -rect.y());
     }
     CGRect bounds(rect);

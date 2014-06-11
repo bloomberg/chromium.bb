@@ -62,9 +62,9 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
     // Draw the image we're fading away from.
     context->save();
     if (m_crossfadeSize != fromImageSize) {
-        context->scale(FloatSize(
+        context->scale(
             static_cast<float>(m_crossfadeSize.width()) / fromImageSize.width(),
-            static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height()));
+            static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height());
     }
     context->setAlphaAsFloat(inversePercentage);
     context->drawImage(m_fromImage, IntPoint());
@@ -73,9 +73,9 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
     // Draw the image we're fading towards.
     context->save();
     if (m_crossfadeSize != toImageSize) {
-        context->scale(FloatSize(
+        context->scale(
             static_cast<float>(m_crossfadeSize.width()) / toImageSize.width(),
-            static_cast<float>(m_crossfadeSize.height()) / toImageSize.height()));
+            static_cast<float>(m_crossfadeSize.height()) / toImageSize.height());
     }
     context->setAlphaAsFloat(m_percentage);
     context->drawImage(m_toImage, IntPoint(), CompositePlusLighter);
@@ -91,7 +91,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
     context->clip(dstRect);
     context->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())
-        context->scale(FloatSize(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height()));
+        context->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
     context->translate(-srcRect.x(), -srcRect.y());
 
     drawCrossfade(context);

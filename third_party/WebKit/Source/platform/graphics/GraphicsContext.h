@@ -370,20 +370,21 @@ public:
     void clipOut(const Path&);
 
     // ---------- Transformation methods -----------------
-    enum IncludeDeviceScale { DefinitelyIncludeDeviceScale, PossiblyIncludeDeviceScale };
-    AffineTransform getCTM(IncludeDeviceScale includeScale = PossiblyIncludeDeviceScale) const;
+    // Note that the getCTM method returns only the current transform from Blink's perspective,
+    // which is not the final transform used to place content on screen. It cannot be relied upon
+    // for testing where a point will appear on screen or how large it will be.
+    AffineTransform getCTM() const;
     void concatCTM(const AffineTransform& affine) { concat(affineTransformToSkMatrix(affine)); }
     void setCTM(const AffineTransform& affine) { setMatrix(affineTransformToSkMatrix(affine)); }
     void setMatrix(const SkMatrix&);
 
-    void scale(const FloatSize&);
+    void scale(float x, float y);
     void rotate(float angleInRadians);
-    void translate(const FloatSize& size) { translate(size.width(), size.height()); }
     void translate(float x, float y);
 
     // This function applies the device scale factor to the context, making the context capable of
     // acting as a base-level context for a HiDPI environment.
-    void applyDeviceScaleFactor(float deviceScaleFactor) { scale(FloatSize(deviceScaleFactor, deviceScaleFactor)); }
+    void applyDeviceScaleFactor(float deviceScaleFactor) { scale(deviceScaleFactor, deviceScaleFactor); }
     // ---------- End transformation methods -----------------
 
     // URL drawing

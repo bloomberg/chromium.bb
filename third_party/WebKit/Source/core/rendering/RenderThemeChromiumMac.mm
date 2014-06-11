@@ -909,7 +909,7 @@ bool RenderThemeChromiumMac::paintMenuList(RenderObject* o, const PaintInfo& pai
         inflatedRect.setWidth(inflatedRect.width() / zoomLevel);
         inflatedRect.setHeight(inflatedRect.height() / zoomLevel);
         paintInfo.context->translate(inflatedRect.x(), inflatedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
@@ -1102,7 +1102,7 @@ bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
 
     if (!renderProgress->style()->isLeftToRightDirection()) {
         paintInfo.context->translate(2 * inflatedRect.x() + inflatedRect.width(), 0);
-        paintInfo.context->scale(FloatSize(-1, 1));
+        paintInfo.context->scale(-1, 1);
     }
 
     paintInfo.context->drawImageBuffer(imageBuffer.get(),
@@ -1312,7 +1312,7 @@ bool RenderThemeChromiumMac::paintSliderTrack(RenderObject* o, const PaintInfo& 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
     if (zoomLevel != 1) {
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -1377,7 +1377,7 @@ bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& 
     FloatRect unzoomedRect(r.x(), r.y(), sliderThumbWidth, sliderThumbHeight);
     if (zoomLevel != 1.0f) {
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -1462,7 +1462,7 @@ bool RenderThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& 
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -1562,7 +1562,7 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -1661,7 +1661,7 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->scale(zoomLevel, zoomLevel);
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 

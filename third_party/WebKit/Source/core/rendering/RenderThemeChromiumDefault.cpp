@@ -259,7 +259,7 @@ bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo&
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->scale(zoomLevel, zoomLevel);
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -442,7 +442,7 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->scale(zoomLevel, zoomLevel);
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
@@ -469,7 +469,7 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
         i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->scale(zoomLevel, zoomLevel);
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 

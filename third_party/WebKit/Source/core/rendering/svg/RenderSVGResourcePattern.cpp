@@ -242,11 +242,12 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
     GraphicsContext* tileImageContext = tileImage->context();
     ASSERT(tileImageContext);
     IntSize unclampedImageSize(roundedIntSize(absoluteTileBoundaries.size()));
-    tileImageContext->scale(FloatSize(unclampedImageSize.width() / absoluteTileBoundaries.width(), unclampedImageSize.height() / absoluteTileBoundaries.height()));
+    tileImageContext->scale(unclampedImageSize.width() / absoluteTileBoundaries.width(), unclampedImageSize.height() / absoluteTileBoundaries.height());
 
     // The image buffer represents the final rendered size, so the content has to be scaled (to avoid pixelation).
-    tileImageContext->scale(FloatSize(clampedAbsoluteTileBoundaries.width() / tileBoundaries.width(),
-                                      clampedAbsoluteTileBoundaries.height() / tileBoundaries.height()));
+    tileImageContext->scale(
+        clampedAbsoluteTileBoundaries.width() / tileBoundaries.width(),
+        clampedAbsoluteTileBoundaries.height() / tileBoundaries.height());
 
     // Apply tile image transformations.
     if (!tileImageTransform.isIdentity())

@@ -227,6 +227,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
 
     // The ImageBuffer size needs to be scaled to match the final resolution.
     // FIXME: No need to get the full CTM here, we just need the scale.
+    // FIXME: See crbug.com/382491. This scale does not reflect compositor applied
+    // scale factors, such a High DPI or device zoom.
     AffineTransform transform = context->getCTM();
     FloatSize imageBufferScale = FloatSize(transform.xScale(), transform.yScale());
     ASSERT(imageBufferScale.width());
@@ -277,7 +279,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     FloatPoint destOffset = dstRect.location() - topLeftOffset;
 
     context->translate(destOffset.x(), destOffset.y());
-    context->scale(scale);
+    context->scale(scale.width(), scale.height());
 
     FrameView* view = frameView();
     view->resize(containerSize());
