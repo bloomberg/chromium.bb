@@ -475,9 +475,6 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     tests_to_retry_.insert(result.full_name);
   }
 
-  // TODO(phajdan.jr): Flag unreliable unknown results, unless passed on retry.
-  // See http://crbug.com/381733 .
-
   results_tracker_.AddTestResult(result);
 
   // TODO(phajdan.jr): Align counter (padding).
@@ -895,6 +892,11 @@ void TestLauncher::OnLaunchTestProcessFinished(
 }
 
 void TestLauncher::OnTestIterationFinished() {
+  TestResultsTracker::TestStatusMap tests_by_status(
+      results_tracker_.GetTestStatusMapForCurrentIteration());
+  if (!tests_by_status[TestResult::TEST_UNKNOWN].empty())
+    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
+
   // When we retry tests, success is determined by having nothing more
   // to retry (everything eventually passed), as opposed to having
   // no failures at all.

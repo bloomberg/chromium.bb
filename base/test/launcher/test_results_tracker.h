@@ -64,7 +64,19 @@ class TestResultsTracker {
   // true on success.
   bool SaveSummaryAsJSON(const FilePath& path) const WARN_UNUSED_RESULT;
 
+  // Map where keys are test result statuses, and values are sets of tests
+  // which finished with that status.
+  typedef std::map<TestResult::Status, std::set<std::string> > TestStatusMap;
+
+  // Returns a test status map (see above) for current test iteration.
+  TestStatusMap GetTestStatusMapForCurrentIteration() const;
+
+  // Returns a test status map (see above) for all test iterations.
+  TestStatusMap GetTestStatusMapForAllIterations() const;
+
  private:
+  void GetTestStatusForIteration(int iteration, TestStatusMap* map) const;
+
   struct AggregateTestResult {
     AggregateTestResult();
     ~AggregateTestResult();

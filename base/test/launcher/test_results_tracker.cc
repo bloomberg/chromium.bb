@@ -182,16 +182,7 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
 }
 
 void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
-  std::map<TestResult::Status, std::set<std::string> > tests_by_status;
-
-  for (PerIterationData::ResultsMap::const_iterator j =
-           per_iteration_data_[iteration_].results.begin();
-       j != per_iteration_data_[iteration_].results.end();
-       ++j) {
-    // Use the last test result as the final one.
-    TestResult result = j->second.test_results.back();
-    tests_by_status[result.status].insert(result.full_name);
-  }
+  TestStatusMap tests_by_status(GetTestStatusMapForCurrentIteration());
 
   PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
              tests_by_status[TestResult::TEST_FAILURE].end(),
@@ -216,18 +207,7 @@ void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::map<TestResult::Status, std::set<std::string> > tests_by_status;
-
-  for (int i = 0; i <= iteration_; i++) {
-    for (PerIterationData::ResultsMap::const_iterator j =
-             per_iteration_data_[i].results.begin();
-         j != per_iteration_data_[i].results.end();
-         ++j) {
-      // Use the last test result as the final one.
-      TestResult result = j->second.test_results.back();
-      tests_by_status[result.status].insert(result.full_name);
-    }
-  }
+  TestStatusMap tests_by_status(GetTestStatusMapForAllIterations());
 
   fprintf(stdout, "Summary of all test iterations:\n");
   fflush(stdout);
@@ -338,6 +318,33 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
 
   JSONFileValueSerializer serializer(path);
   return serializer.Serialize(*summary_root);
+}
+
+TestResultsTracker::TestStatusMap
+    TestResultsTracker::GetTestStatusMapForCurrentIteration() const {
+  TestStatusMap tests_by_status;
+  GetTestStatusForIteration(iteration_, &tests_by_status);
+  return tests_by_status;
+}
+
+TestResultsTracker::TestStatusMap
+    TestResultsTracker::GetTestStatusMapForAllIterations() const {
+  TestStatusMap tests_by_status;
+  for (int i = 0; i <= iteration_; i++)
+    GetTestStatusForIteration(i, &tests_by_status);
+  return tests_by_status;
+}
+
+void TestResultsTracker::GetTestStatusForIteration(
+    int iteration, TestStatusMap* map) const {
+  for (PerIterationData::ResultsMap::const_iterator j =
+           per_iteration_data_[iteration].results.begin();
+       j != per_iteration_data_[iteration].results.end();
+       ++j) {
+    // Use the last test result as the final one.
+    const TestResult& result = j->second.test_results.back();
+    (*map)[result.status].insert(result.full_name);
+  }
 }
 
 TestResultsTracker::AggregateTestResult::AggregateTestResult() {
