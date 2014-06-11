@@ -105,7 +105,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_agents.append(tracingAgentPtr.release());
 
     OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_layerTreeAgent,
-        overlay, InspectorTimelineAgent::PageInspector, inspectorClient));
+        overlay, InspectorTimelineAgent::PageInspector, inspectorClient, &m_agents));
     m_timelineAgent = timelineAgentPtr.get();
     m_agents.append(timelineAgentPtr.release());
 
@@ -169,7 +169,7 @@ void InspectorController::initializeDeferredAgents()
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
 
-    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, overlay));
+    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, overlay, &m_agents));
 
     m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
 

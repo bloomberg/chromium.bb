@@ -83,12 +83,12 @@ public:
     String m_title;
 };
 
-PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, InspectorAgentRegistry* registry)
 {
-    return adoptPtr(new InspectorProfilerAgent(injectedScriptManager, overlay));
+    return adoptPtr(new InspectorProfilerAgent(injectedScriptManager, overlay, registry));
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorProfilerAgent::InspectorProfilerAgent(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, InspectorAgentRegistry* registry)
     : InspectorBaseAgent<InspectorProfilerAgent>("Profiler")
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
@@ -96,6 +96,7 @@ InspectorProfilerAgent::InspectorProfilerAgent(InjectedScriptManager* injectedSc
     , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
     , m_idleStartTime(0.0)
     , m_overlay(overlay)
+    , m_registry(registry)
 {
 }
 
@@ -217,6 +218,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
     if (m_overlay)
         m_overlay->startedRecordingProfile();
     m_frontendInitiatedProfileId = nextProfileId();
+    m_registry->profilerStarted();
     ScriptProfiler::start(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
@@ -237,6 +239,7 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     if (m_overlay)
         m_overlay->finishedRecordingProfile();
     RefPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(m_frontendInitiatedProfileId);
+    m_registry->profilerStopped();
     m_frontendInitiatedProfileId = String();
     if (scriptProfile && profile)
         *profile = createCPUProfile(*scriptProfile);

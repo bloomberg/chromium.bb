@@ -346,6 +346,7 @@ void InspectorTimelineAgent::innerStart()
 {
     if (m_overlay)
         m_overlay->startedRecordingProfile();
+    m_registry->profilerStarted();
     m_state->setBoolean(TimelineAgentState::started, true);
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
@@ -402,6 +403,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
             m_client->stopGPUEventsRecording();
     }
     m_instrumentingAgents->setInspectorTimelineAgent(0);
+    m_registry->profilerStopped();
     ScriptGCEvent::removeEventListener(this);
 
     clearRecordStack();
@@ -1147,7 +1149,7 @@ void InspectorTimelineAgent::unwindRecordStack()
 }
 
 InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
-    InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
+    InspectorOverlay* overlay, InspectorType type, InspectorClient* client, InspectorAgentRegistry* registry)
     : InspectorBaseAgent<InspectorTimelineAgent>("Timeline")
     , m_pageAgent(pageAgent)
     , m_layerTreeAgent(layerTreeAgent)
@@ -1163,6 +1165,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
     , m_paintSetupStart(0)
     , m_mayEmitFirstPaint(false)
     , m_lastProgressTimestamp(0)
+    , m_registry(registry)
 {
 }
 
