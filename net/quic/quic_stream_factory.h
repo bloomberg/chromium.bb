@@ -172,8 +172,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     quic_server_info_factory_ = quic_server_info_factory;
   }
 
-  bool enable_pacing() const { return enable_pacing_; }
-
  private:
   class Job;
   friend class test::QuicStreamFactoryPeer;
@@ -260,7 +258,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Origins which have gone away recently.
   AliasSet gone_away_aliases_;
 
-  QuicConfig config_;
+  const QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 
   JobMap active_jobs_;
@@ -273,9 +271,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // then we will just let the OS select a random client port for each new
   // connection.
   bool enable_port_selection_;
-
-  // True if packet pacing should be advertised during the crypto handshake.
-  bool enable_pacing_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that
