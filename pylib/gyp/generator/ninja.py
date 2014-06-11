@@ -393,6 +393,8 @@ class NinjaWriter:
       self.ninja.variable('arch', self.win_env[arch])
       self.ninja.variable('cc', '$cl_' + arch)
       self.ninja.variable('cxx', '$cl_' + arch)
+      self.ninja.variable('cc_host', '$cl_' + arch)
+      self.ninja.variable('cxx_host', '$cl_' + arch)
 
     if self.flavor == 'mac':
       self.archs = self.xcode_settings.GetActiveArchs(config_name)
@@ -1715,11 +1717,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
   #   to cc/cxx.
   if flavor == 'win':
-    # Overridden by local arch choice in the use_deps case.
-    # Chromium's ffmpeg c99conv.py currently looks for a 'cc =' line in
-    # build.ninja so needs something valid here. http://crbug.com/233985
-    cc = 'cl.exe'
-    cxx = 'cl.exe'
+    # cc and cxx must be set to the correct architecture by overriding with one
+    # of cl_x86 or cl_x64 below.
+    cc = 'UNSET'
+    cxx = 'UNSET'
     ld = 'link.exe'
     ld_host = '$ld'
   else:
