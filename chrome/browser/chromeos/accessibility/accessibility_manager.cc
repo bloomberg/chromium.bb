@@ -12,6 +12,8 @@
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -157,50 +159,77 @@ class ContentScriptLoader {
   std::queue<extensions::ExtensionResource> resources_;
 };
 
-void LoadChromeVoxExtension(Profile* profile,
-                            RenderViewHost* render_view_host) {
+void InjectChromeVoxContentScript(
+    ExtensionService* extension_service,
+    int render_process_id,
+    int render_view_id,
+    const base::Closure& done_cb);
+
+void LoadChromeVoxExtension(
+    Profile* profile,
+    RenderViewHost* render_view_host,
+    base::Closure done_cb) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  std::string extension_id =
-      extension_service->component_loader()->AddChromeVoxExtension();
   if (render_view_host) {
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    const extensions::Extension* extension =
-        extension_service->extensions()->GetByID(extension_id);
-
-    // Set a flag to tell ChromeVox that it's just been enabled,
-    // so that it won't interrupt our speech feedback enabled message.
-    ExtensionMsg_ExecuteCode_Params params;
-    params.request_id = 0;
-    params.extension_id = extension->id();
-    params.is_javascript = true;
-    params.code = "window.INJECTED_AFTER_LOAD = true;";
-    params.run_at = extensions::UserScript::DOCUMENT_IDLE;
-    params.all_frames = true;
-    params.match_about_blank = false;
-    params.in_main_world = false;
-    render_view_host->Send(new ExtensionMsg_ExecuteCode(
-        render_view_host->GetRoutingID(), params));
-
-    // Inject ChromeVox' content scripts.
-    ContentScriptLoader* loader = new ContentScriptLoader(
-        extension->id(), render_view_host->GetProcess()->GetID(),
-        render_view_host->GetRoutingID());
-
-    const extensions::UserScriptList& content_scripts =
-        extensions::ContentScriptsInfo::GetContentScripts(extension);
-    for (size_t i = 0; i < content_scripts.size(); i++) {
-      const extensions::UserScript& script = content_scripts[i];
-      for (size_t j = 0; j < script.js_scripts().size(); ++j) {
-        const extensions::UserScript::File &file = script.js_scripts()[j];
-        extensions::ExtensionResource resource = extension->GetResource(
-            file.relative_path());
-        loader->AppendScript(resource);
-      }
-    }
-    loader->Run();  // It cleans itself up when done.
+    // Wrap the passed in callback to inject the content script.
+    done_cb = base::Bind(
+        &InjectChromeVoxContentScript,
+        extension_service,
+        render_view_host->GetProcess()->GetID(),
+        render_view_host->GetRoutingID(),
+        done_cb);
   }
+  extension_service->component_loader()->AddChromeVoxExtension(done_cb);
+}
+
+void InjectChromeVoxContentScript(
+    ExtensionService* extension_service,
+    int render_process_id,
+    int render_view_id,
+    const base::Closure& done_cb) {
+  // Make sure to always run |done_cb|.  ChromeVox was loaded even if we end up
+  // not injecting into this particular render view.
+  base::ScopedClosureRunner done_runner(done_cb);
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return;
+  const extensions::Extension* extension =
+      extension_service->extensions()->GetByID(
+          extension_misc::kChromeVoxExtensionId);
+
+  // Set a flag to tell ChromeVox that it's just been enabled,
+  // so that it won't interrupt our speech feedback enabled message.
+  ExtensionMsg_ExecuteCode_Params params;
+  params.request_id = 0;
+  params.extension_id = extension->id();
+  params.is_javascript = true;
+  params.code = "window.INJECTED_AFTER_LOAD = true;";
+  params.run_at = extensions::UserScript::DOCUMENT_IDLE;
+  params.all_frames = true;
+  params.match_about_blank = false;
+  params.in_main_world = false;
+  render_view_host->Send(new ExtensionMsg_ExecuteCode(
+      render_view_host->GetRoutingID(), params));
+
+  // Inject ChromeVox' content scripts.
+  ContentScriptLoader* loader = new ContentScriptLoader(
+      extension->id(), render_view_host->GetProcess()->GetID(),
+      render_view_host->GetRoutingID());
+
+  const extensions::UserScriptList& content_scripts =
+      extensions::ContentScriptsInfo::GetContentScripts(extension);
+  for (size_t i = 0; i < content_scripts.size(); i++) {
+    const extensions::UserScript& script = content_scripts[i];
+    for (size_t j = 0; j < script.js_scripts().size(); ++j) {
+      const extensions::UserScript::File &file = script.js_scripts()[j];
+      extensions::ExtensionResource resource = extension->GetResource(
+          file.relative_path());
+      loader->AppendScript(resource);
+    }
+  }
+  loader->Run();  // It cleans itself up when done.
 }
 
 void UnloadChromeVoxExtension(Profile* profile) {
@@ -523,19 +552,22 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 }
 
 void AccessibilityManager::LoadChromeVox() {
+  base::Closure done_cb = base::Bind(&AccessibilityManager::PostLoadChromeVox,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     profile_);
   ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
   if (screen_locker && screen_locker->locked()) {
     // If on the lock screen, loads ChromeVox only to the lock screen as for
     // now. On unlock, it will be loaded to the user screen.
     // (see. AccessibilityManager::Observe())
-    LoadChromeVoxToLockScreen();
+    LoadChromeVoxToLockScreen(done_cb);
   } else {
-    LoadChromeVoxToUserScreen();
+    LoadChromeVoxToUserScreen(done_cb);
   }
-  PostLoadChromeVox(profile_);
 }
 
-void AccessibilityManager::LoadChromeVoxToUserScreen() {
+void AccessibilityManager::LoadChromeVoxToUserScreen(
+    const base::Closure& done_cb) {
   if (chrome_vox_loaded_on_user_screen_)
     return;
 
@@ -556,12 +588,15 @@ void AccessibilityManager::LoadChromeVoxToUserScreen() {
     chrome_vox_loaded_on_lock_screen_ = true;
   }
 
-  LoadChromeVoxExtension(profile_, login_web_ui ?
-      login_web_ui->GetWebContents()->GetRenderViewHost() : NULL);
   chrome_vox_loaded_on_user_screen_ = true;
+  LoadChromeVoxExtension(
+      profile_, login_web_ui ?
+      login_web_ui->GetWebContents()->GetRenderViewHost() : NULL,
+      done_cb);
 }
 
-void AccessibilityManager::LoadChromeVoxToLockScreen() {
+void AccessibilityManager::LoadChromeVoxToLockScreen(
+    const base::Closure& done_cb) {
   if (chrome_vox_loaded_on_lock_screen_)
     return;
 
@@ -570,9 +605,11 @@ void AccessibilityManager::LoadChromeVoxToLockScreen() {
     content::WebUI* lock_web_ui = screen_locker->GetAssociatedWebUI();
     if (lock_web_ui) {
       Profile* profile = Profile::FromWebUI(lock_web_ui);
-      LoadChromeVoxExtension(profile,
-          lock_web_ui->GetWebContents()->GetRenderViewHost());
       chrome_vox_loaded_on_lock_screen_ = true;
+      LoadChromeVoxExtension(
+          profile,
+          lock_web_ui->GetWebContents()->GetRenderViewHost(),
+          done_cb);
     }
   }
 }
@@ -925,7 +962,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
 }
 
 void AccessibilityManager::InjectChromeVox(RenderViewHost* render_view_host) {
-  LoadChromeVoxExtension(profile_, render_view_host);
+  LoadChromeVoxExtension(profile_, render_view_host, base::Closure());
 }
 
 scoped_ptr<AccessibilityStatusSubscription>
@@ -1013,16 +1050,13 @@ void AccessibilityManager::Observe(
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       bool is_screen_locked = *content::Details<bool>(details).ptr();
       if (spoken_feedback_enabled_) {
-        if (is_screen_locked) {
-          LoadChromeVoxToLockScreen();
-
-          // Status tray gets verbalized by user screen ChromeVox, so we need
-          // this as well.
-          LoadChromeVoxToUserScreen();
-        } else {
-          // If spoken feedback was enabled, also enable it on the user screen.
-          LoadChromeVoxToUserScreen();
-        }
+        if (is_screen_locked)
+          LoadChromeVoxToLockScreen(base::Closure());
+        // If spoken feedback was enabled, make sure it is also enabled on
+        // the user screen.
+        // The status tray gets verbalized by user screen ChromeVox, so we need
+        // to load it on the user screen even if the screen is locked.
+        LoadChromeVoxToUserScreen(base::Closure());
       }
       break;
     }

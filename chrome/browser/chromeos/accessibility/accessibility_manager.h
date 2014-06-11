@@ -9,6 +9,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/session/session_state_observer.h"
+#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -195,8 +196,8 @@ class AccessibilityManager
 
  private:
   void LoadChromeVox();
-  void LoadChromeVoxToUserScreen();
-  void LoadChromeVoxToLockScreen();
+  void LoadChromeVoxToUserScreen(const base::Closure& done_cb);
+  void LoadChromeVoxToLockScreen(const base::Closure& done_cb);
   void UnloadChromeVox();
   void UnloadChromeVoxFromLockScreen();
   void PostLoadChromeVox(Profile* profile);

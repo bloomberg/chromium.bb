@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 
 class ExtensionServiceInterface;
@@ -97,7 +99,10 @@ class ComponentLoader {
   void Reload(const std::string& extension_id);
 
 #if defined(OS_CHROMEOS)
-  std::string AddChromeVoxExtension();
+  // Calls |done_cb|, if not a null callback, on success.
+  // NOTE: |done_cb| is not called if the component loader is shut down
+  // during loading.
+  void AddChromeVoxExtension(const base::Closure& done_cb);
   std::string AddChromeOsSpeechSynthesisExtension();
 #endif
 
@@ -146,6 +151,16 @@ class ComponentLoader {
   // Enable HTML5 FileSystem for given component extension in Guest mode.
   void EnableFileSystemInGuestMode(const std::string& id);
 
+#if defined(OS_CHROMEOS)
+  // Used as a reply callback when loading the ChromeVox extension.
+  // Called with a |chromevox_path| and parsed |manifest| and invokes
+  // |done_cb| after adding the extension.
+  void AddChromeVoxExtensionWithManifest(
+      const base::FilePath& chromevox_path,
+      const base::Closure& done_cb,
+      scoped_ptr<base::DictionaryValue> manifest);
+#endif
+
   PrefService* profile_prefs_;
   PrefService* local_state_;
   content::BrowserContext* browser_context_;
@@ -155,6 +170,8 @@ class ComponentLoader {
   // List of registered component extensions (see Manifest::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extensions_;
+
+  base::WeakPtrFactory<ComponentLoader> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(TtsApiTest, NetworkSpeechEngine);
   FRIEND_TEST_ALL_PREFIXES(TtsApiTest, NoNetworkSpeechEngineWhenOffline);
