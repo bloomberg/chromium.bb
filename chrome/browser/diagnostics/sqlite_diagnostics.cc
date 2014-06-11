@@ -24,7 +24,6 @@
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/database_tracker.h"
-#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace diagnostics {
 
@@ -200,15 +199,6 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 };
 
 }  // namespace
-
-DiagnosticsTest* MakeSqliteAppCacheDbTest() {
-  base::FilePath appcache_dir(content::kAppCacheDirname);
-  base::FilePath appcache_db =
-      appcache_dir.Append(appcache::kAppCacheDatabaseName);
-  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
-                                 DIAGNOSTICS_SQLITE_INTEGRITY_APP_CACHE_TEST,
-                                 appcache_db);
-}
 
 DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
   return new SqliteIntegrityTest(
