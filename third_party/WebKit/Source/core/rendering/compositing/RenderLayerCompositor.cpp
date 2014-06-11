@@ -557,11 +557,6 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
     compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
 }
 
-void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)
-{
-    setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-}
-
 void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer* child)
 {
     if (!child->hasCompositedLayerMapping() || parent->renderer()->documentBeingDestroyed())

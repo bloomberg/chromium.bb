@@ -124,8 +124,6 @@ public:
 
     void repaintInCompositedAncestor(RenderLayer*, const LayoutRect&);
 
-    // Notify us that a layer has been added or removed
-    void layerWasAdded(RenderLayer* parent, RenderLayer* child);
     void layerWillBeRemoved(RenderLayer* parent, RenderLayer* child);
 
     void repaintCompositedLayers();

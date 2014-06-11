@@ -1375,6 +1375,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     child->m_parent = this;
 
     setNeedsCompositingInputsUpdate();
+    compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
     if (child->stackingNode()->isNormalFlowOnly())
         m_stackingNode->dirtyNormalFlowList();
@@ -1395,8 +1396,6 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
 
     if (child->blendInfo().hasBlendMode() || child->blendInfo().childLayerHasBlendMode())
         m_blendInfo.setAncestorChainBlendedDescendant();
-
-    compositor()->layerWasAdded(this, child);
 }
 
 RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
