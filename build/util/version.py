@@ -133,8 +133,8 @@ Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
   try:
     try:
       opts, args = getopt.getopt(argv[1:], short_options, long_options)
-    except getopt.error, msg:
-      raise Usage(msg)
+    except getopt.error, err:
+      raise Usage(err.msg)
     for o, a in opts:
       if o in ('-e', '--eval'):
         try:
