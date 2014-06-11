@@ -65,6 +65,7 @@
 #include "core/plugins/PluginOcclusionSupport.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderLayer.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
@@ -288,20 +289,27 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     if (m_webLayer == layer)
         return;
 
-    // If anyone of the layers is null we need to switch between hardware
-    // and software compositing.
-    if (!m_webLayer || !layer) {
-        m_element->setNeedsCompositingUpdate();
-        // Trigger a style recalc so we update the
-        // requiresAcceleratedCompositingForExternalReasons bit in
-        // RenderStyle and thus give the plugin a NormalLayer RenderLayer.
-        m_element->setNeedsStyleRecalc(LocalStyleChange);
-    }
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
     if (layer)
         GraphicsLayer::registerContentsLayer(layer);
+
+    // If either of the layers is null we need to switch between hardware
+    // and software compositing.
+    bool needsCompositingUpdate = !m_webLayer || !layer;
+
     m_webLayer = layer;
+
+    if (!needsCompositingUpdate)
+        return;
+
+    m_element->setNeedsCompositingUpdate();
+    // Being composited or not affects the self painting layer bit
+    // on the RenderLayer.
+    if (RenderPart* renderer = m_element->renderPart()) {
+        ASSERT(renderer->hasLayer());
+        renderer->layer()->updateSelfPaintingLayer();
+    }
 }
 
 bool WebPluginContainerImpl::supportsPaginatedPrint() const
