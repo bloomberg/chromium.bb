@@ -200,8 +200,7 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
     // This is tripped by LayoutTests/compositing/content-changed-chicken-egg.html
     DisableCompositingQueryAsserts disabler;
 
-    // This can get called when video becomes accelerated, so the layers may change.
-    if (changeType == CanvasChanged || changeType == VideoChanged || changeType == FullScreenChanged)
+    if (changeType == CanvasChanged)
         compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
     if (changeType == CanvasContextChanged) {

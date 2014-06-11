@@ -210,7 +210,7 @@ void RenderVideo::updatePlayer()
     if (!videoElement()->isActive())
         return;
 
-    contentChanged(VideoChanged);
+    videoElement()->setNeedsCompositingUpdate();
 }
 
 LayoutUnit RenderVideo::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
