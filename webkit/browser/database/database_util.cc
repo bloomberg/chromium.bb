@@ -8,8 +8,29 @@
 #include "base/strings/utf_string_conversions.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/database/vfs_backend.h"
+#include "webkit/common/database/database_identifier.h"
 
 namespace webkit_database {
+
+namespace {
+
+bool IsSafeSuffix(const base::string16& suffix) {
+  base::char16 prev_c = 0;
+  for (base::string16::const_iterator it = suffix.begin();
+      it < suffix.end(); ++it) {
+    base::char16 c = *it;
+    if (!(IsAsciiAlpha(c) || IsAsciiDigit(c) ||
+              c == '-' || c == '.' || c == '_')) {
+      return false;
+    }
+    if (c == '.' && prev_c == '.')
+      return false;
+    prev_c = c;
+  }
+  return true;
+}
+
+}
 
 const char DatabaseUtil::kJournalFileSuffix[] = "-journal";
 
@@ -31,18 +52,27 @@ bool DatabaseUtil::CrackVfsFileName(const base::string16& vfs_file_name,
     return false;
   }
 
-  if (origin_identifier) {
-    *origin_identifier = base::UTF16ToASCII(
+  std::string origin_id = base::UTF16ToASCII(
         vfs_file_name.substr(0, first_slash_index));
-  }
+  if (!IsValidOriginIdentifier(origin_id))
+    return false;
+
+  base::string16 suffix = vfs_file_name.substr(
+      last_pound_index + 1, vfs_file_name.length() - last_pound_index - 1);
+  if (!IsSafeSuffix(suffix))
+    return false;
+
+  if (origin_identifier)
+    *origin_identifier = origin_id;
+
   if (database_name) {
     *database_name = vfs_file_name.substr(
         first_slash_index + 1, last_pound_index - first_slash_index - 1);
   }
-  if (sqlite_suffix) {
-    *sqlite_suffix = vfs_file_name.substr(
-        last_pound_index + 1, vfs_file_name.length() - last_pound_index - 1);
-  }
+
+  if (sqlite_suffix)
+    *sqlite_suffix = suffix;
+
   return true;
 }
 
@@ -72,14 +102,7 @@ base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
 
 bool DatabaseUtil::IsValidOriginIdentifier(
     const std::string& origin_identifier) {
-  std::string dotdot = "..";
-  char forbidden[] = {'\\', '/', '\0'};
-
-  std::string::size_type pos = origin_identifier.find(dotdot);
-  if (pos == std::string::npos)
-    pos = origin_identifier.find_first_of(forbidden, 0, arraysize(forbidden));
-
-  return pos == std::string::npos;
+  return GetOriginFromIdentifier(origin_identifier).is_valid();
 }
 
 }  // namespace webkit_database

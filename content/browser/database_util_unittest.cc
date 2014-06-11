@@ -44,14 +44,17 @@ namespace content {
 
 // Test DatabaseUtil::CrackVfsFilePath on various inputs.
 TEST(DatabaseUtilTest, CrackVfsFilePathTest) {
-  TestVfsFilePath(true, "origin/#", "origin", "", "");
-  TestVfsFilePath(true, "origin/#suffix", "origin", "", "suffix");
-  TestVfsFilePath(true, "origin/db_name#", "origin", "db_name", "");
-  TestVfsFilePath(true, "origin/db_name#suffix", "origin", "db_name", "suffix");
-  TestVfsFilePath(false, "origindb_name#");
-  TestVfsFilePath(false, "origindb_name#suffix");
-  TestVfsFilePath(false, "origin/db_name");
-  TestVfsFilePath(false, "origin#db_name/suffix");
+  TestVfsFilePath(true, "http_origin_0/#", "http_origin_0", "", "");
+  TestVfsFilePath(true,
+      "http_origin_0/#suffix", "http_origin_0", "", "suffix");
+  TestVfsFilePath(true,
+      "http_origin_0/db_name#", "http_origin_0", "db_name", "");
+  TestVfsFilePath(true,
+      "http_origin_0/db_name#suffix", "http_origin_0", "db_name", "suffix");
+  TestVfsFilePath(false, "http_origin_0db_name#");
+  TestVfsFilePath(false, "http_origin_0db_name#suffix");
+  TestVfsFilePath(false, "http_origin_0/db_name");
+  TestVfsFilePath(false, "http_origin_0#db_name/suffix");
   TestVfsFilePath(false, "/db_name#");
   TestVfsFilePath(false, "/db_name#suffix");
 }
@@ -65,10 +68,11 @@ TEST(DatabaseUtilTest, OriginIdentifiers) {
 
 TEST(DatabaseUtilTest, IsValidOriginIdentifier) {
   TestValidOriginIdentifier(true,  "http_bar_0");
-  TestValidOriginIdentifier(true,  "");
+  TestValidOriginIdentifier(false,  "");
   TestValidOriginIdentifier(false, "bad..id");
   TestValidOriginIdentifier(false, "bad/id");
   TestValidOriginIdentifier(false, "bad\\id");
+  TestValidOriginIdentifier(false, "http_bad:0_2");
   TestValidOriginIdentifier(false, std::string("bad\0id", 6));
 }
 

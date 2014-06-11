@@ -58,6 +58,13 @@ DatabaseIdentifier DatabaseIdentifier::CreateFromOrigin(const GURL& origin) {
 DatabaseIdentifier DatabaseIdentifier::Parse(const std::string& identifier) {
   if (!base::IsStringASCII(identifier))
     return DatabaseIdentifier();
+  if (identifier.find("..") != std::string::npos)
+    return DatabaseIdentifier();
+  char forbidden[] = {'\\', '/', ':' ,'\0'};
+  if (identifier.find_first_of(forbidden, 0, arraysize(forbidden)) !=
+          std::string::npos) {
+    return DatabaseIdentifier();
+  }
 
   size_t first_underscore = identifier.find_first_of('_');
   if (first_underscore == std::string::npos || first_underscore == 0)
