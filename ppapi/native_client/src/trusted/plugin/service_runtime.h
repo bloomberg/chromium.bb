@@ -194,6 +194,7 @@ class ServiceRuntime {
   // Establish an SrpcClient to the sel_ldr instance and load the nexe.
   // The nexe to be started is passed through |file_info|.
   // Upon completion |callback| is invoked with status code.
+  // This function must be called on the main thread.
   void LoadNexeAndStart(PP_NaClFileInfo file_info,
                         const pp::CompletionCallback& callback);
 
