@@ -57,34 +57,6 @@
 
 namespace WebCore {
 
-class DeprecatedDirtyCompositingDuringCompositingUpdate {
-    WTF_MAKE_NONCOPYABLE(DeprecatedDirtyCompositingDuringCompositingUpdate);
-public:
-    DeprecatedDirtyCompositingDuringCompositingUpdate(DocumentLifecycle& lifecycle)
-        : m_lifecycle(lifecycle)
-        , m_deprecatedTransition(lifecycle.state(), DocumentLifecycle::LayoutClean)
-        , m_originalState(lifecycle.state())
-    {
-    }
-
-    ~DeprecatedDirtyCompositingDuringCompositingUpdate()
-    {
-        if (m_originalState != DocumentLifecycle::InCompositingUpdate)
-            return;
-        if (m_lifecycle.state() != m_originalState) {
-            // FIXME: It's crazy that we can trigger a style recalc from inside
-            // the compositing update, but that happens in compositing/visibility/hidden-iframe.html.
-            ASSERT(m_lifecycle.state() == DocumentLifecycle::LayoutClean || m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
-            m_lifecycle.advanceTo(m_originalState);
-        }
-    }
-
-private:
-    DocumentLifecycle& m_lifecycle;
-    DocumentLifecycle::DeprecatedTransition m_deprecatedTransition;
-    DocumentLifecycle::State m_originalState;
-};
-
 RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     : m_renderView(renderView)
     , m_compositingReasonFinder(renderView)
@@ -217,10 +189,12 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 
     ScriptForbiddenScope forbidScript;
 
+    // FIXME: enableCompositingModeIfNeeded can trigger a CompositingUpdateRebuildTree,
+    // which asserts that it's not InCompositingUpdate.
+    enableCompositingModeIfNeeded();
+
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
-
     updateIfNeeded();
-
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
     DocumentAnimations::startPendingAnimations(m_renderView.document());
@@ -314,17 +288,6 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
 
 void RenderLayerCompositor::updateIfNeeded()
 {
-    {
-        // FIXME: Notice that we call this function before checking the dirty bits below.
-        // We'll need to remove DeprecatedDirtyCompositingDuringCompositingUpdate
-        // before moving this function after checking the dirty bits.
-        DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
-
-        // FIXME: enableCompositingModeIfNeeded can trigger a CompositingUpdateRebuildTree,
-        // which asserts that it's not InCompositingUpdate.
-        enableCompositingModeIfNeeded();
-    }
-
     CompositingUpdateType updateType = m_pendingUpdateType;
     m_pendingUpdateType = CompositingUpdateNone;
 
