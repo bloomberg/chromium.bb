@@ -679,16 +679,6 @@ void RenderLayerScrollableArea::updateAfterLayout()
     }
 
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
-
-    {
-        // FIXME: We should not be allowing repaint during layout. crbug.com/336251
-        AllowPaintInvalidationScope scoper(box().view()->frameView());
-
-        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-        // https://code.google.com/p/chromium/issues/detail?id=343756
-        DisableCompositingQueryAsserts disabler;
-        box().view()->compositor()->updateLayerCompositingState(box().layer());
-    }
 }
 
 bool RenderLayerScrollableArea::hasHorizontalOverflow() const
