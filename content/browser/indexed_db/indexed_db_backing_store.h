@@ -407,6 +407,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
       backing_store_ = NULL;
       transaction_ = NULL;
     }
+    leveldb::Status PutBlobInfoIfNeeded(
+        int64 database_id,
+        int64 object_store_id,
+        const std::string& object_store_data_key,
+        std::vector<IndexedDBBlobInfo>*,
+        ScopedVector<webkit_blob::BlobDataHandle>* handles);
     void PutBlobInfo(int64 database_id,
                      int64 object_store_id,
                      const std::string& object_store_data_key,

@@ -1884,11 +1884,13 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
   v.append(value.bits);
 
   leveldb_transaction->Put(object_store_data_key, &v);
-  transaction->PutBlobInfo(database_id,
-                           object_store_id,
-                           object_store_data_key,
-                           &value.blob_info,
-                           handles);
+  s = transaction->PutBlobInfoIfNeeded(database_id,
+                                       object_store_id,
+                                       object_store_data_key,
+                                       &value.blob_info,
+                                       handles);
+  if (!s.ok())
+    return s;
   DCHECK(!handles->size());
 
   const std::string exists_entry_key =
@@ -1937,8 +1939,10 @@ leveldb::Status IndexedDBBackingStore::DeleteRecord(
   const std::string object_store_data_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
   leveldb_transaction->Remove(object_store_data_key);
-  transaction->PutBlobInfo(
+  leveldb::Status s = transaction->PutBlobInfoIfNeeded(
       database_id, object_store_id, object_store_data_key, NULL, NULL);
+  if (!s.ok())
+    return s;
 
   const std::string exists_entry_key = ExistsEntryKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
@@ -4143,6 +4147,37 @@ IndexedDBBackingStore::BlobChangeRecord::Clone() const {
   for (iter = handles_.begin(); iter != handles_.end(); ++iter)
     record->handles_.push_back(new webkit_blob::BlobDataHandle(**iter));
   return record.Pass();
+}
+
+leveldb::Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
+    int64 database_id,
+    int64 object_store_id,
+    const std::string& object_store_data_key,
+    std::vector<IndexedDBBlobInfo>* blob_info,
+    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+  if (!blob_info || blob_info->empty()) {
+    blob_change_map_.erase(object_store_data_key);
+    incognito_blob_map_.erase(object_store_data_key);
+
+    BlobEntryKey blob_entry_key;
+    StringPiece leveldb_key_piece(object_store_data_key);
+    if (!BlobEntryKey::FromObjectStoreDataKey(&leveldb_key_piece,
+                                              &blob_entry_key)) {
+      NOTREACHED();
+      return InternalInconsistencyStatus();
+    }
+    std::string value;
+    bool found = false;
+    leveldb::Status s =
+        transaction()->Get(blob_entry_key.Encode(), &value, &found);
+    if (!s.ok())
+      return s;
+    if (!found)
+      return leveldb::Status::OK();
+  }
+  PutBlobInfo(
+      database_id, object_store_id, object_store_data_key, blob_info, handles);
+  return leveldb::Status::OK();
 }
 
 // This is storing an info, even if empty, even if the previous key had no blob
