@@ -2335,20 +2335,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    var newCurrentVolumeInfo = this.volumeManager_.getVolumeInfo(
+    var oldCurrentVolumeInfo = this.currentVolumeInfo_;
+
+    // Remember the current volume info.
+    this.currentVolumeInfo_ = this.volumeManager_.getVolumeInfo(
         event.newDirEntry);
 
     // If volume has changed, then update the gear menu.
-    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo) {
+    if (oldCurrentVolumeInfo !== this.currentVolumeInfo_) {
       this.updateGearMenu_();
       // If the volume has changed, and it was previously set, then do not
       // close on unmount anymore.
-      if (this.currentVolumeInfo_)
+      if (oldCurrentVolumeInfo)
         this.closeOnUnmount_ = false;
     }
-
-    // Remember the current volume info.
-    this.currentVolumeInfo_ = newCurrentVolumeInfo;
 
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.searchBox.clear();
