@@ -557,21 +557,6 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
     compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
 }
 
-void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer* child)
-{
-    if (!child->hasCompositedLayerMapping() || parent->renderer()->documentBeingDestroyed())
-        return;
-
-    {
-        // FIXME: This is called from within RenderLayer::removeChild, which is called from RenderObject::RemoveChild.
-        // There's no guarantee that compositor state is up to date.
-        DisableCompositingQueryAsserts disabler;
-        repaintInCompositedAncestor(child, child->compositedLayerMapping()->compositedBounds());
-    }
-
-    setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-}
-
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
 {
     if (m_overflowControlsHostLayer)

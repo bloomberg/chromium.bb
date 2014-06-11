@@ -123,9 +123,6 @@ public:
     void repaintOnCompositingChange(RenderLayer*);
 
     void repaintInCompositedAncestor(RenderLayer*, const LayoutRect&);
-
-    void layerWillBeRemoved(RenderLayer* parent, RenderLayer* child);
-
     void repaintCompositedLayers();
 
     RenderLayer* rootRenderLayer() const;

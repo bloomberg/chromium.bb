@@ -1398,10 +1398,6 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
 
 RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
 {
-    if (!renderer()->documentBeingDestroyed())
-        compositor()->layerWillBeRemoved(this, oldChild);
-
-    // remove the child
     if (oldChild->previousSibling())
         oldChild->previousSibling()->setNextSibling(oldChild->nextSibling());
     if (oldChild->nextSibling())
@@ -1448,9 +1444,6 @@ void RenderLayer::removeOnlyThisLayer()
     if (!m_parent)
         return;
 
-    compositor()->layerWillBeRemoved(m_parent, this);
-
-    // Dirty the clip rects.
     m_clipper.clearClipRectsIncludingDescendants();
 
     RenderLayer* nextSib = nextSibling();
