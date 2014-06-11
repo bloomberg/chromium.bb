@@ -791,8 +791,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
   // The FontCacheDispatcher is required only when we're using GDI rendering.
-  if (!ShouldUseDirectWrite())
-    channel_->AddFilter(new FontCacheDispatcher());
+  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
+  // GDI fonts (http://crbug.com/383227), even when using DirectWrite. This
+  // should eventually be if (!ShouldUseDirectWrite()) guarded.
+  channel_->AddFilter(new FontCacheDispatcher());
 #elif defined(OS_ANDROID)
   browser_demuxer_android_ = new BrowserDemuxerAndroid();
   AddFilter(browser_demuxer_android_);

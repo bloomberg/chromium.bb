@@ -1171,9 +1171,11 @@ void RenderMessageFilter::OnDidLose3DContext(
 #if defined(OS_WIN)
 void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
                                                    const base::string16& str) {
-  // TODO(scottmg): Move this to FontCacheDispatcher, http://crbug.com/356346.
-  if (!ShouldUseDirectWrite())
-    return;
+  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
+  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
+  // Eventually this shouldn't be added and should be moved to
+  // FontCacheDispatcher too. http://crbug.com/356346.
+
   // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
   // Except that for True Type fonts,
   // GetTextMetrics will not load the font in memory.
