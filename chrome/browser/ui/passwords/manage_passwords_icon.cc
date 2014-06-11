@@ -5,18 +5,10 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 
 ManagePasswordsIcon::ManagePasswordsIcon()
-    : state_(password_manager::ui::INACTIVE_STATE),
-      active_(false) {
+    : state_(password_manager::ui::INACTIVE_STATE) {
 }
 
 ManagePasswordsIcon::~ManagePasswordsIcon() {
-}
-
-void ManagePasswordsIcon::SetActive(bool active) {
-  if (active_ == active)
-    return;
-  active_ = active;
-  UpdateVisibleUI();
 }
 
 void ManagePasswordsIcon::SetState(password_manager::ui::State state) {

@@ -17,9 +17,6 @@ class ManagePasswordsIcon {
   void SetState(password_manager::ui::State state);
   password_manager::ui::State state() const { return state_; }
 
-  void SetActive(bool active);
-  bool active() const { return active_; }
-
  protected:
   ManagePasswordsIcon();
   ~ManagePasswordsIcon();
@@ -30,7 +27,6 @@ class ManagePasswordsIcon {
 
  private:
   password_manager::ui::State state_;
-  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIcon);
 };
