@@ -128,7 +128,7 @@ void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
 }
 
 gfx::HorizontalAlignment LabelButton::GetHorizontalAlignment() const {
-  return label_->horizontal_alignment();
+  return label_->GetHorizontalAlignment();
 }
 
 void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
