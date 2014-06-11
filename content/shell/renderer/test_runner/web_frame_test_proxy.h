@@ -203,8 +203,8 @@ class WebFrameTestProxy : public Base {
   virtual void willSendRequest(blink::WebLocalFrame* frame, unsigned identifier,
                                blink::WebURLRequest& request,
                                const blink::WebURLResponse& redirectResponse) {
-    base_proxy_->WillSendRequest(frame, identifier, request, redirectResponse);
     Base::willSendRequest(frame, identifier, request, redirectResponse);
+    base_proxy_->WillSendRequest(frame, identifier, request, redirectResponse);
   }
 
   virtual void didReceiveResponse(blink::WebLocalFrame* frame,
