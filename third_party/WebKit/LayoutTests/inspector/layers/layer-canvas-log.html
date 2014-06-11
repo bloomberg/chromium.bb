@@ -13,8 +13,8 @@ function test()
 
     function onHistoryReceived(history)
     {
-        InspectorTest.addResult("Canvas log: ");
-        InspectorTest.addObject(history);
+        InspectorTest.addResult("Canvas log:");
+        InspectorTest.addObject(history, {"genID": "skip"});
         InspectorTest.completeTest();
     }
 

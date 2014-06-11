@@ -646,7 +646,6 @@ Bug(gardener) [ Release Linux ] inspector/extensions/extensions-events.html [ Pa
 crbug.com/246749 [ Release Linux ] inspector/extensions/extensions-panel.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/extensions/extensions-resources.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/file-reader-with-network-panel.html [ Failure Pass ]
-crbug.com/381471 [ Release Linux ] inspector/layers/layer-canvas-log.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Failure Pass ]
 webkit.org/b/90488 [ Debug Linux ] inspector/profiler/cpu-profiler-agent-crash-on-start.html [ Crash Pass ]
 Bug(gardener) [ Release Lion ] inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Timeout ]

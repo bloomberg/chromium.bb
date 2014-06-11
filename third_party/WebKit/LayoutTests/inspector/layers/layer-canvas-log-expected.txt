@@ -1,5 +1,5 @@
 
-Canvas log: 
+Canvas log:
 {
     0 : {
         method : "save"
@@ -70,7 +70,6 @@ Canvas log:
                     base64 : "iVBORw0KGgoAAAANSUhEUgAAABMAAAAVCAYAAACkCdXRAAAAKElEQVQ4T2P8DwQMVAKMo4aRHJKjYUZykDGMhtlomOEIgdGkMcBJAwBg3lPCYiIiUQAAAABJRU5ErkJggg=="
                     mimeType : "image/png"
                 }
-                genID : 1
                 height : 21
                 immutable : true
                 opaque : true
