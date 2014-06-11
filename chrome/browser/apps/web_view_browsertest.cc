@@ -1951,43 +1951,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationRequestGone) {
             << message_;
 }
 
-// In following FilesystemAPIRequestFromMainThread* tests, guest request
-// filesystem access from main thread of the guest.
-// FileSystemAPIRequestFromMainThread* test 1 of 3
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromMainThreadAllow) {
-  TestHelper("testAllow", "web_view/filesystem/main", NEEDS_TEST_SERVER);
-}
-
-// FileSystemAPIRequestFromMainThread* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromMainThreadDeny) {
-  TestHelper("testDeny", "web_view/filesystem/main", NEEDS_TEST_SERVER);
-}
-
-// FileSystemAPIRequestFromMainThread* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       FileSystemAPIRequestFromMainThreadDefaultAllow) {
-  TestHelper("testDefaultAllow", "web_view/filesystem/main", NEEDS_TEST_SERVER);
-}
-
-// In following FilesystemAPIRequestFromWorker* tests, guest create a worker
-// to request filesystem access from worker thread.
-// FileSystemAPIRequestFromWorker* test 1 of 3
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromWorkerAllow) {
-  TestHelper("testAllow", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
-}
-
-// FileSystemAPIRequestFromWorker* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromWorkerDeny) {
-  TestHelper("testDeny", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
-}
-
-// FileSystemAPIRequestFromWorker* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       FileSystemAPIRequestFromWorkerDefaultAllow) {
-  TestHelper(
-      "testDefaultAllow", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
-}
-
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/282674

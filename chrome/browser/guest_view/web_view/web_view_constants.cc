@@ -51,7 +51,6 @@ const char kOldURL[] = "oldUrl";
 const char kPermission[] = "permission";
 const char kPermissionTypeDialog[] = "dialog";
 const char kPermissionTypeDownload[] = "download";
-const char kPermissionTypeFileSystem[] = "filesystem";
 const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeLoadPlugin[] = "loadplugin";
 const char kPermissionTypeMedia[] = "media";

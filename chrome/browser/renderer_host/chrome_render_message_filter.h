@@ -75,7 +75,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnRequestFileSystemAccessSync(int render_frame_id,
                                      const GURL& origin_url,
                                      const GURL& top_origin_url,
-                                     IPC::Message* message);
+                                     bool* allowed);
   void OnRequestFileSystemAccessAsync(int render_frame_id,
                                       int request_id,
                                       const GURL& origin_url,

@@ -236,21 +236,6 @@
         ]
       },
       {
-        "id": "FileSystemPermissionRequest",
-        "type": "object",
-        "description": "The type of <code>request</code> object which accompanies a <code>filesystem</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
-        "properties": {
-          "url": {
-            "description": "The URL of the frame requesting access to local file system.",
-            "type": "string"
-          }
-        },
-        "functions": [
-          { "name": "allow", "description": "Allow the permission request." },
-          { "name": "deny", "description": "Deny the permission request. This is the default behavior if <code>allow</code> is not called." }
-        ]
-      },
-      {
         "id": "LoadPluginPermissionRequest",
         "type": "object",
         "description": "The type of <code>request</code> object which accompanies a <code>loadplugin</code> <a href=\"#event-permissionrequest\">permissionrequest</a> DOM event.<p>",
@@ -789,7 +774,7 @@
             "name": "permission",
             "description": "The type of permission being requested.",
             "type": "string",
-            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin", "filesystem"]
+            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin"]
           },
           {
             "name": "requestId",
