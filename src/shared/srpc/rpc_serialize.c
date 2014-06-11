@@ -544,13 +544,18 @@ static BoolValue CheckMatchAndCopyCounts(size_t vec_len,
         /*
          * Returned strings are allocated by the SRPC transport mechanism,
          * whereas all the other "array" types are allocated by the caller
-         * of the respective Invoke routine.
+         * of the respective Invoke routine.  The caller does allocate a
+         * stub "template" string, which is strdup("") and needs to be freed.
          */
-        expected[i]->arrays.oval = malloc(peeked[i]->u.count);
-        if (expected[i]->arrays.oval == NULL) {
-          return BoolFalse;
+        {
+          void *buffer = malloc(peeked[i]->u.count);
+          if (buffer == NULL) {
+            return BoolFalse;
+          }
+          free(expected[i]->arrays.oval);
+          expected[i]->arrays.oval = buffer;
+          expected[i]->u.count = peeked[i]->u.count;
         }
-        expected[i]->u.count = peeked[i]->u.count;
         break;
 
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
