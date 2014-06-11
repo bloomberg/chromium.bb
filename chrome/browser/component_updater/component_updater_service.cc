@@ -490,10 +490,23 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
   uit->component = component;
 
   work_items_.push_back(uit);
+
   // If this is the first component registered we call Start to
-  // schedule the first timer.
-  if (running_ && (work_items_.size() == 1))
-    Start();
+  // schedule the first timer. Otherwise, reset the timer to trigger another
+  // pass over the work items, if the component updater is sleeping, fact
+  // indicated by a running timer. If the timer is not running, it means that
+  // the service is busy updating something, and in that case, this component
+  // will be picked up at the next pass.
+  if (running_) {
+    if (work_items_.size() == 1) {
+      Start();
+    } else if (timer_.IsRunning()) {
+        timer_.Start(FROM_HERE,
+                     base::TimeDelta::FromSeconds(config_->InitialDelay()),
+                     this,
+                     &CrxUpdateService::ProcessPendingItems);
+    }
+  }
 
   return kOk;
 }
