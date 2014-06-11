@@ -94,7 +94,7 @@ void BrowserAccessibilityManager::Initialize(
     const ui::AXTreeUpdate& initial_tree) {
   if (!tree_->Unserialize(initial_tree)) {
     if (delegate_) {
-      LOG(FATAL) << tree_->error();
+      LOG(ERROR) << tree_->error();
       delegate_->AccessibilityFatalError();
     } else {
       LOG(FATAL) << tree_->error();
@@ -160,7 +160,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     const AccessibilityHostMsg_EventParams& param = params[index];
     if (!tree_->Unserialize(param.update)) {
       if (delegate_) {
-        LOG(FATAL) << tree_->error();
+        LOG(ERROR) << tree_->error();
         delegate_->AccessibilityFatalError();
       } else {
         CHECK(false) << tree_->error();
