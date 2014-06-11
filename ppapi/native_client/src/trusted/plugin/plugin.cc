@@ -27,7 +27,6 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
 
-#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"

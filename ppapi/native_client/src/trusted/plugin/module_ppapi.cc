@@ -10,7 +10,6 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 
 #include "ppapi/native_client/src/trusted/plugin/module_ppapi.h"
-#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
@@ -43,9 +42,6 @@ bool ModulePpapi::Init() {
     return false;
   }
   SetNaClInterface(private_interface_);
-
-  launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
-      private_interface_->LaunchSelLdr);
 
 #if NACL_LINUX || NACL_OSX
   // Note that currently we do not need random numbers inside the

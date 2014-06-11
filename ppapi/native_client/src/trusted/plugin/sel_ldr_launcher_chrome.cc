@@ -5,10 +5,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
-
-LaunchNaClProcessFunc launch_nacl_process = NULL;
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 
@@ -31,24 +29,25 @@ void SelLdrLauncherChrome::Start(
     const PPP_ManifestService* manifest_service_interface,
     void* manifest_service_user_data,
     pp::CompletionCallback callback) {
-  if (!launch_nacl_process) {
+  if (!GetNaClInterface()) {
     pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
     return;
   }
-  launch_nacl_process(instance,
-                      PP_FromBool(main_service_runtime),
-                      url,
-                      PP_FromBool(uses_irt),
-                      PP_FromBool(uses_ppapi),
-                      PP_FromBool(uses_nonsfi_mode),
-                      PP_FromBool(enable_ppapi_dev),
-                      PP_FromBool(enable_dyncode_syscalls),
-                      PP_FromBool(enable_exception_handling),
-                      PP_FromBool(enable_crash_throttling),
-                      manifest_service_interface,
-                      manifest_service_user_data,
-                      &channel_,
-                      callback.pp_completion_callback());
+  GetNaClInterface()->LaunchSelLdr(
+      instance,
+      PP_FromBool(main_service_runtime),
+      url,
+      PP_FromBool(uses_irt),
+      PP_FromBool(uses_ppapi),
+      PP_FromBool(uses_nonsfi_mode),
+      PP_FromBool(enable_ppapi_dev),
+      PP_FromBool(enable_dyncode_syscalls),
+      PP_FromBool(enable_exception_handling),
+      PP_FromBool(enable_crash_throttling),
+      manifest_service_interface,
+      manifest_service_user_data,
+      &channel_,
+      callback.pp_completion_callback());
 }
 
 }  // namespace plugin

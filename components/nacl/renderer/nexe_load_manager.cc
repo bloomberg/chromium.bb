@@ -26,7 +26,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
-#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
