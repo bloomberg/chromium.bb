@@ -748,18 +748,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWindowRestoreState) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        AppWindowAdjustBoundsToBeVisibleOnScreen) {
-  // TODO(benwells): Remove this logging once flakiness has been observed.
-  // See http://crbug.com/377754.
   ExtensionTestMessageListener launched_listener("Launched", false);
 
-  LOG(WARNING) << "Loading minimal app";
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
   EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  LOG(WARNING) << "Creating window";
   AppWindow* window = CreateAppWindow(extension);
 
-  LOG(WARNING) << "Performing tests";
   // The screen bounds didn't change, the cached bounds didn't need to adjust.
   gfx::Rect cached_bounds(80, 100, 400, 400);
   gfx::Rect cached_screen_bounds(0, 0, 1600, 900);
@@ -827,7 +822,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                                                   gfx::Size(900, 900),
                                                   &bounds);
   EXPECT_EQ(bounds, gfx::Rect(0, 0, 900, 900));
-  LOG(WARNING) << "Tests complete";
 }
 
 namespace {
