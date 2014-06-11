@@ -631,8 +631,8 @@ TEST_F(PrefixSetTest, FullHashBuild) {
   EXPECT_FALSE(prefix_set->PrefixExists(kHash6.prefix));
 }
 
-// Test that a version 1 file is re-ordered correctly on read.
-TEST_F(PrefixSetTest, ReadWriteSigned) {
+// Test that a version 1 file is discarded on read.
+TEST_F(PrefixSetTest, ReadSigned) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
@@ -672,25 +672,9 @@ TEST_F(PrefixSetTest, ReadWriteSigned) {
   CleanChecksum(file.get());
   file.reset();  // Flush updates.
 
-  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
-  ASSERT_TRUE(prefix_set.get());
-
-  // |PrefixExists()| uses |std::upper_bound()| to find a starting point, which
-  // assumes |index_| is sorted.  Depending on how |upper_bound()| is
-  // implemented, if the actual list is sorted by |int32|, then one of these
-  // test pairs should fail.
-  EXPECT_TRUE(prefix_set->PrefixExists(1000u));
-  EXPECT_TRUE(prefix_set->PrefixExists(1023u));
-  EXPECT_TRUE(prefix_set->PrefixExists(static_cast<uint32>(-1000)));
-  EXPECT_TRUE(prefix_set->PrefixExists(static_cast<uint32>(-1000 + 23)));
-
-  std::vector<SBPrefix> prefixes_copy;
-  prefix_set->GetPrefixes(&prefixes_copy);
-  EXPECT_EQ(prefixes_copy.size(), 4u);
-  EXPECT_EQ(prefixes_copy[0], 1000u);
-  EXPECT_EQ(prefixes_copy[1], 1023u);
-  EXPECT_EQ(prefixes_copy[2], static_cast<uint32>(-1000));
-  EXPECT_EQ(prefixes_copy[3], static_cast<uint32>(-1000 + 23));
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
+  ASSERT_FALSE(prefix_set.get());
 }
 
 // Test that a golden v2 file can be read by the current code.  All platforms

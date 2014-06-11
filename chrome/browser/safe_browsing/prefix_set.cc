@@ -28,7 +28,8 @@ static uint32 kMagic = 0x864088dd;
 // Version 2 layout is identical to version 1.  The sort order of |index_|
 // changed from |int32| to |uint32| to match the change of |SBPrefix|.
 // Version 3 adds storage for full hashes.
-static uint32 kVersion = 0x3;
+static uint32 kVersion = 3;
+static uint32 kDeprecatedVersion = 1;  // And lower.
 
 typedef struct {
   uint32 magic;
@@ -194,12 +195,11 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // Track version read to inform removal of support for older versions.
   UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.PrefixSetVersionRead", header.version);
 
-  // TODO(shess): Version 1 and 2 use the same file structure, with version 1
-  // data using a signed sort.  For M-35, the data is re-sorted before return.
-  // After M-36, just drop v1 support. <http://crbug.com/346405>
   // TODO(shess): <http://crbug.com/368044> for removing v2 support.
   size_t header_size = sizeof(header);
-  if (header.version == 2 || header.version == 1) {
+  if (header.version <= kDeprecatedVersion) {
+    return scoped_ptr<PrefixSet>();
+  } else if (header.version == 2) {
     // Rewind the file and restart building the digest with the old header
     // structure.
     FileHeader_v2 v2_header;
@@ -290,16 +290,6 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
 
   if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
     return scoped_ptr<PrefixSet>();
-
-  // For version 1, fetch the prefixes and re-sort.
-  if (header.version == 1) {
-    std::vector<SBPrefix> prefixes;
-    PrefixSet(&index, &deltas, &full_hashes).GetPrefixes(&prefixes);
-    std::sort(prefixes.begin(), prefixes.end());
-
-    // v1 cannot have full hashes, so no need to propagate a copy here.
-    return PrefixSetBuilder(prefixes).GetPrefixSetNoHashes().Pass();
-  }
 
   // Steals vector contents using swap().
   return scoped_ptr<PrefixSet>(new PrefixSet(&index, &deltas, &full_hashes));
