@@ -47,6 +47,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
+bool g_app_shims_allow_update_and_launch_in_tests = false;
+
 namespace {
 
 // Launch Services Key to run as an agent app, which doesn't launch in the dock.
@@ -857,8 +859,10 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
 }
 
 void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info) {
-  if (AppShimsDisabledForTest())
+  if (AppShimsDisabledForTest() &&
+      !g_app_shims_allow_update_and_launch_in_tests) {
     return;
+  }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
@@ -970,8 +974,10 @@ void UpdatePlatformShortcuts(
     const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  if (AppShimsDisabledForTest())
+  if (AppShimsDisabledForTest() &&
+      !g_app_shims_allow_update_and_launch_in_tests) {
     return;
+  }
 
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, file_handlers_info);
