@@ -85,8 +85,8 @@ void ManagedUserSettingsService::Subscribe(const SettingsCallback& callback) {
   subscribers_.push_back(callback);
 }
 
-void ManagedUserSettingsService::Activate() {
-  active_ = true;
+void ManagedUserSettingsService::SetActive(bool active) {
+  active_ = active;
   InformSubscribers();
 }
 

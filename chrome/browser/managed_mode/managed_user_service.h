@@ -59,6 +59,14 @@ class ManagedUserService : public KeyedService,
     MANUAL_BLOCK
   };
 
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Returns true to indicate that the delegate handled the (de)activation, or
+    // false to indicate that the ManagedUserService itself should handle it.
+    virtual bool SetActive(bool active) = 0;
+  };
+
   virtual ~ManagedUserService();
 
   // ProfileKeyedService override:
@@ -67,6 +75,8 @@ class ManagedUserService : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void MigrateUserPrefs(PrefService* prefs);
+
+  void SetDelegate(Delegate* delegate);
 
   // Returns the URL filter for the IO thread, for filtering network requests
   // (in ManagedModeResourceThrottle).
@@ -201,6 +211,8 @@ class ManagedUserService : public KeyedService,
   // an instance of this service.
   explicit ManagedUserService(Profile* profile);
 
+  void SetActive(bool active);
+
   void OnCustodianProfileDownloaded(const base::string16& full_name);
 
   void OnManagedUserRegistered(const AuthErrorCallback& callback,
@@ -224,6 +236,8 @@ class ManagedUserService : public KeyedService,
 
   ManagedUserSettingsService* GetSettingsService();
 
+  void OnManagedUserIdChanged();
+
   void OnDefaultFilteringBehaviorChanged();
 
   void UpdateSiteLists();
@@ -238,6 +252,10 @@ class ManagedUserService : public KeyedService,
 
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
+
+  bool active_;
+
+  Delegate* delegate_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

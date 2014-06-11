@@ -56,6 +56,11 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 
+#if defined(ENABLE_THEMES)
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#endif
+
 using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -125,6 +130,8 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 
 ManagedUserService::ManagedUserService(Profile* profile)
     : profile_(profile),
+      active_(false),
+      delegate_(NULL),
       extension_registry_observer_(this),
       waiting_for_sync_initialization_(false),
       is_profile_active_(false),
@@ -142,19 +149,8 @@ void ManagedUserService::Shutdown() {
   did_shutdown_ = true;
   if (ProfileIsManaged()) {
     content::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
-#if !defined(OS_ANDROID)
-    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
-    // http://crbug.com/313377
-    BrowserList::RemoveObserver(this);
-#endif
   }
-
-  if (!waiting_for_sync_initialization_)
-    return;
-
-  ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync_service->RemoveObserver(this);
+  SetActive(false);
 }
 
 bool ManagedUserService::ProfileIsManaged() const {
@@ -199,6 +195,15 @@ void ManagedUserService::MigrateUserPrefs(PrefService* prefs) {
     return;
 
   prefs->SetString(prefs::kManagedUserId, "Dummy ID");
+}
+
+void ManagedUserService::SetDelegate(Delegate* delegate) {
+  if (delegate_ == delegate)
+    return;
+  // If the delegate changed, deactivate first to give the old delegate a chance
+  // to clean up.
+  SetActive(false);
+  delegate_ = delegate;
 }
 
 scoped_refptr<const ManagedModeURLFilter>
@@ -409,6 +414,12 @@ ManagedUserSettingsService* ManagedUserService::GetSettingsService() {
   return ManagedUserSettingsServiceFactory::GetForProfile(profile_);
 }
 
+void ManagedUserService::OnManagedUserIdChanged() {
+  std::string managed_user_id =
+      profile_->GetPrefs()->GetString(prefs::kManagedUserId);
+  SetActive(!managed_user_id.empty());
+}
+
 void ManagedUserService::OnDefaultFilteringBehaviorChanged() {
   DCHECK(ProfileIsManaged());
 
@@ -513,73 +524,124 @@ void ManagedUserService::InitSync(const std::string& refresh_token) {
 }
 
 void ManagedUserService::Init() {
-  ManagedUserSettingsService* settings_service = GetSettingsService();
-  DCHECK(settings_service->IsReady());
-  if (!ProfileIsManaged()) {
-    settings_service->Clear();
+  DCHECK(GetSettingsService()->IsReady());
+
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kManagedUserId,
+      base::Bind(&ManagedUserService::OnManagedUserIdChanged,
+          base::Unretained(this)));
+
+  SetActive(ProfileIsManaged());
+}
+
+void ManagedUserService::SetActive(bool active) {
+  if (active_ == active)
     return;
+  active_ = active;
+
+  if (!delegate_ || !delegate_->SetActive(active_)) {
+    if (active_) {
+      SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
+          ->Init();
+
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {
+        InitSync(
+            command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
+      }
+
+      ProfileOAuth2TokenService* token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+      token_service->LoadCredentials(managed_users::kManagedUserPseudoEmail);
+    }
   }
 
-  settings_service->Activate();
+  // Now activate/deactivate anything not handled by the delegate yet.
 
-  SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
-      ->Init();
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {
-    InitSync(
-        command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
+#if defined(ENABLE_THEMES)
+  // Re-set the default theme to turn the SU theme on/off.
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
+  if (theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme()) {
+    ThemeServiceFactory::GetForProfile(profile_)->UseDefaultTheme();
   }
+#endif
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->LoadCredentials(managed_users::kManagedUserPseudoEmail);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPermissionRequestApiUrl)) {
-    permissions_creator_ =
-        PermissionRequestCreatorApiary::CreateWithProfile(profile_);
-  } else {
-    PrefService* pref_service = profile_->GetPrefs();
-    permissions_creator_.reset(new PermissionRequestCreatorSync(
-        settings_service,
-        ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile_),
-        pref_service->GetString(prefs::kProfileName),
-        pref_service->GetString(prefs::kManagedUserId)));
-  }
+  ManagedUserSettingsService* settings_service = GetSettingsService();
+  settings_service->SetActive(active_);
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile_);
   extensions::ManagementPolicy* management_policy =
       extension_system->management_policy();
-  if (management_policy)
-    extension_system->management_policy()->RegisterProvider(this);
 
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile_));
+  if (active_) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kPermissionRequestApiUrl)) {
+      permissions_creator_ =
+          PermissionRequestCreatorApiary::CreateWithProfile(profile_);
+    } else {
+      PrefService* pref_service = profile_->GetPrefs();
+      permissions_creator_.reset(new PermissionRequestCreatorSync(
+          settings_service,
+          ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+              profile_),
+          pref_service->GetString(prefs::kProfileName),
+          pref_service->GetString(prefs::kManagedUserId)));
+    }
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kDefaultManagedModeFilteringBehavior,
-      base::Bind(&ManagedUserService::OnDefaultFilteringBehaviorChanged,
-          base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kManagedModeManualHosts,
-      base::Bind(&ManagedUserService::UpdateManualHosts,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kManagedModeManualURLs,
-      base::Bind(&ManagedUserService::UpdateManualURLs,
-                 base::Unretained(this)));
+    if (management_policy)
+      management_policy->RegisterProvider(this);
+
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(profile_));
+
+    pref_change_registrar_.Add(
+        prefs::kDefaultManagedModeFilteringBehavior,
+        base::Bind(&ManagedUserService::OnDefaultFilteringBehaviorChanged,
+            base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kManagedModeManualHosts,
+        base::Bind(&ManagedUserService::UpdateManualHosts,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kManagedModeManualURLs,
+        base::Bind(&ManagedUserService::UpdateManualURLs,
+                   base::Unretained(this)));
+
+    // Initialize the filter.
+    OnDefaultFilteringBehaviorChanged();
+    UpdateSiteLists();
+    UpdateManualHosts();
+    UpdateManualURLs();
 
 #if !defined(OS_ANDROID)
-  // TODO(bauerb): Get rid of the platform-specific #ifdef here.
-  // http://crbug.com/313377
-  BrowserList::AddObserver(this);
+    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
+    // http://crbug.com/313377
+    BrowserList::AddObserver(this);
 #endif
+  } else {
+    permissions_creator_.reset();
 
-  // Initialize the filter.
-  OnDefaultFilteringBehaviorChanged();
-  UpdateSiteLists();
-  UpdateManualHosts();
-  UpdateManualURLs();
+    if (management_policy)
+      management_policy->UnregisterProvider(this);
+
+    extension_registry_observer_.RemoveAll();
+
+    pref_change_registrar_.Remove(prefs::kDefaultManagedModeFilteringBehavior);
+    pref_change_registrar_.Remove(prefs::kManagedModeManualHosts);
+    pref_change_registrar_.Remove(prefs::kManagedModeManualURLs);
+
+    if (waiting_for_sync_initialization_) {
+      ProfileSyncService* sync_service =
+          ProfileSyncServiceFactory::GetForProfile(profile_);
+      sync_service->RemoveObserver(this);
+    }
+
+#if !defined(OS_ANDROID)
+    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
+    // http://crbug.com/313377
+    BrowserList::RemoveObserver(this);
+#endif
+  }
 }
 
 void ManagedUserService::RegisterAndInitSync(

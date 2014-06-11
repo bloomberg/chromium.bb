@@ -78,8 +78,9 @@ class ManagedUserSettingsService : public KeyedService,
   // available, or when they change.
   void Subscribe(const SettingsCallback& callback);
 
-  // Activates the service. This happens when the user is managed.
-  void Activate();
+  // Activates/deactivates the service. This is called by the ManagedUserService
+  // when it is (de)activated.
+  void SetActive(bool active);
 
   // Whether managed user settings are available.
   bool IsReady();

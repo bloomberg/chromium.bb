@@ -99,7 +99,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_TRUE(fixture.initialization_completed());
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 
-  service_.Activate();
+  service_.SetActive(true);
 
   // kAllowDeletingBrowserHistory is hardcoded to false for managed users.
   bool allow_deleting_browser_history = true;
@@ -120,7 +120,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 
   // Activating the service again should not change anything.
   fixture.changed_prefs()->Clear();
-  service_.Activate();
+  service_.SetActive(true);
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 
   // kManagedModeManualHosts can be configured by the custodian.
@@ -151,7 +151,7 @@ TEST_F(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {
   SupervisedUserPrefStoreFixture fixture(&service_);
   EXPECT_FALSE(fixture.initialization_completed());
 
-  service_.Activate();
+  service_.SetActive(true);
   EXPECT_FALSE(fixture.initialization_completed());
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 
@@ -162,7 +162,7 @@ TEST_F(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {
 
 TEST_F(SupervisedUserPrefStoreTest, CreatePrefStoreAfterInitialization) {
   pref_store_->SetInitializationCompleted();
-  service_.Activate();
+  service_.SetActive(true);
 
   SupervisedUserPrefStoreFixture fixture(&service_);
   EXPECT_TRUE(fixture.initialization_completed());

@@ -127,7 +127,7 @@ class ManagedUserSettingsServiceTest : public ::testing::Test {
                    base::Unretained(this)));
     pref_store->SetInitializationCompleted();
     ASSERT_FALSE(settings_);
-    settings_service_.Activate();
+    settings_service_.SetActive(true);
     ASSERT_TRUE(settings_);
   }
 
