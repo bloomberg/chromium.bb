@@ -1016,9 +1016,8 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
           routing_id(),
-          print_pages_params_.get()
-              ? print_pages_params_->params.document_cookie
-              : 0));
+          print_pages_params_ ?
+              print_pages_params_->params.document_cookie : 0));
       notify_browser_of_print_failure_ = false;  // Already sent.
     }
     DidFinishPrinting(FAIL_PREVIEW);
@@ -1294,7 +1293,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
       break;
 
     case FAIL_PRINT:
-      if (notify_browser_of_print_failure_ && print_pages_params_.get()) {
+      if (notify_browser_of_print_failure_ && print_pages_params_) {
         int cookie = print_pages_params_->params.document_cookie;
         Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
       }
@@ -1302,7 +1301,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
 
     case FAIL_PREVIEW:
       DCHECK(is_preview_enabled_);
-      int cookie = print_pages_params_.get() ?
+      int cookie = print_pages_params_ ?
           print_pages_params_->params.document_cookie : 0;
       if (notify_browser_of_print_failure_) {
         LOG(ERROR) << "CreatePreviewDocument failed";
@@ -1497,7 +1496,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   // Send the cookie so that UpdatePrintSettings can reuse PrinterQuery when
   // possible.
-  int cookie = print_pages_params_.get() ?
+  int cookie = print_pages_params_ ?
       print_pages_params_->params.document_cookie : 0;
   PrintMsg_PrintPages_Params settings;
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(), cookie, *job_settings,
@@ -1618,15 +1617,13 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
       content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
           buf_size).release());
 
-  if (shared_buf.get()) {
+  if (shared_buf) {
     if (shared_buf->Map(buf_size)) {
       metafile->GetData(shared_buf->memory(), buf_size);
-      shared_buf->GiveToProcess(base::GetCurrentProcessHandle(),
-                                shared_mem_handle);
-      return true;
+      return shared_buf->GiveToProcess(base::GetCurrentProcessHandle(),
+                                       shared_mem_handle);
     }
   }
-  NOTREACHED();
   return false;
 }
 #endif  // defined(OS_POSIX)
