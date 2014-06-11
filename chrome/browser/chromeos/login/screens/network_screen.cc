@@ -24,7 +24,7 @@
 namespace {
 
 // Time in seconds for connection timeout.
-const int kConnectionTimeoutSec = 15;
+const int kConnectionTimeoutSec = 40;
 
 }  // namespace
 
