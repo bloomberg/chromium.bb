@@ -37,6 +37,7 @@ namespace WebCore {
 class LocalFrame;
 
 struct FrameLoadRequest {
+    STACK_ALLOCATED();
 public:
     explicit FrameLoadRequest(Document* originDocument)
         : m_originDocument(originDocument)
@@ -101,14 +102,14 @@ public:
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
 
 private:
-    RefPtrWillBePersistent<Document> m_originDocument;
+    RefPtrWillBeMember<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
     AtomicString m_frameName;
     SubstituteData m_substituteData;
     bool m_lockBackForwardList;
     ClientRedirectPolicy m_clientRedirect;
-    RefPtrWillBePersistent<Event> m_triggeringEvent;
-    RefPtrWillBePersistent<FormState> m_formState;
+    RefPtrWillBeMember<Event> m_triggeringEvent;
+    RefPtrWillBeMember<FormState> m_formState;
     ShouldSendReferrer m_shouldSendReferrer;
 };
 
