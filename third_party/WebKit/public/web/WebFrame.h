@@ -470,9 +470,11 @@ public:
     virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines) = 0;
     virtual void extendSelectionAndDelete(int before, int after) = 0;
 
-    virtual void addStyleSheetByURL(const WebString& url) = 0;
-
     virtual void setCaretVisible(bool) = 0;
+
+    // Navigation Transitions  ---------------------------------------------
+
+    virtual void addStyleSheetByURL(const WebString& url) = 0;
 
     // Printing ------------------------------------------------------------
 
