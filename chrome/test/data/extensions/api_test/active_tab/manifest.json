@@ -16,5 +16,7 @@
     "scripts": ["background.js"]
   },
 
+  "automation": true,
+
   "manifest_version": 2
 }

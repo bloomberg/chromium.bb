@@ -2,34 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var theOnlyTestDone = null;
+var assertEq = chrome.test.assertEq;
+var assertFalse = chrome.test.assertFalse;
+var assertTrue = chrome.test.assertTrue;
+var callbackFail = chrome.test.callbackFail;
+var callbackPass = chrome.test.callbackPass;
 
-function inject(callback) {
-  chrome.tabs.executeScript({ code: "true" }, callback);
-}
+var RoleType = chrome.automation.RoleType;
 
 chrome.browserAction.onClicked.addListener(function() {
-  inject(function() {
-    chrome.test.assertNoLastError();
-    chrome.test.notifyPass();
-  });
+  chrome.tabs.executeScript({ code: 'true' }, callbackPass());
+  chrome.automation.getTree(callbackPass(function(rootNode) {
+    assertFalse(rootNode == undefined);
+    assertEq(RoleType.rootWebArea, rootNode.role);
+    chrome.test.succeed();
+  }));
 });
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
-  inject(function() {
-    chrome.test.assertLastError('Cannot access contents of url "' +
-        details.url +
-        '". Extension manifest must request permission to access this host.');
-    if (details.url.indexOf("final_page") >= 0)
-      theOnlyTestDone();
-    else
-      chrome.test.notifyPass();
-  });
-});
+  chrome.tabs.executeScript({ code: 'true' }, callbackFail(
+         'Cannot access contents of url "' + details.url +
+         '". Extension manifest must request permission to access this host.'));
 
-chrome.test.runTests([
-  function theOnlyTest() {
-    // This will keep the test alive until the final callback is run.
-    theOnlyTestDone = chrome.test.callbackAdded();
-  }
-]);
+  chrome.automation.getTree(callbackFail(
+      'Cannot request automation tree on url "' + details.url +
+        '". Extension manifest must request permission to access this host.'));
+});
