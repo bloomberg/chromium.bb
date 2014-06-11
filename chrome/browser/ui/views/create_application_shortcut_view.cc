@@ -258,10 +258,12 @@ CreateApplicationShortcutView::CreateApplicationShortcutView(Profile* profile)
 
 CreateApplicationShortcutView::~CreateApplicationShortcutView() {}
 
-void CreateApplicationShortcutView::InitControls() {
-  // Create controls
-  app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
-                              shortcut_info_.favicon);
+void CreateApplicationShortcutView::InitControls(DialogLayout dialog_layout) {
+  if (dialog_layout == DIALOG_LAYOUT_URL_SHORTCUT) {
+    app_info_ = new AppInfoView(shortcut_info_.title,
+                                shortcut_info_.description,
+                                shortcut_info_.favicon);
+  }
   create_shortcuts_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -308,10 +310,12 @@ void CreateApplicationShortcutView::InitControls() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         100.0f, views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, kHeaderColumnSetId);
-  layout->AddView(app_info_);
+  if (app_info_) {
+    layout->StartRow(0, kHeaderColumnSetId);
+    layout->AddView(app_info_);
+    layout->AddPaddingRow(0, views::kPanelSubVerticalSpacing);
+  }
 
-  layout->AddPaddingRow(0, views::kPanelSubVerticalSpacing);
   layout->StartRow(0, kHeaderColumnSetId);
   layout->AddView(create_shortcuts_label_);
 
@@ -440,7 +444,7 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
   // Create URL app shortcuts in the top-level menu.
   create_in_chrome_apps_subdir_ = false;
 
-  InitControls();
+  InitControls(DIALOG_LAYOUT_URL_SHORTCUT);
 }
 
 CreateUrlApplicationShortcutView::~CreateUrlApplicationShortcutView() {
@@ -524,20 +528,10 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
         : CreateApplicationShortcutView(profile),
           close_callback_(close_callback),
           weak_ptr_factory_(this) {
-  // Required by InitControls().
-  shortcut_info_.title = base::UTF8ToUTF16(app->name());
-  shortcut_info_.description = base::UTF8ToUTF16(app->description());
-
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
   create_in_chrome_apps_subdir_ = true;
 
-  InitControls();
-
-  // Get shortcut information and icon now; they are needed for our UI.
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app, profile,
-      base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+  InitControls(DIALOG_LAYOUT_APP_SHORTCUT);
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
@@ -552,13 +546,4 @@ bool CreateChromeApplicationShortcutView::Cancel() {
   if (!close_callback_.is_null())
     close_callback_.Run(false);
   return CreateApplicationShortcutView::Cancel();
-}
-
-// Called when the app's ShortcutInfo (with icon) is loaded.
-void CreateChromeApplicationShortcutView::OnShortcutInfoLoaded(
-    const web_app::ShortcutInfo& shortcut_info) {
-  shortcut_info_ = shortcut_info;
-
-  CHECK(app_info_);
-  static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
 }
