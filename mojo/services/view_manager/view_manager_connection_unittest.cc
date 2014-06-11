@@ -137,13 +137,13 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
                                           base::Unretained(this), nodes));
     RunMainLoop();
   }
-  bool Connect(const std::vector<Id>& nodes) {
+  bool Embed(const std::vector<Id>& nodes) {
     changes_.clear();
-    base::AutoReset<bool> auto_reset(&in_connect_, true);
+    base::AutoReset<bool> auto_reset(&in_embed_, true);
     bool result = false;
-    view_manager_->Connect(kTestServiceURL, Array<Id>::From(nodes),
-                           base::Bind(&ViewManagerProxy::GotResult,
-                                      base::Unretained(this), &result));
+    view_manager_->Embed(kTestServiceURL, Array<Id>::From(nodes),
+                         base::Bind(&ViewManagerProxy::GotResult,
+                                    base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -206,11 +206,11 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   static void SetInstance(ViewManagerProxy* instance) {
     DCHECK(!instance_);
     instance_ = instance;
-    // Connect() runs its own run loop that is quit when the result is
-    // received. Connect() also results in a new instance. If we quit here while
-    // waiting for a Connect() we would prematurely return before we got the
-    // result from Connect().
-    if (!in_connect_ && main_run_loop_)
+    // Embed() runs its own run loop that is quit when the result is
+    // received. Embed() also results in a new instance. If we quit here while
+    // waiting for a Embed() we would prematurely return before we got the
+    // result from Embed().
+    if (!in_embed_ && main_run_loop_)
       main_run_loop_->Quit();
   }
 
@@ -235,7 +235,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   static ViewManagerProxy* instance_;
   static base::RunLoop* main_run_loop_;
-  static bool in_connect_;
+  static bool in_embed_;
 
   TestChangeTracker* tracker_;
 
@@ -261,7 +261,7 @@ ViewManagerProxy* ViewManagerProxy::instance_ = NULL;
 base::RunLoop* ViewManagerProxy::main_run_loop_ = NULL;
 
 // static
-bool ViewManagerProxy::in_connect_ = false;
+bool ViewManagerProxy::in_embed_ = false;
 
 class TestViewManagerClientConnection
     : public InterfaceImpl<IViewManagerClient> {
@@ -329,12 +329,12 @@ class TestViewManagerClientConnection
   DISALLOW_COPY_AND_ASSIGN(TestViewManagerClientConnection);
 };
 
-// Used with IViewManager::Connect(). Creates a TestViewManagerClientConnection,
+// Used with IViewManager::Embed(). Creates a TestViewManagerClientConnection,
 // which creates and owns the ViewManagerProxy.
-class ConnectServiceLoader : public ServiceLoader {
+class EmbedServiceLoader : public ServiceLoader {
  public:
-  ConnectServiceLoader() {}
-  virtual ~ConnectServiceLoader() {}
+  EmbedServiceLoader() {}
+  virtual ~EmbedServiceLoader() {}
 
   // ServiceLoader:
   virtual void LoadService(ServiceManager* manager,
@@ -351,7 +351,7 @@ class ConnectServiceLoader : public ServiceLoader {
  private:
   ScopedVector<Application> apps_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
+  DISALLOW_COPY_AND_ASSIGN(EmbedServiceLoader);
 };
 
 // Creates an id used for transport from the specified parameters.
@@ -366,24 +366,22 @@ Id BuildViewId(ConnectionSpecificId connection_id,
   return (connection_id << 16) | view_id;
 }
 
-// Callback from ViewManagerInitConnect(). |result| is the result of the
-// Connect() call and |run_loop| the nested RunLoop.
-void ViewManagerInitConnectCallback(bool* result_cache,
-                                    base::RunLoop* run_loop,
-                                    bool result) {
+// Callback from EmbedRoot(). |result| is the result of the
+// Embed() call and |run_loop| the nested RunLoop.
+void EmbedRootCallback(bool* result_cache,
+                       base::RunLoop* run_loop,
+                       bool result) {
   *result_cache = result;
   run_loop->Quit();
 }
 
-// Resposible for establishing  connection to the viewmanager. Blocks until get
-// back result.
-bool ViewManagerInitConnect(IViewManagerInit* view_manager_init,
-                            const std::string& url) {
+// Resposible for establishing the initial IViewManager connection. Blocks until
+// result is determined.
+bool EmbedRoot(IViewManagerInit* view_manager_init, const std::string& url) {
   bool result = false;
   base::RunLoop run_loop;
-  view_manager_init->Connect(url,
-                             base::Bind(&ViewManagerInitConnectCallback,
-                                        &result, &run_loop));
+  view_manager_init->EmbedRoot(url, base::Bind(&EmbedRootCallback,
+                                               &result, &run_loop));
   run_loop.Run();
   return result;
 }
@@ -400,14 +398,13 @@ class ViewManagerConnectionTest : public testing::Test {
     test_helper_.Init();
 
     test_helper_.SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new ConnectServiceLoader()),
+        scoped_ptr<ServiceLoader>(new EmbedServiceLoader()),
         GURL(kTestServiceURL));
 
     ConnectToService(test_helper_.service_provider(),
                      "mojo:mojo_view_manager",
                      &view_manager_init_);
-    ASSERT_TRUE(ViewManagerInitConnect(view_manager_init_.get(),
-                                       kTestServiceURL));
+    ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kTestServiceURL));
 
     connection_ = ViewManagerProxy::WaitForInstance();
     ASSERT_TRUE(connection_ != NULL);
@@ -427,7 +424,7 @@ class ViewManagerConnectionTest : public testing::Test {
     node_ids.push_back(id1);
     if (id2 != 0)
       node_ids.push_back(id2);
-    ASSERT_TRUE(connection_->Connect(node_ids));
+    ASSERT_TRUE(connection_->Embed(node_ids));
     connection2_ = ViewManagerProxy::WaitForInstance();
     ASSERT_TRUE(connection2_ != NULL);
     connection2_->DoRunLoopUntilChangesCount(1);
@@ -1210,14 +1207,14 @@ TEST_F(ViewManagerConnectionTest, ConnectTwice) {
   {
     std::vector<Id> node_ids;
     node_ids.push_back(BuildNodeId(1, 1));
-    ASSERT_FALSE(connection_->Connect(node_ids));
+    ASSERT_FALSE(connection_->Embed(node_ids));
   }
 
   // Connecting to 1,2 should succeed and end up in connection2.
   {
     std::vector<Id> node_ids;
     node_ids.push_back(BuildNodeId(1, 2));
-    ASSERT_TRUE(connection_->Connect(node_ids));
+    ASSERT_TRUE(connection_->Embed(node_ids));
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());

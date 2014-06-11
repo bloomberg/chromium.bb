@@ -78,17 +78,17 @@ void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
   }
 }
 
-void RootNodeManager::InitialConnect(const std::string& url) {
+void RootNodeManager::EmbedRoot(const std::string& url) {
   CHECK(connection_map_.empty());
   Array<Id> roots(0);
-  ConnectImpl(kRootConnection, String::From(url), roots);
+  EmbedImpl(kRootConnection, String::From(url), roots);
 }
 
-void RootNodeManager::Connect(ConnectionSpecificId creator_id,
-                              const String& url,
-                              const Array<Id>& node_ids) {
+void RootNodeManager::Embed(ConnectionSpecificId creator_id,
+                            const String& url,
+                            const Array<Id>& node_ids) {
   CHECK_GT(node_ids.size(), 0u);
-  ConnectImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
+  EmbedImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
 }
 
 ViewManagerConnection* RootNodeManager::GetConnection(
@@ -190,7 +190,7 @@ void RootNodeManager::FinishChange() {
   current_change_ = NULL;
 }
 
-ViewManagerConnection* RootNodeManager::ConnectImpl(
+ViewManagerConnection* RootNodeManager::EmbedImpl(
     const ConnectionSpecificId creator_id,
     const String& url,
     const Array<Id>& node_ids) {

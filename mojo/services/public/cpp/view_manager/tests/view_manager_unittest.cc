@@ -345,22 +345,19 @@ class ViewManagerTest : public testing::Test {
     ConnectToService(test_helper_.service_provider(),
                      "mojo:mojo_view_manager",
                      &view_manager_init_);
-    ASSERT_TRUE(ViewManagerInitConnect(view_manager_init_.get(),
-                                       kWindowManagerURL));
+    ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kWindowManagerURL));
   }
 
-  void ViewManagerInitConnectCallback(bool* result_cache,
-                                      bool result) {
+  void EmbedRootCallback(bool* result_cache, bool result) {
     *result_cache = result;
   }
 
-  bool ViewManagerInitConnect(IViewManagerInit* view_manager_init,
-                              const std::string& url) {
+  bool EmbedRoot(IViewManagerInit* view_manager_init, const std::string& url) {
     bool result = false;
-    view_manager_init->Connect(
+    view_manager_init->EmbedRoot(
         url,
-        base::Bind(&ViewManagerTest::ViewManagerInitConnectCallback,
-                   base::Unretained(this), &result));
+        base::Bind(&ViewManagerTest::EmbedRootCallback, base::Unretained(this),
+                   &result));
     RunRunLoop();
     window_manager_ = GetLoadedViewManager();
     return result;

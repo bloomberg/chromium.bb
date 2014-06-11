@@ -18,8 +18,7 @@ struct INode {
 // root node. mojo::view_manager returns an instance of this. All other
 // connections are established by the client this creates.
 interface IViewManagerInit {
-  // Connects to |url| creating a connection that has the roots |nodes|.
-  Connect(string url) => (bool success);
+  EmbedRoot(string url) => (bool success);
 };
 
 // Functions that mutate the hierarchy take a change id. This is an ever
@@ -97,13 +96,15 @@ interface IViewManager {
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
-  // Connects to |url| creating a connection that has the roots |nodes|. Fails
+  // Embeds the app at |url| in the specified nodes. More specifically this
+  // creates a new connection to the specified url, expecting to get an
+  // IViewManagerClient and configures it with the root nodes |nodes|. Fails
   // if |nodes| is empty or contains nodes that were not created by this
   // connection.
-  // If a particular client invokes Connect() multiple times with the same url,
+  // If a particular client invokes Embed() multiple times with the same url,
   // the connection is reused. When this happens the IViewManagerClient is
   // notified of the additional roots by way of OnRootsAdded().
-  Connect(string url, uint32[] nodes) => (bool success);
+  Embed(string url, uint32[] nodes) => (bool success);
 };
 
 // Changes to nodes/views are not sent to the connection that originated the

@@ -289,7 +289,7 @@ bool ViewManagerConnection::CanGetNodeTree(const Node* node) const {
       (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
 }
 
-bool ViewManagerConnection::CanConnect(
+bool ViewManagerConnection::CanEmbed(
     const mojo::Array<uint32_t>& node_ids) const {
   for (size_t i = 0; i < node_ids.size(); ++i) {
     const Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
@@ -648,10 +648,10 @@ void ViewManagerConnection::SetNodeBounds(
   callback.Run(true);
 }
 
-void ViewManagerConnection::Connect(const String& url,
-                                    Array<uint32_t> node_ids,
-                                    const Callback<void(bool)>& callback) {
-  bool success = CanConnect(node_ids);
+void ViewManagerConnection::Embed(const String& url,
+                                  Array<uint32_t> node_ids,
+                                  const Callback<void(bool)>& callback) {
+  bool success = CanEmbed(node_ids);
   if (success) {
     // We may already have this connection, if so reuse it.
     ViewManagerConnection* existing_connection =
@@ -659,7 +659,7 @@ void ViewManagerConnection::Connect(const String& url,
     if (existing_connection)
       success = existing_connection->AddRoots(node_ids.storage());
     else
-      root_node_manager_->Connect(id_, url, node_ids);
+      root_node_manager_->Embed(id_, url, node_ids);
   }
   callback.Run(success);
 }

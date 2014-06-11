@@ -94,13 +94,13 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Establishes the initial client. Similar to Connect(), but the resulting
   // client is allowed to do anything.
-  void InitialConnect(const std::string& url);
+  void EmbedRoot(const std::string& url);
 
-  // See description of IViewManager::Connect() for details. This assumes
+  // See description of IViewManager::Embed() for details. This assumes
   // |node_ids| has been validated.
-  void Connect(ConnectionSpecificId creator_id,
-               const String& url,
-               const Array<Id>& node_ids);
+  void Embed(ConnectionSpecificId creator_id,
+             const String& url,
+             const Array<Id>& node_ids);
 
   // Returns the connection by id.
   ViewManagerConnection* GetConnection(ConnectionSpecificId connection_id);
@@ -168,10 +168,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     return current_change_ && current_change_->connection_id() == connection_id;
   }
 
-  // Implementation of the two connect variants.
-  ViewManagerConnection* ConnectImpl(ConnectionSpecificId creator_id,
-                                     const String& url,
-                                     const Array<Id>& node_ids);
+  // Implementation of the two embed variants.
+  ViewManagerConnection* EmbedImpl(ConnectionSpecificId creator_id,
+                                   const String& url,
+                                   const Array<Id>& node_ids);
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,

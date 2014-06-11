@@ -46,12 +46,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitConnection
     Callback<void(bool)> callback;
   };
 
-  void MaybeConnect(const std::string& url,
-                    const Callback<void(bool)>& callback);
+  void MaybeEmbedRoot(const std::string& url,
+                      const Callback<void(bool)>& callback);
 
   // IViewManagerInit overrides:
-  virtual void Connect(const String& url,
-                       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void EmbedRoot(const String& url,
+                         const Callback<void(bool)>& callback) OVERRIDE;
 
   // RootViewManagerDelegate overrides:
   virtual void OnRootViewManagerWindowTreeHostCreated() OVERRIDE;

@@ -114,7 +114,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   bool CanDeleteView(const ViewId& view_id) const;
   bool CanSetView(const Node* node, const ViewId& view_id) const;
   bool CanGetNodeTree(const Node* node) const;
-  bool CanConnect(const mojo::Array<uint32_t>& node_ids) const;
+  bool CanEmbed(const mojo::Array<uint32_t>& node_ids) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -187,9 +187,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void SetNodeBounds(Id node_id,
                              RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void Connect(const mojo::String& url,
-                       mojo::Array<uint32_t> node_ids,
-                       const mojo::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void Embed(const mojo::String& url,
+                     mojo::Array<uint32_t> node_ids,
+                     const mojo::Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,

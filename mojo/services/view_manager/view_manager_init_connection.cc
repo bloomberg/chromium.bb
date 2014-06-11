@@ -26,18 +26,19 @@ ViewManagerInitConnection::ViewManagerInitConnection(
 ViewManagerInitConnection::~ViewManagerInitConnection() {
 }
 
-void ViewManagerInitConnection::MaybeConnect(
+void ViewManagerInitConnection::MaybeEmbedRoot(
     const std::string& url,
     const Callback<void(bool)>& callback) {
   if (!is_tree_host_ready_)
     return;
 
-  root_node_manager_.InitialConnect(url);
+  root_node_manager_.EmbedRoot(url);
   callback.Run(true);
 }
 
-void ViewManagerInitConnection::Connect(const String& url,
-                                        const Callback<void(bool)>& callback) {
+void ViewManagerInitConnection::EmbedRoot(
+    const String& url,
+    const Callback<void(bool)>& callback) {
   if (connect_params_.get()) {
     DVLOG(1) << "Ignoring second connect";
     callback.Run(false);
@@ -46,14 +47,14 @@ void ViewManagerInitConnection::Connect(const String& url,
   connect_params_.reset(new ConnectParams);
   connect_params_->url = url.To<std::string>();
   connect_params_->callback = callback;
-  MaybeConnect(url.To<std::string>(), callback);
+  MaybeEmbedRoot(url.To<std::string>(), callback);
 }
 
 void ViewManagerInitConnection::OnRootViewManagerWindowTreeHostCreated() {
   DCHECK(!is_tree_host_ready_);
   is_tree_host_ready_ = true;
   if (connect_params_.get())
-    MaybeConnect(connect_params_->url, connect_params_->callback);
+    MaybeEmbedRoot(connect_params_->url, connect_params_->callback);
 }
 
 }  // namespace service

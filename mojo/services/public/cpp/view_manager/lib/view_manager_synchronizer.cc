@@ -425,8 +425,7 @@ class EmbedTransaction : public ViewManagerTransaction {
   virtual void DoCommit() OVERRIDE {
     std::vector<Id> ids;
     ids.push_back(node_id_);
-    service()->Connect(url_, Array<Id>::From(ids),
-                       ActionCompletedCallback());
+    service()->Embed(url_, Array<Id>::From(ids), ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?

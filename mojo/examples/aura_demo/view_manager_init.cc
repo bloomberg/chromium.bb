@@ -19,9 +19,9 @@ class ViewManagerInit : public Application {
 
   virtual void Initialize() OVERRIDE {
     ConnectTo("mojo:mojo_view_manager", &view_manager_init_);
-    view_manager_init_->Connect("mojo:mojo_aura_demo",
-                                base::Bind(&ViewManagerInit::DidConnect,
-                                           base::Unretained(this)));
+    view_manager_init_->EmbedRoot("mojo:mojo_aura_demo",
+                                  base::Bind(&ViewManagerInit::DidConnect,
+                                             base::Unretained(this)));
   }
 
  private:
