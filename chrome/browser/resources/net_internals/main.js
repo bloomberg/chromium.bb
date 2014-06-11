@@ -18,6 +18,7 @@ var NetError = null;
 var QuicError = null;
 var QuicRstStreamError = null;
 var LoadFlag = null;
+var CertStatusFlag = null;
 var LoadState = null;
 var AddressFamily = null;
 
@@ -310,6 +311,11 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   QuicRstStreamError = Constants.quicRstStreamError;
   AddressFamily = Constants.addressFamily;
   LoadState = Constants.loadState;
+  // certStatusFlag may not be present when loading old log Files
+  if (typeof(Constants.certStatusFlag) == 'object')
+    CertStatusFlag = Constants.certStatusFlag;
+  else
+    CertStatusFlag = {};
 
   timeutil.setTimeTickOffset(Constants.timeTickOffset);
 };

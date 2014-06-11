@@ -76,6 +76,18 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // enums and their symbolic names.
   constants_dict->Set("logEventTypes", net::NetLog::GetEventTypesAsValue());
 
+  // Add a dictionary with information about the relationship between CertStatus
+  // flags and their symbolic names.
+  {
+    base::DictionaryValue* dict = new base::DictionaryValue();
+
+#define CERT_STATUS_FLAG(label, value) dict->SetInteger(#label, value);
+#include "net/cert/cert_status_flags_list.h"
+#undef CERT_STATUS_FLAG
+
+    constants_dict->Set("certStatusFlag", dict);
+  }
+
   // Add a dictionary with information about the relationship between load flag
   // enums and their symbolic names.
   {

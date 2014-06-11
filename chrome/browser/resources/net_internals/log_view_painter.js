@@ -359,19 +359,34 @@ function defaultWriteParameter(key, value, out) {
  * For example: getLoadFlagSymbolicString(
  */
 function getLoadFlagSymbolicString(loadFlag) {
-  // Load flag of 0 means "NORMAL". Special case this, since and-ing with
-  // 0 is always going to be false.
-  if (loadFlag == 0)
-    return getKeyWithValue(LoadFlag, loadFlag);
 
-  var matchingLoadFlagNames = [];
+  return getSymbolicString(loadFlag, LoadFlag,
+                           getKeyWithValue(LoadFlag, loadFlag));
+}
 
-  for (var k in LoadFlag) {
-    if (loadFlag & LoadFlag[k])
-      matchingLoadFlagNames.push(k);
+/**
+ * Returns the set of CertStatusFlags that make up the integer |certStatusFlag|
+ */
+function getCertStatusFlagSymbolicString(certStatusFlag) {
+  return getSymbolicString(certStatusFlag, CertStatusFlag, '');
+}
+
+/**
+ * Returns a string representing the flags composing the given bitmask.
+ */
+function getSymbolicString(bitmask, valueToName, zeroName) {
+  var matchingFlagNames = [];
+
+  for (var k in valueToName) {
+    if (bitmask & valueToName[k])
+      matchingFlagNames.push(k);
   }
 
-  return matchingLoadFlagNames.join(' | ');
+  // If no flags were matched, returns a special value.
+  if (matchingFlagNames.length == 0)
+    return zeroName;
+
+  return matchingFlagNames.join(' | ');
 }
 
 /**
@@ -568,19 +583,34 @@ function writeParamsForRequestHeaders(entry, out, consumedParams) {
  * Outputs the certificate parameters of |entry| to |out|.
  */
 function writeParamsForCertificates(entry, out, consumedParams) {
-  if (!(entry.params.certificates instanceof Array)) {
-    // Unrecognized params.
-    return;
+  if (entry.params.certificates instanceof Array) {
+    var certs = entry.params.certificates.reduce(function(previous, current) {
+      return previous.concat(current.split('\n'));
+    }, new Array());
+    out.writeArrowKey('certificates');
+    out.writeSpaceIndentedLines(8, certs);
+    consumedParams.certificates = true;
   }
 
-  var certs = entry.params.certificates.reduce(function(previous, current) {
-    return previous.concat(current.split('\n'));
-  }, new Array());
+  if (typeof(entry.params.verified_cert) == 'object') {
+    if (entry.params.verified_cert.certificates instanceof Array) {
+      var certs = entry.params.verified_cert.certificates.reduce(
+          function(previous, current) {
+        return previous.concat(current.split('\n'));
+      }, new Array());
+      out.writeArrowKey('verified_cert');
+      out.writeSpaceIndentedLines(8, certs);
+      consumedParams.verified_cert = true;
+    }
+  }
 
-  out.writeArrowKey('certificates');
-  out.writeSpaceIndentedLines(8, certs);
+  if (typeof(entry.params.cert_status) == 'number') {
+    var valueStr = entry.params.cert_status + ' (' +
+        getCertStatusFlagSymbolicString(entry.params.cert_status) + ')';
+    out.writeArrowKeyValue('cert_status', valueStr);
+    consumedParams.cert_status = true;
+  }
 
-  consumedParams.certificates = true;
 }
 
 /**

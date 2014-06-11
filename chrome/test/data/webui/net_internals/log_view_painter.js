@@ -161,6 +161,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestQuicCryptoHandshakeMessage());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
+  runTestCase(painterTestCertVerifyResult());
   runTestCase(painterTestProxyConfigOneProxyAllSchemes());
   runTestCase(painterTestProxyConfigTwoProxiesAllSchemes());
   runTestCase(painterTestDontStripCookiesURLRequest());
@@ -1452,6 +1453,93 @@ function painterTestCertVerifierJob() {
     '                               -----BEGIN CERTIFICATE-----\n' +
     '                               2\n' +
     '                               -----END CERTIFICATE-----';
+  return testCase;
+
+}
+
+/**
+ * Tests the formatting of CertVerifyResult fields.
+ */
+function painterTestCertVerifyResult() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098481';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        'certificates': [
+          '-----BEGIN CERTIFICATE-----\n1\n-----END CERTIFICATE-----\n',
+          '-----BEGIN CERTIFICATE-----\n2\n-----END CERTIFICATE-----\n',
+        ]
+      },
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 752,
+        'type': EventSourceType.CERT_VERIFIER_JOB
+      },
+      'time': '954124663',
+      'type': EventType.CERT_VERIFIER_JOB
+    },
+    {
+      'params': {
+        'has_md5': true,
+        'has_md2': false,
+        'has_md4': true,
+        'is_issued_by_known_root': true,
+        'is_issued_by_additional_trust_anchor': false,
+        'common_name_fallback_used': true,
+        'cert_status': 5,
+        'verified_cert': {
+          'certificates': [
+          '-----BEGIN CERTIFICATE-----\n1\n-----END CERTIFICATE-----\n',
+          '-----BEGIN CERTIFICATE-----\n2\n-----END CERTIFICATE-----\n',
+          ]
+        },
+        'public_key_hashes': [
+          'hash1',
+          'hash2',
+        ]
+      },
+      'phase': EventPhase.PHASE_END,
+      'source': {
+        'id': 752,
+        'type': EventSourceType.CERT_VERIFIER_JOB
+      },
+      'time': '954124697',
+      'type': EventType.CERT_VERIFIER_JOB
+    }
+  ];
+
+  testCase.expectedText =
+    't=1338865223144 [st= 0] +CERT_VERIFIER_JOB  [dt=34]\n' +
+    '                         --> certificates =\n' +
+    '                                -----BEGIN CERTIFICATE-----\n' +
+    '                                1\n' +
+    '                                -----END CERTIFICATE-----\n' +
+    '                                \n' +
+    '                                -----BEGIN CERTIFICATE-----\n' +
+    '                                2\n' +
+    '                                -----END CERTIFICATE-----\n' +
+    '                                \n' +
+    't=1338865223178 [st=34] -CERT_VERIFIER_JOB\n' +
+    '                         --> verified_cert =\n' +
+    '                                -----BEGIN CERTIFICATE-----\n' +
+    '                                1\n' +
+    '                                -----END CERTIFICATE-----\n' +
+    '                                \n' +
+    '                                -----BEGIN CERTIFICATE-----\n' +
+    '                                2\n' +
+    '                                -----END CERTIFICATE-----\n' +
+    '                                \n' +
+    '                         --> cert_status = 5 (AUTHORITY_INVALID |' +
+    ' COMMON_NAME_INVALID)\n' +
+    '                         --> has_md5 = true\n' +
+    '                         --> has_md2 = false\n' +
+    '                         --> has_md4 = true\n' +
+    '                         --> is_issued_by_known_root = true\n' +
+    '                         --> is_issued_by_additional_trust_anchor =' +
+    ' false\n                         --> common_name_fallback_used = true\n' +
+    '                         --> public_key_hashes = ["hash1","hash2"]';
 
   return testCase;
 }
