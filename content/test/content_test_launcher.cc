@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
@@ -51,6 +52,9 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   virtual void Initialize() OVERRIDE {
 
 #if defined(OS_ANDROID)
+    base::i18n::AllowMultipleInitializeCallsForTesting();
+    base::i18n::InitializeICU();
+
     // This needs to be done before base::TestSuite::Initialize() is called,
     // as it also tries to set MessagePumpForUIFactory.
     if (!base::MessageLoop::InitMessagePumpForUIFactory(
