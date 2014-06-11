@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -27,6 +26,10 @@
 #include "content/public/common/referrer.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/guest_view_base.h"
+#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -166,6 +169,8 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
   DCHECK_EQ(static_cast<LinkPrerender*>(NULL),
             FindByLauncherChildIdAndPrerenderId(launcher_child_id,
                                                 prerender_id));
+
+#if defined(ENABLE_EXTENSIONS)
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(launcher_child_id, render_view_route_id);
   content::WebContents* web_contents =
@@ -174,6 +179,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
   // do not allow guests to prerender content.
   if (GuestViewBase::IsGuest(web_contents))
     return;
+#endif
 
   // Check if the launcher is itself an unswapped prerender.
   PrerenderContents* prerender_contents =

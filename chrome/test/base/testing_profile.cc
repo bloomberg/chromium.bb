@@ -28,7 +28,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_backend.h"
@@ -88,6 +87,10 @@
 #else
 #include "components/policy/core/common/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/guest_view_manager.h"
+#endif
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
@@ -828,7 +831,11 @@ TestingProfile::GetGeolocationPermissionContext() {
 }
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
+#if defined(ENABLE_EXTENSIONS)
   return GuestViewManager::FromBrowserContext(this);
+#else
+  return NULL;
+#endif
 }
 
 bool TestingProfile::IsSameProfile(Profile *p) {

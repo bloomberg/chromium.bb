@@ -42,11 +42,6 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
@@ -231,6 +226,11 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
+#include "chrome/browser/guest_view/guest_view_base.h"
+#include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
 #endif
 
@@ -770,7 +770,9 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   partition_name->clear();
   *in_memory = false;
 
-  bool success = WebViewGuest::GetGuestPartitionConfigForSite(
+  bool success = false;
+#if defined(ENABLE_EXTENSIONS)
+  success = WebViewGuest::GetGuestPartitionConfigForSite(
       site, partition_domain, partition_name, in_memory);
 
   if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
@@ -795,7 +797,11 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
       *in_memory = false;
       partition_name->clear();
     }
-  } else if (site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
+    success = true;
+  }
+#endif
+
+  if (!success && (site.GetOrigin().spec() == kChromeUIChromeSigninURL)) {
     // Chrome signin page has an embedded iframe of extension and web content,
     // thus it must be isolated from other webUI pages.
     *partition_domain = chrome::kChromeUIChromeSigninHost;
@@ -821,6 +827,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
     WebContents* opener_web_contents,
     content::BrowserPluginGuestDelegate** guest_delegate,
     scoped_ptr<base::DictionaryValue> extra_params) {
+#if defined(ENABLE_EXTENSIONS)
   if (!guest_site_instance) {
     NOTREACHED();
     return;
@@ -848,10 +855,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 
   if (opener_web_contents) {
     GuestViewBase* guest = GuestViewBase::FromWebContents(opener_web_contents);
-    if (!guest) {
-      NOTREACHED();
-      return;
-    }
+    DCHECK(guest);
 
     // Create a new GuestViewBase of the same type as the opener.
     *guest_delegate = GuestViewBase::Create(
@@ -877,12 +881,16 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
                             guest_web_contents,
                             extension_id,
                             api_type);
+#else
+  NOTREACHED();
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
     const base::DictionaryValue& extra_params) {
+#if defined(ENABLE_EXTENSIONS)
   GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
   if (!guest) {
     // It's ok to return here, since we could be running a browser plugin
@@ -892,6 +900,9 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
     return;
   }
   guest->Attach(embedder_web_contents, extra_params);
+#else
+  NOTREACHED();
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(
@@ -951,8 +962,12 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 
   RendererContentSettingRules rules;
   if (host->IsIsolatedGuest()) {
+#if defined(ENABLE_EXTENSIONS)
     GuestViewBase::GetDefaultContentSettingRules(&rules,
                                                  profile->IsOffTheRecord());
+#else
+    NOTREACHED();
+#endif
   } else {
     GetRendererContentSettingRules(
         profile->GetHostContentSettingsMap(), &rules);

@@ -14,8 +14,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
@@ -25,17 +23,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/process_map.h"
-#include "extensions/browser/view_type_utils.h"
-#include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using extensions::APIPermission;
-using extensions::ExtensionRegistry;
 
 class GeolocationPermissionRequest : public PermissionBubbleRequest {
  public:
@@ -125,7 +116,8 @@ void GeolocationPermissionRequest::RequestFinished() {
 ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
     Profile* profile)
     : profile_(profile),
-      shutting_down_(false) {
+      shutting_down_(false),
+      extensions_context_(profile) {
 }
 
 ChromeGeolocationPermissionContext::~ChromeGeolocationPermissionContext() {
@@ -145,46 +137,20 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   if (shutting_down_)
     return;
 
-  WebViewGuest* guest = WebViewGuest::FromWebContents(web_contents);
-  if (guest) {
-    guest->RequestGeolocationPermission(bridge_id,
-                                        requesting_frame,
-                                        user_gesture,
-                                        callback);
-    return;
-  }
-
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   const PermissionRequestID id(
       render_process_id, render_view_id, bridge_id, GURL());
-  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
-  if (extension_registry) {
-    const extensions::Extension* extension =
-        extension_registry->enabled_extensions().GetExtensionOrAppByURL(
-            requesting_frame_origin);
-    if (IsExtensionWithPermissionOrSuggestInConsole(
-            APIPermission::kGeolocation, extension,
-            web_contents->GetRenderViewHost())) {
-      // Make sure the extension is in the calling process.
-      if (extensions::ProcessMap::Get(profile_)
-              ->Contains(extension->id(), id.render_process_id())) {
-        NotifyPermissionSet(id, requesting_frame_origin, callback, true);
-        return;
-      }
-    }
-  }
 
-  if (extensions::GetViewType(web_contents) !=
-      extensions::VIEW_TYPE_TAB_CONTENTS) {
-    // The tab may have gone away, or the request may not be from a tab at all.
-    // TODO(mpcomplete): the request could be from a background page or
-    // extension popup (web_contents will have a different ViewType). But why do
-    // we care? Shouldn't we still put an infobar up in the current tab?
-    LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
-                 << id.ToString()
-                 << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, requesting_frame_origin, callback, false);
+  bool permission_set;
+  bool new_permission;
+  if (extensions_context_.RequestPermission(
+          web_contents, id, bridge_id, requesting_frame, user_gesture,
+          callback, &permission_set, &new_permission)) {
+    if (permission_set) {
+      NotifyPermissionSet(id, requesting_frame_origin, callback,
+                          new_permission);
+    }
     return;
   }
 
@@ -205,12 +171,9 @@ void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
     content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame) {
-  WebViewGuest* guest =
-      web_contents ? WebViewGuest::FromWebContents(web_contents) : NULL;
-  if (guest) {
-    guest->CancelGeolocationPermissionRequest(bridge_id);
+  if (extensions_context_.CancelPermissionRequest(web_contents, bridge_id))
     return;
-  }
+
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   CancelPendingInfobarRequest(PermissionRequestID(
@@ -278,7 +241,7 @@ void ChromeGeolocationPermissionContext::RequestFinished(
     GeolocationPermissionRequest* request) {
   base::ScopedPtrHashMap<std::string,
                          GeolocationPermissionRequest>::iterator it;
-  for (it = pending_requests_.begin(); it != pending_requests_.end(); it++) {
+  for (it = pending_requests_.begin(); it != pending_requests_.end(); ++it) {
     if (it->second == request) {
       pending_requests_.take_and_erase(it);
       return;

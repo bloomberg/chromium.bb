@@ -413,14 +413,26 @@ void SendOnMessageEventOnUI(
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
 
   extensions::EventFilteringInfo event_filtering_info;
+
+  std::string event_name;
+#if defined(ENABLE_EXTENSIONS)
   // The instance ID uniquely identifies a <webview> instance within an embedder
   // process. We use a filter here so that only event listeners for a particular
   // <webview> will fire.
-  if (is_web_view_guest)
+  if (is_web_view_guest) {
     event_filtering_info.SetInstanceID(web_view_info.instance_id);
+    event_name = webview::kEventMessage;
+  } else {
+    event_name = declarative_keys::kOnMessage;
+  }
+#else
+  // TODO(thestig) Remove this once the WebRequestAPI code is disabled.
+  // http://crbug.com/305852
+  NOTREACHED();
+#endif
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      is_web_view_guest ? webview::kEventMessage : declarative_keys::kOnMessage,
+      event_name,
       event_args.Pass(), profile, GURL(),
       extensions::EventRouter::USER_GESTURE_UNKNOWN,
       event_filtering_info));

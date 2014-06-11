@@ -11,6 +11,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context_extensions.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
 namespace content {
@@ -109,6 +110,7 @@ class ChromeGeolocationPermissionContext
   Profile* const profile_;
   bool shutting_down_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
+  ChromeGeolocationPermissionContextExtensions extensions_context_;
 
   base::ScopedPtrHashMap<std::string, GeolocationPermissionRequest>
       pending_requests_;

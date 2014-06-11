@@ -684,6 +684,8 @@
         'browser/geolocation/chrome_geolocation_permission_context.h',
         'browser/geolocation/chrome_geolocation_permission_context_android.cc',
         'browser/geolocation/chrome_geolocation_permission_context_android.h',
+        'browser/geolocation/chrome_geolocation_permission_context_extensions.cc',
+        'browser/geolocation/chrome_geolocation_permission_context_extensions.h',
         'browser/geolocation/chrome_geolocation_permission_context_factory.cc',
         'browser/geolocation/chrome_geolocation_permission_context_factory.h',
         'browser/geolocation/geolocation_infobar_delegate.cc',
@@ -2746,6 +2748,9 @@
             'browser/speech/extension_api/tts_engine_extension_api.h',
           ],
         }, {
+          'sources/': [
+            ['exclude', '^browser/guest_view/'],
+          ],
           'sources!': [
             'browser/autocomplete/keyword_extensions_delegate_impl.cc',
             'browser/autocomplete/keyword_extensions_delegate_impl.h',

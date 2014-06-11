@@ -139,10 +139,8 @@
                 # These should be eliminated. See crbug.com/305852.
                 'activity_log_private.json',
                 'app_window.idl',
-                'context_menus.json',
                 'events.json',
                 'file_system.idl',
-                'guest_view_internal.json',
                 'manifest_types.json',
                 'permissions.json',
                 'sync_file_system.idl',
