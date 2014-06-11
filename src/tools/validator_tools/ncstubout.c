@@ -218,9 +218,6 @@ static Bool FixUpELFFile(const struct NaClValidatorInterface *validator,
 int main(int argc, const char *argv[]) {
   /* Be sure to redirect validator error messages to stderr. */
   const struct NaClValidatorInterface *validator;
-  struct GioFile err;
-  GioFileRefCtor(&err, stderr);
-  NaClLogPreInitSetGio((struct Gio*) &err);
   NaClLogModuleInit();
   validator = NaClCreateValidator();
   if (!validator->stubout_mode_implemented) {
@@ -233,9 +230,7 @@ int main(int argc, const char *argv[]) {
     fprintf(stderr,
             "This tool rewrites ELF objects to replace instructions that are\n"
             "rejected by the NaCl validator with safe HLT instructions.\n");
-    GioFileDtor((struct Gio*) &err);
     return 1;
   }
-  GioFileDtor((struct Gio*) &err);
   return FixUpELFFile(validator, argv[1], argv[3]) ? 0 : 1;
 }
