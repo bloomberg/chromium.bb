@@ -1106,7 +1106,6 @@
         'browser/metrics/cloned_install_detector_unittest.cc',
         'browser/metrics/extensions_metrics_provider_unittest.cc',
         'browser/metrics/gpu_metrics_provider_unittest.cc',
-        'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/plugin_metrics_provider_unittest.cc',
         'browser/metrics/profiler_metrics_provider_unittest.cc',

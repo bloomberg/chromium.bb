@@ -7,34 +7,141 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/basictypes.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/metrics/test_metrics_service_client.h"
+#include "components/variations/active_field_trials.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
 
 namespace {
 
+const char kClientId[] = "bogus client ID";
+const int64 kInstallDate = 1373051956;
+const int64 kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
+const int64 kEnabledDate = 1373001211;
+const int64 kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
+const int kSessionId = 127;
+const variations::ActiveGroupId kFieldTrialIds[] = {
+  {37, 43},
+  {13, 47},
+  {23, 17}
+};
+const variations::ActiveGroupId kSyntheticTrials[] = {
+  {55, 15},
+  {66, 16}
+};
+
 class TestMetricsLog : public MetricsLog {
  public:
-  TestMetricsLog(TestMetricsServiceClient* client,
+  TestMetricsLog(const std::string& client_id,
+                 int session_id,
+                 LogType log_type,
+                 metrics::MetricsServiceClient* client,
                  TestingPrefServiceSimple* prefs)
-      : MetricsLog("client_id", 1, MetricsLog::ONGOING_LOG, client, prefs) {
-  }
+      : MetricsLog(client_id, session_id, log_type, client, prefs),
+        prefs_(prefs) {
+    InitPrefs();
+ }
+
   virtual ~TestMetricsLog() {}
 
-  using MetricsLog::uma_proto;
+  const metrics::ChromeUserMetricsExtension& uma_proto() const {
+    return *MetricsLog::uma_proto();
+  }
+
+  const metrics::SystemProfileProto& system_profile() const {
+    return uma_proto().system_profile();
+  }
 
  private:
+  void InitPrefs() {
+    prefs_->SetString(metrics::prefs::kMetricsReportingEnabledTimestamp,
+                      base::Int64ToString(kEnabledDate));
+  }
+
+  virtual void GetFieldTrialIds(
+      std::vector<variations::ActiveGroupId>* field_trial_ids) const
+      OVERRIDE {
+    ASSERT_TRUE(field_trial_ids->empty());
+
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      field_trial_ids->push_back(kFieldTrialIds[i]);
+    }
+  }
+
+  // Weak pointer to the PrefsService used by this log.
+  TestingPrefServiceSimple* prefs_;
+
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
 }  // namespace
 
-TEST(MetricsLogTest, LogType) {
+class MetricsLogTest : public testing::Test {
+ public:
+  MetricsLogTest() {
+    MetricsLog::RegisterPrefs(prefs_.registry());
+    metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
+  }
+
+  virtual ~MetricsLogTest() {
+  }
+
+ protected:
+  // Check that the values in |system_values| correspond to the test data
+  // defined at the top of this file.
+  void CheckSystemProfile(const metrics::SystemProfileProto& system_profile) {
+    EXPECT_EQ(kInstallDateExpected, system_profile.install_date());
+    EXPECT_EQ(kEnabledDateExpected, system_profile.uma_enabled_date());
+
+    ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
+              static_cast<size_t>(system_profile.field_trial_size()));
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i);
+      EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+      EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+    }
+    // Verify the right data is present for the synthetic trials.
+    for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i + arraysize(kFieldTrialIds));
+      EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
+      EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
+    }
+
+    EXPECT_EQ(metrics::TestMetricsServiceClient::kBrandForTesting,
+              system_profile.brand_code());
+
+    const metrics::SystemProfileProto::Hardware& hardware =
+        system_profile.hardware();
+
+    EXPECT_TRUE(hardware.has_cpu());
+    EXPECT_TRUE(hardware.cpu().has_vendor_name());
+    EXPECT_TRUE(hardware.cpu().has_signature());
+
+    // TODO(isherman): Verify other data written into the protobuf as a result
+    // of this call.
+  }
+
+ protected:
+  TestingPrefServiceSimple prefs_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MetricsLogTest);
+};
+
+TEST_F(MetricsLogTest, LogType) {
   TestMetricsServiceClient client;
   TestingPrefServiceSimple prefs;
 
@@ -45,7 +152,7 @@ TEST(MetricsLogTest, LogType) {
   EXPECT_EQ(MetricsLog::INITIAL_STABILITY_LOG, log2.log_type());
 }
 
-TEST(MetricsLogTest, EmptyRecord) {
+TEST_F(MetricsLogTest, EmptyRecord) {
   TestMetricsServiceClient client;
   client.set_version_string("bogus version");
   TestingPrefServiceSimple prefs;
@@ -72,7 +179,7 @@ TEST(MetricsLogTest, EmptyRecord) {
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }
 
-TEST(MetricsLogTest, HistogramBucketFields) {
+TEST_F(MetricsLogTest, HistogramBucketFields) {
   // Create buckets: 1-5, 5-7, 7-8, 8-9, 9-10, 10-11, 11-12.
   base::BucketRanges ranges(8);
   ranges.set_range(0, 1);
@@ -93,12 +200,13 @@ TEST(MetricsLogTest, HistogramBucketFields) {
 
   TestMetricsServiceClient client;
   TestingPrefServiceSimple prefs;
-  TestMetricsLog log(&client, &prefs);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   log.RecordHistogramDelta("Test", samples);
 
-  const metrics::ChromeUserMetricsExtension* uma_proto = log.uma_proto();
-  const metrics::HistogramEventProto& histogram_proto =
-      uma_proto->histogram_event(uma_proto->histogram_event_size() - 1);
+  const ChromeUserMetricsExtension& uma_proto = log.uma_proto();
+  const HistogramEventProto& histogram_proto =
+      uma_proto.histogram_event(uma_proto.histogram_event_size() - 1);
 
   // Buckets with samples: 1-5, 5-7, 8-9, 10-11, 11-12.
   // Should become: 1-/, 5-7, /-9, 10-/, /-12.
@@ -129,6 +237,146 @@ TEST(MetricsLogTest, HistogramBucketFields) {
   EXPECT_FALSE(histogram_proto.bucket(4).has_min());
   EXPECT_TRUE(histogram_proto.bucket(4).has_max());
   EXPECT_EQ(12, histogram_proto.bucket(4).max());
+}
+
+TEST_F(MetricsLogTest, RecordEnvironment) {
+  TestMetricsServiceClient client;
+  client.set_install_date(kInstallDate);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+  // Add two synthetic trials.
+  synthetic_trials.push_back(kSyntheticTrials[0]);
+  synthetic_trials.push_back(kSyntheticTrials[1]);
+
+  log.RecordEnvironment(std::vector<MetricsProvider*>(),
+                        synthetic_trials);
+  // Check that the system profile on the log has the correct values set.
+  CheckSystemProfile(log.system_profile());
+
+  // Check that the system profile has also been written to prefs.
+  const std::string base64_system_profile =
+      prefs_.GetString(prefs::kStabilitySavedSystemProfile);
+  EXPECT_FALSE(base64_system_profile.empty());
+  std::string serialied_system_profile;
+  EXPECT_TRUE(base::Base64Decode(base64_system_profile,
+                                 &serialied_system_profile));
+  SystemProfileProto decoded_system_profile;
+  EXPECT_TRUE(decoded_system_profile.ParseFromString(serialied_system_profile));
+  CheckSystemProfile(decoded_system_profile);
+}
+
+TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
+  const char* kSystemProfilePref = prefs::kStabilitySavedSystemProfile;
+  const char* kSystemProfileHashPref =
+      prefs::kStabilitySavedSystemProfileHash;
+
+  TestMetricsServiceClient client;
+  client.set_install_date(kInstallDate);
+
+  // The pref value is empty, so loading it from prefs should fail.
+  {
+    TestMetricsLog log(
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
+  }
+
+  // Do a RecordEnvironment() call and check whether the pref is recorded.
+  {
+    TestMetricsLog log(
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+    log.RecordEnvironment(std::vector<MetricsProvider*>(),
+                          std::vector<variations::ActiveGroupId>());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
+  }
+
+  {
+    TestMetricsLog log(
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+    EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs());
+    // Check some values in the system profile.
+    EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
+    EXPECT_EQ(kEnabledDateExpected, log.system_profile().uma_enabled_date());
+    // Ensure that the call cleared the prefs.
+    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
+  }
+
+  // Ensure that a non-matching hash results in the pref being invalid.
+  {
+    TestMetricsLog log(
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+    // Call RecordEnvironment() to record the pref again.
+    log.RecordEnvironment(std::vector<MetricsProvider*>(),
+                          std::vector<variations::ActiveGroupId>());
+  }
+
+  {
+    // Set the hash to a bad value.
+    prefs_.SetString(kSystemProfileHashPref, "deadbeef");
+    TestMetricsLog log(
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
+    // Ensure that the prefs are cleared, even if the call failed.
+    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
+  }
+}
+
+TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
+  TestMetricsServiceClient client;
+  TestMetricsLog log(kClientId,
+                     kSessionId,
+                     MetricsLog::INITIAL_STABILITY_LOG,
+                     &client,
+                     &prefs_);
+  std::vector<MetricsProvider*> metrics_providers;
+  log.RecordEnvironment(metrics_providers,
+                        std::vector<variations::ActiveGroupId>());
+  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
+                             base::TimeDelta());
+  const SystemProfileProto_Stability& stability =
+      log.system_profile().stability();
+  // Required metrics:
+  EXPECT_TRUE(stability.has_launch_count());
+  EXPECT_TRUE(stability.has_crash_count());
+  // Initial log metrics:
+  EXPECT_TRUE(stability.has_incomplete_shutdown_count());
+  EXPECT_TRUE(stability.has_breakpad_registration_success_count());
+  EXPECT_TRUE(stability.has_breakpad_registration_failure_count());
+  EXPECT_TRUE(stability.has_debugger_present_count());
+  EXPECT_TRUE(stability.has_debugger_not_present_count());
+}
+
+TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
+  TestMetricsServiceClient client;
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+  std::vector<MetricsProvider*> metrics_providers;
+  log.RecordEnvironment(metrics_providers,
+                        std::vector<variations::ActiveGroupId>());
+  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
+                             base::TimeDelta());
+  const SystemProfileProto_Stability& stability =
+      log.system_profile().stability();
+  // Required metrics:
+  EXPECT_TRUE(stability.has_launch_count());
+  EXPECT_TRUE(stability.has_crash_count());
+  // Initial log metrics:
+  EXPECT_FALSE(stability.has_incomplete_shutdown_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_success_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_failure_count());
+  EXPECT_FALSE(stability.has_debugger_present_count());
+  EXPECT_FALSE(stability.has_debugger_not_present_count());
+}
+
+TEST_F(MetricsLogTest, ChromeChannelWrittenToProtobuf) {
+  TestMetricsServiceClient client;
+  TestMetricsLog log(
+      "user@test.com", kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
+  EXPECT_TRUE(log.uma_proto().system_profile().has_channel());
 }
 
 }  // namespace metrics
