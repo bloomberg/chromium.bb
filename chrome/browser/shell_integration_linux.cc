@@ -659,15 +659,13 @@ web_app::ShortcutLocations GetExistingShortcutLocations(
   // Determine whether there is a shortcut in the applications directory.
   std::string shortcut_contents;
   if (GetExistingShortcutContents(env, shortcut_filename, &shortcut_contents)) {
-    // Whether this counts as "hidden" or "APP_MENU_LOCATION_SUBDIR_CHROMEAPPS"
-    // depends on whether it contains NoDisplay=true. Since these shortcuts are
-    // for apps, they are always in the "Chrome Apps" directory.
-    if (GetNoDisplayFromDesktopFile(shortcut_contents)) {
-      locations.hidden = true;
-    } else {
-      locations.applications_menu_location =
-          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-    }
+    // If the shortcut contents contain NoDisplay=true, it should be hidden.
+    // Otherwise since these shortcuts are for apps, they are always in the
+    // "Chrome Apps" directory.
+    locations.applications_menu_location =
+        GetNoDisplayFromDesktopFile(shortcut_contents)
+            ? web_app::APP_MENU_LOCATION_HIDDEN
+            : web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   }
 
   return locations;
@@ -911,12 +909,11 @@ bool CreateDesktopShortcut(
     // already exist and replace them.
     if (creation_locations.on_desktop)
       DeleteShortcutOnDesktop(shortcut_filename);
-    // The 'applications_menu_location' and 'hidden' locations are actually the
-    // same place ('applications').
+
     if (creation_locations.applications_menu_location !=
-            web_app::APP_MENU_LOCATION_NONE ||
-        creation_locations.hidden)
+            web_app::APP_MENU_LOCATION_NONE) {
       DeleteShortcutInApplicationsMenu(shortcut_filename, base::FilePath());
+    }
   } else {
     shortcut_filename = GetWebShortcutFilename(shortcut_info.url);
   }
@@ -951,41 +948,43 @@ bool CreateDesktopShortcut(
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
   }
 
-  if (creation_locations.applications_menu_location !=
-          web_app::APP_MENU_LOCATION_NONE ||
-      creation_locations.hidden) {
-    base::FilePath directory_filename;
-    std::string directory_contents;
-    switch (creation_locations.applications_menu_location) {
-      case web_app::APP_MENU_LOCATION_NONE:
-      case web_app::APP_MENU_LOCATION_ROOT:
-        break;
-      case web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS:
-        directory_filename = base::FilePath(kDirectoryFilename);
-        directory_contents = GetDirectoryFileContents(
-            ShellIntegration::GetAppShortcutsSubdirName(), "");
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-    // Set NoDisplay=true if hidden but not in the applications menu. This will
-    // hide the application from user-facing menus.
-    std::string contents = GetDesktopFileContents(
-        chrome_exe_path,
-        app_name,
-        shortcut_info.url,
-        shortcut_info.extension_id,
-        shortcut_info.title,
-        icon_name,
-        shortcut_info.profile_path,
-        "",
-        creation_locations.applications_menu_location ==
-            web_app::APP_MENU_LOCATION_NONE);
-    success = CreateShortcutInApplicationsMenu(
-        shortcut_filename, contents, directory_filename, directory_contents) &&
-        success;
+  if (creation_locations.applications_menu_location ==
+          web_app::APP_MENU_LOCATION_NONE) {
+    return success;
   }
+
+  base::FilePath directory_filename;
+  std::string directory_contents;
+  switch (creation_locations.applications_menu_location) {
+    case web_app::APP_MENU_LOCATION_ROOT:
+    case web_app::APP_MENU_LOCATION_HIDDEN:
+      break;
+    case web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS:
+      directory_filename = base::FilePath(kDirectoryFilename);
+      directory_contents = GetDirectoryFileContents(
+          ShellIntegration::GetAppShortcutsSubdirName(), "");
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Set NoDisplay=true if hidden. This will hide the application from
+  // user-facing menus.
+  std::string contents = GetDesktopFileContents(
+      chrome_exe_path,
+      app_name,
+      shortcut_info.url,
+      shortcut_info.extension_id,
+      shortcut_info.title,
+      icon_name,
+      shortcut_info.profile_path,
+      "",
+      creation_locations.applications_menu_location ==
+          web_app::APP_MENU_LOCATION_HIDDEN);
+  success = CreateShortcutInApplicationsMenu(
+      shortcut_filename, contents, directory_filename, directory_contents) &&
+      success;
 
   return success;
 }

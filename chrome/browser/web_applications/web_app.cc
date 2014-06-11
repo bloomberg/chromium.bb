@@ -237,11 +237,7 @@ ShortcutInfo::~ShortcutInfo() {}
 ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
       applications_menu_location(APP_MENU_LOCATION_NONE),
-      in_quick_launch_bar(false)
-#if defined(OS_POSIX)
-      , hidden(false)
-#endif
-      {
+      in_quick_launch_bar(false) {
 }
 
 void GetShortcutInfoForTab(content::WebContents* web_contents,

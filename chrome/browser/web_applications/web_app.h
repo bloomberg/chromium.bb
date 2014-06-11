@@ -60,6 +60,10 @@ struct ShortcutInfo {
 // These represent the applications menu root, the "Google Chrome" folder and
 // the "Chrome Apps" folder respectively.
 //
+// APP_MENU_LOCATION_HIDDEN specifies a shortcut that is used to register the
+// app with the OS (in order to give its windows shelf icons, and correct icons
+// and titles), but the app should not show up in menus or search results.
+//
 // NB: On Linux, these locations may not be used by the window manager (e.g
 // Unity and Gnome Shell).
 enum ApplicationsMenuLocation {
@@ -67,6 +71,7 @@ enum ApplicationsMenuLocation {
   APP_MENU_LOCATION_ROOT,
   APP_MENU_LOCATION_SUBDIR_CHROME,
   APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+  APP_MENU_LOCATION_HIDDEN,
 };
 
 // Info about which locations to create app shortcuts in.
@@ -82,14 +87,6 @@ struct ShortcutLocations {
   // Mac dock or the gnome/kde application launcher. However, those are not
   // implemented yet.
   bool in_quick_launch_bar;
-
-#if defined(OS_POSIX)
-  // For Linux, this refers to a shortcut which the system knows about (for
-  // the purpose of identifying windows and giving them the correct
-  // title/icon), but which does not show up in menus or search results.
-  // Ignored if applications_menu_location is not APP_MENU_LOCATION_NONE.
-  bool hidden;
-#endif
 };
 
 // This encodes the cause of shortcut creation as the correct behavior in each

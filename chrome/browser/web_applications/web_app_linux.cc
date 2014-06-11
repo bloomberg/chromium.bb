@@ -54,16 +54,18 @@ void UpdatePlatformShortcuts(
   ShortcutLocations creation_locations =
       shell_integration_linux::GetExistingShortcutLocations(
           env.get(), shortcut_info.profile_path, shortcut_info.extension_id);
+
   // Always create a hidden shortcut in applications if a visible one is not
   // being created. This allows the operating system to identify the app, but
   // not show it in the menu.
-  creation_locations.hidden = true;
+  if (creation_locations.applications_menu_location == APP_MENU_LOCATION_NONE)
+    creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
   CreatePlatformShortcuts(web_app_path,
                           shortcut_info,
                           file_handlers_info,
                           creation_locations,
-                          SHORTCUT_CREATION_BY_USER);
+                          SHORTCUT_CREATION_AUTOMATED);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

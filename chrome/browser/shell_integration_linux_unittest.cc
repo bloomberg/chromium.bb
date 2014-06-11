@@ -175,7 +175,6 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
-    EXPECT_FALSE(result.hidden);
   }
 
   // Shortcut on desktop.
@@ -196,7 +195,6 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
-    EXPECT_FALSE(result.hidden);
   }
 
   // Shortcut in applications directory.
@@ -218,7 +216,6 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
-    EXPECT_FALSE(result.hidden);
   }
 
   // Shortcut in applications directory with NoDisplay=true.
@@ -237,10 +234,9 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_HIDDEN,
               result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
-    EXPECT_TRUE(result.hidden);
   }
 
   // Shortcut on desktop and in applications directory.
@@ -269,7 +265,6 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
-    EXPECT_FALSE(result.hidden);
   }
 }
 
