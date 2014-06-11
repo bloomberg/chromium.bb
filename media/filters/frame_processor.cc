@@ -339,7 +339,10 @@ bool FrameProcessor::ProcessFrame(
     // See http://crbug.com/371197.
     StreamParser::BufferQueue buffer_to_append;
     buffer_to_append.push_back(frame);
-    track_buffer->stream()->Append(buffer_to_append);
+    if (!track_buffer->stream()->Append(buffer_to_append)) {
+      DVLOG(3) << __FUNCTION__ << ": Failure appending frame to stream";
+      return false;
+    }
 
     // 19. Set last decode timestamp for track buffer to decode timestamp.
     track_buffer->set_last_decode_timestamp(decode_timestamp);
