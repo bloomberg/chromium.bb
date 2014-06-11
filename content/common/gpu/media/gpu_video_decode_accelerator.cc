@@ -26,6 +26,8 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
+#elif defined(OS_MACOSX)
+#include "content/common/gpu/media/vt_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
@@ -251,6 +253,10 @@ void GpuVideoDecodeAccelerator::Initialize(
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   video_decode_accelerator_.reset(
       new DXVAVideoDecodeAccelerator(make_context_current_));
+#elif defined(OS_MACOSX)
+  video_decode_accelerator_.reset(new VTVideoDecodeAccelerator(
+      static_cast<CGLContextObj>(
+          stub_->decoder()->GetGLContext()->GetHandle())));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device.get()) {

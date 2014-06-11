@@ -564,6 +564,8 @@
       'sources': [
         'common/gpu/client/gpu_memory_buffer_impl_io_surface.cc',
         'common/gpu/client/gpu_memory_buffer_impl_io_surface.h',
+        'common/gpu/media/vt_video_decode_accelerator.cc',
+        'common/gpu/media/vt_video_decode_accelerator.h',
       ],
       'sources!': [
         'common/plugin_list_posix.cc',
