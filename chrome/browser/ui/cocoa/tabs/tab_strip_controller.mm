@@ -149,7 +149,7 @@ NSImage* CreateImageWithSize(NSSize size,
   base::scoped_nsobject<NSImage> result([[NSImage alloc] initWithSize:size]);
   [NSGraphicsContext saveGraphicsState];
   for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
-    float scale = GetImageScale(scale_factor);
+    float scale = GetScaleForScaleFactor(scale_factor);
     NSBitmapImageRep *bmpImageRep = [[[NSBitmapImageRep alloc]
         initWithBitmapDataPlanes:NULL
                       pixelsWide:size.width * scale

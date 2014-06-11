@@ -127,7 +127,7 @@ bool HasExpiredOrIncompleteResult(
       FaviconUtil::GetFaviconScaleFactors();
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     int edge_size_in_pixel = floor(
-        desired_size_in_dip * ui::GetImageScale(scale_factors[i]));
+        desired_size_in_dip * ui::GetScaleForScaleFactor(scale_factors[i]));
     std::vector<gfx::Size>::iterator it = std::find(favicon_sizes.begin(),
         favicon_sizes.end(), gfx::Size(edge_size_in_pixel, edge_size_in_pixel));
     if (it == favicon_sizes.end())

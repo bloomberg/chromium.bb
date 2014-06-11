@@ -92,9 +92,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
     return history_service_->GetFavicons(
         icon_urls, icon_type, desired_size_in_dip,
         FaviconUtil::GetFaviconScaleFactors(), callback_runner, tracker);
-  } else {
-    return RunWithEmptyResultAsync(callback_runner, tracker);
   }
+  return RunWithEmptyResultAsync(callback_runner, tracker);
 }
 
 base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
@@ -118,9 +117,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
     return history_service_->GetFavicons(
         icon_urls, icon_type, desired_size_in_dip, desired_scale_factors,
         callback_runner, tracker);
-  } else {
-    return RunWithEmptyResultAsync(callback_runner, tracker);
   }
+  return RunWithEmptyResultAsync(callback_runner, tracker);
 }
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFavicon(
@@ -135,9 +133,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFavicon(
     return history_service_->GetFavicons(
         icon_urls, icon_type, desired_size_in_dip,
         FaviconUtil::GetFaviconScaleFactors(), callback, tracker);
-  } else {
-    return RunWithEmptyResultAsync(callback, tracker);
   }
+  return RunWithEmptyResultAsync(callback, tracker);
 }
 
 base::CancelableTaskTracker::TaskId
@@ -152,9 +149,8 @@ FaviconService::UpdateFaviconMappingsAndFetch(
     return history_service_->UpdateFaviconMappingsAndFetch(
         page_url, icon_urls, icon_types, desired_size_in_dip,
         FaviconUtil::GetFaviconScaleFactors(), callback, tracker);
-  } else {
-    return RunWithEmptyResultAsync(callback, tracker);
   }
+  return RunWithEmptyResultAsync(callback, tracker);
 }
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImageForURL(
@@ -205,7 +201,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForURL(
     scale_factor.push_back(ui::SCALE_FACTOR_100P);
     return GetFaviconForChromeURL(profile, page_url, scale_factor,
                                   favicon_results_callback, tracker);
-  } else if (history_service_) {
+  }
+  if (history_service_) {
     return history_service_->GetLargestFaviconForURL(page_url, icon_types,
         minimum_size_in_pixels, callback, tracker);
   }
@@ -239,9 +236,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForID(
     return history_service_->GetFaviconForID(
         favicon_id, desired_size_in_dip, desired_scale_factor,
         callback_runner, tracker);
-  } else {
-    return RunWithEmptyResultAsync(callback_runner, tracker);
   }
+  return RunWithEmptyResultAsync(callback_runner, tracker);
 }
 
 void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
@@ -329,7 +325,8 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
       params.page_url.SchemeIs(extensions::kExtensionScheme)) {
     return GetFaviconForChromeURL(profile_, params.page_url,
                                   desired_scale_factors, callback, tracker);
-  } else if (history_service_) {
+  }
+  if (history_service_) {
     return history_service_->GetFaviconsForURL(params.page_url,
                                                params.icon_types,
                                                params.desired_size_in_dip,
@@ -380,9 +377,10 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
   }
 
   // If history bitmap is already desired pixel size, return early.
-  float desired_scale = ui::GetImageScale(desired_scale_factor);
+  float desired_scale = ui::GetScaleForScaleFactor(desired_scale_factor);
   int desired_edge_width_in_pixel = static_cast<int>(
       desired_size_in_dip * desired_scale + 0.5f);
+
   gfx::Size desired_size_in_pixel(desired_edge_width_in_pixel,
                                   desired_edge_width_in_pixel);
   if (bitmap_result.pixel_size == desired_size_in_pixel) {

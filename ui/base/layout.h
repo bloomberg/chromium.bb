@@ -42,12 +42,6 @@ UI_BASE_EXPORT void SetSupportedScaleFactors(
 // platform, in ascending order.
 UI_BASE_EXPORT const std::vector<ScaleFactor>& GetSupportedScaleFactors();
 
-// OBSOLETE: Use GetScaleForScaleFactor instead.
-// TODO(oshima): Remove this.
-// Returns the actual image scale to be used for the scale factor passed in.
-// On Windows high dpi, this returns the dpi scale for the display.
-UI_BASE_EXPORT float GetImageScale(ScaleFactor scale_factor);
-
 // Returns the supported ScaleFactor which most closely matches |scale|.
 // Converting from float to ScaleFactor is inefficient and should be done as
 // little as possible.
