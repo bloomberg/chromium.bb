@@ -37,6 +37,7 @@
       "sql_unittests",
       "browser_tests",
       "content_browsertests",
+      "app_shell_browsertests",
       "webkit_compositor_bindings_unittests",
       "mojo_apps_js_unittests",
       "mojo_common_unittests",
@@ -99,7 +100,8 @@
     "gtest_tests": [
       "net_unittests",
       "browser_tests",
-      "content_browsertests"
+      "content_browsertests",
+      "app_shell_browsertests"
     ]
   },
   "Linux Tests (dbg)(2)(32)": {
@@ -154,7 +156,8 @@
     "gtest_tests": [
       "net_unittests",
       "browser_tests",
-      "content_browsertests"
+      "content_browsertests",
+      "app_shell_browsertests"
     ]
   },
   "Linux Tests (dbg)(2)": {

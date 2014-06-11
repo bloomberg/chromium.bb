@@ -98,7 +98,7 @@
     },
     {
       "test": "app_shell_browsertests",
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+      "platforms": ["linux"]
     },
     {
       "test": "ash_unittests",
