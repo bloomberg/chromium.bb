@@ -109,9 +109,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                              int request_id,
                              ServiceWorkerStatusCode status);
 
+  ServiceWorkerContextCore* GetContext();
+
   int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 
   IDMap<ServiceWorkerHandle, IDMapOwnPointer> handles_;
 
