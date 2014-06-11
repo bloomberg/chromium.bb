@@ -157,6 +157,8 @@ AppWindow::CreateParams::CreateParams()
     : window_type(AppWindow::WINDOW_TYPE_DEFAULT),
       frame(AppWindow::FRAME_CHROME),
       has_frame_color(false),
+      active_frame_color(SK_ColorBLACK),
+      inactive_frame_color(SK_ColorBLACK),
       transparent_background(false),
       creator_process_id(0),
       state(ui::SHOW_STATE_DEFAULT),
