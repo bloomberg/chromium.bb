@@ -4,12 +4,15 @@
 
 #include "athena/screen/public/screen_manager.h"
 
+#include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/background_controller.h"
+#include "athena/screen/screen_accelerator_handler.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace athena {
 namespace {
@@ -103,6 +106,8 @@ class ScreenManagerImpl : public ScreenManager {
 
   scoped_ptr<BackgroundController> background_controller_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  scoped_ptr<AcceleratorHandler> accelerator_handler_;
+  scoped_ptr< ::wm::ScopedCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
 };
@@ -114,6 +119,9 @@ void ScreenManagerImpl::Init() {
   background_window_->SetLayoutManager(
       new FillLayoutManager(background_window_));
   background_controller_.reset(new BackgroundController(background_window_));
+
+  capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
+  accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
 }
 
 aura::Window* ScreenManagerImpl::CreateDefaultContainer(

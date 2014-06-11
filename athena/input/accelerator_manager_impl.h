@@ -42,15 +42,16 @@ class AcceleratorManagerImpl : public AcceleratorManager,
 
   void OnRootWindowCreated(aura::Window* root_window);
 
-  bool IsReservedAccelerator(const ui::Accelerator& accelerator) const;
-  bool ProcessAccelerator(const ui::Accelerator& accelerator);
+  bool IsRegistered(const ui::Accelerator& accelerator) const;
+  bool IsReserved(const ui::Accelerator& accelerator) const;
+  bool Process(const ui::Accelerator& accelerator);
 
  private:
   // AcceleratorManager:
   virtual void RegisterAccelerators(const AcceleratorData accelerators[],
                                     size_t num_accelerators,
                                     AcceleratorHandler* handler) OVERRIDE;
-  virtual void EnableDebugAccelerators() OVERRIDE;
+  virtual void SetDebugAcceleratorsEnabled(bool enabled) OVERRIDE;
 
   // ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -61,12 +62,13 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   void RegisterAccelerator(const AcceleratorData& accelerator,
                            AcceleratorHandler* handler);
 
-  bool debug_accelerators_enabled_;
   std::map<ui::Accelerator, InternalData> accelerators_;
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   scoped_ptr<wm::AcceleratorFilter> accelerator_filter_;
   scoped_ptr<wm::NestedAcceleratorController> nested_accelerator_controller_;
+
+  bool debug_accelerators_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorManagerImpl);
 };

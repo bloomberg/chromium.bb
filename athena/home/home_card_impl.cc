@@ -6,7 +6,6 @@
 
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/input/public/accelerator_manager.h"
-#include "athena/input/public/input_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -134,7 +133,7 @@ void HomeCardImpl::InstallAccelerators() {
       {TRIGGER_ON_PRESS, ui::VKEY_L, ui::EF_CONTROL_DOWN,
        COMMAND_SHOW_HOME_CARD, AF_NONE},
   };
-  InputManager::Get()->GetAcceleratorManager()->RegisterAccelerators(
+  AcceleratorManager::Get()->RegisterAccelerators(
       accelerator_data, arraysize(accelerator_data), this);
 }
 

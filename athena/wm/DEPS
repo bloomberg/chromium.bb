@@ -5,9 +5,3 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
 ]
-
-specific_include_rules = {
-  ".*unittest\.cc": [
-    "+athena/test",
-  ],
-}

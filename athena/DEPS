@@ -1,6 +1,15 @@
 # Please do not add dependency to chrome/ and its subdirectories
 
 include_rules = [
-  # Components within athena must state their dependencies explicitly.
+  # Components within athena must state their dependencies explicitly
+  # except for common.
   "-athena",
+  "+athena/common",
 ]
+
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+athena/test",
+  ],
+}
+

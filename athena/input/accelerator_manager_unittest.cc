@@ -96,12 +96,13 @@ TEST_F(InputManagerTest, Basic) {
   EXPECT_EQ(COMMAND_A, test_handler.GetFiredCommandIdAndReset());
 
   // Debug accelerators.
+  accelerator_manager->SetDebugAcceleratorsEnabled(false);
   generator.PressKey(ui::VKEY_C, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(kInvalidCommandId, test_handler.GetFiredCommandIdAndReset());
-
-  accelerator_manager->EnableDebugAccelerators();
+  accelerator_manager->SetDebugAcceleratorsEnabled(true);
   generator.PressKey(ui::VKEY_C, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(COMMAND_C, test_handler.GetFiredCommandIdAndReset());
+  accelerator_manager->SetDebugAcceleratorsEnabled(false);
 
   // Non auto repeatable
   generator.PressKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
@@ -109,12 +110,10 @@ TEST_F(InputManagerTest, Basic) {
   generator.PressKey(ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_IS_REPEAT);
   EXPECT_EQ(kInvalidCommandId, test_handler.GetFiredCommandIdAndReset());
 
-  // Non reserved accelerator won't be handled unless there is
-  // a view's focus manager.
-  // TODO(oshima): Support view's focus manager. Investigate we can implement
-  // the non reserved behavior without view's focus manager.
+  // TODO(oshima): Add scenario where the key event is consumed by
+  // an app.
   generator.PressKey(ui::VKEY_E, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(kInvalidCommandId, test_handler.GetFiredCommandIdAndReset());
+  EXPECT_EQ(COMMAND_E, test_handler.GetFiredCommandIdAndReset());
 }
 
 }  // namespace athena

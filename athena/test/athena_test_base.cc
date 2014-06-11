@@ -7,6 +7,10 @@
 #include "athena/test/athena_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 
+#if defined(USE_X11)
+#include "ui/aura/window_tree_host_x11.h"
+#endif
+
 namespace athena {
 namespace test {
 
@@ -31,6 +35,9 @@ void AthenaTestBase::SetUp() {
       ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   helper_.reset(new AthenaTestHelper(&message_loop_));
+#if defined(USE_X11)
+  aura::test::SetUseOverrideRedirectWindowByDefault(true);
+#endif
   helper_->SetUp(context_factory);
 }
 

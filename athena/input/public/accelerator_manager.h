@@ -55,6 +55,8 @@ class ATHENA_EXPORT AcceleratorHandler {
 
 class AcceleratorManager {
  public:
+  static AcceleratorManager* Get();
+
   virtual ~AcceleratorManager() {}
 
   // Register accelerators and its handler that will be invoked when
@@ -63,8 +65,8 @@ class AcceleratorManager {
                                     size_t num_accelerators,
                                     AcceleratorHandler* handler) = 0;
 
-  // Enables accelerators that has a AF_DEBUG flag.
-  virtual void EnableDebugAccelerators() = 0;
+  // Enables/Disables accelerators that has a AF_DEBUG flag.
+  virtual void SetDebugAcceleratorsEnabled(bool enabled) = 0;
 };
 
 }  // namespace athena

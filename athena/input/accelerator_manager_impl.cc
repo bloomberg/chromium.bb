@@ -4,12 +4,16 @@
 
 #include "athena/input/accelerator_manager_impl.h"
 
+#include "athena/common/switches.h"
 #include "athena/input/public/input_manager.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager_delegate.h"
+#include "ui/views/focus/focus_manager_factory.h"
 #include "ui/wm/core/accelerator_delegate.h"
 #include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/nested_accelerator_controller.h"
@@ -37,9 +41,8 @@ class NestedAcceleratorDelegate : public wm::NestedAcceleratorDelegate {
   // wm::NestedAcceleratorDelegate:
   virtual Result ProcessAccelerator(
       const ui::Accelerator& accelerator) OVERRIDE {
-    return accelerator_manager_->ProcessAccelerator(accelerator)
-               ? RESULT_PROCESSED
-               : RESULT_NOT_PROCESSED;
+    return accelerator_manager_->Process(accelerator) ? RESULT_PROCESSED
+                                                      : RESULT_NOT_PROCESSED;
   }
 
   AcceleratorManagerImpl* accelerator_manager_;
@@ -60,15 +63,62 @@ class AcceleratorDelegate : public wm::AcceleratorDelegate {
                                   KeyType key_type) OVERRIDE {
     aura::Window* target = static_cast<aura::Window*>(event.target());
     if (!target->IsRootWindow() &&
-        !accelerator_manager_->IsReservedAccelerator(accelerator)) {
+        !accelerator_manager_->IsReserved(accelerator)) {
       // TODO(oshima): do the same when the active window is in fullscreen.
       return false;
     }
-    return accelerator_manager_->ProcessAccelerator(accelerator);
+    return accelerator_manager_->Process(accelerator);
   }
 
   AcceleratorManagerImpl* accelerator_manager_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDelegate);
+};
+
+class FocusManagerDelegate : public views::FocusManagerDelegate {
+ public:
+  explicit FocusManagerDelegate(AcceleratorManagerImpl* accelerator_manager)
+      : accelerator_manager_(accelerator_manager) {}
+  virtual ~FocusManagerDelegate() {}
+
+  virtual bool ProcessAccelerator(const ui::Accelerator& accelerator) OVERRIDE {
+    return accelerator_manager_->Process(accelerator);
+  }
+
+  virtual ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
+      const ui::Accelerator& accelerator) const OVERRIDE {
+    return accelerator_manager_->IsRegistered(accelerator)
+               ? accelerator_manager_
+               : NULL;
+  }
+
+ private:
+  AcceleratorManagerImpl* accelerator_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerDelegate);
+};
+
+// Key strokes must be sent to web contents to give them a chance to
+// consume them unless they are reserved, and unhandled key events are
+// sent back to focus manager asynchronously. This installs the athena's
+// focus manager that handles athena shell's accelerators.
+class FocusManagerFactory : public views::FocusManagerFactory {
+ public:
+  explicit FocusManagerFactory(AcceleratorManagerImpl* accelerator_manager)
+      : accelerator_manager_(accelerator_manager) {}
+  virtual ~FocusManagerFactory() {}
+
+  virtual views::FocusManager* CreateFocusManager(
+      views::Widget* widget,
+      bool desktop_widget) OVERRIDE {
+    return new views::FocusManager(
+        widget,
+        desktop_widget ? NULL : new FocusManagerDelegate(accelerator_manager_));
+  }
+
+ private:
+  AcceleratorManagerImpl* accelerator_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerFactory);
 };
 
 }  // namespace
@@ -99,15 +149,21 @@ class AcceleratorManagerImpl::InternalData {
 };
 
 AcceleratorManagerImpl::AcceleratorManagerImpl()
-    : accelerator_manager_(new ui::AcceleratorManager) {
+    : accelerator_manager_(new ui::AcceleratorManager),
+      debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()) {
 }
 
 AcceleratorManagerImpl::~AcceleratorManagerImpl() {
   nested_accelerator_controller_.reset();
   accelerator_filter_.reset();
+  // Reset to use the default focus manager because the athena's
+  // FocusManager has the reference to this object.
+  views::FocusManagerFactory::Install(NULL);
 }
 
 void AcceleratorManagerImpl::Init() {
+  views::FocusManagerFactory::Install(new FocusManagerFactory(this));
+
   ui::EventTarget* toplevel = InputManager::Get()->GetTopmostEventTarget();
   nested_accelerator_controller_.reset(
       new wm::NestedAcceleratorController(new NestedAcceleratorDelegate(this)));
@@ -125,7 +181,12 @@ void AcceleratorManagerImpl::OnRootWindowCreated(aura::Window* root_window) {
                                     nested_accelerator_controller_.get());
 }
 
-bool AcceleratorManagerImpl::IsReservedAccelerator(
+bool AcceleratorManagerImpl::IsRegistered(
+    const ui::Accelerator& accelerator) const {
+  return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
+}
+
+bool AcceleratorManagerImpl::IsReserved(
     const ui::Accelerator& accelerator) const {
   std::map<ui::Accelerator, InternalData>::const_iterator iter =
       accelerators_.find(accelerator);
@@ -134,8 +195,7 @@ bool AcceleratorManagerImpl::IsReservedAccelerator(
   return iter->second.IsReserved();
 }
 
-bool AcceleratorManagerImpl::ProcessAccelerator(
-    const ui::Accelerator& accelerator) {
+bool AcceleratorManagerImpl::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
@@ -147,8 +207,8 @@ void AcceleratorManagerImpl::RegisterAccelerators(
     RegisterAccelerator(accelerators[i], handler);
 }
 
-void AcceleratorManagerImpl::EnableDebugAccelerators() {
-  debug_accelerators_enabled_ = true;
+void AcceleratorManagerImpl::SetDebugAcceleratorsEnabled(bool enabled) {
+  debug_accelerators_enabled_ = enabled;
 }
 
 bool AcceleratorManagerImpl::AcceleratorPressed(
@@ -185,6 +245,11 @@ void AcceleratorManagerImpl::RegisterAccelerator(
                      InternalData(accelerator_data.command_id,
                                   handler,
                                   accelerator_data.accelerator_flags)));
+}
+
+// static
+AcceleratorManager* AcceleratorManager::Get() {
+  return InputManager::Get()->GetAcceleratorManager();
 }
 
 }  // namespace athena

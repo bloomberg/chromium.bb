@@ -31,7 +31,10 @@
         'activity/public/activity_manager.h',
         'activity/public/activity_view_manager.h',
         'activity/public/activity_view_model.h',
+	# move athena_export.h to common/
         'athena_export.h',
+        'common/switches.cc',
+        'common/switches.h',
         'home/app_list_view_delegate.cc',
         'home/app_list_view_delegate.h',
         'home/home_card_impl.cc',
@@ -44,6 +47,8 @@
         'screen/background_controller.cc',
         'screen/background_controller.h',
         'screen/public/screen_manager.h',
+        'screen/screen_accelerator_handler.cc',
+        'screen/screen_accelerator_handler.h',
         'screen/screen_manager_impl.cc',
         'wm/public/window_manager.h',
         'wm/window_manager_impl.cc',
@@ -106,6 +111,7 @@
       'type': 'executable',
       'dependencies': [
         '../testing/gtest.gyp:gtest',
+        '../skia/skia.gyp:skia',
         'athena_lib',
         'athena_test_support',
       ],

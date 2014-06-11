@@ -51,11 +51,13 @@ BackgroundController::BackgroundController(aura::Window* container) {
   views::Widget* background_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.accept_events = false;
   params.parent = container;
   background_widget->Init(params);
   background_widget->GetNativeWindow()->layer()->SetMasksToBounds(true);
   background_view_ = new BackgroundView;
   background_widget->SetContentsView(background_view_);
+  background_widget->GetNativeView()->SetName("BackgroundWidget");
   background_widget->Show();
 }
 

@@ -22,7 +22,6 @@
 #include "ui/wm/core/input_method_event_filter.h"
 
 #if defined(USE_X11)
-#include "ui/aura/window_tree_host_x11.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -36,9 +35,6 @@ AthenaTestHelper::AthenaTestHelper(base::MessageLoopForUI* message_loop)
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-#if defined(USE_X11)
-  aura::test::SetUseOverrideRedirectWindowByDefault(true);
-#endif
 }
 
 AthenaTestHelper::~AthenaTestHelper() {

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/events/event_target.h"
 
 namespace athena {
@@ -36,7 +37,7 @@ class InputManagerImpl : public InputManager,
   // Overridden from aura::client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
       const aura::Window* window) const OVERRIDE {
-    return true;
+    return window && !window->ignore_events();
   }
   virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE { return this; }
 
