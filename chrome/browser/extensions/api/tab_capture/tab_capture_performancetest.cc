@@ -145,12 +145,14 @@ class TabCapturePerformanceTest
     trace_analyzer::Query query =
         trace_analyzer::Query::EventNameIs(event_name) &&
         (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
+         trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_COMPLETE) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT));
     analyzer->FindEvents(query, &events);
     if (events.size() < 20) {
-      LOG(ERROR) << "Not enough events of type " << event_name << " found.";
+      LOG(ERROR) << "Not enough events of type " << event_name << " found ("
+                 << events.size() << ").";
       return false;
     }
 
@@ -184,7 +186,7 @@ class TabCapturePerformanceTest
     }
 
     std::string json_events;
-    ASSERT_TRUE(tracing::BeginTracing("test_fps,mirroring"));
+    ASSERT_TRUE(tracing::BeginTracing("gpu,mirroring"));
     std::string page = "performance.html";
     page += HasFlag(kTestThroughWebRTC) ? "?WebRTC=1" : "?WebRTC=0";
     // Ideally we'd like to run a higher capture rate when vsync is disabled,
@@ -196,19 +198,14 @@ class TabCapturePerformanceTest
     scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer;
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
 
-    // Only one of these PrintResults should actually print something.
     // The printed result will be the average time between frames in the
     // browser window.
-    bool sw_frames = PrintResults(analyzer.get(),
-                                  test_name,
-                                  "TestFrameTickSW",
-                                  "ms");
-    bool gpu_frames = PrintResults(analyzer.get(),
-                                   test_name,
-                                   "TestFrameTickGPU",
-                                   "ms");
-    EXPECT_TRUE(sw_frames || gpu_frames);
-    EXPECT_NE(sw_frames, gpu_frames);
+    bool gpu_frames = PrintResults(
+        analyzer.get(),
+        test_name,
+        "RenderWidget::didCommitAndDrawCompositorFrame",
+        "ms");
+    EXPECT_TRUE(gpu_frames);
 
     // This prints out the average time between capture events.
     // As the capture frame rate is capped at 30fps, this score
@@ -222,8 +219,7 @@ class TabCapturePerformanceTest
 
 }  // namespace
 
-// crbug.com/377089
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, DISABLED_Performance) {
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
   RunTest("TabCapturePerformance");
 }
 
