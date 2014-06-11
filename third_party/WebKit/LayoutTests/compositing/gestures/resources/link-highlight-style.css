@@ -22,6 +22,10 @@
   color: rgb(0, 255, 0);
 }
 
+a {
+  text-decoration: none;
+}
+
 a:active {
   color: rgb(0, 255, 0);
 }

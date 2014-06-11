@@ -19,28 +19,11 @@ function _createHighlight(node, classes) {
   div.setAttribute('class', classes);
   document.body.appendChild(div);
 
-  var offset = _getAbsoluteOffset(node);
   var clientRect = node.getBoundingClientRect();
-  div.style.top = offset.top + "px";
-  div.style.left = offset.left + "px";
-  div.style.width = node.offsetWidth + "px";
-  div.style.height = node.offsetHeight + "px";
+  div.style.top = clientRect.top + "px";
+  div.style.left = clientRect.left + "px";
+  div.style.width = clientRect.width + "px";
+  div.style.height = clientRect.height + "px";
 
   return div;
-}
-
-function _getAbsoluteOffset( elem )
-{
-    var offsetLeft = 0;
-    var offsetTop = 0;
-    do {
-      if ( !isNaN( elem.offsetLeft ) )
-          offsetLeft += elem.offsetLeft - elem.scrollLeft;
-
-      if ( !isNaN( elem.offsetTop ) )
-          offsetTop += elem.offsetTop - elem.scrollTop;
-
-    } while( elem = elem.offsetParent );
-    return { top : offsetTop,
-             left : offsetLeft };
 }
