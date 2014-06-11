@@ -42,15 +42,19 @@ class PersistedLogs {
     PROVISIONAL_STORE,  // A store operation that can be easily reverted later.
   };
 
-  // Constructs a PersistedLogs that stores data in |local_state| under
-  // the preference |pref_name|.  Calling code is responsible for ensuring that
-  // the lifetime of |local_state| is longer than the lifetime of PersistedLogs.
-  // When saving logs to disk, we will store either the first |min_log_count|
-  // logs, or at least |min_log_bytes| bytes of logs, whichever is more.
-  // If the optional max_log_size parameter is non-zero, all logs larger than
+  // Constructs a PersistedLogs that stores data in |local_state| under the
+  // preference |pref_name| and also reads from legacy pref |old_pref_name|.
+  // Calling code is responsible for ensuring that the lifetime of |local_state|
+  // is longer than the lifetime of PersistedLogs.
+  //
+  // When saving logs to disk, stores either the first |min_log_count| logs, or
+  // at least |min_log_bytes| bytes of logs, whichever is greater.
+  //
+  // If the optional |max_log_size| parameter is non-zero, all logs larger than
   // that limit will be dropped before logs are written to disk.
   PersistedLogs(PrefService* local_state,
                 const char* pref_name,
+                const char* old_pref_name,
                 size_t min_log_count,
                 size_t min_log_bytes,
                 size_t max_log_size);
@@ -62,8 +66,8 @@ class PersistedLogs {
   // Reads the list from the preference.
   LogReadStatus DeserializeLogs();
 
-  // Adds a log to the list.  |input| will be swapped with an empty string.
-  void StoreLog(std::string* input);
+  // Adds a log to the list.
+  void StoreLog(const std::string& log_data);
 
   // Stages the most recent log.  The staged_log will remain the same even if
   // additional logs are added.
@@ -87,12 +91,14 @@ class PersistedLogs {
   void DiscardLastProvisionalStore();
 
   // True if a log has been staged.
-  bool has_staged_log() const { return !staged_log_.log.empty(); };
+  bool has_staged_log() const {
+    return !staged_log_.compressed_log_data.empty();
+  }
 
   // Returns the element in the front of the list.
   const std::string& staged_log() const {
     DCHECK(has_staged_log());
-    return staged_log_.log;
+    return staged_log_.compressed_log_data;
   }
 
   // Returns the element in the front of the list.
@@ -114,13 +120,21 @@ class PersistedLogs {
   // Reads the list from the ListValue.
   LogReadStatus ReadLogsFromPrefList(const base::ListValue& list);
 
+  // Reads the list from the old pref's ListValue.
+  // TODO(asvitkine): Remove the old pref in M39.
+  LogReadStatus ReadLogsFromOldPrefList(const base::ListValue& list);
+
   // A weak pointer to the PrefService object to read and write the preference
   // from.  Calling code should ensure this object continues to exist for the
   // lifetime of the PersistedLogs object.
   PrefService* local_state_;
 
-  // The name of the preference this object stores logs in.
+  // The name of the preference to serialize logs to/from.
   const char* pref_name_;
+
+  // The name of the preference to serialize logs from.
+  // TODO(asvitkine): Remove the old pref in M39.
+  const char* old_pref_name_;
 
   // We will keep at least this |min_log_count_| logs or |min_log_bytes_| bytes
   // of logs, whichever is greater, when writing to disk.  These apply after
@@ -132,14 +146,20 @@ class PersistedLogs {
   const size_t max_log_size_;
 
   struct LogHashPair {
-    // Raw log text, typically a serialized protobuf.
-    std::string log;
-    // The SHA1 hash of log, stored to catch errors from memory corruption.
-    std::string hash;
-    // Swap the content of input into log and update the hash.
-    void SwapLog(std::string* input);
+    // Initializes the members based on uncompressed |log_data|.
+    void Init(const std::string& log_data);
+
+    // Clears the struct members.
+    void Clear();
+
     // Swap both log and hash from another LogHashPair.
     void Swap(LogHashPair* input);
+
+    // Compressed log data - a serialized protobuf that's been gzipped.
+    std::string compressed_log_data;
+
+    // The SHA1 hash of log, stored to catch errors from memory corruption.
+    std::string hash;
   };
   // A list of all of the stored logs, stored with SHA1 hashes to check for
   // corruption while they are stored in memory.

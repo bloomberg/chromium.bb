@@ -5,7 +5,6 @@
 #include "components/metrics/net/net_metrics_log_uploader.h"
 
 #include "base/metrics/histogram.h"
-#include "components/metrics/net/compression_utils.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
@@ -24,22 +23,8 @@ NetMetricsLogUploader::NetMetricsLogUploader(
 NetMetricsLogUploader::~NetMetricsLogUploader() {
 }
 
-bool NetMetricsLogUploader::UploadLog(const std::string& log_data,
+bool NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
                                       const std::string& log_hash) {
-  std::string compressed_log_data;
-  if (!GzipCompress(log_data, &compressed_log_data)) {
-    NOTREACHED();
-    return false;
-  }
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "UMA.ProtoCompressionRatio",
-      static_cast<int>(100 * compressed_log_data.size() / log_data.size()));
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "UMA.ProtoGzippedKBSaved",
-      static_cast<int>((log_data.size() - compressed_log_data.size()) / 1024),
-      1, 2000, 50);
-
   current_fetch_.reset(
       net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this));
   current_fetch_->SetRequestContext(request_context_getter_);

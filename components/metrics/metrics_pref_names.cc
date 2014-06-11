@@ -16,6 +16,8 @@ const char kMetricsClientID[] = "user_experience_metrics.client_id2";
 // first minute of a browser session. These logs include things like crash count
 // info, etc.
 const char kMetricsInitialLogs[] =
+    "user_experience_metrics.initial_logs_list";
+const char kMetricsInitialLogsOld[] =
     "user_experience_metrics.initial_logs_as_protobufs";
 
 // The metrics entropy source.
@@ -41,6 +43,8 @@ const char kMetricsOldLowEntropySource[] =
 // logs typically include histograms and memory reports, as well as ongoing
 // user activities.
 const char kMetricsOngoingLogs[] =
+    "user_experience_metrics.ongoing_logs_list";
+const char kMetricsOngoingLogsOld[] =
     "user_experience_metrics.ongoing_logs_as_protobufs";
 
 // Boolean that indicates a cloned install has been detected and the metrics

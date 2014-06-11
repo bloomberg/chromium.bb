@@ -24,7 +24,9 @@ class TestLogPrefService : public TestingPrefServiceSimple {
  public:
   TestLogPrefService() {
     registry()->RegisterListPref(prefs::kMetricsInitialLogs);
+    registry()->RegisterListPref(prefs::kMetricsInitialLogsOld);
     registry()->RegisterListPref(prefs::kMetricsOngoingLogs);
+    registry()->RegisterListPref(prefs::kMetricsOngoingLogsOld);
   }
 
   // Returns the number of logs of the given type.
@@ -34,7 +36,7 @@ class TestLogPrefService : public TestingPrefServiceSimple {
       list_length = GetList(prefs::kMetricsInitialLogs)->GetSize();
     else
       list_length = GetList(prefs::kMetricsOngoingLogs)->GetSize();
-    return list_length ? list_length - 2 : 0;
+    return list_length / 2;
   }
 };
 
@@ -160,9 +162,9 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     // Simulate a log having already been unsent from a previous session.
     {
       std::string log("proto");
-      metrics::PersistedLogs ongoing_logs(
-          &pref_service, prefs::kMetricsOngoingLogs, 1, 1, 0);
-      ongoing_logs.StoreLog(&log);
+      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs,
+                                 prefs::kMetricsOngoingLogsOld, 1, 1, 0);
+      ongoing_logs.StoreLog(log);
       ongoing_logs.SerializeLogs();
     }
     EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::ONGOING_LOG));
@@ -176,7 +178,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::NORMAL_STORE);
     log_manager.FinishCurrentLog();
 
     // Nothing should be written out until PersistUnsentLogs is called.
@@ -236,7 +238,7 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::NORMAL_STORE);
     log_manager.PersistUnsentLogs();
 
     EXPECT_EQ(0U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
@@ -252,7 +254,7 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
         "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::NORMAL_STORE);
     log_manager.PersistUnsentLogs();
 
     EXPECT_EQ(1U, pref_service.TypeCount(MetricsLog::INITIAL_STABILITY_LOG));
@@ -295,8 +297,7 @@ TEST(MetricsLogManagerTest, ProvisionalStoreStandardFlow) {
     log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(
-        metrics::PersistedLogs::PROVISIONAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::PROVISIONAL_STORE);
     log_manager.FinishCurrentLog();
     log_manager.DiscardLastProvisionalStore();
 
@@ -320,15 +321,14 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(
-        metrics::PersistedLogs::PROVISIONAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::PROVISIONAL_STORE);
     log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
     log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::NORMAL_STORE);
     log_manager.DiscardLastProvisionalStore();
 
     log_manager.PersistUnsentLogs();
@@ -345,13 +345,12 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
         "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::NORMAL_STORE);
     log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLog(
         "id", 0, MetricsLog::ONGOING_LOG,  &client, &pref_service)));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(
-        metrics::PersistedLogs::PROVISIONAL_STORE);
+    log_manager.StoreStagedLogAsUnsent(PersistedLogs::PROVISIONAL_STORE);
     log_manager.DiscardLastProvisionalStore();
     log_manager.DiscardLastProvisionalStore();
 

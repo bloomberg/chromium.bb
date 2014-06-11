@@ -33,7 +33,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   virtual ~NetMetricsLogUploader();
 
   // MetricsLogUploader:
-  virtual bool UploadLog(const std::string& log_data,
+  virtual bool UploadLog(const std::string& compressed_log_data,
                          const std::string& log_hash) OVERRIDE;
 
  private:

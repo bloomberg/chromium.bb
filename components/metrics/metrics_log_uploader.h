@@ -25,9 +25,10 @@ class MetricsLogUploader {
                      const base::Callback<void(int)>& on_upload_complete);
   virtual ~MetricsLogUploader();
 
-  // Uploads a log with the specified |log_data| and |log_hash|. |log_hash| is
-  // expected to be the hex-encoded SHA1 hash of |log_data|.
-  virtual bool UploadLog(const std::string& log_data,
+  // Uploads a log with the specified |compressed_log_data| and |log_hash|.
+  // |log_hash| is expected to be the hex-encoded SHA1 hash of the log data
+  // before compression.
+  virtual bool UploadLog(const std::string& compressed_log_data,
                          const std::string& log_hash) = 0;
 
  protected:

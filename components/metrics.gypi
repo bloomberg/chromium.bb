@@ -12,11 +12,13 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/zlib/zlib.gyp:zlib',
         'component_metrics_proto',
         'variations',
       ],
       'sources': [
-        'metrics/metrics_provider.h',
+        'metrics/compression_utils.cc',
+        'metrics/compression_utils.h',
         'metrics/cloned_install_detector.cc',
         'metrics/cloned_install_detector.h',
         'metrics/machine_id_provider.h',
@@ -32,6 +34,7 @@
         'metrics/metrics_log_manager.h',
         'metrics/metrics_pref_names.cc',
         'metrics/metrics_pref_names.h',
+        'metrics/metrics_provider.h',
         'metrics/metrics_reporting_scheduler.cc',
         'metrics/metrics_reporting_scheduler.h',
         'metrics/metrics_service.cc',
@@ -67,12 +70,9 @@
       ],
       'dependencies': [
         '../net/net.gyp:net',
-        '../third_party/zlib/zlib.gyp:zlib',
         'metrics',
       ],
       'sources': [
-        'metrics/net/compression_utils.cc',
-        'metrics/net/compression_utils.h',
         'metrics/net/net_metrics_log_uploader.cc',
         'metrics/net/net_metrics_log_uploader.h',
       ],

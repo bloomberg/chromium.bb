@@ -13,14 +13,11 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sha1.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/metrics/compression_utils.h"
 
 namespace metrics {
 
 namespace {
-
-// We append (2) more elements to persisted lists: the size of the list and a
-// checksum of the elements.
-const size_t kChecksumEntryCount = 2;
 
 PersistedLogs::LogReadStatus MakeRecallStatusHistogram(
     PersistedLogs::LogReadStatus status) {
@@ -29,28 +26,64 @@ PersistedLogs::LogReadStatus MakeRecallStatusHistogram(
   return status;
 }
 
+// Reads the value at |index| from |list_value| as a string and Base64-decodes
+// it into |result|. Returns true on success.
+bool ReadBase64String(const base::ListValue& list_value,
+                      size_t index,
+                      std::string* result) {
+  std::string base64_result;
+  if (!list_value.GetString(index, &base64_result))
+    return false;
+  return base::Base64Decode(base64_result, result);
+}
+
+// Base64-encodes |str| and appends the result to |list_value|.
+void AppendBase64String(const std::string& str, base::ListValue* list_value) {
+  std::string base64_str;
+  base::Base64Encode(str, &base64_str);
+  list_value->Append(base::Value::CreateStringValue(base64_str));
+}
+
 }  // namespace
 
-void PersistedLogs::LogHashPair::SwapLog(std::string* input) {
-  log.swap(*input);
-  if (!log.empty())
-    hash = base::SHA1HashString(log);
-  else
-    hash.clear();
+void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
+  DCHECK(!log_data.empty());
+
+  if (!GzipCompress(log_data, &compressed_log_data)) {
+    NOTREACHED();
+    return;
+  }
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "UMA.ProtoCompressionRatio",
+      static_cast<int>(100 * compressed_log_data.size() / log_data.size()));
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "UMA.ProtoGzippedKBSaved",
+      static_cast<int>((log_data.size() - compressed_log_data.size()) / 1024),
+      1, 2000, 50);
+
+  hash = base::SHA1HashString(log_data);
+}
+
+void PersistedLogs::LogHashPair::Clear() {
+  compressed_log_data.clear();
+  hash.clear();
 }
 
 void PersistedLogs::LogHashPair::Swap(PersistedLogs::LogHashPair* input) {
-  log.swap(input->log);
+  compressed_log_data.swap(input->compressed_log_data);
   hash.swap(input->hash);
 }
 
 PersistedLogs::PersistedLogs(PrefService* local_state,
                              const char* pref_name,
+                             const char* old_pref_name,
                              size_t min_log_count,
                              size_t min_log_bytes,
                              size_t max_log_size)
     : local_state_(local_state),
       pref_name_(pref_name),
+      old_pref_name_(old_pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size),
@@ -67,7 +100,7 @@ void PersistedLogs::SerializeLogs() {
   if (max_log_size_) {
     for (std::vector<LogHashPair>::iterator it = list_.begin();
          it != list_.end();) {
-      size_t log_size = it->log.length();
+      size_t log_size = it->compressed_log_data.length();
       if (log_size > max_log_size_) {
         UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
                              static_cast<int>(log_size));
@@ -77,18 +110,29 @@ void PersistedLogs::SerializeLogs() {
       }
     }
   }
+
   ListPrefUpdate update(local_state_, pref_name_);
   WriteLogsToPrefList(update.Get());
+
+  // Clear the old pref now that we've written to the new one.
+  // TODO(asvitkine): Remove the old pref in M39.
+  local_state_->ClearPref(old_pref_name_);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::DeserializeLogs() {
-  const base::ListValue* unsent_logs = local_state_->GetList(pref_name_);
+  // First, try reading from old pref. If it's empty, read from the new one.
+  // TODO(asvitkine): Remove the old pref in M39.
+  const base::ListValue* unsent_logs = local_state_->GetList(old_pref_name_);
+  if (!unsent_logs->empty())
+    return ReadLogsFromOldPrefList(*unsent_logs);
+
+  unsent_logs = local_state_->GetList(pref_name_);
   return ReadLogsFromPrefList(*unsent_logs);
 }
 
-void PersistedLogs::StoreLog(std::string* input) {
+void PersistedLogs::StoreLog(const std::string& log_data) {
   list_.push_back(LogHashPair());
-  list_.back().SwapLog(input);
+  list_.back().Init(log_data);
 }
 
 void PersistedLogs::StageLog() {
@@ -107,7 +151,7 @@ void PersistedLogs::StageLog() {
 
 void PersistedLogs::DiscardStagedLog() {
   DCHECK(has_staged_log());
-  staged_log_.log.clear();
+  staged_log_.Clear();
 }
 
 void PersistedLogs::StoreStagedLogAsUnsent(StoreType store_type) {
@@ -127,7 +171,6 @@ void PersistedLogs::DiscardLastProvisionalStore() {
 
 void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) {
   list_value->Clear();
-
   // Leave the list completely empty if there are no storable values.
   if (list_.empty())
     return;
@@ -141,7 +184,7 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) {
     std::vector<LogHashPair>::const_reverse_iterator end = list_.rend();
     for (std::vector<LogHashPair>::const_reverse_iterator it = list_.rbegin();
          it != end; ++it) {
-      size_t log_size = it->log.length();
+      const size_t log_size = it->compressed_log_data.length();
       if (bytes_used >= min_log_bytes_ &&
           (list_.size() - start) >= min_log_count_) {
         break;
@@ -151,35 +194,44 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) {
     }
   }
   DCHECK_LT(start, list_.size());
-  if (start >= list_.size())
-    return;
 
-  // Store size at the beginning of the list_value.
-  list_value->Append(base::Value::CreateIntegerValue(list_.size() - start));
-
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  std::string encoded_log;
-  for (std::vector<LogHashPair>::const_iterator it = list_.begin() + start;
-       it != list_.end(); ++it) {
-    // We encode the compressed log as Value::CreateStringValue() expects to
-    // take a valid UTF8 string.
-    base::Base64Encode(it->log, &encoded_log);
-    base::MD5Update(&ctx, encoded_log);
-    list_value->Append(base::Value::CreateStringValue(encoded_log));
+  for (size_t i = start; i < list_.size(); ++i) {
+    AppendBase64String(list_[i].compressed_log_data, list_value);
+    AppendBase64String(list_[i].hash, list_value);
   }
-
-  // Append hash to the end of the list_value.
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-  list_value->Append(base::Value::CreateStringValue(
-      base::MD5DigestToBase16(digest)));
-  // Minimum of 3 elements (size, data, hash).
-  DCHECK_GE(list_value->GetSize(), 3U);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
     const base::ListValue& list_value) {
+  if (list_value.empty())
+    return MakeRecallStatusHistogram(LIST_EMPTY);
+
+  // For each log, there's two entries in the list (the data and the hash).
+  DCHECK_EQ(0U, list_value.GetSize() % 2);
+  const size_t log_count = list_value.GetSize() / 2;
+
+  // Resize |list_| ahead of time, so that values can be decoded directly into
+  // the elements of the list.
+  DCHECK(list_.empty());
+  list_.resize(log_count);
+
+  for (size_t i = 0; i < log_count; ++i) {
+    if (!ReadBase64String(list_value, i * 2, &list_[i].compressed_log_data) ||
+        !ReadBase64String(list_value, i * 2 + 1, &list_[i].hash)) {
+      list_.clear();
+      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
+    }
+  }
+
+  return MakeRecallStatusHistogram(RECALL_SUCCESS);
+}
+
+PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromOldPrefList(
+    const base::ListValue& list_value) {
+  // We append (2) more elements to persisted lists: the size of the list and a
+  // checksum of the elements.
+  const size_t kChecksumEntryCount = 2;
+
   if (list_value.GetSize() == 0)
     return MakeRecallStatusHistogram(LIST_EMPTY);
   if (list_value.GetSize() <= kChecksumEntryCount)
@@ -223,7 +275,7 @@ PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
     }
 
     DCHECK_LT(local_index, list_.size());
-    list_[local_index].SwapLog(&log_text);
+    list_[local_index].Init(log_text);
   }
 
   // Verify checksum.

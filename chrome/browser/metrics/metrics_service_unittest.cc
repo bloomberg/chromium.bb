@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/metrics/compression_utils.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -209,8 +210,12 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   log_manager->StageNextLogForUpload();
   EXPECT_TRUE(log_manager->has_staged_log());
 
+  std::string uncompressed_log;
+  EXPECT_TRUE(metrics::GzipUncompress(log_manager->staged_log(),
+                                      &uncompressed_log));
+
   metrics::ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(uma_log.ParseFromString(log_manager->staged_log()));
+  EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());

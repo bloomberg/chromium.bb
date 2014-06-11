@@ -91,7 +91,7 @@ class MetricsLogManager {
   // This is intended to be used when logs are being saved while an upload is in
   // progress, in case the upload later succeeds.
   // This can only be called if has_staged_log() is true.
-  void StoreStagedLogAsUnsent(metrics::PersistedLogs::StoreType store_type);
+  void StoreStagedLogAsUnsent(PersistedLogs::StoreType store_type);
 
   // Discards the last log stored with StoreStagedLogAsUnsent with |store_type|
   // set to PROVISIONAL_STORE, as long as it hasn't already been re-staged. If
@@ -105,10 +105,8 @@ class MetricsLogManager {
   void LoadPersistedUnsentLogs();
 
  private:
-  // Saves |log| as the given type.
-  // NOTE: This clears the contents of |log| (to avoid an expensive copy),
-  // so the log should be discarded after this call.
-  void StoreLog(std::string* log, MetricsLog::LogType log_type);
+  // Saves |log_data| as the given type.
+  void StoreLog(const std::string& log_data, MetricsLog::LogType log_type);
 
   // Tracks whether unsent logs (if any) have been loaded from the serializer.
   bool unsent_logs_loaded_;
@@ -120,8 +118,8 @@ class MetricsLogManager {
   scoped_ptr<MetricsLog> paused_log_;
 
   // Logs that have not yet been sent.
-  metrics::PersistedLogs initial_log_queue_;
-  metrics::PersistedLogs ongoing_log_queue_;
+  PersistedLogs initial_log_queue_;
+  PersistedLogs ongoing_log_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLogManager);
 };

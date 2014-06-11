@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/net/compression_utils.h"
+#include "components/metrics/compression_utils.h"
 
 #include <string>
 
-#include "base/base_paths.h"
 #include "base/basictypes.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -32,11 +30,6 @@ const uint8 kCompressedData[] =
      0x2f, 0xca, 0x49, 0x01, 0x00, 0x85, 0x11, 0x4a, 0x0d,
      0x0b, 0x00, 0x00, 0x00};
 
-// Re-enable C4309.
-#if defined(OS_WIN)
-#pragma warning( default: 4309 )
-#endif
-
 }  // namespace
 
 TEST(CompressionUtilsTest, GzipCompression) {
@@ -47,6 +40,37 @@ TEST(CompressionUtilsTest, GzipCompression) {
       reinterpret_cast<const char*>(kCompressedData),
       arraysize(kCompressedData));
   EXPECT_EQ(golden_compressed_data, compressed_data);
+}
+
+TEST(CompressionUtilsTest, GzipUncompression) {
+  std::string compressed_data(reinterpret_cast<const char*>(kCompressedData),
+                              arraysize(kCompressedData));
+
+  std::string uncompressed_data;
+  EXPECT_TRUE(GzipUncompress(compressed_data, &uncompressed_data));
+
+  std::string golden_data(reinterpret_cast<const char*>(kData),
+                          arraysize(kData));
+  EXPECT_EQ(golden_data, uncompressed_data);
+}
+
+// Checks that compressing/decompressing input > 256 bytes works as expected.
+TEST(CompressionUtilsTest, LargeInput) {
+  const size_t kSize = 32 * 1024;
+
+  // Generate a data string of |kSize| for testing.
+  std::string data;
+  data.resize(kSize);
+  for (size_t i = 0; i < kSize; ++i)
+    data[i] = static_cast<char>(i & 0xFF);
+
+  std::string compressed_data;
+  EXPECT_TRUE(GzipCompress(data, &compressed_data));
+
+  std::string uncompressed_data;
+  EXPECT_TRUE(GzipUncompress(compressed_data, &uncompressed_data));
+
+  EXPECT_EQ(data, uncompressed_data);
 }
 
 }  // namespace metrics
