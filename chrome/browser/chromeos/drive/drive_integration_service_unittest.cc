@@ -26,13 +26,6 @@ class DriveIntegrationServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(profile_manager_.SetUp());
-    integration_service_.reset(new DriveIntegrationService(
-        profile_manager_.CreateTestingProfile(kTestProfileName),
-        NULL,
-        new DummyDriveService,
-        std::string(),
-        base::FilePath(),
-        new DummyFileSystem));
   }
 
  protected:
@@ -42,13 +35,37 @@ class DriveIntegrationServiceTest : public testing::Test {
   // uses chromeos::ProfileHelper, which needs the ProfileManager or a
   // TestProfileManager to be running.
   TestingProfileManager profile_manager_;
-  scoped_ptr<DriveIntegrationService> integration_service_;
 };
 
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
-  integration_service_->SetEnabled(true);
+  scoped_ptr<DriveIntegrationService> integration_service(
+      new DriveIntegrationService(
+          profile_manager_.CreateTestingProfile(kTestProfileName),
+          NULL,
+          new DummyDriveService,
+          std::string(),
+          base::FilePath(),
+          new DummyFileSystem));
+  integration_service->SetEnabled(true);
   test_util::RunBlockingPoolTask();
-  integration_service_->Shutdown();
+  integration_service->Shutdown();
+}
+
+TEST_F(DriveIntegrationServiceTest, ServiceInstanceIdentity) {
+  TestingProfile* user1 = profile_manager_.CreateTestingProfile("user1");
+
+  // Integration Service is created as a profile keyed service.
+  EXPECT_TRUE(DriveIntegrationServiceFactory::GetForProfile(user1));
+
+  // Shares the same instance with the incognito mode profile.
+  Profile* user1_incognito = user1->GetOffTheRecordProfile();
+  EXPECT_EQ(DriveIntegrationServiceFactory::GetForProfile(user1),
+            DriveIntegrationServiceFactory::GetForProfile(user1_incognito));
+
+  // For different profiles, different services are running.
+  TestingProfile* user2 = profile_manager_.CreateTestingProfile("user2");
+  EXPECT_NE(DriveIntegrationServiceFactory::GetForProfile(user1),
+            DriveIntegrationServiceFactory::GetForProfile(user2));
 }
 
 }  // namespace drive
