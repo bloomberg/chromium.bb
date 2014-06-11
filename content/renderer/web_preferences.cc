@@ -258,7 +258,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setRegionBasedColumnsEnabled(prefs.region_based_columns_enabled);
 
-  WebRuntimeFeatures::enableLazyLayout(prefs.lazy_layout_enabled);
   WebRuntimeFeatures::enableTouch(prefs.touch_enabled);
   settings->setMaxTouchPoints(prefs.pointer_events_max_touch_points);
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
