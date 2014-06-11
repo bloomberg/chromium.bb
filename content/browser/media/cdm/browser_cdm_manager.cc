@@ -5,7 +5,6 @@
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
 #include "content/common/media/cdm_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -42,12 +41,10 @@ BrowserCdmManager::BrowserCdmManager(RenderFrameHost* render_frame_host)
 }
 
 BrowserCdmManager::~BrowserCdmManager() {
-  STLDeleteValues(&cdm_map_);
 }
 
 BrowserCdm* BrowserCdmManager::GetCdm(int cdm_id) {
-  CdmMap::const_iterator iter = cdm_map_.find(cdm_id);
-  return (iter == cdm_map_.end()) ? NULL : iter->second;
+  return cdm_map_.get(cdm_id);
 }
 
 void BrowserCdmManager::OnSessionCreated(
@@ -225,8 +222,8 @@ void BrowserCdmManager::CancelAllPendingSessionCreations(int cdm_id) {
 }
 
 void BrowserCdmManager::AddCdm(int cdm_id,
-                                       const std::string& key_system,
-                                       const GURL& security_origin) {
+                               const std::string& key_system,
+                               const GURL& security_origin) {
   DCHECK(!GetCdm(cdm_id));
   base::WeakPtr<BrowserCdmManager> weak_this = weak_ptr_factory_.GetWeakPtr();
   scoped_ptr<BrowserCdm> cdm(media::CreateBrowserCdm(
@@ -244,7 +241,7 @@ void BrowserCdmManager::AddCdm(int cdm_id,
     return;
   }
 
-  cdm_map_[cdm_id] = cdm.release();
+  cdm_map_.add(cdm_id, cdm.Pass());
   cdm_security_origin_map_[cdm_id] = security_origin;
 }
 
@@ -253,11 +250,7 @@ void BrowserCdmManager::RemoveCdm(int cdm_id) {
   // EME implementation the current code is fine because we always destroy the
   // player before we destroy the DrmBridge. This will not always be the case
   // in unprefixed EME implementation.
-  CdmMap::iterator iter = cdm_map_.find(cdm_id);
-  if (iter != cdm_map_.end()) {
-    delete iter->second;
-    cdm_map_.erase(iter);
-  }
+  cdm_map_.erase(cdm_id);
   cdm_security_origin_map_.erase(cdm_id);
 }
 

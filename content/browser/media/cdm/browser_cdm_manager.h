@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
@@ -107,8 +108,7 @@ class CONTENT_EXPORT BrowserCdmManager {
   WebContents* const web_contents_;
 
   // A map from CDM IDs to managed CDMs.
-  // TODO(xhwang): Use ScopedPtrHashMap for CdmMap.
-  typedef std::map<int, media::BrowserCdm*> CdmMap;
+  typedef base::ScopedPtrHashMap<int, media::BrowserCdm> CdmMap;
   CdmMap cdm_map_;
 
   // Map from CDM ID to CDM's security origin.
