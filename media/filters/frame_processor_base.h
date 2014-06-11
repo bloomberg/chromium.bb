@@ -149,6 +149,13 @@ class MEDIA_EXPORT FrameProcessorBase {
   // frames for the track |id| to |stream|.
   bool AddTrack(StreamParser::TrackId id, ChunkDemuxerStream* stream);
 
+  // Updates the internal mapping of TrackId to track buffer for the track
+  // buffer formerly associated with |old_id| to be associated with |new_id|.
+  // Returns false to indicate failure due to either no existing track buffer
+  // for |old_id| or collision with previous track buffer already mapped to
+  // |new_id|. Otherwise returns true.
+  bool UpdateTrack(StreamParser::TrackId old_id, StreamParser::TrackId new_id);
+
   // Resets state for the coded frame processing algorithm as described in steps
   // 2-5 of the MSE Reset Parser State algorithm described at
   // http://www.w3.org/TR/media-source/#sourcebuffer-reset-parser-state

@@ -75,6 +75,18 @@ bool FrameProcessorBase::AddTrack(StreamParser::TrackId id,
   return true;
 }
 
+bool FrameProcessorBase::UpdateTrack(StreamParser::TrackId old_id,
+                                     StreamParser::TrackId new_id) {
+  DVLOG(2) << __FUNCTION__ << "() : old_id=" << old_id << ", new_id=" << new_id;
+
+  if (old_id == new_id || !FindTrack(old_id) || FindTrack(new_id))
+    return false;
+
+  track_buffers_[new_id] = track_buffers_[old_id];
+  CHECK_EQ(1u, track_buffers_.erase(old_id));
+  return true;
+}
+
 void FrameProcessorBase::Reset() {
   DVLOG(2) << __FUNCTION__ << "()";
   for (TrackBufferMap::iterator itr = track_buffers_.begin();
