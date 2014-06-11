@@ -34,16 +34,22 @@ using storage_monitor::StorageMonitor;
 
 namespace {
 
-// Comparator for sorting GalleryPermissionsVector -- sorts
-// selected galleries low, and then sorts by absolute path.
+// Comparator for sorting gallery entries. Sort Removable entries above
+// non-removable ones. Within those two groups, sort on media counts
+// if populated, otherwise on paths.
 bool GalleriesVectorComparator(
     const MediaGalleriesDialogController::Entry& a,
     const MediaGalleriesDialogController::Entry& b) {
-  if (a.selected && !b.selected)
-    return true;
-  if (!a.selected && b.selected)
-    return false;
-
+  if (StorageInfo::IsRemovableDevice(a.pref_info.device_id) !=
+      StorageInfo::IsRemovableDevice(b.pref_info.device_id)) {
+    return StorageInfo::IsRemovableDevice(a.pref_info.device_id);
+  }
+  int a_media_count = a.pref_info.audio_count + a.pref_info.image_count +
+      a.pref_info.video_count;
+  int b_media_count = b.pref_info.audio_count + b.pref_info.image_count +
+      b.pref_info.video_count;
+  if (a_media_count != b_media_count)
+    return a_media_count > b_media_count;
   return a.pref_info.AbsolutePath() < b.pref_info.AbsolutePath();
 }
 
@@ -164,7 +170,7 @@ MediaGalleriesPermissionController::GetSectionHeaders() const {
   std::vector<base::string16> result;
   result.push_back(base::string16());  // First section has no header.
   result.push_back(
-      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS));
+      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_PERMISSION_SUGGESTIONS));
   return result;
 }
 
@@ -173,20 +179,19 @@ MediaGalleriesDialogController::Entries
 MediaGalleriesPermissionController::GetSectionEntries(size_t index) const {
   DCHECK_GT(2U, index);  // This dialog only has two sections.
 
-  // TODO(vandebo): Change this to be permitted/non-permitted instead of
-  // attached/non-attached.
-  bool attached = !index;
+  bool existing = !index;
   MediaGalleriesDialogController::Entries result;
   for (GalleryPermissionsMap::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
+    MediaGalleryPrefId pref_id = GetPrefId(iter->first);
     if (!ContainsKey(forgotten_galleries_, iter->first) &&
-        attached == iter->second.pref_info.IsGalleryAvailable()) {
+        existing == ContainsKey(pref_permitted_galleries_, pref_id)) {
       result.push_back(iter->second);
     }
   }
-  for (GalleryPermissionsMap::const_iterator iter = new_galleries_.begin();
-       iter != new_galleries_.end(); ++iter) {
-    if (attached == iter->second.pref_info.IsGalleryAvailable()) {
+  if (existing) {
+    for (GalleryPermissionsMap::const_iterator iter = new_galleries_.begin();
+         iter != new_galleries_.end(); ++iter) {
       result.push_back(iter->second);
     }
   }
@@ -229,10 +234,7 @@ void MediaGalleriesPermissionController::DidToggleEntry(
       return;
 
     iter->second.selected = selected;
-    if (ContainsKey(toggled_galleries_, gallery_id))
-      toggled_galleries_.erase(gallery_id);
-    else
-      toggled_galleries_.insert(gallery_id);
+    toggled_galleries_[gallery_id] = selected;
     return;
   }
 
@@ -397,16 +399,21 @@ void MediaGalleriesPermissionController::InitializePermissions() {
     known_galleries_[gallery_id].pref_info.pref_id = gallery_id;
   }
 
-  MediaGalleryPrefIdSet permitted =
-      preferences_->GalleriesForExtension(*extension_);
+  pref_permitted_galleries_ = preferences_->GalleriesForExtension(*extension_);
 
-  for (MediaGalleryPrefIdSet::iterator iter = permitted.begin();
-       iter != permitted.end(); ++iter) {
+  for (MediaGalleryPrefIdSet::iterator iter = pref_permitted_galleries_.begin();
+       iter != pref_permitted_galleries_.end();
+       ++iter) {
     GalleryDialogId gallery_id = GetDialogId(*iter);
-    if (ContainsKey(toggled_galleries_, gallery_id))
-      continue;
     DCHECK(ContainsKey(known_galleries_, gallery_id));
     known_galleries_[gallery_id].selected = true;
+  }
+
+  // Preserve state of toggled galleries.
+  for (ToggledGalleryMap::const_iterator iter = toggled_galleries_.begin();
+       iter != toggled_galleries_.end();
+       ++iter) {
+    known_galleries_[iter->first].selected = iter->second;
   }
 }
 
@@ -502,7 +509,7 @@ GalleryDialogId MediaGalleriesPermissionController::GetDialogId(
 }
 
 MediaGalleryPrefId MediaGalleriesPermissionController::GetPrefId(
-    GalleryDialogId id) {
+    GalleryDialogId id) const {
   return id_map_.GetPrefId(id);
 }
 
@@ -537,7 +544,7 @@ MediaGalleriesPermissionController::DialogIdMap::GetDialogId(
 
 MediaGalleryPrefId
 MediaGalleriesPermissionController::DialogIdMap::GetPrefId(
-    GalleryDialogId id) {
+    GalleryDialogId id) const {
   DCHECK_LT(id, next_dialog_id_);
   return forward_mapping_[id];
 }

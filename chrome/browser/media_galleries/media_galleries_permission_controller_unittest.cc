@@ -184,9 +184,9 @@ void MediaGalleriesPermissionControllerTest::TestForgottenType(
       MakeMediaGalleriesTestingPath("forgotten2"), type);
   // Show dialog and accept to verify 2 entries
   StartDialog();
+  EXPECT_EQ(0U, controller()->GetSectionEntries(0).size());
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
-            controller()->GetSectionEntries(0).size());
-  EXPECT_EQ(0U, controller()->GetSectionEntries(1).size());
+            controller()->GetSectionEntries(1).size());
   controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten1), true);
   controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten2), true);
   controller()->DialogFinished(true);
@@ -194,17 +194,17 @@ void MediaGalleriesPermissionControllerTest::TestForgottenType(
 
   // Forget one and cancel to see that it's still there.
   StartDialog();
+  EXPECT_EQ(2U, controller()->GetSectionEntries(0).size());
   controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten1));
-  EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
   controller()->DialogFinished(false);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Forget one and confirm to see that it's gone.
   StartDialog();
+  EXPECT_EQ(2U, controller()->GetSectionEntries(0).size());
   controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten1));
-  EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
   controller()->DialogFinished(true);
   EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
@@ -212,13 +212,14 @@ void MediaGalleriesPermissionControllerTest::TestForgottenType(
   MediaGalleryPrefId forgotten3 = gallery_prefs()->AddGalleryByPath(
       MakeMediaGalleriesTestingPath("forgotten3"), type);
   StartDialog();
-  EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
-            controller()->GetSectionEntries(0).size());
-  EXPECT_EQ(0U, controller()->GetSectionEntries(1).size());
+  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
+            controller()->GetSectionEntries(1).size());
   controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten3), true);
   controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten3));
-  EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
-            controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(static_cast<unsigned long>(mock_gallery_locations_.num_galleries()),
+            controller()->GetSectionEntries(1).size());
   controller()->DialogFinished(true);
   EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 }

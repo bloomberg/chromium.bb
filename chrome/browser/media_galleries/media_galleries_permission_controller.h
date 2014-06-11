@@ -91,13 +91,14 @@ class MediaGalleriesPermissionController
  private:
   // This type keeps track of media galleries already known to the prefs system.
   typedef std::map<GalleryDialogId, Entry> GalleryPermissionsMap;
+  typedef std::map<GalleryDialogId, bool /*permitted*/> ToggledGalleryMap;
 
   class DialogIdMap {
    public:
     DialogIdMap();
     ~DialogIdMap();
     GalleryDialogId GetDialogId(MediaGalleryPrefId pref_id);
-    MediaGalleryPrefId GetPrefId(GalleryDialogId id);
+    MediaGalleryPrefId GetPrefId(GalleryDialogId id) const;
 
    private:
     GalleryDialogId next_dialog_id_;
@@ -165,7 +166,7 @@ class MediaGalleriesPermissionController
   void UpdateGalleriesOnDeviceEvent(const std::string& device_id);
 
   GalleryDialogId GetDialogId(MediaGalleryPrefId pref_id);
-  MediaGalleryPrefId GetPrefId(GalleryDialogId id);
+  MediaGalleryPrefId GetPrefId(GalleryDialogId id) const;
 
   Profile* GetProfile();
 
@@ -184,7 +185,10 @@ class MediaGalleriesPermissionController
   GalleryPermissionsMap known_galleries_;
 
   // Galleries in |known_galleries_| that the user have toggled.
-  std::set<GalleryDialogId> toggled_galleries_;
+  ToggledGalleryMap toggled_galleries_;
+
+  // The current set of permitted galleries (according to prefs).
+  MediaGalleryPrefIdSet pref_permitted_galleries_;
 
   // Map of new galleries the user added, but have not saved. This list should
   // never overlap with |known_galleries_|.
