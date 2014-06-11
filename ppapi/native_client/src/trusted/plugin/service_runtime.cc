@@ -418,6 +418,8 @@ void PluginReverseInterface::ReportCrash() {
   if (crash_cb_.pp_completion_callback().func != NULL) {
     NaClLog(4, "PluginReverseInterface::ReportCrash: invoking CB\n");
     pp::Module::Get()->core()->CallOnMainThread(0, crash_cb_, PP_OK);
+    // Clear the callback to avoid it gets invoked twice.
+    crash_cb_ = pp::CompletionCallback();
   } else {
     NaClLog(1,
             "PluginReverseInterface::ReportCrash:"
@@ -433,6 +435,30 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
     nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
   return bytes_to_write;
 }
+
+// Thin wrapper for the arguments of LoadNexeAndStart(), as WeakRefNewCallback
+// can take only one argument. Also, this dtor has the responsibility to invoke
+// callbacks on destruction.
+struct ServiceRuntime::LoadNexeAndStartData {
+  explicit LoadNexeAndStartData(const pp::CompletionCallback& callback)
+      : callback(callback) {
+  }
+
+  ~LoadNexeAndStartData() {
+    // We must call the callbacks here if they are not yet called, otherwise
+    // the resource would be leaked.
+    if (callback.pp_completion_callback().func)
+      callback.RunAndClear(PP_ERROR_ABORTED);
+  }
+
+  // On success path, this must be invoked manually. Otherwise the dtor would
+  // invoke callbacks with error code unexpectedly.
+  void Clear() {
+    callback = pp::CompletionCallback();
+  }
+
+  pp::CompletionCallback callback;
+};
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                bool main_service_runtime,
@@ -453,6 +479,50 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
   NaClXCondVarCtor(&cond_);
 }
 
+void ServiceRuntime::LoadNexeAndStartAfterLoadModule(
+    LoadNexeAndStartData* data, int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    DidLoadNexeAndStart(data, pp_error);
+    return;
+  }
+
+  // Here, LoadModule is successfully done. So the remaining task is just
+  // calling StartModule(), here.
+  DidLoadNexeAndStart(data, StartModule() ? PP_OK : PP_ERROR_FAILED);
+}
+
+void ServiceRuntime::DidLoadNexeAndStart(
+    LoadNexeAndStartData* data, int32_t pp_error) {
+  if (pp_error == PP_OK) {
+    NaClLog(4, "ServiceRuntime::LoadNexeAndStart (success)\n");
+  } else {
+    // On a load failure the service runtime does not crash itself to
+    // avoid a race where the no-more-senders error on the reverse
+    // channel esrvice thread might cause the crash-detection logic to
+    // kick in before the start_module RPC reply has been received. So
+    // we induce a service runtime crash here. We do not release
+    // subprocess_ since it's needed to collect crash log output after
+    // the error is reported.
+    Log(LOG_FATAL, "reap logs");
+    if (NULL == reverse_service_) {
+      // No crash detector thread.
+      NaClLog(LOG_ERROR, "scheduling to get crash log\n");
+      // Invoking rev_interface's method is workaround to avoid crash_cb
+      // gets called twice or more. We should clean this up later.
+      rev_interface_->ReportCrash();
+      NaClLog(LOG_ERROR, "should fire soon\n");
+    } else {
+      NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
+    }
+  }
+
+  pp::Module::Get()->core()->CallOnMainThread(0, data->callback, pp_error);
+
+  // Because the ownership of data is taken by caller, we must clear it
+  // manually here. Otherwise, its dtor invokes callbacks again.
+  data->Clear();
+}
+
 bool ServiceRuntime::SetupCommandChannel() {
   NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
@@ -469,30 +539,37 @@ bool ServiceRuntime::SetupCommandChannel() {
   return true;
 }
 
-bool ServiceRuntime::LoadModule(PP_NaClFileInfo file_info) {
+void ServiceRuntime::LoadModule(PP_NaClFileInfo file_info,
+                                pp::CompletionCallback callback) {
   NaClFileInfo nacl_file_info;
   nacl_file_info.desc = ConvertFileDescriptor(file_info.handle, true);
   nacl_file_info.file_token.lo = file_info.token_lo;
   nacl_file_info.file_token.hi = file_info.token_hi;
   NaClDesc* desc = NaClDescIoFromFileInfo(nacl_file_info, O_RDONLY);
-  if (desc == NULL)
-    return false;
+  if (desc == NULL) {
+    DidLoadModule(callback, PP_ERROR_FAILED);
+    return;
+  }
 
   // We don't use a scoped_ptr here since we would immediately release the
   // DescWrapper to LoadModule().
   nacl::DescWrapper* wrapper =
       plugin_->wrapper_factory()->MakeGenericCleanup(desc);
 
-  if (!subprocess_->LoadModule(&command_channel_, wrapper)) {
-    if (main_service_runtime_) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                           "ServiceRuntime: load module failed");
-      plugin_->ReportLoadError(error_info);
-    }
-    return false;
+  // TODO(teravest, hidehiko): Replace this by Chrome IPC.
+  bool result = subprocess_->LoadModule(&command_channel_, wrapper);
+  DidLoadModule(callback, result ? PP_OK : PP_ERROR_FAILED);
+}
+
+void ServiceRuntime::DidLoadModule(pp::CompletionCallback callback,
+                                   int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                         "ServiceRuntime: load module failed");
+    plugin_->ReportLoadError(error_info);
   }
-  return true;
+  callback.Run(pp_error);
 }
 
 bool ServiceRuntime::InitReverseService() {
@@ -683,41 +760,26 @@ void ServiceRuntime::SignalNexeStarted() {
 }
 
 void ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info,
-                                      const pp::CompletionCallback& started_cb,
-                                      const pp::CompletionCallback& crash_cb) {
+                                      const pp::CompletionCallback& callback) {
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (handle_valid=%d "
              "token_lo=%" NACL_PRIu64 " token_hi=%" NACL_PRIu64 ")\n",
       file_info.handle != PP_kInvalidFileHandle,
       file_info.token_lo,
       file_info.token_hi);
 
-  bool ok = SetupCommandChannel() &&
-            InitReverseService() &&
-            LoadModule(file_info) &&
-            StartModule();
-  if (!ok) {
-    // On a load failure the service runtime does not crash itself to
-    // avoid a race where the no-more-senders error on the reverse
-    // channel esrvice thread might cause the crash-detection logic to
-    // kick in before the start_module RPC reply has been received. So
-    // we induce a service runtime crash here. We do not release
-    // subprocess_ since it's needed to collect crash log output after
-    // the error is reported.
-    Log(LOG_FATAL, "reap logs");
-    if (NULL == reverse_service_) {
-      // No crash detector thread.
-      NaClLog(LOG_ERROR, "scheduling to get crash log\n");
-      pp::Module::Get()->core()->CallOnMainThread(0, crash_cb, PP_OK);
-      NaClLog(LOG_ERROR, "should fire soon\n");
-    } else {
-      NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
-    }
-    pp::Module::Get()->core()->CallOnMainThread(0, started_cb, PP_ERROR_FAILED);
+  nacl::scoped_ptr<LoadNexeAndStartData> data(
+      new LoadNexeAndStartData(callback));
+  if (!SetupCommandChannel() || !InitReverseService()) {
+    DidLoadNexeAndStart(data.get(), PP_ERROR_FAILED);
     return;
   }
 
-  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (return 1)\n");
-  pp::Module::Get()->core()->CallOnMainThread(0, started_cb, PP_OK);
+  LoadModule(
+      file_info,
+      WeakRefNewCallback(anchor_,
+                         this,
+                         &ServiceRuntime::LoadNexeAndStartAfterLoadModule,
+                         data.release()));  // Delegate the ownership.
 }
 
 SrpcClient* ServiceRuntime::SetupAppChannel() {

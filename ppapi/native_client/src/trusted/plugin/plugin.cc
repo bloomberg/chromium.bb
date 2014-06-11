@@ -115,7 +115,7 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
   bool nexe_started = false;
   pp::CompletionCallback started_cb = callback_factory_.NewCallback(
       &Plugin::SignalNexeStarted, &nexe_started, service_runtime);
-  service_runtime->LoadNexeAndStart(info, started_cb, pp::CompletionCallback());
+  service_runtime->LoadNexeAndStart(info, started_cb);
   service_runtime->WaitForNexeStart();
   return nexe_started;
 }
@@ -186,22 +186,20 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   }
 
   pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::LoadNexeAndStart, file_info, service_runtime, crash_cb);
+      &Plugin::LoadNexeAndStart, file_info, service_runtime);
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
 
 void Plugin::LoadNexeAndStart(int32_t pp_error,
                               PP_NaClFileInfo file_info,
-                              ServiceRuntime* service_runtime,
-                              const pp::CompletionCallback& crash_cb) {
+                              ServiceRuntime* service_runtime) {
   if (pp_error != PP_OK)
     return;
 
   // We don't take any action once nexe loading has completed, so pass an empty
   // callback here for |loaded_cb|.
-  service_runtime->LoadNexeAndStart(file_info, pp::CompletionCallback(),
-                                    crash_cb);
+  service_runtime->LoadNexeAndStart(file_info, pp::CompletionCallback());
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern() {

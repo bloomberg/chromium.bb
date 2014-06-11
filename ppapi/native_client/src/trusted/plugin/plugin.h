@@ -168,8 +168,7 @@ class Plugin : public pp::Instance {
 
   void LoadNexeAndStart(int32_t pp_error,
                         PP_NaClFileInfo file_info,
-                        ServiceRuntime* service_runtime,
-                        const pp::CompletionCallback& crash_cb);
+                        ServiceRuntime* service_runtime);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
