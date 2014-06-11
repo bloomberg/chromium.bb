@@ -61,7 +61,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
 
 }  // namespace internal
 
-class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
+class RenderTextHarfBuzz : public RenderText {
  public:
   RenderTextHarfBuzz();
   virtual ~RenderTextHarfBuzz();
@@ -90,9 +90,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
-  friend class RenderTextTest;
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
-
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingCaret(const SelectionModel& caret) const;
