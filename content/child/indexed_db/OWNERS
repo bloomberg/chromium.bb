@@ -1,8 +1,8 @@
 dgrogan@chromium.org
-hans@chromium.org
 michaeln@chromium.org
 jsbell@chromium.org
-alecflett@chromium.org
+ericu@chromium.org
+cmumford@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
