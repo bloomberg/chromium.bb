@@ -12,8 +12,7 @@ chrome.test.runTests([
   function goodDisplayName() {
     var onTestSuccess = chrome.test.callbackPass();
     chrome.fileSystemProvider.mount(
-        'file-system-id',
-        'File System Name',
+        {fileSystemId: 'file-system-id', displayName: 'file-system-name'},
         function() {
           onTestSuccess();
         },
@@ -26,8 +25,7 @@ chrome.test.runTests([
   function emptyDisplayName() {
     var onTestSuccess = chrome.test.callbackPass();
     chrome.fileSystemProvider.mount(
-        'file-system-id',
-        '',
+        {fileSystemId: 'file-system-id', displayName: ''},
         function() {
           chrome.test.fail();
         },
@@ -40,8 +38,7 @@ chrome.test.runTests([
   function emptyFileSystemId() {
     var onTestSuccess = chrome.test.callbackPass();
     chrome.fileSystemProvider.mount(
-        '',
-        'File System Name',
+        {fileSystemId: '', displayName: 'File System Name'},
         function() {
           chrome.test.fail();
         },
@@ -59,8 +56,7 @@ chrome.test.runTests([
     var onTestSuccess = chrome.test.callbackPass();
     var fileSystemId = 'caramel-candy';
     chrome.fileSystemProvider.mount(
-        fileSystemId,
-        'caramel-candy.zip',
+        {fileSystemId: fileSystemId, displayName: 'caramel-candy.zip'},
         function() {
           chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
             var found = false;
@@ -93,8 +89,7 @@ chrome.test.runTests([
       if (index < MAX_FILE_SYSTEMS - ALREADY_MOUNTED_FILE_SYSTEMS + 1) {
         var fileSystemId = index + '-stress-test';
         chrome.fileSystemProvider.mount(
-            fileSystemId,
-            index + 'th File System',
+            {fileSystemId: fileSystemId, displayName: index + 'th File System'},
             function() {
               tryNextOne();
             },
@@ -103,8 +98,10 @@ chrome.test.runTests([
             });
       } else {
         chrome.fileSystemProvider.mount(
-            'over-the-limit-fs-id',
-            'Over The Limit File System',
+            {
+              fileSystemId: 'over-the-limit-fs-id',
+              displayName: 'Over The Limit File System'
+            },
             function() {
               chrome.test.fail();
             },

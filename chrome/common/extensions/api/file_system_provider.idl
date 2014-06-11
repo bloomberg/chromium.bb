@@ -50,9 +50,64 @@ namespace fileSystemProvider {
     [instanceOf=Date] object modificationTime;
   };
 
+  // Options for the <code>mount()</code> method.
+  dictionary MountOptions {
+    DOMString fileSystemId;
+    DOMString displayName;
+  };
+
+  // Options for the <code>unmount()</code> method.
+  dictionary UnmountOptions {
+    DOMString fileSystemId;
+  };
+
+  // Options for the <code>onUnmountRequested()</code> event.
+  dictionary UnmountRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+  };
+
+  // Options for the <code>onGetMetadataRequested()</code> event.
+  dictionary GetMetadataRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString entryPath;
+  };
+
+  // Options for the <code>onReadDirectoryRequested()</code> event.
+  dictionary ReadDirectoryRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString directoryPath;
+  };
+
+  // Options for the <code>onOpenFileRequested()</code> event.
+  dictionary OpenFileRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString filePath;
+    OpenFileMode mode;
+    boolean create;
+  };
+
+  // Options for the <code>onCloseFileRequested()</code> event.
+  dictionary CloseFileRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    long openRequestId;
+  };
+
+  // Options for the <code>onReadFileRequested()</code> event.
+  dictionary ReadFileRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    long openRequestId;
+    double offset;
+    double length;
+  };
+
   // Callback to receive the result of mount() function.
   callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
-
 
   // Callback to receive the result of unmount() function.
   callback UnmountCallback = void([nodoc, instanceOf=DOMError] object error);
@@ -93,8 +148,7 @@ namespace fileSystemProvider {
     // mounted by this extension, then <code>errorCallback</code> will be called
     // with <code>ProviderError.EXISTS</code> value. The <code>fileSystemId
     // </code> must not be an empty string.
-    static void mount(DOMString fileSystemId,
-                      DOMString displayName,
+    static void mount(MountOptions options,
                       MountCallback successCallback,
                       [nocompile] ErrorCallback errorCallback);
 
@@ -104,7 +158,7 @@ namespace fileSystemProvider {
     // (eg. in case of lost connection, or a file error). If there is no file
     // system with the requested id, or unmounting fails, then the
     // <code>errorCallback</code> will be called.
-    static void unmount(DOMString fileSystemId,
+    static void unmount(UnmountOptions options,
                         UnmountCallback successCallback,
                         [nocompile] ErrorCallback errorCallback);
   };
@@ -116,7 +170,7 @@ namespace fileSystemProvider {
     // </code>. If unmounting is not possible (eg. due to a pending operation),
     // then <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
-        DOMString fileSystemId,
+        UnmountRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
@@ -125,8 +179,7 @@ namespace fileSystemProvider {
     // successCallback</code> call. In case of an error, <code>errorCallback
     // </code> must be called.
     [maxListeners=1] static void onGetMetadataRequested(
-        DOMString fileSystemId,
-        DOMString entryPath,
+        GetMetadataRequestedOptions options,
         MetadataCallback successCallback,
         ProviderErrorCallback errorCallback);
 
@@ -135,8 +188,7 @@ namespace fileSystemProvider {
     // successCallback</code> several times. In case of an error, <code>
     // errorCallback</code> must be called.
     [maxListeners=1] static void onReadDirectoryRequested(
-        DOMString fileSystemId,
-        DOMString directoryPath,
+        ReadDirectoryRequestedOptions options,
         EntriesCallback successCallback,
         ProviderErrorCallback errorCallback);
 
@@ -144,19 +196,14 @@ namespace fileSystemProvider {
     // If <code>create</code> is set to <code>true</code> and the file does not
     // exist, then it should be created.
     [maxListeners=1] static void onOpenFileRequested(
-        DOMString fileSystemId,
-        long requestId,
-        DOMString filePath,
-        OpenFileMode mode,
-        boolean create,
+        OpenFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when opening a file previously opened with <code>openRequestId
     // </code> is requested to be closed.
     [maxListeners=1] static void onCloseFileRequested(
-        DOMString fileSystemId,
-        long openRequestId,
+        CloseFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
@@ -165,10 +212,7 @@ namespace fileSystemProvider {
     // successCallback</code> several times. In case of an error, <code>
     // errorCallback</code> must be called.
     [maxListeners=1] static void onReadFileRequested(
-        DOMString fileSystemId,
-        long openRequestId,
-        double offset,
-        double length,
+        ReadFileRequestedOptions options,
         FileDataCallback successCallback,
         ProviderErrorCallback errorCallback);
   };

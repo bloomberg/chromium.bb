@@ -27,7 +27,7 @@ bool FileSystemProviderMountFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // It's an error if the file system Id is empty.
-  if (params->file_system_id.empty()) {
+  if (params->options.file_system_id.empty()) {
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kEmptyIdErrorMessage));
     SetResult(result);
@@ -35,7 +35,7 @@ bool FileSystemProviderMountFunction::RunSync() {
   }
 
   // It's an error if the display name is empty.
-  if (params->display_name.empty()) {
+  if (params->options.display_name.empty()) {
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName,
                                kEmptyNameErrorMessage));
@@ -49,8 +49,9 @@ bool FileSystemProviderMountFunction::RunSync() {
     return false;
 
   // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-  if (!service->MountFileSystem(
-          extension_id(), params->file_system_id, params->display_name)) {
+  if (!service->MountFileSystem(extension_id(),
+                                params->options.file_system_id,
+                                params->options.display_name)) {
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);
@@ -72,7 +73,8 @@ bool FileSystemProviderUnmountFunction::RunSync() {
   if (!service)
     return false;
 
-  if (!service->UnmountFileSystem(extension_id(), params->file_system_id)) {
+  if (!service->UnmountFileSystem(extension_id(),
+                                  params->options.file_system_id)) {
     // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kUnmountFailedErrorMessage));

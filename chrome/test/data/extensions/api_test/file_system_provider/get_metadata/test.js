@@ -71,29 +71,28 @@ function getVolumeInfo(fileSystemId, callback) {
 /**
  * Returns metadata for a requested entry.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {string} entryPath Path of the requested entry.
+ * @param {GetMetadataRequestedOptions} options Options.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
  * @param {function(string)} onError Error callback with an error code.
  */
-function onGetMetadataRequested(inFileSystemId, entryPath, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID) {
-    onError('SECURITY_ERROR');  // enum ProviderError.
+function onGetMetadataRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (entryPath == '/') {
+  if (options.entryPath == '/') {
     onSuccess(TESTING_ROOT);
     return;
   }
 
-  if (entryPath == '/' + TESTING_FILE.name) {
+  if (options.entryPath == '/' + TESTING_FILE.name) {
     onSuccess(TESTING_FILE);
     return;
   }
 
-  if (entryPath == '/' + TESTING_WRONG_TIME_FILE.name) {
+  if (options.entryPath == '/' + TESTING_WRONG_TIME_FILE.name) {
     onSuccess(TESTING_WRONG_TIME_FILE);
     return;
   }
@@ -108,24 +107,27 @@ function onGetMetadataRequested(inFileSystemId, entryPath, onSuccess, onError) {
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount(FILE_SYSTEM_ID, 'chocolate.zip', function() {
-    chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-        onGetMetadataRequested);
+  chrome.fileSystemProvider.mount(
+      {fileSystemId: FILE_SYSTEM_ID, displayName: 'chocolate.zip'},
+      function() {
+        chrome.fileSystemProvider.onGetMetadataRequested.addListener(
+            onGetMetadataRequested);
 
-    getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
-      chrome.test.assertTrue(!!volumeInfo);
-      chrome.fileBrowserPrivate.requestFileSystem(
-          volumeInfo.volumeId,
-          function(inFileSystem) {
-            chrome.test.assertTrue(!!inFileSystem);
+        getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
+          chrome.test.assertTrue(!!volumeInfo);
+          chrome.fileBrowserPrivate.requestFileSystem(
+              volumeInfo.volumeId,
+              function(inFileSystem) {
+                chrome.test.assertTrue(!!inFileSystem);
 
-            fileSystem = inFileSystem;
-            callback();
-          });
-    });
-  }, function() {
-    chrome.test.fail();
-  });
+                fileSystem = inFileSystem;
+                callback();
+              });
+        });
+      },
+      function() {
+        chrome.test.fail();
+      });
 }
 
 /**

@@ -14,7 +14,7 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 
 namespace base {
-class ListValue;
+class DictionaryValue;
 }  // namespace base
 
 namespace extensions {
@@ -53,7 +53,7 @@ class Operation : public RequestManager::HandlerInterface {
   // extension does not handle the |event_name| event.
   bool SendEvent(int request_id,
                  const std::string& event_name,
-                 scoped_ptr<base::ListValue> event_args);
+                 scoped_ptr<base::DictionaryValue> options);
 
   ProvidedFileSystemInfo file_system_info_;
 

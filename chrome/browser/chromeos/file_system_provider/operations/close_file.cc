@@ -26,8 +26,8 @@ CloseFile::~CloseFile() {
 }
 
 bool CloseFile::Execute(int request_id) {
-  scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->AppendInteger(open_request_id_);
+  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
+  values->SetInteger("openRequestId", open_request_id_);
 
   return SendEvent(
       request_id,

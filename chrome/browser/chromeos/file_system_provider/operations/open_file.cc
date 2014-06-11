@@ -31,21 +31,25 @@ OpenFile::~OpenFile() {
 }
 
 bool OpenFile::Execute(int request_id) {
-  scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->AppendString(file_path_.AsUTF8Unsafe());
+  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
+  values->SetString("filePath", file_path_.AsUTF8Unsafe());
 
   switch (mode_) {
     case ProvidedFileSystemInterface::OPEN_FILE_MODE_READ:
-      values->AppendString(extensions::api::file_system_provider::ToString(
-          extensions::api::file_system_provider::OPEN_FILE_MODE_READ));
+      values->SetString(
+          "mode",
+          extensions::api::file_system_provider::ToString(
+              extensions::api::file_system_provider::OPEN_FILE_MODE_READ));
       break;
     case ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE:
-      values->AppendString(extensions::api::file_system_provider::ToString(
-          extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE));
+      values->SetString(
+          "mode",
+          extensions::api::file_system_provider::ToString(
+              extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE));
       break;
   }
 
-  values->AppendBoolean(create_);
+  values->SetBoolean("create", create_);
 
   return SendEvent(
       request_id,

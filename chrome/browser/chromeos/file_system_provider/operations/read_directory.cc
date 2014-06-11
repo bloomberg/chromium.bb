@@ -66,8 +66,8 @@ ReadDirectory::~ReadDirectory() {
 }
 
 bool ReadDirectory::Execute(int request_id) {
-  scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->AppendString(directory_path_.AsUTF8Unsafe());
+  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
+  values->SetString("directoryPath", directory_path_.AsUTF8Unsafe());
   return SendEvent(request_id,
                    extensions::api::file_system_provider::
                        OnReadDirectoryRequested::kEventName,

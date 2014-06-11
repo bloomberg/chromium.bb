@@ -83,24 +83,23 @@ function getVolumeInfo(fileSystemId, callback) {
  * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
  * must be implemented and return correct values.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {string} entryPath Path of the requested entry.
+ * @param {GetMetadataRequestedOptions} options Options.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
  * @param {function(string)} onError Error callback with an error code.
  */
-function onGetMetadataRequested(inFileSystemId, entryPath, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID) {
+function onGetMetadataRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (entryPath == '/') {
+  if (options.entryPath == '/') {
     onSuccess(TESTING_ROOT);
     return;
   }
 
-  if (entryPath == '/' + TESTING_6GB_FILE.name) {
+  if (options.entryPath == '/' + TESTING_6GB_FILE.name) {
     onSuccess(TESTING_6GB_FILE);
     return;
   }
@@ -112,51 +111,45 @@ function onGetMetadataRequested(inFileSystemId, entryPath, onSuccess, onError) {
  * Requests opening a file at <code>filePath</code>. Further file operations
  * will be associated with the <code>requestId</code>
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {number} requestId ID of the opening request. Used later for reading.
- * @param {string} filePath Path of the file to be opened.
- * @param {string} mode Mode, either reading or writing.
- * @param {boolean} create True to create if doesn't exist.
+ * @param {OpenFileRequestedOptions} options Options.
  * @param {function()} onSuccess Success callback.
  * @param {function(string)} onError Error callback.
  */
-function onOpenFileRequested(
-    inFileSystemId, requestId, filePath, mode, create, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID) {
+function onOpenFileRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (mode != 'READ' || create) {
+  if (options.mode != 'READ' || options.create) {
     onError('ACCESS_DENIED');  // enum ProviderError.
     return;
   }
 
-  if (filePath != '/' + TESTING_6GB_FILE.name) {
+  if (options.filePath != '/' + TESTING_6GB_FILE.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
   }
 
-  openedFiles[requestId] = filePath;
+  openedFiles[options.requestId] = options.filePath;
   onSuccess();
 }
 
 /**
  * Requests closing a file previously opened with <code>openRequestId</code>.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {number} openRequestId ID of the request used to open the file.
+ * @param {CloseFileRequestedOptions} options Options.
  * @param {function()} onSuccess Success callback.
  * @param {function(string)} onError Error callback.
  */
-function onCloseFileRequested(
-    inFileSystemId, openRequestId, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID || !openedFiles[openRequestId]) {
+function onCloseFileRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID ||
+      !openedFiles[options.openRequestId]) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  delete openedFiles[requestId];
+  delete openedFiles[options.openRequestId];
   onSuccess();
 }
 
@@ -164,31 +157,29 @@ function onCloseFileRequested(
  * Requests reading contents of a file, previously opened with <code>
  * openRequestId</code>.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {number} openRequestId ID of the request used to open the file.
- * @param {number} offset Offset of the file.
- * @param {number} length Number of bytes to read.
+ * @param {ReadFileRequestedOptions} options Options.
  * @param {function(ArrayBuffer, boolean)} onSuccess Success callback with a
  *     chunk of data, and information if more data will be provided later.
  * @param {function(string)} onError Error callback.
  */
-function onReadFileRequested(
-    inFileSystemId, openRequestId, offset, length, onSuccess, onError) {
-  var filePath = openedFiles[openRequestId];
-  if (inFileSystemId != FILE_SYSTEM_ID || !filePath) {
+function onReadFileRequested(options, onSuccess, onError) {
+  var filePath = openedFiles[options.openRequestId];
+  if (options.fileSystemId != FILE_SYSTEM_ID || !filePath) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
   if (filePath == '/' + TESTING_6GB_FILE.name) {
-    if (offset < TESTING_TEXT_OFFSET ||
-        offset + length > TESTING_TEXT_OFFSET + TESTING_TEXT.length) {
+    if (options.offset < TESTING_TEXT_OFFSET ||
+        options.offset + options.length >
+            TESTING_TEXT_OFFSET + TESTING_TEXT.length) {
       console.error('Reading from a wrong location in the file!');
       onError('INVALID_FAILED');  // enum ProviderError.
       return;
     }
 
-    var buffer = TESTING_TEXT.substr(offset - TESTING_TEXT_OFFSET, length);
+    var buffer = TESTING_TEXT.substr(
+        options.offset - TESTING_TEXT_OFFSET, options.length);
     var reader = new FileReader();
     reader.onload = function(e) {
       onSuccess(e.target.result, false /* hasMore */);
@@ -207,30 +198,32 @@ function onReadFileRequested(
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount(FILE_SYSTEM_ID, 'chocolate.zip', function() {
-    chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-        onGetMetadataRequested);
-    chrome.fileSystemProvider.onOpenFileRequested.addListener(
-        onOpenFileRequested);
-    chrome.fileSystemProvider.onReadFileRequested.addListener(
-        onReadFileRequested);
-    var volumeId =
-        'provided:' + chrome.runtime.id + '-' + FILE_SYSTEM_ID + '-user';
+  chrome.fileSystemProvider.mount(
+      {fileSystemId: FILE_SYSTEM_ID, displayName: 'chocolate.zip'},
+      function() {
+        chrome.fileSystemProvider.onGetMetadataRequested.addListener(
+            onGetMetadataRequested);
+        chrome.fileSystemProvider.onOpenFileRequested.addListener(
+            onOpenFileRequested);
+        chrome.fileSystemProvider.onReadFileRequested.addListener(
+            onReadFileRequested);
+        var volumeId =
+            'provided:' + chrome.runtime.id + '-' + FILE_SYSTEM_ID + '-user';
 
-    getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
-      chrome.test.assertTrue(!!volumeInfo);
-      chrome.fileBrowserPrivate.requestFileSystem(
-          volumeInfo.volumeId,
-          function(inFileSystem) {
-            chrome.test.assertTrue(!!inFileSystem);
+        getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
+          chrome.test.assertTrue(!!volumeInfo);
+          chrome.fileBrowserPrivate.requestFileSystem(
+              volumeInfo.volumeId,
+              function(inFileSystem) {
+                chrome.test.assertTrue(!!inFileSystem);
 
-            fileSystem = inFileSystem;
-            callback();
-          });
-    });
-  }, function() {
-    chrome.test.fail();
-  });
+                fileSystem = inFileSystem;
+                callback();
+              });
+        });
+      }, function() {
+        chrome.test.fail();
+      });
 }
 
 /**

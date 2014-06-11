@@ -82,20 +82,18 @@ function getVolumeInfo(fileSystemId, callback) {
 /**
  * Returns entries in the requested directory.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {string} directoryPath Path of the directory.
+ * @param {ReadDirectoryRequestedOptions} options Options.
  * @param {function(Array.<Object>, boolean)} onSuccess Success callback with
  *     a list of entries. May be called multiple times.
  * @param {function(string)} onError Error callback with an error code.
  */
-function onReadDirectoryRequested(
-    inFileSystemId, directoryPath, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID) {
-    onError('SECURITY_ERROR');  // enum ProviderError.
+function onReadDirectoryRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (directoryPath != '/' + TESTING_HELLO_DIR.name) {
+  if (options.directoryPath != '/' + TESTING_HELLO_DIR.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
   }
@@ -110,25 +108,23 @@ function onReadDirectoryRequested(
  * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
  * must be implemented and return correct values.
  *
- * @param {string} inFileSystemId ID of the file system.
- * @param {string} entryPath Path of the requested entry.
+ * @param {GetMetadataRequestedOptions} options Options.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
  * @param {function(string)} onError Error callback with an error code.
  */
-function onGetMetadataRequested(
-    inFileSystemId, entryPath, onSuccess, onError) {
-  if (inFileSystemId != FILE_SYSTEM_ID) {
-    onError('SECURITY_ERROR');  // enum ProviderError.
+function onGetMetadataRequested(options, onSuccess, onError) {
+  if (options.fileSystemId != FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (entryPath == '/') {
+  if (options.entryPath == '/') {
     onSuccess(TESTING_ROOT);
     return;
   }
 
-  if (entryPath == '/' + TESTING_HELLO_DIR.name) {
+  if (options.entryPath == '/' + TESTING_HELLO_DIR.name) {
     onSuccess(TESTING_HELLO_DIR);
     return;
   }
@@ -143,26 +139,31 @@ function onGetMetadataRequested(
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount(FILE_SYSTEM_ID, 'chocolate.zip', function() {
-    chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
-        onReadDirectoryRequested);
-    chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-        onGetMetadataRequested);
+  chrome.fileSystemProvider.mount(
+      {
+        fileSystemId: FILE_SYSTEM_ID,
+        displayName: 'chocolate.zip'
+      },
+      function() {
+        chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
+            onReadDirectoryRequested);
+        chrome.fileSystemProvider.onGetMetadataRequested.addListener(
+            onGetMetadataRequested);
+        getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
+          chrome.test.assertTrue(!!volumeInfo);
+          chrome.fileBrowserPrivate.requestFileSystem(
+              volumeInfo.volumeId,
+              function(inFileSystem) {
+                chrome.test.assertTrue(!!inFileSystem);
 
-    getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
-      chrome.test.assertTrue(!!volumeInfo);
-      chrome.fileBrowserPrivate.requestFileSystem(
-          volumeInfo.volumeId,
-          function(inFileSystem) {
-            chrome.test.assertTrue(!!inFileSystem);
-
-            fileSystem = inFileSystem;
-            callback();
-          });
-    });
-  }, function() {
-    chrome.test.fail();
-  });
+                fileSystem = inFileSystem;
+                callback();
+              });
+        });
+      },
+      function() {
+        chrome.test.fail();
+      });
 }
 
 /**

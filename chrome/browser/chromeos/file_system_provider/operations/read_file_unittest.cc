@@ -138,26 +138,29 @@ TEST_F(FileSystemProviderOperationsReadFileTest, Execute) {
       extensions::api::file_system_provider::OnReadFileRequested::kEventName,
       event->event_name);
   base::ListValue* event_args = event->event_args.get();
-  ASSERT_EQ(5u, event_args->GetSize());
+  ASSERT_EQ(1u, event_args->GetSize());
+
+  base::DictionaryValue* options = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options));
 
   std::string event_file_system_id;
-  EXPECT_TRUE(event_args->GetString(0, &event_file_system_id));
+  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
   EXPECT_EQ(kFileSystemId, event_file_system_id);
 
   int event_request_id = -1;
-  EXPECT_TRUE(event_args->GetInteger(1, &event_request_id));
+  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
   EXPECT_EQ(kRequestId, event_request_id);
 
   int event_file_handle = -1;
-  EXPECT_TRUE(event_args->GetInteger(2, &event_file_handle));
+  EXPECT_TRUE(options->GetInteger("openRequestId", &event_file_handle));
   EXPECT_EQ(kFileHandle, event_file_handle);
 
   double event_offset = -1;
-  EXPECT_TRUE(event_args->GetDouble(3, &event_offset));
+  EXPECT_TRUE(options->GetDouble("offset", &event_offset));
   EXPECT_EQ(kOffset, static_cast<double>(event_offset));
 
   int event_length = -1;
-  EXPECT_TRUE(event_args->GetInteger(4, &event_length));
+  EXPECT_TRUE(options->GetInteger("length", &event_length));
   EXPECT_EQ(kLength, event_length);
 }
 

@@ -130,29 +130,32 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
       extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
       event->event_name);
   base::ListValue* event_args = event->event_args.get();
-  ASSERT_EQ(5u, event_args->GetSize());
+  ASSERT_EQ(1u, event_args->GetSize());
+
+  base::DictionaryValue* options = NULL;
+  ASSERT_TRUE(event_args->GetDictionary(0, &options));
 
   std::string event_file_system_id;
-  EXPECT_TRUE(event_args->GetString(0, &event_file_system_id));
+  EXPECT_TRUE(options->GetString("fileSystemId", &event_file_system_id));
   EXPECT_EQ(kFileSystemId, event_file_system_id);
 
   int event_request_id = -1;
-  EXPECT_TRUE(event_args->GetInteger(1, &event_request_id));
+  EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
   EXPECT_EQ(kRequestId, event_request_id);
 
   std::string event_file_path;
-  EXPECT_TRUE(event_args->GetString(2, &event_file_path));
+  EXPECT_TRUE(options->GetString("filePath", &event_file_path));
   EXPECT_EQ(kFilePath, event_file_path);
 
   std::string event_file_open_mode;
-  EXPECT_TRUE(event_args->GetString(3, &event_file_open_mode));
+  EXPECT_TRUE(options->GetString("mode", &event_file_open_mode));
   const std::string expected_file_open_mode =
       extensions::api::file_system_provider::ToString(
           extensions::api::file_system_provider::OPEN_FILE_MODE_READ);
   EXPECT_EQ(expected_file_open_mode, event_file_open_mode);
 
   bool event_create;
-  EXPECT_TRUE(event_args->GetBoolean(4, &event_create));
+  EXPECT_TRUE(options->GetBoolean("create", &event_create));
   EXPECT_FALSE(event_create);
 }
 

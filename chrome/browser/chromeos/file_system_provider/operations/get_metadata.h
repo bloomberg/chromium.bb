@@ -42,7 +42,7 @@ class GetMetadata : public Operation {
   virtual void OnError(int request_id, base::File::Error error) OVERRIDE;
 
  private:
-  base::FilePath directory_path_;
+  base::FilePath entry_path_;
   const fileapi::AsyncFileUtil::GetFileInfoCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetMetadata);

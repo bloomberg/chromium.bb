@@ -62,10 +62,10 @@ ReadFile::~ReadFile() {
 }
 
 bool ReadFile::Execute(int request_id) {
-  scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->AppendInteger(file_handle_);
-  values->AppendDouble(offset_);
-  values->AppendInteger(length_);
+  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
+  values->SetInteger("openRequestId", file_handle_);
+  values->SetDouble("offset", offset_);
+  values->SetInteger("length", length_);
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnReadFileRequested::kEventName,

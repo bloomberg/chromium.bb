@@ -46,15 +46,13 @@ function setUp(callback) {
   Promise.race([
     new Promise(function(fulfill, reject) {
       chrome.fileSystemProvider.mount(
-          FIRST_FILE_SYSTEM_ID,
-          'vanilla.zip',
+          {fileSystemId: FIRST_FILE_SYSTEM_ID, displayName: 'vanilla.zip'},
           function() { fulfill(); },
           function(error) { reject(error); });
     }),
     new Promise(function(fulfill, reject) {
       chrome.fileSystemProvider.mount(
-          SECOND_FILE_SYSTEM_ID,
-          'ice-cream.zip',
+          {fileSystemId: SECOND_FILE_SYSTEM_ID, displayName: 'ice-cream.zip'},
           function() { fulfill(); },
           function(error) { reject(error); });
     })
@@ -87,23 +85,29 @@ function runTests() {
 
       chrome.fileBrowserPrivate.onMountCompleted.addListener(
           onMountCompleted);
-      chrome.fileSystemProvider.unmount(FIRST_FILE_SYSTEM_ID, function() {
-        // Wait for the unmount event.
-      }, function(error) {
-        chrome.test.fail(error.name);
-      });
+      chrome.fileSystemProvider.unmount(
+          {fileSystemId: FIRST_FILE_SYSTEM_ID},
+          function() {
+            // Wait for the unmount event.
+          },
+          function(error) {
+            chrome.test.fail(error.name);
+          });
     },
 
     // Tests the fileSystemProvider.unmount() with a wrong id. Verifies that
     // it fails with a correct error code.
     function unmountWrongId() {
       var onTestSuccess = chrome.test.callbackPass();
-      chrome.fileSystemProvider.unmount('wrong-fs-id', function() {
-        chrome.test.fail();
-      }, function(error) {
-        chrome.test.assertEq('SecurityError', error.name);
-        onTestSuccess();
-      });
+      chrome.fileSystemProvider.unmount(
+          {fileSystemId: 'wrong-fs-id'},
+          function() {
+            chrome.test.fail();
+          },
+          function(error) {
+            chrome.test.assertEq('SecurityError', error.name);
+            onTestSuccess();
+          });
     },
 
     // Tests if fileBrowserPrivate.removeMount() for provided file systems emits
@@ -111,8 +115,8 @@ function runTests() {
     function requestUnmountSuccess() {
       var onTestSuccess = chrome.test.callbackPass();
 
-      var onUnmountRequested = function(fileSystemId, onSuccess, onError) {
-        chrome.test.assertEq(SECOND_FILE_SYSTEM_ID, fileSystemId);
+      var onUnmountRequested = function(options, onSuccess, onError) {
+        chrome.test.assertEq(SECOND_FILE_SYSTEM_ID, options.fileSystemId);
         onSuccess();
         // Not calling fileSystemProvider.unmount(), so the onMountCompleted
         // event will not be raised.
@@ -138,9 +142,9 @@ function runTests() {
       var onTestSuccess = chrome.test.callbackPass();
       var unmountRequested = false;
 
-      var onUnmountRequested = function(fileSystemId, onSuccess, onError) {
+      var onUnmountRequested = function(options, onSuccess, onError) {
         chrome.test.assertEq(false, unmountRequested);
-        chrome.test.assertEq(SECOND_FILE_SYSTEM_ID, fileSystemId);
+        chrome.test.assertEq(SECOND_FILE_SYSTEM_ID, options.fileSystemId);
         onError('IN_USE');  // enum ProviderError.
         unmountRequested = true;
         chrome.fileSystemProvider.onUnmountRequested.removeListener(

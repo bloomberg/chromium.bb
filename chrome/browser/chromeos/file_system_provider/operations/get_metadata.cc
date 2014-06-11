@@ -48,10 +48,10 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
 GetMetadata::GetMetadata(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& directory_path,
+    const base::FilePath& entry_path,
     const fileapi::AsyncFileUtil::GetFileInfoCallback& callback)
     : Operation(event_router, file_system_info),
-      directory_path_(directory_path),
+      entry_path_(entry_path),
       callback_(callback) {
 }
 
@@ -59,8 +59,8 @@ GetMetadata::~GetMetadata() {
 }
 
 bool GetMetadata::Execute(int request_id) {
-  scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->AppendString(directory_path_.AsUTF8Unsafe());
+  scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
+  values->SetString("entryPath", entry_path_.AsUTF8Unsafe());
   return SendEvent(
       request_id,
       extensions::api::file_system_provider::OnGetMetadataRequested::kEventName,
