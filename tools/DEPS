@@ -3,4 +3,5 @@ skip_child_includes = [
   "clang",
   "gyp",
   "traceline",
+  "perf/page_sets",
 ]

@@ -1,0 +1,9 @@
+{
+  "program": {
+    "portable": {
+      "pnacl-translate": {
+        "url": "touch_drawing_plugin.pexe"
+      }
+    }
+  }
+}

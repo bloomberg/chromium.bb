@@ -16,3 +16,13 @@ class SchedulerToughSchedulingCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_scheduling_cases.py'
 
+@test.Disabled('android')  # pepper plugin is not supported on android
+class SchedulerToughPepperCases(test.Test):
+  """Measures rendering statistics while interacting with pages that have
+  pepper plugins"""
+  test = smoothness.Smoothness
+  page_set = 'page_sets/tough_pepper_cases.py'
+
+  def CustomizeBrowserOptions(self, options):
+    # This is needed for testing pepper plugin.
+    options.AppendExtraBrowserArgs('--enable-pepper-testing')

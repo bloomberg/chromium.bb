@@ -1,0 +1,19 @@
+--- How to build the touch_drawing_plugin.pexe ---
+
+1. Download the Native Client SDK at
+   https://developer.chrome.com/native-client/sdk/download
+2. Create a directory input_event_private at
+   (NACL_SDK_ROOT)/examples/api/input_event_private
+3. Copy Makefile and touch_drawing_plugin.cc over to input_event_private/
+4. Run "TOOLCHAIN=pnacl make"  in input_event_private/
+
+
+
+--- How the plugin telemetry test work ---
+
+tough_scheduling_cases.simple_pepper_plugin.html is the test page which
+has an <embed> element that loads the platform independent executable
+touch_drawing_plugin.pexe. The plugin paints a square for each touch move
+event and tracks the input latency of the touch event through private API
+InputEventPrivate.
+

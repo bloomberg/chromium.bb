@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright 2014 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+
+  <title>Simple Touch Drawing Pepper Plugin</title>
+
+  <script type="text/javascript">
+    // Telemetry will wait until page and plugin module are loaded to send
+    // touch events.
+    var pageLoaded = false;
+    var moduleLoaded = false;
+
+    function moduleDidLoad() {
+      moduleLoaded = true;
+    }
+    function pageDidLoad() {
+      pageLoaded = true;
+    }
+  </script>
+</head>
+<body onload="pageDidLoad()">
+    <div id="listener">
+      <script type="text/javascript">
+        var listener = document.getElementById('listener');
+        listener.addEventListener('load', moduleDidLoad, true);
+      </script>
+
+      <embed id="touch_drawing_plugin"
+             width="640" height="640"
+             src="extra_data/touch_drawing_plugin.nmf"
+             type="application/x-pnacl" />
+    </div>
+</body>
+</html>
