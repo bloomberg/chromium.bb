@@ -86,6 +86,9 @@ td.indexeddb-transaction-scope {
 .indexeddb-transaction.running {
     font-weight: bold;
 }
+.indexeddb-transaction.committing {
+    font-weight: bold;
+}
 .indexeddb-transaction.blocked {
 }
 
@@ -94,6 +97,9 @@ td.indexeddb-transaction-scope {
 }
 .indexeddb-transaction.running .indexeddb-transaction-state {
     background-color: rgb(235, 249, 235);
+}
+.indexeddb-transaction.committing .indexeddb-transaction-state {
+    background-color: rgb(235, 235, 249);
 }
 .indexeddb-transaction.blocked .indexeddb-transaction-state {
     background-color: rgb(249, 235, 235);
