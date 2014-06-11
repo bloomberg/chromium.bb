@@ -803,6 +803,10 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // be ready to draw in order to activate without flashing content from a
   // higher res on the active tree to a lower res on the pending tree.
 
+  // First, early out for layers with no visible content.
+  if (visible_content_rect().IsEmpty())
+    return;
+
   gfx::Rect rect(visible_content_rect());
 
   float min_acceptable_scale =
@@ -1397,6 +1401,9 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
     return true;
 
   if (!tilings_)
+    return true;
+
+  if (visible_content_rect().IsEmpty())
     return true;
 
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
