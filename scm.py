@@ -491,12 +491,15 @@ class GIT(object):
       sha = GIT.Capture(['rev-parse', lookup_rev], cwd=cwd).lower()
       if lookup_rev != rev:
         # Make sure we get the original 40 chars back.
-        return rev.lower() == sha
+        if rev.lower() != sha:
+          return False
       if sha_only:
-        return sha.startswith(rev.lower())
-      return True
+        if not sha.startswith(rev.lower()):
+          return False
     except subprocess2.CalledProcessError:
       return False
+    obj_type = GIT.Capture(['cat-file', '-t', rev], cwd=cwd).strip()
+    return obj_type == 'commit'
 
   @classmethod
   def AssertVersion(cls, min_version):

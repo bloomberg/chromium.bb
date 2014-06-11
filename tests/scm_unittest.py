@@ -8,6 +8,7 @@
 import logging
 import os
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -140,6 +141,17 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     first_rev = self.githash('repo_1', 1)
     self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev=first_rev))
     self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='HEAD'))
+
+    # Verify that IsValidRevision returns False for non-commit objects.
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+    try:
+      tmp.write('This is not a commit')
+      tmp.close()
+      hashval = scm.GIT.Capture(['hash-object', '-w', tmp.name],
+                                cwd=self.clone_dir)
+    finally:
+      os.remove(tmp.name)
+    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev=hashval))
 
 
 class RealGitSvnTest(fake_repos.FakeReposTestBase):
