@@ -88,6 +88,8 @@ PasswordManager::~PasswordManager() {
 }
 
 void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
+  DCHECK(IsSavingEnabledForCurrentPage());
+
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end();
@@ -100,8 +102,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  bool ssl_valid = (form.origin.SchemeIsSecure() &&
-                    !driver_->DidLastPageLoadEncounterSSLErrors());
+  bool ssl_valid = form.origin.SchemeIsSecure();
   PasswordFormManager* manager =
       new PasswordFormManager(this, client_, driver_, form, ssl_valid);
   pending_login_managers_.push_back(manager);
@@ -109,12 +110,13 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // TODO(gcasto): Add UMA stats to track this.
 }
 
-bool PasswordManager::IsSavingEnabled() const {
-  return *password_manager_enabled_ && !driver_->IsOffTheRecord();
+bool PasswordManager::IsSavingEnabledForCurrentPage() const {
+  return *password_manager_enabled_ && !driver_->IsOffTheRecord() &&
+         !driver_->DidLastPageLoadEncounterSSLErrors();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
-  bool is_saving_enabled = IsSavingEnabled();
+  bool is_saving_enabled = IsSavingEnabledForCurrentPage();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
@@ -123,6 +125,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM,
                             form);
     logger->LogBoolean(Logger::STRING_IS_SAVING_ENABLED, is_saving_enabled);
+    logger->LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT,
+                       driver_->DidLastPageLoadEncounterSSLErrors());
   }
 
   if (!is_saving_enabled) {
@@ -306,8 +310,9 @@ void PasswordManager::OnPasswordFormSubmitted(
 
 void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
-  // Ask the SSLManager for current security.
-  bool had_ssl_error = driver_->DidLastPageLoadEncounterSSLErrors();
+  // Don't try to autofill or save passwords in the presence of SSL errors.
+  if (driver_->DidLastPageLoadEncounterSSLErrors())
+    return;
 
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
        iter != forms.end();
@@ -317,7 +322,7 @@ void PasswordManager::OnPasswordFormsParsed(
     if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
       continue;
 
-    bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
+    bool ssl_valid = iter->origin.SchemeIsSecure();
     PasswordFormManager* manager =
         new PasswordFormManager(this, client_, driver_, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
@@ -355,7 +360,7 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
-  DCHECK(IsSavingEnabled());
+  DCHECK(IsSavingEnabledForCurrentPage());
 
   if (logger) {
     logger->LogNumber(Logger::STRING_NUMBER_OF_VISIBLE_FORMS,

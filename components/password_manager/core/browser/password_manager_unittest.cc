@@ -53,6 +53,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
+  MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
 
 ACTION_P(InvokeConsumer, forms) { arg0->OnGetPasswordStoreResults(forms); }
@@ -476,10 +477,10 @@ TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
   // preference.
   prefs_.SetUserPref(prefs::kPasswordManagerEnabled,
                      base::Value::CreateBooleanValue(true));
-  EXPECT_TRUE(manager()->IsSavingEnabled());
+  EXPECT_TRUE(manager()->IsSavingEnabledForCurrentPage());
   prefs_.SetUserPref(prefs::kPasswordManagerEnabled,
                      base::Value::CreateBooleanValue(false));
-  EXPECT_FALSE(manager()->IsSavingEnabled());
+  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
 }
 
 TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
@@ -592,6 +593,28 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   // No expected calls to the PasswordStore...
   manager()->OnPasswordFormsParsed(observed);
   manager()->OnPasswordFormsRendered(observed);
+}
+
+TEST_F(PasswordManagerTest, SavingNotEnabledOnSSLErrors) {
+  EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(Return(true));
+  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
+}
+
+TEST_F(PasswordManagerTest, AutofillingNotEnabledOnSSLErrors) {
+  // Test that in the presence of SSL errors, the password manager does not
+  // attempt to autofill forms found on a website.
+  EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(Return(true));
+
+  // Let us pretend some forms were found on a website.
+  std::vector<PasswordForm> forms;
+  forms.push_back(MakeSimpleForm());
+
+  // Feed those forms to |manager()| and check that it does not try to find
+  // matching saved credentials for the forms.
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _)).Times(Exactly(0));
+  manager()->OnPasswordFormsParsed(forms);
 }
 
 }  // namespace password_manager

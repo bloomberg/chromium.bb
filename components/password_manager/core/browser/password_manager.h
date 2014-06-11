@@ -59,10 +59,11 @@ class PasswordManager : public LoginModel {
   // should always be valid when called.
   void AddSubmissionCallback(const PasswordSubmittedCallback& callback);
 
-  // Is saving new data for password autofill enabled for the current profile?
-  // For example, saving new data is disabled in Incognito mode, whereas filling
-  // data is not.
-  bool IsSavingEnabled() const;
+  // Is saving new data for password autofill enabled for the current profile
+  // and page? For example, saving new data is disabled in Incognito mode,
+  // whereas filling data is not. Also, saving data is disabled in the presence
+  // of SSL errors on a page.
+  bool IsSavingEnabledForCurrentPage() const;
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.

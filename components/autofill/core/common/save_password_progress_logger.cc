@@ -130,7 +130,7 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
       return "ProvisionallySavePassword form";
     case SavePasswordProgressLogger::STRING_IS_SAVING_ENABLED:
-      return "IsSavingEnabled";
+      return "IsSavingEnabledForCurrentPage";
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
       return "Empty password";
     case SavePasswordProgressLogger::STRING_EXACT_MATCH:
@@ -161,6 +161,8 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Saving disabled";
     case SavePasswordProgressLogger::STRING_NO_MATCHING_FORM:
       return "No matching form";
+    case SavePasswordProgressLogger::STRING_SSL_ERRORS_PRESENT:
+      return "SSL errors present";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
