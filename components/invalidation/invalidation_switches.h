@@ -9,8 +9,6 @@ namespace invalidation {
 namespace switches {
 
 extern const char kSyncNotificationHostPort[];
-extern const char kSyncTrySsltcpFirstForXmpp[];
-extern const char kSyncInvalidateXmppLogin[];
 extern const char kSyncAllowInsecureXmppConnection[];
 
 }  // namespace switches

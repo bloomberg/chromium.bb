@@ -25,16 +25,6 @@ notifier::NotifierOptions ParseNotifierOptions(
              << " for test sync notification server.";
   }
 
-  notifier_options.try_ssltcp_first =
-      command_line.HasSwitch(switches::kSyncTrySsltcpFirstForXmpp);
-  DVLOG_IF(1, notifier_options.try_ssltcp_first)
-      << "Trying SSL/TCP port before XMPP port for notifications.";
-
-  notifier_options.invalidate_xmpp_login =
-      command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
-  DVLOG_IF(1, notifier_options.invalidate_xmpp_login)
-      << "Invalidating sync XMPP login.";
-
   notifier_options.allow_insecure_connection =
       command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
   DVLOG_IF(1, notifier_options.allow_insecure_connection)
