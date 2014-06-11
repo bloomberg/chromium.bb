@@ -66,22 +66,6 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
 }
 #endif
 
-template<class GenericNode, class GenericNodeContainer>
-inline void appendChildToContainer(GenericNode& child, GenericNodeContainer& container)
-{
-    child.setParentOrShadowHostNode(&container);
-
-    GenericNode* lastChild = container.lastChild();
-    if (lastChild) {
-        child.setPreviousSibling(lastChild);
-        lastChild->setNextSibling(&child);
-    } else {
-        container.setFirstChild(&child);
-    }
-
-    container.setLastChild(&child);
-}
-
 // Helper methods for removeDetachedChildrenInContainer, hidden from WebCore namespace
 namespace Private {
 

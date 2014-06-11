@@ -169,9 +169,6 @@ protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
     template<class GenericNode, class GenericNodeContainer>
-    friend void appendChildToContainer(GenericNode& child, GenericNodeContainer&);
-
-    template<class GenericNode, class GenericNodeContainer>
     friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
 
 #if !ENABLE(OILPAN)
@@ -184,6 +181,7 @@ protected:
 private:
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
     void insertBeforeCommon(Node& nextChild, Node& oldChild);
+    void appendChildCommon(Node& child);
     void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
     void willRemoveChild(Node& child);
