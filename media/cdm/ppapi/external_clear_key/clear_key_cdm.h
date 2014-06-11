@@ -86,6 +86,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionMessage(const std::string& web_session_id,
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
+  void OnSessionClosed(const std::string& web_session_id);
 
   // Handle the success/failure of a promise. These methods are responsible for
   // calling |host_| to resolve or reject the promise.

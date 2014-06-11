@@ -219,9 +219,12 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(const SessionMessageCB& session_message_cb)
-    : session_message_cb_(session_message_cb) {
+AesDecryptor::AesDecryptor(const SessionMessageCB& session_message_cb,
+                           const SessionClosedCB& session_closed_cb)
+    : session_message_cb_(session_message_cb),
+      session_closed_cb_(session_closed_cb) {
   DCHECK(!session_message_cb_.is_null());
+  DCHECK(!session_closed_cb_.is_null());
 }
 
 AesDecryptor::~AesDecryptor() {
@@ -327,6 +330,7 @@ void AesDecryptor::ReleaseSession(const std::string& web_session_id,
   // Close the session.
   DeleteKeysForSession(web_session_id);
   promise->resolve();
+  session_closed_cb_.Run(web_session_id);
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {

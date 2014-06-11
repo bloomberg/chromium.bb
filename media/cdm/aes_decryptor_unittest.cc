@@ -201,6 +201,8 @@ class AesDecryptorTest : public testing::Test {
  public:
   AesDecryptorTest()
       : decryptor_(base::Bind(&AesDecryptorTest::OnSessionMessage,
+                              base::Unretained(this)),
+                   base::Bind(&AesDecryptorTest::OnSessionClosed,
                               base::Unretained(this))),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
@@ -273,6 +275,7 @@ class AesDecryptorTest : public testing::Test {
 
   // Releases the session specified by |session_id|.
   void ReleaseSession(const std::string& session_id) {
+    EXPECT_CALL(*this, OnSessionClosed(session_id));
     decryptor_.ReleaseSession(session_id, CreatePromise(RESOLVED));
   }
 
@@ -352,6 +355,7 @@ class AesDecryptorTest : public testing::Test {
                void(const std::string& web_session_id,
                     const std::vector<uint8>& message,
                     const GURL& destination_url));
+  MOCK_METHOD1(OnSessionClosed, void(const std::string& web_session_id));
 
   AesDecryptor decryptor_;
   AesDecryptor::DecryptCB decrypt_cb_;

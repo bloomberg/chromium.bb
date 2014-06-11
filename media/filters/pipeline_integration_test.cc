@@ -138,6 +138,8 @@ class FakeEncryptedMedia {
 
   FakeEncryptedMedia(AppBase* app)
       : decryptor_(base::Bind(&FakeEncryptedMedia::OnSessionMessage,
+                              base::Unretained(this)),
+                   base::Bind(&FakeEncryptedMedia::OnSessionClosed,
                               base::Unretained(this))),
         app_(app) {}
 

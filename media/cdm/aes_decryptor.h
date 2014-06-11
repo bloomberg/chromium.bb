@@ -27,7 +27,8 @@ namespace media {
 // encryption must be CTR with a key size of 128bits.
 class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
  public:
-  explicit AesDecryptor(const SessionMessageCB& session_message_cb);
+  AesDecryptor(const SessionMessageCB& session_message_cb,
+               const SessionClosedCB& session_closed_cb);
   virtual ~AesDecryptor();
 
   // MediaKeys implementation.
@@ -115,6 +116,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
+  SessionClosedCB session_closed_cb_;
 
   // Since only Decrypt() is called off the renderer thread, we only need to
   // protect |key_map_|, the only member variable that is shared between

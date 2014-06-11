@@ -240,6 +240,19 @@ void ProxyDecryptor::OnSessionReady(const std::string& web_session_id) {
 void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
   base::hash_map<std::string, bool>::iterator it =
       active_sessions_.find(web_session_id);
+
+  // Latest EME spec separates closing a session ("allows an application to
+  // indicate that it no longer needs the session") and actually closing the
+  // session (done by the CDM at any point "such as in response to a close()
+  // call, when the session is no longer needed, or when system resources are
+  // lost.") Thus the CDM may cause 2 close() events -- one to resolve the
+  // close() promise, and a second to actually close the session. Prefixed EME
+  // only expects 1 close event, so drop the second (and subsequent) events.
+  // However, this means we can't tell if the CDM is generating spurious close()
+  // events.
+  if (it == active_sessions_.end())
+    return;
+
   if (it->second) {
     OnSessionError(web_session_id,
                    media::MediaKeys::NOT_SUPPORTED_ERROR,

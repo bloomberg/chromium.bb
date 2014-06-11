@@ -42,7 +42,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 
   if (CanUseAesDecryptor(key_system)) {
     return scoped_ptr<media::MediaKeys>(
-        new media::AesDecryptor(session_message_cb));
+        new media::AesDecryptor(session_message_cb, session_closed_cb));
   }
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(

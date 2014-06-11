@@ -221,7 +221,8 @@ namespace media {
 
 ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
     : decryptor_(
-          base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this))),
+        base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
+        base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this))),
       host_(host),
       key_system_(key_system),
       timer_delay_ms_(kInitialTimerDelayMs),
@@ -648,6 +649,10 @@ void ClearKeyCdm::OnSessionMessage(const std::string& web_session_id,
                           message.size(),
                           destination_url.spec().data(),
                           destination_url.spec().size());
+}
+
+void ClearKeyCdm::OnSessionClosed(const std::string& web_session_id) {
+  host_->OnSessionClosed(web_session_id.data(), web_session_id.length());
 }
 
 void ClearKeyCdm::OnSessionCreated(uint32 promise_id,

@@ -61,6 +61,11 @@ class WebContentDecryptionModuleSessionImpl
   // promise.
   std::string web_session_id_;
 
+  // Don't pass more than 1 close() event to blink::
+  // TODO(jrummell): Remove this once blink tests handle close() promise and
+  // closed() event.
+  bool is_closed_;
+
   // Since promises will live until they are fired, use a weak reference when
   // creating a promise in case this class disappears before the promise
   // actually fires.

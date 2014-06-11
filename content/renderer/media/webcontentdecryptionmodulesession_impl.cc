@@ -20,6 +20,7 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter),
       client_(client),
+      is_closed_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -99,7 +100,10 @@ void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
-  client_->close();
+  if (!is_closed_) {
+    is_closed_ = true;
+    client_->close();
+  }
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
