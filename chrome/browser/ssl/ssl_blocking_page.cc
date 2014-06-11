@@ -416,25 +416,26 @@ std::string SSLBlockingPage::GetHTMLContentsV1() {
 }
 
 std::string SSLBlockingPage::GetHTMLContentsV2() {
-  base::DictionaryValue loadTimeData;
+  base::DictionaryValue load_time_data;
   base::string16 url(ASCIIToUTF16(request_url_.host()));
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&url);
-  webui::SetFontAndTextDirection(&loadTimeData);
+  webui::SetFontAndTextDirection(&load_time_data);
 
   // Shared values for both the overridable and non-overridable versions.
-  loadTimeData.SetBoolean("overridable", overridable_ && !strict_enforcement_);
-  loadTimeData.SetString(
+  load_time_data.SetBoolean(
+      "overridable", overridable_ && !strict_enforcement_);
+  load_time_data.SetString(
       "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
-  loadTimeData.SetString(
+  load_time_data.SetString(
       "heading", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-  loadTimeData.SetString(
+  load_time_data.SetString(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
-  loadTimeData.SetString(
+  load_time_data.SetString(
      "openDetails",
      l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
-  loadTimeData.SetString(
+  load_time_data.SetString(
      "closeDetails",
      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
 
@@ -444,20 +445,20 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
             SSLErrorInfo::NetErrorToErrorType(cert_error_),
             ssl_info_.cert.get(),
             request_url_);
-    loadTimeData.SetString(
+    load_time_data.SetString(
         "explanationParagraph", error_info.details());
-    loadTimeData.SetString(
+    load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
-    loadTimeData.SetString(
+    load_time_data.SetString(
         "finalParagraph",
         l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));
   } else {  // Non-overridable.
-    loadTimeData.SetBoolean("overridable", false);
-    loadTimeData.SetString(
+    load_time_data.SetBoolean("overridable", false);
+    load_time_data.SetString(
         "explanationParagraph",
         l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
-    loadTimeData.SetString(
+    load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_NONOVERRIDABLE_RELOAD_BUTTON));
     // Customize the help link depending on the specific error type.
@@ -465,7 +466,7 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
     // INVALID as a fallback if no other string is appropriate.
     SSLErrorInfo::ErrorType type =
         SSLErrorInfo::NetErrorToErrorType(cert_error_);
-    loadTimeData.SetInteger("errorType", type);
+    load_time_data.SetInteger("errorType", type);
     int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
     switch (type) {
       case SSLErrorInfo::CERT_REVOKED:
@@ -481,16 +482,16 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
         if (strict_enforcement_)
           help_string = IDS_SSL_NONOVERRIDABLE_HSTS;
     }
-    loadTimeData.SetString(
-        "finalParagraph",
-        l10n_util::GetStringFUTF16(help_string, url));
+    load_time_data.SetString(
+        "finalParagraph", l10n_util::GetStringFUTF16(help_string, url));
+    load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
   }
 
   base::StringPiece html(
      ResourceBundle::GetSharedInstance().GetRawDataResource(
          IRD_SSL_INTERSTITIAL_V2_HTML));
   webui::UseVersion2 version;
-  return webui::GetI18nTemplateHtml(html, &loadTimeData);
+  return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {

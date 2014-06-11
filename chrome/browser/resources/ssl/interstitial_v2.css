@@ -44,6 +44,12 @@ button:active {
   font-size: .875em;
 }
 
+#error-code {
+  color: black;
+  opacity: .35;
+  text-transform: uppercase;
+}
+
 h1 {
   -webkit-margin-after: 16px;
   color: #585858;

@@ -19,13 +19,14 @@ function setupEvents() {
       sendCommand(CMD_PROCEED);
       event.preventDefault();
     });
-  }
-
-  if (!overridable) {
+  } else {
     $('help-link').addEventListener('click', function(event) {
       sendCommand(CMD_HELP);
       event.preventDefault();
     });
+
+    $('error-code').textContent = loadTimeData.getString('errorCode');
+    $('error-code').classList.remove('hidden');
   }
 
   $('details-button').addEventListener('click', function(event) {
