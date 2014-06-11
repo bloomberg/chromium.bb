@@ -98,6 +98,7 @@
     'jar_excluded_classes': [],
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
     'obfuscated_jar_path': '<(intermediate_dir)/obfuscated.jar',
+    'test_jar_path': '<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
     'dex_path': '<(intermediate_dir)/classes.dex',
     'emma_device_jar': '<(android_sdk_root)/tools/lib/emma_device.jar',
     'android_manifest_path%': '<(java_in_dir)/AndroidManifest.xml',
@@ -585,6 +586,7 @@
       ],
       'outputs': [
         '<(jar_stamp)',
+        '<(jar_path)',
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/jar.py',
@@ -595,43 +597,72 @@
       ]
     },
     {
-      'action_name': 'ant_obfuscate_<(_target_name)',
+      'action_name': 'obfuscate_<(_target_name)',
       'message': 'Obfuscating <(_target_name)',
+      'variables': {
+        'additional_obfuscate_options': [],
+        'proguard_out_dir': '<(intermediate_dir)/proguard',
+        'proguard_input_jar_paths': [
+          '>@(input_jars_paths)',
+          '<(jar_path)',
+        ],
+        'conditions': [
+          ['is_test_apk == 1', {
+            'additional_obfuscate_options': [
+              '--testapp',
+            ],
+          }],
+          ['proguard_enabled == "true"', {
+            'additional_obfuscate_options': [
+              '--proguard-enabled',
+            ],
+          }],
+        ],
+      },
+      'conditions': [
+        ['is_test_apk == 1', {
+          'outputs': [
+            '<(test_jar_path)',
+          ],
+        }],
+      ],
       'inputs': [
-        '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
+        '<(DEPTH)/build/android/gyp/apk_obfuscate.py',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/ant.py',
-        '<(android_manifest_path)',
         '>@(proguard_flags_paths)',
-        '<(instr_stamp)',
+        '>@(proguard_input_jar_paths)',
       ],
       'outputs': [
         # This lists obfuscate_stamp instead of obfuscated_jar_path because
         # ant only writes the latter if the md5 of the inputs changes.
         '<(obfuscate_stamp)',
+
+        # In non-Release builds, these paths will all be empty files.
+        '<(obfuscated_jar_path)',
+        '<(obfuscated_jar_path).dump',
+        '<(obfuscated_jar_path).seeds',
+        '<(obfuscated_jar_path).mapping',
+        '<(obfuscated_jar_path).usage',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/gyp/ant.py',
-        '-quiet',
-        '-DANDROID_MANIFEST=<(android_manifest_path)',
-        '-DANDROID_SDK_JAR=<(android_sdk_jar)',
-        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-        '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DAPK_NAME=<(apk_name)',
-        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DINPUT_JARS_PATHS=>(input_jars_paths)',
-        '-DIS_TEST_APK=<(is_test_apk)',
-        '-DOBFUSCATED_JAR_PATH=<(obfuscated_jar_path)',
-        '-DOUT_DIR=<(intermediate_dir)',
-        '-DPROGUARD_ENABLED=<(proguard_enabled)',
-        '-DPROGUARD_FLAGS=<(proguard_flags_paths)',
-        '-DTEST_JAR_PATH=<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
+        'python', '<(DEPTH)/build/android/gyp/apk_obfuscate.py',
 
-        '-DSTAMP=<(obfuscate_stamp)',
-        '-Dbasedir=.',
-        '-buildfile',
-        '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
+        '--configuration-name', '<(CONFIGURATION_NAME)',
+
+        '--android-sdk', '<(android_sdk)',
+        '--android-sdk-tools', '<(android_sdk_tools)',
+        '--android-sdk-jar', '<(android_sdk_jar)',
+
+        '--input-jars-paths=>(proguard_input_jar_paths)',
+        '--test-jar-path', '<(test_jar_path)',
+        '--obfuscated-jar-path', '<(obfuscated_jar_path)',
+
+        '--proguard-jar-path', '<(android_sdk_root)/tools/proguard/lib/proguard.jar',
+
+        '--proguard-config-files=<(proguard_flags_paths)',
+        '--stamp', '<(obfuscate_stamp)',
+
+        '<@(additional_obfuscate_options)',
       ],
     },
     {
