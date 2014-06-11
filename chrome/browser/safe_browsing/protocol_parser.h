@@ -5,110 +5,61 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_
 
-// Parse the data returned from the chunk response.
+// Parsers and formatters for SafeBrowsing v3.0 protocol:
+// https://devsite.googleplex.com/safe-browsing/developers_guide_v3
 //
-// Based on the SafeBrowsing v2.1 protocol:
-// http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec
-//
-// Read the response from a SafeBrowsing request, and parse into useful pieces.
-// The protocol is generally line oriented, but can contain binary data in the
-// actual chunk responses. The consumer of the protocol data should instantiate
-// the parser and call the appropriate parsing function on the data.
-//
-// Examples of protocol responses:
-//
-// 1. List identification
-//    i:goog-phish-shavar\n
-//    <command>:<command_data>\n
-//
-// 2. Minimum time to wait (seconds) until the next download request can be made
-//    n:1200\n
-//    <command>:<time_in_seconds>\n
-//
-// 3. Redirect URL for retrieving a chunk
-//    u:cache.googlevideo.com/safebrowsing/rd/goog-phish-shavar_a_1\n
-//    <command>:<url>\n
-//
-// 4. Add and sub chunks
-//   a:1:4:523\n...    <-- Add chunk + binary data
-//   s:13:4:17\n...    <-- Sub chunk + binary data
-//   <chunk_type>:<chunk_number>:<prefix_len>:<chunk_bytes>\n<binary_data>
-//
-// 5. Add-del and sub-del requests
-//    ad:1-4000,5001\n    <-- Add-del
-//    sd:1,3,5,7,903\n    <-- Sub-del
-//    <command>:<chunk_range>\n
-
+// The quoted references are with respect to that document.
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/safe_browsing/chunk_range.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
-
-class SafeBrowsingProtocolParser {
- public:
-  SafeBrowsingProtocolParser();
-
-  // Parse the response of an update request. Results for chunk deletions (both
-  // add-del and sub-del are returned in 'chunk_deletes', and new chunk URLs to
-  // download are contained in 'chunk_urls'. The next time the client is allowed
-  // to request another update is returned in 'next_update_sec'. 'reset' will
-  // be set to true if the SafeBrowsing service wants us to dump our database.
-  // Returns 'true'if it was able to decode the chunk properly, 'false' if not
-  // decoded properly and the results should be ignored.
-  bool ParseUpdate(const char* chunk_data,
-                   int chunk_len,
-                   int* next_update_sec,
-                   bool* reset,
-                   std::vector<SBChunkDelete>* chunk_deletes,
-                   std::vector<ChunkUrl>* chunk_urls);
-
-  // Parse the response from a chunk URL request and returns the hosts/prefixes
-  // for adds and subs in "chunks".  Returns 'true' on successful parsing,
-  // 'false' otherwise. Any result should be ignored when a parse has failed.
-  bool ParseChunk(const std::string& list_name,
-                  const char* chunk_data,
-                  int chunk_len,
-                  SBChunkList* chunks);
-
-  // Parse the result of a GetHash request, returning the list of full hashes.
-  bool ParseGetHash(const char* chunk_data,
-                    int chunk_len,
-                    std::vector<SBFullHashResult>* full_hashes);
-
-  // Convert a list of partial hashes into a proper GetHash request.
-  void FormatGetHash(const std::vector<SBPrefix>& prefixes,
-                     std::string* request);
-
- private:
-  bool ParseAddChunk(const std::string& list_name,
-                     const char* data,
-                     int data_len,
-                     int hash_len,
-                     std::deque<SBChunkHost>* hosts);
-  bool ParseSubChunk(const std::string& list_name,
-                     const char* data,
-                     int data_len,
-                     int hash_len,
-                     std::deque<SBChunkHost>* hosts);
-
-  // Helper functions used by ParseAddChunk and ParseSubChunk.
-  static bool ReadHostAndPrefixCount(const char** data,
-                                     int* remaining,
-                                     SBPrefix* host,
-                                     int* count);
-  static bool ReadChunkId(const char** data, int* remaining, int* chunk_id);
-  static bool ReadPrefixes(
-      const char** data, int* remaining, SBEntry* entry, int count);
-
-  // The name of the current list
-  std::string list_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolParser);
+namespace base {
+class TimeDelta;
 };
 
+namespace safe_browsing {
+
+// TODO(shess): Maybe the data/len pairs could be productively replaced with
+// const base::StringPiece&.
+
+// Parse body of "HTTP Response for Data".  |*next_update_sec| is the minimum
+// delay to next update.  |*reset| is set to true if the update requested a
+// database reset.  |*chunk_deletes| receives add-del and sub-del requests,
+// while |*chunk_urls| receives the list of redirect urls to fetch.  Returns
+// |false| if the update could not be decoded properly, in which case all
+// results should be discarded.
+bool ParseUpdate(const char* chunk_data,
+                 size_t chunk_len,
+                 size_t* next_update_sec,
+                 bool* reset,
+                 std::vector<SBChunkDelete>* chunk_deletes,
+                 std::vector<ChunkUrl>* chunk_urls);
+
+// Parse body of a redirect response.  |*chunks| receives the parsed chunk data.
+// Returns |false| if the data could not be parsed correctly, in which case all
+// results should be discarded.
+bool ParseChunk(const char* chunk_data,
+                size_t chunk_len,
+                ScopedVector<SBChunkData>* chunks);
+
+// Parse body of "HTTP Response for Full-Length Hashes", returning the list of
+// full hashes.  Returns |false| if the data could not be parsed correctly, in
+// which case all results should be discarded.
+bool ParseGetHash(const char* chunk_data,
+                  size_t chunk_len,
+                  base::TimeDelta* cache_lifetime,
+                  std::vector<SBFullHashResult>* full_hashes);
+
+// Convert prefix hashes into a "HTTP Request for Full-Length Hashes" body.
+std::string FormatGetHash(const std::vector<SBPrefix>& prefixes);
+
+// Format the LIST part of "HTTP Request for Data" body.
+std::string FormatList(const SBListChunkRanges& list);
+
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_

@@ -38,6 +38,7 @@
         'drive_proto',
         'in_memory_url_index_cache_proto',
         'installer_util',
+        'safe_browsing_chunk_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         '../breakpad/breakpad.gyp:breakpad_client',

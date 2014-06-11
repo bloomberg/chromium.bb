@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 //
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -22,13 +26,39 @@ using base::TimeDelta;
 using testing::_;
 using testing::Invoke;
 
-static const char kUrlPrefix[] = "https://prefix.com/foo";
-static const char kBackupConnectUrlPrefix[] = "https://alt1-prefix.com/foo";
-static const char kBackupHttpUrlPrefix[] = "https://alt2-prefix.com/foo";
-static const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
-static const char kClient[] = "unittest";
-static const char kAppVer[] = "1.0";
-static const char kAdditionalQuery[] = "additional_query";
+namespace {
+
+const char kUrlPrefix[] = "https://prefix.com/foo";
+const char kBackupConnectUrlPrefix[] = "https://alt1-prefix.com/foo";
+const char kBackupHttpUrlPrefix[] = "https://alt2-prefix.com/foo";
+const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
+const char kClient[] = "unittest";
+const char kAppVer[] = "1.0";
+const char kAdditionalQuery[] = "additional_query";
+
+// Add-prefix chunk with single prefix.
+const char kRawChunkPayload1[] = {
+  '\0', '\0', '\0', '\x08',  // 32-bit payload length in network byte order.
+  '\x08',                    // field 1, wire format varint
+  '\x03',                    // chunk_number varint 3
+  '\x22',                    // field 4, wire format length-delimited
+  '\x04',                    // varint 4 length
+  'a', 'b', 'c', 'd'         // 4-byte prefix
+};
+const std::string kChunkPayload1(kRawChunkPayload1, sizeof(kRawChunkPayload1));
+
+// Add-prefix chunk_number 5 with single prefix.
+const char kRawChunkPayload2[] = {
+  '\0', '\0', '\0', '\x08',  // 32-bit payload length in network byte order.
+  '\x08',                    // field 1, wire format varint
+  '\x05',                    // chunk_number varint 5
+  '\x22',                    // field 4, wire format length-delimited
+  '\x04',                    // varint length 4
+  'e', 'f', 'g', 'h'         // 4-byte prefix
+};
+const std::string kChunkPayload2(kRawChunkPayload2, sizeof(kRawChunkPayload2));
+
+}  // namespace
 
 class SafeBrowsingProtocolManagerTest : public testing::Test {
  protected:
@@ -65,7 +95,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     EXPECT_EQ("goog-phish-shavar;\ngoog-malware-shavar;\n",
               url_fetcher->upload_data());
     EXPECT_EQ(GURL(expected_prefix + "/downloads?client=unittest&appver=1.0"
-                   "&pver=2.2" + key_param_),
+                   "&pver=3.0" + key_param_),
               url_fetcher->GetOriginalURL());
   }
 
@@ -139,36 +169,38 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
   SBListChunkRanges phish("goog-phish-shavar");
   phish.adds = "1,4,6,8-20,99";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ(pm->FormatList(phish),
-            "goog-phish-shavar;a:1,4,6,8-20,99:s:16,32,64-96\n");
+  EXPECT_EQ("goog-phish-shavar;a:1,4,6,8-20,99:s:16,32,64-96\n",
+            safe_browsing::FormatList(phish));
 
   // Add chunks only.
   phish.subs = "";
-  EXPECT_EQ(pm->FormatList(phish), "goog-phish-shavar;a:1,4,6,8-20,99\n");
+  EXPECT_EQ("goog-phish-shavar;a:1,4,6,8-20,99\n",
+            safe_browsing::FormatList(phish));
 
   // Sub chunks only.
   phish.adds = "";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ(pm->FormatList(phish), "goog-phish-shavar;s:16,32,64-96\n");
+  EXPECT_EQ("goog-phish-shavar;s:16,32,64-96\n",
+            safe_browsing::FormatList(phish));
 
   // No chunks of either type.
   phish.adds = "";
   phish.subs = "";
-  EXPECT_EQ(pm->FormatList(phish), "goog-phish-shavar;\n");
+  EXPECT_EQ("goog-phish-shavar;\n", safe_browsing::FormatList(phish));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   // No errors or back off time yet.
-  EXPECT_EQ(pm->gethash_error_count_, 0);
+  EXPECT_EQ(0U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_.is_null());
 
   Time now = Time::Now();
 
   // 1 error.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 1);
+  EXPECT_EQ(1U, pm->gethash_error_count_);
   TimeDelta margin = TimeDelta::FromSeconds(5);  // Fudge factor.
   Time future = now + TimeDelta::FromMinutes(1);
   EXPECT_TRUE(pm->next_gethash_time_ >= future - margin &&
@@ -176,36 +208,36 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 
   // 2 errors.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 2);
+  EXPECT_EQ(2U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_ >= now + TimeDelta::FromMinutes(30));
   EXPECT_TRUE(pm->next_gethash_time_ <= now + TimeDelta::FromMinutes(60));
 
   // 3 errors.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 3);
+  EXPECT_EQ(3U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_ >= now + TimeDelta::FromMinutes(60));
   EXPECT_TRUE(pm->next_gethash_time_ <= now + TimeDelta::FromMinutes(120));
 
   // 4 errors.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 4);
+  EXPECT_EQ(4U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_ >= now + TimeDelta::FromMinutes(120));
   EXPECT_TRUE(pm->next_gethash_time_ <= now + TimeDelta::FromMinutes(240));
 
   // 5 errors.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 5);
+  EXPECT_EQ(5U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_ >= now + TimeDelta::FromMinutes(240));
   EXPECT_TRUE(pm->next_gethash_time_ <= now + TimeDelta::FromMinutes(480));
 
   // 6 errors, reached max backoff.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 6);
+  EXPECT_EQ(6U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_ == now + TimeDelta::FromMinutes(480));
 
   // 7 errors.
   pm->HandleGetHashError(now);
-  EXPECT_EQ(pm->gethash_error_count_, 7);
+  EXPECT_EQ(7U, pm->gethash_error_count_);
   EXPECT_TRUE(pm->next_gethash_time_== now + TimeDelta::FromMinutes(480));
 }
 
@@ -213,11 +245,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_, pm->GetHashUrl().spec());
+            "pver=3.0" + key_param_, pm->GetHashUrl().spec());
 
   pm->set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&additional_query",
+            "pver=3.0" + key_param_ + "&additional_query",
             pm->GetHashUrl().spec());
 }
 
@@ -225,11 +257,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_, pm->UpdateUrl().spec());
+            "pver=3.0" + key_param_, pm->UpdateUrl().spec());
 
   pm->set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&additional_query",
+            "pver=3.0" + key_param_ + "&additional_query",
             pm->UpdateUrl().spec());
 }
 
@@ -272,9 +304,26 @@ class MockProtocolDelegate : public SafeBrowsingProtocolManagerDelegate {
   MOCK_METHOD1(UpdateFinished, void(bool));
   MOCK_METHOD0(ResetDatabase, void());
   MOCK_METHOD1(GetChunks, void(GetChunksCallback));
-  MOCK_METHOD3(AddChunks, void(const std::string&, SBChunkList*,
-                               AddChunksCallback));
-  MOCK_METHOD1(DeleteChunks, void(std::vector<SBChunkDelete>*));
+
+  // gmock does not work with scoped_ptr<> at this time.  Add a local method to
+  // mock, then call that from an override.  Beware of object ownership when
+  // making changes here.
+  MOCK_METHOD3(AddChunksRaw, void(const std::string& lists,
+                                  const ScopedVector<SBChunkData>& chunks,
+                                  AddChunksCallback));
+  virtual void AddChunks(const std::string& list,
+                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
+                         AddChunksCallback callback) OVERRIDE {
+    AddChunksRaw(list, *chunks, callback);
+  }
+
+  // TODO(shess): Actually test this case somewhere.
+  MOCK_METHOD1(DeleteChunksRaw,
+               void(const std::vector<SBChunkDelete>& chunk_deletes));
+  virtual void DeleteChunks(
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) OVERRIDE{
+    DeleteChunksRaw(*chunk_deletes);
+  }
 };
 
 // |InvokeGetChunksCallback| is required because GMock's InvokeArgument action
@@ -293,9 +342,8 @@ void InvokeGetChunksCallback(
 // SafeBrowsingProtocolManagerDelegate contract.
 void HandleAddChunks(
     const std::string& unused_list,
-    SBChunkList* chunks,
+    const ScopedVector<SBChunkData>& chunks,
     SafeBrowsingProtocolManagerDelegate::AddChunksCallback callback) {
-  delete chunks;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
   if (!task_runner.get())
@@ -373,7 +421,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
             "goog-malware-shavar;\n",
             url_fetcher->upload_data());
   EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
-                 "&pver=2.2" + key_param_),
+                 "&pver=3.0" + key_param_),
             url_fetcher->GetOriginalURL());
 
   url_fetcher->set_status(net::URLRequestStatus());
@@ -954,7 +1002,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     std::vector<SBListChunkRanges>(),
                                     false)));
-  EXPECT_CALL(test_delegate, AddChunks("goog-phish-shavar", _, _)).WillOnce(
+  EXPECT_CALL(test_delegate, AddChunksRaw("goog-phish-shavar", _, _)).WillOnce(
       Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
@@ -982,9 +1030,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
       chunk_url_fetcher, "https://redirect-server.example.com/path");
   chunk_url_fetcher->set_status(net::URLRequestStatus());
   chunk_url_fetcher->set_response_code(200);
-  chunk_url_fetcher->SetResponseString(
-      "a:4:4:9\n"
-      "host\1fdaf");
+  chunk_url_fetcher->SetResponseString(kChunkPayload1);
   chunk_url_fetcher->delegate()->OnURLFetchComplete(chunk_url_fetcher);
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
@@ -1009,7 +1055,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     std::vector<SBListChunkRanges>(),
                                     false)));
-  EXPECT_CALL(test_delegate, AddChunks("goog-phish-shavar", _, _)).
+  EXPECT_CALL(test_delegate, AddChunksRaw("goog-phish-shavar", _, _)).
       WillRepeatedly(Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
@@ -1038,9 +1084,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
       first_chunk_url_fetcher, "https://redirect-server.example.com/one");
   first_chunk_url_fetcher->set_status(net::URLRequestStatus());
   first_chunk_url_fetcher->set_response_code(200);
-  first_chunk_url_fetcher->SetResponseString(
-      "a:4:4:9\n"
-      "host\1aaaa");
+  first_chunk_url_fetcher->SetResponseString(kChunkPayload1);
   first_chunk_url_fetcher->delegate()->OnURLFetchComplete(
       first_chunk_url_fetcher);
 
@@ -1056,9 +1100,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
       second_chunk_url_fetcher, "https://redirect-server.example.com/two");
   second_chunk_url_fetcher->set_status(net::URLRequestStatus());
   second_chunk_url_fetcher->set_response_code(200);
-  second_chunk_url_fetcher->SetResponseString(
-      "a:5:4:9\n"
-      "host\1bbbb");
+  second_chunk_url_fetcher->SetResponseString(kChunkPayload2);
   second_chunk_url_fetcher->delegate()->OnURLFetchComplete(
       second_chunk_url_fetcher);
 

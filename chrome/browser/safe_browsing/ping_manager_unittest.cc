@@ -44,7 +44,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
   GURL page_url("http://page.url.com");
   GURL referrer_url("http://referrer.url.com");
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ +
+            "pver=3.0" + key_param_ +
             "&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=1",
@@ -53,7 +53,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                 true, SB_THREAT_TYPE_URL_MALWARE).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&evts=phishblhit&"
+            "pver=3.0" + key_param_ + "&evts=phishblhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -62,7 +62,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                 false, SB_THREAT_TYPE_URL_PHISHING).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&evts=binurlhit&"
+            "pver=3.0" + key_param_ + "&evts=binurlhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -71,7 +71,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                 false, SB_THREAT_TYPE_BINARY_MALWARE_URL).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&evts=phishcsdhit&"
+            "pver=3.0" + key_param_ + "&evts=phishcsdhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -80,7 +80,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                 false, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL).spec());
 
     EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2" + key_param_ + "&evts=malcsdhit&"
+            "pver=3.0" + key_param_ + "&evts=malcsdhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=1",

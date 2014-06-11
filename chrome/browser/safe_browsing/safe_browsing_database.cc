@@ -821,144 +821,77 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
   return false;
 }
 
-// Helper to insert entries for all of the prefixes or full hashes in
-// |entry| into the store.
-void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
-                                        const SBEntry* entry, int list_id) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
-
-  SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
-
-  STATS_COUNTER("SB.HostInsert", 1);
-  const int encoded_chunk_id = EncodeChunkId(chunk_id, list_id);
-  const int count = entry->prefix_count();
-
-  DCHECK(!entry->IsSub());
-  if (!count) {
-    // No prefixes, use host instead.
-    STATS_COUNTER("SB.PrefixAdd", 1);
-    store->WriteAddPrefix(encoded_chunk_id, host);
-  } else if (entry->IsPrefix()) {
-    // Prefixes only.
-    for (int i = 0; i < count; i++) {
-      const SBPrefix prefix = entry->PrefixAt(i);
-      STATS_COUNTER("SB.PrefixAdd", 1);
-      store->WriteAddPrefix(encoded_chunk_id, prefix);
-    }
-  } else {
-    // Full hashes only.
-    for (int i = 0; i < count; ++i) {
-      const SBFullHash full_hash = entry->FullHashAt(i);
-
-      STATS_COUNTER("SB.PrefixAddFull", 1);
-      store->WriteAddHash(encoded_chunk_id, full_hash);
-    }
-  }
-}
-
-// Helper to iterate over all the entries in the hosts in |chunks| and
-// add them to the store.
-void SafeBrowsingDatabaseNew::InsertAddChunks(
+// Helper to insert add-chunk entries.
+void SafeBrowsingDatabaseNew::InsertAddChunk(
+    SafeBrowsingStore* store,
     const safe_browsing_util::ListType list_id,
-    const SBChunkList& chunks) {
+    const SBChunkData& chunk_data) {
   DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(store);
 
-  SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
-
-  for (SBChunkList::const_iterator citer = chunks.begin();
-       citer != chunks.end(); ++citer) {
-    const int chunk_id = citer->chunk_number;
-
-    // The server can give us a chunk that we already have because
-    // it's part of a range.  Don't add it again.
-    const int encoded_chunk_id = EncodeChunkId(chunk_id, list_id);
-    if (store->CheckAddChunk(encoded_chunk_id))
-      continue;
-
-    store->SetAddChunk(encoded_chunk_id);
-    for (std::deque<SBChunkHost>::const_iterator hiter = citer->hosts.begin();
-         hiter != citer->hosts.end(); ++hiter) {
-      // NOTE: Could pass |encoded_chunk_id|, but then inserting add
-      // chunks would look different from inserting sub chunks.
-      InsertAdd(chunk_id, hiter->host, hiter->entry, list_id);
-    }
-  }
-}
-
-// Helper to insert entries for all of the prefixes or full hashes in
-// |entry| into the store.
-void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
-                                        const SBEntry* entry, int list_id) {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
-
-  SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
-
-  STATS_COUNTER("SB.HostDelete", 1);
+  // The server can give us a chunk that we already have because
+  // it's part of a range.  Don't add it again.
+  const int chunk_id = chunk_data.ChunkNumber();
   const int encoded_chunk_id = EncodeChunkId(chunk_id, list_id);
-  const int count = entry->prefix_count();
+  if (store->CheckAddChunk(encoded_chunk_id))
+    return;
 
-  DCHECK(entry->IsSub());
-  if (!count) {
-    // No prefixes, use host instead.
-    STATS_COUNTER("SB.PrefixSub", 1);
-    const int add_chunk_id = EncodeChunkId(entry->chunk_id(), list_id);
-    store->WriteSubPrefix(encoded_chunk_id, add_chunk_id, host);
-  } else if (entry->IsPrefix()) {
-    // Prefixes only.
-    for (int i = 0; i < count; i++) {
-      const SBPrefix prefix = entry->PrefixAt(i);
-      const int add_chunk_id =
-          EncodeChunkId(entry->ChunkIdAtPrefix(i), list_id);
-
-      STATS_COUNTER("SB.PrefixSub", 1);
-      store->WriteSubPrefix(encoded_chunk_id, add_chunk_id, prefix);
+  store->SetAddChunk(encoded_chunk_id);
+  if (chunk_data.IsPrefix()) {
+    const size_t c = chunk_data.PrefixCount();
+    for (size_t i = 0; i < c; ++i) {
+      STATS_COUNTER("SB.PrefixAdd", 1);
+      store->WriteAddPrefix(encoded_chunk_id, chunk_data.PrefixAt(i));
     }
   } else {
-    // Full hashes only.
-    for (int i = 0; i < count; ++i) {
-      const SBFullHash full_hash = entry->FullHashAt(i);
-      const int add_chunk_id =
-          EncodeChunkId(entry->ChunkIdAtPrefix(i), list_id);
-
-      STATS_COUNTER("SB.PrefixSubFull", 1);
-      store->WriteSubHash(encoded_chunk_id, add_chunk_id, full_hash);
+    const size_t c = chunk_data.FullHashCount();
+    for (size_t i = 0; i < c; ++i) {
+      STATS_COUNTER("SB.PrefixAddFull", 1);
+      store->WriteAddHash(encoded_chunk_id, chunk_data.FullHashAt(i));
     }
   }
 }
 
-// Helper to iterate over all the entries in the hosts in |chunks| and
-// add them to the store.
-void SafeBrowsingDatabaseNew::InsertSubChunks(
-    safe_browsing_util::ListType list_id,
-    const SBChunkList& chunks) {
+// Helper to insert sub-chunk entries.
+void SafeBrowsingDatabaseNew::InsertSubChunk(
+    SafeBrowsingStore* store,
+    const safe_browsing_util::ListType list_id,
+    const SBChunkData& chunk_data) {
   DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  DCHECK(store);
 
-  SafeBrowsingStore* store = GetStore(list_id);
-  if (!store) return;
+  // The server can give us a chunk that we already have because
+  // it's part of a range.  Don't add it again.
+  const int chunk_id = chunk_data.ChunkNumber();
+  const int encoded_chunk_id = EncodeChunkId(chunk_id, list_id);
+  if (store->CheckSubChunk(encoded_chunk_id))
+    return;
 
-  for (SBChunkList::const_iterator citer = chunks.begin();
-       citer != chunks.end(); ++citer) {
-    const int chunk_id = citer->chunk_number;
-
-    // The server can give us a chunk that we already have because
-    // it's part of a range.  Don't add it again.
-    const int encoded_chunk_id = EncodeChunkId(chunk_id, list_id);
-    if (store->CheckSubChunk(encoded_chunk_id))
-      continue;
-
-    store->SetSubChunk(encoded_chunk_id);
-    for (std::deque<SBChunkHost>::const_iterator hiter = citer->hosts.begin();
-         hiter != citer->hosts.end(); ++hiter) {
-      InsertSub(chunk_id, hiter->host, hiter->entry, list_id);
+  store->SetSubChunk(encoded_chunk_id);
+  if (chunk_data.IsPrefix()) {
+    const size_t c = chunk_data.PrefixCount();
+    for (size_t i = 0; i < c; ++i) {
+      STATS_COUNTER("SB.PrefixSub", 1);
+      const int add_chunk_id = chunk_data.AddChunkNumberAt(i);
+      const int encoded_add_chunk_id = EncodeChunkId(add_chunk_id, list_id);
+      store->WriteSubPrefix(encoded_chunk_id, encoded_add_chunk_id,
+                            chunk_data.PrefixAt(i));
+    }
+  } else {
+    const size_t c = chunk_data.FullHashCount();
+    for (size_t i = 0; i < c; ++i) {
+      STATS_COUNTER("SB.PrefixSubFull", 1);
+      const int add_chunk_id = chunk_data.AddChunkNumberAt(i);
+      const int encoded_add_chunk_id = EncodeChunkId(add_chunk_id, list_id);
+      store->WriteSubHash(encoded_chunk_id, encoded_add_chunk_id,
+                          chunk_data.FullHashAt(i));
     }
   }
 }
 
-void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
-                                           const SBChunkList& chunks) {
+void SafeBrowsingDatabaseNew::InsertChunks(
+    const std::string& list_name,
+    const std::vector<SBChunkData*>& chunks) {
   DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   if (corruption_detected_ || chunks.empty())
@@ -966,6 +899,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
 
   const base::TimeTicks before = base::TimeTicks::Now();
 
+  // TODO(shess): The caller should just pass list_id.
   const safe_browsing_util::ListType list_id =
       safe_browsing_util::GetListId(list_name);
   DVLOG(2) << list_name << ": " << list_id;
@@ -975,11 +909,17 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
 
   change_detected_ = true;
 
+  // TODO(shess): I believe that the list is always add or sub.  Can this use
+  // that productively?
   store->BeginChunk();
-  if (chunks.front().is_add) {
-    InsertAddChunks(list_id, chunks);
-  } else {
-    InsertSubChunks(list_id, chunks);
+  for (size_t i = 0; i < chunks.size(); ++i) {
+    if (chunks[i]->IsAdd()) {
+      InsertAddChunk(store, list_id, *chunks[i]);
+    } else if (chunks[i]->IsSub()) {
+      InsertSubChunk(store, list_id, *chunks[i]);
+    } else {
+      NOTREACHED();
+    }
   }
   store->FinishChunk();
 

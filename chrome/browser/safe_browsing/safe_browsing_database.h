@@ -172,7 +172,7 @@ class SafeBrowsingDatabase {
   // the other functions.
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) = 0;
   virtual void InsertChunks(const std::string& list_name,
-                            const SBChunkList& chunks) = 0;
+                            const std::vector<SBChunkData*>& chunks) = 0;
   virtual void DeleteChunks(
       const std::vector<SBChunkDelete>& chunk_deletes) = 0;
   virtual void UpdateFinished(bool update_succeeded) = 0;
@@ -320,7 +320,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual bool ContainsMalwareIP(const std::string& ip_address) OVERRIDE;
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE;
   virtual void InsertChunks(const std::string& list_name,
-                            const SBChunkList& chunks) OVERRIDE;
+                            const std::vector<SBChunkData*>& chunks) OVERRIDE;
   virtual void DeleteChunks(
       const std::vector<SBChunkDelete>& chunk_deletes) OVERRIDE;
   virtual void UpdateFinished(bool update_succeeded) OVERRIDE;
@@ -391,12 +391,12 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void OnHandleCorruptDatabase();
 
   // Helpers for InsertChunks().
-  void InsertAdd(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
-  void InsertAddChunks(safe_browsing_util::ListType list_id,
-                       const SBChunkList& chunks);
-  void InsertSub(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
-  void InsertSubChunks(safe_browsing_util::ListType list_id,
-                       const SBChunkList& chunks);
+  void InsertAddChunk(SafeBrowsingStore* store,
+                      safe_browsing_util::ListType list_id,
+                      const SBChunkData& chunk);
+  void InsertSubChunk(SafeBrowsingStore* store,
+                      safe_browsing_util::ListType list_id,
+                      const SBChunkData& chunk);
 
   // Returns the size in bytes of the store after the update.
   int64 UpdateHashPrefixStore(const base::FilePath& store_filename,

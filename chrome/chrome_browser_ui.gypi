@@ -26,6 +26,7 @@
         'common',
         'common_net',
         'in_memory_url_index_cache_proto',
+        'safe_browsing_chunk_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         '../components/components.gyp:auto_login_parser',
@@ -2585,6 +2586,7 @@
           ],
         }, {  # safe_browsing==0 || safe_browsing==2
           'dependencies!': [
+            'safe_browsing_chunk_proto',
             'safe_browsing_proto',
             'safe_browsing_report_proto',
           ],

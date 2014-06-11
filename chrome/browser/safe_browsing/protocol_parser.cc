@@ -4,143 +4,280 @@
 //
 // Parse the data returned from the SafeBrowsing v2.1 protocol response.
 
+// TODOv3(shess): Review these changes carefully.
+
 #include <stdlib.h>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace {
-// Helper function for quick scans of a line oriented protocol. Note that we use
-//   std::string::assign(const charT* s, size_type n)
-// to copy data into 'line'. This form of 'assign' does not call strlen on
-// 'input', which is binary data and is not NULL terminated. 'input' may also
-// contain valid NULL bytes in the payload, which a strlen based copy would
-// truncate.
-bool GetLine(const char* input, int input_len, std::string* line) {
-  const char* pos = input;
-  while (pos && (pos - input < input_len)) {
-    if (*pos == '\n') {
-      line->assign(input, pos - input);
-      return true;
-    }
-    ++pos;
+
+// Helper class for scanning a buffer.
+class BufferReader {
+ public:
+  BufferReader(const char* data, size_t length)
+      : data_(data),
+        length_(length) {
   }
-  return false;
-}
-}  // namespace
 
-//------------------------------------------------------------------------------
-// SafeBrowsingParser implementation
+  // Return info about remaining buffer data.
+  size_t length() const {
+    return length_;
+  }
+  const char* data() const {
+    return data_;
+  }
+  bool empty() const {
+    return length_ == 0;
+  }
 
-SafeBrowsingProtocolParser::SafeBrowsingProtocolParser() {
-}
+  // Remove |l| characters from the buffer.
+  void Advance(size_t l) {
+    DCHECK_LE(l, length());
+    data_ += l;
+    length_ -= l;
+  }
 
-bool SafeBrowsingProtocolParser::ParseGetHash(
-    const char* chunk_data,
-    int chunk_len,
-    std::vector<SBFullHashResult>* full_hashes) {
-  full_hashes->clear();
-  int length = chunk_len;
-  const char* data = chunk_data;
+  // Get a reference to data in the buffer.
+  // TODO(shess): I'm not sure I like this.  Fill out a StringPiece instead?
+  bool RefData(const void** pptr, size_t l) {
+    if (length() < l) {
+      Advance(length());  // poison
+      return false;
+    }
 
-  int offset;
-  std::string line;
-  while (length > 0) {
-    if (!GetLine(data, length, &line))
+    *pptr = data();
+    Advance(l);
+    return true;
+  }
+
+  // Copy data out of the buffer.
+  bool GetData(void* ptr, size_t l) {
+    const void* buf_ptr;
+    if (!RefData(&buf_ptr, l))
       return false;
 
-    offset = static_cast<int>(line.size()) + 1;
-    data += offset;
-    length -= offset;
+    memcpy(ptr, buf_ptr, l);
+    return true;
+  }
 
-    std::vector<std::string> cmd_parts;
-    base::SplitString(line, ':', &cmd_parts);
-    if (cmd_parts.size() != 3)
+  // Read a 32-bit integer in network byte order into a local uint32.
+  bool GetNet32(uint32* i) {
+    if (!GetData(i, sizeof(*i)))
+      return false;
+
+    *i = base::NetToHost32(*i);
+    return true;
+  }
+
+  // Returns false if there is no data, otherwise fills |*line| with a reference
+  // to the next line of data in the buffer.
+  bool GetLine(base::StringPiece* line) {
+    if (!length_)
+      return false;
+
+    // Find the end of the line, or the end of the input.
+    size_t eol = 0;
+    while (eol < length_ && data_[eol] != '\n') {
+      ++eol;
+    }
+    line->set(data_, eol);
+    Advance(eol);
+
+    // Skip the newline if present.
+    if (length_ && data_[0] == '\n')
+      Advance(1);
+
+    return true;
+  }
+
+  // Read out |c| colon-separated pieces from the next line.  The resulting
+  // pieces point into the original data buffer.
+  bool GetPieces(size_t c, std::vector<base::StringPiece>* pieces) {
+    base::StringPiece line;
+    if (!GetLine(&line))
+      return false;
+
+    // Find the parts separated by ':'.
+    while (pieces->size() + 1 < c) {
+      size_t colon_ofs = line.find(':');
+      if (colon_ofs == base::StringPiece::npos) {
+        Advance(length_);
+        return false;
+      }
+
+      pieces->push_back(line.substr(0, colon_ofs));
+      line.remove_prefix(colon_ofs + 1);
+    }
+
+    // The last piece runs to the end of the line.
+    pieces->push_back(line);
+    return true;
+  }
+
+ private:
+  const char* data_;
+  size_t length_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferReader);
+};
+
+}  // namespace
+
+namespace safe_browsing {
+
+// BODY          = CACHELIFETIME LF HASHENTRY* EOF
+// CACHELIFETIME = DIGIT+
+// HASHENTRY     = LISTNAME ":" HASHSIZE ":" NUMRESPONSES [":m"] LF
+//                 HASHDATA (METADATALEN LF METADATA)*
+// HASHSIZE      = DIGIT+                  # Length of each full hash
+// NUMRESPONSES  = DIGIT+                  # Number of full hashes in HASHDATA
+// HASHDATA      = <HASHSIZE*NUMRESPONSES number of unsigned bytes>
+// METADATALEN   = DIGIT+
+// METADATA      = <METADATALEN number of unsigned bytes>
+bool ParseGetHash(const char* chunk_data,
+                  size_t chunk_len,
+                  base::TimeDelta* cache_lifetime,
+                  std::vector<SBFullHashResult>* full_hashes) {
+  full_hashes->clear();
+  BufferReader reader(chunk_data, chunk_len);
+
+  // Parse out cache lifetime.
+  {
+    base::StringPiece line;
+    if (!reader.GetLine(&line))
+      return false;
+
+    int64_t cache_lifetime_seconds;
+    if (!base::StringToInt64(line, &cache_lifetime_seconds))
+      return false;
+
+    // TODO(shess): Zero also doesn't make sense, but isn't clearly forbidden,
+    // either.  Maybe there should be a threshold involved.
+    if (cache_lifetime_seconds < 0)
+      return false;
+
+    *cache_lifetime = base::TimeDelta::FromSeconds(cache_lifetime_seconds);
+  }
+
+  while (!reader.empty()) {
+    std::vector<base::StringPiece> cmd_parts;
+    if (!reader.GetPieces(3, &cmd_parts))
       return false;
 
     SBFullHashResult full_hash;
     full_hash.list_id = safe_browsing_util::GetListId(cmd_parts[0]);
-    // Ignore cmd_parts[1] (add_chunk_id), as we no longer use it with SB 2.3
-    // caching rules.
-    int full_hash_len = atoi(cmd_parts[2].c_str());
 
-    if (full_hash_len < 0 || full_hash_len > length)
+    size_t hash_len;
+    if (!base::StringToSizeT(cmd_parts[1], &hash_len))
+      return false;
+
+    // TODO(shess): Is this possible?  If not, why the length present?
+    if (hash_len != sizeof(SBFullHash))
+      return false;
+
+    // Metadata is indicated by an optional ":m" at the end of the line.
+    bool has_metadata = false;
+    base::StringPiece hash_count_string = cmd_parts[2];
+    size_t optional_colon = hash_count_string.find(':', 0);
+    if (optional_colon != base::StringPiece::npos) {
+      if (hash_count_string.substr(optional_colon) != ":m")
+        return false;
+      has_metadata = true;
+      hash_count_string.remove_suffix(2);
+    }
+
+    size_t hash_count;
+    if (!base::StringToSizeT(hash_count_string, &hash_count))
+      return false;
+
+    if (hash_len * hash_count > reader.length())
       return false;
 
     // Ignore hash results from lists we don't recognize.
     if (full_hash.list_id < 0) {
-      data += full_hash_len;
-      length -= full_hash_len;
+      reader.Advance(hash_len * hash_count);
       continue;
     }
 
-    while (static_cast<size_t>(full_hash_len) >= sizeof(SBFullHash)) {
-      memcpy(&full_hash.hash, data, sizeof(SBFullHash));
+    for (size_t i = 0; i < hash_count; ++i) {
+      if (!reader.GetData(&full_hash.hash, hash_len))
+        return false;
       full_hashes->push_back(full_hash);
-      data += sizeof(SBFullHash);
-      length -= sizeof(SBFullHash);
-      full_hash_len -= sizeof(SBFullHash);
+    }
+
+    // Discard the metadata for now.
+    if (has_metadata) {
+      for (size_t i = 0; i < hash_count; ++i) {
+        base::StringPiece line;
+        if (!reader.GetLine(&line))
+          return false;
+
+        size_t meta_data_len;
+        if (!base::StringToSizeT(line, &meta_data_len))
+          return false;
+
+        const void* meta_data;
+        if (!reader.RefData(&meta_data, meta_data_len))
+          return false;
+      }
     }
   }
 
-  return length == 0;
+  return reader.empty();
 }
 
-void SafeBrowsingProtocolParser::FormatGetHash(
-   const std::vector<SBPrefix>& prefixes, std::string* request) {
-  DCHECK(request);
+// BODY       = HEADER LF PREFIXES EOF
+// HEADER     = PREFIXSIZE ":" LENGTH
+// PREFIXSIZE = DIGIT+         # Size of each prefix in bytes
+// LENGTH     = DIGIT+         # Size of PREFIXES in bytes
+std::string FormatGetHash(const std::vector<SBPrefix>& prefixes) {
+  std::string request;
+  request.append(base::Uint64ToString(sizeof(SBPrefix)));
+  request.append(":");
+  request.append(base::Uint64ToString(sizeof(SBPrefix) * prefixes.size()));
+  request.append("\n");
 
-  // Format the request for GetHash.
-  request->append(base::StringPrintf("%" PRIuS ":%" PRIuS "\n",
-                                     sizeof(SBPrefix),
-                                     sizeof(SBPrefix) * prefixes.size()));
+  // SBPrefix values are read without concern for byte order, so write back the
+  // same way.
   for (size_t i = 0; i < prefixes.size(); ++i) {
-    request->append(reinterpret_cast<const char*>(&prefixes[i]),
-                    sizeof(SBPrefix));
+    request.append(reinterpret_cast<const char*>(&prefixes[i]),
+                   sizeof(SBPrefix));
   }
+
+  return request;
 }
 
-bool SafeBrowsingProtocolParser::ParseUpdate(
-    const char* chunk_data,
-    int chunk_len,
-    int* next_update_sec,
-    bool* reset,
-    std::vector<SBChunkDelete>* deletes,
-    std::vector<ChunkUrl>* chunk_urls) {
+bool ParseUpdate(const char* chunk_data,
+                 size_t chunk_len,
+                 size_t* next_update_sec,
+                 bool* reset,
+                 std::vector<SBChunkDelete>* deletes,
+                 std::vector<ChunkUrl>* chunk_urls) {
   DCHECK(next_update_sec);
   DCHECK(deletes);
   DCHECK(chunk_urls);
 
-  int length = chunk_len;
-  const char* data = chunk_data;
+  BufferReader reader(chunk_data, chunk_len);
 
   // Populated below.
   std::string list_name;
 
-  while (length > 0) {
-    std::string cmd_line;
-    if (!GetLine(data, length, &cmd_line))
-      return false;  // Error: bad list format!
-
-    std::vector<std::string> cmd_parts;
-    base::SplitString(cmd_line, ':', &cmd_parts);
-    if (cmd_parts.empty())
-      return false;
-    const std::string& command = cmd_parts[0];
-    if (cmd_parts.size() != 2 && command[0] != 'u')
+  while (!reader.empty()) {
+    std::vector<base::StringPiece> pieces;
+    if (!reader.GetPieces(2, &pieces))
       return false;
 
-    const int consumed = static_cast<int>(cmd_line.size()) + 1;
-    data += consumed;
-    length -= consumed;
-    if (length < 0)
-      return false;  // Parsing error.
+    base::StringPiece& command = pieces[0];
 
     // Differentiate on the first character of the command (which is usually
     // only one character, with the exception of the 'ad' and 'sd' commands).
@@ -150,11 +287,11 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
         // Must be either an 'ad' (add-del) or 'sd' (sub-del) chunk. We must
         // have also parsed the list name before getting here, or the add-del
         // or sub-del will have no context.
-        if (command.size() != 2 || command[1] != 'd' || list_name.empty())
+        if (list_name.empty() || (command != "ad" && command != "sd"))
           return false;
         SBChunkDelete chunk_delete;
         chunk_delete.is_sub_del = command[0] == 's';
-        StringToRanges(cmd_parts[1], &chunk_delete.chunk_del);
+        StringToRanges(pieces[1].as_string(), &chunk_delete.chunk_del);
         chunk_delete.list_name = list_name;
         deletes->push_back(chunk_delete);
         break;
@@ -162,30 +299,32 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
 
       case 'i':
         // The line providing the name of the list (i.e. 'goog-phish-shavar').
-        list_name = cmd_parts[1];
+        list_name = pieces[1].as_string();
         break;
 
       case 'n':
         // The line providing the next earliest time (in seconds) to re-query.
-        *next_update_sec = atoi(cmd_parts[1].c_str());
+        if (!base::StringToSizeT(pieces[1], next_update_sec))
+          return false;
         break;
 
       case 'u': {
         ChunkUrl chunk_url;
-        chunk_url.url = cmd_line.substr(2);  // Skip the initial "u:".
+        chunk_url.url = pieces[1].as_string();  // Skip the initial "u:".
         chunk_url.list_name = list_name;
         chunk_urls->push_back(chunk_url);
         break;
       }
 
       case 'r':
-        if (cmd_parts[1] != "pleasereset")
+        if (pieces[1] != "pleasereset")
           return false;
         *reset = true;
         break;
 
       default:
         // According to the spec, we ignore commands we don't understand.
+        // TODO(shess): Does this apply to r:unknown or n:not-integer?
         break;
     }
   }
@@ -193,234 +332,53 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
   return true;
 }
 
-bool SafeBrowsingProtocolParser::ParseChunk(const std::string& list_name,
-                                            const char* data,
-                                            int length,
-                                            SBChunkList* chunks) {
-  int remaining = length;
-  const char* chunk_data = data;
+// BODY      = (UINT32 CHUNKDATA)+
+// UINT32    = Unsigned 32-bit integer in network byte order
+// CHUNKDATA = Encoded ChunkData protocol message
+bool ParseChunk(const char* data,
+                size_t length,
+                ScopedVector<SBChunkData>* chunks) {
+  BufferReader reader(data, length);
 
-  while (remaining > 0) {
-    std::string cmd_line;
-    if (!GetLine(chunk_data, remaining, &cmd_line))
-      return false;  // Error: bad chunk format!
-
-    const int line_len = static_cast<int>(cmd_line.length()) + 1;
-    chunk_data += line_len;
-    remaining -= line_len;
-    std::vector<std::string> cmd_parts;
-    base::SplitString(cmd_line, ':', &cmd_parts);
-    if (cmd_parts.size() != 4) {
+  while (!reader.empty()) {
+    uint32 l = 0;
+    if (!reader.GetNet32(&l) || l == 0 || l > reader.length())
       return false;
-    }
 
-    // Process the chunk data.
-    const int chunk_number = atoi(cmd_parts[1].c_str());
-    const int hash_len = atoi(cmd_parts[2].c_str());
-    if (hash_len != sizeof(SBPrefix) && hash_len != sizeof(SBFullHash)) {
-      VLOG(1) << "ParseChunk got unknown hashlen " << hash_len;
+    const void* p = NULL;
+    if (!reader.RefData(&p, l))
       return false;
-    }
 
-    const int chunk_len = atoi(cmd_parts[3].c_str());
-
-    if (chunk_len < 0 || chunk_len > remaining)
-      return false;  // parse error.
-
-    chunks->push_back(SBChunk());
-    chunks->back().chunk_number = chunk_number;
-
-    if (cmd_parts[0] == "a") {
-      chunks->back().is_add = true;
-      if (!ParseAddChunk(list_name, chunk_data, chunk_len, hash_len,
-                         &chunks->back().hosts))
-        return false;  // Parse error.
-    } else if (cmd_parts[0] == "s") {
-      chunks->back().is_add = false;
-      if (!ParseSubChunk(list_name, chunk_data, chunk_len, hash_len,
-                         &chunks->back().hosts))
-        return false;  // Parse error.
-    } else {
-      NOTREACHED();
+    scoped_ptr<SBChunkData> chunk(new SBChunkData());
+    if (!chunk->ParseFrom(reinterpret_cast<const unsigned char*>(p), l))
       return false;
-    }
 
-    chunk_data += chunk_len;
-    remaining -= chunk_len;
-    DCHECK_LE(0, remaining);
+    chunks->push_back(chunk.release());
   }
 
-  DCHECK(remaining == 0);
-
+  DCHECK(reader.empty());
   return true;
 }
 
-bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
-                                               const char* data,
-                                               int data_len,
-                                               int hash_len,
-                                               std::deque<SBChunkHost>* hosts) {
-  const char* chunk_data = data;
-  int remaining = data_len;
-  int prefix_count;
-  SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
-      SBEntry::ADD_PREFIX : SBEntry::ADD_FULL_HASH;
+// LIST      = LISTNAME ";" LISTINFO (":" LISTINFO)*
+// LISTINFO  = CHUNKTYPE ":" CHUNKLIST
+// CHUNKTYPE = "a" | "s"
+// CHUNKLIST = (RANGE | NUMBER) ["," CHUNKLIST]
+// NUMBER    = DIGIT+
+// RANGE     = NUMBER "-" NUMBER
+std::string FormatList(const SBListChunkRanges& list) {
+  std::string formatted_results = list.name;
+  formatted_results.append(";");
 
-  if (list_name == safe_browsing_util::kDownloadWhiteList ||
-      list_name == safe_browsing_util::kExtensionBlacklist ||
-      list_name == safe_browsing_util::kIPBlacklist) {
-    // These lists only contain prefixes, no HOSTKEY and COUNT.
-    DCHECK_EQ(0, remaining % hash_len);
-    prefix_count = remaining / hash_len;
-    SBChunkHost chunk_host;
-    chunk_host.host = 0;
-    chunk_host.entry = SBEntry::Create(type, prefix_count);
-    hosts->push_back(chunk_host);
-    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
-                      prefix_count)) {
-      DVLOG(2) << "Unable to read chunk data for list: " << list_name;
-      return false;
-    }
-    DCHECK_GE(remaining, 0);
-  } else {
-    SBPrefix host;
-    const int min_size = sizeof(SBPrefix) + 1;
-    while (remaining >= min_size) {
-      if (!ReadHostAndPrefixCount(&chunk_data, &remaining,
-                                  &host, &prefix_count)) {
-        return false;
-      }
-      DCHECK_GE(remaining, 0);
-      SBChunkHost chunk_host;
-      chunk_host.host = host;
-      chunk_host.entry = SBEntry::Create(type, prefix_count);
-      hosts->push_back(chunk_host);
-      if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
-                        prefix_count))
-        return false;
-      DCHECK_GE(remaining, 0);
-    }
-  }
-  return remaining == 0;
+  if (!list.adds.empty())
+    formatted_results.append("a:").append(list.adds);
+  if (!list.adds.empty() && !list.subs.empty())
+    formatted_results.append(":");
+  if (!list.subs.empty())
+    formatted_results.append("s:").append(list.subs);
+  formatted_results.append("\n");
+
+  return formatted_results;
 }
 
-bool SafeBrowsingProtocolParser::ParseSubChunk(const std::string& list_name,
-                                               const char* data,
-                                               int data_len,
-                                               int hash_len,
-                                               std::deque<SBChunkHost>* hosts) {
-  int remaining = data_len;
-  const char* chunk_data = data;
-  int prefix_count;
-  SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
-      SBEntry::SUB_PREFIX : SBEntry::SUB_FULL_HASH;
-
-  if (list_name == safe_browsing_util::kDownloadWhiteList ||
-      list_name == safe_browsing_util::kExtensionBlacklist ||
-      list_name == safe_browsing_util::kIPBlacklist) {
-    SBChunkHost chunk_host;
-    // Set host to 0 and it won't be used.
-    chunk_host.host = 0;
-    // lists only contain (add_chunk_number, prefix) pairs, no HOSTKEY
-    // and COUNT. |add_chunk_number| is int32.
-    prefix_count = remaining / (sizeof(int32) + hash_len);
-    chunk_host.entry = SBEntry::Create(type, prefix_count);
-    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry, prefix_count))
-      return false;
-    DCHECK_GE(remaining, 0);
-    hosts->push_back(chunk_host);
-  } else {
-    SBPrefix host;
-    const int min_size = 2 * sizeof(SBPrefix) + 1;
-    while (remaining >= min_size) {
-      if (!ReadHostAndPrefixCount(&chunk_data, &remaining,
-                                  &host, &prefix_count)) {
-        return false;
-      }
-      DCHECK_GE(remaining, 0);
-      SBChunkHost chunk_host;
-      chunk_host.host = host;
-      chunk_host.entry = SBEntry::Create(type, prefix_count);
-      hosts->push_back(chunk_host);
-      if (prefix_count == 0) {
-        // There is only an add chunk number (no prefixes).
-        int chunk_id;
-        if (!ReadChunkId(&chunk_data, &remaining, &chunk_id))
-          return false;
-        DCHECK_GE(remaining, 0);
-        chunk_host.entry->set_chunk_id(chunk_id);
-        continue;
-      }
-      if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
-                        prefix_count))
-        return false;
-      DCHECK_GE(remaining, 0);
-    }
-  }
-  return remaining == 0;
-}
-
-bool SafeBrowsingProtocolParser::ReadHostAndPrefixCount(
-    const char** data, int* remaining, SBPrefix* host, int* count) {
-  if (static_cast<size_t>(*remaining) < sizeof(SBPrefix) + 1)
-    return false;
-  // Next 4 bytes are the host prefix.
-  memcpy(host, *data, sizeof(SBPrefix));
-  *data += sizeof(SBPrefix);
-  *remaining -= sizeof(SBPrefix);
-
-  // Next 1 byte is the prefix count (could be zero, but never negative).
-  *count = static_cast<unsigned char>(**data);
-  *data += 1;
-  *remaining -= 1;
-  DCHECK_GE(*remaining, 0);
-  return true;
-}
-
-bool SafeBrowsingProtocolParser::ReadChunkId(
-    const char** data, int* remaining, int* chunk_id) {
-  // Protocol says four bytes, not sizeof(int).  Make sure those
-  // values are the same.
-  DCHECK_EQ(sizeof(*chunk_id), 4u);
-  if (static_cast<size_t>(*remaining) < sizeof(*chunk_id))
-    return false;
-  memcpy(chunk_id, *data, sizeof(*chunk_id));
-  *data += sizeof(*chunk_id);
-  *remaining -= sizeof(*chunk_id);
-  *chunk_id = base::HostToNet32(*chunk_id);
-  DCHECK_GE(*remaining, 0);
-  return true;
-}
-
-bool SafeBrowsingProtocolParser::ReadPrefixes(
-    const char** data, int* remaining, SBEntry* entry, int count) {
-  int hash_len = entry->HashLen();
-  for (int i = 0; i < count; ++i) {
-    if (entry->IsSub()) {
-      int chunk_id;
-      if (!ReadChunkId(data, remaining, &chunk_id))
-        return false;
-      DCHECK_GE(*remaining, 0);
-      entry->SetChunkIdAtPrefix(i, chunk_id);
-    }
-
-    if (*remaining < hash_len)
-      return false;
-    if (entry->IsPrefix()) {
-      SBPrefix prefix;
-      DCHECK_EQ(hash_len, (int)sizeof(prefix));
-      memcpy(&prefix, *data, sizeof(prefix));
-      entry->SetPrefixAt(i, prefix);
-    } else {
-      SBFullHash hash;
-      DCHECK_EQ(hash_len, (int)sizeof(hash));
-      memcpy(&hash, *data, sizeof(hash));
-      entry->SetFullHashAt(i, hash);
-    }
-    *data += hash_len;
-    *remaining -= hash_len;
-    DCHECK_GE(*remaining, 0);
-  }
-
-  return true;
-}
+}  // namespace safe_browsing

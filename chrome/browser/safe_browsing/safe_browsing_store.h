@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_
 
+#include <deque>
 #include <set>
 #include <vector>
 

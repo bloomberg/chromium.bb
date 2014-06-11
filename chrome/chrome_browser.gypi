@@ -24,6 +24,7 @@
         'common_net',
         'in_memory_url_index_cache_proto',
         'probe_message_proto',
+        'safe_browsing_chunk_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'suggestions_proto',
@@ -2935,6 +2936,7 @@
         }],
         ['safe_browsing==0', {
           'dependencies!': [
+            'safe_browsing_chunk_proto',
             'safe_browsing_proto',
             'safe_browsing_report_proto',
           ],
@@ -3576,6 +3578,18 @@
       'variables': {
         'proto_in_dir': 'browser/net',
         'proto_out_dir': 'chrome/browser/net',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing chunk
+      # protocol buffer.
+      'target_name': 'safe_browsing_chunk_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/safe_browsing/chunk.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/safe_browsing',
+        'proto_out_dir': 'chrome/browser/safe_browsing',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

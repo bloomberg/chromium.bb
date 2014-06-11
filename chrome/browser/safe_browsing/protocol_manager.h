@@ -230,8 +230,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Worker function for calculating GetHash and Update backoff times (in
   // seconds). |multiplier| is doubled for each consecutive error between the
   // 2nd and 5th, and |error_count| is incremented with each call.
-  base::TimeDelta GetNextBackOffInterval(int* error_count,
-                                         int* multiplier) const;
+  base::TimeDelta GetNextBackOffInterval(size_t* error_count,
+                                         size_t* multiplier) const;
 
   // Manages our update with the next allowable update time. If 'back_off_' is
   // true, we must decrease the frequency of requests of the SafeBrowsing
@@ -258,14 +258,10 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Sends a request for a chunk to the SafeBrowsing servers.
   void IssueChunkRequest();
 
-  // Formats a string returned from the database into:
-  //   "list_name;a:<add_chunk_ranges>:s:<sub_chunk_ranges>\n"
-  static std::string FormatList(const SBListChunkRanges& list);
-
   // Runs the protocol parser on received data and update the
   // SafeBrowsingService with the new content. Returns 'true' on successful
   // parse, 'false' on error.
-  bool HandleServiceResponse(const GURL& url, const char* data, int length);
+  bool HandleServiceResponse(const GURL& url, const char* data, size_t length);
 
   // Updates internal state for each GetHash response error, assuming that the
   // current time is |now|.
@@ -310,12 +306,12 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   SafeBrowsingRequestType request_type_;
 
   // The number of HTTP response errors, used for request backoff timing.
-  int update_error_count_;
-  int gethash_error_count_;
+  size_t update_error_count_;
+  size_t gethash_error_count_;
 
   // Multipliers which double (max == 8) for each error after the second.
-  int update_back_off_mult_;
-  int gethash_back_off_mult_;
+  size_t update_back_off_mult_;
+  size_t gethash_back_off_mult_;
 
   // Multiplier between 0 and 1 to spread clients over an interval.
   float back_off_fuzz_;
@@ -362,7 +358,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   base::Time chunk_request_start_;
 
   // Tracks the size of each update (in bytes).
-  int update_size_;
+  size_t update_size_;
 
   // The safe browsing client name sent in each request.
   std::string client_name_;
@@ -440,12 +436,13 @@ class SafeBrowsingProtocolManagerDelegate {
 
   // Add new chunks to the database. Invokes |callback| when complete, but must
   // call at a later time.
-  virtual void AddChunks(const std::string& list, SBChunkList* chunks,
+  virtual void AddChunks(const std::string& list,
+                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
                          AddChunksCallback callback) = 0;
 
   // Delete chunks from the database.
   virtual void DeleteChunks(
-      std::vector<SBChunkDelete>* delete_chunks) = 0;
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) = 0;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_

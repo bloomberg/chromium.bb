@@ -453,23 +453,25 @@ void SafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
       &SafeBrowsingDatabaseManager::GetAllChunksFromDatabase, this, callback));
 }
 
-void SafeBrowsingDatabaseManager::AddChunks(const std::string& list,
-                                            SBChunkList* chunks,
-                                            AddChunksCallback callback) {
+void SafeBrowsingDatabaseManager::AddChunks(
+    const std::string& list,
+    scoped_ptr<ScopedVector<SBChunkData> > chunks,
+    AddChunksCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
   DCHECK(!callback.is_null());
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
       &SafeBrowsingDatabaseManager::AddDatabaseChunks, this, list,
-      chunks, callback));
+      base::Passed(&chunks), callback));
 }
 
 void SafeBrowsingDatabaseManager::DeleteChunks(
-    std::vector<SBChunkDelete>* chunk_deletes) {
+    scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingDatabaseManager::DeleteDatabaseChunks, this, chunk_deletes));
+      &SafeBrowsingDatabaseManager::DeleteDatabaseChunks, this,
+      base::Passed(&chunk_deletes)));
 }
 
 void SafeBrowsingDatabaseManager::UpdateStarted() {
@@ -787,14 +789,13 @@ void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
 }
 
 void SafeBrowsingDatabaseManager::AddDatabaseChunks(
-    const std::string& list_name, SBChunkList* chunks,
+    const std::string& list_name,
+    scoped_ptr<ScopedVector<SBChunkData> > chunks,
     AddChunksCallback callback) {
   DCHECK_EQ(base::MessageLoop::current(),
             safe_browsing_thread_->message_loop());
-  if (chunks) {
-    GetDatabase()->InsertChunks(list_name, *chunks);
-    delete chunks;
-  }
+  if (chunks)
+    GetDatabase()->InsertChunks(list_name, chunks->get());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManager::OnAddChunksComplete, this,
@@ -802,13 +803,11 @@ void SafeBrowsingDatabaseManager::AddDatabaseChunks(
 }
 
 void SafeBrowsingDatabaseManager::DeleteDatabaseChunks(
-    std::vector<SBChunkDelete>* chunk_deletes) {
+    scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) {
   DCHECK_EQ(base::MessageLoop::current(),
             safe_browsing_thread_->message_loop());
-  if (chunk_deletes) {
+  if (chunk_deletes)
     GetDatabase()->DeleteChunks(*chunk_deletes);
-    delete chunk_deletes;
-  }
 }
 
 void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(

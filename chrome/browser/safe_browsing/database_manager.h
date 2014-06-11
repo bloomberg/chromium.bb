@@ -273,11 +273,12 @@ class SafeBrowsingDatabaseManager
   void DatabaseLoadComplete();
 
   // Called on the database thread to add/remove chunks and host keys.
-  // Callee will free the data when it's done.
-  void AddDatabaseChunks(const std::string& list, SBChunkList* chunks,
+  void AddDatabaseChunks(const std::string& list,
+                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
                          AddChunksCallback callback);
 
-  void DeleteDatabaseChunks(std::vector<SBChunkDelete>* chunk_deletes);
+  void DeleteDatabaseChunks(
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes);
 
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
@@ -327,10 +328,11 @@ class SafeBrowsingDatabaseManager
   virtual void UpdateStarted() OVERRIDE;
   virtual void UpdateFinished(bool success) OVERRIDE;
   virtual void GetChunks(GetChunksCallback callback) OVERRIDE;
-  virtual void AddChunks(const std::string& list, SBChunkList* chunks,
+  virtual void AddChunks(const std::string& list,
+                         scoped_ptr<ScopedVector<SBChunkData> > chunks,
                          AddChunksCallback callback) OVERRIDE;
   virtual void DeleteChunks(
-      std::vector<SBChunkDelete>* delete_chunks) OVERRIDE;
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes) OVERRIDE;
 
   scoped_refptr<SafeBrowsingService> sb_service_;
 

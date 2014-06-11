@@ -40,7 +40,7 @@ std::string SafeBrowsingProtocolManagerHelper::ComposeUrl(
     const std::string& additional_query) {
   DCHECK(!prefix.empty() && !method.empty() &&
          !client_name.empty() && !version.empty());
-  std::string url = base::StringPrintf("%s/%s?client=%s&appver=%s&pver=2.2",
+  std::string url = base::StringPrintf("%s/%s?client=%s&appver=%s&pver=3.0",
                                        prefix.c_str(), method.c_str(),
                                        client_name.c_str(), version.c_str());
   std::string api_key = google_apis::GetAPIKey();
