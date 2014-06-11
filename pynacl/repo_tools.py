@@ -181,9 +181,12 @@ def PopulateGitCache(cache_dir, url_list):
     cache_dir: Local directory where git cache will be populated.
     url_list: List of URLs which cache_dir should be populated with.
   """
-  git = GitCmd()
-  for url in url_list:
-    log_tools.CheckCall(git + ['cache', 'populate', '-c', cache_dir, url])
+  if url_list:
+    file_tools.MakeDirectoryIfAbsent(cache_dir)
+    git = GitCmd()
+    for url in url_list:
+      log_tools.CheckCall(git + ['cache', 'populate', '-c', '.', url],
+                          cwd=cache_dir)
 
 
 def GetGitCacheURL(cache_dir, url):
@@ -193,8 +196,16 @@ def GetGitCacheURL(cache_dir, url):
     url: original Git URL that is already populated within the cache directory.
     cache_dir: Git cache directory that has already populated the URL.
   """
-  return log_tools.CheckOutput(GitCmd() + ['cache', 'exists',
-                                           '-c', cache_dir, url]).strip()
+  # Make sure we are using absolute paths or else cache exists return relative.
+  cache_dir = os.path.abspath(cache_dir)
+
+  # For CygWin, we must first convert the cache_dir name to a non-cygwin path.
+  if platform.IsWindows() and cache_dir.startswith('/cygdrive/'):
+    drive, file_path = cache_dir[len('/cygdrive/'):].split('/', 1)
+    cache_dir = drive.upper() + ':\\' + file_path.replace('/', '\\')
+
+  return log_tools.CheckOutput(GitCmd() + ['cache', 'exists', '-c', cache_dir,
+                                           url]).strip()
 
 
 def GitRevInfo(directory):
