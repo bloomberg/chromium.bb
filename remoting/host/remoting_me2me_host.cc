@@ -223,21 +223,20 @@ class HostProcess
   // Applies the host config, returning true if successful.
   bool ApplyConfig(scoped_ptr<JsonHostConfig> config);
 
+  // Handles policy updates, by calling On*PolicyUpdate methods.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
-  bool OnHostDomainPolicyUpdate(const std::string& host_domain);
-  bool OnUsernamePolicyUpdate(bool curtain_required,
-                              bool username_match_required);
-  bool OnNatPolicyUpdate(bool nat_traversal_enabled);
-  bool OnRelayPolicyUpdate(bool allow_relay);
-  bool OnUdpPortPolicyUpdate(const std::string& udp_port_range);
-  void OnCurtainPolicyUpdate(bool curtain_required);
-  bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
-  bool OnHostTokenUrlPolicyUpdate(
-      const GURL& token_url,
-      const GURL& token_validation_url,
-      const std::string& token_validation_cert_issuer);
-  bool OnPairingPolicyUpdate(bool pairing_enabled);
-  bool OnGnubbyAuthPolicyUpdate(bool enable_gnubby_auth);
+  void ApplyHostDomainPolicy();
+  void ApplyUsernamePolicy();
+  bool OnHostDomainPolicyUpdate(base::DictionaryValue* policies);
+  bool OnUsernamePolicyUpdate(base::DictionaryValue* policies);
+  bool OnNatPolicyUpdate(base::DictionaryValue* policies);
+  bool OnRelayPolicyUpdate(base::DictionaryValue* policies);
+  bool OnUdpPortPolicyUpdate(base::DictionaryValue* policies);
+  bool OnCurtainPolicyUpdate(base::DictionaryValue* policies);
+  bool OnHostTalkGadgetPrefixPolicyUpdate(base::DictionaryValue* policies);
+  bool OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies);
+  bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
+  bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
 
   void StartHost();
 
@@ -288,7 +287,10 @@ class HostProcess
   std::string serialized_config_;
   std::string host_owner_;
   bool use_service_account_;
+
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
+  std::string host_domain_;
+  bool host_username_match_required_;
   bool allow_nat_traversal_;
   bool allow_relay_;
   int min_udp_port_;
@@ -329,6 +331,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
     : context_(context.Pass()),
       state_(HOST_INITIALIZING),
       use_service_account_(false),
+      host_username_match_required_(false),
       allow_nat_traversal_(true),
       allow_relay_(true),
       min_udp_port_(0),
@@ -482,11 +485,17 @@ void HostProcess::OnConfigUpdated(
         policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
     policy_watcher_->StartWatching(
         base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
-  } else if (state_ == HOST_STARTED) {
-    // TODO(sergeyu): Here we assume that PIN is the only part of the config
-    // that may change while the service is running. Change ApplyConfig() to
-    // detect other changes in the config and restart host if necessary here.
-    CreateAuthenticatorFactory();
+  } else {
+    // Reapply policies that could be affected by a new config.
+    ApplyHostDomainPolicy();
+    ApplyUsernamePolicy();
+
+    if (state_ == HOST_STARTED) {
+      // TODO(sergeyu): Here we assume that PIN is the only part of the config
+      // that may change while the service is running. Change ApplyConfig() to
+      // detect other changes in the config and restart host if necessary here.
+      CreateAuthenticatorFactory();
+    }
   }
 }
 
@@ -811,11 +820,6 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
 }
 
 void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
-  // TODO(rmsousa): Consolidate all On*PolicyUpdate methods into this one.
-  // TODO(sergeyu): Currently polices are verified only when they are loaded.
-  // Separate policy loading from policy verifications - this will allow to
-  // check policies again later, e.g. when host config changes.
-
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
         &HostProcess::OnPolicyUpdate, this, base::Passed(&policies)));
@@ -823,66 +827,17 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   }
 
   bool restart_required = false;
-  bool bool_value;
-  std::string string_value;
-  if (policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
-                          &string_value)) {
-    restart_required |= OnHostDomainPolicyUpdate(string_value);
-  }
-  bool curtain_required = false;
-  if (policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
-          &curtain_required)) {
-    OnCurtainPolicyUpdate(curtain_required);
-  }
-  if (policies->GetBoolean(
-      policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
-      &bool_value)) {
-    restart_required |= OnUsernamePolicyUpdate(curtain_required, bool_value);
-  }
-  if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
-                           &bool_value)) {
-    restart_required |= OnNatPolicyUpdate(bool_value);
-  }
-  if (policies->GetBoolean(policy_hack::PolicyWatcher::kRelayPolicyName,
-                           &bool_value)) {
-    restart_required |= OnRelayPolicyUpdate(bool_value);
-  }
-  std::string udp_port_range;
-  if (policies->GetString(policy_hack::PolicyWatcher::kUdpPortRangePolicyName,
-                           &udp_port_range)) {
-    restart_required |= OnUdpPortPolicyUpdate(udp_port_range);
-  }
-
-  if (policies->GetString(
-          policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
-          &string_value)) {
-    restart_required |= OnHostTalkGadgetPrefixPolicyUpdate(string_value);
-  }
-  std::string token_url_string, token_validation_url_string;
-  std::string token_validation_cert_issuer;
-  if (policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenUrlPolicyName,
-          &token_url_string) &&
-      policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenValidationUrlPolicyName,
-          &token_validation_url_string) &&
-      policies->GetString(
-          policy_hack::PolicyWatcher::kHostTokenValidationCertIssuerPolicyName,
-          &token_validation_cert_issuer)) {
-    restart_required |= OnHostTokenUrlPolicyUpdate(
-        GURL(token_url_string), GURL(token_validation_url_string),
-        token_validation_cert_issuer);
-  }
-  if (policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostAllowClientPairing,
-          &bool_value)) {
-    restart_required |= OnPairingPolicyUpdate(bool_value);
-  }
-  if (policies->GetBoolean(
-          policy_hack::PolicyWatcher::kHostAllowGnubbyAuthPolicyName,
-          &bool_value))
-    restart_required |= OnGnubbyAuthPolicyUpdate(bool_value);
+  restart_required |= OnHostDomainPolicyUpdate(policies.get());
+  restart_required |= OnCurtainPolicyUpdate(policies.get());
+  // Note: UsernamePolicyUpdate must run after OnCurtainPolicyUpdate.
+  restart_required |= OnUsernamePolicyUpdate(policies.get());
+  restart_required |= OnNatPolicyUpdate(policies.get());
+  restart_required |= OnRelayPolicyUpdate(policies.get());
+  restart_required |= OnUdpPortPolicyUpdate(policies.get());
+  restart_required |= OnHostTalkGadgetPrefixPolicyUpdate(policies.get());
+  restart_required |= OnHostTokenUrlPolicyUpdate(policies.get());
+  restart_required |= OnPairingPolicyUpdate(policies.get());
+  restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
 
   if (state_ == HOST_INITIALIZING) {
     StartHost();
@@ -891,25 +846,30 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   }
 }
 
-bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
+void HostProcess::ApplyHostDomainPolicy() {
+  HOST_LOG << "Policy sets host domain: " << host_domain_;
+  if (!host_domain_.empty() &&
+      !EndsWith(host_owner_, std::string("@") + host_domain_, false)) {
+    LOG(ERROR) << "The host domain does not match the policy.";
+    ShutdownHost(kInvalidHostDomainExitCode);
+  }
+}
+
+bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  HOST_LOG << "Policy sets host domain: " << host_domain;
-
-  if (!host_domain.empty() &&
-      !EndsWith(host_owner_, std::string("@") + host_domain, false)) {
-    ShutdownHost(kInvalidHostDomainExitCode);
+  if (!policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
+                          &host_domain_)) {
+    return false;
   }
+
+  ApplyHostDomainPolicy();
   return false;
 }
 
-bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
-                                         bool host_username_match_required) {
-  // Returns false: never restart the host after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (host_username_match_required) {
+void HostProcess::ApplyUsernamePolicy() {
+  if (host_username_match_required_) {
     HOST_LOG << "Policy requires host username match.";
     std::string username = GetUsername();
     bool shutdown = username.empty() ||
@@ -929,8 +889,8 @@ bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
     // for each connection, removing the need for an explicit user-name matching
     // check.
 #if defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
-    if (curtain_required)
-      return false;
+    if (curtain_required_)
+      return;
 #endif  // defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
 
     // Shutdown the host if the username does not match.
@@ -941,43 +901,65 @@ bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
   } else {
     HOST_LOG << "Policy does not require host username match.";
   }
-
-  return false;
 }
 
-bool HostProcess::OnNatPolicyUpdate(bool nat_traversal_enabled) {
-  // Returns true if the host has to be restarted after this policy update.
+bool HostProcess::OnUsernamePolicyUpdate(base::DictionaryValue* policies) {
+  // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (allow_nat_traversal_ != nat_traversal_enabled) {
-    if (nat_traversal_enabled)
-      HOST_LOG << "Policy enables NAT traversal.";
-    else
-      HOST_LOG << "Policy disables NAT traversal.";
-    allow_nat_traversal_ = nat_traversal_enabled;
-    return true;
+  if (!policies->GetBoolean(
+      policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
+      &host_username_match_required_)) {
+    return false;
   }
+
+  ApplyUsernamePolicy();
   return false;
 }
 
-bool HostProcess::OnRelayPolicyUpdate(bool allow_relay) {
+bool HostProcess::OnNatPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (allow_relay_ != allow_relay) {
-    if (allow_relay)
-      HOST_LOG << "Policy enables use of relay server.";
-    else
-      HOST_LOG << "Policy disables use of relay server.";
-    allow_relay_ = allow_relay;
-    return true;
+  if (!policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
+                           &allow_nat_traversal_)) {
+    return false;
   }
-  return false;
+
+  if (allow_nat_traversal_) {
+    HOST_LOG << "Policy enables NAT traversal.";
+  } else {
+    HOST_LOG << "Policy disables NAT traversal.";
+  }
+  return true;
 }
 
-bool HostProcess::OnUdpPortPolicyUpdate(const std::string& udp_port_range) {
+bool HostProcess::OnRelayPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!policies->GetBoolean(policy_hack::PolicyWatcher::kRelayPolicyName,
+                           &allow_relay_)) {
+    return false;
+  }
+
+  if (allow_relay_) {
+    HOST_LOG << "Policy enables use of relay server.";
+  } else {
+    HOST_LOG << "Policy disables use of relay server.";
+  }
+  return true;
+}
+
+bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
+  // Returns true if the host has to be restarted after this policy update.
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  std::string udp_port_range;
+  if (!policies->GetString(policy_hack::PolicyWatcher::kUdpPortRangePolicyName,
+                           &udp_port_range)) {
+    return false;
+  }
 
   // Use default values if policy setting is empty or invalid.
   int min_udp_port = 0;
@@ -1003,12 +985,18 @@ bool HostProcess::OnUdpPortPolicyUpdate(const std::string& udp_port_range) {
   return false;
 }
 
-void HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
+bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+  if (!policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
+          &curtain_required_)) {
+    return false;
+  }
+
 #if defined(OS_MACOSX)
-  if (curtain_required) {
+  if (curtain_required_) {
     // When curtain mode is in effect on Mac, the host process runs in the
     // user's switched-out session, but launchd will also run an instance at
     // the console login screen.  Even if no user is currently logged-on, we
@@ -1022,90 +1010,109 @@ void HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
       LOG(ERROR) << "Running the host in the console login session is yet not "
                     "supported.";
       ShutdownHost(kLoginScreenNotSupportedExitCode);
-      return;
+      return false;
     }
   }
 #endif
 
-  if (curtain_required_ != curtain_required) {
-    if (curtain_required)
-      HOST_LOG << "Policy requires curtain-mode.";
-    else
-      HOST_LOG << "Policy does not require curtain-mode.";
-    curtain_required_ = curtain_required;
-    if (host_)
-      host_->SetEnableCurtaining(curtain_required_);
+  if (curtain_required_) {
+    HOST_LOG << "Policy requires curtain-mode.";
+  } else {
+    HOST_LOG << "Policy does not require curtain-mode.";
   }
+
+  if (host_)
+    host_->SetEnableCurtaining(curtain_required_);
+  return false;
 }
 
 bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
-    const std::string& talkgadget_prefix) {
+    base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (talkgadget_prefix != talkgadget_prefix_) {
-    HOST_LOG << "Policy sets talkgadget prefix: " << talkgadget_prefix;
-    talkgadget_prefix_ = talkgadget_prefix;
-    return true;
-  }
-  return false;
-}
-
-bool HostProcess::OnHostTokenUrlPolicyUpdate(
-    const GURL& token_url,
-    const GURL& token_validation_url,
-    const std::string& token_validation_cert_issuer) {
-  // Returns true if the host has to be restarted after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (third_party_auth_config_.token_url != token_url ||
-      third_party_auth_config_.token_validation_url != token_validation_url ||
-      third_party_auth_config_.token_validation_cert_issuer !=
-      token_validation_cert_issuer) {
-    HOST_LOG << "Policy sets third-party token URLs: "
-             << "TokenUrl: " << token_url << ", "
-             << "TokenValidationUrl: " << token_validation_url
-             << "TokenValidationCertificateIssuer: "
-             << token_validation_cert_issuer;
-    third_party_auth_config_.token_url = token_url;
-    third_party_auth_config_.token_validation_url = token_validation_url;
-    third_party_auth_config_.token_validation_cert_issuer =
-        token_validation_cert_issuer;
-    return true;
-  }
-
-  return false;
-}
-
-bool HostProcess::OnPairingPolicyUpdate(bool allow_pairing) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (allow_pairing_ == allow_pairing)
+  if (!policies->GetString(
+          policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
+          &talkgadget_prefix_)) {
     return false;
+  }
 
-  if (allow_pairing)
-    HOST_LOG << "Policy enables client pairing.";
-  else
-    HOST_LOG << "Policy disables client pairing.";
-  allow_pairing_ = allow_pairing;
+  HOST_LOG << "Policy sets talkgadget prefix: " << talkgadget_prefix_;
   return true;
 }
 
-bool HostProcess::OnGnubbyAuthPolicyUpdate(bool enable_gnubby_auth) {
+bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
+  // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (enable_gnubby_auth_ == enable_gnubby_auth)
-    return false;
+  bool token_policy_changed = false;
+  std::string token_url_string;
+  if (policies->GetString(
+          policy_hack::PolicyWatcher::kHostTokenUrlPolicyName,
+          &token_url_string)) {
+    token_policy_changed = true;
+    third_party_auth_config_.token_url = GURL(token_url_string);
+  }
+  std::string token_validation_url_string;
+  if (policies->GetString(
+          policy_hack::PolicyWatcher::kHostTokenValidationUrlPolicyName,
+          &token_validation_url_string)) {
+    token_policy_changed = true;
+    third_party_auth_config_.token_validation_url =
+        GURL(token_validation_url_string);
+  }
+  if (policies->GetString(
+          policy_hack::PolicyWatcher::kHostTokenValidationCertIssuerPolicyName,
+          &third_party_auth_config_.token_validation_cert_issuer)) {
+    token_policy_changed = true;
+  }
 
-  if (enable_gnubby_auth) {
+  if (token_policy_changed) {
+    HOST_LOG << "Policy sets third-party token URLs: "
+             << "TokenUrl: "
+             << third_party_auth_config_.token_url << ", "
+             << "TokenValidationUrl: "
+             << third_party_auth_config_.token_validation_url << ", "
+             << "TokenValidationCertificateIssuer: "
+             << third_party_auth_config_.token_validation_cert_issuer;
+  }
+  return token_policy_changed;
+}
+
+bool HostProcess::OnPairingPolicyUpdate(base::DictionaryValue* policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostAllowClientPairing,
+          &allow_pairing_)) {
+    return false;
+  }
+
+  if (allow_pairing_) {
+    HOST_LOG << "Policy enables client pairing.";
+  } else {
+    HOST_LOG << "Policy disables client pairing.";
+  }
+  return true;
+}
+
+bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostAllowGnubbyAuthPolicyName,
+          &enable_gnubby_auth_)) {
+    return false;
+  }
+
+  if (enable_gnubby_auth_) {
     HOST_LOG << "Policy enables gnubby auth.";
   } else {
     HOST_LOG << "Policy disables gnubby auth.";
   }
-  enable_gnubby_auth_ = enable_gnubby_auth;
 
   if (desktop_environment_factory_)
-    desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth);
+    desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth_);
 
   return true;
 }
