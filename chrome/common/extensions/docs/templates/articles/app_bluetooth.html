@@ -18,20 +18,40 @@
   For Chrome Apps that use Bluetooth, add the
   <a href="manifest/bluetooth">bluetooth</a> entry to the manifest
   and specify, if appropriate, the UUIDs of profiles, protocols or services
-  you wish to implement.
-  For example:
+  you wish to implement along with whether you wish to implement these with the
+  socket and/or Low Energy APIs.
+</p>
+
+<p>
+  For example for a socket implementation:
 </p>
 
 <pre data-filename="manifest.json">
 "bluetooth": {
-  "uuids": [ "1105", "1106" ]
+  "uuids": [ "1105", "1106" ],
+  "socket": true
+}
+</pre>
+
+<p>
+  And for a Low Energy implementation:
+</p>
+
+<pre data-filename="manifest.json">
+"bluetooth": {
+  "uuids": [ "180D", "1809", "180F" ],
+  "low_energy": true
 }
 </pre>
 
 <p>
   To only access adapter state, discover nearby devices, and obtain basic
-  information about devices, omit the <code>uuids</code> list.
+  information about devices, only the entry itself is required:
 </p>
+
+<pre data-filename="manifest.json">
+"bluetooth": { }
+</pre>
 
 <h2 id="adapter_info">Adapter information</h2>
 

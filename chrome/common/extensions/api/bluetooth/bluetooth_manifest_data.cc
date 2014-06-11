@@ -32,6 +32,20 @@ bool BluetoothManifestData::CheckRequest(
 }
 
 // static
+bool BluetoothManifestData::CheckSocketPermitted(
+    const Extension* extension) {
+  const BluetoothManifestData* data = BluetoothManifestData::Get(extension);
+  return data && data->permission()->CheckSocketPermitted(extension);
+}
+
+// static
+bool BluetoothManifestData::CheckLowEnergyPermitted(
+    const Extension* extension) {
+  const BluetoothManifestData* data = BluetoothManifestData::Get(extension);
+  return data && data->permission()->CheckLowEnergyPermitted(extension);
+}
+
+// static
 scoped_ptr<BluetoothManifestData> BluetoothManifestData::FromValue(
     const base::Value& value,
     base::string16* error) {

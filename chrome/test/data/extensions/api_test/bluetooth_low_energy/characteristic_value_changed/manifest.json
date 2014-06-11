@@ -7,5 +7,7 @@
       "scripts": ["runtest.js"]
     }
   },
-  "bluetooth": {}
+  "bluetooth": {
+    "low_energy": true
+  }
 }

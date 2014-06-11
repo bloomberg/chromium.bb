@@ -98,6 +98,11 @@ bool BluetoothSocketAsyncApiFunction::RunAsync() {
 }
 
 bool BluetoothSocketAsyncApiFunction::PrePrepare() {
+  if (!BluetoothManifestData::CheckSocketPermitted(GetExtension())) {
+    error_ = kPermissionDeniedError;
+    return false;
+  }
+
   manager_ = ApiResourceManager<BluetoothApiSocket>::Get(browser_context());
   DCHECK(manager_)
       << "There is no socket manager. "

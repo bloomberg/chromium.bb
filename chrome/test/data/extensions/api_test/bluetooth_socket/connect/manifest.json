@@ -11,6 +11,7 @@
   "bluetooth": {
     "uuids": [
       "8e3ad063-db38-4289-aa8f-b30e4223cf40"
-    ]
+    ],
+    "socket": true
   }
 }

@@ -56,7 +56,9 @@ bool ParseUuidArray(BluetoothManifestPermission* permission,
 
 }  // namespace
 
-BluetoothManifestPermission::BluetoothManifestPermission() {}
+BluetoothManifestPermission::BluetoothManifestPermission()
+  : socket_(false),
+    low_energy_(false) {}
 
 BluetoothManifestPermission::~BluetoothManifestPermission() {}
 
@@ -76,6 +78,12 @@ scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
       return scoped_ptr<BluetoothManifestPermission>();
     }
   }
+  if (bluetooth->socket) {
+    result->socket_ = *(bluetooth->socket);
+  }
+  if (bluetooth->low_energy) {
+    result->low_energy_ = *(bluetooth->low_energy);
+  }
   return result.Pass();
 }
 
@@ -92,6 +100,16 @@ bool BluetoothManifestPermission::CheckRequest(
       return true;
   }
   return false;
+}
+
+bool BluetoothManifestPermission::CheckSocketPermitted(
+    const Extension* extension) const {
+  return socket_;
+}
+
+bool BluetoothManifestPermission::CheckLowEnergyPermitted(
+    const Extension* extension) const {
+  return low_energy_;
 }
 
 std::string BluetoothManifestPermission::name() const {

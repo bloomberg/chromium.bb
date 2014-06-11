@@ -189,3 +189,16 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, PermissionDenied) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Run the test.
+  scoped_refptr<const Extension> extension(
+      LoadExtension(test_data_dir_.AppendASCII(
+          "bluetooth_socket/permission_denied")));
+  ASSERT_TRUE(extension.get());
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}

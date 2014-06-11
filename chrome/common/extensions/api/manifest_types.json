@@ -184,6 +184,16 @@
               "description": "<p>The list specified as UUID strings.</p>",
               "type": "string"
             }
+          },
+          "socket": {
+            "type": "boolean",
+            "description": "If <code>true</code>, gives permission to an app to use the $(ref:bluetoothSocket) API",
+            "optional": true
+          },
+          "low_energy": {
+            "type": "boolean",
+            "description": "If <code>true</code>, gives permission to an app to use the $(ref:bluetoothLowEnergy) API",
+            "optional": true
           }
         }
       },

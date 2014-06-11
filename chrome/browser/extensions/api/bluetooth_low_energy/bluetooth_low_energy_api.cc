@@ -9,9 +9,11 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
+#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -39,6 +41,7 @@ const char kErrorWriteCharacteristicValueFailedFormat[] =
     "Failed to write value of characteristic with ID \"%s\".";
 const char kErrorWriteDescriptorValueFailedFormat[] =
     "Failed to write value of descriptor with ID \"%s\".";
+const char kErrorPermissionDenied[] = "Permission denied";
 
 extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
     BrowserContext* context) {
@@ -93,6 +96,11 @@ BluetoothLowEnergyExtensionFunction::~BluetoothLowEnergyExtensionFunction() {
 
 bool BluetoothLowEnergyExtensionFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!BluetoothManifestData::CheckLowEnergyPermitted(GetExtension())) {
+    error_ = kErrorPermissionDenied;
+    return false;
+  }
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());

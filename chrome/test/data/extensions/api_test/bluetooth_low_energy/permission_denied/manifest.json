@@ -1,13 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "Test the Bluetooth Low Energy readDescriptorValue API",
+  "name": "Test Bluetooth Low Energy without manifest permission",
   "version": "1.0",
   "app": {
     "background": {
       "scripts": ["runtest.js"]
     }
   },
-  "bluetooth": {
-    "low_energy": true
-  }
+  "bluetooth": { }
 }

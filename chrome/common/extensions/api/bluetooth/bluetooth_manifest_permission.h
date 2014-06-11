@@ -35,6 +35,8 @@ class BluetoothManifestPermission : public ManifestPermission {
 
   bool CheckRequest(const Extension* extension,
                     const BluetoothPermissionRequest& request) const;
+  bool CheckSocketPermitted(const Extension* extension) const;
+  bool CheckLowEnergyPermitted(const Extension* extension) const;
 
   void AddPermission(const std::string& uuid);
 
@@ -64,6 +66,8 @@ class BluetoothManifestPermission : public ManifestPermission {
 
  private:
   BluetoothUuidSet uuids_;
+  bool socket_;
+  bool low_energy_;
 };
 
 }  // namespace extensions
