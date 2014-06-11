@@ -349,10 +349,8 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
-  if (!window_mapped_) {
+  if (!window_mapped_)
     MapWindow(show_state);
-    ResetWindowRegion();
-  }
 
   if (show_state == ui::SHOW_STATE_NORMAL ||
       show_state == ui::SHOW_STATE_MAXIMIZED) {
@@ -1274,6 +1272,7 @@ bool DesktopWindowTreeHostX11::HasWMSpecProperty(const char* property) const {
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
   x11_window_event_filter_->SetUseHostWindowBorders(use_native_frame);
+  ResetWindowRegion();
 }
 
 void DesktopWindowTreeHostX11::OnCaptureReleased() {
