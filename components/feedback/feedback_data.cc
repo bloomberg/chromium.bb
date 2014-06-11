@@ -58,9 +58,9 @@ void FeedbackData::SetAndCompressSystemInfo(
     }
   }
 
-  AddLogs(sys_info.Pass());
   if (sys_info.get()) {
     ++pending_op_count_;
+    AddLogs(sys_info.Pass());
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&FeedbackCommon::CompressLogs, this),
