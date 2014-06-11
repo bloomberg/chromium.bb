@@ -169,8 +169,6 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 DirectoryModel.prototype.onWatcherDirectoryChanged_ = function() {
   // Clear the metadata cache since something in this directory has changed.
   var directoryEntry = this.getCurrentDirEntry();
-  if (!util.isFakeEntry(directoryEntry))
-    this.metadataCache_.clearRecursively(directoryEntry, '*');
 
   this.rescanSoon();
 };
