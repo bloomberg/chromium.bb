@@ -476,7 +476,6 @@ Gallery.prototype.delete_ = function() {
     if (!itemsToRemove.length)
       return;  // All deleted.
 
-    // TODO(hirono): Use fileOperationManager.
     var entry = itemsToRemove.pop().getEntry();
     entry.remove(deleteNext, function() {
       util.flog('Error deleting: ' + entry.name, deleteNext);
@@ -491,6 +490,7 @@ Gallery.prototype.delete_ = function() {
 
 
   var confirm = new cr.ui.dialogs.ConfirmDialog(this.container_);
+  confirm.setOkLabel(str('DELETE_BUTTON_LABEL'));
   confirm.show(strf(plural ?
       'GALLERY_CONFIRM_DELETE_SOME' : 'GALLERY_CONFIRM_DELETE_ONE', param),
       function() {

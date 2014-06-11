@@ -505,7 +505,13 @@ CommandHandler.COMMANDS_['drive-hosted-settings'] = {
  */
 CommandHandler.COMMANDS_['delete'] = {
   execute: function(event, fileManager) {
-    fileManager.deleteSelection();
+    var entries = fileManager.getSelection().entries;
+    var message = entries.length == 1 ?
+        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
+        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
+    fileManager.ui.deleteConfirmDialog.show(message, function() {
+      fileManager.fileOperationManager.deleteEntries(entries);
+    });
   },
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
@@ -949,4 +955,3 @@ CommandHandler.COMMANDS_['inspect-background'] = {
   },
   canExecute: CommandUtil.canExecuteAlways
 };
-

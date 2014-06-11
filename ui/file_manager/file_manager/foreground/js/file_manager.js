@@ -83,6 +83,9 @@ FileManager.prototype = {
   get fileTransferController() {
     return this.fileTransferController_;
   },
+  get fileOperationManager() {
+    return this.fileOperationManager_;
+  },
   get backgroundPage() {
     return this.backgroundPage_;
   },
@@ -1983,20 +1986,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.getCurrentDirectoryEntry = function() {
     return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();
-  };
-
-  /**
-   * Deletes the selected file and directories recursively.
-   */
-  FileManager.prototype.deleteSelection = function() {
-    // TODO(mtomasz): Remove this temporary dialog. crbug.com/167364
-    var entries = this.getSelection().entries;
-    var message = entries.length == 1 ?
-        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
-        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
-    this.confirm.show(message, function() {
-      this.fileOperationManager_.deleteEntries(entries);
-    }.bind(this));
   };
 
   /**

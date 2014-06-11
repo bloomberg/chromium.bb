@@ -45,6 +45,12 @@ var FileManagerUI = function(element, dialogType) {
   this.confirmDialog = null;
 
   /**
+   * Confirm dialog for delete.
+   * @type {cr.ui.dialogs.ConfirmDialog}
+   */
+  this.deleteConfirmDialog = null;
+
+  /**
    * Prompt dialog.
    * @type {cr.ui.dialogs.PromptDialog}
    */
@@ -178,6 +184,8 @@ FileManagerUI.prototype.initDialogs = function() {
   this.errorDialog = new ErrorDialog(this.element_);
   this.alertDialog = new dialogs.AlertDialog(this.element_);
   this.confirmDialog = new dialogs.ConfirmDialog(this.element_);
+  this.deleteConfirmDialog = new dialogs.ConfirmDialog(this.element_);
+  this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
   this.promptDialog = new dialogs.PromptDialog(this.element_);
   this.shareDialog = new ShareDialog(this.element_);
   this.multiProfileShareDialog = new MultiProfileShareDialog(this.element_);
