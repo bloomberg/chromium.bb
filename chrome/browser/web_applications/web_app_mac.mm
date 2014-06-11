@@ -599,8 +599,13 @@ bool WebAppShortcutCreator::CreateShortcuts(
   } else {
     paths.push_back(app_data_dir_);
   }
-  paths.push_back(applications_dir);
 
+  bool shortcut_visible =
+      creation_locations.applications_menu_location != APP_MENU_LOCATION_HIDDEN;
+  if (shortcut_visible)
+    paths.push_back(applications_dir);
+
+  DCHECK(!paths.empty());
   size_t success_count = CreateShortcutsIn(paths);
   if (success_count == 0)
     return false;
@@ -611,7 +616,8 @@ bool WebAppShortcutCreator::CreateShortcuts(
   if (success_count != paths.size())
     return false;
 
-  if (creation_locations.in_quick_launch_bar && path_to_add_to_dock) {
+  if (creation_locations.in_quick_launch_bar && path_to_add_to_dock &&
+      shortcut_visible) {
     switch (dock::AddIcon(path_to_add_to_dock, nil)) {
       case dock::IconAddFailure:
         // If adding the icon failed, instead reveal the Finder window.

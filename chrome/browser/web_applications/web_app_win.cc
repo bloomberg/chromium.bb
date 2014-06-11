@@ -448,6 +448,10 @@ bool CreatePlatformShortcuts(
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
+  // Nothing to do on Windows for hidden apps.
+  if (creation_locations.applications_menu_location == APP_MENU_LOCATION_HIDDEN)
+    return true;
+
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths =
       GetShortcutPaths(creation_locations);

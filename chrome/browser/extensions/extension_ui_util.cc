@@ -30,9 +30,14 @@ namespace ui_util {
 
 bool ShouldDisplayInAppLauncher(const Extension* extension,
                                 content::BrowserContext* context) {
+  return CanDisplayInAppLauncher(extension, context) &&
+         !util::IsEphemeralApp(extension->id(), context);
+}
+
+bool CanDisplayInAppLauncher(const Extension* extension,
+                             content::BrowserContext* context) {
   return extension->ShouldDisplayInAppLauncher() &&
-      !IsBlockedByPolicy(extension, context) &&
-      !util::IsEphemeralApp(extension->id(), context);
+         !IsBlockedByPolicy(extension, context);
 }
 
 bool ShouldDisplayInNewTabPage(const Extension* extension,

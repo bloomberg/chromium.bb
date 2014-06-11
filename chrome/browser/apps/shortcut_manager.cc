@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -39,14 +40,21 @@ const int kCurrentAppShortcutsVersion = 0;
 // Delay in seconds before running UpdateShortcutsForAllApps.
 const int kUpdateShortcutsForAllAppsDelay = 10;
 
-// Creates a shortcut for an application in the applications menu, if there is
-// not already one present.
-void CreateShortcutsInApplicationsMenu(Profile* profile,
-                                       const Extension* app) {
+void CreateShortcutsForApp(Profile* profile, const Extension* app) {
   web_app::ShortcutLocations creation_locations;
-  // Create the shortcut in the Chrome Apps subdir.
-  creation_locations.applications_menu_location =
-      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+
+  if (extensions::util::IsEphemeralApp(app->id(), profile)) {
+    // Ephemeral apps should not have visible shortcuts, but may still require
+    // platform-specific handling.
+    creation_locations.applications_menu_location =
+        web_app::APP_MENU_LOCATION_HIDDEN;
+  } else {
+    // Creates a shortcut for an app in the Chrome Apps subdir of the
+    // applications menu, if there is not already one present.
+    creation_locations.applications_menu_location =
+        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+  }
+
   web_app::CreateShortcuts(
       web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
 }
@@ -120,7 +128,7 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
     web_app::UpdateAllShortcuts(
         base::UTF8ToUTF16(old_name), profile_, extension);
   } else {
-    CreateShortcutsInApplicationsMenu(profile_, extension);
+    CreateShortcutsForApp(profile_, extension);
   }
 }
 

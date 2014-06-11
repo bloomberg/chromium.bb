@@ -294,8 +294,8 @@ void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
 bool ShouldCreateShortcutFor(Profile* profile,
                              const extensions::Extension* extension) {
   return extension->is_platform_app() &&
-      extension->location() != extensions::Manifest::COMPONENT &&
-      extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile);
+         extension->location() != extensions::Manifest::COMPONENT &&
+         extensions::ui_util::CanDisplayInAppLauncher(extension, profile);
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,

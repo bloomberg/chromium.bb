@@ -21,6 +21,12 @@ namespace ui_util {
 bool ShouldDisplayInAppLauncher(const Extension* extension,
                                 content::BrowserContext* context);
 
+// Returns true if the extension can be displayed in the app launcher.
+// Checks whether the extension should be hidden due to policy, but does not
+// exclude ephemeral apps.
+bool CanDisplayInAppLauncher(const Extension* extension,
+                             content::BrowserContext* context);
+
 // Returns true if the extension should be displayed in the browser NTP.
 // Checks whether the extension is an ephemeral app or should be hidden due to
 // policy.
