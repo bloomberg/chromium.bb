@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/DOMWindowLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
@@ -56,7 +55,6 @@ class ServiceWorkerContainer FINAL :
     public RefCounted<ServiceWorkerContainer>,
     public ScriptWrappable,
     public ContextLifecycleObserver,
-    public DOMWindowLifecycleObserver,
     public blink::WebServiceWorkerProviderClient {
 public:
     static PassRefPtr<ServiceWorkerContainer> create(ExecutionContext*);

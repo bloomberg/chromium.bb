@@ -64,6 +64,7 @@ PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionConte
 
 ServiceWorkerContainer::~ServiceWorkerContainer()
 {
+    ASSERT(!m_provider);
 }
 
 void ServiceWorkerContainer::detachClient()
@@ -189,17 +190,16 @@ void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorke
 
 void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray& webChannels)
 {
-    if (!executionContext() || !window())
+    if (!executionContext() || !executionContext()->executingWindow())
         return;
 
     OwnPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValue::createFromWire(message);
-    window()->dispatchEvent(MessageEvent::create(ports.release(), value));
+    executionContext()->executingWindow()->dispatchEvent(MessageEvent::create(ports.release(), value));
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext)
-    , DOMWindowLifecycleObserver(executionContext->isDocument() ? toDocument(executionContext)->domWindow() : 0)
     , m_provider(0)
 {
     ScriptWrappable::init(this);
