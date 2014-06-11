@@ -18,12 +18,25 @@ import buildbot_lib
 
 
 # Config
-TEST_PATH_C = 'pnacl/git/gcc/gcc/testsuite/gcc.c-torture/execute'
-TEST_PATH_CPP = 'pnacl/git/gcc/gcc/testsuite/g++.dg'
+TEST_SUITE_BASE = os.path.join('toolchain_build', 'src', 'pnacl-gcc',
+                               'gcc', 'testsuite')
+TEST_PATH_C = os.path.join(TEST_SUITE_BASE, 'gcc.c-torture', 'execute')
+TEST_PATH_CPP = os.path.join(TEST_SUITE_BASE, 'g++.dg')
+
 
 def usage():
   print 'Usage:', sys.argv[0], '<compiler> <platform>',
   print '[<args for toolchain_tester.py>]'
+
+
+def list_tests(src_base, *glob_path):
+  if not os.path.isdir(src_base):
+    raise Exception('Torture test source directory missing: ' + src_base)
+  glob_pattern = os.path.join(src_base, *glob_path)
+  test_list = glob.glob(glob_pattern)
+  if not test_list:
+    raise Exception('Empty result list from glob pattern: ' + glob_pattern)
+  return test_list
 
 
 def standard_tests(context, config, exclude, extra_args):
@@ -36,8 +49,8 @@ def standard_tests(context, config, exclude, extra_args):
   if 'pnacl' in config:
     command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
   command.extend(extra_args)
-  command.extend(glob.glob(os.path.join(TEST_PATH_C, '*c')))
-  command.extend(glob.glob(os.path.join(TEST_PATH_C, 'ieee', '*c')))
+  command.extend(list_tests(TEST_PATH_C, '*c'))
+  command.extend(list_tests(TEST_PATH_C, 'ieee', '*c'))
   print command
   try:
     return buildbot_lib.Command(context, command)
@@ -60,7 +73,7 @@ def eh_tests(context, config, exclude, extra_args, use_sjlj_eh):
       command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
       command.append('--append=TRANSLATE_FLAGS:--allow-llvm-bitcode-input')
   command.extend(extra_args)
-  command.extend(glob.glob(os.path.join(TEST_PATH_CPP, 'eh', '*.C')))
+  command.extend(list_tests(TEST_PATH_CPP, 'eh', '*.C'))
   print command
   try:
     return buildbot_lib.Command(context, command)
