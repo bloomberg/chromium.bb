@@ -27,6 +27,10 @@ class ExtensionSpecialStoragePolicy;
 class IOThread;
 class Profile;
 
+namespace chrome_browser_net {
+class Predictor;
+}
+
 namespace content {
 class PluginDataRemover;
 class StoragePartition;
@@ -303,7 +307,8 @@ class BrowsingDataRemover
 
   // Invoked on the IO thread to clear speculative data related to hostname
   // pre-resolution from the network Predictor.
-  void ClearNetworkPredictorOnIOThread();
+  void ClearNetworkPredictorOnIOThread(
+      chrome_browser_net::Predictor* predictor);
 
   // Callback for when network related data in ProfileIOData has been cleared.
   // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.

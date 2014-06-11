@@ -312,7 +312,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&BrowsingDataRemover::ClearNetworkPredictorOnIOThread,
-                     base::Unretained(this)));
+                     base::Unretained(this),
+                     profile_->GetNetworkPredictor()));
     }
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -864,14 +865,13 @@ void BrowsingDataRemover::OnClearedNetworkPredictor() {
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::ClearNetworkPredictorOnIOThread() {
+void BrowsingDataRemover::ClearNetworkPredictorOnIOThread(
+    chrome_browser_net::Predictor* predictor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(predictor);
 
-  chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
-  if (predictor) {
-    predictor->DiscardInitialNavigationHistory();
-    predictor->DiscardAllResults();
-  }
+  predictor->DiscardInitialNavigationHistory();
+  predictor->DiscardAllResults();
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(
