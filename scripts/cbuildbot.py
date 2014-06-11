@@ -657,6 +657,7 @@ class DistributedBuilder(SimpleBuilder):
   These builds sync using git/manifest logic in manifest_versions.  In general
   they use a non-distributed builder code for the bulk of the work.
   """
+
   def __init__(self, *args, **kwargs):
     """Initializes a buildbot builder.
 
@@ -759,8 +760,8 @@ def _ConfirmBuildRoot(buildroot):
 def _ConfirmRemoteBuildbotRun():
   """Confirm user wants to run with --buildbot --remote."""
   cros_build_lib.Warning(
-       'You are about to launch a PRODUCTION job!  This is *NOT* a '
-       'trybot run! Are you sure?')
+      'You are about to launch a PRODUCTION job!  This is *NOT* a '
+      'trybot run! Are you sure?')
   if not cros_build_lib.BooleanPrompt(default=False):
     print('Please specify --pass-through="--debug".')
     sys.exit(0)
@@ -854,7 +855,8 @@ def _RunBuildStagesWrapper(options, build_config):
 
   # If it's likely we'll need to build Chrome, fetch the source.
   if build_config['sync_chrome'] is None:
-    options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
+    options.managed_chrome = (
+        chrome_rev != constants.CHROME_REV_LOCAL and
         (not build_config['usepkg_build_packages'] or chrome_rev or
          build_config['profile'] or options.rietveld_patches))
   else:
@@ -937,7 +939,7 @@ def _CheckLocalPatches(sourceroot, local_patches):
     if not ok:
       if branch:
         cros_build_lib.Die('Project %s does not have branch %s'
-                            % (project, branch))
+                           % (project, branch))
       else:
         cros_build_lib.Die('Project %s is not on a branch!' % (project,))
 
@@ -977,6 +979,7 @@ def FindCacheDir(_parser, _options):
 
 class CustomGroup(optparse.OptionGroup):
   """Custom option group which supports arguments passed-through to trybot."""
+
   def add_remote_option(self, *args, **kwargs):
     """For arguments that are passed-through to remote trybot."""
     return optparse.OptionGroup.add_option(self, *args,
@@ -1027,7 +1030,7 @@ class CustomParser(commandline.FilteringParser):
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
-  usage = "usage: %prog [options] buildbot_config [buildbot_config ...]"
+  usage = 'usage: %prog [options] buildbot_config [buildbot_config ...]'
   parser = CustomParser(usage=usage, caching=FindCacheDir)
 
   # Main options
@@ -1039,19 +1042,19 @@ def _CreateParser():
                     help='List all of the buildbot configs available w/--list')
 
   parser.add_option('--local', default=False, action='store_true',
-                    help='Specifies that this tryjob should be run locally. '
-                         'Implies --debug.')
+                    help=('Specifies that this tryjob should be run locally. '
+                          'Implies --debug.'))
   parser.add_option('--remote', default=False, action='store_true',
                     help='Specifies that this tryjob should be run remotely.')
 
   parser.add_remote_option('-b', '--branch',
-                           help='The manifest branch to test.  The branch to '
-                                'check the buildroot out to.')
+                           help=('The manifest branch to test.  The branch to '
+                                 'check the buildroot out to.'))
   parser.add_option('-r', '--buildroot', dest='buildroot', type='path',
-                    help='Root directory where source is checked out to, and '
-                         'where the build occurs. For external build configs, '
-                         "defaults to 'trybot' directory at top level of your "
-                         'repo-managed checkout.')
+                    help=('Root directory where source is checked out to, and '
+                          'where the build occurs. For external build configs, '
+                          "defaults to 'trybot' directory at top level of your "
+                          'repo-managed checkout.'))
   parser.add_remote_option('--chrome_rev', default=None, type='string',
                            action='callback', dest='chrome_rev',
                            callback=_CheckChromeRevOption,
@@ -1072,21 +1075,21 @@ def _CreateParser():
   group.add_remote_option('-g', '--gerrit-patches', action='extend',
                           default=[], type='string',
                           metavar="'Id1 *int_Id2...IdN'",
-                          help="Space-separated list of short-form Gerrit "
-                               "Change-Id's or change numbers to patch. "
-                               "Please prepend '*' to internal Change-Id's")
+                          help=('Space-separated list of short-form Gerrit '
+                                "Change-Id's or change numbers to patch. "
+                                "Please prepend '*' to internal Change-Id's"))
   group.add_remote_option('-G', '--rietveld-patches', action='extend',
                           default=[], type='string',
                           metavar="'id1[:subdir1]...idN[:subdirN]'",
-                          help='Space-separated list of short-form Rietveld '
-                               'issue numbers to patch. If no subdir is '
-                               'specified, the src directory is used.')
+                          help=('Space-separated list of short-form Rietveld '
+                                'issue numbers to patch. If no subdir is '
+                                'specified, the src directory is used.'))
   group.add_option('-p', '--local-patches', action='extend', default=[],
                    metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
-                   help='Space-separated list of project branches with '
-                        'patches to apply.  Projects are specified by name. '
-                        'If no branch is specified the current branch of the '
-                        'project will be used.')
+                   help=('Space-separated list of project branches with '
+                         'patches to apply.  Projects are specified by name. '
+                         'If no branch is specified the current branch of the '
+                         'project will be used.'))
 
   parser.add_option_group(group)
 
@@ -1099,24 +1102,24 @@ def _CreateParser():
       'Remote Trybot Options (--remote)')
 
   group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
-                           default=False,
-                           help='Run the HWTest stage (tests on real hardware)')
+                          default=False,
+                          help='Run the HWTest stage (tests on real hardware)')
   group.add_option('--remote-description', default=None,
-                   help='Attach an optional description to a --remote run '
-                        'to make it easier to identify the results when it '
-                        'finishes')
+                   help=('Attach an optional description to a --remote run '
+                         'to make it easier to identify the results when it '
+                         'finishes'))
   group.add_option('--slaves', action='extend', default=[],
-                   help='Specify specific remote tryslaves to run on (e.g. '
-                        'build149-m2); if the bot is busy, it will be queued')
+                   help=('Specify specific remote tryslaves to run on (e.g. '
+                         'build149-m2); if the bot is busy, it will be queued'))
   group.add_remote_option('--channel', dest='channels', action='extend',
                           default=[],
-                          help='Specify a channel for a payloads trybot. Can be'
-                               'specified multiple times. No valid for '
-                               'non-payloads configs.')
+                          help=('Specify a channel for a payloads trybot. Can '
+                                'be specified multiple times. No valid for '
+                                'non-payloads configs.'))
   group.add_option('--test-tryjob', action='store_true',
                    default=False,
-                   help='Submit a tryjob to the test repository.  Will not '
-                        'show up on the production trybot waterfall.')
+                   help=('Submit a tryjob to the test repository.  Will not '
+                         'show up on the production trybot waterfall.'))
 
   parser.add_option_group(group)
 
@@ -1149,8 +1152,8 @@ def _CreateParser():
       'Caution: use these options at your own risk.')
 
   group.add_remote_option('--bootstrap-args', action='append', default=[],
-                          help='Args passed directly to the bootstrap re-exec '
-                               'to skip verification by the bootstrap code')
+                          help=('Args passed directly to the bootstrap re-exec '
+                                'to skip verification by the bootstrap code'))
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
   group.add_remote_option('--buildnumber', help='build number', type='int',
@@ -1161,8 +1164,9 @@ def _CreateParser():
   group.add_remote_option('--chrome_version', default=None, type='string',
                           action='callback', dest='chrome_version',
                           callback=_CheckChromeVersionOption,
-                          help='Used with SPEC logic to force a particular SVN '
-                               'revision of chrome rather than the latest.')
+                          help=('Used with SPEC logic to force a particular '
+                                'SVN revision of chrome rather than the '
+                                'latest.'))
   group.add_remote_option('--clobber', action='store_true', dest='clobber',
                           default=False,
                           help='Clears an old checkout before syncing')
@@ -1173,7 +1177,7 @@ def _CreateParser():
                     help=('Directory where logs are stored.'))
   group.add_remote_option('--maxarchives', dest='max_archive_builds',
                           default=3, type='int',
-                          help="Change the local saved build count limit.")
+                          help='Change the local saved build count limit.')
   parser.add_remote_option('--manifest-repo-url',
                            help=('Overrides the default manifest repo url.'))
   group.add_remote_option('--compilecheck', action='store_true', default=False,
@@ -1182,8 +1186,8 @@ def _CreateParser():
                           default=True, help="Don't run archive stage.")
   group.add_remote_option('--nobootstrap', action='store_false',
                           dest='bootstrap', default=True,
-                          help="Don't checkout and run from a standalone "
-                               "chromite repo.")
+                          help=("Don't checkout and run from a standalone "
+                                'chromite repo.'))
   group.add_remote_option('--nobuild', action='store_false', dest='build',
                           default=True,
                           help="Don't actually build (for cbuildbot dev)")
@@ -1194,16 +1198,16 @@ def _CreateParser():
                           help='Disable cbuildbots usage of cgroups.')
   group.add_remote_option('--nochromesdk', action='store_false',
                           dest='chrome_sdk', default=True,
-                          help="Don't run the ChromeSDK stage which builds "
-                               "Chrome outside of the chroot.")
+                          help=("Don't run the ChromeSDK stage which builds "
+                                'Chrome outside of the chroot.'))
   group.add_remote_option('--noprebuilts', action='store_false',
                           dest='prebuilts', default=True,
                           help="Don't upload prebuilts.")
   group.add_remote_option('--nopatch', action='store_false',
                           dest='postsync_patch', default=True,
                           help=("Don't run PatchChanges stage.  This does not "
-                                "disable patching in of chromite patches "
-                                "during BootstrapStage."))
+                                'disable patching in of chromite patches '
+                                'during BootstrapStage.'))
   group.add_remote_option('--nopaygen', action='store_false',
                           dest='paygen', default=True,
                           help="Don't generate payloads.")
@@ -1217,31 +1221,31 @@ def _CreateParser():
                           default=True, help="Don't sync before building.")
   group.add_remote_option('--notests', action='store_false', dest='tests',
                           default=True,
-                          help='Override values from buildconfig and run no '
-                               'tests.')
+                          help=('Override values from buildconfig and run no '
+                                'tests.'))
   group.add_remote_option('--nouprev', action='store_false', dest='uprev',
                           default=True,
-                          help='Override values from buildconfig and never '
-                               'uprev.')
+                          help=('Override values from buildconfig and never '
+                                'uprev.'))
   group.add_option('--reference-repo', action='store', default=None,
                    dest='reference_repo',
-                   help='Reuse git data stored in an existing repo '
-                        'checkout. This can drastically reduce the network '
-                        'time spent setting up the trybot checkout.  By '
-                        "default, if this option isn't given but cbuildbot "
-                        'is invoked from a repo checkout, cbuildbot will '
-                        'use the repo root.')
+                   help=('Reuse git data stored in an existing repo '
+                         'checkout. This can drastically reduce the network '
+                         'time spent setting up the trybot checkout.  By '
+                         "default, if this option isn't given but cbuildbot "
+                         'is invoked from a repo checkout, cbuildbot will '
+                         'use the repo root.'))
   group.add_option('--resume', action='store_true', default=False,
                    help='Skip stages already successfully completed.')
   group.add_remote_option('--timeout', action='store', type='int', default=0,
-                          help='Specify the maximum amount of time this job '
-                               'can run for, at which point the build will be '
-                               'aborted.  If set to zero, then there is no '
-                               'timeout.')
+                          help=('Specify the maximum amount of time this job '
+                                'can run for, at which point the build will be '
+                                'aborted.  If set to zero, then there is no '
+                                'timeout.'))
   group.add_remote_option('--version', dest='force_version', default=None,
-                          help='Used with manifest logic.  Forces use of this '
-                               'version rather than create or get latest. '
-                               'Examples: 4815.0.0-rc1, 4815.1.2')
+                          help=('Used with manifest logic.  Forces use of this '
+                                'version rather than create or get latest. '
+                                'Examples: 4815.0.0-rc1, 4815.1.2'))
 
   parser.add_option_group(group)
 
@@ -1255,59 +1259,57 @@ def _CreateParser():
       'Caution: these are for meant for the Chromium OS build team only')
 
   group.add_remote_option('--archive-base', type='gs_path',
-                          help='Base GS URL (gs://<bucket_name>/<path>) to '
-                               'upload archive artifacts to')
-  group.add_remote_option('--cq-gerrit-query', dest='cq_gerrit_override',
-                          default=None,
-                          help=
-      "If given, this gerrit query will be used to find what patches to test, "
-      "rather than the normal 'CommitQueue>=1 AND Verified=1 AND CodeReview=2' "
-      "query it defaults to.  Use with care- note additionally this setting "
-      "only has an effect if the buildbot target is a cq target, and we're "
-      "in buildbot mode.")
+                          help=('Base GS URL (gs://<bucket_name>/<path>) to '
+                                'upload archive artifacts to'))
+  group.add_remote_option(
+      '--cq-gerrit-query', dest='cq_gerrit_override', default=None,
+      help=('If given, this gerrit query will be used to find what patches to '
+            "test, rather than the normal 'CommitQueue>=1 AND Verified=1 AND "
+            "CodeReview=2' query it defaults to.  Use with care- note "
+            'additionally this setting only has an effect if the buildbot '
+            "target is a cq target, and we're in buildbot mode."))
   group.add_option('--pass-through', dest='pass_through_args', action='append',
                    type='string', default=[])
   group.add_remote_option('--pre-cq', action='store_true', default=False,
                           help='Mark CLs as tested by the PreCQ on success.')
   group.add_option('--reexec-api-version', dest='output_api_version',
                    action='store_true', default=False,
-                   help='Used for handling forwards/backwards compatibility '
-                        'with --resume and --bootstrap')
+                   help=('Used for handling forwards/backwards compatibility '
+                         'with --resume and --bootstrap'))
   group.add_option('--remote-trybot', dest='remote_trybot',
                    action='store_true', default=False,
                    help='Indicates this is running on a remote trybot machine')
   group.add_remote_option('--remote-patches', action='extend', default=[],
-                          help='Patches uploaded by the trybot client when run '
-                               'using the -p option')
+                          help=('Patches uploaded by the trybot client when '
+                                'run using the -p option'))
   # Note the default here needs to be hardcoded to 3; that is the last version
   # that lacked this functionality.
   group.add_option('--remote-version', default=3, type=int, action='store',
-                   help='Used for compatibility checks w/tryjobs running in '
-                        'older chromite instances')
+                   help=('Used for compatibility checks w/tryjobs running in '
+                         'older chromite instances'))
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
   group.add_remote_option('--test-bootstrap', action='store_true',
                           default=False,
-                          help='Causes cbuildbot to bootstrap itself twice, in '
-                               'the sequence A->B->C: A(unpatched) patches and '
-                               'bootstraps B; B patches and bootstraps C')
+                          help=('Causes cbuildbot to bootstrap itself twice, '
+                                'in the sequence A->B->C: A(unpatched) patches '
+                                'and bootstraps B; B patches and bootstraps C'))
   group.add_remote_option('--validation_pool', default=None,
-                          help='Path to a pickled validation pool. Intended '
-                               'for use only with the commit queue.')
+                          help=('Path to a pickled validation pool. Intended '
+                                'for use only with the commit queue.'))
   group.add_remote_option('--mock-tree-status', dest='mock_tree_status',
                           default=None, action='store',
-                          help='Override the tree status value that would be '
-                               'returned from the the actual tree. Example '
-                               'values: open, closed, throttled. When used '
-                               'in conjunction with --debug, the tree status '
-                               'will not be ignored as it usually is in a '
-                               '--debug run.')
-  group.add_remote_option('--mock-slave-status', dest='mock_slave_status',
-                          default=None, action='store',
-                          metavar='MOCK_SLAVE_STATUS_PICKLE_FILE',
-                          help='Override the result of the _FetchSlaveStatuses '
-                               'method of MasterSlaveSyncCompletionStage, by '
-                               'specifying a file with a pickle of the result '
-                               'to be returned.')
+                          help=('Override the tree status value that would be '
+                                'returned from the the actual tree. Example '
+                                'values: open, closed, throttled. When used '
+                                'in conjunction with --debug, the tree status '
+                                'will not be ignored as it usually is in a '
+                                '--debug run.'))
+  group.add_remote_option(
+      '--mock-slave-status', dest='mock_slave_status', default=None,
+      action='store', metavar='MOCK_SLAVE_STATUS_PICKLE_FILE',
+      help=('Override the result of the _FetchSlaveStatuses method of '
+            'MasterSlaveSyncCompletionStage, by specifying a file with a '
+            'pickle of the result to be returned.'))
 
   parser.add_option_group(group)
 
@@ -1318,11 +1320,11 @@ def _CreateParser():
   # pylint: disable=W0212
   group = parser.debug_group
   debug = [x for x in group.option_list if x._long_opts == ['--debug']][0]
-  debug.help += "  Currently functions as --dry-run in addition."
+  debug.help += '  Currently functions as --dry-run in addition.'
   debug.pass_through = True
   group.add_option('--notee', action='store_false', dest='tee', default=True,
-                    help="Disable logging and internal tee process.  Primarily "
-                         "used for debugging cbuildbot itself.")
+                   help=('Disable logging and internal tee process.  Primarily '
+                         'used for debugging cbuildbot itself.'))
   return parser
 
 
@@ -1433,8 +1435,7 @@ def _FinishParsing(options, args):
 
     exclusive_opts = {'--version': options.force_version,
                       '--delete-branch': options.delete_branch,
-                      '--rename-to': options.rename_to,
-                     }
+                      '--rename-to': options.rename_to}
     if 1 != sum(1 for x in exclusive_opts.values() if x):
       cros_build_lib.Die('When using the %s config, you must'
                          ' specifiy one and only one of the following'
@@ -1500,7 +1501,7 @@ def _PostParseCheck(parser, options, args):
   default = os.environ.get('CBUILDBOT_DEFAULT_MODE')
   if (default and not any([options.local, options.buildbot,
                            options.remote, options.remote_trybot])):
-    cros_build_lib.Info("CBUILDBOT_DEFAULT_MODE=%s env var detected, using it."
+    cros_build_lib.Info('CBUILDBOT_DEFAULT_MODE=%s env var detected, using it.'
                         % default)
     default = default.lower()
     if default == 'local':
@@ -1658,7 +1659,7 @@ def main(argv):
 
     missing = osutils.FindMissingBinaries(_BUILDBOT_REQUIRED_BINARIES)
     if missing:
-      parser.error("Option --buildbot/--remote-trybot requires the following "
+      parser.error('Option --buildbot/--remote-trybot requires the following '
                    "binaries which couldn't be found in $PATH: %s"
                    % (', '.join(missing)))
 
@@ -1714,7 +1715,7 @@ def main(argv):
       # If we're in resume mode, use our parents tempdir rather than
       # nesting another layer.
       stack.Add(osutils.TempDir, prefix='cbuildbot-tmp', set_global=True)
-      logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
+      logging.debug('Cbuildbot tempdir is %r.', os.environ.get('TMP'))
 
     if options.cgroups:
       stack.Add(cgroups.SimpleContainChildren, 'cbuildbot')
