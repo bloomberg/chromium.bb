@@ -73,12 +73,11 @@
 #endif
 
 #if defined(OS_WIN)
-#include <atlbase.h>
-#include <atlapp.h>
 #include <malloc.h>
 #include <cstring>
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/base/win/atl_module.h"
 #include "ui/base/win/dpi_setup.h"
 #include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
@@ -139,8 +138,6 @@ base::LazyInstance<ContentUtilityClient>
 #endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
 
 #if defined(OS_WIN)
-
-static CAppModule _Module;
 
 #endif  // defined(OS_WIN)
 
@@ -484,7 +481,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_WIN)
     RegisterInvalidParamHandler();
-    _Module.Init(NULL, static_cast<HINSTANCE>(params.instance));
+    ui::win::CreateATLModuleIfNeeded();
 
     sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
@@ -788,8 +785,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #ifdef _CRTDBG_MAP_ALLOC
     _CrtDumpMemoryLeaks();
 #endif  // _CRTDBG_MAP_ALLOC
-
-    _Module.Term();
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)

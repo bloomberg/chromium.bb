@@ -11,6 +11,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/base/win/atl_module.h"
 
 namespace content {
 
@@ -40,6 +41,7 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
       parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
       accessible_hwnd_(accessible_hwnd) {
+  ui::win::CreateATLModuleIfNeeded();
   accessible_hwnd_->set_browser_accessibility_manager(this);
 }
 
