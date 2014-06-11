@@ -14,7 +14,7 @@ class V8(recipe_util.Recipe):
 
   @staticmethod
   def fetch_spec(props):
-    ref = 'branch-heads/bleeding_edge'
+    ref = 'bleeding_edge'
     url = 'https://chromium.googlesource.com/external/v8.git@%s' % ref
     solution = { 'name'   :'v8',
                  'url'    : url,
@@ -28,8 +28,6 @@ class V8(recipe_util.Recipe):
       'svn_url': 'https://v8.googlecode.com/svn',
       'svn_branch': 'branches/bleeding_edge',
       'svn_ref': 'bleeding_edge',
-      'svn_prefix': 'branch-heads/',
-      'with_branch_heads': True,
     }
     checkout_type = 'gclient_git_svn'
     if props.get('nosvn'):
