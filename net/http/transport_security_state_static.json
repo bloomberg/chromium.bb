@@ -454,7 +454,6 @@
     { "name": "google.tm", "include_subdomains": true, "pins": "google" },
     { "name": "google.tn", "include_subdomains": true, "pins": "google" },
     { "name": "google.to", "include_subdomains": true, "pins": "google" },
-    { "name": "google.tp", "include_subdomains": true, "pins": "google" },
     { "name": "google.tt", "include_subdomains": true, "pins": "google" },
     { "name": "google.us", "include_subdomains": true, "pins": "google" },
     { "name": "google.uz", "include_subdomains": true, "pins": "google" },
