@@ -514,7 +514,7 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 }
 
 // These are temporary hacks to work around chicken-egg issues while we continue to refactor the compositing code.
-// See crbug.com/339892 for a list of tests that fail if this method is removed.
+// See crbug.com/383191 for a list of tests that fail if this method is removed.
 void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer* layer, CompositingStateTransitionType compositedLayerUpdate)
 {
     if (compositedLayerUpdate != NoCompositingStateChange)
