@@ -105,6 +105,7 @@ SyncWorker::SyncWorker(
       has_refresh_token_(false),
       weak_ptr_factory_(this) {
   sequence_checker_.DetachFromSequence();
+  DCHECK(base_dir_.IsAbsolute());
 }
 
 SyncWorker::~SyncWorker() {}

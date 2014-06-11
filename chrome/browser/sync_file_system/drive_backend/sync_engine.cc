@@ -574,6 +574,7 @@ SyncEngine::SyncEngine(
       worker_task_runner_(worker_task_runner),
       file_task_runner_(file_task_runner),
       drive_task_runner_(drive_task_runner),
+      sync_file_system_dir_(sync_file_system_dir),
       task_logger_(task_logger),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
@@ -584,7 +585,9 @@ SyncEngine::SyncEngine(
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       sync_enabled_(false),
       env_override_(env_override),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(sync_file_system_dir_.IsAbsolute());
+}
 
 void SyncEngine::OnPendingFileListUpdated(int item_count) {
   FOR_EACH_OBSERVER(

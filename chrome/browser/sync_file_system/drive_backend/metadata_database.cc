@@ -139,6 +139,7 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db_out);
   DCHECK(created);
+  DCHECK(path.IsAbsolute());
 
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
