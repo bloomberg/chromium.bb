@@ -97,7 +97,8 @@ class CallbackRunningObserver {
 
 }  // namespace
 
-DisplayConfiguratorAnimation::DisplayConfiguratorAnimation() {
+DisplayConfiguratorAnimation::DisplayConfiguratorAnimation()
+    : weak_ptr_factory_(this) {
 }
 
 DisplayConfiguratorAnimation::~DisplayConfiguratorAnimation() {
@@ -154,7 +155,7 @@ void DisplayConfiguratorAnimation::StartFadeInAnimation() {
   // should be deleted eventually.
   CallbackRunningObserver* observer = new CallbackRunningObserver(
       base::Bind(&DisplayConfiguratorAnimation::ClearHidingLayers,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Ensure that layers are not animating.
   for (std::map<aura::Window*, ui::Layer*>::iterator it =

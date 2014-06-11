@@ -232,7 +232,8 @@ DisplayController::DisplayController()
     : primary_tree_host_for_replace_(NULL),
       focus_activation_store_(new FocusActivationStore()),
       cursor_window_controller_(new CursorWindowController()),
-      mirror_window_controller_(new MirrorWindowController()) {
+      mirror_window_controller_(new MirrorWindowController()),
+      weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
@@ -392,8 +393,8 @@ void DisplayController::ToggleMirrorMode() {
   DisplayConfiguratorAnimation* animation =
       shell->display_configurator_animation();
   animation->StartFadeOutAnimation(
-      base::Bind(base::IgnoreResult(&DisplayManager::SetMirrorMode),
-                 base::Unretained(display_manager),
+      base::Bind(&DisplayController::SetMirrorModeAfterAnimation,
+                 weak_ptr_factory_.GetWeakPtr(),
                  !display_manager->IsMirrored()));
 #endif
 }
@@ -412,7 +413,7 @@ void DisplayController::SwapPrimaryDisplay() {
     if (animation) {
       animation->StartFadeOutAnimation(base::Bind(
           &DisplayController::OnFadeOutForSwapDisplayFinished,
-          base::Unretained(this)));
+          weak_ptr_factory_.GetWeakPtr()));
     } else {
       SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
     }
@@ -752,6 +753,10 @@ void DisplayController::OnFadeOutForSwapDisplayFinished() {
   Shell::GetInstance()->display_configurator_animation()
       ->StartFadeInAnimation();
 #endif
+}
+
+void DisplayController::SetMirrorModeAfterAnimation(bool mirror) {
+  GetDisplayManager()->SetMirrorMode(mirror);
 }
 
 void DisplayController::UpdateHostWindowNames() {

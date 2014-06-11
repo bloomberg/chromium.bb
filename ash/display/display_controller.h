@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -177,6 +178,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   void OnFadeOutForSwapDisplayFinished();
 
+  void SetMirrorModeAfterAnimation(bool mirror);
+
   void UpdateHostWindowNames();
 
   class DisplayChangeLimiter {
@@ -220,6 +223,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // restore the cursor location when display configuration
   // changed.
   gfx::Point cursor_location_in_native_coords_for_restore_;
+
+  base::WeakPtrFactory<DisplayController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };
