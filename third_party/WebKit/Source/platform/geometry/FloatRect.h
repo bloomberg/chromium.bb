@@ -28,6 +28,7 @@
 #define FloatRect_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "wtf/Vector.h"
 
 #if OS(MACOSX)
@@ -37,8 +38,6 @@ typedef struct CGRect CGRect;
 #import <Foundation/Foundation.h>
 #endif
 #endif
-
-struct SkRect;
 
 namespace WebCore {
 
@@ -172,7 +171,7 @@ public:
 #endif
 #endif
 
-    operator SkRect() const;
+    operator SkRect() const { return SkRect::MakeXYWH(x(), y(), width(), height()); }
 
 private:
     FloatPoint m_location;

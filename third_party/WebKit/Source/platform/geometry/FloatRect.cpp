@@ -225,12 +225,6 @@ void FloatRect::fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const Fl
     setLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
-FloatRect::operator SkRect() const
-{
-    SkRect rect = { x(), y(), maxX(), maxY() };
-    return rect;
-}
-
 IntRect enclosingIntRect(const FloatRect& rect)
 {
     IntPoint location = flooredIntPoint(rect.minXMinYCorner());
