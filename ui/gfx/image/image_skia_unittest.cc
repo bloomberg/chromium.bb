@@ -424,9 +424,6 @@ TEST_F(ImageSkiaTest, Unscaled) {
 }
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowArbitraryScaleFactorInImageSkia);
-
   // Do not test if the ImageSkia doesn't support arbitrary scale factors.
   if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
     return;
@@ -497,9 +494,6 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
 }
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowArbitraryScaleFactorInImageSkia);
-
   // Do not test if the ImageSkia doesn't support arbitrary scale factors.
   if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
     return;
@@ -517,9 +511,6 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
 }
 
 TEST_F(ImageSkiaTest, UnscaledImageForArbitraryScaleFactor) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowArbitraryScaleFactorInImageSkia);
-
   // Do not test if the ImageSkia doesn't support arbitrary scale factors.
   if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
     return;

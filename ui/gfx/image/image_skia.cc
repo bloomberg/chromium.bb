@@ -319,13 +319,8 @@ ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
 
 bool ImageSkia::IsDSFScalingInImageSkiaEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-#if defined(OS_WIN)
   return !command_line->HasSwitch(
-      switches::kDisallowArbitraryScaleFactorInImageSkia);
-#else
-  return command_line->HasSwitch(
-      switches::kAllowArbitraryScaleFactorInImageSkia);
-#endif
+      switches::kDisableArbitraryScaleFactorInImageSkia);
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
