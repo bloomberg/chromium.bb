@@ -104,6 +104,7 @@
 
       <!-- ChromeOS specific icons -->
       <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_BLUETOOTH" file="cros/status/status_audio_device_bluetooth.png" />

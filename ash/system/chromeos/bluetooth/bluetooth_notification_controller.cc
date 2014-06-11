@@ -297,7 +297,7 @@ void BluetoothNotificationController::NotifyAdapterDiscoverable() {
           IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
           base::UTF8ToUTF16(adapter_->GetName()),
           base::UTF8ToUTF16(adapter_->GetAddress())),
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH),
+      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
       base::string16() /* display source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
@@ -328,7 +328,7 @@ void BluetoothNotificationController::NotifyPairing(
       kBluetoothDevicePairingNotificationId,
       base::string16()  /* title */,
       message,
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH),
+      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
       base::string16()  /* display source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
@@ -357,7 +357,7 @@ void BluetoothNotificationController::NotifyPairedDevice(
       base::string16() /* title */,
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED, device->GetName()),
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH),
+      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
       base::string16() /* display source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
