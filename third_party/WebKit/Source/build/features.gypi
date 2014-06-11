@@ -52,7 +52,6 @@
       }],
       ['OS=="android"', {
         'feature_defines': [
-          'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_MEDIA_CAPTURE=1'
         ],
       }, { # OS!="android"

@@ -2235,14 +2235,13 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
 
     if (view()->frameView()) {
         bool shouldBlitOnFixedBackgroundImage = false;
-#if ENABLE(FAST_MOBILE_SCROLLING)
-        // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
-        // when scrolling a page with a fixed background image. As an optimization, assuming there are
-        // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
-        // ignore the CSS property "background-attachment: fixed".
-        shouldBlitOnFixedBackgroundImage = true;
-#endif
-
+        if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()) {
+            // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
+            // when scrolling a page with a fixed background image. As an optimization, assuming there are
+            // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
+            // ignore the CSS property "background-attachment: fixed".
+            shouldBlitOnFixedBackgroundImage = true;
+        }
         bool newStyleSlowScroll = !shouldBlitOnFixedBackgroundImage && newStyle.hasFixedBackgroundImage();
         bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
 

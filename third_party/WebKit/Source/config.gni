@@ -65,7 +65,6 @@ if (use_concatenated_impulse_responses) {
 
 if (is_android) {
   feature_defines_list += [
-    "ENABLE_FAST_MOBILE_SCROLLING=1",
     "ENABLE_MEDIA_CAPTURE=1",
   ]
 } else {
