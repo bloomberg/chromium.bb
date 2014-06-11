@@ -582,6 +582,11 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   // is deleted by the Shell.
   window_tree_hosts_.erase(display.id());
 
+  // TODO(oshima): This should not happen. Investigate if this fixed
+  // crbug.com/379239.
+  if (!host_to_delete)
+    return;
+
   // When the primary root window's display is removed, move the primary
   // root to the other display.
   if (primary_display_id == display.id()) {
