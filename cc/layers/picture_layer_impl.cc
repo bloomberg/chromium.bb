@@ -1225,6 +1225,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       raster_contents_scale_, ideal_contents_scale_);
   float max_acceptable_high_res_scale = std::max(
       raster_contents_scale_, ideal_contents_scale_);
+  float twin_low_res_scale = 0.f;
 
   PictureLayerImpl* twin = twin_layer_;
   if (twin) {
@@ -1234,6 +1235,12 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     max_acceptable_high_res_scale = std::max(
         max_acceptable_high_res_scale,
         std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
+
+    for (size_t i = 0; i < twin->tilings_->num_tilings(); ++i) {
+      PictureLayerTiling* tiling = twin->tilings_->tiling_at(i);
+      if (tiling->resolution() == LOW_RESOLUTION)
+        twin_low_res_scale = tiling->contents_scale();
+    }
   }
 
   std::vector<PictureLayerTiling*> to_remove;
@@ -1247,9 +1254,11 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       continue;
 
     // Keep low resolution tilings, if the layer should have them.
-    if (tiling->resolution() == LOW_RESOLUTION &&
-        layer_tree_impl()->create_low_res_tiling())
-      continue;
+    if (layer_tree_impl()->create_low_res_tiling()) {
+      if (tiling->resolution() == LOW_RESOLUTION ||
+          tiling->contents_scale() == twin_low_res_scale)
+        continue;
+    }
 
     // Don't remove tilings that are being used (and thus would cause a flash.)
     if (std::find(used_tilings.begin(), used_tilings.end(), tiling) !=

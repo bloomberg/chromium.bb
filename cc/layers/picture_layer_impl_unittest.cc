@@ -2917,6 +2917,86 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
 }
 
+TEST_F(PictureLayerImplTest, ScaleCollision) {
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+  std::vector<PictureLayerTiling*> used_tilings;
+
+  SetupTrees(pending_pile, active_pile);
+
+  float pending_contents_scale = 1.f;
+  float active_contents_scale = 2.f;
+  float device_scale_factor = 1.f;
+  float page_scale_factor = 1.f;
+  float maximum_animation_contents_scale = 1.f;
+  bool animating_transform = false;
+
+  EXPECT_TRUE(host_impl_.settings().create_low_res_tiling);
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+  EXPECT_LT(low_res_factor, 1.f);
+
+  pending_layer_->CalculateContentsScale(pending_contents_scale,
+                                         device_scale_factor,
+                                         page_scale_factor,
+                                         maximum_animation_contents_scale,
+                                         animating_transform,
+                                         &result_scale_x,
+                                         &result_scale_y,
+                                         &result_bounds);
+  active_layer_->CalculateContentsScale(active_contents_scale,
+                                        device_scale_factor,
+                                        page_scale_factor,
+                                        maximum_animation_contents_scale,
+                                        animating_transform,
+                                        &result_scale_x,
+                                        &result_scale_y,
+                                        &result_bounds);
+
+  ASSERT_EQ(4u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
+
+  EXPECT_EQ(active_contents_scale,
+            pending_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_EQ(pending_contents_scale,
+            pending_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_EQ(active_contents_scale * low_res_factor,
+            pending_layer_->tilings()->tiling_at(2)->contents_scale());
+  EXPECT_EQ(pending_contents_scale * low_res_factor,
+            pending_layer_->tilings()->tiling_at(3)->contents_scale());
+
+  EXPECT_EQ(active_contents_scale,
+            active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_EQ(pending_contents_scale,
+            active_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_EQ(active_contents_scale * low_res_factor,
+            active_layer_->tilings()->tiling_at(2)->contents_scale());
+  EXPECT_EQ(pending_contents_scale * low_res_factor,
+            active_layer_->tilings()->tiling_at(3)->contents_scale());
+
+  // The unused low res tiling from the pending tree must be kept or we may add
+  // it again on the active tree and collide with the pending tree.
+  used_tilings.push_back(active_layer_->tilings()->tiling_at(1));
+  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
+  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
+
+  EXPECT_EQ(active_contents_scale,
+            active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_EQ(pending_contents_scale,
+            active_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_EQ(active_contents_scale * low_res_factor,
+            active_layer_->tilings()->tiling_at(2)->contents_scale());
+  EXPECT_EQ(pending_contents_scale * low_res_factor,
+            active_layer_->tilings()->tiling_at(3)->contents_scale());
+}
+
 TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
