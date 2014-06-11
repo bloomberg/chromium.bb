@@ -9,7 +9,8 @@
 #include <mach/mach.h>
 
 #include "base/mac/scoped_mach_port.h"
-#include "base/mac/scoped_mach_vm.h"
+#include "base/memory/scoped_ptr.h"
+#include "sandbox/mac/mach_message_server.h"
 #include "sandbox/mac/os_compatibility.h"
 
 namespace sandbox {
@@ -21,26 +22,21 @@ class BootstrapSandbox;
 // a subset of the launchd/bootstrap IPC call set for sandboxing. It permits
 // or rejects requests based on the per-process policy specified in the
 // BootstrapSandbox.
-class LaunchdInterceptionServer {
+class LaunchdInterceptionServer : public MessageDemuxer {
  public:
   explicit LaunchdInterceptionServer(const BootstrapSandbox* sandbox);
-  ~LaunchdInterceptionServer();
+  virtual ~LaunchdInterceptionServer();
 
   // Initializes the class and starts running the message server.
   bool Initialize();
 
-  mach_port_t server_port() const { return server_port_.get(); }
+  // MessageDemuxer:
+  virtual void DemuxMessage(mach_msg_header_t* request,
+                            mach_msg_header_t* reply) OVERRIDE;
+
+  mach_port_t server_port() const { return message_server_->server_port(); }
 
  private:
-  // Event handler for the |server_source_| that reads a message from the queue
-  // and processes it.
-  void ReceiveMessage();
-
-  // Decodes a message header and handles it by either servicing the request
-  // itself, forwarding the message on to the real launchd, or rejecting the
-  // message with an error.
-  void DemuxMessage(mach_msg_header_t* request, mach_msg_header_t* reply);
-
   // Given a look_up2 request message, this looks up the appropriate sandbox
   // policy for the service name then formulates and sends the reply message.
   void HandleLookUp(mach_msg_header_t* request,
@@ -54,36 +50,14 @@ class LaunchdInterceptionServer {
                          mach_msg_header_t* reply,
                          pid_t sender_pid);
 
-  // Sends a reply message. Returns true if the message was sent successfully.
-  bool SendReply(mach_msg_header_t* reply);
-
   // Forwards the original |request| on to real bootstrap server for handling.
-  void ForwardMessage(mach_msg_header_t* request, mach_msg_header_t* reply);
-
-  // Replies to the message with the specified |error_code| as a MIG
-  // error_reply RetCode.
-  void RejectMessage(mach_msg_header_t* request,
-                     mach_msg_header_t* reply,
-                     int error_code);
+  void ForwardMessage(mach_msg_header_t* request);
 
   // The sandbox for which this message server is running.
   const BootstrapSandbox* sandbox_;
 
-  // The Mach port on which the server is receiving requests.
-  base::mac::ScopedMachReceiveRight server_port_;
-
-  // The dispatch queue used to service the server_source_.
-  dispatch_queue_t server_queue_;
-
-  // A MACH_RECV dispatch source for the server_port_.
-  dispatch_source_t server_source_;
-
-  // Request and reply buffers used in ReceiveMessage.
-  base::mac::ScopedMachVM request_buffer_;
-  base::mac::ScopedMachVM reply_buffer_;
-
-  // Whether or not ForwardMessage() was called during ReceiveMessage().
-  bool did_forward_message_;
+  // The Mach IPC server.
+  scoped_ptr<MachMessageServer> message_server_;
 
   // The Mach port handed out in reply to denied look up requests. All denied
   // requests share the same port, though nothing reads messages from it.
