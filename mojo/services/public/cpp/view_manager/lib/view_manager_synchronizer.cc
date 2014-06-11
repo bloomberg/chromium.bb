@@ -120,30 +120,8 @@ class ViewManagerTransaction {
   bool committed() const { return committed_; }
 
  protected:
-  enum TransactionType {
-    // View creation and destruction.
-    TYPE_CREATE_VIEW,
-    TYPE_DESTROY_VIEW,
-    // Node creation and destruction.
-    TYPE_CREATE_VIEW_TREE_NODE,
-    TYPE_DESTROY_VIEW_TREE_NODE,
-    // Modifications to the hierarchy (addition of or removal of nodes from a
-    // parent.)
-    TYPE_HIERARCHY,
-    // View replacement.
-    TYPE_SET_ACTIVE_VIEW,
-    // Node bounds.
-    TYPE_SET_BOUNDS,
-    // View contents
-    TYPE_SET_VIEW_CONTENTS,
-    // Embed.
-    TYPE_EMBED
-  };
-
-  ViewManagerTransaction(TransactionType transaction_type,
-                         ViewManagerSynchronizer* synchronizer)
-      : transaction_type_(transaction_type),
-        committed_(false),
+  explicit ViewManagerTransaction(ViewManagerSynchronizer* synchronizer)
+      : committed_(false),
         synchronizer_(synchronizer) {
   }
 
@@ -173,7 +151,6 @@ class ViewManagerTransaction {
     synchronizer_->RemoveFromPendingQueue(this);
   }
 
-  const TransactionType transaction_type_;
   bool committed_;
   ViewManagerSynchronizer* synchronizer_;
 
@@ -183,7 +160,7 @@ class ViewManagerTransaction {
 class CreateViewTransaction : public ViewManagerTransaction {
  public:
   CreateViewTransaction(Id view_id, ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_CREATE_VIEW, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         view_id_(view_id) {}
   virtual ~CreateViewTransaction() {}
 
@@ -204,7 +181,7 @@ class CreateViewTransaction : public ViewManagerTransaction {
 class DestroyViewTransaction : public ViewManagerTransaction {
  public:
   DestroyViewTransaction(Id view_id, ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_DESTROY_VIEW, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         view_id_(view_id) {}
   virtual ~DestroyViewTransaction() {}
 
@@ -226,7 +203,7 @@ class CreateViewTreeNodeTransaction : public ViewManagerTransaction {
  public:
   CreateViewTreeNodeTransaction(Id node_id,
                                 ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_CREATE_VIEW_TREE_NODE, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         node_id_(node_id) {}
   virtual ~CreateViewTreeNodeTransaction() {}
 
@@ -251,7 +228,7 @@ class DestroyViewTreeNodeTransaction : public ViewManagerTransaction {
  public:
   DestroyViewTreeNodeTransaction(Id node_id,
                                  ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_DESTROY_VIEW_TREE_NODE, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         node_id_(node_id) {}
   virtual ~DestroyViewTreeNodeTransaction() {}
 
@@ -279,7 +256,7 @@ class HierarchyTransaction : public ViewManagerTransaction {
                        Id child_id,
                        Id parent_id,
                        ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_HIERARCHY, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         hierarchy_change_type_(hierarchy_change_type),
         child_id_(child_id),
         parent_id_(parent_id) {}
@@ -322,7 +299,7 @@ class SetActiveViewTransaction : public ViewManagerTransaction {
   SetActiveViewTransaction(Id node_id,
                            Id view_id,
                            ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_SET_ACTIVE_VIEW, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         node_id_(node_id),
         view_id_(view_id) {}
   virtual ~SetActiveViewTransaction() {}
@@ -347,7 +324,7 @@ class SetBoundsTransaction : public ViewManagerTransaction {
   SetBoundsTransaction(Id node_id,
                        const gfx::Rect& bounds,
                        ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_SET_BOUNDS, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         node_id_(node_id),
         bounds_(bounds) {}
   virtual ~SetBoundsTransaction() {}
@@ -373,7 +350,7 @@ class SetViewContentsTransaction : public ViewManagerTransaction {
   SetViewContentsTransaction(Id view_id,
                              const SkBitmap& contents,
                              ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_SET_VIEW_CONTENTS, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         view_id_(view_id),
         contents_(contents) {}
   virtual ~SetViewContentsTransaction() {}
@@ -438,7 +415,7 @@ class EmbedTransaction : public ViewManagerTransaction {
   EmbedTransaction(const String& url,
                    Id node_id,
                    ViewManagerSynchronizer* synchronizer)
-      : ViewManagerTransaction(TYPE_EMBED, synchronizer),
+      : ViewManagerTransaction(synchronizer),
         url_(url),
         node_id_(node_id) {}
   virtual ~EmbedTransaction() {}
