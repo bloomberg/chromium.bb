@@ -707,6 +707,16 @@ public class Tab implements NavigationClient {
     }
 
     /**
+     * Replaces the current NativePage with a empty stand-in for a NativePage. This can be used
+     * to reduce memory pressure.
+     */
+    public void freezeNativePage() {
+        if (mNativePage == null || mNativePage instanceof FrozenNativePage) return;
+        assert mNativePage.getView().getParent() == null : "Cannot freeze visible native page";
+        mNativePage = FrozenNativePage.freeze(mNativePage);
+    }
+
+    /**
      * Hides the current {@link NativePage}, if any, and shows the {@link ContentViewCore}'s view.
      */
     protected void showRenderedPage() {
