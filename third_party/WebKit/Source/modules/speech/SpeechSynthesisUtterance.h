@@ -33,14 +33,15 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class SpeechSynthesisUtterance FINAL : public RefCountedGarbageCollected<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<SpeechSynthesisUtterance>);
+class SpeechSynthesisUtterance FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(SpeechSynthesisUtterance);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 public:
-    static SpeechSynthesisUtterance* create(ExecutionContext*, const String&);
+    static PassRefPtrWillBeRawPtr<SpeechSynthesisUtterance> create(ExecutionContext*, const String&);
 
     virtual ~SpeechSynthesisUtterance();
 
@@ -82,7 +83,7 @@ public:
 private:
     SpeechSynthesisUtterance(ExecutionContext*, const String&);
     RefPtr<PlatformSpeechSynthesisUtterance> m_platformUtterance;
-    Member<SpeechSynthesisVoice> m_voice;
+    RefPtrWillBeMember<SpeechSynthesisVoice> m_voice;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;

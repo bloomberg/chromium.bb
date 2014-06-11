@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-SpeechSynthesisVoice* SpeechSynthesisVoice::create(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
+PassRefPtrWillBeRawPtr<SpeechSynthesisVoice> SpeechSynthesisVoice::create(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
 {
-    return new SpeechSynthesisVoice(voice);
+    return adoptRefWillBeNoop(new SpeechSynthesisVoice(voice));
 }
 
 SpeechSynthesisVoice::SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice> voice)

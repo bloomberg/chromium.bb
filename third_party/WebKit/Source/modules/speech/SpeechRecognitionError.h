@@ -27,6 +27,7 @@
 #define SpeechRecognitionError_h
 
 #include "modules/EventModules.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

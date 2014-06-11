@@ -37,11 +37,11 @@
 
 namespace WebCore {
 
-SpeechRecognition* SpeechRecognition::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
 {
-    SpeechRecognition* speechRecognition = adoptRefCountedGarbageCollected(new SpeechRecognition(context));
+    RefPtrWillBeRawPtr<SpeechRecognition> speechRecognition(adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognition(context)));
     speechRecognition->suspendIfNeeded();
-    return speechRecognition;
+    return speechRecognition.release();
 }
 
 void SpeechRecognition::start(ExceptionState& exceptionState)
@@ -105,21 +105,21 @@ void SpeechRecognition::didEndAudio()
     dispatchEvent(Event::create(EventTypeNames::audioend));
 }
 
-void SpeechRecognition::didReceiveResults(const HeapVector<Member<SpeechRecognitionResult> >& newFinalResults, const HeapVector<Member<SpeechRecognitionResult> >& currentInterimResults)
+void SpeechRecognition::didReceiveResults(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& newFinalResults, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& currentInterimResults)
 {
     unsigned long resultIndex = m_finalResults.size();
 
     for (size_t i = 0; i < newFinalResults.size(); ++i)
         m_finalResults.append(newFinalResults[i]);
 
-    HeapVector<Member<SpeechRecognitionResult> > results = m_finalResults;
+    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > results = m_finalResults;
     for (size_t i = 0; i < currentInterimResults.size(); ++i)
         results.append(currentInterimResults[i]);
 
     dispatchEvent(SpeechRecognitionEvent::createResult(resultIndex, results));
 }
 
-void SpeechRecognition::didReceiveNoMatch(SpeechRecognitionResult* result)
+void SpeechRecognition::didReceiveNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult> result)
 {
     dispatchEvent(SpeechRecognitionEvent::createNoMatch(result));
 }

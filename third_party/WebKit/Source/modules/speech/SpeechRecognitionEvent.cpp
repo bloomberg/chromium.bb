@@ -36,7 +36,7 @@ SpeechRecognitionEventInit::SpeechRecognitionEventInit()
 
 PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
 {
-    return adoptRefWillBeNoop(new SpeechRecognitionEvent);
+    return adoptRefWillBeNoop(new SpeechRecognitionEvent());
 }
 
 PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
@@ -44,15 +44,15 @@ PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(co
     return adoptRefWillBeNoop(new SpeechRecognitionEvent(eventName, initializer));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult> >& results)
+PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
 {
     return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
+PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult> result)
 {
     if (result) {
-        HeapVector<Member<SpeechRecognitionResult> > results;
+        WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > results;
         results.append(result);
         return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
     }
@@ -79,7 +79,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, co
     ScriptWrappable::init(this);
 }
 
-SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results)
+SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> results)
     : Event(eventName, /*canBubble=*/false, /*cancelable=*/false)
     , m_resultIndex(resultIndex)
     , m_results(results)
@@ -89,6 +89,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, un
 
 SpeechRecognitionEvent::~SpeechRecognitionEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 void SpeechRecognitionEvent::trace(Visitor* visitor)

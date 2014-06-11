@@ -24,7 +24,7 @@
  */
 
 [
-    GarbageCollected,
+    WillBeGarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=SpeechSynthesis
 ] interface SpeechSynthesis : EventTarget {

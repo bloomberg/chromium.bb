@@ -29,9 +29,9 @@
 
 namespace WebCore {
 
-SpeechRecognitionResultList* SpeechRecognitionResultList::create(const HeapVector<Member<SpeechRecognitionResult> >& results)
+PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
 {
-    return new SpeechRecognitionResultList(results);
+    return adoptRefWillBeNoop(new SpeechRecognitionResultList(results));
 }
 
 SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
@@ -42,7 +42,7 @@ SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
     return m_results[index].get();
 }
 
-SpeechRecognitionResultList::SpeechRecognitionResultList(const HeapVector<Member<SpeechRecognitionResult> >& results)
+SpeechRecognitionResultList::SpeechRecognitionResultList(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
     : m_results(results)
 {
     ScriptWrappable::init(this);

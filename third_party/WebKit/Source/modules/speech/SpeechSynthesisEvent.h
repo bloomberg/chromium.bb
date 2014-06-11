@@ -27,6 +27,7 @@
 #define SpeechSynthesisEvent_h
 
 #include "modules/EventModules.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -41,10 +42,7 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::SpeechSynthesisEvent; }
 
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        Event::trace(visitor);
-    }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     SpeechSynthesisEvent();

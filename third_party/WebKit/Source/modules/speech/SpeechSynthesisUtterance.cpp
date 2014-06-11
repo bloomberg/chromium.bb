@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-SpeechSynthesisUtterance* SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
+PassRefPtrWillBeRawPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
 {
-    return adoptRefCountedGarbageCollected(new SpeechSynthesisUtterance(context, text));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisUtterance(context, text));
 }
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, const String& text)

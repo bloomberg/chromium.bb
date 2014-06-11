@@ -48,7 +48,7 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator WebCore::SpeechRecognitionResult*() const;
+    operator PassRefPtrWillBeRawPtr<WebCore::SpeechRecognitionResult>() const;
 #endif
 
 private:

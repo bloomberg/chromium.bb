@@ -24,7 +24,7 @@
  */
 
 [
-    GarbageCollected,
+    WillBeGarbageCollected,
     NoInterfaceObject,
     Constructor
 ] interface SpeechGrammar {

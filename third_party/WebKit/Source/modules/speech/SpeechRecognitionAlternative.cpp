@@ -29,9 +29,9 @@
 
 namespace WebCore {
 
-SpeechRecognitionAlternative* SpeechRecognitionAlternative::create(const String& transcript, double confidence)
+PassRefPtrWillBeRawPtr<SpeechRecognitionAlternative> SpeechRecognitionAlternative::create(const String& transcript, double confidence)
 {
-    return new SpeechRecognitionAlternative(transcript, confidence);
+    return adoptRefWillBeNoop(new SpeechRecognitionAlternative(transcript, confidence));
 }
 
 SpeechRecognitionAlternative::SpeechRecognitionAlternative(const String& transcript, double confidence)

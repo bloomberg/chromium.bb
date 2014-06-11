@@ -30,7 +30,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
-    return adoptRefWillBeNoop(new SpeechSynthesisEvent);
+    return adoptRefWillBeNoop(new SpeechSynthesisEvent());
 }
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
@@ -50,6 +50,11 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
     , m_name(name)
 {
     ScriptWrappable::init(this);
+}
+
+void SpeechSynthesisEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
 }
 
 } // namespace WebCore

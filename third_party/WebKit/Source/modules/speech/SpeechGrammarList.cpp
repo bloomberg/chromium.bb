@@ -31,9 +31,9 @@
 
 namespace WebCore {
 
-SpeechGrammarList* SpeechGrammarList::create()
+PassRefPtrWillBeRawPtr<SpeechGrammarList> SpeechGrammarList::create()
 {
-    return new SpeechGrammarList;
+    return adoptRefWillBeNoop(new SpeechGrammarList);
 }
 
 SpeechGrammar* SpeechGrammarList::item(unsigned long index) const

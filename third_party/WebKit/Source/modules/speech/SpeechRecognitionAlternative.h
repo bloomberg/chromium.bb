@@ -28,15 +28,16 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class SpeechRecognitionAlternative : public GarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
+class SpeechRecognitionAlternative : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
 public:
-    static SpeechRecognitionAlternative* create(const String&, double);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionAlternative> create(const String&, double);
 
     const String& transcript() const { return m_transcript; }
     double confidence() const { return m_confidence; }

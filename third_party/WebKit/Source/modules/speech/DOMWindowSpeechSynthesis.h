@@ -51,7 +51,7 @@ private:
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();
 
-    PersistentWillBeMember<SpeechSynthesis> m_speechSynthesis;
+    RefPtrWillBeMember<SpeechSynthesis> m_speechSynthesis;
 };
 
 } // namespace WebCore

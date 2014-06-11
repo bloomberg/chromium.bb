@@ -30,6 +30,7 @@
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/heap/Handle.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -40,7 +41,7 @@ public:
     SpeechRecognitionEventInit();
 
     unsigned long resultIndex;
-    Member<SpeechRecognitionResultList> results;
+    RefPtrWillBeMember<SpeechRecognitionResultList> results;
 };
 
 class SpeechRecognitionEvent FINAL : public Event {
@@ -49,8 +50,8 @@ public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
     virtual ~SpeechRecognitionEvent();
 
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult> >& results);
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createNoMatch(SpeechRecognitionResult*);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results);
+    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult>);
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results.get(); }
@@ -67,10 +68,10 @@ public:
 private:
     SpeechRecognitionEvent();
     SpeechRecognitionEvent(const AtomicString&, const SpeechRecognitionEventInit&);
-    SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results);
+    SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> results);
 
     unsigned long m_resultIndex;
-    PersistentWillBeMember<SpeechRecognitionResultList> m_results;
+    RefPtrWillBeMember<SpeechRecognitionResultList> m_results;
 };
 
 } // namespace WebCore

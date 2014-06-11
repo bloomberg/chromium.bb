@@ -31,14 +31,14 @@
 
 namespace WebCore {
 
-SpeechGrammar* SpeechGrammar::create()
+PassRefPtrWillBeRawPtr<SpeechGrammar> SpeechGrammar::create()
 {
-    return new SpeechGrammar;
+    return adoptRefWillBeNoop(new SpeechGrammar);
 }
 
-SpeechGrammar* SpeechGrammar::create(const KURL& src, double weight)
+PassRefPtrWillBeRawPtr<SpeechGrammar> SpeechGrammar::create(const KURL& src, double weight)
 {
-    return new SpeechGrammar(src, weight);
+    return adoptRefWillBeNoop(new SpeechGrammar(src, weight));
 }
 
 void SpeechGrammar::setSrc(ExecutionContext* executionContext, const String& src)

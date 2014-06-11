@@ -29,16 +29,17 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class SpeechGrammar FINAL : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
+class SpeechGrammar : public RefCountedWillBeGarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
 public:
-    static SpeechGrammar* create(); // FIXME: The spec is not clear on what the constructor should look like.
-    static SpeechGrammar* create(const KURL& src, double weight);
+    static PassRefPtrWillBeRawPtr<SpeechGrammar> create(); // FIXME: The spec is not clear on what the constructor should look like.
+    static PassRefPtrWillBeRawPtr<SpeechGrammar> create(const KURL& src, double weight);
 
     const KURL& src(ExecutionContext*) const { return m_src; }
     const KURL& src() const { return m_src; }
