@@ -1349,12 +1349,25 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileFilter_.removeFilter('fileType');
     var selectedIndex = this.getSelectedFilterIndex_();
     if (selectedIndex > 0) { // Specific filter selected.
-      var regexp = new RegExp('.*(' +
+      var regexp = new RegExp('\\.(' +
           this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
       var filter = function(entry) {
         return entry.isDirectory || regexp.test(entry.name);
       };
       this.fileFilter_.addFilter('fileType', filter);
+
+      // In save dialog, update the destination name extension.
+      if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
+        var current = this.filenameInput_.value;
+        var newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
+        if (newExt && !regexp.test(current)) {
+          var i = current.lastIndexOf('.');
+          if (i >= 0) {
+            this.filenameInput_.value = current.substr(0, i) + '.' + newExt;
+            this.selectTargetNameInFilenameInput_();
+          }
+        }
+      }
     }
   };
 
