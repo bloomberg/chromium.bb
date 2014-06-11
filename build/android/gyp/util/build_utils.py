@@ -14,6 +14,11 @@ import sys
 import tempfile
 import zipfile
 
+CHROMIUM_SRC = os.path.join(os.path.dirname(__file__),
+                            os.pardir, os.pardir, os.pardir, os.pardir)
+COLORAMA_ROOT = os.path.join(CHROMIUM_SRC,
+                             'third_party', 'colorama', 'src')
+
 
 @contextlib.contextmanager
 def TempDir():
@@ -112,7 +117,10 @@ class CalledProcessError(Exception):
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.
-def CheckOutput(args, cwd=None, print_stdout=False, print_stderr=True,
+def CheckOutput(args, cwd=None,
+                print_stdout=False, print_stderr=True,
+                stdout_filter=None,
+                stderr_filter=None,
                 fail_func=lambda returncode, stderr: returncode != 0):
   if not cwd:
     cwd = os.getcwd()
@@ -120,6 +128,12 @@ def CheckOutput(args, cwd=None, print_stdout=False, print_stderr=True,
   child = subprocess.Popen(args,
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
   stdout, stderr = child.communicate()
+
+  if stdout_filter is not None:
+    stdout = stdout_filter(stdout)
+
+  if stderr_filter is not None:
+    stderr = stderr_filter(stderr)
 
   if fail_func(child.returncode, stderr):
     raise CalledProcessError(cwd, args, stdout + stderr)

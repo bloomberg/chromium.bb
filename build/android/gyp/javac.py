@@ -7,10 +7,47 @@
 import fnmatch
 import optparse
 import os
+import re
 import sys
 
 from util import build_utils
 from util import md5_check
+
+sys.path.append(build_utils.COLORAMA_ROOT)
+import colorama
+
+
+def ColorJavacOutput(output):
+  fileline_prefix = '(?P<fileline>(?P<file>[-.\w/\\]+.java):(?P<line>[0-9]+):)'
+  warning_re = re.compile(
+      fileline_prefix + '(?P<full_message> warning: (?P<message>.*))$')
+  error_re = re.compile(
+      fileline_prefix + '(?P<full_message> (?P<message>.*))$')
+  marker_re = re.compile(r'\s*(?P<marker>\^)\s*$')
+
+  warning_color = ['full_message', colorama.Fore.YELLOW + colorama.Style.DIM]
+  error_color = ['full_message', colorama.Fore.MAGENTA + colorama.Style.BRIGHT]
+  marker_color = ['marker',  colorama.Fore.BLUE + colorama.Style.BRIGHT]
+
+  def Colorize(line, regex, color):
+    match = regex.match(line)
+    start = match.start(color[0])
+    end = match.end(color[0])
+    return (line[:start]
+            + color[1] + line[start:end]
+            + colorama.Fore.RESET + colorama.Style.RESET_ALL
+            + line[end:])
+
+  def ApplyColor(line):
+    if warning_re.match(line):
+      line = Colorize(line, warning_re, warning_color)
+    elif error_re.match(line):
+      line = Colorize(line, error_re, error_color)
+    elif marker_re.match(line):
+      line = Colorize(line, marker_re, marker_color)
+    return line
+
+  return '\n'.join(map(ApplyColor, output.split('\n')))
 
 
 def DoJavac(options, args):
@@ -64,7 +101,11 @@ def DoJavac(options, args):
     # not contain the corresponding old .class file after running this action.
     build_utils.DeleteDirectory(output_dir)
     build_utils.MakeDirectory(output_dir)
-    build_utils.CheckOutput(javac_cmd, print_stdout=options.chromium_code)
+    build_utils.CheckOutput(
+        javac_cmd,
+        print_stdout=options.chromium_code,
+        stderr_filter=ColorJavacOutput)
+
 
   record_path = '%s/javac.md5.stamp' % options.output_dir
   md5_check.CallAndRecordIfStale(
@@ -75,6 +116,8 @@ def DoJavac(options, args):
 
 
 def main():
+  colorama.init()
+
   parser = optparse.OptionParser()
   parser.add_option('--src-gendirs',
       help='Directories containing generated java files.')
