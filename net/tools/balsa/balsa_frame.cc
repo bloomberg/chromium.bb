@@ -8,7 +8,6 @@
 #if __SSE2__
 #include <emmintrin.h>
 #endif  // __SSE2__
-#include <strings.h>
 
 #include <limits>
 #include <string>
@@ -25,6 +24,13 @@
 #include "net/tools/balsa/simple_buffer.h"
 #include "net/tools/balsa/split.h"
 #include "net/tools/balsa/string_piece_utils.h"
+
+#if defined(COMPILER_MSVC)
+#include <string.h>
+#define strncasecmp _strnicmp
+#else
+#include <strings.h>
+#endif
 
 namespace net {
 
@@ -426,7 +432,7 @@ void BalsaFrame::ProcessFirstLine(const char* begin, const char* end) {
   }
 
   if (is_request_) {
-    int version_length =
+    size_t version_length =
         headers_->whitespace_4_idx_ - headers_->non_whitespace_3_idx_;
     visitor_->ProcessRequestFirstLine(
         begin + headers_->non_whitespace_1_idx_,
@@ -1555,10 +1561,5 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
 #endif  // DEBUGFRAMER
   return current - input;
 }
-
-const uint32 BalsaFrame::kValidTerm1;
-const uint32 BalsaFrame::kValidTerm1Mask;
-const uint32 BalsaFrame::kValidTerm2;
-const uint32 BalsaFrame::kValidTerm2Mask;
 
 }  // namespace net

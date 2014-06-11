@@ -1607,6 +1607,8 @@
       'test/scoped_mock_log.cc',
       'test/scoped_mock_log.h',
       'test/test_certificate_data.h',
+      'tools/balsa/balsa_frame_test.cc',
+      'tools/balsa/balsa_headers_test.cc',
       'tools/dump_cache/url_to_filename_encoder.cc',
       'tools/dump_cache/url_to_filename_encoder.h',
       'tools/dump_cache/url_to_filename_encoder_unittest.cc',
@@ -1653,8 +1655,6 @@
     ],
     'net_linux_test_sources': [
       'quic/quic_end_to_end_unittest.cc',
-      'tools/balsa/balsa_frame_test.cc',
-      'tools/balsa/balsa_headers_test.cc',
       'tools/quic/end_to_end_test.cc',
       'tools/quic/quic_client_session_test.cc',
       'tools/quic/quic_dispatcher_test.cc',

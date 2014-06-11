@@ -12,6 +12,34 @@
 
 namespace net {
 
+#if defined(COMPILER_MSVC)
+struct StringPieceCaseCompare {
+  static const size_t bucket_size = 4;
+
+  size_t operator()(const base::StringPiece& sp) const {
+    // based on __stl_string_hash in http://www.sgi.com/tech/stl/string
+    size_t hash_val = 0;
+    for (base::StringPiece::const_iterator it = sp.begin();
+         it != sp.end(); ++it) {
+      hash_val = 5 * hash_val + tolower(*it);
+    }
+    return hash_val;
+  }
+
+  bool operator()(const base::StringPiece& sp1,
+                  const base::StringPiece& sp2) const {
+    size_t len1 = sp1.length();
+    size_t len2 = sp2.length();
+    bool sp1_shorter = len1 < len2;
+    size_t len = sp1_shorter ? len1 : len2;
+    int rv = _memicmp(sp1.data(), sp2.data(), len);
+    if (rv == 0) {
+      return sp1_shorter;
+    }
+    return rv < 0;
+  }
+};
+#else  // COMPILER_MSVC
 struct StringPieceCaseHash {
   size_t operator()(const base::StringPiece& sp) const {
     // based on __stl_string_hash in http://www.sgi.com/tech/stl/string
@@ -23,6 +51,7 @@ struct StringPieceCaseHash {
     return hash_val;
   }
 };
+#endif  // COMPILER_MSVC
 
 struct StringPieceUtils {
   static bool EqualIgnoreCase(const base::StringPiece& piece1,

@@ -24,6 +24,11 @@ struct BalsaFrameEnums {
   };
 
   enum ErrorCode {
+#if defined(_WIN32)
+    // On Windows, <WinError.h> defines the NO_ERROR macro as 0L, which
+    // breaks the compilation of the "NO_ERROR = 0" line.
+#undef NO_ERROR
+#endif
     NO_ERROR = 0,  // A sentinel value for convenience, none of the callbacks
     //                should ever see this error code.
     // Header parsing errors

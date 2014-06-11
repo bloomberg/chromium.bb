@@ -6,11 +6,11 @@
 
 #include <stdio.h>
 #include <algorithm>
-#include <ext/hash_set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/strings/string_piece.h"
@@ -20,15 +20,28 @@
 #include "net/tools/balsa/simple_buffer.h"
 #include "third_party/tcmalloc/chromium/src/base/googleinit.h"
 
+#if defined(COMPILER_MSVC)
+#include <string.h>
+#define snprintf _snprintf
+#define strncasecmp _strnicmp
+#else
+#include <strings.h>
+#endif
+
 namespace {
 
 const char kContentLength[] = "Content-Length";
 const char kTransferEncoding[] = "Transfer-Encoding";
 const char kSpaceChar = ' ';
 
-__gnu_cxx::hash_set<base::StringPiece,
-                    net::StringPieceCaseHash,
-                    net::StringPieceCaseEqual> g_multivalued_headers;
+#if defined(COMPILER_MSVC)
+base::hash_set<base::StringPiece,
+               net::StringPieceCaseCompare> g_multivalued_headers;
+#else
+base::hash_set<base::StringPiece,
+               net::StringPieceCaseHash,
+               net::StringPieceCaseEqual> g_multivalued_headers;
+#endif
 
 void InitMultivaluedHeaders() {
   g_multivalued_headers.insert("accept");
@@ -65,8 +78,6 @@ const int kFastToBufferSize = 32;  // I think 22 is adequate, but anyway..
 }  // namespace
 
 namespace net {
-
-const size_t BalsaBuffer::kDefaultBlocksize;
 
 BalsaHeaders::iterator_base::iterator_base() : headers_(NULL), idx_(0) { }
 
@@ -542,7 +553,7 @@ const base::StringPiece BalsaHeaders::GetHeader(
   const HeaderLines::const_iterator begin = header_lines_.begin();
   HeaderLines::const_iterator i = GetConstHeaderLinesIterator(key, begin);
   if (i == end) {
-    return base::StringPiece(NULL, 0);
+    return base::StringPiece();
   }
   return GetValueFromHeaderLineDescription(*i);
 }

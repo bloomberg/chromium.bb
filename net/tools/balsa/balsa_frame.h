@@ -5,8 +5,6 @@
 #ifndef NET_TOOLS_BALSA_BALSA_FRAME_H_
 #define NET_TOOLS_BALSA_BALSA_FRAME_H_
 
-#include <strings.h>
-
 #include <utility>
 #include <vector>
 

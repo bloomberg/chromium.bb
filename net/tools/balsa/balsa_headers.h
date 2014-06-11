@@ -938,7 +938,7 @@ class BalsaHeaders {
     return transfer_encoding_is_chunked_;
   }
 
-  static bool ResponseCodeImpliesNoBody(int code) {
+  static bool ResponseCodeImpliesNoBody(size_t code) {
     // From HTTP spec section 6.1.1 all 1xx responses must not have a body,
     // as well as 204 No Content and 304 Not Modified.
     return ((code >= 100) && (code <= 199)) || (code == 204) || (code == 304);
