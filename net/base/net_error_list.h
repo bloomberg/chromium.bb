@@ -607,6 +607,9 @@ NET_ERROR(SPDY_FRAME_SIZE_ERROR, -362)
 // Decoding or encoding of compressed SPDY headers failed.
 NET_ERROR(SPDY_COMPRESSION_ERROR, -363)
 
+// Proxy Auth Requested without a valid Client Socket Handle.
+NET_ERROR(PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION, -364)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

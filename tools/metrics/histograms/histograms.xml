@@ -13880,6 +13880,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.ProxyAuthRequested.HasConnection">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    When a PROXY_AUTH_REQUESTED error code is handled in
+    net::HttpStreamFactoryImpl::Job::RunLoop, this is true if connection_ has an
+    associated value.
+  </summary>
+</histogram>
+
 <histogram name="Net.ProxyPollConfigurationTime">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
