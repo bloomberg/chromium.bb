@@ -188,14 +188,9 @@ def main():
       code = code or code1 or code2
     return code
   else:
-    latest_download_site = archive.Site.BLINK_SNAPSHOT
-    if util.IsLinux() and platform.architecture()[0] == '32bit':
-      # There is no linux32 blink build, so use a build from the chromium
-      # snapshot build archive instead.
-      latest_download_site = archive.Site.CHROMIUM_SNAPSHOT
-    latest_snapshot = archive.GetLatestRevision(latest_download_site)
+    latest_snapshot_revision = archive.GetLatestSnapshotVersion()
     versions = [
-        ['HEAD', latest_snapshot],
+        ['HEAD', latest_snapshot_revision],
         ['36', archive.CHROME_36_REVISION],
         ['35', archive.CHROME_35_REVISION],
         ['34', archive.CHROME_34_REVISION]
@@ -208,7 +203,7 @@ def main():
       version_name = version[0]
       if version_name == 'HEAD':
         version_name = version[1]
-        download_site = latest_download_site
+        download_site = archive.GetSnapshotDownloadSite()
       temp_dir, chrome_path = DownloadChrome(version_name, version[1],
                                              download_site)
       if not chrome_path:
