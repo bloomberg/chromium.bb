@@ -27,9 +27,10 @@ const char kInstantExtendedAPIParam[] = "espv";
 GURL LinkDoctorBaseURL();
 void SetMockLinkDoctorBaseURLForTesting();
 
-// Returns the Google locale.  This is the same string as
-// AppendGoogleLocaleParam adds to the URL, only without the leading "hl".
-std::string GetGoogleLocale();
+// Returns the Google locale corresponding to |application_locale|.  This is
+// the same string as AppendGoogleLocaleParam adds to the URL, only without the
+// leading "hl".
+std::string GetGoogleLocale(const std::string& application_locale);
 
 // Adds the Google locale string to the URL (e.g., hl=en-US).  This does not
 // check to see if the param already exists.

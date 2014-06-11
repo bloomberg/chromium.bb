@@ -67,17 +67,14 @@ void SetMockLinkDoctorBaseURLForTesting() {
   gUseMockLinkDoctorBaseURLForTesting = true;
 }
 
-std::string GetGoogleLocale() {
-  std::string locale = g_browser_process->GetApplicationLocale();
-  // Google does not yet recognize 'nb' for Norwegian Bokmal, but it uses
-  // 'no' for that.
-  if (locale == "nb")
-    return "no";
-  return locale;
+std::string GetGoogleLocale(const std::string& application_locale) {
+  // Google does not recognize "nb" for Norwegian Bokmal; it uses "no".
+  return (application_locale == "nb") ? "no" : application_locale;
 }
 
 GURL AppendGoogleLocaleParam(const GURL& url) {
-  return net::AppendQueryParameter(url, "hl", GetGoogleLocale());
+  return net::AppendQueryParameter(
+      url, "hl", GetGoogleLocale(g_browser_process->GetApplicationLocale()));
 }
 
 std::string StringAppendGoogleLocaleParam(const std::string& url) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -94,7 +95,7 @@ void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
   rfh->Send(new ChromeViewMsg_SetNavigationCorrectionInfo(
       rfh->GetRoutingID(),
       GetNavigationCorrectionURL(),
-      google_util::GetGoogleLocale(),
+      google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale()),
       google_util::GetGoogleCountryCode(
           google_profile_helper::GetGoogleHomePageURL(profile_)),
       google_apis::GetAPIKey(),
