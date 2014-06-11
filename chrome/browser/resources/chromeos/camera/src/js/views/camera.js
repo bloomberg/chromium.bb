@@ -1657,10 +1657,12 @@ camera.views.Camera.prototype.start_ = function() {
         onSuccess,
         function() {
           index++;
-          if (index < camera.views.Camera.RESOLUTIONS.length)
-            tryNextResolution();
-          else
+          if (index < camera.views.Camera.RESOLUTIONS.length) {
+            // TODO(mtomasz): Workaround for crbug.com/383241.
+            setTimeout(tryNextResolution, 0);
+          } else {
             onFailure();
+          }
         },
         scheduleRetry.bind(this));  // onDisconnected
   }.bind(this);
