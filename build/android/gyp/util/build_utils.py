@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import fnmatch
 import json
 import os
@@ -10,6 +11,17 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
+import zipfile
+
+
+@contextlib.contextmanager
+def TempDir():
+  dirname = tempfile.mkdtemp()
+  try:
+    yield dirname
+  finally:
+    shutil.rmtree(dirname)
 
 
 def MakeDirectory(dir_path):
@@ -140,6 +152,39 @@ def IsTimeStale(output, inputs):
 def IsDeviceReady():
   device_state = CheckOutput(['adb', 'get-state'])
   return device_state.strip() == 'device'
+
+
+def CheckZipPath(name):
+  if os.path.normpath(name) != name:
+    raise Exception('Non-canonical zip path: %s, %s' % name)
+  if os.path.isabs(name):
+    raise Exception('Absolute zip path: %s, %s' % name)
+
+
+def ExtractAll(zip_path, path=None, no_clobber=True):
+  if path is None:
+    path = os.getcwd()
+  elif not os.path.exists(path):
+    MakeDirectory(path)
+
+  with zipfile.ZipFile(zip_path) as z:
+    for name in z.namelist():
+      CheckZipPath(name)
+      if no_clobber:
+        output_path = os.path.join(path, name)
+        if os.path.exists(output_path):
+          raise Exception(
+              'Path already exists from zip: %s %s %s'
+              % (zip_path, name, output_path))
+
+    z.extractall(path=path)
+
+
+def DoZip(inputs, output, base_dir):
+  with zipfile.ZipFile(output, 'w') as outfile:
+    for f in inputs:
+      CheckZipPath(f)
+      outfile.write(f, os.path.relpath(f, base_dir))
 
 
 def PrintWarning(message):

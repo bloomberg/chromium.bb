@@ -65,10 +65,9 @@
     'proguard_flags_paths': ['<(generated_proguard_file)'],
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
-    'res_v14_compatibility_dir': '<(intermediate_dir)/res_v14_compatibility',
     'R_package%':'',
     'additional_R_text_files': [],
-    'additional_res_dirs': [],
+    'dependencies_res_zip_paths': [],
     'additional_res_packages': [],
     'is_test_apk%': 0,
     'resource_input_paths': [],
@@ -105,7 +104,7 @@
     'push_stamp': '<(intermediate_dir)/push.stamp',
     'link_stamp': '<(intermediate_dir)/link.stamp',
     'package_resources_stamp': '<(intermediate_dir)/package_resources.stamp',
-    'crunch_output_dir': '<(intermediate_dir)/res',
+    'resource_zip_path': '<(intermediate_dir)/<(_target_name).resources.zip',
     'resource_packaged_apk_name': '<(apk_name)-resources.ap_',
     'resource_packaged_apk_path': '<(intermediate_dir)/<(resource_packaged_apk_name)',
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
@@ -170,7 +169,6 @@
       'variables': {
         # We generate R.java in package R_package (in addition to the package
         # listed in the AndroidManifest.xml, which is unavoidable).
-        'additional_res_dirs': ['<(DEPTH)/build/android/ant/empty/res'],
         'additional_res_packages': ['<(R_package)'],
         'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
       },
@@ -449,7 +447,7 @@
         'process_resources_options': [],
         'conditions': [
           ['is_test_apk == 1', {
-            'additional_res_dirs=': [],
+            'dependencies_res_zip_paths=': [],
             'additional_res_packages=': [],
           }],
           ['res_v14_verify_only == 1', {
@@ -463,9 +461,11 @@
         '<(android_manifest_path)',
         '>@(additional_input_paths)',
         '>@(resource_input_paths)',
+        '>@(dependencies_res_zip_paths)',
         '>(inputs_list_file)',
       ],
       'outputs': [
+        '<(resource_zip_path)',
         '<(generated_proguard_file)',
         '<(codegen_stamp)',
       ],
@@ -475,7 +475,7 @@
         '--android-sdk-tools', '<(android_sdk_tools)',
 
         '--android-manifest', '<(android_manifest_path)',
-        '--dependencies-res-dirs', '>(additional_res_dirs)',
+        '--dependencies-res-zips', '>(dependencies_res_zip_paths)',
 
         '--extra-res-packages', '>(additional_res_packages)',
         '--extra-r-text-files', '>(additional_R_text_files)',
@@ -483,8 +483,7 @@
         '--proguard-file', '<(generated_proguard_file)',
 
         '--resource-dir', '<(resource_dir)',
-        '--res-v14-compatibility-dir', '<(res_v14_compatibility_dir)',
-        '--crunch-output-dir', '<(crunch_output_dir)',
+        '--resource-zip-out', '<(resource_zip_path)',
 
         '--R-dir', '<(intermediate_dir)/gen',
 
@@ -659,26 +658,15 @@
       'action_name': 'package_resources',
       'message': 'packaging resources for <(_target_name)',
       'variables': {
-        'extra_package_input_paths': [
-            '>@(package_input_paths)',
-            '>@(additional_input_paths)',
-            '>@(resource_input_paths)'
+        'package_resource_zip_input_paths': [
+          '<(resource_zip_path)',
+          '>@(dependencies_res_zip_paths)',
         ],
-        'package_resource_dirs': [
-            # <(crunch_output_dir) must come before <(resource_dir) so that
-            # the crunched files take precedence.
-            '<(crunch_output_dir)',
-            '<(resource_dir)',
-            '>@(additional_res_dirs)',
-        ],
-        # Write the inputs list to a file, so that its mtime is updated when
-        # the list of inputs changes.
-        'inputs_list_file': '>|(apk_package.<(_target_name).gypcmd >@(extra_package_input_paths))',
       },
       'conditions': [
         ['is_test_apk == 1', {
           'variables': {
-            'additional_res_dirs=': [],
+            'dependencies_res_zip_paths=': [],
             'additional_res_packages=': [],
           }
         }],
@@ -689,10 +677,9 @@
         '<(DEPTH)/build/android/gyp/package_resources.py',
         '<(android_manifest_path)',
 
-        '<(codegen_stamp)',
+        '>@(package_resource_zip_input_paths)',
 
-        '>@(extra_package_input_paths)',
-        '>(inputs_list_file)',
+        '<(codegen_stamp)',
       ],
       'outputs': [
         '<(resource_packaged_apk_path)',
@@ -709,7 +696,7 @@
         '--version-name', '<(app_manifest_version_name)',
 
         '--asset-dir', '<(asset_location)',
-        '--resource-dirs', '>(package_resource_dirs)',
+        '--resource-zips', '>(package_resource_zip_input_paths)',
 
         '--apk-path', '<(resource_packaged_apk_path)',
       ],
