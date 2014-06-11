@@ -154,6 +154,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_google_.type = PasswordForm::TYPE_GENERATED;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
     form_google_.form_data.user_submitted = true;
+    form_google_.date_synced = base::Time::Now();
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -163,6 +164,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_isc_.password_value = UTF8ToUTF16("ihazabukkit");
     form_isc_.submit_element = UTF8ToUTF16("login");
     form_isc_.signon_realm = "ISC";
+    form_isc_.date_synced = base::Time::Now();
   }
 
   static void CheckPasswordForm(const PasswordForm& expected,
@@ -192,6 +194,7 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.type, actual.type);
   EXPECT_EQ(expected.times_used, actual.times_used);
   EXPECT_EQ(expected.scheme, actual.scheme);
+  EXPECT_EQ(expected.date_synced, actual.date_synced);
 }
 
 void NativeBackendKWalletTestBase::CheckPasswordChanges(
@@ -794,16 +797,27 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
 
 class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
  protected:
+  void CreateVersion2Pickle(const PasswordForm& form, Pickle* pickle);
   void CreateVersion1Pickle(const PasswordForm& form, Pickle* pickle);
   void CreateVersion0Pickle(bool size_32,
                             const PasswordForm& form,
                             Pickle* pickle);
+  void CheckVersion2Pickle();
   void CheckVersion1Pickle();
   void CheckVersion0Pickle(bool size_32, PasswordForm::Scheme scheme);
 
  private:
   void CreatePickle(bool size_32, const PasswordForm& form, Pickle* pickle);
 };
+
+void NativeBackendKWalletPickleTest::CreateVersion2Pickle(
+    const PasswordForm& form, Pickle* pickle) {
+  pickle->WriteInt(2);
+  CreatePickle(false, form, pickle);
+  pickle->WriteInt(form.type);
+  pickle->WriteInt(form.times_used);
+  autofill::SerializeFormData(form.form_data, pickle);
+}
 
 void NativeBackendKWalletPickleTest::CreateVersion1Pickle(
     const PasswordForm& form, Pickle* pickle) {
@@ -837,15 +851,18 @@ void NativeBackendKWalletPickleTest::CreatePickle(
   pickle->WriteInt64(form.date_created.ToTimeT());
 }
 
-void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
-    bool size_32, PasswordForm::Scheme scheme) {
+void NativeBackendKWalletPickleTest::CheckVersion2Pickle() {
   Pickle pickle;
-  PasswordForm form = old_form_google_;
-  form.scheme = scheme;
-  CreateVersion0Pickle(size_32, form, &pickle);
+  PasswordForm form = form_google_;
+  form.date_synced = base::Time();
+  CreateVersion2Pickle(form, &pickle);
+
   std::vector<PasswordForm*> form_list;
   NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
                                              pickle, &form_list);
+
+  // This will match |old_form_google_| because not all the fields present in
+  // |form_google_| will be deserialized.
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0]);
@@ -867,6 +884,21 @@ void NativeBackendKWalletPickleTest::CheckVersion1Pickle() {
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(old_form_google_, *form_list[0]);
+  STLDeleteElements(&form_list);
+}
+
+void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
+    bool size_32, PasswordForm::Scheme scheme) {
+  Pickle pickle;
+  PasswordForm form = old_form_google_;
+  form.scheme = scheme;
+  CreateVersion0Pickle(size_32, form, &pickle);
+  std::vector<PasswordForm*> form_list;
+  NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
+                                             pickle, &form_list);
+  EXPECT_EQ(1u, form_list.size());
+  if (form_list.size() > 0)
+    CheckPasswordForm(form, *form_list[0]);
   STLDeleteElements(&form_list);
 }
 
@@ -896,4 +928,8 @@ TEST_F(NativeBackendKWalletPickleTest, ReadsOld64BitHTTPPickles) {
 
 TEST_F(NativeBackendKWalletPickleTest, CheckVersion1Pickle) {
   CheckVersion1Pickle();
+}
+
+TEST_F(NativeBackendKWalletPickleTest, CheckVersion2Pickle) {
+  CheckVersion2Pickle();
 }

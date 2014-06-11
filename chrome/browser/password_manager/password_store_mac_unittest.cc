@@ -186,6 +186,7 @@ static PasswordForm* CreatePasswordFormFromData(
   form->preferred = form_data.preferred;
   form->ssl_valid = form_data.ssl_valid;
   form->date_created = base::Time::FromDoubleT(form_data.creation_time);
+  form->date_synced = form->date_created + base::TimeDelta::FromDays(1);
   if (form_data.signon_realm)
     form->signon_realm = std::string(form_data.signon_realm);
   if (form_data.origin)
@@ -256,6 +257,9 @@ static void CheckFormsAgainstExpectations(
     EXPECT_EQ(expectation->ssl_valid, form->ssl_valid) << test_label;
     EXPECT_DOUBLE_EQ(expectation->creation_time,
                      form->date_created.ToDoubleT()) << test_label;
+    base::Time created = base::Time::FromDoubleT(expectation->creation_time);
+    EXPECT_EQ(created + base::TimeDelta::FromDays(1),
+              form->date_synced) << test_label;
   }
 }
 

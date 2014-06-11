@@ -732,6 +732,7 @@ void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
     pickle->WriteInt(form->type);
     pickle->WriteInt(form->times_used);
     autofill::SerializeFormData(form->form_data, pickle);
+    pickle->WriteInt64(form->date_synced.ToInternalValue());
   }
 }
 
@@ -811,6 +812,15 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
         return false;
       }
       form->type = static_cast<PasswordForm::Type>(type);
+    }
+
+    if (version > 2) {
+      int64 date_synced = 0;
+      if (!iter.ReadInt64(&date_synced)) {
+        LogDeserializationWarning(version, signon_realm, false);
+        return false;
+      }
+      form->date_synced = base::Time::FromInternalValue(date_synced);
     }
 
     forms->push_back(form.release());

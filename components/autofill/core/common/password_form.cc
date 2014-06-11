@@ -44,6 +44,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       ssl_valid == form.ssl_valid &&
       preferred == form.preferred &&
       date_created == form.date_created &&
+      date_synced == form.date_synced &&
       blacklisted_by_user == form.blacklisted_by_user &&
       type == form.type &&
       times_used == form.times_used &&
@@ -74,6 +75,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " preferred: " << form.preferred
             << " ssl_valid: " << form.ssl_valid
             << " date_created: " << form.date_created.ToDoubleT()
+            << " date_synced: " << form.date_synced.ToDoubleT()
             << " type: " << form.type
             << " times_used: " << form.times_used
             << " use additional authentication: "

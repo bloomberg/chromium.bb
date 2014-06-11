@@ -23,7 +23,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-static const int kCurrentVersionNumber = 5;
+static const int kCurrentVersionNumber = 6;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {
@@ -66,7 +66,8 @@ enum LoginTableColumns {
   COLUMN_POSSIBLE_USERNAMES,
   COLUMN_TIMES_USED,
   COLUMN_FORM_DATA,
-  COLUMN_USE_ADDITIONAL_AUTH
+  COLUMN_USE_ADDITIONAL_AUTH,
+  COLUMN_DATE_SYNCED
 };
 
 void BindAddStatement(const PasswordForm& form,
@@ -98,6 +99,7 @@ void BindAddStatement(const PasswordForm& form,
               form_data_pickle.data(),
               form_data_pickle.size());
   s->BindInt(COLUMN_USE_ADDITIONAL_AUTH, form.use_additional_authentication);
+  s->BindInt64(COLUMN_DATE_SYNCED, form.date_synced.ToInternalValue());
 }
 
 void AddCallback(int err, sql::Statement* /*stmt*/) {
@@ -198,6 +200,13 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       }
       meta_table_.SetVersionNumber(5);
       // Fall through.
+    case 5:
+      if (!db_.Execute(
+          "ALTER TABLE logins ADD COLUMN date_synced INTEGER")) {
+        return false;
+      }
+      meta_table_.SetVersionNumber(6);
+      // Fall through.
     case kCurrentVersionNumber:
       // Already up to date
       return true;
@@ -228,6 +237,7 @@ bool LoginDatabase::InitLoginsTable() {
                      "times_used INTEGER,"
                      "form_data BLOB,"
                      "use_additional_auth INTEGER,"
+                     "date_synced INTEGER,"
                      "UNIQUE "
                      "(origin_url, username_element, "
                      "username_value, password_element, "
@@ -308,8 +318,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
       " password_element, password_value, submit_element, "
       " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       " scheme, password_type, possible_usernames, times_used, form_data, "
-      " use_additional_auth) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      " use_additional_auth, date_synced) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   BindAddStatement(form, encrypted_password, &s);
   db_.set_error_callback(base::Bind(&AddCallback));
   const bool success = s.Run();
@@ -325,8 +335,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
       " password_element, password_value, submit_element, "
       " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       " scheme, password_type, possible_usernames, times_used, form_data, "
-      " use_additional_auth) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      " use_additional_auth, date_synced) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run()) {
     list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
@@ -464,6 +474,8 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   }
   form->use_additional_authentication =
       (s.ColumnInt(COLUMN_USE_ADDITIONAL_AUTH) > 0);
+  form->date_synced = base::Time::FromInternalValue(
+      s.ColumnInt64(COLUMN_DATE_SYNCED));
   return ENCRYPTION_RESULT_SUCCESS;
 }
 
@@ -476,7 +488,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
-      "use_additional_auth FROM logins WHERE signon_realm == ? ";
+      "use_additional_auth, date_synced FROM logins WHERE signon_realm == ? ";
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain =
@@ -571,7 +583,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
-      "use_additional_auth FROM logins "
+      "use_additional_auth, date_synced FROM logins "
       "WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToTimeT());
@@ -611,8 +623,8 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used, form_data, "
-      "use_additional_auth FROM logins WHERE blacklisted_by_user == ? "
-      "ORDER BY origin_url"));
+      "use_additional_auth, date_synced FROM logins "
+      "WHERE blacklisted_by_user == ? ORDER BY origin_url"));
   s.BindInt(0, blacklisted ? 1 : 0);
 
   while (s.Step()) {

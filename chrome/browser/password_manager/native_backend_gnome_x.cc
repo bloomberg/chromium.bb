@@ -137,6 +137,9 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->type = static_cast<PasswordForm::Type>(uint_attr_map["type"]);
   form->times_used = uint_attr_map["times_used"];
   form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
+  int64 date_synced = 0;
+  base::StringToInt64(string_attr_map["date_synced"], &date_synced);
+  form->date_synced = base::Time::FromInternalValue(date_synced);
 
   return form.Pass();
 }
@@ -218,6 +221,7 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "scheme", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "type", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "times_used", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
+    { "date_synced", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { NULL }
@@ -312,6 +316,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   // We don't want to actually save passwords as though on January 1, 1970.
   if (!date_created)
     date_created = time(NULL);
+  int64 date_synced = form.date_synced.ToInternalValue();
   gnome_keyring_store_password(
       &kGnomeSchema,
       NULL,  // Default keyring.
@@ -334,6 +339,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "type", form.type,
       "times_used", form.times_used,
       "scheme", form.scheme,
+      "date_synced", base::Int64ToString(date_synced).c_str(),
       "application", app_string,
       NULL);
 }

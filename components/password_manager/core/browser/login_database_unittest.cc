@@ -135,19 +135,21 @@ TEST_F(LoginDatabaseTest, Logins) {
   form.times_used = 1;
   form.form_data.name = ASCIIToUTF16("form_name");
   form.form_data.method = ASCIIToUTF16("POST");
+  form.date_synced = base::Time::Now();
 
   // Add it and make sure it is there and that all the fields were retrieved
   // correctly.
   EXPECT_EQ(AddChangeForForm(form), db_.AddLogin(form));
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
-  EXPECT_EQ(1U, result.size());
+  ASSERT_EQ(1U, result.size());
   FormsAreEqual(form, *result[0]);
   delete result[0];
   result.clear();
 
   // Match against an exact copy.
   EXPECT_TRUE(db_.GetLogins(form, &result));
-  EXPECT_EQ(1U, result.size());
+  ASSERT_EQ(1U, result.size());
+  FormsAreEqual(form, *result[0]);
   delete result[0];
   result.clear();
 
@@ -659,6 +661,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.preferred = true;
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::SCHEME_HTML;
+  form.date_synced = base::Time::Now();
   EXPECT_EQ(AddChangeForForm(form), db_.AddLogin(form));
 
   // Get all non-blacklisted logins (should be none).
@@ -667,12 +670,14 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 
   // GetLogins should give the blacklisted result.
   EXPECT_TRUE(db_.GetLogins(form, &result));
-  EXPECT_EQ(1U, result.size());
+  ASSERT_EQ(1U, result.size());
+  FormsAreEqual(form, *result[0]);
   ClearResults(&result);
 
   // So should GetAllBlacklistedLogins.
   EXPECT_TRUE(db_.GetBlacklistLogins(&result));
-  EXPECT_EQ(1U, result.size());
+  ASSERT_EQ(1U, result.size());
+  FormsAreEqual(form, *result[0]);
   ClearResults(&result);
 }
 
