@@ -3511,6 +3511,33 @@ TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
   CheckExpectedBuffers("240K 270 300");
 }
 
+TEST_F(SourceBufferStreamTest, Remove_WholeGOPBeingAppended) {
+  Seek(0);
+  NewSegmentAppend("0K 30 60 90");
+  CheckExpectedRangesByTimestamp("{ [0,120) }");
+
+  // Remove the keyframe of the current GOP being appended.
+  RemoveInMs(0, 30, 120);
+  CheckExpectedRangesByTimestamp("{ }");
+
+  // Continue appending the current GOP.
+  AppendBuffers("210 240");
+
+  CheckExpectedRangesByTimestamp("{ }");
+
+  // Append the beginning of the next GOP.
+  AppendBuffers("270K 300");
+
+  // Verify that the new range is started at the
+  // beginning of the next GOP.
+  CheckExpectedRangesByTimestamp("{ [270,330) }");
+
+  // Verify the buffers in the ranges.
+  CheckNoNextBuffer();
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(270));
+  CheckExpectedBuffers("270K 300");
+}
+
 TEST_F(SourceBufferStreamTest,
        Remove_PreviousAppendDestroyedAndOverwriteExistingRange) {
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(90));

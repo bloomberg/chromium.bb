@@ -503,7 +503,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
     // segment, then we must make sure that we start with a keyframe.
     // This can happen if the GOP in the previous append gets destroyed
     // by a Remove() call.
-    if (!new_media_segment_ && !buffers.front()->IsKeyframe()) {
+    if (!new_media_segment_) {
       BufferQueue::const_iterator itr = buffers.begin();
 
       // Scan past all the non-keyframes.
@@ -517,13 +517,15 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
         last_appended_buffer_timestamp_ = buffers.back()->GetDecodeTimestamp();
         last_appended_buffer_is_keyframe_ = buffers.back()->IsKeyframe();
         return true;
+      } else if (itr != buffers.begin()) {
+        // Copy the first keyframe and everything after it into
+        // |trimmed_buffers|.
+        trimmed_buffers.assign(itr, buffers.end());
+        buffers_for_new_range = &trimmed_buffers;
       }
 
-      // Copy the first keyframe and everything after it into |trimmed_buffers|.
-      trimmed_buffers.assign(itr, buffers.end());
-
-      new_range_start_time = trimmed_buffers.front()->GetDecodeTimestamp();
-      buffers_for_new_range = &trimmed_buffers;
+      new_range_start_time =
+          buffers_for_new_range->front()->GetDecodeTimestamp();
     }
 
     range_for_next_append_ =
@@ -1619,6 +1621,8 @@ void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
   if (*itr == range_for_next_append_) {
     DVLOG(1) << __FUNCTION__ << " deleting range_for_next_append_.";
     range_for_next_append_ = ranges_.end();
+    last_appended_buffer_timestamp_ = kNoTimestamp();
+    last_appended_buffer_is_keyframe_ = false;
   }
 
   delete **itr;
