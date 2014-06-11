@@ -31,9 +31,6 @@ inline HTMLHeadingElement::HTMLHeadingElement(const QualifiedName& tagName, Docu
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLHeadingElement> HTMLHeadingElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLHeadingElement(tagName, document));
-}
+DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLHeadingElement)
 
 }

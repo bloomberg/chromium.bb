@@ -30,7 +30,7 @@ namespace WebCore {
 
 class HTMLModElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLModElement> create(const QualifiedName&, Document&);
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
 
 private:
     HTMLModElement(const QualifiedName&, Document&);

@@ -43,10 +43,7 @@ inline HTMLTableSectionElement::HTMLTableSectionElement(const QualifiedName& tag
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLTableSectionElement> HTMLTableSectionElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableSectionElement(tagName, document));
-}
+DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)
 
 const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttributeStyle()
 {

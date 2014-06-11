@@ -43,10 +43,7 @@ namespace WebCore {
 // false to make sure we don't attempt to render such elements.
 class SVGUnknownElement FINAL : public SVGElement {
 public:
-    static PassRefPtrWillBeRawPtr<SVGUnknownElement> create(const QualifiedName& tagName, Document& document)
-    {
-        return adoptRefWillBeRefCountedGarbageCollected(new SVGUnknownElement(tagName, document));
-    }
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);
 
 private:
     SVGUnknownElement(const QualifiedName&, Document&);

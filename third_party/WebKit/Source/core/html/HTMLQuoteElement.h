@@ -31,7 +31,7 @@ namespace WebCore {
 
 class HTMLQuoteElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLQuoteElement> create(const QualifiedName&, Document&);
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement);
 
 private:
     HTMLQuoteElement(const QualifiedName&, Document&);

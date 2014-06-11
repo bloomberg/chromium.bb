@@ -32,7 +32,7 @@ namespace WebCore {
 
 class HTMLTableCellElement FINAL : public HTMLTablePartElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLTableCellElement> create(const QualifiedName&, Document&);
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement);
 
     int cellIndex() const;
 

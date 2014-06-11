@@ -63,10 +63,7 @@ using namespace WTF;
 using std::min;
 using std::max;
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLElement(tagName, document));
-}
+DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
 String HTMLElement::nodeName() const
 {

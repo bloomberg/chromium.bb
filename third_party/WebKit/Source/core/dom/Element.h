@@ -878,6 +878,14 @@ inline bool isShadowHost(const Element* element)
     template <> inline bool isElementOfType<const thisType>(const Element& element) { return is##thisType(element); } \
     DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
+#define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
+    static PassRefPtrWillBeRawPtr<T> create(const QualifiedName&, Document&)
+#define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
+    PassRefPtrWillBeRawPtr<T> T::create(const QualifiedName& tagName, Document& document) \
+    { \
+        return adoptRefWillBeRefCountedGarbageCollected(new T(tagName, document)); \
+    }
+
 } // namespace
 
 #endif

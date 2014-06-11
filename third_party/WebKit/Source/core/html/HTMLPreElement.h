@@ -29,7 +29,7 @@ namespace WebCore {
 
 class HTMLPreElement FINAL : public HTMLElement {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLPreElement> create(const QualifiedName&, Document&);
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement);
 
 private:
     HTMLPreElement(const QualifiedName&, Document&);

@@ -41,10 +41,7 @@ inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tagName, Do
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLTableColElement> HTMLTableColElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLTableColElement(tagName, document));
-}
+DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)
 
 bool HTMLTableColElement::isPresentationAttribute(const QualifiedName& name) const
 {

@@ -40,7 +40,7 @@ enum TranslateAttributeMode {
 
 class HTMLElement : public Element {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLElement> create(const QualifiedName& tagName, Document&);
+    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
     virtual String title() const OVERRIDE FINAL;
     virtual short tabIndex() const OVERRIDE;
