@@ -28,6 +28,7 @@
 #include "core/editing/Editor.h"
 
 #include "CSSPropertyNames.h"
+#include "EventNames.h"
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
@@ -68,6 +69,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -918,6 +920,71 @@ void Editor::performDelete()
     // clear the "start new kill ring sequence" setting, because it was set to true
     // when the selection was updated by deleting the range
     setStartNewKillRingSequence(false);
+}
+
+static void countEditingEvent(ExecutionContext* executionContext, const Event* event, UseCounter::Feature featureOnInput, UseCounter::Feature featureOnTextArea, UseCounter::Feature featureOnContentEditable, UseCounter::Feature featureOnNonNode)
+{
+    EventTarget* eventTarget = event->target();
+    Node* node = eventTarget->toNode();
+    if (!node) {
+        UseCounter::count(executionContext, featureOnNonNode);
+        return;
+    }
+
+    if (isHTMLInputElement(node)) {
+        UseCounter::count(executionContext, featureOnInput);
+        return;
+    }
+
+    if (isHTMLTextAreaElement(node)) {
+        UseCounter::count(executionContext, featureOnTextArea);
+        return;
+    }
+
+    HTMLTextFormControlElement* control = enclosingTextFormControl(node);
+    if (isHTMLInputElement(control)) {
+        UseCounter::count(executionContext, featureOnInput);
+        return;
+    }
+
+    if (isHTMLTextAreaElement(control)) {
+        UseCounter::count(executionContext, featureOnTextArea);
+        return;
+    }
+
+    UseCounter::count(executionContext, featureOnContentEditable);
+}
+
+void Editor::countEvent(ExecutionContext* executionContext, const Event* event)
+{
+    if (!executionContext)
+        return;
+
+    if (event->type() == EventTypeNames::textInput) {
+        countEditingEvent(executionContext, event,
+            UseCounter::TextInputEventOnInput,
+            UseCounter::TextInputEventOnTextArea,
+            UseCounter::TextInputEventOnContentEditable,
+            UseCounter::TextInputEventOnNotNode);
+        return;
+    }
+
+    if (event->type() == EventTypeNames::webkitBeforeTextInserted) {
+        countEditingEvent(executionContext, event,
+            UseCounter::WebkitBeforeTextInsertedOnInput,
+            UseCounter::WebkitBeforeTextInsertedOnTextArea,
+            UseCounter::WebkitBeforeTextInsertedOnContentEditable,
+            UseCounter::WebkitBeforeTextInsertedOnNotNode);
+        return;
+    }
+
+    if (event->type() == EventTypeNames::webkitEditableContentChanged) {
+        countEditingEvent(executionContext, event,
+            UseCounter::WebkitEditableContentChangedOnInput,
+            UseCounter::WebkitEditableContentChangedOnTextArea,
+            UseCounter::WebkitEditableContentChangedOnContentEditable,
+            UseCounter::WebkitEditableContentChangedOnNotNode);
+    }
 }
 
 void Editor::copyImage(const HitTestResult& result)

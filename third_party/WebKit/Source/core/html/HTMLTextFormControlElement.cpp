@@ -614,8 +614,11 @@ HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
     ASSERT(position.isNull() || position.anchorType() == Position::PositionIsOffsetInAnchor
         || position.containerNode() || !position.anchorNode()->shadowHost()
         || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
+    return enclosingTextFormControl(position.containerNode());
+}
 
-    Node* container = position.containerNode();
+HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
+{
     if (!container)
         return 0;
     Element* ancestor = container->shadowHost();

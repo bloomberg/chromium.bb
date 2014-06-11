@@ -145,6 +145,7 @@ inline bool isHTMLTextFormControlElement(const Element& element)
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position&);
+HTMLTextFormControlElement* enclosingTextFormControl(Node*);
 
 } // namespace
 
