@@ -19,7 +19,6 @@
 #include "content/child/request_info.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/child/sync_load_response.h"
-#include "content/child/threaded_data_provider.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
 #include "content/public/child/request_peer.h"
@@ -81,8 +80,6 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   virtual void SetDefersLoading(bool value) OVERRIDE;
   virtual void DidChangePriority(net::RequestPriority new_priority,
                                  int intra_priority_value) OVERRIDE;
-  virtual bool AttachThreadedDataReceiver(
-      blink::WebThreadedDataReceiver* threaded_data_receiver) OVERRIDE;
   virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE;
 
  private:
@@ -221,17 +218,6 @@ void IPCResourceLoaderBridge::DidChangePriority(
 
   dispatcher_->DidChangePriority(
       request_id_, new_priority, intra_priority_value);
-}
-
-bool IPCResourceLoaderBridge::AttachThreadedDataReceiver(
-    blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  if (request_id_ < 0) {
-    NOTREACHED() << "Trying to attach threaded receiver on unstarted request";
-    return false;
-  }
-
-  return dispatcher_->AttachThreadedDataReceiver(request_id_,
-                                                 threaded_data_receiver);
 }
 
 void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
@@ -419,7 +405,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedData");
   DCHECK_GT(data_length, 0);
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  bool send_ack = true;
   if (request_info && data_length > 0) {
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
@@ -431,10 +416,9 @@ void ResourceDispatcher::OnReceivedData(int request_id,
 
     base::TimeTicks time_start = base::TimeTicks::Now();
 
-    const char* data_start = static_cast<char*>(request_info->buffer->memory());
-    CHECK(data_start);
-    CHECK(data_start + data_offset);
-    const char* data_ptr = data_start + data_offset;
+    const char* data_ptr = static_cast<char*>(request_info->buffer->memory());
+    CHECK(data_ptr);
+    CHECK(data_ptr + data_offset);
 
     // Check whether this response data is compliant with our cross-site
     // document blocking policy. We only do this for the first packet.
@@ -442,31 +426,22 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     if (request_info->site_isolation_metadata.get()) {
       request_info->blocked_response =
           SiteIsolationPolicy::ShouldBlockResponse(
-              request_info->site_isolation_metadata, data_ptr, data_length,
-              &alternative_data);
+              request_info->site_isolation_metadata, data_ptr + data_offset,
+              data_length, &alternative_data);
       request_info->site_isolation_metadata.reset();
-
-      // When the response is blocked we may have any alternative data to
-      // send to the renderer. When |alternative_data| is zero-sized, we do not
-      // call peer's callback.
-      if (request_info->blocked_response && !alternative_data.empty()) {
-        data_ptr = alternative_data.data();
-        data_length = alternative_data.size();
-        encoded_data_length = alternative_data.size();
-      }
     }
 
-    if (!request_info->blocked_response || !alternative_data.empty()) {
-      if (request_info->threaded_data_provider) {
-        request_info->threaded_data_provider->OnReceivedDataOnForegroundThread(
-            data_ptr, data_length, encoded_data_length);
-        // A threaded data provider will take care of its own ACKing, as the
-        // data may be processed later on another thread.
-        send_ack = false;
-      } else {
-        request_info->peer->OnReceivedData(
-            data_ptr, data_length, encoded_data_length);
-      }
+    // When the response is not blocked.
+    if (!request_info->blocked_response) {
+      request_info->peer->OnReceivedData(
+          data_ptr + data_offset, data_length, encoded_data_length);
+    } else if (alternative_data.size() > 0) {
+      // When the response is blocked, and when we have any alternative data to
+      // send to the renderer. When |alternative_data| is zero-sized, we do not
+      // call peer's callback.
+      request_info->peer->OnReceivedData(alternative_data.data(),
+                                         alternative_data.size(),
+                                         alternative_data.size());
     }
 
     UMA_HISTOGRAM_TIMES("ResourceDispatcher.OnReceivedDataTime",
@@ -474,8 +449,7 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   }
 
   // Acknowledge the reception of this data.
-  if (send_ack)
-    message_sender_->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
+  message_sender_->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
 }
 
 void ResourceDispatcher::OnDownloadedData(int request_id,
@@ -649,21 +623,8 @@ void ResourceDispatcher::DidChangePriority(int request_id,
       request_id, new_priority, intra_priority_value));
 }
 
-bool ResourceDispatcher::AttachThreadedDataReceiver(
-    int request_id, blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  DCHECK(request_info);
-  DCHECK(!request_info->threaded_data_provider);
-  request_info->threaded_data_provider = new ThreadedDataProvider(
-      request_id, threaded_data_receiver, request_info->buffer,
-      request_info->buffer_size);
-
-  return true;
-}
-
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
-      threaded_data_provider(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
       is_deferred(false),
       download_to_file(false),
@@ -679,7 +640,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     const GURL& request_url,
     bool download_to_file)
     : peer(peer),
-      threaded_data_provider(NULL),
       resource_type(resource_type),
       origin_pid(origin_pid),
       is_deferred(false),
@@ -690,10 +650,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       request_start(base::TimeTicks::Now()),
       blocked_response(false) {}
 
-ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
-  if (threaded_data_provider)
-    threaded_data_provider->Stop();
-}
+ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {}
 
 void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ResourceDispatcher, message)

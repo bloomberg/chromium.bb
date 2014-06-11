@@ -213,8 +213,6 @@
       'child/webfileutilities_impl.h',
       'child/webmessageportchannel_impl.cc',
       'child/webmessageportchannel_impl.h',
-      'child/threaded_data_provider.cc',
-      'child/threaded_data_provider.h',
       'child/websocket_bridge.cc',
       'child/websocket_bridge.h',
       'child/websocket_dispatcher.cc',
