@@ -78,8 +78,7 @@ void TranslateInfoBarDelegate::Create(
   TranslateClient* translate_client = translate_manager->translate_client();
   if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
        (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
-      translate_client->GetTranslateDriver()->GetLanguageState()
-          .InTranslateNavigation()) {
+      translate_manager->GetLanguageState().InTranslateNavigation()) {
     return;
   }
 
@@ -322,10 +321,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       is_off_the_record_(is_off_the_record),
       step_(step),
       background_animation_(NONE),
-      ui_delegate_(translate_manager->translate_client(),
-                   translate_manager.get(),
-                   original_language,
-                   target_language),
+      ui_delegate_(translate_manager, original_language, target_language),
       translate_manager_(translate_manager),
       error_type_(error_type),
       prefs_(translate_manager->translate_client()->GetTranslatePrefs()),

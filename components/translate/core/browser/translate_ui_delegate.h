@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/translate/core/common/translate_errors.h"
 
@@ -25,8 +26,7 @@ class TranslateUIDelegate {
  public:
   enum { NO_INDEX = -1, };
 
-  TranslateUIDelegate(TranslateClient* translate_client,
-                      TranslateManager* translate_manager,
+  TranslateUIDelegate(const base::WeakPtr<TranslateManager>& translate_manager,
                       const std::string& original_language,
                       const std::string& target_language);
   virtual ~TranslateUIDelegate();
@@ -98,9 +98,8 @@ class TranslateUIDelegate {
   // associated with the current page.
   std::string GetPageHost();
 
-  TranslateClient* translate_client_;
   TranslateDriver* translate_driver_;
-  TranslateManager* translate_manager_;
+  base::WeakPtr<TranslateManager> translate_manager_;
 
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 

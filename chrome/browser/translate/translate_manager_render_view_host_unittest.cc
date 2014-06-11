@@ -384,11 +384,11 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
         chrome_translate_client->GetLanguageState().original_language();
     std::string target_language = TranslateDownloadManager::GetLanguageCode(
         g_browser_process->GetApplicationLocale());
-    scoped_ptr<TranslateUIDelegate> ui_delegate(
-        new TranslateUIDelegate(chrome_translate_client,
-                                chrome_translate_client->GetTranslateManager(),
-                                source_language,
-                                target_language));
+
+    scoped_ptr<TranslateUIDelegate> ui_delegate(new TranslateUIDelegate(
+        chrome_translate_client->GetTranslateManager()->GetWeakPtr(),
+        source_language,
+        target_language));
     model_.reset(new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
   }
 

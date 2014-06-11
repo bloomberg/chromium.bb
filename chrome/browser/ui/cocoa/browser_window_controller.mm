@@ -80,6 +80,7 @@
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -1772,8 +1773,7 @@ using web_modal::WebContentsModalDialogManager;
       contents, &sourceLanguage, &targetLanguage);
 
   scoped_ptr<TranslateUIDelegate> uiDelegate(new TranslateUIDelegate(
-      ChromeTranslateClient::FromWebContents(contents),
-      ChromeTranslateClient::GetManagerFromWebContents(contents),
+      ChromeTranslateClient::GetManagerFromWebContents(contents)->GetWeakPtr(),
       sourceLanguage,
       targetLanguage));
   scoped_ptr<TranslateBubbleModel> model(

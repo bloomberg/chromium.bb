@@ -142,8 +142,8 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
       web_contents, &source_language, &target_language);
 
   scoped_ptr<TranslateUIDelegate> ui_delegate(new TranslateUIDelegate(
-      ChromeTranslateClient::FromWebContents(web_contents),
-      ChromeTranslateClient::GetManagerFromWebContents(web_contents),
+      ChromeTranslateClient::GetManagerFromWebContents(web_contents)
+          ->GetWeakPtr(),
       source_language,
       target_language));
   scoped_ptr<TranslateBubbleModel> model(

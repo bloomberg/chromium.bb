@@ -31,17 +31,16 @@ const char kShowErrorUI[] = "Translate.ShowErrorUI";
 
 }  // namespace
 
-TranslateUIDelegate::TranslateUIDelegate(TranslateClient* translate_client,
-                                         TranslateManager* translate_manager,
-                                         const std::string& original_language,
-                                         const std::string& target_language)
-    : translate_client_(translate_client),
-      translate_driver_(translate_client->GetTranslateDriver()),
+TranslateUIDelegate::TranslateUIDelegate(
+    const base::WeakPtr<TranslateManager>& translate_manager,
+    const std::string& original_language,
+    const std::string& target_language)
+    : translate_driver_(
+          translate_manager->translate_client()->GetTranslateDriver()),
       translate_manager_(translate_manager),
       original_language_index_(NO_INDEX),
       initial_original_language_index_(NO_INDEX),
       target_language_index_(NO_INDEX) {
-  DCHECK(translate_client_);
   DCHECK(translate_driver_);
   DCHECK(translate_manager_);
 
@@ -86,7 +85,7 @@ TranslateUIDelegate::TranslateUIDelegate(TranslateClient* translate_client,
       target_language_index_ = iter - languages_.begin();
   }
 
-  prefs_ = translate_client_->GetTranslatePrefs();
+  prefs_ = translate_manager_->translate_client()->GetTranslatePrefs();
 }
 
 TranslateUIDelegate::~TranslateUIDelegate() {}
@@ -103,7 +102,7 @@ void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
 }
 
 const LanguageState& TranslateUIDelegate::GetLanguageState() {
-  return translate_driver_->GetLanguageState();
+  return translate_manager_->GetLanguageState();
 }
 
 size_t TranslateUIDelegate::GetNumberOfLanguages() const {
@@ -162,16 +161,19 @@ void TranslateUIDelegate::Translate() {
     prefs_->ResetTranslationDeniedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationAcceptedCount(GetOriginalLanguageCode());
   }
-  translate_manager_->TranslatePage(
-      GetOriginalLanguageCode(), GetTargetLanguageCode(), false);
 
-  UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
+  if (translate_manager_) {
+    translate_manager_->TranslatePage(
+        GetOriginalLanguageCode(), GetTargetLanguageCode(), false);
+    UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
+  }
 }
 
 void TranslateUIDelegate::RevertTranslation() {
-  translate_manager_->RevertTranslation();
-
-  UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
+  if (translate_manager_) {
+    translate_manager_->RevertTranslation();
+    UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
+  }
 }
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
@@ -185,9 +187,10 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  translate_driver_->GetLanguageState().set_translation_declined(true);
-
-  UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
+  if (translate_manager_) {
+    translate_manager_->GetLanguageState().set_translation_declined(true);
+    UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
+  }
 
   if (!explicitly_closed)
     UMA_HISTOGRAM_BOOLEAN(kDeclineTranslateDismissUI, true);
@@ -200,7 +203,9 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
+    if (translate_manager_) {
+      translate_manager_->GetLanguageState().SetTranslateEnabled(false);
+    }
   } else {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
   }
@@ -220,7 +225,9 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 
   if (value) {
     prefs_->BlacklistSite(host);
-    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
+    if (translate_manager_) {
+      translate_manager_->GetLanguageState().SetTranslateEnabled(false);
+    }
   } else {
     prefs_->RemoveSiteFromBlacklist(host);
   }
