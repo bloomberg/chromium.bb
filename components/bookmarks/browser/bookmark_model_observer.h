@@ -99,15 +99,23 @@ class BookmarkModelObserver {
   // update to finish.
   virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) {}
 
-  // Invoked before all non-permanent bookmark nodes are removed.
-  virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) {}
+  // Invoked before all non-permanent bookmark nodes that are editable by
+  // the user are removed.
+  virtual void OnWillRemoveAllUserBookmarks(BookmarkModel* model);
 
   // Invoked when all non-permanent bookmark nodes that are editable by the
   // user have been removed.
   // |removed_urls| is populated with the urls which no longer have any
   // bookmarks associated with them.
-  virtual void BookmarkAllNodesRemoved(BookmarkModel* model,
-                                       const std::set<GURL>& removed_urls) = 0;
+  virtual void BookmarkAllUserNodesRemoved(BookmarkModel* model,
+                                           const std::set<GURL>& removed_urls);
+
+  // These deprecated methods will be removed once all implementations are
+  // updated. http://crbug.com/49598
+  virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) {}
+  virtual void BookmarkAllNodesRemoved(
+      BookmarkModel* model,
+      const std::set<GURL>& removed_urls) {}
 
   // Invoked before a set of model changes that is initiated by a single user
   // action. For example, this is called a single time when pasting from the

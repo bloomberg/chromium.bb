@@ -290,7 +290,7 @@ TEST_F(ManagedBookmarksTrackerTest, IsManaged) {
   EXPECT_TRUE(IsManaged(parent->GetChild(1)));
 }
 
-TEST_F(ManagedBookmarksTrackerTest, RemoveAllDoesntRemoveManaged) {
+TEST_F(ManagedBookmarksTrackerTest, RemoveAllUserBookmarksDoesntRemoveManaged) {
   prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
   EXPECT_EQ(2, managed_node()->child_count());
@@ -308,8 +308,8 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAllDoesntRemoveManaged) {
   EXPECT_EQ(2, model_->bookmark_bar_node()->child_count());
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, BookmarkAllNodesRemoved(model_.get(), _));
-  model_->RemoveAll();
+  EXPECT_CALL(observer_, BookmarkAllUserNodesRemoved(model_.get(), _));
+  model_->RemoveAllUserBookmarks();
   EXPECT_EQ(2, managed_node()->child_count());
   EXPECT_EQ(0, model_->bookmark_bar_node()->child_count());
   Mock::VerifyAndClearExpectations(&observer_);

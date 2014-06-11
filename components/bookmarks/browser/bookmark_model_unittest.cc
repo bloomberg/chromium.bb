@@ -219,13 +219,13 @@ class BookmarkModelTest : public testing::Test,
     ++extensive_changes_ended_count_;
   }
 
-  virtual void BookmarkAllNodesRemoved(
+  virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) OVERRIDE {
     ++all_bookmarks_removed_;
   }
 
-  virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) OVERRIDE {
+  virtual void OnWillRemoveAllUserBookmarks(BookmarkModel* model) OVERRIDE {
     ++before_remove_all_count_;
   }
 
@@ -510,7 +510,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
 }
 
-TEST_F(BookmarkModelTest, RemoveAll) {
+TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
 
   ClearCounts();
@@ -527,7 +527,7 @@ TEST_F(BookmarkModelTest, RemoveAll) {
   AssertObserverCount(3, 0, 0, 0, 0, 0, 0, 0, 0);
   ClearCounts();
 
-  model_->RemoveAll();
+  model_->RemoveAllUserBookmarks();
 
   EXPECT_EQ(0, bookmark_bar_node->child_count());
   // No individual BookmarkNodeRemoved events are fired, so removed count

@@ -209,7 +209,7 @@ void ChromeBookmarkClient::BookmarkNodeRemoved(
   NotifyHistoryOfRemovedURLs(profile_, removed_urls);
 }
 
-void ChromeBookmarkClient::BookmarkAllNodesRemoved(
+void ChromeBookmarkClient::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
   NotifyHistoryOfRemovedURLs(profile_, removed_urls);

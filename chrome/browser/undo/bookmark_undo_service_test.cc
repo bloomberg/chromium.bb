@@ -329,9 +329,10 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemoveAll) {
   new_folder = model->AddFolder(parent, 1, ASCIIToUTF16("folder"));
   model->AddURL(new_folder, 0, ASCIIToUTF16("b"), GURL("http://www.b.com"));
 
-  model->RemoveAll();
+  model->RemoveAllUserBookmarks();
 
-  // Test that the undo of RemoveAll restores all folders and bookmarks.
+  // Test that the undo of RemoveAllUserBookmarks restores all folders and
+  // bookmarks.
   undo_service->undo_manager()->Undo();
 
   ASSERT_EQ(2, model->other_node()->child_count());

@@ -37,6 +37,6 @@ class MockBookmarkModelObserver : public BookmarkModelObserver {
   MOCK_METHOD2(BookmarkNodeChildrenReordered, void(BookmarkModel*,
                                                    const BookmarkNode*));
 
-  MOCK_METHOD2(BookmarkAllNodesRemoved, void(BookmarkModel*,
-                                             const std::set<GURL>&));
+  MOCK_METHOD2(BookmarkAllUserNodesRemoved, void(BookmarkModel*,
+                                                 const std::set<GURL>&));
 };

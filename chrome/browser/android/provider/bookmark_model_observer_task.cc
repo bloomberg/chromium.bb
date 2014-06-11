@@ -55,7 +55,7 @@ void BookmarkModelObserverTask::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
 }
 
-void BookmarkModelObserverTask::BookmarkAllNodesRemoved(
+void BookmarkModelObserverTask::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
 }
