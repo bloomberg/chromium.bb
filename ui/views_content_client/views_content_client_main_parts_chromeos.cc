@@ -9,11 +9,29 @@
 #include "ui/gfx/screen.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts_aura.h"
+#include "ui/wm/core/nested_accelerator_controller.h"
+#include "ui/wm/core/nested_accelerator_delegate.h"
 #include "ui/wm/test/wm_test_helper.h"
 
 namespace ui {
 
 namespace {
+
+// A dummy version of the delegate usually provided by the Ash Shell.
+class NestedAcceleratorDelegate : public ::wm::NestedAcceleratorDelegate {
+ public:
+  NestedAcceleratorDelegate() {}
+  virtual ~NestedAcceleratorDelegate() {}
+
+  // ::wm::NestedAcceleratorDelegate:
+  virtual Result ProcessAccelerator(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    return RESULT_NOT_PROCESSED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDelegate);
+};
 
 class ViewsContentClientMainPartsChromeOS
     : public ViewsContentClientMainPartsAura {
@@ -30,6 +48,7 @@ class ViewsContentClientMainPartsChromeOS
  private:
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr< ::wm::WMTestHelper> wm_test_helper_;
+  scoped_ptr< ::wm::NestedAcceleratorController> nested_accelerator_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsChromeOS);
 };
@@ -52,11 +71,18 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
   wm_test_helper_->host()->Show();
 
   // Ensure Aura knows where to open new windows.
-  views_content_client()->task().Run(browser_context(),
-                                     wm_test_helper_->host()->window());
+  aura::Window* root_window = wm_test_helper_->host()->window();
+  views_content_client()->task().Run(browser_context(), root_window);
+
+  nested_accelerator_controller_.reset(
+      new ::wm::NestedAcceleratorController(new NestedAcceleratorDelegate));
+  aura::client::SetDispatcherClient(root_window,
+                                    nested_accelerator_controller_.get());
 }
 
 void ViewsContentClientMainPartsChromeOS::PostMainMessageLoopRun() {
+  aura::client::SetDispatcherClient(wm_test_helper_->host()->window(), NULL);
+  nested_accelerator_controller_.reset();
   wm_test_helper_.reset();
 
   ViewsContentClientMainPartsAura::PostMainMessageLoopRun();

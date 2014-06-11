@@ -55,8 +55,6 @@ void MenuHost::InitMenuHost(Widget* parent,
   Init(params);
 
   SetContentsView(contents_view);
-  if (bubble_border || rounded_border)
-    SetOpacity(0);
   ShowMenuHost(do_capture);
 }
 
