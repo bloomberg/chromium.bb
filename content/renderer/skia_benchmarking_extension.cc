@@ -131,13 +131,14 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   int stop_index = -1;
   bool overdraw = false;
 
+  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   if (!args->PeekNext().IsEmpty()) {
     v8::Handle<v8::Value> params;
     args->GetNext(&params);
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
     scoped_ptr<base::Value> params_value(
-        converter->FromV8Value(params, isolate->GetCurrentContext()));
+        converter->FromV8Value(params, context));
 
     const base::DictionaryValue* params_dict = NULL;
     if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
@@ -203,7 +204,8 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   result->Set(v8::String::NewFromUtf8(isolate, "height"),
               v8::Number::New(isolate, snapped_clip.height()));
   result->Set(v8::String::NewFromUtf8(isolate, "data"),
-              blink::WebArrayBufferConverter::toV8Value(&buffer));
+              blink::WebArrayBufferConverter::toV8Value(
+                  &buffer, context->Global(), isolate));
 
   args->Return(result);
 }

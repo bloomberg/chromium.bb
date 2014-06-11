@@ -141,7 +141,7 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
       HostArrayBufferVar* host_buffer =
           static_cast<HostArrayBufferVar*>(buffer);
       *result = blink::WebArrayBufferConverter::toV8Value(
-          &host_buffer->webkit_buffer());
+          &host_buffer->webkit_buffer(), context->Global(), isolate);
       break;
     }
     case PP_VARTYPE_ARRAY:
@@ -214,7 +214,8 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
     *result = (new ArrayVar())->GetPPVar();
   } else if (val->IsObject()) {
     scoped_ptr<blink::WebArrayBuffer> web_array_buffer(
-        blink::WebArrayBufferConverter::createFromV8Value(val));
+        blink::WebArrayBufferConverter::createFromV8Value(
+            val, context->GetIsolate()));
     if (web_array_buffer.get()) {
       scoped_refptr<HostArrayBufferVar> buffer_var(
           new HostArrayBufferVar(*web_array_buffer));
