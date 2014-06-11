@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
+import android.widget.PopupWindow;
 
 import org.chromium.ui.base.ViewAndroidDelegate;
 
@@ -28,6 +29,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private float mAnchorX;
     private float mAnchorY;
     private OnLayoutChangeListener mLayoutChangeListener;
+    private PopupWindow.OnDismissListener mOnDismissListener;
 
     /**
      * Creates an DropdownPopupWindow with specified parameters.
@@ -50,8 +52,20 @@ public class DropdownPopupWindow extends ListPopupWindow {
                 if (v == mAnchorView) DropdownPopupWindow.this.show();
             }
         };
-
         mAnchorView.addOnLayoutChangeListener(mLayoutChangeListener);
+
+        super.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                if (mOnDismissListener != null) {
+                    mOnDismissListener.onDismiss();
+                }
+                mAnchorView.removeOnLayoutChangeListener(mLayoutChangeListener);
+                mAnchorView.setTag(null);
+                mViewAndroidDelegate.releaseAnchorView(mAnchorView);
+            }
+        });
+
         setAnchorView(mAnchorView);
     }
 
@@ -93,11 +107,8 @@ public class DropdownPopupWindow extends ListPopupWindow {
     }
 
     @Override
-    public void dismiss() {
-        super.dismiss();
-        mAnchorView.removeOnLayoutChangeListener(mLayoutChangeListener);
-        mAnchorView.setTag(null);
-        mViewAndroidDelegate.releaseAnchorView(mAnchorView);
+    public void setOnDismissListener(PopupWindow.OnDismissListener listener) {
+        mOnDismissListener = listener;
     }
 
     /**
