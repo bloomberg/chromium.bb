@@ -27,6 +27,7 @@ class Array {
   typedef typename Traits::ConstRefType ConstRefType;
   typedef typename Traits::RefType RefType;
   typedef typename Traits::StorageType StorageType;
+  typedef typename Traits::ForwardType ForwardType;
 
   typedef internal::Array_Data<typename internal::WrapperTraits<T>::DataType>
       Data_;
@@ -74,6 +75,16 @@ class Array {
 
   RefType at(size_t offset) { return Traits::at(&vec_, offset); }
   RefType operator[](size_t offset) { return at(offset); }
+
+  void push_back(ForwardType value) {
+    is_null_ = false;
+    Traits::PushBack(&vec_, value);
+  }
+
+  void resize(size_t size) {
+    is_null_ = false;
+    Traits::Resize(&vec_, size);
+  }
 
   const std::vector<StorageType>& storage() const {
     return vec_;

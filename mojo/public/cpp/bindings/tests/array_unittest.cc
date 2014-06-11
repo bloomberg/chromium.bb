@@ -13,6 +13,60 @@ namespace mojo {
 namespace test {
 namespace {
 
+class CopyableType {
+ public:
+  CopyableType() : copied_(false), ptr_(this) { num_instances_++; }
+  CopyableType(const CopyableType& other) : copied_(true), ptr_(other.ptr()) {
+    num_instances_++;
+  }
+  CopyableType& operator=(const CopyableType& other) {
+    copied_ = true;
+    ptr_ = other.ptr();
+    return *this;
+  }
+  ~CopyableType() { num_instances_--; }
+
+  bool copied() const { return copied_; }
+  static size_t num_instances() { return num_instances_; }
+  CopyableType* ptr() const { return ptr_; }
+  void ResetCopied() { copied_ = false; }
+
+ private:
+  bool copied_;
+  static size_t num_instances_;
+  CopyableType* ptr_;
+};
+
+size_t CopyableType::num_instances_ = 0;
+
+class MoveOnlyType {
+  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(MoveOnlyType, RValue)
+ public:
+  typedef MoveOnlyType Data_;
+  MoveOnlyType() : moved_(false), ptr_(this) { num_instances_++; }
+  MoveOnlyType(RValue other) : moved_(true), ptr_(other.object->ptr()) {
+    num_instances_++;
+  }
+  MoveOnlyType& operator=(RValue other) {
+    moved_ = true;
+    ptr_ = other.object->ptr();
+    return *this;
+  }
+  ~MoveOnlyType() { num_instances_--; }
+
+  bool moved() const { return moved_; }
+  static size_t num_instances() { return num_instances_; }
+  MoveOnlyType* ptr() const { return ptr_; }
+  void ResetMoved() { moved_ = false; }
+
+ private:
+  bool moved_;
+  static size_t num_instances_;
+  MoveOnlyType* ptr_;
+};
+
+size_t MoveOnlyType::num_instances_ = 0;
+
 // Tests that basic Array operations work.
 TEST(ArrayTest, Basic) {
   Array<char> array(8);
@@ -163,6 +217,180 @@ TEST(ArrayTest, Serialization_ArrayOfString) {
     char c = 'A' + 1;
     EXPECT_EQ(String(&c, 1), array2[i]);
   }
+}
+
+TEST(ArrayTest, Resize_Copyable) {
+  ASSERT_EQ(0u, CopyableType::num_instances());
+  mojo::Array<CopyableType> array(3);
+  std::vector<CopyableType*> value_ptrs;
+  value_ptrs.push_back(array[0].ptr());
+  value_ptrs.push_back(array[1].ptr());
+
+  for (size_t i = 0; i < array.size(); i++)
+    array[i].ResetCopied();
+
+  array.resize(2);
+  ASSERT_EQ(2u, array.size());
+  EXPECT_EQ(array.size(), CopyableType::num_instances());
+  for (size_t i = 0; i < array.size(); i++) {
+    EXPECT_FALSE(array[i].copied());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+
+  array.resize(3);
+  array[2].ResetCopied();
+  ASSERT_EQ(3u, array.size());
+  EXPECT_EQ(array.size(), CopyableType::num_instances());
+  for (size_t i = 0; i < array.size(); i++)
+    EXPECT_FALSE(array[i].copied());
+  value_ptrs.push_back(array[2].ptr());
+
+  size_t capacity = array.storage().capacity();
+  array.resize(capacity);
+  ASSERT_EQ(capacity, array.size());
+  EXPECT_EQ(array.size(), CopyableType::num_instances());
+  for (size_t i = 0; i < 3; i++)
+    EXPECT_FALSE(array[i].copied());
+  for (size_t i = 3; i < array.size(); i++) {
+    array[i].ResetCopied();
+    value_ptrs.push_back(array[i].ptr());
+  }
+
+  array.resize(capacity + 2);
+  ASSERT_EQ(capacity + 2, array.size());
+  EXPECT_EQ(array.size(), CopyableType::num_instances());
+  for (size_t i = 0; i < capacity; i++) {
+    EXPECT_TRUE(array[i].copied());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+  array.reset();
+  EXPECT_EQ(0u, CopyableType::num_instances());
+  EXPECT_FALSE(array);
+  array.resize(0);
+  EXPECT_EQ(0u, CopyableType::num_instances());
+  EXPECT_TRUE(array);
+}
+
+TEST(ArrayTest, Resize_MoveOnly) {
+  ASSERT_EQ(0u, MoveOnlyType::num_instances());
+  mojo::Array<MoveOnlyType> array(3);
+  std::vector<MoveOnlyType*> value_ptrs;
+  value_ptrs.push_back(array[0].ptr());
+  value_ptrs.push_back(array[1].ptr());
+
+  for (size_t i = 0; i < array.size(); i++)
+    EXPECT_FALSE(array[i].moved());
+
+  array.resize(2);
+  ASSERT_EQ(2u, array.size());
+  EXPECT_EQ(array.size(), MoveOnlyType::num_instances());
+  for (size_t i = 0; i < array.size(); i++) {
+    EXPECT_FALSE(array[i].moved());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+
+  array.resize(3);
+  ASSERT_EQ(3u, array.size());
+  EXPECT_EQ(array.size(), MoveOnlyType::num_instances());
+  for (size_t i = 0; i < array.size(); i++)
+    EXPECT_FALSE(array[i].moved());
+  value_ptrs.push_back(array[2].ptr());
+
+  size_t capacity = array.storage().capacity();
+  array.resize(capacity);
+  ASSERT_EQ(capacity, array.size());
+  EXPECT_EQ(array.size(), MoveOnlyType::num_instances());
+  for (size_t i = 0; i < array.size(); i++)
+    EXPECT_FALSE(array[i].moved());
+  for (size_t i = 3; i < array.size(); i++)
+    value_ptrs.push_back(array[i].ptr());
+
+  array.resize(capacity + 2);
+  ASSERT_EQ(capacity + 2, array.size());
+  EXPECT_EQ(array.size(), MoveOnlyType::num_instances());
+  for (size_t i = 0; i < capacity; i++) {
+    EXPECT_TRUE(array[i].moved());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+  for (size_t i = capacity; i < array.size(); i++)
+    EXPECT_FALSE(array[i].moved());
+
+  array.reset();
+  EXPECT_EQ(0u, MoveOnlyType::num_instances());
+  EXPECT_FALSE(array);
+  array.resize(0);
+  EXPECT_EQ(0u, MoveOnlyType::num_instances());
+  EXPECT_TRUE(array);
+}
+
+TEST(ArrayTest, PushBack_Copyable) {
+  ASSERT_EQ(0u, CopyableType::num_instances());
+  mojo::Array<CopyableType> array(2);
+  array.reset();
+  std::vector<CopyableType*> value_ptrs;
+  size_t capacity = array.storage().capacity();
+  for (size_t i = 0; i < capacity; i++) {
+    CopyableType value;
+    value_ptrs.push_back(value.ptr());
+    array.push_back(value);
+    ASSERT_EQ(i + 1, array.size());
+    ASSERT_EQ(i + 1, value_ptrs.size());
+    EXPECT_EQ(array.size() + 1, CopyableType::num_instances());
+    EXPECT_TRUE(array[i].copied());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+    array[i].ResetCopied();
+    EXPECT_TRUE(array);
+  }
+  {
+    CopyableType value;
+    value_ptrs.push_back(value.ptr());
+    array.push_back(value);
+    EXPECT_EQ(array.size() + 1, CopyableType::num_instances());
+  }
+  ASSERT_EQ(capacity + 1, array.size());
+  EXPECT_EQ(array.size(), CopyableType::num_instances());
+
+  for (size_t i = 0; i < array.size(); i++) {
+    EXPECT_TRUE(array[i].copied());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+  array.reset();
+  EXPECT_EQ(0u, CopyableType::num_instances());
+}
+
+TEST(ArrayTest, PushBack_MoveOnly) {
+  ASSERT_EQ(0u, MoveOnlyType::num_instances());
+  mojo::Array<MoveOnlyType> array(2);
+  array.reset();
+  std::vector<MoveOnlyType*> value_ptrs;
+  size_t capacity = array.storage().capacity();
+  for (size_t i = 0; i < capacity; i++) {
+    MoveOnlyType value;
+    value_ptrs.push_back(value.ptr());
+    array.push_back(value.Pass());
+    ASSERT_EQ(i + 1, array.size());
+    ASSERT_EQ(i + 1, value_ptrs.size());
+    EXPECT_EQ(array.size() + 1, MoveOnlyType::num_instances());
+    EXPECT_TRUE(array[i].moved());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+    array[i].ResetMoved();
+    EXPECT_TRUE(array);
+  }
+  {
+    MoveOnlyType value;
+    value_ptrs.push_back(value.ptr());
+    array.push_back(value.Pass());
+    EXPECT_EQ(array.size() + 1, MoveOnlyType::num_instances());
+  }
+  ASSERT_EQ(capacity + 1, array.size());
+  EXPECT_EQ(array.size(), MoveOnlyType::num_instances());
+
+  for (size_t i = 0; i < array.size(); i++) {
+    EXPECT_TRUE(array[i].moved());
+    EXPECT_EQ(value_ptrs[i], array[i].ptr());
+  }
+  array.reset();
+  EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 
 }  // namespace
