@@ -79,8 +79,7 @@ html[dir=rtl] .pod .locked-indicator {
 }
 
 .pod .supervised-indicator {
-  /* TODO(treib): Use round icon when it's available. */
-  background-image: url('chrome://theme/IDR_MANAGED_USER_ICON');
+  background-image: url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED');
   background-repeat: no-repeat;
   height: 35px;
   left: 10px;

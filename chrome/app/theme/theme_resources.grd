@@ -338,6 +338,7 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ADD_USER" file="common/icon_add_user.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_BROWSE_GUEST" file="common/icon_browse_as_guest.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LOCKED" file="common/icon_locked.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_SUPERVISED" file="common/icon_supervised.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LOCK" file="common/avatar_menu_lock.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="common/avatar_menu_profile.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_SUPERVISED" file="common/avatar_menu_supervised.png" />
