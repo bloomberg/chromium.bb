@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -73,13 +74,19 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
 
   ClearBookmarkMenu(bookmark_menu);
 
-  // Add bookmark bar items, if any.
+  // Add at most one separator for the bookmark bar and the managed bookmarks
+  // folder.
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
   const BookmarkNode* barNode = model->bookmark_bar_node();
-  CHECK(barNode);
-  if (!barNode->empty()) {
+  const BookmarkNode* managedNode = client->managed_node();
+  if (!barNode->empty() || !managedNode->empty())
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
+  // TODO(joaodasilva): use the 'Managed Bookmarks' icon for the managedNode.
+  if (!managedNode->empty())
+    AddNodeAsSubmenu(bookmark_menu, managedNode, !is_submenu);
+  if (!barNode->empty())
     AddNodeToMenu(barNode, bookmark_menu, !is_submenu);
-  }
 
   // If the "Other Bookmarks" folder has any content, make a submenu for it and
   // fill it in.

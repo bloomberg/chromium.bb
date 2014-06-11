@@ -9,8 +9,8 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
-class BookmarkModel;
 class BookmarkNode;
+class ChromeBookmarkClient;
 @class BookmarkBubbleController;
 @class BookmarkSyncPromoController;
 
@@ -21,7 +21,7 @@ class BookmarkNode;
 @interface BookmarkBubbleController : BaseBubbleController {
  @private
   // Both weak; owned by the current browser's profile.
-  BookmarkModel* model_;  // weak
+  ChromeBookmarkClient* client_;  // weak
   const BookmarkNode* node_;  // weak
 
   // The bookmark node whose button we asked to pulse.
@@ -50,7 +50,7 @@ class BookmarkNode;
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                     model:(BookmarkModel*)model
+                    client:(ChromeBookmarkClient*)client
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;
 

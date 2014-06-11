@@ -28,6 +28,7 @@
 class BookmarkModel;
 class BookmarkNode;
 class Browser;
+class ChromeBookmarkClient;
 class GURL;
 namespace ui {
 class ThemeProvider;
@@ -171,6 +172,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   Browser* browser_;              // weak; owned by its window
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
+  ChromeBookmarkClient* bookmarkClient_;
 
   // Our initial view width, which is applied in awakeFromNib.
   CGFloat initialWidth_;
@@ -223,11 +225,14 @@ willAnimateFromState:(BookmarkBar::State)oldState
   NSRect originalNoItemsRect_;  // Original, pre-resized field rect.
   NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
 
+  // "Apps" button on the left side.
+  base::scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
+
+  // "Managed bookmarks" button on the left side, next to the apps button.
+  base::scoped_nsobject<BookmarkButton> managedBookmarksButton_;
+
   // "Other bookmarks" button on the right side.
   base::scoped_nsobject<BookmarkButton> otherBookmarksButton_;
-
-  // "Apps" button to the right of "Other bookmarks".
-  base::scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
 
   // When doing a drag, this is folder button "hovered over" which we
   // may want to open after a short delay.  There are cases where a

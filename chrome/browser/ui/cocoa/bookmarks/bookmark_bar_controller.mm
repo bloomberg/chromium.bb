@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -217,9 +218,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)clearMenuTagMap;
 - (int)preferredHeight;
 - (void)addButtonsToView;
+- (BOOL)setManagedBookmarksButtonVisibility;
 - (BOOL)setOtherBookmarksButtonVisibility;
 - (BOOL)setAppsPageShortcutButtonVisibility;
-- (BookmarkButton*)customBookmarkButtonForCell:(NSCell*)cell;
+- (BookmarkButton*)createCustomBookmarkButtonForCell:(NSCell*)cell;
+- (void)createManagedBookmarksButton;
 - (void)createOtherBookmarksButton;
 - (void)createAppsPageShortcutButton;
 - (void)openAppsPage:(id)sender;
@@ -250,7 +253,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
     browser_ = browser;
     initialWidth_ = initialWidth;
-    bookmarkModel_ = BookmarkModelFactory::GetForProfile(browser_->profile());
+    bookmarkClient_ = BookmarkModelFactory::GetChromeBookmarkClientForProfile(
+        browser_->profile());
+    bookmarkModel_ = bookmarkClient_->model();
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
@@ -318,6 +323,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       [button setIsContinuousPulsing:doPulse];
       return;
     }
+  }
+  if ([managedBookmarksButton_ bookmarkNode] == node) {
+    [managedBookmarksButton_ setIsContinuousPulsing:doPulse];
+    return;
   }
   if ([otherBookmarksButton_ bookmarkNode] == node) {
     [otherBookmarksButton_ setIsContinuousPulsing:doPulse];
@@ -489,6 +498,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // Update the apps and other buttons explicitly, since they are not in the
     // buttons_ array.
     [appsPageShortcutButton_ setNeedsDisplay:YES];
+    [managedBookmarksButton_ setNeedsDisplay:YES];
     [otherBookmarksButton_ setNeedsDisplay:YES];
   }
 }
@@ -570,6 +580,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!node)
     return defaultImage_;
 
+  // TODO(joaodasilva): return the "Managed Bookmarks" icon here for the
+  // managed node.
   if (node->is_folder())
     return folderImage_;
 
@@ -592,8 +604,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
   // Don't allow edit/delete of the permanent nodes.
-  if (node == nil || bookmarkModel_->is_permanent_node(node))
+  if (node == nil || bookmarkModel_->is_permanent_node(node) ||
+      !bookmarkClient_->CanBeEditedByUser(node)) {
     return NO;
+  }
   return YES;
 }
 
@@ -1057,6 +1071,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [appsPageShortcutButton_ setFrame:frame];
   }
 
+  // Draw the managed bookmark folder if needed.
+  if (![managedBookmarksButton_ isHidden]) {
+    xOffset += bookmarks::kBookmarkHorizontalPadding;
+    NSRect frame =
+        [self frameForBookmarkButtonFromCell:[managedBookmarksButton_ cell]
+                                     xOffset:&xOffset];
+    [managedBookmarksButton_ setFrame:frame];
+  }
+
   for (int i = 0; i < node->child_count(); i++) {
     const BookmarkNode* child = node->GetChild(i);
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
@@ -1142,6 +1165,21 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 // Shows or hides the Other Bookmarks button as appropriate, and returns
 // whether it ended up visible.
+- (BOOL)setManagedBookmarksButtonVisibility {
+  if (!managedBookmarksButton_.get())
+    return NO;
+
+  BOOL visible = ![managedBookmarksButton_ bookmarkNode]->empty();
+  BOOL currentVisibility = ![managedBookmarksButton_ isHidden];
+  if (currentVisibility != visible) {
+    [managedBookmarksButton_ setHidden:!visible];
+    [self resetAllButtonPositionsWithAnimation:NO];
+  }
+  return visible;
+}
+
+// Shows or hides the Other Bookmarks button as appropriate, and returns
+// whether it ended up visible.
 - (BOOL)setOtherBookmarksButtonVisibility {
   if (!otherBookmarksButton_.get())
     return NO;
@@ -1166,7 +1204,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 // Creates a bookmark bar button that does not correspond to a regular bookmark
 // or folder. It is used by the "Other Bookmarks" and the "Apps" buttons.
-- (BookmarkButton*)customBookmarkButtonForCell:(NSCell*)cell {
+- (BookmarkButton*)createCustomBookmarkButtonForCell:(NSCell*)cell {
   BookmarkButton* button = [[BookmarkButton alloc] init];
   [[button draggableButton] setDraggable:NO];
   [[button draggableButton] setActsOnMouseDown:YES];
@@ -1179,6 +1217,22 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return button;
 }
 
+// Creates the button for "Managed Bookmarks", but does not position it.
+- (void)createManagedBookmarksButton {
+  if (managedBookmarksButton_.get()) {
+    [self setManagedBookmarksButtonVisibility];
+    return;
+  }
+
+  NSCell* cell = [self cellForBookmarkNode:bookmarkClient_->managed_node()];
+  managedBookmarksButton_.reset([self createCustomBookmarkButtonForCell:cell]);
+  [managedBookmarksButton_ setAction:@selector(openBookmarkFolderFromButton:)];
+  view_id_util::SetID(managedBookmarksButton_.get(), VIEW_ID_MANAGED_BOOKMARKS);
+  [buttonView_ addSubview:managedBookmarksButton_.get()];
+
+  [self setManagedBookmarksButtonVisibility];
+}
+
 // Creates the button for "Other Bookmarks", but does not position it.
 - (void)createOtherBookmarksButton {
   // Can't create this until the model is loaded, but only need to
@@ -1189,7 +1243,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 
   NSCell* cell = [self cellForBookmarkNode:bookmarkModel_->other_node()];
-  otherBookmarksButton_.reset([self customBookmarkButtonForCell:cell]);
+  otherBookmarksButton_.reset([self createCustomBookmarkButtonForCell:cell]);
   // Peg at right; keep same height as bar.
   [otherBookmarksButton_ setAutoresizingMask:(NSViewMinXMargin)];
   [otherBookmarksButton_ setAction:@selector(openBookmarkFolderFromButton:)];
@@ -1214,7 +1268,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       IDR_BOOKMARK_BAR_APPS_SHORTCUT).ToNSImage();
   NSCell* cell = [self cellForCustomButtonWithText:text
                                              image:image];
-  appsPageShortcutButton_.reset([self customBookmarkButtonForCell:cell]);
+  appsPageShortcutButton_.reset([self createCustomBookmarkButtonForCell:cell]);
   [[appsPageShortcutButton_ draggableButton] setActsOnMouseDown:NO];
   [appsPageShortcutButton_ setAction:@selector(openAppsPage:)];
   NSString* tooltip =
@@ -1334,6 +1388,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)reconfigureBookmarkBar {
+  [self setManagedBookmarksButtonVisibility];
   [self redistributeButtonsOnBarAsNeeded];
   [self positionRightSideButtons];
   [self configureOffTheSideButtonContentsAndVisibility];
@@ -1401,6 +1456,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       noItemsRect.origin.x += width;
       importBookmarksRect.origin.x += width;
     }
+    if (![managedBookmarksButton_ isHidden]) {
+      float width = NSWidth([managedBookmarksButton_ frame]);
+      noItemsRect.origin.x += width;
+      importBookmarksRect.origin.x += width;
+    }
     [noItemTextfield setFrame:noItemsRect];
     [noItemTextfield setHidden:NO];
     NSButton* importBookmarksButton = [buttonView_ importBookmarksButton];
@@ -1424,6 +1484,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Draw the apps bookmark if needed.
   if (![appsPageShortcutButton_ isHidden]) {
     left = NSMaxX([appsPageShortcutButton_ frame]) +
+        bookmarks::kBookmarkHorizontalPadding;
+  }
+
+  // Draw the managed bookmarks folder if needed.
+  if (![managedBookmarksButton_ isHidden]) {
+    left = NSMaxX([managedBookmarksButton_ frame]) +
         bookmarks::kBookmarkHorizontalPadding;
   }
 
@@ -1498,6 +1564,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   int xOffset;
   if (displayedButtonCount_ > 0) {
     xOffset = NSMaxX([self finalRectOfLastButton]) +
+        bookmarks::kBookmarkHorizontalPadding;
+  } else if (![managedBookmarksButton_ isHidden]) {
+    xOffset = NSMaxX([managedBookmarksButton_ frame]) +
         bookmarks::kBookmarkHorizontalPadding;
   } else if (![appsPageShortcutButton_ isHidden]) {
     xOffset = NSMaxX([appsPageShortcutButton_ frame]) +
@@ -1711,6 +1780,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     BookmarkButtonCell* cell = [button cell];
     [cell setTextColor:color];
   }
+  [[managedBookmarksButton_ cell] setTextColor:color];
   [[otherBookmarksButton_ cell] setTextColor:color];
   [[appsPageShortcutButton_ cell] setTextColor:color];
 }
@@ -1905,6 +1975,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex = [self indexForDragToPoint:point];
   }
 
+  if (!bookmarkClient_->CanBeEditedByUser(destParent))
+    return NO;
+  if (!bookmarkClient_->CanBeEditedByUser(sourceNode))
+    copy = YES;
+
   // Be sure we don't try and drop a folder into itself.
   if (sourceNode != destParent) {
     if (copy)
@@ -1934,10 +2009,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (!hasInsertionPos_ || where != insertionPos_) {
     insertionPos_ = where;
     hasInsertionPos_ = YES;
-    CGFloat left = [appsPageShortcutButton_ isHidden] ?
-        bookmarks::kBookmarkLeftMargin :
-        NSMaxX([appsPageShortcutButton_ frame]) +
-            bookmarks::kBookmarkHorizontalPadding;
+    CGFloat left;
+    if (![managedBookmarksButton_ isHidden]) {
+      left = NSMaxX([managedBookmarksButton_ frame]) +
+             bookmarks::kBookmarkHorizontalPadding;
+    } else if (![appsPageShortcutButton_ isHidden]) {
+      left = NSMaxX([appsPageShortcutButton_ frame]) +
+             bookmarks::kBookmarkHorizontalPadding;
+    } else {
+      left = bookmarks::kBookmarkLeftMargin;
+    }
     CGFloat paddingWidth = bookmarks::kDefaultBookmarkWidth;
     BookmarkButton* draggedButton = [BookmarkButton draggedButton];
     if (draggedButton) {
@@ -1985,6 +2066,17 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [appsPageShortcutButton_ setFrame:frame];
     left = xOffset + bookmarks::kBookmarkHorizontalPadding;
   }
+
+  // Position the managed bookmarks folder if needed.
+  if (![managedBookmarksButton_ isHidden]) {
+    int xOffset = left;
+    NSRect frame =
+        [self frameForBookmarkButtonFromCell:[managedBookmarksButton_ cell]
+                                     xOffset:&xOffset];
+    [managedBookmarksButton_ setFrame:frame];
+    left = xOffset + bookmarks::kBookmarkHorizontalPadding;
+  }
+
   animate &= innerContentAnimationsEnabled_;
 
   for (NSButton* button in buttons_.get()) {
@@ -2031,6 +2123,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* node = model->bookmark_bar_node();
   [self clearBookmarkBar];
   [self createAppsPageShortcutButton];
+  [self createManagedBookmarksButton];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
   [self updateTheme:[[[self view] window] themeProvider]];
@@ -2435,10 +2528,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   int numButtons = displayedButtonCount_;
 
   CGFloat leftmostX;
-  if ([appsPageShortcutButton_ isHidden])
-    leftmostX = bookmarks::kBookmarkLeftMargin - halfHorizontalPadding;
-  else
+  if (![managedBookmarksButton_ isHidden])
+    leftmostX = NSMaxX([managedBookmarksButton_ frame]) + halfHorizontalPadding;
+  else if (![appsPageShortcutButton_ isHidden])
     leftmostX = NSMaxX([appsPageShortcutButton_ frame]) + halfHorizontalPadding;
+  else
+    leftmostX = bookmarks::kBookmarkLeftMargin - halfHorizontalPadding;
 
   // If it's a drop strictly between existing buttons ...
   if (destIndex == 0) {
@@ -2583,6 +2678,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destParent = bookmarkModel_->bookmark_bar_node();
     destIndex = [self indexForDragToPoint:point];
   }
+
+  if (!bookmarkClient_->CanBeEditedByUser(destParent))
+    return NO;
 
   // Don't add the bookmarks if the destination index shows an error.
   if (destIndex >= 0) {

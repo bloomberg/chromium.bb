@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/fullscreen.h"
@@ -1699,12 +1700,14 @@ using web_modal::WebContentsModalDialogManager;
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyMarked {
   if (!bookmarkBubbleController_) {
-    BookmarkModel* model =
-        BookmarkModelFactory::GetForProfile(browser_->profile());
-    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
+    ChromeBookmarkClient* client =
+        BookmarkModelFactory::GetChromeBookmarkClientForProfile(
+            browser_->profile());
+    const BookmarkNode* node =
+        client->model()->GetMostRecentlyAddedUserNodeForURL(url);
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
-                                                         model:model
+                                                        client:client
                                                           node:node
                                              alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];

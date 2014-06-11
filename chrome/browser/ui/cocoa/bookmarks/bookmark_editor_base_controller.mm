@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
@@ -502,11 +503,14 @@ NSString* const kOkEnabledName = @"okEnabled";
 }
 
 - (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node {
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
   NSMutableArray* childFolders = nil;
   int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* childNode = node->GetChild(i);
-    if (childNode->is_folder() && childNode->IsVisible()) {
+    if (childNode->is_folder() && childNode->IsVisible() &&
+        client->CanBeEditedByUser(childNode)) {
       NSString* childName = base::SysUTF16ToNSString(childNode->GetTitle());
       NSMutableArray* children = [self addChildFoldersFromNode:childNode];
       BookmarkFolderInfo* folderInfo =

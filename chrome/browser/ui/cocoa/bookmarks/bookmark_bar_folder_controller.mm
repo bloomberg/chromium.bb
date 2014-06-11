@@ -7,6 +7,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #import "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -1257,6 +1259,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex += [[parentButton_ cell] startingChildIndex];
   }
 
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+  if (!client->CanBeEditedByUser(destParent))
+    return NO;
+  if (!client->CanBeEditedByUser(sourceNode))
+    copy = YES;
+
   // Prevent cycles.
   BOOL wasCopiedOrMoved = NO;
   if (!destParent->HasAncestor(sourceNode)) {
@@ -1814,6 +1823,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Be careful if the number of buttons != number of nodes.
     destIndex += [[parentButton_ cell] startingChildIndex];
   }
+
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+  if (!client->CanBeEditedByUser(destParent))
+    return NO;
 
   // Create and add the new bookmark nodes.
   size_t urlCount = [urls count];

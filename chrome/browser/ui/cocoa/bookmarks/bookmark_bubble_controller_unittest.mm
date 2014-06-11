@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -87,9 +88,11 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
       [controller_ close];
       controller_ = nil;
     }
+    ChromeBookmarkClient* client =
+        BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile());
     controller_ = [[BookmarkBubbleController alloc]
         initWithParentWindow:browser()->window()->GetNativeWindow()
-                       model:BookmarkModelFactory::GetForProfile(profile())
+                      client:client
                         node:node
            alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
@@ -386,18 +389,19 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 // the user clicking the star, then sending the "cancel" command to represent
 // them pressing escape. The bookmark should not be there.
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
-  BookmarkModel* model = GetBookmarkModel();
+  ChromeBookmarkClient* client =
+      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile());
   const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
           initWithParentWindow:browser()->window()->GetNativeWindow()
-                         model:model
+                        client:client
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
   // Calls release on controller.
   [controller cancel:nil];
-  EXPECT_FALSE(model->IsBookmarked(GURL(kTestBookmarkURL)));
+  EXPECT_FALSE(client->model()->IsBookmarked(GURL(kTestBookmarkURL)));
 }
 
 // Create a controller where the bookmark already existed prior to clicking
