@@ -6,8 +6,8 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/metrics_service.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"

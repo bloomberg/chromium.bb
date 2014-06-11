@@ -26,7 +26,6 @@
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/profiler_metrics_provider.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -144,6 +144,10 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
 
 // static
 void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+
   MetricsService::RegisterPrefs(registry);
   ChromeStabilityMetricsProvider::RegisterPrefs(registry);
 

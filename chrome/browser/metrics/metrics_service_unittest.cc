@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_service.h"
+#include "components/metrics/metrics_service.h"
 
 #include <string>
 
@@ -157,7 +157,7 @@ class TestMetricsServiceObserver : public MetricsServiceObserver {
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
-  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  GetLocalState()->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
 
   metrics::TestMetricsServiceClient client;
   TestMetricsService service(
@@ -177,7 +177,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
       TestingBrowserProcess::GetGlobal());
   TestingPrefServiceSimple* local_state = testing_local_state.Get();
   EnableMetricsReporting();
-  local_state->ClearPref(prefs::kStabilityExitedCleanly);
+  local_state->ClearPref(metrics::prefs::kStabilityExitedCleanly);
 
   // Set up prefs to simulate restarting after a crash.
 
@@ -190,12 +190,12 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
-  local_state->SetInt64(prefs::kStabilityStatsBuildTime,
+  local_state->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
                         MetricsLog::GetBuildTime());
-  local_state->SetString(prefs::kStabilityStatsVersion,
+  local_state->SetString(metrics::prefs::kStabilityStatsVersion,
                          client.GetVersionString());
 
-  local_state->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
 
   TestMetricsService service(GetMetricsStateManager(), &client, local_state);
   service.InitializeMetricsRecordingState();

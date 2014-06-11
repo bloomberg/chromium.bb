@@ -75,13 +75,30 @@ const char kStabilityDebuggerPresent[] =
 const char kStabilityDebuggerNotPresent[] =
     "user_experience_metrics.stability.debugger_not_present";
 
+// An enum value to indicate the execution phase the browser was in.
+const char kStabilityExecutionPhase[] =
+    "user_experience_metrics.stability.execution_phase";
+
+// True if the previous run of the program exited cleanly.
+const char kStabilityExitedCleanly[] =
+    "user_experience_metrics.stability.exited_cleanly";
+
 // Number of times the session end did not complete.
 const char kStabilityIncompleteSessionEndCount[] =
     "user_experience_metrics.stability.incomplete_session_end_count";
 
+// Time when the app was last known to be running, in seconds since
+// the epoch.
+const char kStabilityLastTimestampSec[] =
+    "user_experience_metrics.stability.last_timestamp_sec";
+
 // Number of times the application was launched since last report.
 const char kStabilityLaunchCount[] =
     "user_experience_metrics.stability.launch_count";
+
+// Time when the app was last launched, in seconds since the epoch.
+const char kStabilityLaunchTimeSec[] =
+    "user_experience_metrics.stability.launch_time_sec";
 
 // Base64 encoded serialized UMA system profile proto from the previous session.
 const char kStabilitySavedSystemProfile[] =
@@ -90,6 +107,27 @@ const char kStabilitySavedSystemProfile[] =
 // SHA-1 hash of the serialized UMA system profile proto (hex encoded).
 const char kStabilitySavedSystemProfileHash[] =
     "user_experience_metrics.stability.saved_system_profile_hash";
+
+// False if we received a session end and either we crashed during processing
+// the session end or ran out of time and windows terminated us.
+const char kStabilitySessionEndCompleted[] =
+    "user_experience_metrics.stability.session_end_completed";
+
+// Build time, in seconds since an epoch, which is used to assure that stability
+// metrics reported reflect stability of the same build.
+const char kStabilityStatsBuildTime[] =
+    "user_experience_metrics.stability.stats_buildtime";
+
+// Version string of previous run, which is used to assure that stability
+// metrics reported under current version reflect stability of the same version.
+const char kStabilityStatsVersion[] =
+    "user_experience_metrics.stability.stats_version";
+
+// The keys below are strictly increasing counters over the lifetime of
+// a chrome installation. They are (optionally) sent up to the uninstall
+// survey in the event of uninstallation.
+const char kUninstallLaunchCount[] = "uninstall_metrics.launch_count";
+const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 
 }  // namespace prefs
 }  // namespace metrics

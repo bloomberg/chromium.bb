@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file defines a service that collects information about the user
 // experience in order to help improve future versions of the app.
 
-#ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
-#define CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
+#ifndef COMPONENTS_METRICS_METRICS_SERVICE_H_
+#define COMPONENTS_METRICS_METRICS_SERVICE_H_
 
 #include <map>
 #include <string>
@@ -46,9 +46,6 @@ namespace variations {
 struct ActiveGroupId;
 }
 
-namespace content {
-}
-
 namespace metrics {
 class MetricsLogUploader;
 class MetricsServiceClient;
@@ -57,10 +54,6 @@ class MetricsStateManager;
 
 namespace net {
 class URLFetcher;
-}
-
-namespace tracked_objects {
-struct ProcessDataSnapshot;
 }
 
 // A Field Trial and its selected group, which represent a particular
@@ -472,4 +465,4 @@ class MetricsService : public base::HistogramFlattener {
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
-#endif  // CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
+#endif  // COMPONENTS_METRICS_METRICS_SERVICE_H_

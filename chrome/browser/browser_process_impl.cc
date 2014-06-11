@@ -45,7 +45,6 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -78,6 +77,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -406,7 +406,7 @@ void BrowserProcessImpl::EndSession() {
 #if !defined(OS_CHROMEOS)
     // MetricsService lazily writes to prefs, force it to write now.
     // On ChromeOS, chrome gets killed when hangs, so no need to
-    // commit prefs::kStabilitySessionEndCompleted change immediately.
+    // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
     local_state()->CommitPendingWrite();
 #endif
   }

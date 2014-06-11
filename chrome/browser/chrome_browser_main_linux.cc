@@ -5,8 +5,8 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "components/breakpad/app/breakpad_linux.h"
+#include "components/metrics/metrics_service.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/linux_util.h"

@@ -6,8 +6,8 @@
 
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_service.h"
 
 // static
 bool OptionsUtil::ResolveMetricsReportingEnabled(bool enabled) {

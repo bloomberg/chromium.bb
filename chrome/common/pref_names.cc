@@ -1376,29 +1376,6 @@ const char kVariationsSeedHash[] = "variations_seed_hash";
 // Digital signature of the binary variations seed data, base64-encoded.
 const char kVariationsSeedSignature[] = "variations_seed_signature";
 
-// An enum value to indicate the execution phase the browser was in.
-const char kStabilityExecutionPhase[] =
-    "user_experience_metrics.stability.execution_phase";
-
-// True if the previous run of the program exited cleanly.
-const char kStabilityExitedCleanly[] =
-    "user_experience_metrics.stability.exited_cleanly";
-
-// Version string of previous run, which is used to assure that stability
-// metrics reported under current version reflect stability of the same version.
-const char kStabilityStatsVersion[] =
-    "user_experience_metrics.stability.stats_version";
-
-// Build time, in seconds since an epoch, which is used to assure that stability
-// metrics reported reflect stability of the same build.
-const char kStabilityStatsBuildTime[] =
-    "user_experience_metrics.stability.stats_buildtime";
-
-// False if we received a session end and either we crashed during processing
-// the session end or ran out of time and windows terminated us.
-const char kStabilitySessionEndCompleted[] =
-    "user_experience_metrics.stability.session_end_completed";
-
 // Number of times a page load event occurred since the last report.
 const char kStabilityPageLoadCount[] =
     "user_experience_metrics.stability.page_load_count";
@@ -1410,15 +1387,6 @@ const char kStabilityRendererCrashCount[] =
 // Number of times an extension renderer process crashed since the last report.
 const char kStabilityExtensionRendererCrashCount[] =
     "user_experience_metrics.stability.extension_renderer_crash_count";
-
-// Time when the app was last launched, in seconds since the epoch.
-const char kStabilityLaunchTimeSec[] =
-    "user_experience_metrics.stability.launch_time_sec";
-
-// Time when the app was last known to be running, in seconds since
-// the epoch.
-const char kStabilityLastTimestampSec[] =
-    "user_experience_metrics.stability.last_timestamp_sec";
 
 // This is the location of a list of dictionaries of plugin stability stats.
 const char kStabilityPluginStats[] =
@@ -1487,8 +1455,6 @@ const char kStabilityPluginLoadingErrors[] = "loading_errors";
 const char kInstallDate[] = "uninstall_metrics.installation_date2";
 const char kUninstallMetricsPageLoadCount[] =
     "uninstall_metrics.page_load_count";
-const char kUninstallLaunchCount[] = "uninstall_metrics.launch_count";
-const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 const char kUninstallLastLaunchTimeSec[] =
     "uninstall_metrics.last_launch_time_sec";
 const char kUninstallLastObservedRunTimeSec[] =

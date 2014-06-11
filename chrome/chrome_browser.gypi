@@ -1228,8 +1228,6 @@
         'browser/metrics/gpu_metrics_provider.cc',
         'browser/metrics/gpu_metrics_provider.h',
         'browser/metrics/metric_event_duration_details.h',
-        'browser/metrics/metrics_service.cc',
-        'browser/metrics/metrics_service.h',
         'browser/metrics/metrics_service_accessor.cc',
         'browser/metrics/metrics_service_accessor.h',
         'browser/metrics/metrics_services_manager.cc',

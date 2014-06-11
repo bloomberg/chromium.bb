@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,7 @@
 //
 //------------------------------------------------------------------------------
 
-#include "chrome/browser/metrics/metrics_service.h"
+#include "components/metrics/metrics_service.h"
 
 #include <algorithm>
 
@@ -181,7 +181,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -190,7 +189,6 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/variations/entropy_provider.h"
-#include "content/public/browser/browser_thread.h"
 
 using base::Time;
 using metrics::MetricsLogManager;
@@ -257,8 +255,8 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
 }
 
 void MarkAppCleanShutdownAndCommit(PrefService* local_state) {
-  local_state->SetBoolean(prefs::kStabilityExitedCleanly, true);
-  local_state->SetInteger(prefs::kStabilityExecutionPhase,
+  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+  local_state->SetInteger(metrics::prefs::kStabilityExecutionPhase,
                           MetricsService::SHUTDOWN_COMPLETE);
   // Start writing right away (write happens on a different thread).
   local_state->CommitPendingWrite();
@@ -288,24 +286,23 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
 
-  registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
-  registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
-  registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
-  registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
-  registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
-  registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase,
+  registry->RegisterInt64Pref(metrics::prefs::kStabilityLaunchTimeSec, 0);
+  registry->RegisterInt64Pref(metrics::prefs::kStabilityLastTimestampSec, 0);
+  registry->RegisterStringPref(metrics::prefs::kStabilityStatsVersion,
+                               std::string());
+  registry->RegisterInt64Pref(metrics::prefs::kStabilityStatsBuildTime, 0);
+  registry->RegisterBooleanPref(metrics::prefs::kStabilityExitedCleanly, true);
+  registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase,
                                 UNINITIALIZED_PHASE);
-  registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
+  registry->RegisterBooleanPref(metrics::prefs::kStabilitySessionEndCompleted,
+                                true);
   registry->RegisterIntegerPref(metrics::prefs::kMetricsSessionID, -1);
 
   registry->RegisterListPref(metrics::prefs::kMetricsInitialLogs);
   registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
 
-  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+  registry->RegisterInt64Pref(metrics::prefs::kUninstallLaunchCount, 0);
+  registry->RegisterInt64Pref(metrics::prefs::kUninstallMetricsUptimeSec, 0);
 }
 
 MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
@@ -477,12 +474,12 @@ void MetricsService::OnApplicationNotIdle() {
 
 void MetricsService::RecordStartOfSessionEnd() {
   LogCleanShutdown();
-  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, false);
+  RecordBooleanPrefValue(metrics::prefs::kStabilitySessionEndCompleted, false);
 }
 
 void MetricsService::RecordCompletedSessionEnd() {
   LogCleanShutdown();
-  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
+  RecordBooleanPrefValue(metrics::prefs::kStabilitySessionEndCompleted, true);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -505,12 +502,12 @@ void MetricsService::OnAppEnterBackground() {
 }
 
 void MetricsService::OnAppEnterForeground() {
-  local_state_->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
   StartSchedulerIfNecessary();
 }
 #else
 void MetricsService::LogNeedForCleanShutdown(PrefService* local_state) {
-  local_state->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
   // Redundant setting to be sure we call for a clean shutdown.
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }
@@ -520,7 +517,8 @@ void MetricsService::LogNeedForCleanShutdown(PrefService* local_state) {
 void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
                                        PrefService* local_state) {
   execution_phase_ = execution_phase;
-  local_state->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
+  local_state->SetInteger(metrics::prefs::kStabilityExecutionPhase,
+                          execution_phase_);
 }
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
@@ -546,23 +544,23 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 // Initialization methods
 
 void MetricsService::InitializeMetricsState() {
-  local_state_->SetString(prefs::kStabilityStatsVersion,
+  local_state_->SetString(metrics::prefs::kStabilityStatsVersion,
                           client_->GetVersionString());
-  local_state_->SetInt64(prefs::kStabilityStatsBuildTime,
+  local_state_->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
                          MetricsLog::GetBuildTime());
 
   session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
 
-  if (!local_state_->GetBoolean(prefs::kStabilityExitedCleanly)) {
+  if (!local_state_->GetBoolean(metrics::prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(metrics::prefs::kStabilityCrashCount);
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
-    local_state_->SetBoolean(prefs::kStabilityExitedCleanly, true);
+    local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
 
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
-        local_state_->GetInteger(prefs::kStabilityExecutionPhase);
+        local_state_->GetInteger(metrics::prefs::kStabilityExecutionPhase);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
                                 execution_phase);
 
@@ -582,10 +580,12 @@ void MetricsService::InitializeMetricsState() {
   DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
   SetExecutionPhase(START_METRICS_RECORDING, local_state_);
 
-  if (!local_state_->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
+  if (!local_state_->GetBoolean(
+          metrics::prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(metrics::prefs::kStabilityIncompleteSessionEndCount);
     // This is marked false when we get a WM_ENDSESSION.
-    local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
+    local_state_->SetBoolean(metrics::prefs::kStabilitySessionEndCompleted,
+                             true);
   }
 
   // Call GetUptimes() for the first time, thus allowing all later calls
@@ -595,12 +595,13 @@ void MetricsService::InitializeMetricsState() {
   GetUptimes(local_state_, &startup_uptime, &ignored_uptime_parameter);
   DCHECK_EQ(0, startup_uptime.InMicroseconds());
   // For backwards compatibility, leave this intact in case Omaha is checking
-  // them.  prefs::kStabilityLastTimestampSec may also be useless now.
+  // them.  metrics::prefs::kStabilityLastTimestampSec may also be useless now.
   // TODO(jar): Delete these if they have no uses.
-  local_state_->SetInt64(prefs::kStabilityLaunchTimeSec, Time::Now().ToTimeT());
+  local_state_->SetInt64(metrics::prefs::kStabilityLaunchTimeSec,
+                         Time::Now().ToTimeT());
 
   // Bookkeeping for the uninstall metrics.
-  IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
+  IncrementLongPrefsValue(metrics::prefs::kUninstallLaunchCount);
 
   // Kick off the process of saving the state (so the uptime numbers keep
   // getting updated) every n minutes.
@@ -644,9 +645,10 @@ void MetricsService::GetUptimes(PrefService* pref,
 
   const int64 incremental_time_secs = incremental_uptime->InSeconds();
   if (incremental_time_secs > 0) {
-    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
+    int64 metrics_uptime =
+        pref->GetInt64(metrics::prefs::kUninstallMetricsUptimeSec);
     metrics_uptime += incremental_time_secs;
-    pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
+    pref->SetInt64(metrics::prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
 }
 
@@ -700,8 +702,7 @@ void MetricsService::OpenNewLog() {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
 
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI,
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MetricsService::StartGatheringMetrics,
                    self_ptr_factory_.GetWeakPtr()),
@@ -1176,8 +1177,8 @@ void MetricsService::LogCleanShutdown() {
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
 
-  RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
-  local_state_->SetInteger(prefs::kStabilityExecutionPhase,
+  RecordBooleanPrefValue(metrics::prefs::kStabilityExitedCleanly, true);
+  local_state_->SetInteger(metrics::prefs::kStabilityExecutionPhase,
                            MetricsService::SHUTDOWN_COMPLETE);
 }
 
@@ -1195,7 +1196,8 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 }
 
 void MetricsService::RecordCurrentState(PrefService* pref) {
-  pref->SetInt64(prefs::kStabilityLastTimestampSec, Time::Now().ToTimeT());
+  pref->SetInt64(metrics::prefs::kStabilityLastTimestampSec,
+                 Time::Now().ToTimeT());
 
   for (size_t i = 0; i < metrics_providers_.size(); ++i)
     metrics_providers_[i]->RecordCurrentState();

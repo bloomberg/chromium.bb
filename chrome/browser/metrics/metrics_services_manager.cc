@@ -7,10 +7,10 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/rappor/rappor_service.h"
 

@@ -34,6 +34,8 @@
         'metrics/metrics_pref_names.h',
         'metrics/metrics_reporting_scheduler.cc',
         'metrics/metrics_reporting_scheduler.h',
+        'metrics/metrics_service.cc',
+        'metrics/metrics_service.h',
         'metrics/metrics_service_client.h',
         'metrics/metrics_service_observer.cc',
         'metrics/metrics_service_observer.h',

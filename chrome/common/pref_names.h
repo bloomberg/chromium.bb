@@ -451,16 +451,9 @@ extern const char kProfilesNumCreated[];
 extern const char kProfileInfoCache[];
 extern const char kProfileCreatedByVersion[];
 
-extern const char kStabilityExecutionPhase[];
-extern const char kStabilityExitedCleanly[];
-extern const char kStabilityStatsVersion[];
-extern const char kStabilityStatsBuildTime[];
-extern const char kStabilitySessionEndCompleted[];
 extern const char kStabilityPageLoadCount[];
 extern const char kStabilityRendererCrashCount[];
 extern const char kStabilityExtensionRendererCrashCount[];
-extern const char kStabilityLaunchTimeSec[];
-extern const char kStabilityLastTimestampSec[];
 extern const char kStabilityRendererHangCount[];
 extern const char kStabilityChildProcessCrashCount[];
 extern const char kStabilityOtherUserCrashCount[];
@@ -482,8 +475,6 @@ extern const char kStabilityPluginLoadingErrors[];
 
 extern const char kInstallDate[];
 extern const char kUninstallMetricsPageLoadCount[];
-extern const char kUninstallLaunchCount[];
-extern const char kUninstallMetricsUptimeSec[];
 extern const char kUninstallLastLaunchTimeSec[];
 extern const char kUninstallLastObservedRunTimeSec[];
 

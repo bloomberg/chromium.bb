@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_observer.h"
 
 // static

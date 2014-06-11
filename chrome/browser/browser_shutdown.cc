@@ -24,7 +24,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/common/chrome_paths.h"
@@ -32,6 +31,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
+#include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
