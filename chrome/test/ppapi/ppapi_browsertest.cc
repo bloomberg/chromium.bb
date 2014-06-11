@@ -1204,11 +1204,7 @@ TEST_PPAPI_NACL(MouseCursor)
 
 TEST_PPAPI_NACL(NetworkProxy)
 
-// TODO(scottmg): Disabled with DirectWrite investigating, probably sandbox-
-// related. http://crbug.com/382729
-#if !defined(OS_WIN)
 TEST_PPAPI_NACL(TrueTypeFont)
-#endif
 
 // VideoDestination doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(VideoDestination)
