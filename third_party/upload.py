@@ -629,6 +629,8 @@ group.add_option("-j", "--number-parallel-uploads",
 group = parser.add_option_group("Issue options")
 group.add_option("-t", "--title", action="store", dest="title",
                  help="New issue subject or new patch set title")
+group.add_option("--project", action="store", dest="project",
+                 help="The project the issue belongs to")
 group.add_option("-m", "--message", action="store", dest="message",
                  default=None,
                  help="New issue description or new patch set message")
@@ -2596,6 +2598,8 @@ def RealMain(argv, data=None):
     for cc in options.cc.split(','):
       CheckReviewer(cc)
     form_fields.append(("cc", options.cc))
+  if options.project:
+    form_fields.append(("project", options.project))
 
   # Process --message, --title and --file.
   message = options.message or ""

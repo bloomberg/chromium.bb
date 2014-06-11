@@ -911,6 +911,10 @@ def CMDupload(change_info, args):
       if GetCodeReviewSetting("PRIVATE") == "True":
         upload_arg.append("--private")
 
+      project = GetCodeReviewSetting("PROJECT")
+      if project:
+        upload_arg.append("--project=%s" % project)
+
     # If we have a lot of files with long paths, then we won't be able to fit
     # the command to "svn diff".  Instead, we generate the diff manually for
     # each file and concatenate them before passing it to upload.py.
