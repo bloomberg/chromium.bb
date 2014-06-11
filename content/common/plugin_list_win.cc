@@ -463,9 +463,13 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
     }
   }
 
-#if !defined(ARCH_CPU_X86_64)
-  // The plugin in question could be a 64 bit plugin which we cannot load.
   base::FilePath plugin_path(info.path);
+#if defined(ARCH_CPU_X86_64)
+  // The plugin in question could be a 32 bit plugin which we cannot load.
+  if (IsValid32BitImage(base::MakeAbsoluteFilePath(plugin_path)))
+    return false;
+#else
+  // The plugin in question could be a 64 bit plugin which we cannot load.
   if (!IsValid32BitImage(base::MakeAbsoluteFilePath(plugin_path)))
     return false;
 #endif
