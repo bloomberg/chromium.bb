@@ -77,18 +77,40 @@ cr.define('uber_frame', function() {
     var navItem =
         document.querySelector('li[controls="' + params.pageId + '"]');
     setSelection(navItem);
+    showNavItems();
+  }
+
+  /**
+   * @return {Element} The currently selected nav item, if any.
+   */
+  function getSelectedNavItem() {
+    return document.querySelector('li.selected');
   }
 
   /**
    * Sets selection on the given nav item.
-   * @param {boolean} newSelection The item to be selected.
+   * @param {Element} newSelection The item to be selected.
    */
   function setSelection(newSelection) {
-    var lastSelectedNavItem = document.querySelector('li.selected');
+    var lastSelectedNavItem = getSelectedNavItem();
     if (lastSelectedNavItem !== newSelection) {
       newSelection.classList.add('selected');
       if (lastSelectedNavItem)
         lastSelectedNavItem.classList.remove('selected');
+    }
+  }
+
+  /**
+   * Shows nav items belonging to the same group as the selected item.
+   */
+  function showNavItems() {
+    var navItems = document.querySelectorAll('li');
+    var selectedNavItem = getSelectedNavItem();
+    assert(selectedNavItem);
+
+    var selectedGroup = selectedNavItem.getAttribute('group');
+    for (var i = 0; i < navItems.length; ++i) {
+      navItems[i].hidden = navItems[i].getAttribute('group') != selectedGroup;
     }
   }
 
@@ -124,7 +146,7 @@ cr.define('uber_frame', function() {
   }
 
   /**
-   * @return {Object} The currently selected iframe container.
+   * @return {Element} The currently selected iframe container.
    * @private
    */
   function getSelectedIframe() {

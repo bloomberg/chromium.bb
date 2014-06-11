@@ -183,29 +183,25 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, SettingsWindowMultiProfile) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsChromePages) {
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenChromePages) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // History should open in the existing browser window.
+  chrome::ShowHistory(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   // Settings should open a new browser window.
   chrome::ShowSettings(browser());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
-  // History should open a new browser window.
-  CloseNonDefaultBrowsers();
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  chrome::ShowHistory(browser());
-  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-
-  // Extensions should open a new browser window.
+  // Extensions should open in an existing browser window.
   CloseNonDefaultBrowsers();
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   std::string extension_to_highlight;  // none
   chrome::ShowExtensions(browser(), extension_to_highlight);
-  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-
-  // Downloads should NOT open a new browser window.
-  CloseNonDefaultBrowsers();
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Downloads should open in an existing browser window.
   chrome::ShowDownloads(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }

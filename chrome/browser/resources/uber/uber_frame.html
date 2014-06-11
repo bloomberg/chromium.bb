@@ -16,19 +16,20 @@
 
 <h1 i18n-content="shortProductName"></h1>
 <ul>
-  <li i18n-values="controls:historyHost;override:overridesHistory">
+  <li i18n-values="controls:historyHost;override:overridesHistory;
+                   group:historyGroup" hidden>
     <button class="custom-appearance"
         i18n-content="historyDisplayName"></button>
   </li>
-  <li i18n-values="controls:extensionsHost">
+  <li i18n-values="controls:extensionsHost;group:extensionsGroup" hidden>
     <button class="custom-appearance"
         i18n-content="extensionsDisplayName"></button>
   </li>
-  <li i18n-values="controls:settingsHost">
+  <li i18n-values="controls:settingsHost;group:settingsGroup" hidden>
     <button class="custom-appearance"
         i18n-content="settingsDisplayName"></button>
   </li>
-  <li id="helpNavItem" i18n-values="controls:helpHost">
+  <li id="helpNavItem" i18n-values="controls:helpHost;group:helpGroup" hidden>
     <button class="custom-appearance"
         i18n-content="helpDisplayName"></button>
   </li>

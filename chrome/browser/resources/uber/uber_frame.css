@@ -41,7 +41,8 @@ li.selected {
   pointer-events: none;
 }
 
-#helpNavItem {
+/* Separates the Help nav item if there are at least 3 items. */
+li:not([hidden]) ~ li:not([hidden]) ~ #helpNavItem {
   margin-top: 27px;
 }
 

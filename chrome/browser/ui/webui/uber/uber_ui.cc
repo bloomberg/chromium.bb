@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -32,6 +34,11 @@ using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
+
+bool IsSettingsWindowEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableSettingsWindow);
+}
 
 content::WebUIDataSource* CreateUberHTMLSource() {
   content::WebUIDataSource* source =
@@ -102,19 +109,27 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 #endif  // defined(OS_CHROMEOS)
 
+  // Group settings and help separately if settings in a window is enabled.
+  base::string16 settings_group(ASCIIToUTF16("settings_group"));
+  base::string16 other_group(ASCIIToUTF16(
+      IsSettingsWindowEnabled() ? "other_group" : "settings_group"));
   source->AddString("extensionsHost",
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
+  source->AddString("extensionsGroup", other_group);
   source->AddString("helpHost",
                     ASCIIToUTF16(chrome::kChromeUIHelpHost));
   source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
+  source->AddString("helpGroup", settings_group);
   source->AddString("historyHost",
                     ASCIIToUTF16(chrome::kChromeUIHistoryHost));
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
+  source->AddString("historyGroup", other_group);
   source->AddString("settingsHost",
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
+  source->AddString("settingsGroup", settings_group);
   bool overridesHistory = HasExtensionType(profile,
       chrome::kChromeUIHistoryHost);
   source->AddString("overridesHistory",

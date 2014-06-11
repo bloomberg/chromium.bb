@@ -108,7 +108,7 @@ void ShowHelpImpl(Browser* browser,
   ShowSingletonTab(browser, url);
 }
 
-bool SettingsWindowEnabled() {
+bool IsSettingsWindowEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableSettingsWindow);
 }
@@ -129,11 +129,6 @@ void ShowBookmarkManagerForNode(Browser* browser, int64 node_id) {
 
 void ShowHistory(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowHistory"));
-  if (SettingsWindowEnabled()) {
-    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        browser->profile(), GURL(kChromeUIHistoryURL));
-    return;
-  }
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHistoryURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -156,11 +151,6 @@ void ShowDownloads(Browser* browser) {
 void ShowExtensions(Browser* browser,
                     const std::string& extension_to_highlight) {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  if (SettingsWindowEnabled()) {
-    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        browser->profile(), GURL(kChromeUIExtensionsURL));
-    return;
-  }
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIExtensionsURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -244,7 +234,7 @@ void ShowSettings(Browser* browser) {
 }
 
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
-  if (SettingsWindowEnabled()) {
+  if (IsSettingsWindowEnabled()) {
     ShowSettingsSubPageForProfile(browser->profile(), sub_page);
     return;
   }
@@ -253,7 +243,7 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
-  if (SettingsWindowEnabled()) {
+  if (IsSettingsWindowEnabled()) {
     content::RecordAction(base::UserMetricsAction("ShowOptions"));
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
         profile, GetSettingsUrl(sub_page));
