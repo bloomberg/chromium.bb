@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_DISPLAY_H_
-#define CC_SURFACES_DISPLAY_H_
-
 #include "cc/surfaces/display.h"
 
 #include "base/message_loop/message_loop.h"
@@ -165,5 +162,3 @@ void Display::ReturnResources(const ReturnedResourceArray& resources) {
 }
 
 }  // namespace cc
-
-#endif  // CC_SURFACES_DISPLAY_H_
