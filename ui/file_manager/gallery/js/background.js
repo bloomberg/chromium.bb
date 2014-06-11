@@ -88,7 +88,11 @@ function getChildren(entry) {
       });
     });
   };
-  return readEntries();
+  return readEntries().then(function(entries) {
+    return entries.sort(function(a, b) {
+      return a.name.localeCompare(b.name);
+    });
+  });
 }
 
 /**

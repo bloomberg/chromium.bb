@@ -1220,6 +1220,11 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
   }
 
  protected:
+  virtual void SetUp() OVERRIDE {
+    AddScript("gallery/test_util.js");
+    FileManagerBrowserTestBase::SetUp();
+  }
+
   virtual std::string OnMessage(const std::string& name,
                                 const base::Value* value) OVERRIDE;
 
@@ -1282,6 +1287,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        OpenMultipleImagesOnDownloads) {
+  AddScript("gallery/test_util.js");
   AddScript("gallery/open_image_files.js");
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();
@@ -1293,5 +1299,23 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("traverseSlideImagesOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       TraverseSlideImagesOnDownloads) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("traverseSlideImagesOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("traverseSlideImagesOnDrive");
+  StartTest();
+}
 }  // namespace
 }  // namespace file_manager
