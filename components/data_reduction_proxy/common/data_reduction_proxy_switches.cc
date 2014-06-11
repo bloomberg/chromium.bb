@@ -33,6 +33,14 @@ const char kDataReductionProxyProbeURL[] = "data-reduction-proxy-probe-url";
 // The origin of the data reduction SSL proxy.
 const char kDataReductionSSLProxy[] = "data-reduction-ssl-proxy";
 
+// Disables the origin of the data reduction proxy dev.
+const char kDisableDataReductionProxyDev[] =
+    "disable-spdy-proxy-dev-auth-origin";
+
+// Enables the origin of the data reduction proxy dev.
+const char kEnableDataReductionProxyDev[] =
+    "enable-spdy-proxy-dev-auth-origin";
+
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 

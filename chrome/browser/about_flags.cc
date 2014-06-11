@@ -39,6 +39,11 @@
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/views/views_switches.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/common/chrome_version_info.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #endif
@@ -1914,6 +1919,17 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kMalwareInterstitialVersions)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-data-reduction-proxy-dev",
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME,
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_DESCRIPTION,
+    kOsAndroid,
+    ENABLE_DISABLE_VALUE_TYPE(
+        data_reduction_proxy::switches::kEnableDataReductionProxyDev,
+        data_reduction_proxy::switches::kDisableDataReductionProxyDev)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
@@ -2030,6 +2046,14 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
            std::string("manual-enhanced-bookmarks-optout"))) {
     return true;
   }
+
+#if defined(OS_ANDROID)
+  // enable-data-reduction-proxy-dev is only available for the Dev channel.
+  if (!strcmp("enable-data-reduction-proxy-dev", experiment.internal_name) &&
+      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
+    return true;
+  }
+#endif
 
   return false;
 }

@@ -160,8 +160,11 @@ bool DataReductionProxyParams::Init(
 
 void DataReductionProxyParams::InitWithoutChecks() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string origin =
-      command_line.GetSwitchValueASCII(switches::kDataReductionProxyDev);
+  std::string origin;
+  if (!command_line.HasSwitch(switches::kDisableDataReductionProxyDev)) {
+      origin = command_line.GetSwitchValueASCII(
+          switches::kDataReductionProxyDev);
+  }
   if (origin.empty())
     origin = command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
   std::string fallback_origin =
@@ -231,8 +234,12 @@ std::string DataReductionProxyParams::GetDefaultKey() const {
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
 #if defined(DATA_REDUCTION_DEV_HOST)
-  if (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
-      kEnabled) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
+    return std::string();
+  if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
+      (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
+         kEnabled)) {
     return DATA_REDUCTION_DEV_HOST;
   }
 #endif

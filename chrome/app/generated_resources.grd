@@ -6140,12 +6140,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
         </message>
       </if>
+
+      <!-- Data Reduction Proxy -->
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable data compression proxy.">
           Enable Data Compression Proxy
         </message>
         <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION" desc="Description of flag to enable data compression proxy.">
           Reduce data consumption by loading optimized web pages via Google proxy servers.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy">
+          Enable Experiment Data Reduction Proxy
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy">
+         Enable or disable using the development version of the data reduction proxy.
         </message>
       </if>
       <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_NAME" desc="Name of about:flags option for impl-side painting.">
