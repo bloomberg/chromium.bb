@@ -11,9 +11,12 @@ from telemetry.page import page_set as page_set_module
 
 
 def _CreateXpathFunction(xpath):
-  return ('document.evaluate(%s, document, null, '
-          'XPathResult.FIRST_ORDERED_NODE_TYPE, null)'
-          '.singleNodeEvaluate') % re.escape(xpath)
+  return ('document.evaluate("%s",'
+                             'document,'
+                             'null,'
+                             'XPathResult.FIRST_ORDERED_NODE_TYPE,'
+                             'null)'
+          '.singleNodeValue' % re.escape(xpath))
 
 
 class GmailComposeDiscardPage(page_module.Page):
