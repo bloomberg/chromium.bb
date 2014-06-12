@@ -9,6 +9,7 @@
       url('chrome://theme/IDR_FILETYPE_GENERIC@2x') 2x);
   background-position: center;
   background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 
 tree:focus .tree-item[selected] > .tree-row > [file-type-icon],
