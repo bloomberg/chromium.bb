@@ -91,14 +91,16 @@ public final class GCMDriver {
             @Override public void run() {
                 final String BUNDLE_SENDER_ID = "from";
                 final String BUNDLE_COLLAPSE_KEY = "collapse_key";
+                final String BUNDLE_GCMMPLEX = "com.google.ipc.invalidation.gcmmplex.";
 
                 String senderId = extras.getString(BUNDLE_SENDER_ID);
                 String collapseKey = extras.getString(BUNDLE_COLLAPSE_KEY);
 
                 List<String> dataKeysAndValues = new ArrayList<String>();
                 for (String key : extras.keySet()) {
-                    // TODO(johnme): Check there aren't other default keys that we need to exclude.
-                    if (key == BUNDLE_SENDER_ID || key == BUNDLE_COLLAPSE_KEY)
+                    // TODO(johnme): Check there aren't other keys that we need to exclude.
+                    if (key == BUNDLE_SENDER_ID || key == BUNDLE_COLLAPSE_KEY ||
+                            key.startsWith(BUNDLE_GCMMPLEX))
                         continue;
                     dataKeysAndValues.add(key);
                     dataKeysAndValues.add(extras.getString(key));
