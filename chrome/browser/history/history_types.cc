@@ -332,7 +332,7 @@ TopSitesDelta::~TopSitesDelta() {}
 // HistoryAddPageArgs ---------------------------------------------------------
 
 HistoryAddPageArgs::HistoryAddPageArgs()
-    : id_scope(NULL),
+    : context_id(NULL),
       page_id(0),
       transition(content::PAGE_TRANSITION_LINK),
       visit_source(SOURCE_BROWSED),
@@ -341,7 +341,7 @@ HistoryAddPageArgs::HistoryAddPageArgs()
 HistoryAddPageArgs::HistoryAddPageArgs(
     const GURL& url,
     base::Time time,
-    const void* id_scope,
+    ContextID context_id,
     int32 page_id,
     const GURL& referrer,
     const history::RedirectList& redirects,
@@ -350,7 +350,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(
     bool did_replace_entry)
       : url(url),
         time(time),
-        id_scope(id_scope),
+        context_id(context_id),
         page_id(page_id),
         referrer(referrer),
         redirects(redirects),

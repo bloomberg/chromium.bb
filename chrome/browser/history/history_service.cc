@@ -278,10 +278,11 @@ void HistoryService::Cleanup() {
   delete thread;
 }
 
-void HistoryService::NotifyRenderProcessHostDestruction(const void* host) {
+void HistoryService::ClearCachedDataForContextID(
+    history::ContextID context_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::NotifyRenderProcessHostDestruction, host);
+                    &HistoryBackend::ClearCachedDataForContextID, context_id);
 }
 
 history::URLDatabase* HistoryService::InMemoryDatabase() {
@@ -409,7 +410,7 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
 
 void HistoryService::AddPage(const GURL& url,
                              Time time,
-                             const void* id_scope,
+                             history::ContextID context_id,
                              int32 page_id,
                              const GURL& referrer,
                              const history::RedirectList& redirects,
@@ -418,7 +419,7 @@ void HistoryService::AddPage(const GURL& url,
                              bool did_replace_entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   AddPage(
-      history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
+      history::HistoryAddPageArgs(url, time, context_id, page_id, referrer,
                                   redirects, transition, visit_source,
                                   did_replace_entry));
 }
@@ -480,13 +481,13 @@ void HistoryService::SetPageTitle(const GURL& url,
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);
 }
 
-void HistoryService::UpdateWithPageEndTime(const void* host,
+void HistoryService::UpdateWithPageEndTime(history::ContextID context_id,
                                            int32 page_id,
                                            const GURL& url,
                                            Time end_ts) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateWithPageEndTime,
-                    host, page_id, url, end_ts);
+                    context_id, page_id, url, end_ts);
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,

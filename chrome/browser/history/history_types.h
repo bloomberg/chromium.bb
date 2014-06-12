@@ -46,6 +46,9 @@ typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
+// Identifier for a context to scope page ids.
+typedef const void* ContextID;
+
 // URLRow ---------------------------------------------------------------------
 
 typedef int64 URLID;
@@ -568,7 +571,7 @@ struct HistoryAddPageArgs {
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
-                     const void* id_scope,
+                     ContextID context_id,
                      int32 page_id,
                      const GURL& referrer,
                      const history::RedirectList& redirects,
@@ -580,7 +583,7 @@ struct HistoryAddPageArgs {
   GURL url;
   base::Time time;
 
-  const void* id_scope;
+  ContextID context_id;
   int32 page_id;
 
   GURL referrer;

@@ -251,11 +251,9 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     for (int i = 0; sequence[i] != NULL; ++i)
       redirects.push_back(GURL(sequence[i]));
 
-    int int_scope = 1;
-    void* scope = 0;
-    memcpy(&scope, &int_scope, sizeof(int_scope));
+    ContextID context_id = reinterpret_cast<ContextID>(1);
     history::HistoryAddPageArgs request(
-        redirects.back(), time, scope, page_id, GURL(),
+        redirects.back(), time, context_id, page_id, GURL(),
         redirects, transition, history::SOURCE_BROWSED,
         true);
     backend_->AddPage(request);
@@ -271,14 +269,14 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   void AddClientRedirect(const GURL& url1, const GURL& url2, bool did_replace,
                          base::Time time,
                          int* transition1, int* transition2) {
-    void* const dummy_scope = reinterpret_cast<void*>(0x87654321);
+    ContextID dummy_context_id = reinterpret_cast<ContextID>(0x87654321);
     history::RedirectList redirects;
     if (url1.is_valid())
       redirects.push_back(url1);
     if (url2.is_valid())
       redirects.push_back(url2);
     HistoryAddPageArgs request(
-        url2, time, dummy_scope, 0, url1,
+        url2, time, dummy_context_id, 0, url1,
         redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
         history::SOURCE_BROWSED, did_replace);
     backend_->AddPage(request);

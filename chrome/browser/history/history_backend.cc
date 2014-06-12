@@ -220,8 +220,8 @@ void HistoryBackend::Closing() {
   delegate_.reset();
 }
 
-void HistoryBackend::NotifyRenderProcessHostDestruction(const void* host) {
-  tracker_.NotifyRenderProcessHostDestruction(host);
+void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
+  tracker_.ClearCachedDataForContextID(context_id);
 }
 
 base::FilePath HistoryBackend::GetThumbnailFileName() const {
@@ -339,12 +339,12 @@ SegmentID HistoryBackend::UpdateSegments(
   return segment_id;
 }
 
-void HistoryBackend::UpdateWithPageEndTime(const void* host,
+void HistoryBackend::UpdateWithPageEndTime(ContextID context_id,
                                            int32 page_id,
                                            const GURL& url,
                                            Time end_ts) {
   // Will be filled with the URL ID and the visit ID of the last addition.
-  VisitID visit_id = tracker_.GetLastVisit(host, page_id, url);
+  VisitID visit_id = tracker_.GetLastVisit(context_id, page_id, url);
   UpdateVisitDuration(visit_id, end_ts);
 }
 
@@ -368,7 +368,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
   // Will be filled with the URL ID and the visit ID of the last addition.
   std::pair<URLID, VisitID> last_ids(0, tracker_.GetLastVisit(
-      request.id_scope, request.page_id, request.referrer));
+      request.context_id, request.page_id, request.referrer));
 
   VisitID from_visit_id = last_ids.second;
 
@@ -531,7 +531,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   if (stripped_transition != content::PAGE_TRANSITION_AUTO_SUBFRAME &&
       stripped_transition != content::PAGE_TRANSITION_MANUAL_SUBFRAME &&
       !is_keyword_generated) {
-    tracker_.AddVisit(request.id_scope, request.page_id, request.url,
+    tracker_.AddVisit(request.context_id, request.page_id, request.url,
                       last_ids.second);
   }
 

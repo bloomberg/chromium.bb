@@ -898,15 +898,6 @@ TEST_F(HistoryBackendDBTest,
   }
 }
 
-// The tracker uses RenderProcessHost pointers for scoping but never
-// dereferences them. We use ints because it's easier. This function converts
-// between the two.
-static void* MakeFakeHost(int id) {
-  void* host = 0;
-  memcpy(&host, &id, sizeof(id));
-  return host;
-}
-
 class HistoryTest : public testing::Test {
  public:
   HistoryTest()
@@ -963,7 +954,7 @@ class HistoryTest : public testing::Test {
   void CleanupHistoryService() {
     DCHECK(history_service_);
 
-    history_service_->NotifyRenderProcessHostDestruction(0);
+    history_service_->ClearCachedDataForContextID(0);
     history_service_->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
     history_service_->Cleanup();
     history_service_.reset();
@@ -1098,9 +1089,9 @@ TEST_F(HistoryTest, AddRedirect) {
   // Add the sequence of pages as a server with no referrer. Note that we need
   // to have a non-NULL page ID scope.
   history_service_->AddPage(
-      first_redirects.back(), base::Time::Now(), MakeFakeHost(1),
-      0, GURL(), first_redirects, content::PAGE_TRANSITION_LINK,
-      history::SOURCE_BROWSED, true);
+      first_redirects.back(), base::Time::Now(),
+      reinterpret_cast<ContextID>(1), 0, GURL(), first_redirects,
+      content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED, true);
 
   // The first page should be added once with a link visit type (because we set
   // LINK when we added the original URL, and a referrer of nowhere (0).
@@ -1137,7 +1128,8 @@ TEST_F(HistoryTest, AddRedirect) {
   second_redirects.push_back(first_redirects[1]);
   second_redirects.push_back(GURL("http://last.page.com/"));
   history_service_->AddPage(second_redirects[1], base::Time::Now(),
-                   MakeFakeHost(1), 1, second_redirects[0], second_redirects,
+                   reinterpret_cast<ContextID>(1), 1,
+                   second_redirects[0], second_redirects,
                    static_cast<content::PageTransition>(
                        content::PAGE_TRANSITION_LINK |
                        content::PAGE_TRANSITION_CLIENT_REDIRECT),
@@ -1327,12 +1319,12 @@ TEST_F(HistoryTest, SetTitle) {
 TEST_F(HistoryTest, DISABLED_Segments) {
   ASSERT_TRUE(history_service_.get());
 
-  static const void* scope = static_cast<void*>(this);
+  static ContextID context_id = static_cast<ContextID>(this);
 
   // Add a URL.
   const GURL existing_url("http://www.google.com/");
   history_service_->AddPage(
-      existing_url, base::Time::Now(), scope, 0, GURL(),
+      existing_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
 
@@ -1352,7 +1344,7 @@ TEST_F(HistoryTest, DISABLED_Segments) {
   // Add a URL which doesn't create a segment.
   const GURL link_url("http://yahoo.com/");
   history_service_->AddPage(
-      link_url, base::Time::Now(), scope, 0, GURL(),
+      link_url, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_LINK,
       history::SOURCE_BROWSED, false);
 
@@ -1372,7 +1364,7 @@ TEST_F(HistoryTest, DISABLED_Segments) {
   // Add a page linked from existing_url.
   history_service_->AddPage(
       GURL("http://www.google.com/foo"), base::Time::Now(),
-      scope, 3, existing_url, history::RedirectList(),
+      context_id, 3, existing_url, history::RedirectList(),
       content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
       false);
 
@@ -1402,15 +1394,15 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   const GURL url3("http://www.google.com/url3/");
   const GURL url4("http://www.google.com/url4/");
 
-  static const void* scope = static_cast<void*>(this);
+  static ContextID context_id = static_cast<ContextID>(this);
 
   // Add two pages.
   history_service_->AddPage(
-      url0, base::Time::Now(), scope, 0, GURL(),
+      url0, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->AddPage(
-      url1, base::Time::Now(), scope, 0, GURL(),
+      url1, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
@@ -1426,7 +1418,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 
   // Add another page.
   history_service_->AddPage(
-      url2, base::Time::Now(), scope, 0, GURL(),
+      url2, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
@@ -1443,7 +1435,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 
   // Revisit url2, making it the top URL.
   history_service_->AddPage(
-      url2, base::Time::Now(), scope, 0, GURL(),
+      url2, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
@@ -1460,7 +1452,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 
   // Revisit url1, making it the top URL.
   history_service_->AddPage(
-      url1, base::Time::Now(), scope, 0, GURL(),
+      url1, base::Time::Now(), context_id, 0, GURL(),
       history::RedirectList(), content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(
@@ -1482,7 +1474,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 
   // Visit url4 using redirects.
   history_service_->AddPage(
-      url4, base::Time::Now(), scope, 0, GURL(),
+      url4, base::Time::Now(), context_id, 0, GURL(),
       redirects, content::PAGE_TRANSITION_TYPED,
       history::SOURCE_BROWSED, false);
   history_service_->QueryMostVisitedURLs(

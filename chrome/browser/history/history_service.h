@@ -127,13 +127,10 @@ class HistoryService : public CancelableRequestProvider,
   // still in memory (pending requests may be holding a reference to us).
   void Cleanup();
 
-  // RenderProcessHost pointers are used to scope page IDs (see AddPage). These
-  // objects must tell us when they are being destroyed so that we can clear
-  // out any cached data associated with that scope.
-  //
-  // The given pointer will not be dereferenced, it is only used for
-  // identification purposes, hence it is a void*.
-  void NotifyRenderProcessHostDestruction(const void* host);
+  // Context ids are used to scope page IDs (see AddPage). These contexts
+  // must tell us when they are being invalidated so that we can clear
+  // out any cached data associated with that context.
+  void ClearCachedDataForContextID(history::ContextID context_id);
 
   // Triggers the backend to load if it hasn't already, and then returns the
   // in-memory URL database. The returned pointer MAY BE NULL if the in-memory
@@ -174,14 +171,13 @@ class HistoryService : public CancelableRequestProvider,
   // Adds the given canonical URL to history with the given time as the visit
   // time. Referrer may be the empty string.
   //
-  // The supplied render process host is used to scope the given page ID. Page
-  // IDs are only unique inside a given render process, so we need that to
-  // differentiate them. This pointer should not be dereferenced by the history
-  // system.
+  // The supplied context id is used to scope the given page ID. Page IDs
+  // are only unique inside a given context, so we need that to differentiate
+  // them.
   //
-  // The scope/ids can be NULL if there is no meaningful tracking information
-  // that can be performed on the given URL. The 'page_id' should be the ID of
-  // the current session history entry in the given process.
+  // The context/page ids can be NULL if there is no meaningful tracking
+  // information that can be performed on the given URL. The 'page_id' should
+  // be the ID of the current session history entry in the given process.
   //
   // 'redirects' is an array of redirect URLs leading to this page, with the
   // page itself as the last item (so when there is no redirect, it will have
@@ -195,7 +191,7 @@ class HistoryService : public CancelableRequestProvider,
   // All "Add Page" functions will update the visited link database.
   void AddPage(const GURL& url,
                base::Time time,
-               const void* id_scope,
+               history::ContextID context_id,
                int32 page_id,
                const GURL& referrer,
                const history::RedirectList& redirects,
@@ -221,12 +217,9 @@ class HistoryService : public CancelableRequestProvider,
   void SetPageTitle(const GURL& url, const base::string16& title);
 
   // Updates the history database with a page's ending time stamp information.
-  // The page can be identified by the combination of the pointer to
-  // a RenderProcessHost, the page id and the url.
-  //
-  // The given pointer will not be dereferenced, it is only used for
-  // identification purposes, hence it is a void*.
-  void UpdateWithPageEndTime(const void* host,
+  // The page can be identified by the combination of the context id, the page
+  // id and the url.
+  void UpdateWithPageEndTime(history::ContextID context_id,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);

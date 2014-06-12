@@ -237,7 +237,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     RedirectList redirects;
     redirects.push_back(url);
     history_service()->AddPage(
-        url, base::Time::Now(), static_cast<void*>(this), 0, GURL(),
+        url, base::Time::Now(), static_cast<ContextID>(this), 0, GURL(),
         redirects, content::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
         false);
   }
@@ -247,7 +247,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     RedirectList redirects;
     redirects.push_back(url);
     history_service()->AddPage(
-        url, base::Time::Now(), static_cast<void*>(this), 0, GURL(),
+        url, base::Time::Now(), static_cast<ContextID>(this), 0, GURL(),
         redirects, content::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
         false);
     history_service()->SetPageTitle(url, title);
@@ -259,7 +259,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
                         const history::RedirectList& redirects,
                         base::Time time) {
     history_service()->AddPage(
-        url, time, static_cast<void*>(this), 0, GURL(),
+        url, time, static_cast<ContextID>(this), 0, GURL(),
         redirects, content::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
         false);
     history_service()->SetPageTitle(url, title);

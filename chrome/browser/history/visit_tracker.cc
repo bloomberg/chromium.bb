@@ -20,7 +20,7 @@ VisitTracker::VisitTracker() {
 }
 
 VisitTracker::~VisitTracker() {
-  STLDeleteContainerPairSecondPointers(hosts_.begin(), hosts_.end());
+  STLDeleteContainerPairSecondPointers(contexts_.begin(), contexts_.end());
 }
 
 // This function is potentially slow because it may do up to two brute-force
@@ -28,15 +28,15 @@ VisitTracker::~VisitTracker() {
 // relatively small number by CleanupTransitionList so it shouldn't be a big
 // deal. However, if this ends up being noticable for performance, we may want
 // to optimize lookup.
-VisitID VisitTracker::GetLastVisit(const void* host,
+VisitID VisitTracker::GetLastVisit(ContextID context_id,
                                    int32 page_id,
                                    const GURL& referrer) {
-  if (referrer.is_empty() || !host)
+  if (referrer.is_empty() || !context_id)
     return 0;
 
-  HostList::iterator i = hosts_.find(host);
-  if (i == hosts_.end())
-    return 0;  // We don't have any entries for this host.
+  ContextList::iterator i = contexts_.find(context_id);
+  if (i == contexts_.end())
+    return 0;  // We don't have any entries for this context.
   TransitionList& transitions = *i->second;
 
   // Recall that a page ID is associated with a single session history entry.
@@ -66,14 +66,14 @@ VisitID VisitTracker::GetLastVisit(const void* host,
   return 0;
 }
 
-void VisitTracker::AddVisit(const void* host,
+void VisitTracker::AddVisit(ContextID context_id,
                             int32 page_id,
                             const GURL& url,
                             VisitID visit_id) {
-  TransitionList* transitions = hosts_[host];
+  TransitionList* transitions = contexts_[context_id];
   if (!transitions) {
     transitions = new TransitionList;
-    hosts_[host] = transitions;
+    contexts_[context_id] = transitions;
   }
 
   Transition t;
@@ -85,13 +85,13 @@ void VisitTracker::AddVisit(const void* host,
   CleanupTransitionList(transitions);
 }
 
-void VisitTracker::NotifyRenderProcessHostDestruction(const void* host) {
-  HostList::iterator i = hosts_.find(host);
-  if (i == hosts_.end())
-    return;  // We don't have any entries for this host.
+void VisitTracker::ClearCachedDataForContextID(ContextID context_id) {
+  ContextList::iterator i = contexts_.find(context_id);
+  if (i == contexts_.end())
+    return;  // We don't have any entries for this context.
 
   delete i->second;
-  hosts_.erase(i);
+  contexts_.erase(i);
 }
 
 

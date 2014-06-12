@@ -126,8 +126,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // actually be deleted.
   void Closing();
 
-  // See NotifyRenderProcessHostDestruction.
-  void NotifyRenderProcessHostDestruction(const void* host);
+  void ClearCachedDataForContextID(ContextID context_id);
 
   // Navigation ----------------------------------------------------------------
 
@@ -135,14 +134,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void AddPage(const HistoryAddPageArgs& request);
   virtual void SetPageTitle(const GURL& url, const base::string16& title);
   void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
-
-  // Updates the database backend with a page's ending time stamp information.
-  // The page can be identified by the combination of the pointer to
-  // a RenderProcessHost, the page id and the url.
-  //
-  // The given pointer will not be dereferenced, it is only used for
-  // identification purposes, hence it is a void*.
-  void UpdateWithPageEndTime(const void* host,
+  void UpdateWithPageEndTime(ContextID context_id,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);

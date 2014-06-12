@@ -6,14 +6,14 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using history::ContextID;
 using history::VisitTracker;
 
 namespace {
 
 struct VisitToTest {
-  // Identifies the host, we'll cast this to a pointer when querying (the
-  // tracker isn't allowed to dereference this pointer).
-  int host;
+  // Identifies the context.
+  int context_id_int;
   int32 page_id;
 
   // Used when adding this to the tracker
@@ -27,29 +27,20 @@ struct VisitToTest {
   history::VisitID referring_visit_id;
 };
 
-// The tracker uses RenderProcessHost pointers for scoping but never
-// dereferences them. We use ints because it's easier. This function converts
-// between the two.
-void* MakeFakeHost(int id) {
-  void* host = 0;
-  memcpy(&host, &id, sizeof(int));
-  return host;
-}
-
 void RunTest(VisitTracker* tracker, VisitToTest* test, int test_count) {
   for (int i = 0; i < test_count; i++) {
     // Our host pointer is actually just an int, convert it (it will not get
     // dereferenced).
-    void* host = MakeFakeHost(test[i].host);
+    ContextID context_id = reinterpret_cast<ContextID>(test[i].context_id_int);
 
     // Check the referrer for this visit.
     history::VisitID ref_visit = tracker->GetLastVisit(
-        host, test[i].page_id, GURL(test[i].referrer));
+        context_id, test[i].page_id, GURL(test[i].referrer));
     EXPECT_EQ(test[i].referring_visit_id, ref_visit);
 
     // Now add this visit.
-    tracker->AddVisit(host, test[i].page_id, GURL(test[i].url),
-                      test[i].visit_id);
+    tracker->AddVisit(
+        context_id, test[i].page_id, GURL(test[i].url), test[i].visit_id);
   }
 }
 
@@ -59,12 +50,12 @@ void RunTest(VisitTracker* tracker, VisitToTest* test, int test_count) {
 // presence of back/forward.
 TEST(VisitTracker, SimpleTransitions) {
   VisitToTest test_simple[] = {
-    // Started here:
-    {1, 1, "http://www.google.com/",    1, "",                       0},
-    // Clicked a link:
-    {1, 2, "http://images.google.com/", 2, "http://www.google.com/", 1},
-    // Went back, then clicked a link:
-    {1, 3, "http://video.google.com/",  3, "http://www.google.com/", 1},
+      // Started here:
+      {1, 1, "http://www.google.com/", 1, "", 0},
+      // Clicked a link:
+      {1, 2, "http://images.google.com/", 2, "http://www.google.com/", 1},
+      // Went back, then clicked a link:
+      {1, 3, "http://video.google.com/", 3, "http://www.google.com/", 1},
   };
 
   VisitTracker tracker;
@@ -75,18 +66,18 @@ TEST(VisitTracker, SimpleTransitions) {
 // navigations happening.
 TEST(VisitTracker, Frames) {
   VisitToTest test_frames[] = {
-    // Started here:
-    {1, 1, "http://foo.com/",           1, "",                        0},
-    // Which had an auto-loaded subframe:
-    {1, 1, "http://foo.com/ad.html",    2, "http://foo.com/",         1},
-    // ...and another auto-loaded subframe:
-    {1, 1, "http://foo.com/ad2.html",   3, "http://foo.com/",         1},
-    // ...and the user navigated the first subframe to somwhere else
-    {1, 2, "http://bar.com/",           4, "http://foo.com/ad.html",  2},
-    // ...and then the second subframe somewhere else
-    {1, 3, "http://fud.com/",           5, "http://foo.com/ad2.html", 3},
-    // ...and then the main frame somewhere else.
-    {1, 4, "http://www.google.com/",    6, "http://foo.com/",         1},
+      // Started here:
+      {1, 1, "http://foo.com/", 1, "", 0},
+      // Which had an auto-loaded subframe:
+      {1, 1, "http://foo.com/ad.html", 2, "http://foo.com/", 1},
+      // ...and another auto-loaded subframe:
+      {1, 1, "http://foo.com/ad2.html", 3, "http://foo.com/", 1},
+      // ...and the user navigated the first subframe to somwhere else
+      {1, 2, "http://bar.com/", 4, "http://foo.com/ad.html", 2},
+      // ...and then the second subframe somewhere else
+      {1, 3, "http://fud.com/", 5, "http://foo.com/ad2.html", 3},
+      // ...and then the main frame somewhere else.
+      {1, 4, "http://www.google.com/", 6, "http://foo.com/", 1},
   };
 
   VisitTracker tracker;
@@ -119,20 +110,20 @@ TEST(VisitTracker, MultiProcess) {
 TEST(VisitTracker, ProcessRemove) {
   // Simple navigation from one process.
   VisitToTest part1[] = {
-    {1, 1, "http://www.google.com/",    1, "",                       0},
-    {1, 2, "http://images.google.com/", 2, "http://www.google.com/", 1},
+      {1, 1, "http://www.google.com/", 1, "", 0},
+      {1, 2, "http://images.google.com/", 2, "http://www.google.com/", 1},
   };
 
   VisitTracker tracker;
   RunTest(&tracker, part1, arraysize(part1));
 
-  // Say that process has been destroyed.
-  tracker.NotifyRenderProcessHostDestruction(MakeFakeHost(1));
+  // Say that context has been invalidated.
+  tracker.ClearCachedDataForContextID(reinterpret_cast<ContextID>(1));
 
   // Simple navigation from a new process with the same ID, it should not find
   // a referrer.
   VisitToTest part2[] = {
-    {1, 1, "http://images.google.com/", 2, "http://www.google.com/", 0},
+      {1, 1, "http://images.google.com/", 2, "http://www.google.com/", 0},
   };
   RunTest(&tracker, part2, arraysize(part2));
 }

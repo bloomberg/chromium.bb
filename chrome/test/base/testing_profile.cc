@@ -462,7 +462,7 @@ void TestingProfile::DestroyHistoryService() {
   if (!history_service)
     return;
 
-  history_service->NotifyRenderProcessHostDestruction(0);
+  history_service->ClearCachedDataForContextID(0);
   history_service->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
   history_service->Cleanup();
   HistoryServiceFactory::ShutdownForProfile(this);
