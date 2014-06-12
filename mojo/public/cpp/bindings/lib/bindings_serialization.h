@@ -71,6 +71,7 @@ inline void Decode(T* obj, std::vector<Handle>* handles) {
 
 // If returns true, this function also claims the memory range of the size
 // specified in the struct header, starting from |data|.
+// Note: |min_num_bytes| must be no less than sizeof(StructHeader).
 bool ValidateStructHeader(const void* data,
                           uint32_t min_num_bytes,
                           uint32_t min_num_fields,

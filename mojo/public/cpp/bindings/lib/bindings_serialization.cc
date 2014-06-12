@@ -84,6 +84,8 @@ bool ValidateStructHeader(const void* data,
                           uint32_t min_num_bytes,
                           uint32_t min_num_fields,
                           BoundsChecker* bounds_checker) {
+  assert(min_num_bytes >= sizeof(StructHeader));
+
   if (!IsAligned(data)) {
     ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
     return false;
