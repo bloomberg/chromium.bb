@@ -11,6 +11,7 @@
     # code.
     'nacl_default_compile_flags': [
       '-Wundef',
+      '-Wstrict-prototypes',
     ],
   },
 }

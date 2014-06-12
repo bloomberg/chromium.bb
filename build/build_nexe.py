@@ -581,20 +581,25 @@ class Builder(object):
   def Compile(self, src):
     """Compile the source with pre-determined options."""
 
+    compile_options = self.compile_options[:]
     _, ext = os.path.splitext(src)
     if ext in ['.c', '.S']:
       bin_name = self.GetCCompiler()
-      extra = ['-std=gnu99', '-Wstrict-prototypes']
+      compile_options.append('-std=gnu99')
       if self.is_pnacl_toolchain and ext == '.S':
-        extra.append('-arch')
-        extra.append(self.arch)
+        compile_options.append('-arch')
+        compile_options.append(self.arch)
     elif ext in ['.cc', '.cpp']:
       bin_name = self.GetCXXCompiler()
-      extra = []
     else:
       if ext != '.h':
         self.Log('Skipping unknown type %s for %s.' % (ext, src))
       return None
+
+    # This option is only applicable to C, and C++ compilers warn if
+    # it is present, so remove it for C++ to avoid the warning.
+    if ext != '.c' and '-Wstrict-prototypes' in compile_options:
+      compile_options.remove('-Wstrict-prototypes')
 
     self.Log('\nCompile %s' % src)
 
@@ -609,7 +614,7 @@ class Builder(object):
     self.CleanOutput(out)
     self.CleanOutput(outd)
     cmd_line = [bin_name, '-c', src, '-o', out,
-                '-MD', '-MF', outd] + extra + self.compile_options
+                '-MD', '-MF', outd] + compile_options
     if self.gomacc:
       cmd_line.insert(0, self.gomacc)
     err = self.Run(cmd_line, out)
