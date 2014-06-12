@@ -890,6 +890,11 @@ RenderView* RenderView::FromRoutingID(int routing_id) {
   return RenderViewImpl::FromRoutingID(routing_id);
 }
 
+/* static */
+size_t RenderViewImpl::GetRenderViewCount() {
+  return g_view_map.Get().size();
+}
+
 /*static*/
 void RenderView::ForEach(RenderViewVisitor* visitor) {
   ViewMap* views = g_view_map.Pointer();
@@ -2130,23 +2135,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);
 }
 
-void RenderViewImpl::FrameDidCommitProvisionalLoad(WebLocalFrame* frame,
-                                                   bool is_new_navigation) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidCommitProvisionalLoad(frame, is_new_navigation));
-
-  // TODO(nasko): Transition this code to RenderFrameImpl, since g_view_map is
-  // not accessible from there.
-  if (!frame->parent()) {  // Only for top frames.
-    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-    if (render_thread_impl) {  // Can be NULL in tests.
-      render_thread_impl->histogram_customizer()->
-          RenderViewNavigatedToHost(GURL(GetLoadingUrl(frame)).host(),
-                                    g_view_map.Get().size());
-    }
-  }
-}
-
 void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidClearWindowObject(frame));
@@ -2364,15 +2352,6 @@ void RenderViewImpl::SyncNavigationState() {
   if (!webview())
     return;
   SendUpdateState(history_controller_->GetCurrentEntry());
-}
-
-GURL RenderViewImpl::GetLoadingUrl(blink::WebFrame* frame) const {
-  WebDataSource* ds = frame->dataSource();
-  if (ds->hasUnreachableURL())
-    return ds->unreachableURL();
-
-  const WebURLRequest& request = ds->request();
-  return request.url();
 }
 
 blink::WebPlugin* RenderViewImpl::GetWebPluginForFind() {

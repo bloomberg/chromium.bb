@@ -201,6 +201,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 
+  static size_t GetRenderViewCount();
+
   // May return NULL when the view is closing.
   blink::WebView* webview() const;
 
@@ -274,9 +276,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void FrameDidStartLoading(blink::WebFrame* frame);
   void FrameDidStopLoading(blink::WebFrame* frame);
-
-  void FrameDidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                     bool is_new_navigation);
 
   // Plugin-related functions --------------------------------------------------
 
@@ -795,9 +794,6 @@ class CONTENT_EXPORT RenderViewImpl
   // frames, the frame whose size is image_size is returned. If the image
   // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
-
-  // Returns the URL being loaded by the given frame's request.
-  GURL GetLoadingUrl(blink::WebFrame* frame) const;
 
   // Called to get the WebPlugin to handle find requests in the document.
   // Returns NULL if there is no such WebPlugin.

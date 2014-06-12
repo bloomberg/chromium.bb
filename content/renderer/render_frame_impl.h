@@ -531,6 +531,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // The method is virtual so that layouttests can override it.
   virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
+  // Returns the URL being loaded by the |frame_|'s request.
+  GURL GetLoadingUrl() const;
+
 #if defined(OS_ANDROID)
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       const blink::WebURL& url,

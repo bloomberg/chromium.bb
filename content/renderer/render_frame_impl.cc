@@ -1969,7 +1969,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // UpdateSessionHistory and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
-    if (render_view_->GetLoadingUrl(frame) != GURL(kSwappedOutURL)) {
+    if (GetLoadingUrl() != GURL(kSwappedOutURL)) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
       render_view_->history_list_offset_++;
@@ -2012,9 +2012,19 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     }
   }
 
-  render_view_->FrameDidCommitProvisionalLoad(frame, is_new_navigation);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
+                    DidCommitProvisionalLoad(frame, is_new_navigation));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidCommitProvisionalLoad(is_new_navigation));
+
+  if (!frame->parent()) {  // Only for top frames.
+    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+    if (render_thread_impl) {  // Can be NULL in tests.
+      render_thread_impl->histogram_customizer()->
+          RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
+                                    RenderViewImpl::GetRenderViewCount());
+    }
+  }
 
   // Remember that we've already processed this request, so we don't update
   // the session history again.  We do this regardless of whether this is
@@ -2961,7 +2971,7 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   params.security_info = response.securityInfo();
 
   // Set the URL to be displayed in the browser UI to the user.
-  params.url = render_view_->GetLoadingUrl(frame);
+  params.url = GetLoadingUrl();
   DCHECK(!is_swapped_out_ || params.url == GURL(kSwappedOutURL));
 
   if (frame->document().baseURL() != params.url)
@@ -3503,6 +3513,15 @@ RenderFrameImpl::CreateRendererFactory() {
   return scoped_ptr<MediaStreamRendererFactory>(
       static_cast<MediaStreamRendererFactory*>(NULL));
 #endif
+}
+
+GURL RenderFrameImpl::GetLoadingUrl() const {
+  WebDataSource* ds = frame_->dataSource();
+  if (ds->hasUnreachableURL())
+    return ds->unreachableURL();
+
+  const WebURLRequest& request = ds->request();
+  return request.url();
 }
 
 #if defined(OS_ANDROID)
