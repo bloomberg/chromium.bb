@@ -36,6 +36,9 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 // Disable Genius App and use the original Help App instead.
 const char kDisableGeniusApp[] = "disable-genius-app";
 
+// Disable HID-detection OOBE screen.
+const char kDisableHIDDetectionOnOOBE[]      = "disable-hid-detection-on-oobe";
+
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
@@ -81,9 +84,6 @@ const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 
 // Enables MTP support in Files.app.
 const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
-
-// Enable explicit HID detection on OOBE.
-const char kEnableHIDDetectionOnOOBE[] = "enable-hid-detection-on-oobe";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =

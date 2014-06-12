@@ -64,9 +64,11 @@ bool DeviceIsKeyboard(device::BluetoothDevice::DeviceType device_type) {
 
 namespace chromeos {
 
-HIDDetectionScreenHandler::HIDDetectionScreenHandler()
+HIDDetectionScreenHandler::HIDDetectionScreenHandler(
+    CoreOobeActor* core_oobe_actor)
     : BaseScreenHandler(kJsScreenPath),
       delegate_(NULL),
+      core_oobe_actor_(core_oobe_actor),
       show_on_init_(false),
       mouse_is_pairing_(false),
       keyboard_is_pairing_(false),
@@ -103,6 +105,7 @@ void HIDDetectionScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
+  core_oobe_actor_->InitDemoModeDetection();
   input_service_proxy_.AddObserver(this);
   first_time_screen_show_ = true;
   GetDevicesFirstTime();
@@ -174,6 +177,7 @@ void HIDDetectionScreenHandler::HandleOnContinue() {
         scenario_type,
         CONTINUE_SCENARIO_TYPE_SIZE);
   }
+  core_oobe_actor_->StopDemoModeDetection();
   if (delegate_)
     delegate_->OnExit();
 }

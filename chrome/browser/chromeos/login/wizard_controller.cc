@@ -99,8 +99,8 @@ const char *kResumableScreens[] = {
 
 // Checks flag for HID-detection screen show.
 bool CanShowHIDDetectionScreen() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableHIDDetectionOnOOBE);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
 bool IsResumableScreen(const std::string& screen) {
