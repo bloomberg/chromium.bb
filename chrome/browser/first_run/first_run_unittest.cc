@@ -27,17 +27,6 @@ class FirstRunTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FirstRunTest);
 };
 
-TEST_F(FirstRunTest, RemoveSentinel) {
-  base::FilePath sentinel_path;
-  EXPECT_TRUE(internal::GetFirstRunSentinelFilePath(&sentinel_path));
-
-  EXPECT_TRUE(internal::CreateSentinel());
-  EXPECT_TRUE(base::PathExists(sentinel_path));
-
-  EXPECT_TRUE(RemoveSentinel());
-  EXPECT_FALSE(base::PathExists(sentinel_path));
-}
-
 TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeed) {
   installer::MasterPreferences install_prefs("{ \"variations_seed\":\"xyz\" }");
   EXPECT_EQ(1U, install_prefs.master_dictionary().size());

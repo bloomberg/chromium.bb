@@ -87,14 +87,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kCheckDefaultBrowser,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#if defined(OS_WIN)
-  // As with Mac-spacific code above, it should be in a platform-specific
-  // section somewhere, but there is no good place for it.
-  registry->RegisterBooleanPref(
-      prefs::kSuppressSwitchToMetroModeOnSetDefault,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
   registry->RegisterBooleanPref(
       prefs::kWebAppCreateOnDesktop,
       true,

@@ -1005,14 +1005,6 @@ const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
-#if defined(OS_WIN)
-// By default, setting Chrome as default during first run on Windows 8 will
-// trigger shutting down the current instance and spawning a new (Metro)
-// Chrome. This boolean preference suppresses this behaviour.
-const char kSuppressSwitchToMetroModeOnSetDefault[] =
-    "browser.suppress_switch_to_metro_mode_on_set_default";
-#endif
-
 // Policy setting whether default browser check should be disabled and default
 // browser registration should take place.
 const char kDefaultBrowserSettingEnabled[] =

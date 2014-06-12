@@ -103,9 +103,6 @@ std::string GetPingDelayPrefName();
 // Register user preferences used by the MasterPrefs structure.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Remove the first run sentinel file; returns false on failure.
-bool RemoveSentinel();
-
 // Sets the kShowFirstRunBubbleOption local state pref so that the browser
 // shows the bubble once the main message loop gets going (or refrains from
 // showing the bubble, if |show_bubble| is not FIRST_RUN_BUBBLE_SHOW).

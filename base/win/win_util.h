@@ -107,10 +107,6 @@ BASE_EXPORT bool ShouldCrashOnProcessDetach();
 // process is aborted.
 BASE_EXPORT void SetAbortBehaviorForCrashReporting();
 
-// A touch enabled device by this definition is something that has
-// integrated multi-touch ready to use and has Windows version > Windows7.
-BASE_EXPORT bool IsTouchEnabledDevice();
-
 // A tablet is a device that is touch enabled and also is being used
 // "like a tablet".  This is used primarily for metrics in order to gain some
 // insight into how users use Chrome.

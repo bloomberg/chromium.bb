@@ -20,7 +20,6 @@
 #include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -227,7 +226,7 @@ bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
                           &reg_value) == ERROR_SUCCESS) {
     return reg_value == 1;
   }
-  return base::win::IsTouchEnabledDevice();
+  return false;
 #endif
 }
 

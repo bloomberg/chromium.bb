@@ -10,9 +10,6 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/win/win_util.h"
-#include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,16 +48,16 @@ namespace {
 
 const char kSetAsDefaultBrowserHistogram[] = "DefaultBrowser.InteractionResult";
 
-// The enum permits registering in UMA the three possible outcomes.
+// The enum permits registering in UMA the three possible outcomes (do not
+// reorder these).
 // ACCEPTED: user pressed Next and made Chrome default.
 // DECLINED: user simply closed the dialog without making Chrome default.
 // REGRETTED: user pressed Next but then elected a different default browser.
-// ACCEPTED_IMMERSE: as above with a switch to metro mode.
 enum MakeChromeDefaultResult {
-  MAKE_CHROME_DEFAULT_ACCEPTED,
-  MAKE_CHROME_DEFAULT_DECLINED,
-  MAKE_CHROME_DEFAULT_REGRETTED,
-  MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE,
+  MAKE_CHROME_DEFAULT_ACCEPTED = 0,
+  MAKE_CHROME_DEFAULT_DECLINED = 1,
+  MAKE_CHROME_DEFAULT_REGRETTED = 2,
+  // MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE = 3,  // Deprecated.
   MAKE_CHROME_DEFAULT_MAX
 };
 
@@ -120,10 +117,6 @@ class SetAsDefaultBrowserHandler
   // Close this web ui.
   void ConcludeInteraction(MakeChromeDefaultResult interaction_result);
 
-  // Returns true if Chrome should be restarted in immersive mode upon being
-  // made the default browser.
-  bool ShouldAttemptImmersiveRestart();
-
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
   bool set_default_returned_;
   bool set_default_result_;
@@ -163,8 +156,7 @@ void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
     // chrome the default.
     ConcludeInteraction(MAKE_CHROME_DEFAULT_REGRETTED);
   } else if (state == ShellIntegration::STATE_IS_DEFAULT) {
-    ConcludeInteraction(ShouldAttemptImmersiveRestart() ?
-        MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE : MAKE_CHROME_DEFAULT_ACCEPTED);
+    ConcludeInteraction(MAKE_CHROME_DEFAULT_ACCEPTED);
   }
 
   // Otherwise, keep the dialog open since the user probably didn't make a
@@ -203,12 +195,6 @@ void SetAsDefaultBrowserHandler::ConcludeInteraction(
   }
 }
 
-bool SetAsDefaultBrowserHandler::ShouldAttemptImmersiveRestart() {
-  return (base::win::IsTouchEnabledDevice() &&
-          !Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-              prefs::kSuppressSwitchToMetroModeOnSetDefault));
-}
-
 // A web dialog delegate implementation for when 'Make Chrome Metro' UI
 // is displayed on a dialog.
 class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
@@ -243,12 +229,6 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
  private:
-  // Reset the first-run sentinel file, so must be called on the FILE thread.
-  // This is needed if the browser should be restarted in immersive mode.
-  // The method is static because the dialog could be destroyed
-  // before the task arrives on the FILE thread.
-  static void AttemptImmersiveFirstRunRestartOnFileThread();
-
   Profile* profile_;
   Browser* browser_;
   mutable bool owns_handler_;
@@ -329,30 +309,22 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
                             dialog_interaction_result_,
                             MAKE_CHROME_DEFAULT_MAX);
 
-  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SetAsDefaultBrowserDialogImpl::
-            AttemptImmersiveFirstRunRestartOnFileThread));
-  } else {
-    // If the user explicitly elected *not to* make Chrome default, we won't
-    // ask again.
-    if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED) {
-      PrefService* prefs = profile_->GetPrefs();
-      prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
-    }
+  // If the user explicitly elected *not to* make Chrome default, we won't
+  // ask again.
+  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
+  }
 
-    // Carry on with a normal chrome session. For the purpose of surfacing this
-    // dialog the actual browser window had to remain hidden. Now it's time to
-    // show it.
-    if (browser_) {
-      BrowserWindow* window = browser_->window();
-      WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents();
-      window->Show();
-      if (contents)
-        contents->SetInitialFocus();
-    }
+  // Carry on with a normal chrome session. For the purpose of surfacing this
+  // dialog the actual browser window had to remain hidden. Now it's time to
+  // show it.
+  if (browser_) {
+    BrowserWindow* window = browser_->window();
+    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+    window->Show();
+    if (contents)
+      contents->SetInitialFocus();
   }
 
   delete this;
@@ -382,24 +354,6 @@ void SetAsDefaultBrowserDialogImpl::OnBrowserRemoved(Browser* browser) {
     browser_ = NULL;
     BrowserList::RemoveObserver(this);
   }
-}
-
-void SetAsDefaultBrowserDialogImpl::
-    AttemptImmersiveFirstRunRestartOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  // If the sentinel was created for this launch, remove it before restarting
-  // in immersive mode so that the user is taken through the full first-run
-  // flow there.
-  if (first_run::IsChromeFirstRun())
-    first_run::RemoveSentinel();
-
-  // Do a straight-up restart rather than a mode-switch restart.
-  // delegate_execute.exe will choose an immersive launch on the basis of the
-  // same IsTouchEnabledDevice check, but will not store this as the user's
-  // choice.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&chrome::AttemptRestart));
 }
 
 }  // namespace

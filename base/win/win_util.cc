@@ -222,17 +222,6 @@ void SetAbortBehaviorForCrashReporting() {
   signal(SIGABRT, ForceCrashOnSigAbort);
 }
 
-bool IsTouchEnabledDevice() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-  const int kMultiTouch = NID_INTEGRATED_TOUCH | NID_MULTI_INPUT | NID_READY;
-  int sm = GetSystemMetrics(SM_DIGITIZER);
-  if ((sm & kMultiTouch) == kMultiTouch) {
-    return true;
-  }
-  return false;
-}
-
 bool IsTabletDevice() {
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0)
     return false;

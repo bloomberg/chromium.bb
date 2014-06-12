@@ -621,12 +621,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool RemoveSentinel() {
-  base::FilePath first_run_sentinel;
-  return internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
-      base::DeleteFile(first_run_sentinel, false);
-}
-
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
