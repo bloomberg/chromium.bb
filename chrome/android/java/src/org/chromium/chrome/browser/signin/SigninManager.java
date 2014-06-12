@@ -245,7 +245,8 @@ public class SigninManager {
                         mPolicyConfirmationDialog = null;
                     }
                 });
-        builder.setOnDismissListener(
+        mPolicyConfirmationDialog = builder.create();
+        mPolicyConfirmationDialog.setOnDismissListener(
                 new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
@@ -256,7 +257,6 @@ public class SigninManager {
                         }
                     }
                 });
-        mPolicyConfirmationDialog = builder.create();
         mPolicyConfirmationDialog.show();
     }
 
