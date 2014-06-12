@@ -62,10 +62,8 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
                                     const base::Value& value) = 0;
 
     // Modify services in the Manager's list.
-    virtual void AddManagerService(const std::string& service_path,
-                                   bool add_to_visible_list) = 0;
-    virtual void RemoveManagerService(const std::string& service_path,
-                                      bool remove_from_complete_list) = 0;
+    virtual void AddManagerService(const std::string& service_path) = 0;
+    virtual void RemoveManagerService(const std::string& service_path) = 0;
     virtual void ClearManagerServices() = 0;
 
     // Called by ShillServiceClient when a service's State property changes,
@@ -74,10 +72,11 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     virtual void ServiceStateChanged(const std::string& service_path,
                                      const std::string& state) = 0;
 
-    // Called by ShillServiceClient when a service's State property changes,
-    // after notifying observers. Services are sorted first by Active or
-    // Inactive State, then by Type.
-    virtual void SortManagerServices() = 0;
+    // Called by ShillServiceClient when a service's State or Visibile
+    // property changes. If |notify| is true, notifies observers if a list
+    // changed. Services are sorted first by active, inactive, or disabled
+    // state, then by type.
+    virtual void SortManagerServices(bool notify) = 0;
 
     // Sets up the default fake environment based on default initial states
     // or states provided by the command line.

@@ -18,7 +18,7 @@ class PrefRegistrySyncable;
 
 namespace chromeos {
 
-class FavoriteState;
+class NetworkState;
 
 namespace proxy_config {
 
@@ -26,14 +26,14 @@ namespace proxy_config {
 // |network|. If |profile_prefs| is NULL, then only shared settings (and device
 // policy) are respected. This is e.g. the case for the signin screen and the
 // system request context.
-scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
+scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
-    const FavoriteState& network,
+    const NetworkState& network,
     onc::ONCSource* onc_source);
 
-void SetProxyConfigForFavoriteNetwork(const ProxyConfigDictionary& proxy_config,
-                                      const FavoriteState& network);
+void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
+                              const NetworkState& network);
 
 void RegisterPrefs(PrefRegistrySimple* registry);
 

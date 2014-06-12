@@ -23,9 +23,8 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/client_cert_util.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
@@ -309,12 +308,17 @@ void ClientCertResolver::NetworkListChanged() {
   std::set<std::string> old_resolved_networks;
   old_resolved_networks.swap(resolved_networks_);
 
-  FavoriteStateList networks;
-  network_state_handler_->GetFavoriteList(&networks);
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(),
+      true /* configured_only */,
+      false /* visible_only */,
+      0 /* no limit */,
+      &networks);
 
-  FavoriteStateList networks_to_check;
-  for (FavoriteStateList::const_iterator it = networks.begin();
-       it != networks.end(); ++it) {
+  NetworkStateHandler::NetworkStateList networks_to_check;
+  for (NetworkStateHandler::NetworkStateList::const_iterator it =
+           networks.begin(); it != networks.end(); ++it) {
     const std::string& service_path = (*it)->path();
     if (ContainsKey(old_resolved_networks, service_path)) {
       resolved_networks_.insert(service_path);
@@ -333,8 +337,13 @@ void ClientCertResolver::OnCertificatesLoaded(
   if (!ClientCertificatesLoaded())
     return;
   // Compare all networks with all certificates.
-  FavoriteStateList networks;
-  network_state_handler_->GetFavoriteList(&networks);
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(),
+      true /* configured_only */,
+      false /* visible_only */,
+      0 /* no limit */,
+      &networks);
   ResolveNetworks(networks);
 }
 
@@ -343,27 +352,28 @@ void ClientCertResolver::PolicyApplied(const std::string& service_path) {
   if (!ClientCertificatesLoaded())
     return;
   // Compare this network with all certificates.
-  const FavoriteState* network =
-      network_state_handler_->GetFavoriteStateFromServicePath(
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromServicePath(
           service_path, true /* configured_only */);
   if (!network) {
     LOG(ERROR) << "service path '" << service_path << "' unknown.";
     return;
   }
-  FavoriteStateList networks;
+  NetworkStateHandler::NetworkStateList networks;
   networks.push_back(network);
   ResolveNetworks(networks);
 }
 
-void ClientCertResolver::ResolveNetworks(const FavoriteStateList& networks) {
+void ClientCertResolver::ResolveNetworks(
+    const NetworkStateHandler::NetworkStateList& networks) {
   scoped_ptr<std::vector<NetworkAndCertPattern> > networks_with_pattern(
       new std::vector<NetworkAndCertPattern>);
 
   // Filter networks with ClientCertPattern. As ClientCertPatterns can only be
   // set by policy, we check there.
-  for (FavoriteStateList::const_iterator it = networks.begin();
-       it != networks.end(); ++it) {
-    const FavoriteState* network = *it;
+  for (NetworkStateHandler::NetworkStateList::const_iterator it =
+           networks.begin(); it != networks.end(); ++it) {
+    const NetworkState* network = *it;
 
     // In any case, don't check this network again in NetworkListChanged.
     resolved_networks_.insert(network->path());

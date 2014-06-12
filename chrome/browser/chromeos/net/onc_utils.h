@@ -19,7 +19,6 @@ class ListValue;
 
 namespace chromeos {
 
-class FavoriteState;
 class NetworkState;
 class User;
 
@@ -63,19 +62,19 @@ const base::DictionaryValue* GetGlobalConfigFromPolicy(bool for_active_user);
 // GetGlobalConfigFromPolicy).
 bool PolicyAllowsOnlyPolicyNetworksToAutoconnect(bool for_active_user);
 
-// Returns the effective (user or device) policy for network |favorite|. Both
+// Returns the effective (user or device) policy for network |network|. Both
 // |profile_prefs| and |local_state_prefs| might be NULL. Returns NULL if no
 // applicable policy is found. Sets |onc_source| accordingly.
-const base::DictionaryValue* GetPolicyForFavoriteNetwork(
+const base::DictionaryValue* GetPolicyForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
-    const FavoriteState& favorite,
+    const NetworkState& network,
     ::onc::ONCSource* onc_source);
 
 // Convenience function to check only whether a policy for a network exists.
-bool HasPolicyForFavoriteNetwork(const PrefService* profile_prefs,
-                                 const PrefService* local_state_prefs,
-                                 const FavoriteState& network);
+bool HasPolicyForNetwork(const PrefService* profile_prefs,
+                         const PrefService* local_state_prefs,
+                         const NetworkState& network);
 
 }  // namespace onc
 }  // namespace chromeos

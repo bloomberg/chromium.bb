@@ -101,6 +101,7 @@ class MobileActivatorTest : public testing::Test {
     cellular_network_.activation_state_ = activation_state;
   }
   void set_connection_state(const std::string& state) {
+    cellular_network_.visible_ = true;
     cellular_network_.connection_state_ = state;
   }
 

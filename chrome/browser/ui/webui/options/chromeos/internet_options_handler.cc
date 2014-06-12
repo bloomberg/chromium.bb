@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -293,25 +292,7 @@ std::string LoggedInUserTypeToJSString(LoginState::LoggedInUserType type) {
   return std::string();
 }
 
-bool HasPolicyForFavorite(const FavoriteState* favorite,
-                          const PrefService* profile_prefs) {
-  return onc::HasPolicyForFavoriteNetwork(
-      profile_prefs, g_browser_process->local_state(), *favorite);
-}
-
-bool HasPolicyForNetwork(const NetworkState* network,
-                         const PrefService* profile_prefs) {
-  const FavoriteState* favorite =
-      NetworkHandler::Get()
-          ->network_state_handler()
-          ->GetFavoriteStateFromServicePath(network->path(),
-                                            true /* configured_only */);
-  if (!favorite)
-    return false;
-  return HasPolicyForFavorite(favorite, profile_prefs);
-}
-
-void SetCommonNetworkInfo(const ManagedState* state,
+void SetCommonNetworkInfo(const NetworkState* state,
                           const std::string& icon_url,
                           base::DictionaryValue* network_info) {
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
@@ -334,34 +315,25 @@ base::DictionaryValue* BuildNetworkDictionary(
     float icon_scale_factor,
     const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
-  network_info->SetBoolean(kNetworkInfoKeyConnectable, network->connectable());
-  network_info->SetBoolean(kNetworkInfoKeyConnected,
-                           network->IsConnectedState());
-  network_info->SetBoolean(kNetworkInfoKeyConnecting,
-                           network->IsConnectingState());
-  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
-                           HasPolicyForNetwork(network, profile_prefs));
+  if (network->visible()) {
+    network_info->SetBoolean(kNetworkInfoKeyConnectable,
+                             network->connectable());
+    network_info->SetBoolean(kNetworkInfoKeyConnected,
+                             network->IsConnectedState());
+    network_info->SetBoolean(kNetworkInfoKeyConnecting,
+                             network->IsConnectingState());
+  } else {
+    network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
+    network_info->SetBoolean(kNetworkInfoKeyConnected, false);
+    network_info->SetBoolean(kNetworkInfoKeyConnecting, false);
+  }
+  bool has_policy = onc::HasPolicyForNetwork(
+      profile_prefs, g_browser_process->local_state(), *network);
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
 
   std::string icon_url = ash::network_icon::GetImageUrlForNetwork(
       network, ash::network_icon::ICON_TYPE_LIST, icon_scale_factor);
   SetCommonNetworkInfo(network, icon_url, network_info.get());
-  return network_info.release();
-}
-
-base::DictionaryValue* BuildFavoriteDictionary(
-    const FavoriteState* favorite,
-    float icon_scale_factor,
-    const PrefService* profile_prefs) {
-  scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
-  network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
-  network_info->SetBoolean(kNetworkInfoKeyConnected, false);
-  network_info->SetBoolean(kNetworkInfoKeyConnecting, false);
-  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
-                           HasPolicyForFavorite(favorite, profile_prefs));
-
-  std::string icon_url = ash::network_icon::GetImageUrlForDisconnectedNetwork(
-      ash::network_icon::ICON_TYPE_LIST, favorite->type(), icon_scale_factor);
-  SetCommonNetworkInfo(favorite, icon_url, network_info.get());
   return network_info.release();
 }
 
@@ -1738,7 +1710,7 @@ base::ListValue* InternetOptionsHandler::GetWirelessList() {
   base::ListValue* list = new base::ListValue();
 
   NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkListByType(
       NetworkTypePattern::Wireless(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
@@ -1755,7 +1727,7 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
   base::ListValue* list = new base::ListValue();
 
   NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkListByType(
       NetworkTypePattern::VPN(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
@@ -1771,18 +1743,23 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
 base::ListValue* InternetOptionsHandler::GetRememberedList() {
   base::ListValue* list = new base::ListValue();
 
-  NetworkStateHandler::FavoriteStateList favorites;
-  NetworkHandler::Get()->network_state_handler()->GetFavoriteList(&favorites);
-  for (NetworkStateHandler::FavoriteStateList::const_iterator iter =
-           favorites.begin(); iter != favorites.end(); ++iter) {
-    const FavoriteState* favorite = *iter;
-    if (favorite->type() != shill::kTypeWifi &&
-        favorite->type() != shill::kTypeVPN)
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      NetworkTypePattern::Default(),
+      true /* configured_only */,
+      false /* visible_only */,
+      0 /* no limit */,
+      &networks);
+  for (NetworkStateHandler::NetworkStateList::const_iterator iter =
+           networks.begin(); iter != networks.end(); ++iter) {
+    const NetworkState* network = *iter;
+    if (network->type() != shill::kTypeWifi &&
+        network->type() != shill::kTypeVPN)
       continue;
     list->Append(
-        BuildFavoriteDictionary(favorite,
-                                web_ui()->GetDeviceScaleFactor(),
-                                Profile::FromWebUI(web_ui())->GetPrefs()));
+        BuildNetworkDictionary(network,
+                               web_ui()->GetDeviceScaleFactor(),
+                               Profile::FromWebUI(web_ui())->GetPrefs()));
   }
 
   return list;

@@ -66,14 +66,12 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   NetworkProfileHandler();
 
   // Add ShillManagerClient property observer and request initial list.
-  // Sets |network_state_handler_| for triggering Manager updates (can be NULL).
-  void Init(NetworkStateHandler* network_state_handler);
+  void Init();
 
   void AddProfile(const NetworkProfile& profile);
   void RemoveProfile(const std::string& profile_path);
 
  private:
-  NetworkStateHandler* network_state_handler_;
   ProfileList profiles_;
   ObserverList<NetworkProfileObserver> observers_;
 

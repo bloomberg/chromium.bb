@@ -28,14 +28,14 @@ const char kNetworkStateConnecting[] = "connecting";
 const char kNetworkStateProxyAuthRequired[] = "proxy auth required";
 
 bool HasDefaultNetworkProxyConfigured() {
-  const FavoriteState* favorite =
-      NetworkHandler::Get()->network_state_handler()->DefaultFavoriteNetwork();
-  if (!favorite)
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  if (!network)
     return false;
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForFavoriteNetwork(
-          NULL, g_browser_process->local_state(), *favorite, &onc_source);
+      proxy_config::GetProxyConfigForNetwork(
+          NULL, g_browser_process->local_state(), *network, &onc_source);
   ProxyPrefs::ProxyMode mode;
   return (proxy_dict && proxy_dict->GetMode(&mode) &&
           mode == ProxyPrefs::MODE_FIXED_SERVERS);

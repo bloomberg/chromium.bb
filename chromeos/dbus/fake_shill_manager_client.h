@@ -93,14 +93,12 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void ClearProperties() OVERRIDE;
   virtual void SetManagerProperty(const std::string& key,
                                   const base::Value& value) OVERRIDE;
-  virtual void AddManagerService(const std::string& service_path,
-                                 bool add_to_visible_list) OVERRIDE;
-  virtual void RemoveManagerService(const std::string& service_path,
-                                    bool remove_from_complete_list) OVERRIDE;
+  virtual void AddManagerService(const std::string& service_path) OVERRIDE;
+  virtual void RemoveManagerService(const std::string& service_path) OVERRIDE;
   virtual void ClearManagerServices() OVERRIDE;
   virtual void ServiceStateChanged(const std::string& service_path,
                                    const std::string& state) OVERRIDE;
-  virtual void SortManagerServices() OVERRIDE;
+  virtual void SortManagerServices(bool notify) OVERRIDE;
   virtual void SetupDefaultEnvironment() OVERRIDE;
   virtual int GetInteractiveDelay() const OVERRIDE;
   virtual void SetBestServiceToConnect(
@@ -123,7 +121,6 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void SetTechnologyEnabled(const std::string& type,
                             const base::Closure& callback,
                             bool enabled);
-  base::ListValue* GetEnabledServiceList(const std::string& property) const;
   void ScanCompleted(const std::string& device_path,
                      const base::Closure& callback);
 

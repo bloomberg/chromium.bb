@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
@@ -31,7 +30,6 @@
 namespace api = extensions::api::networking_private;
 
 using chromeos::DBusThreadManager;
-using chromeos::FavoriteState;
 using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkPortalDetector;
@@ -72,8 +70,8 @@ std::string GetUserIdHash(Profile* profile) {
 bool GetServicePathFromGuid(const std::string& guid,
                             std::string* service_path,
                             std::string* error) {
-  const FavoriteState* network =
-      NetworkHandler::Get()->network_state_handler()->GetFavoriteStateFromGuid(
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   if (!network) {
     *error = "Error.InvalidNetworkGuid";
@@ -180,18 +178,18 @@ bool NetworkingPrivateGetStateFunction::RunAsync() {
   if (!GetServicePathFromGuid(params->network_guid, &service_path, &error_))
     return false;
 
-  const FavoriteState* favorite_state =
+  const NetworkState* network_state =
       NetworkHandler::Get()
           ->network_state_handler()
-          ->GetFavoriteStateFromServicePath(service_path,
-                                            false /* configured_only */);
-  if (!favorite_state) {
+          ->GetNetworkStateFromServicePath(service_path,
+                                           false /* configured_only */);
+  if (!network_state) {
     error_ = "Error.NetworkUnavailable";
     return false;
   }
 
   scoped_ptr<base::DictionaryValue> network_properties =
-      chromeos::network_util::TranslateFavoriteStateToONC(favorite_state);
+      chromeos::network_util::TranslateNetworkStateToONC(network_state);
 
   SetResult(network_properties.release());
   SendResponse(true);

@@ -18,7 +18,6 @@
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
@@ -35,11 +34,11 @@ namespace {
 // proxy was configured for this network.
 bool GetProxyConfig(const PrefService* profile_prefs,
                     const PrefService* local_state_prefs,
-                    const FavoriteState& network,
+                    const NetworkState& network,
                     net::ProxyConfig* proxy_config,
                     ::onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForFavoriteNetwork(
+      proxy_config::GetProxyConfigForNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
   if (!proxy_dict)
     return false;
@@ -161,7 +160,7 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
 
 void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const FavoriteState* network = handler->DefaultFavoriteNetwork();
+  const NetworkState* network = handler->DefaultNetwork();
 
   // Get prefs proxy config if available.
   net::ProxyConfig pref_config;

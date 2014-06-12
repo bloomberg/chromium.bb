@@ -364,26 +364,6 @@ const gfx::ImageSkia GetDisconnectedImage(IconType icon_type,
   return GetImageForIndex(image_type, icon_type, disconnected_index);
 }
 
-const std::string& GetDisconnectedImageUrl(IconType icon_type,
-                                           const std::string& network_type,
-                                           float scale_factor) {
-  static ImageIdUrlMap* s_image_url_map = NULL;
-  if (s_image_url_map == NULL)
-    s_image_url_map = new ImageIdUrlMap;
-
-  ImageIdForNetworkType key(icon_type, network_type, scale_factor);
-  ImageIdUrlMap::iterator iter = s_image_url_map->find(key);
-  if (iter != s_image_url_map->end())
-    return iter->second;
-
-  VLOG(2) << "Generating disconnected bitmap URL for: " << network_type;
-  gfx::ImageSkia image = GetDisconnectedImage(icon_type, network_type);
-  gfx::ImageSkiaRep image_rep = image.GetRepresentation(scale_factor);
-  iter = s_image_url_map->insert(std::make_pair(
-      key, webui::GetBitmapDataUrl(image_rep.sk_bitmap()))).first;
-  return iter->second;
-}
-
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
                                         IconType icon_type,
                                         double animation) {
@@ -783,7 +763,9 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkState* network,
 gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
                                   IconType icon_type) {
   DCHECK(network);
-  // Handle connecting icons.
+  if (!network->visible())
+    return GetDisconnectedImage(icon_type, network->type());
+
   if (network->IsConnectingState())
     return GetConnectingImage(icon_type, network->type());
 
@@ -816,12 +798,6 @@ gfx::ImageSkia GetImageForConnectingNetwork(IconType icon_type,
 gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
                                               const std::string& network_type) {
   return GetDisconnectedImage(icon_type, network_type);
-}
-
-std::string GetImageUrlForDisconnectedNetwork(IconType icon_type,
-                                              const std::string& network_type,
-                                              float scale_factor) {
-  return GetDisconnectedImageUrl(icon_type, network_type, scale_factor);
 }
 
 base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
@@ -970,7 +946,8 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
 
 void PurgeNetworkIconCache() {
   NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
+      &networks);
   std::set<std::string> network_paths;
   for (NetworkStateHandler::NetworkStateList::iterator iter = networks.begin();
        iter != networks.end(); ++iter) {

@@ -127,6 +127,7 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
   // Sets the default network state used for notifier updates.
   void SetDefaultNetworkState(
       const DefaultNetworkState& default_network_state) {
+    default_network_.visible_ = true;
     if (default_network_state.is_connected)
       default_network_.connection_state_ = shill::kStateOnline;
     else

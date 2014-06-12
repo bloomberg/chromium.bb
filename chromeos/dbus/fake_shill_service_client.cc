@@ -39,7 +39,7 @@ void PassStubServiceProperties(
 
 void CallSortManagerServices() {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      SortManagerServices();
+      SortManagerServices(true);
 }
 
 int GetInteractiveDelay() {
@@ -322,8 +322,6 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
     const std::string& state,
     const std::string& ipconfig_path,
     bool add_to_visible_list) {
-  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddManagerService(service_path, add_to_visible_list);
   std::string device_path =
       DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
       GetDevicePathForType(type);
@@ -366,6 +364,9 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   properties->SetWithoutPathExpansion(
       shill::kStateProperty,
       new base::StringValue(state));
+  properties->SetWithoutPathExpansion(
+      shill::kVisibleProperty,
+      new base::FundamentalValue(add_to_visible_list));
   if (!ipconfig_path.empty()) {
     properties->SetWithoutPathExpansion(
         shill::kIPConfigProperty,
@@ -377,20 +378,20 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
         new base::StringValue(shill::kSecurityNone));
   }
 
-  CallSortManagerServices();
-
   if (!profile_path.empty()) {
     DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
         UpdateService(profile_path, service_path);
   }
+
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddManagerService(service_path);
 }
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
-  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      RemoveManagerService(service_path, true);
-
   stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
   connect_behavior_.erase(service_path);
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      RemoveManagerService(service_path);
 }
 
 bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
@@ -448,9 +449,10 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
         ServiceStateChanged(service_path, state);
   }
 
-  // If the State changes, the sort order of Services may change and the
-  // DefaultService property may change.
-  if (property == shill::kStateProperty) {
+  // If the State or Visibility changes, the sort order of service lists may
+  // change and the DefaultService property may change.
+  if (property == shill::kStateProperty ||
+      property == shill::kVisibleProperty) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&CallSortManagerServices));
   }

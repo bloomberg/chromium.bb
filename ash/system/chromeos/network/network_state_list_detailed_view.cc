@@ -182,7 +182,7 @@ void NetworkStateListDetailedView::ManagerChanged() {
 void NetworkStateListDetailedView::NetworkListChanged() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   NetworkStateHandler::NetworkStateList network_list;
-  handler->GetNetworkList(&network_list);
+  handler->GetVisibleNetworkList(&network_list);
   UpdateNetworks(network_list);
   UpdateNetworkList();
   UpdateHeaderButtons();

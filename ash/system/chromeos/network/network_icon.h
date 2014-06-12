@@ -56,12 +56,6 @@ ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedNetwork(
     IconType icon_type,
     const std::string& network_type);
 
-// Gets a url representing the image for a disconnected network type.
-ASH_EXPORT std::string GetImageUrlForDisconnectedNetwork(
-    IconType icon_type,
-    const std::string& network_type,
-    float scale_factor);
-
 // Returns the label for |network| based on |icon_type|. |network| can be NULL.
 ASH_EXPORT base::string16 GetLabelForNetwork(
     const chromeos::NetworkState* network,

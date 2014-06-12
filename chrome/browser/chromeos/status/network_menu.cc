@@ -411,7 +411,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
 
   // Get the list of all networks.
   NetworkStateHandler::NetworkStateList network_list;
-  handler->GetNetworkList(&network_list);
+  handler->GetVisibleNetworkList(&network_list);
 
   // Cellular Networks
   if (handler->IsTechnologyEnabled(NetworkTypePattern::Cellular())) {

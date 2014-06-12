@@ -145,7 +145,7 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
   DCHECK(profile);
   profile->entries.SetWithoutPathExpansion(entry_path, properties.DeepCopy());
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddManagerService(entry_path, false /* visible */);
+      AddManagerService(entry_path);
 }
 
 bool FakeShillProfileClient::AddService(const std::string& profile_path,
@@ -153,14 +153,12 @@ bool FakeShillProfileClient::AddService(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   if (!profile) {
-    LOG(ERROR) << "AddService: No matching profile: " << profile_path;
+    LOG(ERROR) << "AddService: No matching profile: " << profile_path
+               << " for: " << service_path;
     return false;
   }
-  if (profile->entries.HasKey(service_path)) {
-    LOG(ERROR) << "AddService: Profile: " << profile_path
-               << " already contains Service: " << service_path;
+  if (profile->entries.HasKey(service_path))
     return false;
-  }
   return AddOrUpdateServiceImpl(profile_path, service_path, profile);
 }
 
@@ -169,7 +167,8 @@ bool FakeShillProfileClient::UpdateService(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   if (!profile) {
-    LOG(ERROR) << "UpdateService: No matching profile: " << profile_path;
+    LOG(ERROR) << "UpdateService: No matching profile: " << profile_path
+               << " for: " << service_path;
     return false;
   }
   if (!profile->entries.HasKey(service_path)) {

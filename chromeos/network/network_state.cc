@@ -5,11 +5,11 @@
 #include "chromeos/network/network_state.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -61,6 +61,7 @@ namespace chromeos {
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path),
+      visible_(false),
       connectable_(false),
       prefix_length_(0),
       signal_strength_(0),
@@ -120,6 +121,29 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
+  } else if (key == shill::kProxyConfigProperty) {
+    std::string proxy_config_str;
+    if (!value.GetAsString(&proxy_config_str)) {
+      NET_LOG_ERROR("Failed to parse " + key, path());
+      return false;
+    }
+
+    proxy_config_.Clear();
+    if (proxy_config_str.empty())
+      return true;
+
+    scoped_ptr<base::DictionaryValue> proxy_config_dict(
+        onc::ReadDictionaryFromJson(proxy_config_str));
+    if (proxy_config_dict) {
+      // Warning: The DictionaryValue returned from
+      // ReadDictionaryFromJson/JSONParser is an optimized derived class that
+      // doesn't allow releasing ownership of nested values. A Swap in the wrong
+      // order leads to memory access errors.
+      proxy_config_.MergeDictionary(proxy_config_dict.get());
+    } else {
+      NET_LOG_ERROR("Failed to parse " + key, path());
+    }
+    return true;
   }
   return false;
 }
@@ -142,7 +166,7 @@ bool NetworkState::InitialPropertiesReceived(
   changed |= had_ca_cert_nss != has_ca_cert_nss_;
 
   // By convention, all visible WiFi networks have a SignalStrength > 0.
-  if (type() == shill::kTypeWifi) {
+  if (visible() && type() == shill::kTypeWifi) {
     if (signal_strength_ <= 0)
       signal_strength_ = 1;
   }
@@ -155,21 +179,26 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
   // Properties shared by all types.
   dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
-  dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
-                                            connection_state());
   dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
                                             security());
-  if (!error().empty())
-    dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error());
 
+  if (visible()) {
+    if (!error().empty())
+      dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error());
+    dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
+                                              connection_state());
+  }
+
+  // Wireless properties
   if (!NetworkTypePattern::Wireless().MatchesType(type()))
     return;
 
-  // Wireless properties
-  dictionary->SetBooleanWithoutPathExpansion(shill::kConnectableProperty,
-                                             connectable());
-  dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
-                                             signal_strength());
+  if (visible()) {
+    dictionary->SetBooleanWithoutPathExpansion(shill::kConnectableProperty,
+                                               connectable());
+    dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
+                                               signal_strength());
+  }
 
   // Wifi properties
   if (NetworkTypePattern::WiFi().MatchesType(type())) {
@@ -236,12 +265,25 @@ bool NetworkState::RequiresActivation() const {
           activation_state() != shill::kActivationStateUnknown);
 }
 
+std::string NetworkState::connection_state() const {
+  if (!visible())
+    return shill::kStateDisconnect;
+  return connection_state_;
+}
+
 bool NetworkState::IsConnectedState() const {
-  return StateIsConnected(connection_state_);
+  return visible() && StateIsConnected(connection_state_);
 }
 
 bool NetworkState::IsConnectingState() const {
-  return StateIsConnecting(connection_state_);
+  return visible() && StateIsConnecting(connection_state_);
+}
+
+bool NetworkState::IsInProfile() const {
+  // kTypeEthernetEap is always saved. We need this check because it does
+  // not show up in the visible list, but its properties may not be available
+  // when it first shows up in ServiceCompleteList. See crbug.com/355117.
+  return !profile_path_.empty() || type() == shill::kTypeEthernetEap;
 }
 
 bool NetworkState::IsPrivate() const {
@@ -261,6 +303,18 @@ std::string NetworkState::GetDnsServersAsString() const {
 
 std::string NetworkState::GetNetmask() const {
   return network_util::PrefixLengthToNetmask(prefix_length_);
+}
+
+std::string NetworkState::GetSpecifier() const {
+  if (!update_received()) {
+    NET_LOG_ERROR("GetSpecifier called before update", path());
+    return std::string();
+  }
+  if (type() == shill::kTypeWifi)
+    return name() + "_" + security_;
+  if (!name().empty())
+    return name();
+  return type();  // For unnamed networks such as ethernet.
 }
 
 void NetworkState::SetGuid(const std::string& guid) {

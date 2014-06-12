@@ -14,10 +14,10 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "dbus/object_path.h"
@@ -38,13 +38,13 @@ void NotifyNetworkStateHandler(const std::string& service_path) {
 
 namespace proxy_config {
 
-scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
+scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
-    const FavoriteState& network,
+    const NetworkState& network,
     ::onc::ONCSource* onc_source) {
   const base::DictionaryValue* network_policy =
-      onc::GetPolicyForFavoriteNetwork(
+      onc::GetPolicyForNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
 
   if (network_policy) {
@@ -91,8 +91,8 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
   return make_scoped_ptr(new ProxyConfigDictionary(&value));
 }
 
-void SetProxyConfigForFavoriteNetwork(const ProxyConfigDictionary& proxy_config,
-                                      const FavoriteState& network) {
+void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
+                              const NetworkState& network) {
   chromeos::ShillServiceClient* shill_service_client =
       DBusThreadManager::Get()->GetShillServiceClient();
 

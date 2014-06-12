@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -348,10 +347,10 @@ const base::DictionaryValue* GetNetworkConfigForEthernetWithoutEAP(
 
 const base::DictionaryValue* GetNetworkConfigForNetworkFromOnc(
     const base::ListValue& network_configs,
-    const FavoriteState& favorite) {
+    const NetworkState& network) {
   // In all cases except Ethernet, we use the GUID of |network|.
-  if (!favorite.Matches(NetworkTypePattern::Ethernet()))
-    return GetNetworkConfigByGUID(network_configs, favorite.guid());
+  if (!network.Matches(NetworkTypePattern::Ethernet()))
+    return GetNetworkConfigByGUID(network_configs, network.guid());
 
   // Ethernet is always shared and thus cannot store a GUID per user. Thus we
   // search for any Ethernet policy intead of a matching GUID.
@@ -359,11 +358,11 @@ const base::DictionaryValue* GetNetworkConfigForNetworkFromOnc(
   // the respective ONC policy. The EthernetEAP service itself is however never
   // in state "connected". An EthernetEAP policy must be applied, if an Ethernet
   // service is connected using the EAP parameters.
-  const FavoriteState* ethernet_eap = NULL;
+  const NetworkState* ethernet_eap = NULL;
   if (NetworkHandler::IsInitialized()) {
     ethernet_eap =
         NetworkHandler::Get()->network_state_handler()->GetEAPForEthernet(
-            favorite.path());
+            network.path());
   }
 
   // The GUID associated with the EthernetEAP service refers to the ONC policy
@@ -379,7 +378,7 @@ const base::DictionaryValue* GetNetworkConfigForNetworkFromOnc(
 const base::DictionaryValue* GetPolicyForNetworkFromPref(
     const PrefService* pref_service,
     const char* pref_name,
-    const FavoriteState& favorite) {
+    const NetworkState& network) {
   if (!pref_service) {
     VLOG(2) << "No pref service";
     return NULL;
@@ -413,42 +412,42 @@ const base::DictionaryValue* GetPolicyForNetworkFromPref(
   onc_policy_value->GetAsList(&onc_policy);
   DCHECK(onc_policy);
 
-  return GetNetworkConfigForNetworkFromOnc(*onc_policy, favorite);
+  return GetNetworkConfigForNetworkFromOnc(*onc_policy, network);
 }
 
 }  // namespace
 
-const base::DictionaryValue* GetPolicyForFavoriteNetwork(
+const base::DictionaryValue* GetPolicyForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
-    const FavoriteState& favorite,
+    const NetworkState& network,
     ::onc::ONCSource* onc_source) {
-  VLOG(2) << "GetPolicyForFavoriteNetwork: " << favorite.path();
+  VLOG(2) << "GetPolicyForNetwork: " << network.path();
   *onc_source = ::onc::ONC_SOURCE_NONE;
 
   const base::DictionaryValue* network_policy = GetPolicyForNetworkFromPref(
-      profile_prefs, prefs::kOpenNetworkConfiguration, favorite);
+      profile_prefs, prefs::kOpenNetworkConfiguration, network);
   if (network_policy) {
-    VLOG(1) << "Network " << favorite.path() << " is managed by user policy.";
+    VLOG(1) << "Network " << network.path() << " is managed by user policy.";
     *onc_source = ::onc::ONC_SOURCE_USER_POLICY;
     return network_policy;
   }
   network_policy = GetPolicyForNetworkFromPref(
-      local_state_prefs, prefs::kDeviceOpenNetworkConfiguration, favorite);
+      local_state_prefs, prefs::kDeviceOpenNetworkConfiguration, network);
   if (network_policy) {
-    VLOG(1) << "Network " << favorite.path() << " is managed by device policy.";
+    VLOG(1) << "Network " << network.path() << " is managed by device policy.";
     *onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;
     return network_policy;
   }
-  VLOG(2) << "Network " << favorite.path() << " is unmanaged.";
+  VLOG(2) << "Network " << network.path() << " is unmanaged.";
   return NULL;
 }
 
-bool HasPolicyForFavoriteNetwork(const PrefService* profile_prefs,
-                                 const PrefService* local_state_prefs,
-                                 const FavoriteState& network) {
+bool HasPolicyForNetwork(const PrefService* profile_prefs,
+                         const PrefService* local_state_prefs,
+                         const NetworkState& network) {
   ::onc::ONCSource ignored_onc_source;
-  const base::DictionaryValue* policy = onc::GetPolicyForFavoriteNetwork(
+  const base::DictionaryValue* policy = onc::GetPolicyForNetwork(
       profile_prefs, local_state_prefs, network, &ignored_onc_source);
   return policy != NULL;
 }

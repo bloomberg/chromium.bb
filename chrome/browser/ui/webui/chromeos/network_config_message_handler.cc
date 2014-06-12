@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -28,8 +27,8 @@ namespace {
 
 bool GetServicePathFromGuid(const std::string& guid,
                             std::string* service_path) {
-  const FavoriteState* network =
-      NetworkHandler::Get()->network_state_handler()->GetFavoriteStateFromGuid(
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   if (!network)
     return false;

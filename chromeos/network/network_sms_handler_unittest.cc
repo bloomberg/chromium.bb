@@ -13,7 +13,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -62,15 +61,12 @@ class NetworkSmsHandlerTest : public testing::Test {
 
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::InitializeWithStub();
-    ShillManagerClient::TestInterface* manager_test =
-        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
-    ASSERT_TRUE(manager_test);
-    manager_test->AddDevice("stub_cellular_device2");
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ASSERT_TRUE(device_test);
-    device_test->AddDevice("stub_cellular_device2", shill::kTypeCellular,
-                           "/org/freedesktop/ModemManager1/stub/0");
+    device_test->AddDevice("/org/freedesktop/ModemManager1/stub/0",
+                           shill::kTypeCellular,
+                           "stub_cellular_device2");
 
     // This relies on the stub dbus implementations for ShillManagerClient,
     // ShillDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.

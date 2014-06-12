@@ -819,8 +819,8 @@ void NetworkConnectionHandler::DisconnectIfPolicyRequires() {
   // Get the list of unmanaged & shared networks that are connected or
   // connecting.
   NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetNetworkListByType(NetworkTypePattern::Wireless(),
-                                               &networks);
+  network_state_handler_->GetVisibleNetworkListByType(
+      NetworkTypePattern::Wireless(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator it =
            networks.begin();
        it != networks.end();

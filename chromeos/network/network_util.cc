@@ -7,7 +7,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -140,21 +139,11 @@ bool ParseCellularScanResults(const base::ListValue& list,
   return true;
 }
 
-scoped_ptr<base::DictionaryValue> TranslateFavoriteStateToONC(
-    const FavoriteState* favorite) {
-  // Get the properties from the FavoriteState.
+scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
+    const NetworkState* network) {
+  // Get the properties from the NetworkState.
   base::DictionaryValue shill_dictionary;
-  favorite->GetStateProperties(&shill_dictionary);
-
-  // If a corresponding NetworkState exists, merge its State properties.
-  const NetworkState* network_state =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-          favorite->path());
-  if (network_state) {
-    base::DictionaryValue shill_network_dictionary;
-    network_state->GetStateProperties(&shill_network_dictionary);
-    shill_dictionary.MergeDictionary(&shill_network_dictionary);
-  }
+  network->GetStateProperties(&shill_dictionary);
 
   scoped_ptr<base::DictionaryValue> onc_dictionary =
       TranslateShillServiceToONCPart(
@@ -168,19 +157,20 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     bool visible_only,
     int limit,
     bool debugging_properties) {
-  NetworkStateHandler::FavoriteStateList favorite_states;
-  NetworkHandler::Get()->network_state_handler()->GetFavoriteListByType(
-      pattern, configured_only, visible_only, limit, &favorite_states);
+  NetworkStateHandler::NetworkStateList network_states;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      pattern, configured_only, visible_only, limit, &network_states);
 
   scoped_ptr<base::ListValue> network_properties_list(new base::ListValue);
-  for (NetworkStateHandler::FavoriteStateList::iterator it =
-           favorite_states.begin();
-       it != favorite_states.end();
+  for (NetworkStateHandler::NetworkStateList::iterator it =
+           network_states.begin();
+       it != network_states.end();
        ++it) {
     scoped_ptr<base::DictionaryValue> onc_dictionary =
-        TranslateFavoriteStateToONC(*it);
+        TranslateNetworkStateToONC(*it);
 
     if (debugging_properties) {
+      onc_dictionary->SetBoolean("visible", (*it)->visible());
       onc_dictionary->SetString("profile_path", (*it)->profile_path());
       std::string onc_source = (*it)->ui_data().GetONCSourceAsString();
       if (!onc_source.empty())

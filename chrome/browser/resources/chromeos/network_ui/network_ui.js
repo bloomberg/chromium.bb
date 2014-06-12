@@ -27,7 +27,8 @@ var NetworkUI = (function() {
     'GUID',
     'Name',
     'Type',
-    'Profile',
+    'profile_path',
+    'visible',
     'onc_source'
   ];
 

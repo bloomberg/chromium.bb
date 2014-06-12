@@ -125,7 +125,7 @@ void ShellNetworkController::ConnectIfUnconnected() {
     return;
 
   chromeos::NetworkStateHandler::NetworkStateList state_list;
-  handler->network_state_handler()->GetNetworkListByType(
+  handler->network_state_handler()->GetVisibleNetworkListByType(
       chromeos::NetworkTypePattern::WiFi(), &state_list);
   for (chromeos::NetworkStateHandler::NetworkStateList::const_iterator it =
        state_list.begin(); it != state_list.end(); ++it) {

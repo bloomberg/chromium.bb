@@ -143,7 +143,8 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
   EventRouter* event_router = EventRouter::Get(profile_);
   NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
+      &networks);
   if (!event_router->HasEventListener(
            api::networking_private::OnNetworkListChanged::kEventName)) {
     // TODO(stevenjb): Remove logging once crbug.com/256881 is fixed

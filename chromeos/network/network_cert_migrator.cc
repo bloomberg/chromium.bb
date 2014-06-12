@@ -263,7 +263,7 @@ void NetworkCertMigrator::NetworkListChanged() {
   scoped_refptr<MigrationTask> helper(new MigrationTask(
       CertLoader::Get()->cert_list(), weak_ptr_factory_.GetWeakPtr()));
   NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetNetworkList(&networks);
+  network_state_handler_->GetVisibleNetworkList(&networks);
   helper->Run(networks);
 }
 

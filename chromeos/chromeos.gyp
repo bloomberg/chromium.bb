@@ -274,8 +274,6 @@
         'network/client_cert_util.h',
         'network/device_state.cc',
         'network/device_state.h',
-        'network/favorite_state.cc',
-        'network/favorite_state.h',
         'network/geolocation_handler.cc',
         'network/geolocation_handler.h',
         'network/managed_network_configuration_handler.cc',

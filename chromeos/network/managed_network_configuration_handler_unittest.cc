@@ -134,7 +134,7 @@ class ShillProfileTestClient {
 class TestNetworkProfileHandler : public NetworkProfileHandler {
  public:
   TestNetworkProfileHandler() {
-    Init(NULL /* No NetworkStateHandler */);
+    Init();
   }
   virtual ~TestNetworkProfileHandler() {}
 

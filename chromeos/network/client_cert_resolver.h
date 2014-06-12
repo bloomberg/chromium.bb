@@ -15,6 +15,7 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_policy_observer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace base {
@@ -23,8 +24,7 @@ class TaskRunner;
 
 namespace chromeos {
 
-class FavoriteState;
-class NetworkStateHandler;
+class NetworkState;
 class ManagedNetworkConfigurationHandler;
 
 // Observes the known networks. If a network is configured with a client
@@ -48,8 +48,6 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
       const scoped_refptr<base::TaskRunner>& task_runner);
 
  private:
-  typedef std::vector<const FavoriteState*> FavoriteStateList;
-
    // NetworkStateHandlerObserver overrides
   virtual void NetworkListChanged() OVERRIDE;
 
@@ -63,7 +61,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   // Check which networks of |networks| are configured with a client certificate
   // pattern. Search for certificates, on the worker thread, and configure the
   // networks for which a matching cert is found (see ConfigureCertificates).
-  void ResolveNetworks(const FavoriteStateList& networks);
+  void ResolveNetworks(const NetworkStateHandler::NetworkStateList& networks);
 
   // |matches| contains networks for which a matching certificate was found.
   // Configures these networks.
