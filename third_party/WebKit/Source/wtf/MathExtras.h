@@ -208,6 +208,8 @@ inline double turn2deg(double t) { return t * 360.0; }
 inline double deg2turn(double d) { return d / 360.0; }
 inline double rad2grad(double r) { return r * 200.0 / piDouble; }
 inline double grad2rad(double g) { return g * piDouble / 200.0; }
+inline double turn2grad(double t) { return t * 400; }
+inline double grad2turn(double g) { return g / 400; }
 
 inline float deg2rad(float d)  { return d * piFloat / 180.0f; }
 inline float rad2deg(float r)  { return r * 180.0f / piFloat; }
@@ -217,6 +219,8 @@ inline float turn2deg(float t) { return t * 360.0f; }
 inline float deg2turn(float d) { return d / 360.0f; }
 inline float rad2grad(float r) { return r * 200.0f / piFloat; }
 inline float grad2rad(float g) { return g * piFloat / 200.0f; }
+inline float turn2grad(float t) { return t * 400; }
+inline float grad2turn(float g) { return g / 400; }
 
 // std::numeric_limits<T>::min() returns the smallest positive value for floating point types
 template<typename T> inline T defaultMinimumForClamp() { return std::numeric_limits<T>::min(); }

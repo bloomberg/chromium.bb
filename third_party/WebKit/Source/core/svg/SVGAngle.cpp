@@ -117,6 +117,8 @@ float SVGAngle::value() const
         return grad2deg(m_valueInSpecifiedUnits);
     case SVG_ANGLETYPE_RAD:
         return rad2deg(m_valueInSpecifiedUnits);
+    case SVG_ANGLETYPE_TURN:
+        return turn2deg(m_valueInSpecifiedUnits);
     case SVG_ANGLETYPE_UNSPECIFIED:
     case SVG_ANGLETYPE_UNKNOWN:
     case SVG_ANGLETYPE_DEG:
@@ -135,6 +137,9 @@ void SVGAngle::setValue(float value)
         break;
     case SVG_ANGLETYPE_RAD:
         m_valueInSpecifiedUnits = deg2rad(value);
+        break;
+    case SVG_ANGLETYPE_TURN:
+        m_valueInSpecifiedUnits = deg2turn(value);
         break;
     case SVG_ANGLETYPE_UNSPECIFIED:
     case SVG_ANGLETYPE_UNKNOWN:
@@ -168,6 +173,8 @@ static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr, const Char
             const CharType fourthChar = *ptr++;
             if (firstChar == 'g' && secondChar == 'r' && thirdChar == 'a' && fourthChar == 'd')
                 type = SVGAngle::SVG_ANGLETYPE_GRAD;
+            else if (firstChar == 't' && secondChar == 'u' && thirdChar == 'r' && fourthChar == 'n')
+                type = SVGAngle::SVG_ANGLETYPE_TURN;
         }
     }
 
@@ -191,6 +198,10 @@ String SVGAngle::valueAsString() const
     case SVG_ANGLETYPE_GRAD: {
         DEFINE_STATIC_LOCAL(String, gradString, ("grad"));
         return String::number(m_valueInSpecifiedUnits) + gradString;
+    }
+    case SVG_ANGLETYPE_TURN: {
+        DEFINE_STATIC_LOCAL(String, turnString, ("turn"));
+        return String::number(m_valueInSpecifiedUnits) + turnString;
     }
     case SVG_ANGLETYPE_UNSPECIFIED:
     case SVG_ANGLETYPE_UNKNOWN:
@@ -263,6 +274,24 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& ex
         return;
 
     switch (m_unitType) {
+    case SVG_ANGLETYPE_TURN:
+        switch (unitType) {
+        case SVG_ANGLETYPE_GRAD:
+            m_valueInSpecifiedUnits = turn2grad(m_valueInSpecifiedUnits);
+            break;
+        case SVG_ANGLETYPE_UNSPECIFIED:
+        case SVG_ANGLETYPE_DEG:
+            m_valueInSpecifiedUnits = turn2deg(m_valueInSpecifiedUnits);
+            break;
+        case SVG_ANGLETYPE_RAD:
+            m_valueInSpecifiedUnits = deg2rad(turn2deg(m_valueInSpecifiedUnits));
+            break;
+        case SVG_ANGLETYPE_TURN:
+        case SVG_ANGLETYPE_UNKNOWN:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+        break;
     case SVG_ANGLETYPE_RAD:
         switch (unitType) {
         case SVG_ANGLETYPE_GRAD:
@@ -271,6 +300,9 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& ex
         case SVG_ANGLETYPE_UNSPECIFIED:
         case SVG_ANGLETYPE_DEG:
             m_valueInSpecifiedUnits = rad2deg(m_valueInSpecifiedUnits);
+            break;
+        case SVG_ANGLETYPE_TURN:
+            m_valueInSpecifiedUnits = deg2turn(rad2deg(m_valueInSpecifiedUnits));
             break;
         case SVG_ANGLETYPE_RAD:
         case SVG_ANGLETYPE_UNKNOWN:
@@ -286,6 +318,9 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& ex
         case SVG_ANGLETYPE_UNSPECIFIED:
         case SVG_ANGLETYPE_DEG:
             m_valueInSpecifiedUnits = grad2deg(m_valueInSpecifiedUnits);
+            break;
+        case SVG_ANGLETYPE_TURN:
+            m_valueInSpecifiedUnits = grad2turn(m_valueInSpecifiedUnits);
             break;
         case SVG_ANGLETYPE_GRAD:
         case SVG_ANGLETYPE_UNKNOWN:
@@ -303,9 +338,12 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& ex
         case SVG_ANGLETYPE_GRAD:
             m_valueInSpecifiedUnits = deg2grad(m_valueInSpecifiedUnits);
             break;
-        case SVG_ANGLETYPE_UNSPECIFIED:
+        case SVG_ANGLETYPE_TURN:
+            m_valueInSpecifiedUnits = deg2turn(m_valueInSpecifiedUnits);
             break;
+        case SVG_ANGLETYPE_UNSPECIFIED:
         case SVG_ANGLETYPE_DEG:
+            break;
         case SVG_ANGLETYPE_UNKNOWN:
             ASSERT_NOT_REACHED();
             break;

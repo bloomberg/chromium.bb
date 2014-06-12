@@ -67,7 +67,8 @@ public:
         SVG_ANGLETYPE_UNSPECIFIED = 1,
         SVG_ANGLETYPE_DEG = 2,
         SVG_ANGLETYPE_RAD = 3,
-        SVG_ANGLETYPE_GRAD = 4
+        SVG_ANGLETYPE_GRAD = 4,
+        SVG_ANGLETYPE_TURN = 5
     };
 
     static PassRefPtr<SVGAngle> create()

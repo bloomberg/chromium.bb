@@ -54,7 +54,7 @@ public:
 
     virtual ~SVGAngleTearOff();
 
-    unsigned short unitType() { return target()->unitType(); }
+    unsigned short unitType() { return hasExposedAngleUnit() ? target()->unitType() : SVGAngle::SVG_ANGLETYPE_UNKNOWN; }
 
     void setValue(float, ExceptionState&);
     float value() { return target()->value(); }
@@ -65,11 +65,13 @@ public:
     void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
     void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
-    String valueAsString() { return target()->valueAsString(); }
+    String valueAsString() { return hasExposedAngleUnit() ? target()->valueAsString() : String::number(0); }
     void setValueAsString(const String&, ExceptionState&);
 
 private:
     SVGAngleTearOff(PassRefPtr<SVGAngle>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+
+    bool hasExposedAngleUnit() { return target()->unitType() <= SVGAngle::SVG_ANGLETYPE_GRAD; }
 };
 
 } // namespace WebCore
