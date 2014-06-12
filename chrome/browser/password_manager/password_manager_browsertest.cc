@@ -10,9 +10,11 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -157,6 +159,10 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     return WebContents()->GetRenderViewHost();
   }
 
+  ManagePasswordsUIController* controller() {
+    return ManagePasswordsUIController::FromWebContents(WebContents());
+  }
+
   // Wrapper around ui_test_utils::NavigateToURL that waits until
   // DidFinishLoad() fires. Normally this function returns after
   // DidStopLoading(), which caused flakiness as the NavigationObserver
@@ -267,7 +273,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -283,7 +293,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -300,7 +314,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('submit_unrelated').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
@@ -316,7 +334,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
       "document.getElementById('submit_failed').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
@@ -332,14 +354,22 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.disable_should_automatically_accept_infobar();
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 
   // The redirection page now redirects via Javascript. We check that the
   // infobar stays.
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
                                      "window.location.href = 'done.html';"));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_removed());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_removed());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -356,7 +386,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 // Flaky: crbug.com/301547, observed on win and mac. Probably happens on all
@@ -376,7 +410,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "}, 0)";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForNavigation) {
@@ -387,7 +425,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForNavigation) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
                                      "window.location.href = 'done.html';"));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -410,7 +452,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -434,7 +480,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -457,7 +507,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -473,7 +527,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "send_xhr()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -489,7 +547,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('link').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_click_link));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 // TODO(jam): http://crbug.com/350550
@@ -515,7 +577,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
 
   first_observer.Wait();
-  ASSERT_TRUE(first_observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    ASSERT_TRUE(controller()->PasswordPendingUserDecision());
+    controller()->SavePassword();
+  } else {
+    ASSERT_TRUE(first_observer.infobar_shown());
+  }
 
   // Now navigate to a login form that has similar HTML markup.
   NavigateToFile("/password/password_form.html");
@@ -542,7 +609,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_form));
   second_observer.Wait();
-  EXPECT_FALSE(second_observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(second_observer.infobar_shown());
+  }
 
   // Verify that we sent a ping to Autofill saying that the original form
   // was likely an account creation form since it has more than 2 text input
@@ -574,7 +645,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
 
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -590,7 +665,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button_no_name').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -606,7 +685,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementsByName('input_submit_button_no_id')[0].click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -625,7 +708,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "form.children[2].click()";  // form.children[2] is the submit button.
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
@@ -673,7 +760,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PasswordValueAccessible) {
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   form_submit_observer.Wait();
-  EXPECT_TRUE(form_submit_observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    controller()->SavePassword();
+  } else {
+    EXPECT_TRUE(form_submit_observer.infobar_shown());
+  }
 
   // Reload the original page to have the saved credentials autofilled.
   NavigationObserver reload_observer(WebContents());
@@ -711,7 +803,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   form_submit_observer.Wait();
-  EXPECT_TRUE(form_submit_observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    controller()->SavePassword();
+  } else {
+    EXPECT_TRUE(form_submit_observer.infobar_shown());
+  }
 
   // Reload the original page to have the saved credentials autofilled.
   NavigationObserver reload_observer(WebContents());
@@ -738,7 +835,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   NavigationObserver observer(WebContents());
   NavigateToFile("/password/done.html");
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -753,7 +854,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -783,10 +888,18 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   if (chrome::VersionInfo::GetChannel() ==
       chrome::VersionInfo::CHANNEL_UNKNOWN) {
-    EXPECT_FALSE(observer.infobar_shown());
+    if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+      EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+    } else {
+      EXPECT_FALSE(observer.infobar_shown());
+    }
     EXPECT_FALSE(password_store->IsEmpty());
   } else {
-    EXPECT_TRUE(observer.infobar_shown());
+    if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+      EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+    } else {
+      EXPECT_TRUE(observer.infobar_shown());
+    }
     EXPECT_TRUE(password_store->IsEmpty());
   }
 }
@@ -806,5 +919,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptWhenReloading) {
                                 content::PAGE_TRANSITION_RELOAD);
   ui_test_utils::NavigateToURL(&params);
   observer.Wait();
-  EXPECT_FALSE(observer.infobar_shown());
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_FALSE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_FALSE(observer.infobar_shown());
+  }
 }
