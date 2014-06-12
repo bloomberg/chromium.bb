@@ -29,6 +29,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'sources': [
+        'buffer_data.cc',
+        'buffer_data.h',
         'gbm_surface.cc',
         'gbm_surface.h',
         'gbm_surface_factory.cc',
