@@ -5,6 +5,8 @@
 from measurements import media
 from telemetry import test
 from telemetry.page import page_measurement
+from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 
 
 class _MSEMeasurement(page_measurement.PageMeasurement):
@@ -13,11 +15,17 @@ class _MSEMeasurement(page_measurement.PageMeasurement):
     trace = media_metric['id'] if 'id' in media_metric else None
     metrics = media_metric['metrics'] if 'metrics' in media_metric else []
     for m in metrics:
+      trace_name = '%s.%s' % (m, trace)
       if isinstance(metrics[m], list):
-        values = [float(v) for v in metrics[m]]
+        results.AddValue(list_of_scalar_values.ListOfScalarValues(
+                results.current_page, trace_name, unit='ms',
+                values=[float(v) for v in metrics[m]],
+                important=True))
+
       else:
-        values = float(metrics[m])
-      results.Add(trace, 'ms', values, chart_name=m)
+        results.AddValue(scalar.ScalarValue(
+                results.current_page, trace_name, unit='ms',
+                value=float(metrics[m]), important=True))
 
 
 class Media(test.Test):

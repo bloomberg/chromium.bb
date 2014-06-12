@@ -5,6 +5,8 @@ import logging
 import os
 
 from metrics import Metric
+from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 
 
 class MediaMetric(Metric):
@@ -58,12 +60,16 @@ class MediaMetric(Metric):
       for m in metrics:
         if m.startswith(metric):
           special_label = m[len(metric):]
+          trace_name = '%s.%s%s' % (metric, trace, special_label)
           if isinstance(metrics[m], list):
-            values = [float(v) for v in metrics[m]]
+            results.AddValue(list_of_scalar_values.ListOfScalarValues(
+                results.current_page, trace_name, unit,
+                values=[float(v) for v in metrics[m]],
+                important=True))
           else:
-            values = float(metrics[m])
-          results.Add(trace + special_label, unit, values,
-                      chart_name=metric, data_type='default')
+            results.AddValue(scalar.ScalarValue(
+                results.current_page, trace_name, unit, value=float(metrics[m]),
+                important=True))
 
     trace = media_metric['id']
     if not trace:

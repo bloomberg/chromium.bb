@@ -83,10 +83,18 @@ class Endure(page_measurement.PageMeasurement):
 
     def AddPoint(trace_name, units_y, value_y, chart_name=None):
       """Adds one data point to the results object."""
-      results.Add(trace_name + '_X', 'iterations', self._iterations_elapsed,
-                  data_type='unimportant', chart_name=chart_name)
-      results.Add(trace_name + '_Y', units_y, value_y, data_type='unimportant',
-                  chart_name=chart_name)
+      if chart_name:
+        trace_name = '%s.%s' % (chart_name, trace_name)
+      else:
+        assert '.' not in trace_name, (
+            'Trace names cannot contain "." with an empty chart_name since this'
+            ' is used to delimit chart_name.trace_name.')
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, trace_name + '_X', 'iterations',
+          self._iterations_elapsed, important=False))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, trace_name + '_Y', units_y, value_y,
+          important=False))
 
       # Save the value so that summary stats can be calculated.
       if trace_name not in self._y_values:
