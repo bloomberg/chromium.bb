@@ -37,6 +37,8 @@
           'android/content_uri_utils.cc',
           'android/content_uri_utils.h',
           'android/cpu_features.cc',
+          'android/event_log.cc',
+          'android/event_log.h',
           'android/fifo_utils.cc',
           'android/fifo_utils.h',
           'android/important_file_writer_android.cc',

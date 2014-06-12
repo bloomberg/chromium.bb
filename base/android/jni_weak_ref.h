@@ -25,6 +25,8 @@ class BASE_EXPORT JavaObjectWeakGlobalRef {
 
   base::android::ScopedJavaLocalRef<jobject> get(JNIEnv* env) const;
 
+  bool is_empty() const { return obj_ == NULL; }
+
   void reset();
 
  private:
