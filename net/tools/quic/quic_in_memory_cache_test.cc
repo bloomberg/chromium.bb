@@ -39,7 +39,7 @@ class QuicInMemoryCacheTest : public ::testing::Test {
     headers->ReplaceOrAppendHeader("host", host);
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     QuicInMemoryCachePeer::ResetForTests();
   }
 

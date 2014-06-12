@@ -86,7 +86,7 @@ class TestStream : public QuicDataStream {
 
   using ReliableQuicStream::CloseWriteSide;
 
-  virtual uint32 ProcessData(const char* data, uint32 data_len) {
+  virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE {
     return data_len;
   }
 
@@ -743,6 +743,86 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
   stream->Reset(QUIC_STREAM_CANCELLED);
 
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
+}
+
+TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
+  // Test that when we RST the stream (and tear down stream state), and then
+  // receive a FIN from the peer, we correctly adjust our connection level flow
+  // control receive window.
+  FLAGS_enable_quic_connection_flow_control = true;
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Connection starts with some non-zero highest received byte offset,
+  // due to other active streams.
+  const uint64 kInitialConnectionBytesConsumed = 567;
+  const uint64 kInitialConnectionHighestReceivedOffset = 1234;
+  EXPECT_LT(kInitialConnectionBytesConsumed,
+            kInitialConnectionHighestReceivedOffset);
+  session_.flow_controller()->UpdateHighestReceivedOffset(
+      kInitialConnectionHighestReceivedOffset);
+  session_.flow_controller()->AddBytesConsumed(kInitialConnectionBytesConsumed);
+
+  // Reset our stream: this results in the stream being closed locally.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+  stream->Reset(QUIC_STREAM_CANCELLED);
+
+  // Now receive a response from the peer with a FIN. We should handle this by
+  // adjusting the connection level flow control receive window to take into
+  // account the total number of bytes sent by the peer.
+  const QuicStreamOffset kByteOffset = 5678;
+  string body = "hello";
+  IOVector data = MakeIOVector(body);
+  QuicStreamFrame frame(stream->id(), true, kByteOffset, data);
+  vector<QuicStreamFrame> frames;
+  frames.push_back(frame);
+  session_.OnStreamFrames(frames);
+
+  QuicStreamOffset total_stream_bytes_sent_by_peer =
+      kByteOffset + body.length();
+  EXPECT_EQ(kInitialConnectionBytesConsumed + total_stream_bytes_sent_by_peer,
+            session_.flow_controller()->bytes_consumed());
+  EXPECT_EQ(
+      kInitialConnectionHighestReceivedOffset + total_stream_bytes_sent_by_peer,
+      session_.flow_controller()->highest_received_byte_offset());
+}
+
+TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
+  // Test that when we RST the stream (and tear down stream state), and then
+  // receive a RST from the peer, we correctly adjust our connection level flow
+  // control receive window.
+  FLAGS_enable_quic_connection_flow_control = true;
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Connection starts with some non-zero highest received byte offset,
+  // due to other active streams.
+  const uint64 kInitialConnectionBytesConsumed = 567;
+  const uint64 kInitialConnectionHighestReceivedOffset = 1234;
+  EXPECT_LT(kInitialConnectionBytesConsumed,
+            kInitialConnectionHighestReceivedOffset);
+  session_.flow_controller()->UpdateHighestReceivedOffset(
+      kInitialConnectionHighestReceivedOffset);
+  session_.flow_controller()->AddBytesConsumed(kInitialConnectionBytesConsumed);
+
+  // Reset our stream: this results in the stream being closed locally.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+  stream->Reset(QUIC_STREAM_CANCELLED);
+
+  // Now receive a RST from the peer. We should handle this by adjusting the
+  // connection level flow control receive window to take into account the total
+  // number of bytes sent by the peer.
+  const QuicStreamOffset kByteOffset = 5678;
+  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
+                               kByteOffset);
+  session_.OnRstStream(rst_frame);
+
+  EXPECT_EQ(kInitialConnectionBytesConsumed + kByteOffset,
+            session_.flow_controller()->bytes_consumed());
+  EXPECT_EQ(kInitialConnectionHighestReceivedOffset + kByteOffset,
+            session_.flow_controller()->highest_received_byte_offset());
 }
 
 TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {

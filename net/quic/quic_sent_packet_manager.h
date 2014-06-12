@@ -101,6 +101,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Requests retransmission of all unacked packets of |retransmission_type|.
   void RetransmitUnackedPackets(RetransmissionType retransmission_type);
 
+  // Retransmits the oldest pending packet there is still a tail loss probe
+  // pending.  Invoked after OnRetransmissionTimeout.
+  bool MaybeRetransmitTailLossProbe();
+
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
   void NeuterUnencryptedPackets();
@@ -205,9 +209,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Retransmits all crypto stream packets.
   void RetransmitCryptoPackets();
-
-  // Retransmits the oldest pending packet.
-  void RetransmitOldestPacket();
 
   // Retransmits all the packets and abandons by invoking a full RTO.
   void RetransmitAllPackets();

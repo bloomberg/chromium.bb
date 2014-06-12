@@ -557,7 +557,6 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   proxy_delegate->OnAckNotification(10, 20, 30, 40, zero_);
 }
 
-
 // Verify that when we receive a packet which violates flow control (i.e. sends
 // too much data on the stream) that the stream sequencer never sees this frame,
 // as we check for violation and close the connection early.
@@ -582,6 +581,31 @@ TEST_F(ReliableQuicStreamTest,
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
   EXPECT_FALSE(stream_->OnStreamFrame(frame));
+}
+
+TEST_F(ReliableQuicStreamTest, FinalByteOffsetFromFin) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
+
+  QuicStreamFrame stream_frame_no_fin(stream_->id(), false, 1234,
+                                      MakeIOVector("."));
+  stream_->OnStreamFrame(stream_frame_no_fin);
+  EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
+
+  QuicStreamFrame stream_frame_with_fin(stream_->id(), true, 1234,
+                                        MakeIOVector("."));
+  stream_->OnStreamFrame(stream_frame_with_fin);
+  EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
+}
+
+TEST_F(ReliableQuicStreamTest, FinalByteOffsetFromRst) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
+  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED, 1234);
+  stream_->OnStreamReset(rst_frame);
+  EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
 }  // namespace

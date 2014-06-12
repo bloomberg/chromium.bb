@@ -22,6 +22,7 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
+#include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -1460,7 +1461,8 @@ TEST_P(QuicConnectionTest, FECSending) {
   creator->set_max_packet_length(length);
 
   // And send FEC every two packets.
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(creator, 2));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 2);
 
   // Send 4 data packets and 2 FEC packets.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
@@ -1482,7 +1484,8 @@ TEST_P(QuicConnectionTest, FECQueueing) {
       IN_FEC_GROUP, &payload_length);
   creator->set_max_packet_length(length);
   // And send FEC every two packets.
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(creator, 2));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 1);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   BlockOnNextWrite();
@@ -1495,8 +1498,8 @@ TEST_P(QuicConnectionTest, FECQueueing) {
 }
 
 TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(
-      QuicConnectionPeer::GetPacketCreator(&connection_), 1));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 1);
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
@@ -1515,8 +1518,8 @@ TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
 
 TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(
-      QuicConnectionPeer::GetPacketCreator(&connection_), 1));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 1);
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
@@ -1543,8 +1546,8 @@ TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
 
 TEST_P(QuicConnectionTest, AbandonAllFEC) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(
-      QuicConnectionPeer::GetPacketCreator(&connection_), 1));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 1);
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
@@ -1660,8 +1663,8 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
 
 TEST_P(QuicConnectionTest, FramePackingFEC) {
   // Enable fec.
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(
-      QuicConnectionPeer::GetPacketCreator(&connection_), 6));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(&connection_), 6);
 
   CongestionBlockWrites();
 
@@ -2219,6 +2222,27 @@ TEST_P(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
   // Ensure entropy is not revived for the missing packet.
   EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
   EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 3));
+}
+
+TEST_P(QuicConnectionTest, TLP) {
+  QuicSentPacketManagerPeer::SetMaxTailLossProbes(
+      QuicConnectionPeer::GetSentPacketManager(&connection_), 1);
+
+  SendStreamDataToPeer(3, "foo", 0, !kFin, NULL);
+  EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
+  QuicTime retransmission_time =
+      connection_.GetRetransmissionAlarm()->deadline();
+  EXPECT_NE(QuicTime::Zero(), retransmission_time);
+
+  EXPECT_EQ(1u, writer_->header().packet_sequence_number);
+  // Simulate the retransmission alarm firing and sending a tlp,
+  // so send algorithm's OnRetransmissionTimeout is not called.
+  clock_.AdvanceTime(retransmission_time.Subtract(clock_.Now()));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 2u, _, _));
+  connection_.GetRetransmissionAlarm()->Fire();
+  EXPECT_EQ(2u, writer_->header().packet_sequence_number);
+  // We do not raise the high water mark yet.
+  EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
 }
 
 TEST_P(QuicConnectionTest, RTO) {

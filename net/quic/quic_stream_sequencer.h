@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   typedef map<QuicStreamOffset, string> FrameMap;
 
   // Stores buffered frames (maps from sequence number -> frame data as string).
-  FrameMap frames_;
+  FrameMap buffered_frames_;
 
   // The offset, if any, we got a stream termination for.  When this many bytes
   // have been processed, the sequencer will be closed.

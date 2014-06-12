@@ -12,6 +12,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
+#include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +33,7 @@ namespace {
 class MockDelegate : public QuicPacketGenerator::DelegateInterface {
  public:
   MockDelegate() {}
-  virtual ~MockDelegate() {}
+  virtual ~MockDelegate() OVERRIDE {}
 
   MOCK_METHOD3(ShouldGeneratePacket,
                bool(TransmissionType transmission_type,
@@ -111,10 +112,12 @@ class QuicPacketGeneratorTest : public ::testing::Test {
         packet2_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
         packet3_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
         packet4_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
-        packet5_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL) {
+        packet5_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet6_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL),
+        packet7_(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL) {
   }
 
-  ~QuicPacketGeneratorTest() {
+  virtual ~QuicPacketGeneratorTest() OVERRIDE {
     delete packet_.packet;
     delete packet_.retransmittable_frames;
     delete packet2_.packet;
@@ -125,6 +128,10 @@ class QuicPacketGeneratorTest : public ::testing::Test {
     delete packet4_.retransmittable_frames;
     delete packet5_.packet;
     delete packet5_.retransmittable_frames;
+    delete packet6_.packet;
+    delete packet6_.retransmittable_frames;
+    delete packet7_.packet;
+    delete packet7_.retransmittable_frames;
   }
 
   QuicAckFrame* CreateAckFrame() {
@@ -226,6 +233,8 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   SerializedPacket packet3_;
   SerializedPacket packet4_;
   SerializedPacket packet5_;
+  SerializedPacket packet6_;
+  SerializedPacket packet7_;
 
  private:
   scoped_ptr<char[]> data_array_;
@@ -440,7 +449,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFEC) {
   delegate_.SetCanWriteAnything();
 
   // Send FEC every two packets.
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 2));
+  creator_.set_max_packets_per_fec_group(2);
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
 
   {
     InSequence dummy;
@@ -476,7 +486,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
   delegate_.SetCanWriteAnything();
 
   // Send FEC every six packets.
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
+  creator_.set_max_packets_per_fec_group(6);
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
@@ -545,6 +556,254 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   contents.num_stream_frames = 1;
   CheckPacketContains(contents, packet_);
   CheckPacketContains(contents, packet2_);
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnOff) {
+  delegate_.SetCanWriteAnything();
+  // Enable FEC.
+  creator_.set_max_packets_per_fec_group(2);
+  EXPECT_FALSE(creator_.IsFecProtected());
+
+  // Send one unprotected data packet.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet_), Return(true)));
+  QuicConsumedData consumed =
+      generator_.ConsumeData(5, CreateData(1u), 0, true, NULL);
+  EXPECT_EQ(1u, consumed.bytes_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(creator_.IsFecProtected());
+  // Verify that one data packet was sent.
+  PacketContents contents;
+  contents.num_stream_frames = 1;
+  CheckPacketContains(contents, packet_);
+
+  // Turn on FEC protection.
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  EXPECT_TRUE(creator_.IsFecProtected());
+  {
+    InSequence dummy;
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet2_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet3_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet4_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet5_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet6_), Return(true)));
+  }
+  // Send enough data to create 3 packets.
+  size_t data_len = 2 * kDefaultMaxPacketSize + 100;
+  consumed = generator_.ConsumeData(7, CreateData(data_len), 0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  // Verify that two FEC packets were sent.
+  CheckPacketHasSingleStreamFrame(packet2_);
+  CheckPacketHasSingleStreamFrame(packet3_);
+  CheckPacketIsFec(packet4_, /*fec_group=*/2u);
+  CheckPacketHasSingleStreamFrame(packet5_);
+  CheckPacketIsFec(packet6_, /*fec_group=*/5u);  // Sent at the end of stream.
+
+  // Turn off FEC protection and send one unprotected data packet.
+  QuicPacketGeneratorPeer::MaybeStopFecProtection(&generator_, false);
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet7_), Return(true)));
+  consumed = generator_.ConsumeData(7, CreateData(1u), 0, true, NULL);
+  EXPECT_EQ(1u, consumed.bytes_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(creator_.IsFecProtected());
+  // Verify that one unprotected data packet was sent.
+  CheckPacketContains(contents, packet7_);
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnWithPendingFrameInCreator) {
+  delegate_.SetCanWriteAnything();
+  // Enable FEC.
+  creator_.set_max_packets_per_fec_group(2);
+
+  generator_.StartBatchOperations();
+  // Queue enough data to prevent a stream frame with a non-zero offset from
+  // fitting.
+  QuicConsumedData consumed = generator_.ConsumeData(7, CreateData(1u), 0,
+                                                     true, NULL);
+  EXPECT_EQ(1u, consumed.bytes_consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Turn on FEC protection. Should cause queued frames to be flushed.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  EXPECT_FALSE(creator_.IsFecProtected());
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  CheckPacketHasSingleStreamFrame(packet_);
+  EXPECT_TRUE(creator_.IsFecProtected());
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnWithPendingFramesInGenerator) {
+  // Enable FEC.
+  creator_.set_max_packets_per_fec_group(2);
+
+  // Queue control frames in generator.
+  delegate_.SetCanNotWrite();
+  generator_.SetShouldSendAck(true, true);
+  delegate_.SetCanWriteAnything();
+
+  // Set up frames to write into the creator when control frames are written.
+  EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, CreateFeedbackFrame()).WillOnce(
+      Return(CreateFeedbackFrame()));
+  EXPECT_CALL(delegate_, CreateStopWaitingFrame()).WillOnce(
+      Return(CreateStopWaitingFrame()));
+
+  // Generator should have queued control frames, and creator should be empty.
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  EXPECT_FALSE(creator_.IsFecProtected());
+
+  // Turn on FEC protection. Should cause queued control frames to be flushed.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  PacketContents contents;
+  contents.num_ack_frames = 1;
+  contents.num_feedback_frames = 1;
+  contents.num_stop_waiting_frames = 1;
+  CheckPacketContains(contents, packet_);
+
+  // FEC protection should be on in creator.
+  EXPECT_TRUE(creator_.IsFecProtected());
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentFramesProtected) {
+  delegate_.SetCanWriteAnything();
+
+  // Enable and start FEC protection.
+  creator_.set_max_packets_per_fec_group(2);
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  // Queue stream frame to be protected in creator.
+  generator_.StartBatchOperations();
+  QuicConsumedData consumed = generator_.ConsumeData(5, CreateData(1u), 0, true,
+                                                     NULL);
+  EXPECT_EQ(1u, consumed.bytes_consumed);
+  // Turn FEC protection off in generator.
+  QuicPacketGeneratorPeer::MaybeStopFecProtection(&generator_, /*force=*/false);
+  // Creator has a pending protected frame.
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  // Add enough data to exceed size of current packet, so that current packet
+  // is sent. Both frames will be sent out in a single packet.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  size_t data_len = kDefaultMaxPacketSize;
+  consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  PacketContents contents;
+  contents.num_stream_frames = 2u;
+  contents.fec_group = 1u;
+  CheckPacketContains(contents, packet_);
+  // FEC protection should still be on in creator.
+  EXPECT_TRUE(creator_.IsFecProtected());
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffWithSubsequentPacketsProtected) {
+  delegate_.SetCanWriteAnything();
+
+  // Enable and start FEC protection.
+  creator_.set_max_packets_per_fec_group(2);
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  generator_.StartBatchOperations();
+  // Send first packet, FEC protected.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  // Write enough data to cause a packet to be emitted.
+  size_t data_len = kDefaultMaxPacketSize;
+  QuicConsumedData consumed = generator_.ConsumeData(5, CreateData(data_len),
+                                                     0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  PacketContents contents;
+  contents.num_stream_frames = 1u;
+  contents.fec_group = 1u;
+  CheckPacketContains(contents, packet_);
+
+  // Turn FEC protection off in generator.
+  QuicPacketGeneratorPeer::MaybeStopFecProtection(&generator_, /*force=*/false);
+  // FEC group is still open in creator.
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  // Send second packet, which is protected because it happens to fall within an
+  // open FEC group. Data packet will be followed by FEC packet.
+  {
+    InSequence dummy;
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet2_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet3_), Return(true)));
+  }
+  consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  contents.num_stream_frames = 2u;
+  CheckPacketContains(contents, packet2_);
+  CheckPacketIsFec(packet3_, /*fec_group=*/1u);
+
+  // FEC protection should be off in creator.
+  EXPECT_FALSE(creator_.IsFecProtected());
+}
+
+TEST_F(QuicPacketGeneratorTest, SwitchFecOnOffThenOnWithCreatorProtectionOn) {
+  delegate_.SetCanWriteAnything();
+  generator_.StartBatchOperations();
+
+  // Enable and start FEC protection.
+  creator_.set_max_packets_per_fec_group(2);
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+  EXPECT_TRUE(creator_.IsFecProtected());
+
+  // Queue one byte of FEC protected data and turn FEC off in generator.
+  QuicConsumedData consumed = generator_.ConsumeData(5, CreateData(1u), 0, true,
+                                                     NULL);
+  QuicPacketGeneratorPeer::MaybeStopFecProtection(&generator_, /*force=*/false);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+  // Add more data causing first packet to be sent, FEC protected.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  // Write enough data to cause a packet to be emitted.
+  size_t data_len = kDefaultMaxPacketSize;
+  consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  PacketContents contents;
+  contents.num_stream_frames = 2u;
+  contents.fec_group = 1u;
+  CheckPacketContains(contents, packet_);
+
+  // FEC group is still open in creator.
+  EXPECT_TRUE(creator_.IsFecProtected());
+  // Turn FEC on again in generator, for the next data.
+  QuicPacketGeneratorPeer::MaybeStartFecProtection(&generator_);
+
+  // Add data that should be protected, large enough to cause second packet to
+  // be sent. Data packet should be followed by FEC packet.
+  {
+    InSequence dummy;
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet2_), Return(true)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+        DoAll(SaveArg<0>(&packet3_), Return(true)));
+  }
+  consumed = generator_.ConsumeData(5, CreateData(data_len), 0, true, NULL);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  CheckPacketContains(contents, packet2_);
+  CheckPacketIsFec(packet3_, /*fec_group=*/1u);
+
+  // FEC protection should be on in creator.
+  EXPECT_TRUE(creator_.IsFecProtected());
 }
 
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {

@@ -60,14 +60,17 @@ class QuicSocketUtils {
   // status to WRITE_STATUS_OK and sets bytes_written.  Otherwise sets the
   // result's status to WRITE_STATUS_BLOCKED or WRITE_STATUS_ERROR and sets
   // error_code to errno.
-  static WriteResult WritePacket(int fd, const char* buffer, size_t buf_len,
+  static WriteResult WritePacket(int fd,
+                                 const char* buffer,
+                                 size_t buf_len,
                                  const IPAddressNumber& self_address,
                                  const IPEndPoint& peer_address);
 
   // A helper for WritePacket which fills in the cmsg with the supplied self
   // address.
-  static void SetIpInfoInCmsg(const IPAddressNumber& self_address,
-                              cmsghdr* cmsg);
+  // Returns the length of the packet info structure used.
+  static size_t SetIpInfoInCmsg(const IPAddressNumber& self_address,
+                                cmsghdr* cmsg);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);

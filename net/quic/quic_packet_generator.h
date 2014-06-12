@@ -58,6 +58,10 @@
 
 namespace net {
 
+namespace test {
+class QuicPacketGeneratorPeer;
+}  // namespace test
+
 class QuicAckNotifier;
 
 class NET_EXPORT_PRIVATE QuicPacketGenerator {
@@ -137,6 +141,30 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   }
 
  private:
+  friend class test::QuicPacketGeneratorPeer;
+
+  // Turn on FEC protection for subsequent packets in the generator.
+  // If no FEC group is currently open in the creator, this method flushes any
+  // queued frames in the generator and in the creator, and it then turns FEC on
+  // in the creator. This method may be called with an open FEC group in the
+  // creator, in which case, only the generator's state is altered.
+  void MaybeStartFecProtection();
+
+  // Turn off FEC protection for subsequent packets. If |force| is true,
+  // force-closes any open FEC group, sends out an FEC packet if one was under
+  // construction, and turns off protection in the generator and creator. If
+  // |force| is false, does the same as above if the creator is ready to send
+  // and FEC packet. Note that when |force| is false, the creator may still have
+  // an open FEC group after this method runs.
+  void MaybeStopFecProtection(bool force);
+
+  // Serializes and calls the delegate on an FEC packet if one was under
+  // construction in the creator. When |force| is false, it relies on the
+  // creator being ready to send an FEC packet, otherwise FEC packet is sent
+  // as long as one is under construction in the creator.  Also tries to turns
+  // off FEC protection in the creator if it's off in the generator.
+  void MaybeSendFecPacketAndCloseGroup(bool force);
+
   void SendQueuedFrames(bool flush);
 
   // Test to see if we have pending ack, feedback, or control frames.
@@ -160,6 +188,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   // True if batch mode is currently enabled.
   bool batch_mode_;
+
+  // True if FEC protection is on.
+  bool should_fec_protect_;
 
   // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;

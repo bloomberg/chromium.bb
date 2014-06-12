@@ -33,7 +33,7 @@ namespace test {
 class TestChannelIDKey : public ChannelIDKey {
  public:
   explicit TestChannelIDKey(EVP_PKEY* ecdsa_key) : ecdsa_key_(ecdsa_key) {}
-  virtual ~TestChannelIDKey() { }
+  virtual ~TestChannelIDKey() OVERRIDE {}
 
   // ChannelIDKey implementation.
 

@@ -51,7 +51,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
   }
 
-  virtual ~QuicSentPacketManagerTest() {
+  virtual ~QuicSentPacketManagerTest() OVERRIDE {
     STLDeleteElements(&packets_);
   }
 
@@ -785,12 +785,26 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
 
   // The first tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  manager_.MaybeRetransmitTailLossProbe();
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(2);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // The second tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  manager_.MaybeRetransmitTailLossProbe();
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack the third and ensure the first two are still pending.
@@ -826,13 +840,30 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
 
   // The first tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  manager_.MaybeRetransmitTailLossProbe();
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(101);
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // The second tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
-  RetransmitNextPacket(102);
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
+  RetransmitNextPacket(102);
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
 
   // Advance the time enough to ensure all packets are RTO'd.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
@@ -1029,7 +1060,16 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeoutUnsentDataPacket) {
 
   // Retransmit 1 unacked packets, but not the first serialized packet.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  manager_.MaybeRetransmitTailLossProbe();
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
@@ -1081,6 +1121,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
   }
 
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_FALSE(manager_.MaybeRetransmitTailLossProbe());
   manager_.OnRetransmissionTimeout();
 }
 
@@ -1137,7 +1178,16 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   // Retransmit the packet by invoking the retransmission timeout.
   clock_.AdvanceTime(expected_tlp_delay);
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   expected_time = clock_.Now().Add(expected_tlp_delay);

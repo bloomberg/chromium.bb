@@ -120,9 +120,8 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
 TEST_F(QuicFlowControllerTest,
        DisabledWhenQuicVersionDoesNotSupportFlowControl) {
   // Only support version 16: no flow control.
-  QuicVersionVector supported_versions;
-  supported_versions.push_back(QUIC_VERSION_16);
-  QuicConnectionPeer::SetSupportedVersions(&connection_, supported_versions);
+  QuicConnectionPeer::SetSupportedVersions(&connection_,
+                                           SupportedVersions(QUIC_VERSION_16));
 
   Initialize();
 

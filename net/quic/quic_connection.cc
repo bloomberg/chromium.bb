@@ -1603,10 +1603,16 @@ void QuicConnection::OnRetransmissionTimeout() {
   }
 
   sent_packet_manager_.OnRetransmissionTimeout();
-
   WriteIfNotBlocked();
+  // In the TLP case, the SentPacketManager gives the connection the opportunity
+  // to send new data before retransmitting.
+  if (sent_packet_manager_.MaybeRetransmitTailLossProbe()) {
+    // Send the pending retransmission now that it's been queued.
+    WriteIfNotBlocked();
+  }
 
-  // Ensure the retransmission alarm is always set if there are unacked packets.
+  // Ensure the retransmission alarm is always set if there are unacked packets
+  // and nothing waiting to be sent.
   if (!HasQueuedData() && !retransmission_alarm_->IsSet()) {
     QuicTime rto_timeout = sent_packet_manager_.GetRetransmissionTime();
     if (rto_timeout != QuicTime::Zero()) {

@@ -467,6 +467,7 @@ bool QuicSentPacketManager::OnPacketSent(
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
   DCHECK(unacked_packets_.HasInFlightPackets());
+  DCHECK(!pending_tlp_transmission_);
   // Handshake retransmission, timer based loss detection, TLP, and RTO are
   // implemented with a single alarm. The handshake alarm is set when the
   // handshake has not completed, the loss alarm is set when the loss detection
@@ -488,8 +489,10 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
       // If no tail loss probe can be sent, because there are no retransmittable
       // packets, execute a conventional RTO to abandon old packets.
       ++stats_->tlp_count;
+      ++consecutive_tlp_count_;
       pending_tlp_transmission_ = true;
-      RetransmitOldestPacket();
+      // TLPs prefer sending new data instead of retransmitting data, so
+      // give the connection a chance to write before completing the TLP.
       return;
     case RTO_MODE:
       ++stats_->rto_count;
@@ -520,9 +523,10 @@ void QuicSentPacketManager::RetransmitCryptoPackets() {
   DCHECK(packet_retransmitted) << "No crypto packets found to retransmit.";
 }
 
-void QuicSentPacketManager::RetransmitOldestPacket() {
-  DCHECK_EQ(TLP_MODE, GetRetransmissionMode());
-  ++consecutive_tlp_count_;
+bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
+  if (!pending_tlp_transmission_) {
+    return false;
+  }
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
     QuicPacketSequenceNumber sequence_number = it->first;
@@ -533,10 +537,11 @@ void QuicSentPacketManager::RetransmitOldestPacket() {
     }
     DCHECK_NE(IS_HANDSHAKE, frames->HasCryptoHandshake());
     MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
-    return;
+    return true;
   }
   DLOG(FATAL)
     << "No retransmittable packets, so RetransmitOldestPacket failed.";
+  return false;
 }
 
 void QuicSentPacketManager::RetransmitAllPackets() {
@@ -671,8 +676,9 @@ const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
-  // Don't set the timer if there are no packets in flight.
-  if (!unacked_packets_.HasInFlightPackets()) {
+  // Don't set the timer if there are no packets in flight or we've already
+  // queued a tlp transmission and it hasn't been sent yet.
+  if (!unacked_packets_.HasInFlightPackets() || pending_tlp_transmission_) {
     return QuicTime::Zero();
   }
   switch (GetRetransmissionMode()) {

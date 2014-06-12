@@ -113,6 +113,14 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // control window or the connection flow control window.
   bool IsFlowControlBlocked();
 
+  // Returns true if we have received either a RST or a FIN - either of which
+  // gives a definitive number of bytes which the peer has sent. If this is not
+  // true on stream termination the session must keep track of the stream's byte
+  // offset until a definitive final value arrives.
+  bool HasFinalReceivedByteOffset() const {
+    return fin_received_ || rst_received_;
+  }
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
@@ -199,9 +207,16 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool fin_buffered_;
   bool fin_sent_;
 
+  // True if this stream has received (and the sequencer has accepted) a
+  // StreamFrame with the FIN set.
+  bool fin_received_;
+
   // In combination with fin_sent_, used to ensure that a FIN and/or a RST is
   // always sent before stream termination.
   bool rst_sent_;
+
+  // True if this stream has received a RST stream frame.
+  bool rst_received_;
 
   // True if the session this stream is running under is a server session.
   bool is_server_;

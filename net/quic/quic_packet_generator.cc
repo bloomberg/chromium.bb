@@ -22,6 +22,7 @@ QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
       debug_delegate_(debug_delegate),
       packet_creator_(creator),
       batch_mode_(false),
+      should_fec_protect_(false),
       should_send_ack_(false),
       should_send_feedback_(false),
       should_send_stop_waiting_(false) {
@@ -143,15 +144,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     }
   }
 
-  // Ensure the FEC group is closed at the end of this method if not in batch
-  // mode.
-  if (!InBatchMode() && packet_creator_->ShouldSendFec(true)) {
-    // TODO(jri): SerializeFec can return a NULL packet, and this should
-    // cause an early return, with a call to delegate_->OnPacketGenerationError.
-    SerializedPacket serialized_fec = packet_creator_->SerializeFec();
-    DCHECK(serialized_fec.packet);
-    delegate_->OnSerializedPacket(serialized_fec);
-  }
+  // Try to close FEC group since we've either run out of data to send or we're
+  // blocked. If not in batch mode, force close the group.
+  MaybeSendFecPacketAndCloseGroup(!InBatchMode());
 
   DCHECK(InBatchMode() || !packet_creator_->HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
@@ -183,17 +178,62 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
     if (packet_creator_->HasPendingFrames()) {
       SerializeAndSendPacket();
     }
-
     // Ensure the FEC group is closed at the end of this method unless other
     // writes are pending.
-    if (packet_creator_->ShouldSendFec(true)) {
-      // TODO(jri): SerializeFec can return a NULL packet, and this should
-      // cause an early return, with a call to
-      // delegate_->OnPacketGenerationError.
-      SerializedPacket serialized_fec = packet_creator_->SerializeFec();
-      DCHECK(serialized_fec.packet);
-      delegate_->OnSerializedPacket(serialized_fec);
-    }
+    MaybeSendFecPacketAndCloseGroup(true);
+  }
+}
+
+void QuicPacketGenerator::MaybeStartFecProtection() {
+  if (!packet_creator_->IsFecEnabled()) {
+    return;
+  }
+  DVLOG(1) << "Turning FEC protection ON";
+  should_fec_protect_ = true;
+  if (packet_creator_->IsFecProtected()) {
+    // Only start creator's FEC protection if not already on.
+    return;
+  }
+  if (HasQueuedFrames()) {
+    // TODO(jri): This currently requires that the generator flush out any
+    // pending frames when FEC protection is turned on. If current packet can be
+    // converted to an FEC protected packet, do it. This will require the
+    // generator to check if the resulting expansion still allows the incoming
+    // frame to be added to the packet.
+    SendQueuedFrames(true);
+  }
+  packet_creator_->StartFecProtectingPackets();
+  DCHECK(packet_creator_->IsFecProtected());
+}
+
+void QuicPacketGenerator::MaybeStopFecProtection(bool force) {
+  DVLOG(1) << "Turning FEC protection OFF";
+  // FEC protection will stop after the next FEC packet is transmitted.
+  should_fec_protect_ = false;
+  MaybeSendFecPacketAndCloseGroup(force);
+}
+
+void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force) {
+  if (!packet_creator_->IsFecProtected() ||
+      packet_creator_->HasPendingFrames()) {
+    return;
+  }
+
+  if (packet_creator_->ShouldSendFec(force)) {
+    // TODO(jri): SerializeFec can return a NULL packet, and this should
+    // cause an early return, with a call to
+    // delegate_->OnPacketGenerationError.
+    SerializedPacket serialized_fec = packet_creator_->SerializeFec();
+    DCHECK(serialized_fec.packet);
+    delegate_->OnSerializedPacket(serialized_fec);
+  }
+
+  // Turn FEC protection off if the creator does not have an FEC group open.
+  // Note: We only wait until the frames queued in the creator are flushed;
+  // pending frames in the generator will not keep us from turning FEC off.
+  if (!should_fec_protect_ && !packet_creator_->IsFecGroupOpen()) {
+    packet_creator_->StopFecProtectingPackets();
+    DCHECK(!packet_creator_->IsFecProtected());
   }
 }
 
@@ -274,14 +314,7 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   SerializedPacket serialized_packet = packet_creator_->SerializePacket();
   DCHECK(serialized_packet.packet);
   delegate_->OnSerializedPacket(serialized_packet);
-
-  if (packet_creator_->ShouldSendFec(false)) {
-    // TODO(jri): SerializeFec can return a NULL packet, and this should
-    // cause an early return, with a call to delegate_->OnPacketGenerationError.
-    SerializedPacket serialized_fec = packet_creator_->SerializeFec();
-    DCHECK(serialized_fec.packet);
-    delegate_->OnSerializedPacket(serialized_fec);
-  }
+  MaybeSendFecPacketAndCloseGroup(false);
 }
 
 }  // namespace net

@@ -154,8 +154,8 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
   return bytes_read;
 }
 
-void QuicSocketUtils::SetIpInfoInCmsg(const IPAddressNumber& self_address,
-                                      cmsghdr* cmsg) {
+size_t QuicSocketUtils::SetIpInfoInCmsg(const IPAddressNumber& self_address,
+                                        cmsghdr* cmsg) {
   if (GetAddressFamily(self_address) == ADDRESS_FAMILY_IPV4) {
     cmsg->cmsg_len = CMSG_LEN(sizeof(in_pktinfo));
     cmsg->cmsg_level = IPPROTO_IP;
@@ -164,6 +164,7 @@ void QuicSocketUtils::SetIpInfoInCmsg(const IPAddressNumber& self_address,
     memset(pktinfo, 0, sizeof(in_pktinfo));
     pktinfo->ipi_ifindex = 0;
     memcpy(&pktinfo->ipi_spec_dst, &self_address[0], self_address.size());
+    return sizeof(in_pktinfo);
   } else {
     cmsg->cmsg_len = CMSG_LEN(sizeof(in6_pktinfo));
     cmsg->cmsg_level = IPPROTO_IPV6;
@@ -171,6 +172,7 @@ void QuicSocketUtils::SetIpInfoInCmsg(const IPAddressNumber& self_address,
     in6_pktinfo* pktinfo = reinterpret_cast<in6_pktinfo*>(CMSG_DATA(cmsg));
     memset(pktinfo, 0, sizeof(in6_pktinfo));
     memcpy(&pktinfo->ipi6_addr, &self_address[0], self_address.size());
+    return sizeof(in6_pktinfo);
   }
 }
 

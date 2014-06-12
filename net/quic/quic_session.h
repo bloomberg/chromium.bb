@@ -262,6 +262,18 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // then the stream has been reset by this endpoint, not by the peer.
   void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
 
+  // When a stream is closed locally, it may not yet know how many bytes the
+  // peer sent on that stream.
+  // When this data arrives (via stream frame w. FIN, or RST) this method
+  // is called, and correctly updates the connection level flow controller.
+  void UpdateFlowControlOnFinalReceivedByteOffset(
+      QuicStreamId id, QuicStreamOffset final_byte_offset);
+
+  // Keep track of highest received byte offset of locally closed streams, while
+  // waiting for a definitive final highest offset from the peer.
+  std::map<QuicStreamId, QuicStreamOffset>
+      locally_closed_streams_highest_offset_;
+
   scoped_ptr<QuicConnection> connection_;
 
   scoped_ptr<QuicHeadersStream> headers_stream_;

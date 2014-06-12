@@ -45,7 +45,7 @@ namespace test {
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingPublicReset() {}
-  virtual ~FramerVisitorCapturingPublicReset() {}
+  virtual ~FramerVisitorCapturingPublicReset() OVERRIDE {}
 
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& public_reset) OVERRIDE {
@@ -96,9 +96,9 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
         client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
-  virtual ~QuicTimeWaitListManagerTest() {}
+  virtual ~QuicTimeWaitListManagerTest() OVERRIDE {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     EXPECT_CALL(writer_, IsWriteBlocked())
         .WillRepeatedly(ReturnPointee(&writer_is_blocked_));
     EXPECT_CALL(writer_, IsWriteBlockedDataBuffered())
@@ -181,7 +181,7 @@ class ValidatePublicResetPacketPredicate
 
   virtual bool MatchAndExplain(
       const std::tr1::tuple<const char*, int> packet_buffer,
-      testing::MatchResultListener* /* listener */) const {
+      testing::MatchResultListener* /* listener */) const OVERRIDE {
     FramerVisitorCapturingPublicReset visitor;
     QuicFramer framer(QuicSupportedVersions(),
                       QuicTime::Zero(),
@@ -198,9 +198,9 @@ class ValidatePublicResetPacketPredicate
         kTestPort == packet.client_address.port();
   }
 
-  virtual void DescribeTo(::std::ostream* os) const { }
+  virtual void DescribeTo(::std::ostream* os) const OVERRIDE {}
 
-  virtual void DescribeNegationTo(::std::ostream* os) const { }
+  virtual void DescribeNegationTo(::std::ostream* os) const OVERRIDE {}
 
  private:
   QuicConnectionId connection_id_;

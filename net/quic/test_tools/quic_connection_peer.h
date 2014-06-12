@@ -22,6 +22,7 @@ class QuicEncryptedPacket;
 class QuicFecGroup;
 class QuicFramer;
 class QuicPacketCreator;
+class QuicPacketGenerator;
 class QuicPacketWriter;
 class QuicReceivedPacketManager;
 class QuicSentPacketManager;
@@ -47,6 +48,8 @@ class QuicConnectionPeer {
       QuicConnection* connection);
 
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
+
+  static QuicPacketGenerator* GetPacketGenerator(QuicConnection* connection);
 
   static QuicSentPacketManager* GetSentPacketManager(
       QuicConnection* connection);

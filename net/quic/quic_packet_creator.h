@@ -56,6 +56,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // return true if an FEC group is open.
   bool ShouldSendFec(bool force_close) const;
 
+  // Returns true if an FEC packet is under construction.
+  bool IsFecGroupOpen() const;
+
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
 
@@ -111,7 +114,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
       const QuicFrames& frames, QuicSequenceNumberLength original_length);
 
   // Returns true if there are frames pending to be serialized.
-  bool HasPendingFrames();
+  bool HasPendingFrames() const;
 
   // Returns whether FEC protection is currently enabled. Note: Enabled does not
   // mean that an FEC group is currently active; i.e., IsFecProtected() may

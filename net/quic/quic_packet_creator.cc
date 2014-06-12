@@ -89,9 +89,14 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
 }
 
 bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
+  DCHECK(!HasPendingFrames());
   return fec_group_.get() != NULL && fec_group_->NumReceivedPackets() > 0 &&
       (force_close || fec_group_->NumReceivedPackets() >=
                       max_packets_per_fec_group_);
+}
+
+bool QuicPacketCreator::IsFecGroupOpen() const {
+  return ShouldSendFec(true);
 }
 
 void QuicPacketCreator::StartFecProtectingPackets() {
@@ -305,7 +310,7 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(
   return packet;
 }
 
-bool QuicPacketCreator::HasPendingFrames() {
+bool QuicPacketCreator::HasPendingFrames() const {
   return !queued_frames_.empty();
 }
 

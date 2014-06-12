@@ -80,6 +80,7 @@ struct ClientHelloInfo {
   StringPiece sni;
   StringPiece client_nonce;
   StringPiece server_nonce;
+  StringPiece user_agent_id;
 };
 
 struct ValidateClientHelloResultCallback::Result {
@@ -888,6 +889,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
                               "Invalid SNI name");
     return;
   }
+
+  client_hello.GetStringPiece(kUAID, &info->user_agent_id);
 
   StringPiece srct;
   if (requested_config.get() != NULL &&

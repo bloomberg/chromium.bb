@@ -24,7 +24,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_packet_creator_peer.h"
+#include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -51,7 +51,7 @@ using base::WaitableEvent;
 using net::EpollServer;
 using net::test::GenerateBody;
 using net::test::QuicConnectionPeer;
-using net::test::QuicPacketCreatorPeer;
+using net::test::QuicPacketGeneratorPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using net::test::kClientDataStreamId1;
@@ -648,9 +648,9 @@ TEST_P(EndToEndTest, LargePostFEC) {
   SetPacketLossPercentage(30);
 
   // Turn on FEC protection.
-  QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
-      client_->client()->session()->connection());
-  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(creator, 6));
+  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
+      QuicConnectionPeer::GetPacketGenerator(
+          client_->client()->session()->connection()), 6);
 
   string body;
   GenerateBody(&body, 10240);

@@ -90,7 +90,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   for (size_t i = 0; i < data.Size(); ++i) {
     DVLOG(1) << "Buffering stream data at offset " << byte_offset;
     const iovec& iov = data.iovec()[i];
-    frames_.insert(make_pair(
+    buffered_frames_.insert(make_pair(
         byte_offset, string(static_cast<char*>(iov.iov_base), iov.iov_len)));
     byte_offset += iov.iov_len;
     num_bytes_buffered_ += iov.iov_len;
@@ -121,7 +121,7 @@ bool QuicStreamSequencer::MaybeCloseStream() {
     // Technically it's an error if num_bytes_consumed isn't exactly
     // equal, but error handling seems silly at this point.
     stream_->OnFinRead();
-    frames_.clear();
+    buffered_frames_.clear();
     num_bytes_buffered_ = 0;
     return true;
   }
@@ -130,10 +130,10 @@ bool QuicStreamSequencer::MaybeCloseStream() {
 
 int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
   DCHECK(!blocked_);
-  FrameMap::iterator it = frames_.begin();
+  FrameMap::iterator it = buffered_frames_.begin();
   size_t index = 0;
   QuicStreamOffset offset = num_bytes_consumed_;
-  while (it != frames_.end() && index < iov_len) {
+  while (it != buffered_frames_.end() && index < iov_len) {
     if (it->first != offset) return index;
 
     iov[index].iov_base = static_cast<void*>(
@@ -149,14 +149,14 @@ int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
 
 int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(!blocked_);
-  FrameMap::iterator it = frames_.begin();
+  FrameMap::iterator it = buffered_frames_.begin();
   size_t iov_index = 0;
   size_t iov_offset = 0;
   size_t frame_offset = 0;
   size_t initial_bytes_consumed = num_bytes_consumed_;
 
   while (iov_index < iov_len &&
-         it != frames_.end() &&
+         it != buffered_frames_.end() &&
          it->first == num_bytes_consumed_) {
     int bytes_to_read = min(iov[iov_index].iov_len - iov_offset,
                             it->second.size() - frame_offset);
@@ -175,25 +175,25 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
     if (it->second.size() == frame_offset) {
       // We've copied this whole frame
       RecordBytesConsumed(it->second.size());
-      frames_.erase(it);
-      it = frames_.begin();
+      buffered_frames_.erase(it);
+      it = buffered_frames_.begin();
       frame_offset = 0;
     }
   }
   // We've finished copying.  If we have a partial frame, update it.
   if (frame_offset != 0) {
-    frames_.insert(make_pair(it->first + frame_offset,
+    buffered_frames_.insert(make_pair(it->first + frame_offset,
                              it->second.substr(frame_offset)));
-    frames_.erase(frames_.begin());
+    buffered_frames_.erase(buffered_frames_.begin());
     RecordBytesConsumed(frame_offset);
   }
   return num_bytes_consumed_ - initial_bytes_consumed;
 }
 
 bool QuicStreamSequencer::HasBytesToRead() const {
-  FrameMap::const_iterator it = frames_.begin();
+  FrameMap::const_iterator it = buffered_frames_.begin();
 
-  return it != frames_.end() && it->first == num_bytes_consumed_;
+  return it != buffered_frames_.end() && it->first == num_bytes_consumed_;
 }
 
 bool QuicStreamSequencer::IsClosed() const {
@@ -206,7 +206,7 @@ bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {
   // TODO(pwestin): Is it possible that a new frame contain more data even if
   // the offset is the same?
   return frame.offset < num_bytes_consumed_ ||
-      frames_.find(frame.offset) != frames_.end();
+      buffered_frames_.find(frame.offset) != buffered_frames_.end();
 }
 
 void QuicStreamSequencer::SetBlockedUntilFlush() {
@@ -215,8 +215,8 @@ void QuicStreamSequencer::SetBlockedUntilFlush() {
 
 void QuicStreamSequencer::FlushBufferedFrames() {
   blocked_ = false;
-  FrameMap::iterator it = frames_.find(num_bytes_consumed_);
-  while (it != frames_.end()) {
+  FrameMap::iterator it = buffered_frames_.find(num_bytes_consumed_);
+  while (it != buffered_frames_.end()) {
     DVLOG(1) << "Flushing buffered packet at offset " << it->first;
     string* data = &it->second;
     size_t bytes_consumed = stream_->ProcessRawData(data->c_str(),
@@ -229,12 +229,12 @@ void QuicStreamSequencer::FlushBufferedFrames() {
       stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);  // Programming error
       return;
     } else if (bytes_consumed == data->size()) {
-      frames_.erase(it);
-      it = frames_.find(num_bytes_consumed_);
+      buffered_frames_.erase(it);
+      it = buffered_frames_.find(num_bytes_consumed_);
     } else {
       string new_data = it->second.substr(bytes_consumed);
-      frames_.erase(it);
-      frames_.insert(make_pair(num_bytes_consumed_, new_data));
+      buffered_frames_.erase(it);
+      buffered_frames_.insert(make_pair(num_bytes_consumed_, new_data));
       return;
     }
   }

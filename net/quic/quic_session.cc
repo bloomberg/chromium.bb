@@ -140,14 +140,30 @@ QuicSession::QuicSession(QuicConnection* connection,
 QuicSession::~QuicSession() {
   STLDeleteElements(&closed_streams_);
   STLDeleteValues(&stream_map_);
+
+  DLOG_IF(WARNING,
+          locally_closed_streams_highest_offset_.size() > max_open_streams_)
+      << "Surprisingly high number of locally closed streams still waiting for "
+         "final byte offset: " << locally_closed_streams_highest_offset_.size();
 }
 
 void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
   for (size_t i = 0; i < frames.size(); ++i) {
     // TODO(rch) deal with the error case of stream id 0.
-    QuicStreamId stream_id = frames[i].stream_id;
+    const QuicStreamFrame& frame = frames[i];
+    QuicStreamId stream_id = frame.stream_id;
     ReliableQuicStream* stream = GetStream(stream_id);
     if (!stream) {
+      // The stream no longer exists, but we may still be interested in the
+      // final stream byte offset sent by the peer. A frame with a FIN can give
+      // us this offset.
+      if (frame.fin) {
+        QuicStreamOffset final_byte_offset =
+            frame.offset + frame.data.TotalBufferSize();
+        UpdateFlowControlOnFinalReceivedByteOffset(stream_id,
+                                                   final_byte_offset);
+      }
+
       continue;
     }
     stream->OnStreamFrame(frames[i]);
@@ -198,8 +214,13 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
         "Attempt to reset the headers stream");
     return;
   }
+
   QuicDataStream* stream = GetDataStream(frame.stream_id);
   if (!stream) {
+    // The RST frame contains the final byte offset for the stream: we can now
+    // update the connection level flow controller if needed.
+    UpdateFlowControlOnFinalReceivedByteOffset(frame.stream_id,
+                                               frame.byte_offset);
     return;  // Errors are handled by GetStream.
   }
 
@@ -396,8 +417,47 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
   }
 
   closed_streams_.push_back(it->second);
+
+  // If we haven't received a FIN or RST for this stream, we need to keep track
+  // of the how many bytes the stream's flow controller believes it has
+  // received, for accurate connection level flow control accounting.
+  if (!stream->HasFinalReceivedByteOffset() &&
+      stream->flow_controller()->IsEnabled() &&
+      FLAGS_enable_quic_connection_flow_control) {
+    locally_closed_streams_highest_offset_[stream_id] =
+        stream->flow_controller()->highest_received_byte_offset();
+  }
+
   stream_map_.erase(it);
   stream->OnClose();
+}
+
+void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
+    QuicStreamId stream_id, QuicStreamOffset final_byte_offset) {
+  if (!FLAGS_enable_quic_connection_flow_control) {
+    return;
+  }
+
+  map<QuicStreamId, QuicStreamOffset>::iterator it =
+      locally_closed_streams_highest_offset_.find(stream_id);
+  if (it == locally_closed_streams_highest_offset_.end()) {
+    return;
+  }
+
+  DVLOG(1) << ENDPOINT << "Received final byte offset " << final_byte_offset
+           << " for stream " << stream_id;
+  uint64 offset_diff = final_byte_offset - it->second;
+  if (flow_controller_->UpdateHighestReceivedOffset(
+      flow_controller_->highest_received_byte_offset() + offset_diff)) {
+    // If the final offset violates flow control, close the connection now.
+    if (flow_controller_->FlowControlViolation()) {
+      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA);
+      return;
+    }
+  }
+
+  flow_controller_->AddBytesConsumed(offset_diff);
+  locally_closed_streams_highest_offset_.erase(it);
 }
 
 bool QuicSession::IsEncryptionEstablished() {

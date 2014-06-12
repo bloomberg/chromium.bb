@@ -22,7 +22,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       : error_(QUIC_NO_ERROR) {
   }
 
-  virtual ~SimpleFramerVisitor() {
+  virtual ~SimpleFramerVisitor() OVERRIDE {
     STLDeleteElements(&stream_data_);
   }
 

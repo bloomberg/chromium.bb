@@ -78,7 +78,7 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
  protected:
   // Delegates are ref counted.
-  virtual ~ProxyAckNotifierDelegate() {
+  virtual ~ProxyAckNotifierDelegate() OVERRIDE {
   }
 
  private:
@@ -121,7 +121,9 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       write_side_closed_(false),
       fin_buffered_(false),
       fin_sent_(false),
+      fin_received_(false),
       rst_sent_(false),
+      rst_received_(false),
       is_server_(session_->is_server()),
       flow_controller_(
           session_->connection(),
@@ -148,6 +150,10 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (frame.stream_id != id_) {
     LOG(ERROR) << "Error!";
     return false;
+  }
+
+  if (frame.fin) {
+    fin_received_ = true;
   }
 
   // This count include duplicate data received.
@@ -178,6 +184,7 @@ int ReliableQuicStream::num_duplicate_frames_received() const {
 }
 
 void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+  rst_received_ = true;
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
 
   stream_error_ = frame.error_code;

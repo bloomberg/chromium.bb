@@ -54,6 +54,12 @@ QuicPacketCreator* QuicConnectionPeer::GetPacketCreator(
 }
 
 // static
+QuicPacketGenerator* QuicConnectionPeer::GetPacketGenerator(
+    QuicConnection* connection) {
+  return &connection->packet_generator_;
+}
+
+// static
 QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
     QuicConnection* connection) {
   return &connection->sent_packet_manager_;
