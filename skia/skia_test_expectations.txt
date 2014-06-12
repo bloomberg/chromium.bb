@@ -48,4 +48,18 @@
 #
 # START OVERRIDES HERE
 
+crbug.com/383435 virtual/gpu/canvas/philip/tests/2d.shadow.enable.blur.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-createPattern-fillRect-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-gradient-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-fillPath-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-fillRect-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-shadowBlur.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-shadow.html [ ImageOnlyFailure ]
+crbug.com/383435 virtual/gpu/fast/canvas/canvas-transforms-fillRect-shadow.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
