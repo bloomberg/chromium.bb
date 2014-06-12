@@ -279,7 +279,7 @@ scons-stage-noirt() {
 
 driver-tests() {
   local arch=$1
-  echo "@@@BUILD_STEP@@@ driver_tests"
+  echo "@@@BUILD_STEP driver_tests ${arch}@@@"
   ${DRIVER_TESTS} --platform="${arch}" || handle-error
 }
 
