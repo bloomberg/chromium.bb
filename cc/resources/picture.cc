@@ -267,11 +267,8 @@ void Picture::Record(ContentLayerClient* painter,
   scoped_ptr<EXPERIMENTAL::SkRecording> recording;
 
   skia::RefPtr<SkCanvas> canvas;
-  canvas = skia::SharePtr(
-      recorder.beginRecording(layer_rect_.width(),
-                              layer_rect_.height(),
-                              &factory,
-                              SkPicture::kUsePathBoundsForClip_RecordingFlag));
+  canvas = skia::SharePtr(recorder.beginRecording(
+      layer_rect_.width(), layer_rect_.height(), &factory));
 
   ContentLayerClient::GraphicsContextStatus graphics_context_status =
       ContentLayerClient::GRAPHICS_CONTEXT_ENABLED;
@@ -448,8 +445,7 @@ scoped_ptr<base::Value> Picture::AsValue() const {
     skia::RefPtr<SkCanvas> canvas(skia::SharePtr(recorder.beginRecording(
         layer_rect_.width(),
         layer_rect_.height(),
-        NULL,  // Default (no) bounding-box hierarchy is fastest.
-        SkPicture::kUsePathBoundsForClip_RecordingFlag)));
+        NULL)));  // Default (no) bounding-box hierarchy is fastest.
     playback_->draw(canvas.get());
     skia::RefPtr<SkPicture> picture(skia::AdoptRef(recorder.endRecording()));
     picture->serialize(&stream, &EncodeBitmap);
