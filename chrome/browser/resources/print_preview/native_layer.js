@@ -277,6 +277,7 @@ cr.define('print_preview', function() {
 
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
+        'mediaSize': printTicketStore.mediaSize.getValue(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
         'landscape': printTicketStore.landscape.getValue(),
         'color': this.getNativeColorModel_(destination, printTicketStore.color),

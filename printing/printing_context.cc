@@ -96,19 +96,13 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
                                     is_cloud_dialog || print_with_privet)) {
     settings_.set_dpi(kDefaultPdfDpi);
     gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
-    const base::DictionaryValue* media_size = NULL;
-    if (job_settings.GetDictionary(kSettingMediaSize, &media_size)) {
-      int width_microns = 0;
-      int height_microns = 0;
-      if (media_size->GetInteger(kSettingMediaSizeWidthMicrons,
-                                 &width_microns) &&
-          media_size->GetInteger(kSettingMediaSizeHeightMicrons,
-                                 &height_microns)) {
-        float deviceMicronsPerDeviceUnit =
-            (kHundrethsMMPerInch * 10.0f) / settings_.device_units_per_inch();
-        paper_size = gfx::Size(width_microns / deviceMicronsPerDeviceUnit,
-                               height_microns / deviceMicronsPerDeviceUnit);
-      }
+    if (!settings_.requested_media().size_microns.IsEmpty()) {
+      float deviceMicronsPerDeviceUnit =
+          (kHundrethsMMPerInch * 10.0f) / settings_.device_units_per_inch();
+      paper_size = gfx::Size(settings_.requested_media().size_microns.width() /
+                             deviceMicronsPerDeviceUnit,
+                             settings_.requested_media().size_microns.height() /
+                             deviceMicronsPerDeviceUnit);
     }
     gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
     if (print_to_cloud || print_with_privet) {

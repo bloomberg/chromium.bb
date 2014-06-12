@@ -460,13 +460,15 @@ Media::Media(MediaType type, int32 width_um, int32 height_um)
 }
 
 Media::Media(const std::string& custom_display_name,
+             const std::string& vendor_id,
              int32 width_um,
              int32 height_um)
     : type(CUSTOM_MEDIA),
       width_um(width_um),
       height_um(height_um),
       is_continuous_feed(width_um <= 0 || height_um <= 0),
-      custom_display_name(custom_display_name) {
+      custom_display_name(custom_display_name),
+      vendor_id(vendor_id) {
 }
 
 bool Media::MatchBySize() {
@@ -474,7 +476,6 @@ bool Media::MatchBySize() {
   if (!media)
     return false;
   type = media->id;
-  custom_display_name.clear();
   return true;
 }
 
@@ -758,6 +759,7 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
     dict.GetInteger(kMediaHeight, &option->height_um);
     dict.GetBoolean(kMediaIsContinuous, &option->is_continuous_feed);
     dict.GetString(kCustomName, &option->custom_display_name);
+    dict.GetString(kKeyVendorId, &option->vendor_id);
     return true;
   }
 
@@ -766,6 +768,8 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
       dict->SetString(kKeyName, TypeToString(kMediaDefinitions, option.type));
     if (!option.custom_display_name.empty() || option.type == CUSTOM_MEDIA)
       dict->SetString(kCustomName, option.custom_display_name);
+    if (!option.vendor_id.empty())
+      dict->SetString(kKeyVendorId, option.vendor_id);
     if (option.width_um > 0)
       dict->SetInteger(kMediaWidth, option.width_um);
     if (option.height_um > 0)

@@ -138,7 +138,8 @@ const char kCdd[] =
     "      }, {"
     "        'width_microns': 1111,"
     "        'is_continuous_feed': true,"
-    "        'custom_display_name': 'FEED'"
+    "        'custom_display_name': 'Feed',"
+    "        'vendor_id': 'FEED'"
     "      } ]"
     "    },"
     "    'collate': {"
@@ -364,7 +365,7 @@ TEST(PrinterDescriptionTest, CddSetAll) {
   media.AddDefaultOption(Media(NA_LETTER, 2222, 3333), true);
   media.AddOption(Media(ISO_A6, 4444, 5555));
   media.AddOption(Media(JPN_YOU4, 6666, 7777));
-  media.AddOption(Media("FEED", 1111, 0));
+  media.AddOption(Media("Feed", "FEED", 1111, 0));
 
   collate.set_default_value(false);
   reverse.set_default_value(true);
@@ -463,7 +464,7 @@ TEST(PrinterDescriptionTest, CddGetAll) {
   EXPECT_TRUE(media.Contains(Media(NA_LETTER, 2222, 3333)));
   EXPECT_TRUE(media.Contains(Media(ISO_A6, 4444, 5555)));
   EXPECT_TRUE(media.Contains(Media(JPN_YOU4, 6666, 7777)));
-  EXPECT_TRUE(media.Contains(Media("FEED", 1111, 0)));
+  EXPECT_TRUE(media.Contains(Media("Feed", "FEED", 1111, 0)));
   EXPECT_EQ(Media(NA_LETTER, 2222, 3333), media.GetDefault());
 
   EXPECT_FALSE(collate.default_value());

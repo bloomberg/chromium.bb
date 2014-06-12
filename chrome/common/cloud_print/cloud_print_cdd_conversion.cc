@@ -54,9 +54,9 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   }
   color.SaveTo(&description);
 
-#if defined(OS_WIN)
   if (!semantic_info.papers.empty()) {
     Media default_media(semantic_info.default_paper.name,
+                        "",
                         semantic_info.default_paper.size_um.width(),
                         semantic_info.default_paper.size_um.height());
     default_media.MatchBySize();
@@ -67,7 +67,9 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
       gfx::Size paper_size = semantic_info.papers[i].size_um;
       if (paper_size.width() > paper_size.height())
         paper_size.SetSize(paper_size.height(), paper_size.width());
-      Media new_media(semantic_info.papers[i].name, paper_size.width(),
+      Media new_media(semantic_info.papers[i].name,
+                      "",
+                      paper_size.width(),
                       paper_size.height());
       new_media.MatchBySize();
       if (new_media.IsValid() && !media.Contains(new_media)) {
@@ -110,7 +112,6 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
       NOTREACHED();
     }
   }
-#endif
 
   OrientationCapability orientation;
   orientation.AddDefaultOption(PORTRAIT, true);

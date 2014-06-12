@@ -330,7 +330,7 @@ scoped_ptr<base::DictionaryValue> GetPdfCapabilitiesOnFileThread(
   };
   const gfx::Size default_media_size = GetDefaultPdfMediaSizeMicrons();
   Media default_media(
-      "", default_media_size.width(), default_media_size.height());
+      "", "", default_media_size.width(), default_media_size.height());
   if (!default_media.MatchBySize() ||
       std::find(kPdfMedia,
                 kPdfMedia + arraysize(kPdfMedia),

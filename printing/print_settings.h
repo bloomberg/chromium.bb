@@ -29,6 +29,19 @@ PRINTING_EXPORT void GetColorModelForMode(int color_mode,
 // OS-independent print settings.
 class PRINTING_EXPORT PrintSettings {
  public:
+  // Media properties requested by the user. Default instance represents
+  // default media selection.
+  struct RequestedMedia {
+    // Size of the media, in microns.
+    gfx::Size size_microns;
+    // Platform specific id to map it back to the particular media.
+    std::string vendor_id;
+
+    bool IsDefault() const {
+      return size_microns.IsEmpty() && vendor_id.empty();
+    }
+  };
+
   PrintSettings();
   ~PrintSettings();
 
@@ -42,6 +55,16 @@ class PRINTING_EXPORT PrintSettings {
   // Updates the orientation and flip the page if needed.
   void SetOrientation(bool landscape);
   bool landscape() const { return landscape_; }
+
+  // Updates user requested media.
+  void set_requested_media(const RequestedMedia& media) {
+    requested_media_ = media;
+  }
+  // Media properties requested by the user. Translated into device media by the
+  // platform specific layers.
+  const RequestedMedia& requested_media() const {
+    return requested_media_;
+  }
 
   // Set printer printable area in in device units.
   // Some platforms already provide flipped area. Set |landscape_needs_flip|
@@ -173,6 +196,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // Printer device name as opened by the OS.
   base::string16 device_name_;
+
+  // Media requested by the user.
+  RequestedMedia requested_media_;
 
   // Page setup in device units.
   PageSetup page_setup_device_units_;

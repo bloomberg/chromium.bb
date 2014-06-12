@@ -51,6 +51,25 @@ bool PrintSettingsInitializer::InitSettings(
   settings->set_should_print_backgrounds(backgrounds);
   settings->set_selection_only(selection_only);
 
+  PrintSettings::RequestedMedia requested_media;
+  const base::DictionaryValue* media_size_value = NULL;
+  if (job_settings.GetDictionary(kSettingMediaSize, &media_size_value)) {
+    int width_microns = 0;
+    int height_microns = 0;
+    if (media_size_value->GetInteger(kSettingMediaSizeWidthMicrons,
+                                     &width_microns) &&
+        media_size_value->GetInteger(kSettingMediaSizeHeightMicrons,
+                                     &height_microns)) {
+      requested_media.size_microns = gfx::Size(width_microns, height_microns);
+    }
+    std::string vendor_id;
+    if (media_size_value->GetString(kSettingMediaSizeVendorId, &vendor_id) &&
+        !vendor_id.empty()) {
+      requested_media.vendor_id = vendor_id;
+    }
+  }
+  settings->set_requested_media(requested_media);
+
   int margin_type = DEFAULT_MARGINS;
   if (!job_settings.GetInteger(kSettingMarginsType, &margin_type) ||
       (margin_type != DEFAULT_MARGINS &&

@@ -77,16 +77,17 @@ cr.define('print_preview', function() {
             indexToSelect = index;
           }
         });
-      } else {
-        var valueToSelect = JSON.stringify(this.ticketItem_.getValue());
-        for (var i = 0, option; option = select.options[i]; i++) {
-          if (option.value == valueToSelect) {
-            indexToSelect = i;
-            break;
-          }
+      }
+      // Try to select current ticket item.
+      var valueToSelect = JSON.stringify(this.ticketItem_.getValue());
+      for (var i = 0, option; option = select.options[i]; i++) {
+        if (option.value == valueToSelect) {
+          indexToSelect = i;
+          break;
         }
       }
       select.selectedIndex = indexToSelect;
+      this.onSelectChange_();
     },
 
     /**

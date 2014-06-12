@@ -210,7 +210,10 @@ cr.define('print_preview', function() {
         'NA_LEDGER': 'Tabloid'
       };
       for (var i = 0, media; media = mediaSize.option[i]; i++) {
-        media.custom_display_name = mediaDisplayNames[media.name] || media.name;
+        media.custom_display_name =
+            media.custom_display_name ||
+            mediaDisplayNames[media.name] ||
+            media.name;
       }
     }
     return capabilities;

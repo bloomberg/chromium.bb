@@ -128,6 +128,7 @@ void PrintSettings::Clear() {
   url_ = base::string16();
   display_header_footer_ = false;
   device_name_.clear();
+  requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();
   dpi_ = 0;
   landscape_ = false;
