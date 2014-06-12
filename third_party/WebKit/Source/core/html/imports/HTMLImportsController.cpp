@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -52,6 +53,7 @@ void HTMLImportsController::provideTo(Document& master)
 HTMLImportsController::HTMLImportsController(Document& master)
     : m_root(HTMLImportTreeRoot::create(&master))
 {
+    UseCounter::count(master, UseCounter::HTMLImports);
 }
 
 HTMLImportsController::~HTMLImportsController()
