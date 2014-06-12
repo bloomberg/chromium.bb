@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The purpose of this file is determine what bitrate to use for mirroring.
+// Ideally this should be as much as possible, without causing any frames to
+// arrive late.
+
+// The current algorithm is to measure how much bandwidth we've been using
+// recently. We also keep track of how much data has been queued up for sending
+// in a virtual "buffer" (this virtual buffer represents all the buffers between
+// the sender and the receiver, including retransmissions and so forth.)
+// If we estimate that our virtual buffer is mostly empty, we try to use
+// more bandwidth than our recent usage, otherwise we use less.
+
 #include "media/cast/congestion_control/congestion_control.h"
 
 #include "base/logging.h"
@@ -11,112 +22,176 @@
 namespace media {
 namespace cast {
 
-static const int64 kCongestionControlMinChangeIntervalMs = 10;
-static const int64 kCongestionControlMaxChangeIntervalMs = 100;
+// This means that we *try* to keep our buffer 90% empty.
+// If it is less full, we increase the bandwidth, if it is more
+// we decrease the bandwidth. Making this smaller makes the
+// congestion control more aggressive.
+static const double kTargetEmptyBufferFraction = 0.9;
 
-// At 10 ms RTT TCP Reno would ramp 1500 * 8 * 100  = 1200 Kbit/s.
-// NACK is sent after a maximum of 10 ms.
-static const int kCongestionControlMaxBitrateIncreasePerMillisecond = 1200;
+// This is the size of our history in frames. Larger values makes the
+// congestion control adapt slower.
+static const size_t kHistorySize = 100;
 
-static const int64 kMaxElapsedTimeMs = kCongestionControlMaxChangeIntervalMs;
+CongestionControl::FrameStats::FrameStats() : frame_size(0) {
+}
 
 CongestionControl::CongestionControl(base::TickClock* clock,
-                                     float congestion_control_back_off,
                                      uint32 max_bitrate_configured,
                                      uint32 min_bitrate_configured,
-                                     uint32 start_bitrate)
+                                     size_t max_unacked_frames)
     : clock_(clock),
-      congestion_control_back_off_(congestion_control_back_off),
       max_bitrate_configured_(max_bitrate_configured),
       min_bitrate_configured_(min_bitrate_configured),
-      bitrate_(start_bitrate) {
-  DCHECK_GT(congestion_control_back_off, 0.0f) << "Invalid config";
-  DCHECK_LT(congestion_control_back_off, 1.0f) << "Invalid config";
+      last_frame_stats_(static_cast<uint32>(-1)),
+      last_acked_frame_(static_cast<uint32>(-1)),
+      last_encoded_frame_(static_cast<uint32>(-1)),
+      history_size_(max_unacked_frames + kHistorySize),
+      acked_bits_in_history_(0) {
   DCHECK_GE(max_bitrate_configured, min_bitrate_configured) << "Invalid config";
-  DCHECK_GE(max_bitrate_configured, start_bitrate) << "Invalid config";
-  DCHECK_GE(start_bitrate, min_bitrate_configured) << "Invalid config";
+  frame_stats_.resize(2);
+  base::TimeTicks now = clock->NowTicks();
+  frame_stats_[0].ack_time = now;
+  frame_stats_[0].sent_time = now;
+  frame_stats_[1].ack_time = now;
+  DCHECK(!frame_stats_[0].ack_time.is_null());
 }
 
 CongestionControl::~CongestionControl() {}
 
-bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
-  base::TimeTicks now = clock_->NowTicks();
-
-  // First feedback?
-  if (time_last_increase_.is_null()) {
-    time_last_increase_ = now;
-    time_last_decrease_ = now;
-    return false;
-  }
-  // Are we at the max bitrate?
-  if (max_bitrate_configured_ == bitrate_)
-    return false;
-
-  // Make sure RTT is never less than 1 ms.
-  rtt = std::max(rtt, base::TimeDelta::FromMilliseconds(1));
-
-  base::TimeDelta elapsed_time =
-      std::min(now - time_last_increase_,
-               base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
-  base::TimeDelta change_interval = std::max(
-      rtt,
-      base::TimeDelta::FromMilliseconds(kCongestionControlMinChangeIntervalMs));
-  change_interval = std::min(
-      change_interval,
-      base::TimeDelta::FromMilliseconds(kCongestionControlMaxChangeIntervalMs));
-
-  // Have enough time have passed?
-  if (elapsed_time < change_interval)
-    return false;
-
-  time_last_increase_ = now;
-
-  // One packet per RTT multiplied by the elapsed time fraction.
-  // 1500 * 8 * (1000 / rtt_ms) * (elapsed_time_ms / 1000) =>
-  // 1500 * 8 * elapsed_time_ms / rtt_ms.
-  uint32 bitrate_increase =
-      (1500 * 8 * elapsed_time.InMilliseconds()) / rtt.InMilliseconds();
-  uint32 max_bitrate_increase =
-      kCongestionControlMaxBitrateIncreasePerMillisecond *
-      elapsed_time.InMilliseconds();
-  bitrate_increase = std::min(max_bitrate_increase, bitrate_increase);
-  *new_bitrate = std::min(bitrate_increase + bitrate_, max_bitrate_configured_);
-  bitrate_ = *new_bitrate;
-  return true;
+void CongestionControl::UpdateRtt(base::TimeDelta rtt) {
+  rtt_ = base::TimeDelta::FromSecondsD(
+      (rtt_.InSecondsF() * 7 + rtt.InSecondsF()) / 8);
 }
 
-bool CongestionControl::OnNack(base::TimeDelta rtt, uint32* new_bitrate) {
-  base::TimeTicks now = clock_->NowTicks();
-
-  // First feedback?
-  if (time_last_decrease_.is_null()) {
-    time_last_increase_ = now;
-    time_last_decrease_ = now;
-    return false;
+// Calculate how much "dead air" there is between two frames.
+base::TimeDelta CongestionControl::DeadTime(const FrameStats& a,
+                                            const FrameStats& b) {
+  if (b.sent_time > a.ack_time) {
+    return b.sent_time - a.ack_time;
+  } else {
+    return base::TimeDelta();
   }
-  base::TimeDelta elapsed_time =
-      std::min(now - time_last_decrease_,
-               base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
-  base::TimeDelta change_interval = std::max(
-      rtt,
-      base::TimeDelta::FromMilliseconds(kCongestionControlMinChangeIntervalMs));
-  change_interval = std::min(
-      change_interval,
-      base::TimeDelta::FromMilliseconds(kCongestionControlMaxChangeIntervalMs));
+}
 
-  // Have enough time have passed?
-  if (elapsed_time < change_interval)
-    return false;
+double CongestionControl::CalculateSafeBitrate() {
+  double transmit_time =
+      (GetFrameStats(last_acked_frame_)->ack_time -
+       frame_stats_.front().sent_time - dead_time_in_history_).InSecondsF();
 
-  time_last_decrease_ = now;
-  time_last_increase_ = now;
+  if (acked_bits_in_history_ == 0 || transmit_time <= 0.0) {
+    return min_bitrate_configured_;
+  }
+  return acked_bits_in_history_ / std::max(transmit_time, 1E-3);
+}
 
-  *new_bitrate =
-      std::max(static_cast<uint32>(bitrate_ * congestion_control_back_off_),
-               min_bitrate_configured_);
+CongestionControl::FrameStats* CongestionControl::GetFrameStats(
+    uint32 frame_id) {
+  int32 offset = static_cast<int32>(frame_id - last_frame_stats_);
+  DCHECK_LT(offset, static_cast<int32>(kHistorySize));
+  if (offset > 0) {
+    frame_stats_.resize(frame_stats_.size() + offset);
+    last_frame_stats_ += offset;
+    offset = 0;
+  }
+  while (frame_stats_.size() > history_size_) {
+    DCHECK_GT(frame_stats_.size(), 1UL);
+    DCHECK(!frame_stats_[0].ack_time.is_null());
+    acked_bits_in_history_ -= frame_stats_[0].frame_size;
+    dead_time_in_history_ -= DeadTime(frame_stats_[0], frame_stats_[1]);
+    DCHECK_GE(acked_bits_in_history_, 0UL);
+    VLOG(2) << "DT: " << dead_time_in_history_.InSecondsF();
+    DCHECK_GE(dead_time_in_history_.InSecondsF(), 0.0);
+    frame_stats_.pop_front();
+  }
+  offset += frame_stats_.size() - 1;
+  if (offset < 0 || offset >= static_cast<int32>(frame_stats_.size())) {
+    return NULL;
+  }
+  return &frame_stats_[offset];
+}
 
-  bitrate_ = *new_bitrate;
-  return true;
+void CongestionControl::AckFrame(uint32 frame_id, base::TimeTicks when) {
+  FrameStats* frame_stats = GetFrameStats(last_acked_frame_);
+  while (IsNewerFrameId(frame_id, last_acked_frame_)) {
+    FrameStats* last_frame_stats = frame_stats;
+    last_acked_frame_++;
+    frame_stats = GetFrameStats(last_acked_frame_);
+    DCHECK(frame_stats);
+    frame_stats->ack_time = when;
+    acked_bits_in_history_ += frame_stats->frame_size;
+    dead_time_in_history_ += DeadTime(*last_frame_stats, *frame_stats);
+  }
+}
+
+void CongestionControl::SendFrameToTransport(uint32 frame_id,
+                                             size_t frame_size,
+                                             base::TimeTicks when) {
+  last_encoded_frame_ = frame_id;
+  FrameStats* frame_stats = GetFrameStats(frame_id);
+  DCHECK(frame_stats);
+  frame_stats->frame_size = frame_size;
+  frame_stats->sent_time = when;
+}
+
+base::TimeTicks CongestionControl::EstimatedAckTime(uint32 frame_id,
+                                                    double bitrate) {
+  FrameStats* frame_stats = GetFrameStats(frame_id);
+  DCHECK(frame_stats);
+  if (frame_stats->ack_time.is_null()) {
+    DCHECK(frame_stats->frame_size) << "frame_id: " << frame_id;
+    base::TimeTicks ret = EstimatedSendingTime(frame_id, bitrate);
+    ret += base::TimeDelta::FromSecondsD(frame_stats->frame_size / bitrate);
+    ret += rtt_;
+    base::TimeTicks now = clock_->NowTicks();
+    if (ret < now) {
+      // This is a little counter-intuitive, but it seems to work.
+      // Basically, when we estimate that the ACK should have already happened,
+      // we figure out how long ago it should have happened and guess that the
+      // ACK will happen half of that time in the future. This will cause some
+      // over-estimation when acks are late, which is actually what we want.
+      return now + (now - ret) / 2;
+    } else {
+      return ret;
+    }
+  } else {
+    return frame_stats->ack_time;
+  }
+}
+
+base::TimeTicks CongestionControl::EstimatedSendingTime(uint32 frame_id,
+                                                        double bitrate) {
+  FrameStats* frame_stats = GetFrameStats(frame_id);
+  DCHECK(frame_stats);
+  base::TimeTicks ret = EstimatedAckTime(frame_id - 1, bitrate) - rtt_;
+  if (frame_stats->sent_time.is_null()) {
+    // Not sent yet, but we can't start sending it in the past.
+    return std::max(ret, clock_->NowTicks());
+  } else {
+    return std::max(ret, frame_stats->sent_time);
+  }
+}
+
+uint32 CongestionControl::GetBitrate(base::TimeTicks playout_time,
+                                     base::TimeDelta playout_delay) {
+  double safe_bitrate = CalculateSafeBitrate();
+  // Estimate when we might start sending the next frame.
+  base::TimeDelta time_to_catch_up =
+      playout_time -
+      EstimatedSendingTime(last_encoded_frame_ + 1, safe_bitrate);
+
+  double empty_buffer_fraction =
+      time_to_catch_up.InSecondsF() / playout_delay.InSecondsF();
+  empty_buffer_fraction = std::min(empty_buffer_fraction, 1.0);
+  empty_buffer_fraction = std::max(empty_buffer_fraction, 0.0);
+
+  uint32 bits_per_second = static_cast<uint32>(
+      safe_bitrate * empty_buffer_fraction / kTargetEmptyBufferFraction);
+  VLOG(3) << " FBR:" << (bits_per_second / 1E6)
+          << " EBF:" << empty_buffer_fraction
+          << " SBR:" << (safe_bitrate / 1E6);
+  bits_per_second = std::max(bits_per_second, min_bitrate_configured_);
+  bits_per_second = std::min(bits_per_second, max_bitrate_configured_);
+  return bits_per_second;
 }
 
 }  // namespace cast
