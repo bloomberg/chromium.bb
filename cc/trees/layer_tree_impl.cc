@@ -1095,35 +1095,33 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
       gfx::ToRoundedPoint(hit_test_point_in_layer_space));
 }
 
+static LayerImpl* GetNextClippingLayer(LayerImpl* layer) {
+  if (layer->scroll_parent())
+    return layer->scroll_parent();
+  if (layer->clip_parent())
+    return layer->clip_parent();
+  return layer->parent();
+}
+
 static bool PointIsClippedBySurfaceOrClipRect(
     const gfx::PointF& screen_space_point,
     LayerImpl* layer) {
-  LayerImpl* current_layer = layer;
-
   // Walk up the layer tree and hit-test any render_surfaces and any layer
   // clip rects that are active.
-  while (current_layer) {
-    if (current_layer->render_surface() &&
-        !PointHitsRect(
-            screen_space_point,
-            current_layer->render_surface()->screen_space_transform(),
-            current_layer->render_surface()->content_rect(),
-            NULL))
+  for (; layer; layer = GetNextClippingLayer(layer)) {
+    if (layer->render_surface() &&
+        !PointHitsRect(screen_space_point,
+                       layer->render_surface()->screen_space_transform(),
+                       layer->render_surface()->content_rect(),
+                       NULL))
       return true;
 
-    // Note that drawable content rects are actually in target surface space, so
-    // the transform we have to provide is the target surface's
-    // screen_space_transform.
-    LayerImpl* render_target = current_layer->render_target();
-    if (LayerClipsSubtree(current_layer) &&
-        !PointHitsRect(
-            screen_space_point,
-            render_target->render_surface()->screen_space_transform(),
-            current_layer->drawable_content_rect(),
-            NULL))
+    if (LayerClipsSubtree(layer) &&
+        !PointHitsRect(screen_space_point,
+                       layer->screen_space_transform(),
+                       gfx::Rect(layer->content_bounds()),
+                       NULL))
       return true;
-
-    current_layer = current_layer->parent();
   }
 
   // If we have finished walking all ancestors without having already exited,
