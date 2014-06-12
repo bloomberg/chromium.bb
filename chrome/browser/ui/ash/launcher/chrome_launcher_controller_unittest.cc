@@ -23,7 +23,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
@@ -1992,11 +1991,6 @@ TEST_F(ChromeLauncherControllerTest, BrowserMenuGeneration) {
 }
 
 #if defined(OS_CHROMEOS)
-static KeyedService* BuildChromeFaviconClient(
-    content::BrowserContext* profile) {
-  return new ChromeFaviconClient(static_cast<Profile*>(profile));
-}
-
 // Check the multi profile case where only user related browsers should show
 // up.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
@@ -2026,8 +2020,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // users running browser list.
   std::string user2 = "user2";
   TestingProfile* profile2 = CreateMultiUserProfile(user2);
-  ChromeFaviconClientFactory::GetInstance()->SetTestingFactory(
-      profile2, BuildChromeFaviconClient);
   scoped_ptr<Browser> browser2(
       CreateBrowserAndTabWithProfile(profile2, user2, "http://test2"));
   base::string16 one_menu_item2[] = { ASCIIToUTF16(user2) };

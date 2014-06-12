@@ -5,14 +5,12 @@
 #ifndef COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
 #define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
 
-#include "components/keyed_service/core/keyed_service.h"
-
 class FaviconService;
 class GURL;
 
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.
-class FaviconClient : public KeyedService {
+class FaviconClient {
  public:
   virtual ~FaviconClient() {};
 

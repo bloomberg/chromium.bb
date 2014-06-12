@@ -10,7 +10,6 @@
       'dependencies': [
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'favicon_base',
-        'keyed_service_core',
       ],
       'sources': [
         'favicon/core/browser/favicon_client.h',

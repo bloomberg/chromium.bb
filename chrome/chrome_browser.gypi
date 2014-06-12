@@ -644,8 +644,6 @@
         'browser/external_protocol/external_protocol_handler.h',
         'browser/favicon/chrome_favicon_client.cc',
         'browser/favicon/chrome_favicon_client.h',
-        'browser/favicon/chrome_favicon_client_factory.cc',
-        'browser/favicon/chrome_favicon_client_factory.h',
         'browser/favicon/favicon_changed_details.cc',
         'browser/favicon/favicon_changed_details.h',
         'browser/favicon/favicon_handler.cc',
