@@ -335,6 +335,15 @@ if test x$enable_simple_egl_clients = xyes; then
                     [egl >= 7.10 glesv2 wayland-client wayland-egl wayland-cursor])
 fi
 
+AC_ARG_ENABLE(simple-intel-dmabuf-client,
+              AS_HELP_STRING([--disable-simple-intel-dmabuf-client],
+                             [do not build the simple intel dmabuf client]),,
+              enable_simple_intel_dmabuf_client="yes")
+AM_CONDITIONAL(BUILD_SIMPLE_INTEL_DMABUF_CLIENT, test "x$enable_simple_intel_dmabuf_client" = "xyes")
+if test "x$enable_simple_intel_dmabuf_client" = "xyes"; then
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_CLIENT, [wayland-client libdrm libdrm_intel])
+fi
+
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
 AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 if test x$enable_clients = xyes; then

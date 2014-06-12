@@ -503,6 +503,21 @@ weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
 weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
+if BUILD_SIMPLE_INTEL_DMABUF_CLIENT
+demo_clients += weston-simple-dmabuf
+weston_simple_dmabuf_SOURCES = clients/simple-dmabuf.c
+nodist_weston_simple_dmabuf_SOURCES =		\
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h	\
+	protocol/fullscreen-shell-protocol.c	\
+	protocol/fullscreen-shell-client-protocol.h \
+	protocol/linux-dmabuf-protocol.c \
+	protocol/linux-dmabuf-client-protocol.h
+weston_simple_dmabuf_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_CLIENT_CFLAGS)
+weston_simple_dmabuf_LDADD = $(SIMPLE_DMABUF_CLIENT_LIBS) libshared.la
+BUILT_SOURCES += protocol/linux-dmabuf-client-protocol.h
+endif
+
 noinst_LTLIBRARIES += libtoytoolkit.la
 
 libtoytoolkit_la_SOURCES =				\

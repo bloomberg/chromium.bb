@@ -66,6 +66,7 @@ weston-nested-client
 weston-presentation-shm
 weston-resizor
 weston-scaler
+weston-simple-dmabuf
 weston-simple-egl
 weston-simple-shm
 weston-simple-touch
