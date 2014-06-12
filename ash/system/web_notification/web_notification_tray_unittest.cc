@@ -157,27 +157,27 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
   // Add a notification.
   AddNotification("test_id1");
   EXPECT_EQ(1u, GetMessageCenter()->NotificationCount());
-  EXPECT_TRUE(GetMessageCenter()->HasNotification("test_id1"));
+  EXPECT_TRUE(GetMessageCenter()->FindVisibleNotificationById("test_id1"));
   AddNotification("test_id2");
   AddNotification("test_id2");
   EXPECT_EQ(2u, GetMessageCenter()->NotificationCount());
-  EXPECT_TRUE(GetMessageCenter()->HasNotification("test_id2"));
+  EXPECT_TRUE(GetMessageCenter()->FindVisibleNotificationById("test_id2"));
 
   // Ensure that updating a notification does not affect the count.
   UpdateNotification("test_id2", "test_id3");
   UpdateNotification("test_id3", "test_id3");
   EXPECT_EQ(2u, GetMessageCenter()->NotificationCount());
-  EXPECT_FALSE(GetMessageCenter()->HasNotification("test_id2"));
+  EXPECT_FALSE(GetMessageCenter()->FindVisibleNotificationById("test_id2"));
 
   // Ensure that Removing the first notification removes it from the tray.
   RemoveNotification("test_id1");
-  EXPECT_FALSE(GetMessageCenter()->HasNotification("test_id1"));
+  EXPECT_FALSE(GetMessageCenter()->FindVisibleNotificationById("test_id1"));
   EXPECT_EQ(1u, GetMessageCenter()->NotificationCount());
 
   // Remove the remianing notification.
   RemoveNotification("test_id3");
   EXPECT_EQ(0u, GetMessageCenter()->NotificationCount());
-  EXPECT_FALSE(GetMessageCenter()->HasNotification("test_id3"));
+  EXPECT_FALSE(GetMessageCenter()->FindVisibleNotificationById("test_id3"));
 }
 
 TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {

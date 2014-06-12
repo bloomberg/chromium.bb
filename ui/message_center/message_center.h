@@ -20,6 +20,16 @@ class DictionaryValue;
 // [Add|Remove|Update]Notification to create and update notifications in the
 // list. It also sends those changes to its observers when a notification
 // is shown, closed, or clicked on.
+//
+// MessageCenter is agnostic of profiles; it uses the string returned by
+// message_center::Notification::id() to uniquely identify a notification. It is
+// the caller's responsibility to formulate the id so that 2 different
+// notification should have different ids. For example, if the caller supports
+// multiple profiles, then caller should encode both profile characteristics and
+// notification front end's notification id into a new id and set it into the
+// notification instance before passing that in. Consequently the id passed to
+// observers will be this unique id, which can be used with MessageCenter
+// interface but probably not higher level interfaces.
 
 namespace message_center {
 
@@ -51,9 +61,13 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual size_t NotificationCount() const = 0;
   virtual size_t UnreadNotificationCount() const = 0;
   virtual bool HasPopupNotifications() const = 0;
-  virtual bool HasNotification(const std::string& id) = 0;
   virtual bool IsQuietMode() const = 0;
   virtual bool HasClickedListener(const std::string& id) = 0;
+
+  // Find the notification with the corresponding id. Returns NULL if not found.
+  // The returned instance is owned by the message center.
+  virtual message_center::Notification* FindVisibleNotificationById(
+      const std::string& id) = 0;
 
   // Gets all notifications to be shown to the user in the message center.  Note
   // that queued changes due to the message center being open are not reflected

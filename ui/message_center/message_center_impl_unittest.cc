@@ -617,8 +617,8 @@ TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {
   message_center()->AddNotification(notification.Pass());
   notification.reset(CreateSimpleNotification(id2));
   message_center()->UpdateNotification(id, notification.Pass());
-  EXPECT_TRUE(message_center()->HasNotification(id2));
-  EXPECT_FALSE(message_center()->HasNotification(id));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id2));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 
   // Then open the message center.
   message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
@@ -626,13 +626,13 @@ TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {
   // Then update a notification; nothing should have happened.
   notification.reset(CreateSimpleNotification(id));
   message_center()->UpdateNotification(id2, notification.Pass());
-  EXPECT_TRUE(message_center()->HasNotification(id2));
-  EXPECT_FALSE(message_center()->HasNotification(id));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id2));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 
   // Close the message center; then the update should have propagated.
   message_center()->SetVisibility(VISIBILITY_TRANSIENT);
-  EXPECT_FALSE(message_center()->HasNotification(id2));
-  EXPECT_TRUE(message_center()->HasNotification(id));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id2));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
 }
 
 TEST_F(MessageCenterImplTest, ComplexQueueing) {
@@ -647,10 +647,10 @@ TEST_F(MessageCenterImplTest, ComplexQueueing) {
     message_center()->AddNotification(notification.Pass());
   }
   for (i = 0; i < 3; i++) {
-    EXPECT_TRUE(message_center()->HasNotification(ids[i]));
+    EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[i]));
   }
   for (; i < 5; i++) {
-    EXPECT_FALSE(message_center()->HasNotification(ids[i]));
+    EXPECT_FALSE(message_center()->FindVisibleNotificationById(ids[i]));
   }
 
   notification.reset(CreateNotification(ids[4], NOTIFICATION_TYPE_PROGRESS));
@@ -680,20 +680,20 @@ TEST_F(MessageCenterImplTest, ComplexQueueing) {
   message_center()->AddNotification(notification.Pass());
 
   // The NL should still be the same: ["0", "1", "2", "4p"]
-  EXPECT_TRUE(message_center()->HasNotification(ids[0]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[1]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[2]));
-  EXPECT_FALSE(message_center()->HasNotification(ids[3]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[4]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[0]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[1]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[2]));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(ids[3]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[4]));
   EXPECT_EQ(message_center()->GetVisibleNotifications().size(), 4u);
   message_center()->SetVisibility(VISIBILITY_TRANSIENT);
 
-  EXPECT_TRUE(message_center()->HasNotification(ids[0]));
-  EXPECT_FALSE(message_center()->HasNotification(ids[1]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[2]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[3]));
-  EXPECT_TRUE(message_center()->HasNotification(ids[4]));
-  EXPECT_TRUE(message_center()->HasNotification("New id"));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[0]));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(ids[1]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[2]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[3]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(ids[4]));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById("New id"));
   EXPECT_EQ(message_center()->GetVisibleNotifications().size(), 5u);
 }
 
@@ -722,7 +722,7 @@ TEST_F(MessageCenterImplTest, QueuedDirectUpdates) {
   message_center()->AddNotification(notification.Pass());
 
   // The notification should be in the queue.
-  EXPECT_FALSE(message_center()->HasNotification(id));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 
   // Now try setting the icon to a different size.
   gfx::Size new_size(16, 16);
@@ -737,12 +737,12 @@ TEST_F(MessageCenterImplTest, QueuedDirectUpdates) {
   message_center()->SetNotificationButtonIcon(id, 1, testImage);
 
   // The notification should be in the queue.
-  EXPECT_FALSE(message_center()->HasNotification(id));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 
   // Close the message center; then the update should have propagated.
   message_center()->SetVisibility(VISIBILITY_TRANSIENT);
   // The notification should no longer be in the queue.
-  EXPECT_TRUE(message_center()->HasNotification(id));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
 
   Notification* mc_notification =
       *(message_center()->GetVisibleNotifications().begin());

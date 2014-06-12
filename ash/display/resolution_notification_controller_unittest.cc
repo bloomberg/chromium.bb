@@ -123,7 +123,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
   }
 
   static bool IsNotificationVisible() {
-    return message_center::MessageCenter::Get()->HasNotification(
+    return message_center::MessageCenter::Get()->FindVisibleNotificationById(
         ResolutionNotificationController::kNotificationId);
   }
 

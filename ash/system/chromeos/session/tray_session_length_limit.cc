@@ -123,7 +123,7 @@ void TraySessionLengthLimit::UpdateNotification() {
   // If state hasn't changed and the notification has already been acknowledged,
   // we won't re-create it.
   if (limit_state_ == last_limit_state_ &&
-      !message_center->HasNotification(kNotificationId)) {
+      !message_center->FindVisibleNotificationById(kNotificationId)) {
     return;
   }
 
@@ -132,7 +132,7 @@ void TraySessionLengthLimit::UpdateNotification() {
   // (and in the rare case of state change towards LIMIT_NONE to make the
   // notification disappear).
   if (limit_state_ != last_limit_state_ &&
-      message_center->HasNotification(kNotificationId)) {
+      message_center->FindVisibleNotificationById(kNotificationId)) {
     message_center::MessageCenter::Get()->RemoveNotification(
         kNotificationId, false /* by_user */);
   }
@@ -162,7 +162,7 @@ void TraySessionLengthLimit::UpdateNotification() {
           data,
           NULL /* delegate */));
   notification->SetSystemPriority();
-  if (message_center->HasNotification(kNotificationId))
+  if (message_center->FindVisibleNotificationById(kNotificationId))
     message_center->UpdateNotification(kNotificationId, notification.Pass());
   else
     message_center->AddNotification(notification.Pass());

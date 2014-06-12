@@ -441,8 +441,9 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   message_center::MessageCenter::Get()->ClickOnNotificationButton(
       ResolutionNotificationController::kNotificationId, 1);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(message_center::MessageCenter::Get()->HasNotification(
-      ResolutionNotificationController::kNotificationId));
+  EXPECT_FALSE(
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          ResolutionNotificationController::kNotificationId));
 
   // Once the notification is removed, the specified resolution will be stored
   // by SetDisplayResolution.

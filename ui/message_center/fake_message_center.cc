@@ -38,16 +38,17 @@ bool FakeMessageCenter::HasPopupNotifications() const {
   return false;
 }
 
-bool FakeMessageCenter::HasNotification(const std::string& id) {
-  return false;
-}
-
 bool FakeMessageCenter::IsQuietMode() const {
   return false;
 }
 
 bool FakeMessageCenter::HasClickedListener(const std::string& id) {
   return false;
+}
+
+message_center::Notification* FakeMessageCenter::FindVisibleNotificationById(
+    const std::string& id) {
+  return NULL;
 }
 
 const NotificationList::Notifications&

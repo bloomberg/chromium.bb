@@ -661,7 +661,8 @@ const CGFloat kTrayBottomMargin = 75;
 
   // Fade-out those notifications pending removal.
   for (MCNotificationController* notification in notifications_.get()) {
-    if (messageCenter_->HasNotification([notification notificationID]))
+    if (messageCenter_->FindVisibleNotificationById(
+        [notification notificationID]))
       continue;
     [notificationsPendingRemoval_ addObject:notification];
     [animationDataArray addObject:@{

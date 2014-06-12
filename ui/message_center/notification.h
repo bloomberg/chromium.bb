@@ -65,7 +65,9 @@ class MESSAGE_CENTER_EXPORT Notification {
                NotificationDelegate* delegate);
 
   Notification(const Notification& other);
+
   Notification& operator=(const Notification& other);
+
   virtual ~Notification();
 
   // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
@@ -75,6 +77,11 @@ class MESSAGE_CENTER_EXPORT Notification {
   NotificationType type() const { return type_; }
   void set_type(NotificationType type) { type_ = type; }
 
+  // Uniquely identifies a notification in the message center. For
+  // notification front ends that support multiple profiles, this id should
+  // identify a unique profile + frontend_notification_id combination. You can
+  // Use this id against the MessageCenter interface but not the
+  // NotificationUIManager interface.
   const std::string& id() const { return id_; }
 
   const base::string16& title() const { return title_; }

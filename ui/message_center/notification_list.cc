@@ -160,10 +160,6 @@ bool NotificationList::SetNotificationButtonIcon(
   return true;
 }
 
-bool NotificationList::HasNotification(const std::string& id) {
-  return GetNotification(id) != notifications_.end();
-}
-
 bool NotificationList::HasNotificationOfType(const std::string& id,
                                              const NotificationType type) {
   Notifications::iterator iter = GetNotification(id);
@@ -269,6 +265,13 @@ void NotificationList::SetQuietMode(bool quiet_mode) {
       (*iter)->set_shown_as_popup(true);
     }
   }
+}
+
+Notification* NotificationList::GetNotificationById(const std::string& id) {
+  Notifications::iterator iter = GetNotification(id);
+  if (iter != notifications_.end())
+    return *iter;
+  return NULL;
 }
 
 NotificationList::Notifications NotificationList::GetVisibleNotifications(

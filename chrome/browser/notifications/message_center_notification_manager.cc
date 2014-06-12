@@ -138,7 +138,7 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // the immediate update allowed in the message center.
       std::string old_id =
           old_notification->notification().notification_id();
-      DCHECK(message_center_->HasNotification(old_id));
+      DCHECK(message_center_->FindVisibleNotificationById(old_id));
 
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.

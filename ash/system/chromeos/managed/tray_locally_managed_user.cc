@@ -39,7 +39,8 @@ void TrayLocallyManagedUser::UpdateMessage() {
       GetLocallyManagedUserMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
-  if (message_center::MessageCenter::Get()->HasNotification(kNotificationId))
+  if (message_center::MessageCenter::Get()->FindVisibleNotificationById(
+      kNotificationId))
     CreateOrUpdateNotification(message);
 }
 

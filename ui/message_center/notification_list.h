@@ -84,9 +84,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
                                  int button_index,
                                  const gfx::Image& image);
 
-  // Returns true if |id| matches a notification in the list.
-  bool HasNotification(const std::string& id);
-
   // Returns true if |id| matches a notification in the list and that
   // notification's type matches the given type.
   bool HasNotificationOfType(const std::string& id,
@@ -124,6 +121,10 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Sets the current quiet mode to true. The quiet mode will expire in the
   // specified time-delta from now.
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in);
+
+  // Returns the notification with the corresponding id. If not found, returns
+  // NULL. Notification instance is owned by this list.
+  Notification* GetNotificationById(const std::string& id);
 
   // Returns all visible notifications, in a (priority-timestamp) order.
   // Suitable for rendering notifications in a MessageCenter.

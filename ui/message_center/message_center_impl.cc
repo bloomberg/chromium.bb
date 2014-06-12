@@ -532,15 +532,6 @@ bool MessageCenterImpl::HasPopupNotifications() const {
       notification_list_->HasPopupNotifications(blockers_);
 }
 
-bool MessageCenterImpl::HasNotification(const std::string& id) {
-  // This will return true if the notification with |id| is hidden by the
-  // ChromeOS multi-profile feature. This would be harmless for now because
-  // this check will be used from the UI, so the |id| for hidden profile won't
-  // arrive here.
-  // TODO(mukai): fix this if necessary.
-  return notification_list_->HasNotification(id);
-}
-
 bool MessageCenterImpl::IsQuietMode() const {
   return notification_list_->quiet_mode();
 }
@@ -549,6 +540,11 @@ bool MessageCenterImpl::HasClickedListener(const std::string& id) {
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   return delegate.get() && delegate->HasClickedListener();
+}
+
+message_center::Notification* MessageCenterImpl::FindVisibleNotificationById(
+    const std::string& id) {
+  return notification_list_->GetNotificationById(id);
 }
 
 const NotificationList::Notifications&
@@ -577,7 +573,7 @@ void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
-  bool already_exists = notification_list_->HasNotification(id);
+  bool already_exists = (notification_list_->GetNotificationById(id) != NULL);
   notification_list_->AddNotification(notification.Pass());
   notification_cache_.Rebuild(
       notification_list_->GetVisibleNotifications(blockers_));
@@ -643,7 +639,7 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
     return;
   }
 
-  if (!HasNotification(id))
+  if (FindVisibleNotificationById(id) == NULL)
     return;
 
   // In many cases |id| is a reference to an existing notification instance
@@ -788,7 +784,7 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
 }
 
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
-  if (!HasNotification(id))
+  if (FindVisibleNotificationById(id) == NULL)
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
@@ -802,7 +798,7 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
                                               int button_index) {
-  if (!HasNotification(id))
+  if (FindVisibleNotificationById(id) == NULL)
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
@@ -817,7 +813,7 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
 
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
-  if (!HasNotification(id))
+  if (FindVisibleNotificationById(id) == NULL)
     return;
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
   notification_cache_.RecountUnread();
@@ -828,7 +824,7 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
 void MessageCenterImpl::DisplayedNotification(
     const std::string& id,
     const DisplaySource source) {
-  if (!HasNotification(id))
+  if (FindVisibleNotificationById(id) == NULL)
     return;
 
   if (HasPopupNotifications())

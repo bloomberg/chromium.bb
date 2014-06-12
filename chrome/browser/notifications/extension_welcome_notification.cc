@@ -289,7 +289,8 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
 
 void ExtensionWelcomeNotification::HideWelcomeNotification() {
   if (!welcome_notification_id_.empty() &&
-      GetMessageCenter()->HasNotification(welcome_notification_id_)) {
+      GetMessageCenter()->FindVisibleNotificationById(
+          welcome_notification_id_) != NULL) {
     GetMessageCenter()->RemoveNotification(welcome_notification_id_, false);
     StopExpirationTimer();
   }

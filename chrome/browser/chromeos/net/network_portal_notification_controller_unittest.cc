@@ -20,7 +20,8 @@ const char* kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
 
 bool HasNotification() {
-  return MessageCenter::Get()->HasNotification(kNotificationId);
+  MessageCenter* message_center = MessageCenter::Get();
+  return message_center->FindVisibleNotificationById(kNotificationId);
 }
 
 class NotificationObserver : public message_center::MessageCenterObserver {

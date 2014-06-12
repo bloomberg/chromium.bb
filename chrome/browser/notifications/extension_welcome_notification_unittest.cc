@@ -40,8 +40,11 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   }
 
   // message_center::FakeMessageCenter Overrides
-  virtual bool HasNotification(const std::string& id) OVERRIDE {
-    return last_notification.get() && (last_notification->id() == id);
+  virtual message_center::Notification* FindVisibleNotificationById(
+      const std::string& id) OVERRIDE {
+    if (last_notification.get() && last_notification->id() == id)
+      return last_notification.get();
+    return NULL;
   }
 
   virtual void AddNotification(

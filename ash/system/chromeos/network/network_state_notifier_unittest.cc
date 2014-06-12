@@ -98,7 +98,7 @@ TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   // Failure should spawn a notification.
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
-  EXPECT_TRUE(message_center->HasNotification(
+  EXPECT_TRUE(message_center->FindVisibleNotificationById(
       network_connect::kNetworkConnectNotificationId));
 }
 
