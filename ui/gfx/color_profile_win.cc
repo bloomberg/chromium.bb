@@ -55,12 +55,48 @@ class ColorProfileCache {
   DISALLOW_COPY_AND_ASSIGN(ColorProfileCache);
 };
 
+base::LazyInstance<ColorProfileCache>::Leaky g_color_profile_cache =
+    LAZY_INSTANCE_INITIALIZER;
+
+inline ColorProfileCache& GetColorProfileCache() {
+  return g_color_profile_cache.Get();
+}
+
 bool GetDisplayColorProfile(const gfx::Rect& bounds,
                             std::vector<char>* profile) {
-  if (bounds.IsEmpty())
+  DCHECK(profile->empty());
+
+  RECT rect = bounds.ToRECT();
+  HMONITOR handle = ::MonitorFromRect(&rect, MONITOR_DEFAULTTONULL);
+  if (bounds.IsEmpty() || !handle)
     return false;
-  // TODO(noel): implement.
-  return false;
+
+  MONITORINFOEX monitor;
+  monitor.cbSize = sizeof(MONITORINFOEX);
+  CHECK(::GetMonitorInfo(handle, &monitor));
+  if (GetColorProfileCache().Find(monitor.szDevice, profile))
+    return true;
+
+  HDC hdc = ::CreateDC(monitor.szDevice, NULL, NULL, NULL);
+  DWORD path_length = MAX_PATH;
+  WCHAR path[MAX_PATH + 1];
+  BOOL result = ::GetICMProfile(hdc, &path_length, path);
+  ::DeleteDC(hdc);
+  if (!result)
+    return false;
+
+  base::FilePath file_name = base::FilePath(path).BaseName();
+  if (file_name != base::FilePath(L"sRGB Color Space Profile.icm")) {
+    std::string data;
+    if (base::ReadFileToString(base::FilePath(path), &data))
+      profile->assign(data.data(), data.data() + data.size());
+    size_t length = profile->size();
+    if (gfx::InvalidColorProfileLength(length))
+      profile->clear();
+  }
+
+  GetColorProfileCache().Insert(monitor.szDevice, *profile);
+  return true;
 }
 
 void ReadColorProfile(std::vector<char>* profile) {
