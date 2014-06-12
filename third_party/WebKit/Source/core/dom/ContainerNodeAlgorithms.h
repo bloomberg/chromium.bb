@@ -69,34 +69,6 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
 // Helper methods for removeDetachedChildrenInContainer, hidden from WebCore namespace
 namespace Private {
 
-    template<class GenericNode, class GenericNodeContainer, bool dispatchRemovalNotification>
-    struct NodeRemovalDispatcher {
-        static void dispatch(GenericNode&, GenericNodeContainer&)
-        {
-            // no-op, by default
-        }
-    };
-
-    template<class GenericNode, class GenericNodeContainer>
-    struct NodeRemovalDispatcher<GenericNode, GenericNodeContainer, true> {
-        static void dispatch(GenericNode& node, GenericNodeContainer& container)
-        {
-            container.document().adoptIfNeeded(node);
-            if (node.inDocument())
-                container.notifyNodeRemoved(node);
-        }
-    };
-
-    template<class GenericNode>
-    struct ShouldDispatchRemovalNotification {
-        static const bool value = false;
-    };
-
-    template<>
-    struct ShouldDispatchRemovalNotification<Node> {
-        static const bool value = true;
-    };
-
     template<class GenericNode, class GenericNodeContainer>
     void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer& container)
     {
@@ -126,7 +98,9 @@ namespace Private {
                 tail = n;
             } else {
                 RefPtrWillBeRawPtr<GenericNode> protect(n); // removedFromDocument may remove all references to this node.
-                NodeRemovalDispatcher<GenericNode, GenericNodeContainer, ShouldDispatchRemovalNotification<GenericNode>::value>::dispatch(*n, container);
+                container.document().adoptIfNeeded(*n);
+                if (n->inDocument())
+                    container.notifyNodeRemoved(*n);
             }
         }
 
