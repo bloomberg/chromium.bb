@@ -38,6 +38,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_worker_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -61,7 +62,7 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
-class SyncEngine::WorkerObserver : public SyncWorker::Observer {
+class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
  public:
   WorkerObserver(base::SequencedTaskRunner* ui_task_runner,
                  base::WeakPtr<SyncEngine> sync_engine)
@@ -241,8 +242,8 @@ void SyncEngine::Reset() {
   if (drive_service_)
     drive_service_->RemoveObserver(this);
 
-  DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
   DeleteSoon(FROM_HERE, worker_task_runner_, sync_worker_.Pass());
+  DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
   DeleteSoon(FROM_HERE, worker_task_runner_,
              remote_change_processor_on_worker_.Pass());
 
@@ -324,14 +325,12 @@ void SyncEngine::InitializeInternal(
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
-  scoped_ptr<SyncWorker> worker(new SyncWorker(
+  sync_worker_.reset(new SyncWorker(
       sync_file_system_dir_,
       extension_service_weak_ptr,
       sync_engine_context.Pass(),
       env_override_));
-
-  worker->AddObserver(worker_observer_.get());
-  sync_worker_ = worker.PassAs<SyncWorkerInterface>();
+  sync_worker_->AddObserver(worker_observer_.get());
 
   if (remote_change_processor_)
     SetRemoteChangeProcessor(remote_change_processor_);

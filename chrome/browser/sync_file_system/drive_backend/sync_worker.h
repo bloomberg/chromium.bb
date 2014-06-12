@@ -14,9 +14,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker_interface.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
-#include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
-#include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "net/base/network_change_notifier.h"
 
@@ -57,28 +55,6 @@ class SyncEngineInitializer;
 class SyncWorker : public SyncWorkerInterface,
                    public SyncTaskManager::Client {
  public:
-  enum AppStatus {
-    APP_STATUS_ENABLED,
-    APP_STATUS_DISABLED,
-    APP_STATUS_UNINSTALLED,
-  };
-
-  typedef base::hash_map<std::string, AppStatus> AppStatusMap;
-
-  class Observer {
-   public:
-    virtual void OnPendingFileListUpdated(int item_count) = 0;
-    virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
-                                     SyncFileStatus file_status,
-                                     SyncAction sync_action,
-                                     SyncDirection direction) = 0;
-    virtual void UpdateServiceState(RemoteServiceState state,
-                                    const std::string& description) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   SyncWorker(const base::FilePath& base_dir,
              const base::WeakPtr<ExtensionServiceInterface>& extension_service,
              scoped_ptr<SyncEngineContext> sync_engine_context,
@@ -138,11 +114,19 @@ class SyncWorker : public SyncWorkerInterface,
 
   virtual void DetachFromSequence() OVERRIDE;
 
-  void AddObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
 
  private:
   friend class DriveBackendSyncTest;
   friend class SyncWorkerTest;
+
+  enum AppStatus {
+    APP_STATUS_ENABLED,
+    APP_STATUS_DISABLED,
+    APP_STATUS_UNINSTALLED,
+  };
+
+  typedef base::hash_map<std::string, AppStatus> AppStatusMap;
 
   // SyncWorkerInterface overrides.
   // TODO(peria): Remove this interface after making FakeSyncWorker class.
@@ -157,6 +141,11 @@ class SyncWorker : public SyncWorkerInterface,
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);
   void UpdateRegisteredApps();
+  static void QueryAppStatusOnUIThread(
+      const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
+      const std::vector<std::string>* app_ids,
+      AppStatusMap* status,
+      const base::Closure& callback);
   void DidQueryAppStatus(const AppStatusMap* app_status);
   void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                               const SyncFileCallback& callback,

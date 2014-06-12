@@ -36,31 +36,6 @@ namespace {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
-void QueryAppStatusOnUIThread(
-    const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
-    const std::vector<std::string>* app_ids,
-    SyncWorker::AppStatusMap* status,
-    const base::Closure& callback) {
-  ExtensionServiceInterface* extension_service = extension_service_ptr.get();
-  if (!extension_service) {
-    callback.Run();
-    return;
-  }
-
-  for (std::vector<std::string>::const_iterator itr = app_ids->begin();
-       itr != app_ids->end(); ++itr) {
-    const std::string& app_id = *itr;
-    if (!extension_service->GetInstalledExtension(app_id))
-      (*status)[app_id] = SyncWorker::APP_STATUS_UNINSTALLED;
-    else if (!extension_service->IsExtensionEnabled(app_id))
-      (*status)[app_id] = SyncWorker::APP_STATUS_DISABLED;
-    else
-      (*status)[app_id] = SyncWorker::APP_STATUS_ENABLED;
-  }
-
-  callback.Run();
-}
-
 }  // namespace
 
 SyncWorker::SyncWorker(
@@ -86,7 +61,9 @@ SyncWorker::SyncWorker(
   DCHECK(base_dir_.IsAbsolute());
 }
 
-SyncWorker::~SyncWorker() {}
+SyncWorker::~SyncWorker() {
+  observers_.Clear();
+}
 
 void SyncWorker::Initialize() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -497,13 +474,38 @@ void SyncWorker::UpdateRegisteredApps() {
 
   context_->GetUITaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&QueryAppStatusOnUIThread,
+      base::Bind(&SyncWorker::QueryAppStatusOnUIThread,
                  extension_service_,
                  base::Owned(app_ids.release()),
                  app_status,
                  RelayCallbackToTaskRunner(
                      context_->GetWorkerTaskRunner(),
                      FROM_HERE, callback)));
+}
+
+void SyncWorker::QueryAppStatusOnUIThread(
+    const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
+    const std::vector<std::string>* app_ids,
+    AppStatusMap* status,
+    const base::Closure& callback) {
+  ExtensionServiceInterface* extension_service = extension_service_ptr.get();
+  if (!extension_service) {
+    callback.Run();
+    return;
+  }
+
+  for (std::vector<std::string>::const_iterator itr = app_ids->begin();
+       itr != app_ids->end(); ++itr) {
+    const std::string& app_id = *itr;
+    if (!extension_service->GetInstalledExtension(app_id))
+      (*status)[app_id] = APP_STATUS_UNINSTALLED;
+    else if (!extension_service->IsExtensionEnabled(app_id))
+      (*status)[app_id] = APP_STATUS_DISABLED;
+    else
+      (*status)[app_id] = APP_STATUS_ENABLED;
+  }
+
+  callback.Run();
 }
 
 void SyncWorker::DidQueryAppStatus(const AppStatusMap* app_status) {

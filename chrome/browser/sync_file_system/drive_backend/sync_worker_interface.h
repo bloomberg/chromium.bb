@@ -9,7 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_direction.h"
 #include "net/base/network_change_notifier.h"
 
 class GURL;
@@ -41,6 +43,21 @@ class SyncTaskManager;
 
 class SyncWorkerInterface {
  public:
+  class Observer {
+   public:
+    virtual void OnPendingFileListUpdated(int item_count) = 0;
+    virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+                                     SyncFileStatus file_status,
+                                     SyncAction sync_action,
+                                     SyncDirection direction) = 0;
+    virtual void UpdateServiceState(RemoteServiceState state,
+                                    const std::string& description) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  SyncWorkerInterface() {}
   virtual ~SyncWorkerInterface() {}
 
   // Initializes SyncWorkerInterface after constructions of some member classes.
@@ -94,11 +111,15 @@ class SyncWorkerInterface {
 
   virtual void DetachFromSequence() = 0;
 
+  virtual void AddObserver(Observer* observer) = 0;
+
  private:
   friend class SyncEngineTest;
 
   // TODO(peria): Remove this interface after making FakeSyncWorker class.
   virtual void SetHasRefreshToken(bool has_refresh_token) = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncWorkerInterface);
 };
 
 }  // namespace drive_backend
