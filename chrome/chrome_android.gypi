@@ -98,6 +98,9 @@
         'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
+        # TODO(kkimlabs): Move this to chrome.gyp:browser when the dependent
+        #                 is upstreamed.
+        '../components/components.gyp:enhanced_bookmarks',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
       ],
