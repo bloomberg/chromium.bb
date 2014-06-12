@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdlib.h>
-
 #include "media/cast/test/utility/udp_proxy.h"
 
 #include "base/logging.h"
@@ -50,10 +48,7 @@ class Buffer : public PacketPipe {
       : buffer_size_(0),
         max_buffer_size_(buffer_size),
         max_megabits_per_second_(max_megabits_per_second),
-        weak_factory_(this) {
-    CHECK_GT(max_buffer_size_, 0UL);
-    CHECK_GT(max_megabits_per_second, 0);
-  }
+        weak_factory_(this) {}
 
   virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
     if (packet->size() + buffer_size_ <= max_buffer_size_) {
@@ -100,17 +95,17 @@ scoped_ptr<PacketPipe> NewBuffer(size_t buffer_size, double bandwidth) {
 
 class RandomDrop : public PacketPipe {
  public:
-  RandomDrop(double drop_fraction)
-      : drop_fraction_(static_cast<int>(drop_fraction * RAND_MAX)) {}
+  RandomDrop(double drop_fraction) : drop_fraction_(drop_fraction) {
+  }
 
   virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
-    if (rand() > drop_fraction_) {
+    if (base::RandDouble() >= drop_fraction_) {
       pipe_->Send(packet.Pass());
     }
   }
 
  private:
-  int drop_fraction_;
+  double drop_fraction_;
 };
 
 scoped_ptr<PacketPipe> NewRandomDrop(double drop_fraction) {

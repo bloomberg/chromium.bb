@@ -26,7 +26,6 @@ bool FakeSingleThreadTaskRunner::PostDelayedTask(
   if (fail_on_next_task_) {
     LOG(FATAL) << "Infinite task-add loop detected.";
   }
-  CHECK(delay >= base::TimeDelta());
   EXPECT_GE(delay, base::TimeDelta());
   PostedTask posed_task(from_here,
                         task,
