@@ -11,6 +11,8 @@
 
 class BookmarkNode;
 
+namespace bookmarks {
+
 struct BookmarkMatch {
   // Each MatchPosition is the [begin, end) positions of a match within a
   // string.
@@ -40,5 +42,7 @@ struct BookmarkMatch {
   // Location of the matching words in the URL of the node.
   MatchPositions url_match_positions;
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_TITLE_MATCH_H_

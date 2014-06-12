@@ -22,6 +22,8 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "net/base/net_util.h"
 
+using bookmarks::BookmarkMatch;
+
 typedef std::vector<BookmarkMatch> BookmarkMatches;
 
 // BookmarkProvider ------------------------------------------------------------

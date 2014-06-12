@@ -28,6 +28,7 @@
 using base::Time;
 using bookmarks::BookmarkIndex;
 using bookmarks::BookmarkLoadDetails;
+using bookmarks::BookmarkMatch;
 using bookmarks::BookmarkStorage;
 
 namespace {

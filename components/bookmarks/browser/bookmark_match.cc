@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 
+namespace bookmarks {
+
 BookmarkMatch::BookmarkMatch() : node(NULL) {}
 
 BookmarkMatch::~BookmarkMatch() {}
@@ -42,3 +44,5 @@ BookmarkMatch::MatchPositions BookmarkMatch::ReplaceOffsetsInMatchPositions(
   }
   return new_match_positions;
 }
+
+}  // namespace bookmarks

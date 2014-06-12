@@ -22,6 +22,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using bookmarks::BookmarkMatch;
 using content::BrowserThread;
 
 class TestProfileWriter : public ProfileWriter {

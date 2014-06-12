@@ -24,9 +24,7 @@
 
 class BookmarkExpandedStateTracker;
 class BookmarkModelObserver;
-struct BookmarkMatch;
 class PrefService;
-class ScopedGroupBookmarkActions;
 
 namespace base {
 class FilePath;
@@ -38,6 +36,7 @@ class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkStorage;
 class ScopedGroupBookmarkActions;
+struct BookmarkMatch;
 }
 
 namespace favicon_base {
@@ -244,10 +243,9 @@ class BookmarkModel {
 
   // Returns up to |max_count| of bookmarks containing each term from |text|
   // in either the title or the URL.
-  void GetBookmarksMatching(
-      const base::string16& text,
-      size_t max_count,
-      std::vector<BookmarkMatch>* matches);
+  void GetBookmarksMatching(const base::string16& text,
+                            size_t max_count,
+                            std::vector<bookmarks::BookmarkMatch>* matches);
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up

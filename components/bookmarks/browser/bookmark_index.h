@@ -16,9 +16,10 @@
 
 class BookmarkClient;
 class BookmarkNode;
-struct BookmarkMatch;
 
 namespace bookmarks {
+
+struct BookmarkMatch;
 
 // BookmarkIndex maintains an index of the titles and URLs of bookmarks for
 // quick look up. BookmarkIndex is owned and maintained by BookmarkModel, you

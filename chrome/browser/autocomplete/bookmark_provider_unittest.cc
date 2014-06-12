@@ -22,6 +22,8 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using bookmarks::BookmarkMatch;
+
 // The bookmark corpus against which we will simulate searches.
 struct BookmarksTestInfo {
   std::string title;

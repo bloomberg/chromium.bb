@@ -13,8 +13,11 @@
 #include "components/query_parser/snippet.h"
 
 class BookmarkModel;
-struct BookmarkMatch;
 class Profile;
+
+namespace bookmarks {
+struct BookmarkMatch;
+}
 
 // This class is an autocomplete provider which quickly (and synchronously)
 // provides autocomplete suggestions based on the titles of bookmarks. Page
@@ -56,7 +59,7 @@ class BookmarkProvider : public AutocompleteProvider {
   AutocompleteMatch BookmarkMatchToACMatch(
       const AutocompleteInput& input,
       const base::string16& fixed_up_input_text,
-      const BookmarkMatch& match);
+      const bookmarks::BookmarkMatch& match);
 
   // Converts |positions| into ACMatchClassifications and returns the
   // classifications. |text_length| is used to determine the need to add an
