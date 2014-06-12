@@ -721,7 +721,8 @@ void Editor::unappliedEditing(PassRefPtrWillBeRawPtr<EditCommandComposition> cmd
 
     VisibleSelection newSelection(cmd->startingSelection());
     newSelection.validatePositionsIfNeeded();
-    changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
+    if (newSelection.start().document() == m_frame.document() && newSelection.end().document() == m_frame.document())
+        changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
     m_lastEditCommand = nullptr;
     if (UndoStack* undoStack = this->undoStack())
