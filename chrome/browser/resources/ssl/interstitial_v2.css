@@ -31,6 +31,10 @@ button {
   padding: 8px 24px;
 }
 
+[dir='rtl'] button {
+  float: left;
+}
+
 button:active {
   background: rgb(50, 102, 213);
 }
@@ -108,19 +112,62 @@ h1 {
 }
 
 .safe-browsing .icon {
-  background: -webkit-image-set(
+  background-image: -webkit-image-set(
       url('../safe_browsing/images/1x/stop_sign.png') 1x,
       url('../safe_browsing/images/2x/stop_sign.png') 2x);
 }
 
 .ssl .icon {
-  background: -webkit-image-set(
+  background-image: -webkit-image-set(
       url('images/1x/brokenssl_red.png') 1x,
       url('images/2x/brokenssl_red.png') 2x);
 }
 
 @media (max-width: 700px) {
   .interstitial-wrapper {
-    padding: 0 10%;
+    padding: 0 15%;
+  }
+}
+
+@media (max-width: 400px) {
+  button,
+  [dir='rtl'] button {
+    float: none;
+    height: auto;
+    width: 100%;
+  }
+
+  #details {
+    margin: 20px 0 20px 0;
+  }
+
+  #details p:not(:first-of-type) {
+    margin-top: 10px;
+  }
+
+  #details-button {
+    display: block;
+    padding-top: 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  h1 {
+    line-height: normal;
+  }
+
+  .icon {
+    background-size: 40px 40px;
+    height: 40px;
+    margin: 0 0 20px;
+    width: 40px;
+  }
+
+  .interstitial-wrapper {
+    padding: 0 5%;
+  }
+
+  #main-message {
+    height: 160px;
   }
 }
