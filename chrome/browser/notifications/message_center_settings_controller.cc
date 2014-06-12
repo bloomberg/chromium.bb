@@ -209,7 +209,7 @@ void MessageCenterSettingsController::GetNotifierList(
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
-  UErrorCode error;
+  UErrorCode error = U_ZERO_ERROR;
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
   scoped_ptr<NotifierComparator> comparator;
   if (!U_FAILURE(error))
