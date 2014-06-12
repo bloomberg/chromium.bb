@@ -18,13 +18,13 @@ class _MSEMeasurement(page_measurement.PageMeasurement):
       trace_name = '%s.%s' % (m, trace)
       if isinstance(metrics[m], list):
         results.AddValue(list_of_scalar_values.ListOfScalarValues(
-                results.current_page, trace_name, unit='ms',
+                results.current_page, trace_name, units='ms',
                 values=[float(v) for v in metrics[m]],
                 important=True))
 
       else:
         results.AddValue(scalar.ScalarValue(
-                results.current_page, trace_name, unit='ms',
+                results.current_page, trace_name, units='ms',
                 value=float(metrics[m]), important=True))
 
 
