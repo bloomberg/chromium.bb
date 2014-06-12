@@ -2579,6 +2579,38 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
+// Try generating RSA key pairs using unsupported public exponents. Only
+// exponents of 3 and 65537 are supported. While both OpenSSL and NSS can
+// support other values, OpenSSL hangs when given invalid exponents, so use a
+// whitelist to validate the parameters.
+TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadExponent)) {
+  const unsigned int modulus_length = 1024;
+
+  const char* const kPublicExponents[] = {
+      "11",  // 17 - This is a valid public exponent, but currently disallowed.
+      "00",
+      "01",
+      "02",
+      "010000",  // 65536
+  };
+
+  for (size_t i = 0; i < arraysize(kPublicExponents); ++i) {
+    SCOPED_TRACE(i);
+    blink::WebCryptoAlgorithm algorithm = CreateRsaHashedKeyGenAlgorithm(
+        blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+        blink::WebCryptoAlgorithmIdSha256,
+        modulus_length,
+        HexStringToBytes(kPublicExponents[i]));
+
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
+    EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
+              GenerateKeyPair(
+                  algorithm, true, 0, &public_key, &private_key));
+  }
+}
+
 TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   // Import a key pair.
   blink::WebCryptoAlgorithm import_algorithm =

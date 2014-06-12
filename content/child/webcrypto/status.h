@@ -161,9 +161,8 @@ class CONTENT_EXPORT Status {
   // multiple of 8 bytes, as required by RFC 3394.
   static Status ErrorInvalidAesKwDataLength();
 
-  // The "publicExponent" used to generate a key was invalid: either no bytes
-  // were specified, or the number was too large to fit into an "unsigned long"
-  // (implemention limitation), or the exponent was zero.
+  // The "publicExponent" used to generate a key was invalid or unsupported.
+  // Only values of 3 and 65537 are allowed.
   static Status ErrorGenerateKeyPublicExponent();
 
   // The modulus bytes were empty when importing an RSA public key.

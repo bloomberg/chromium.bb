@@ -177,7 +177,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           blink::WebCryptoKeyUsageMask public_key_usage_mask,
                           blink::WebCryptoKeyUsageMask private_key_usage_mask,
                           unsigned int modulus_length_bits,
-                          const CryptoData& public_exponent,
+                          unsigned long public_exponent,
                           blink::WebCryptoKey* public_key,
                           blink::WebCryptoKey* private_key);
 

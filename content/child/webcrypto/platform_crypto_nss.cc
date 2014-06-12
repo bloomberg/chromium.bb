@@ -531,28 +531,6 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
   }
 }
 
-// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
-// to unsigned long.
-bool BigIntegerToLong(const uint8* data,
-                      unsigned int data_size,
-                      unsigned long* result) {
-  // TODO(padolph): Is it correct to say that empty data is an error, or does it
-  // mean value 0? See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23655
-  if (data_size == 0)
-    return false;
-
-  *result = 0;
-  for (size_t i = 0; i < data_size; ++i) {
-    size_t reverse_i = data_size - i - 1;
-
-    if (reverse_i >= sizeof(unsigned long) && data[i])
-      return false;  // Too large for a long.
-
-    *result |= data[i] << 8 * reverse_i;
-  }
-  return true;
-}
-
 bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               SECKEYPublicKey* key,
                               blink::WebCryptoKeyAlgorithm* key_algorithm) {
@@ -1443,7 +1421,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           blink::WebCryptoKeyUsageMask public_key_usage_mask,
                           blink::WebCryptoKeyUsageMask private_key_usage_mask,
                           unsigned int modulus_length_bits,
-                          const CryptoData& public_exponent,
+                          unsigned long public_exponent,
                           blink::WebCryptoKey* public_key,
                           blink::WebCryptoKey* private_key) {
   if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep &&
@@ -1455,17 +1433,9 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   if (!slot)
     return Status::OperationError();
 
-  unsigned long public_exponent_long;
-  if (!BigIntegerToLong(public_exponent.bytes(),
-                        public_exponent.byte_length(),
-                        &public_exponent_long) ||
-      !public_exponent_long) {
-    return Status::ErrorGenerateKeyPublicExponent();
-  }
-
   PK11RSAGenParams rsa_gen_params;
   rsa_gen_params.keySizeInBits = modulus_length_bits;
-  rsa_gen_params.pe = public_exponent_long;
+  rsa_gen_params.pe = public_exponent;
 
   // Flags are verified at the Blink layer; here the flags are set to all
   // possible operations for the given key type.

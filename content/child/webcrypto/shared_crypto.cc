@@ -601,6 +601,29 @@ Status CheckKeyUsagesForGenerateKeyPair(
   return Status::Success();
 }
 
+// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
+// to unsigned long.
+bool BigIntegerToLong(const uint8* data,
+                      unsigned int data_size,
+                      unsigned long* result) {
+  // TODO(padolph): Is it correct to say that empty data is an error, or does it
+  // mean value 0? See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23655
+  if (data_size == 0)
+    return false;
+
+  *result = 0;
+  for (size_t i = 0; i < data_size; ++i) {
+    size_t reverse_i = data_size - i - 1;
+
+    if (reverse_i >= sizeof(unsigned long) && data[i])
+      return false;  // Too large for a long.
+
+    *result |= data[i] << 8 * reverse_i;
+  }
+  return true;
+}
+
+
 }  // namespace
 
 void Init() { platform::Init(); }
@@ -717,16 +740,20 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
       if (!params->modulusLengthBits())
         return Status::ErrorGenerateRsaZeroModulus();
 
-      CryptoData publicExponent(params->publicExponent());
-      if (!publicExponent.byte_length())
+      unsigned long public_exponent = 0;
+      if (!BigIntegerToLong(params->publicExponent().data(),
+                            params->publicExponent().size(),
+                            &public_exponent) ||
+          (public_exponent != 3 && public_exponent != 65537)) {
         return Status::ErrorGenerateKeyPublicExponent();
+      }
 
       return platform::GenerateRsaKeyPair(algorithm,
                                           extractable,
                                           public_key_usage_mask,
                                           private_key_usage_mask,
                                           params->modulusLengthBits(),
-                                          publicExponent,
+                                          public_exponent,
                                           public_key,
                                           private_key);
     }

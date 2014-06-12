@@ -170,7 +170,7 @@ Status Status::ErrorInvalidAesKwDataLength() {
 
 Status Status::ErrorGenerateKeyPublicExponent() {
   return Status(blink::WebCryptoErrorTypeData,
-                "The \"publicExponent\" is either empty, zero, or too large");
+                "The \"publicExponent\" must be either 3 or 65537");
 }
 
 Status Status::ErrorImportRsaEmptyModulus() {
