@@ -122,9 +122,12 @@ void ScrollingCoordinator::notifyLayoutUpdated()
     m_shouldScrollOnMainThreadDirty = true;
 }
 
-void ScrollingCoordinator::updateAfterCompositingChange()
+void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
 {
-    TRACE_EVENT0("input", "ScrollingCoordinator::updateAfterCompositingChange");
+    if (!shouldUpdateAfterCompositingChange())
+        return;
+
+    TRACE_EVENT0("input", "ScrollingCoordinator::updateAfterCompositingChangeIfNeeded");
 
     if (m_scrollGestureRegionIsDirty) {
         // Compute the region of the page where we can't handle scroll gestures and mousewheel events

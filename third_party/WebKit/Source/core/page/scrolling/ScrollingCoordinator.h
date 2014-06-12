@@ -64,10 +64,7 @@ public:
     // Called when any frame has done its layout.
     void notifyLayoutUpdated();
 
-    // Should be called after compositing has been updated.
-    void updateAfterCompositingChange();
-
-    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsDirty(); }
+    void updateAfterCompositingChangeIfNeeded();
 
     void updateHaveWheelEventHandlers();
     void updateHaveScrollEventHandlers();
@@ -132,6 +129,8 @@ protected:
     bool m_shouldScrollOnMainThreadDirty;
 
 private:
+    bool shouldUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsDirty(); }
+
     void setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons);
 
     bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;

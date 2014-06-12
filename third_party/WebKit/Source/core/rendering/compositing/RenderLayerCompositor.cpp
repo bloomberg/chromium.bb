@@ -291,11 +291,7 @@ void RenderLayerCompositor::updateIfNeeded()
     CompositingUpdateType updateType = m_pendingUpdateType;
     m_pendingUpdateType = CompositingUpdateNone;
 
-    if (!hasAcceleratedCompositing())
-        return;
-
-    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
-    if (updateType == CompositingUpdateNone && !needsToUpdateScrollingCoordinator)
+    if (!hasAcceleratedCompositing() || updateType == CompositingUpdateNone)
         return;
 
     RenderLayer* updateRoot = rootRenderLayer();
@@ -365,11 +361,6 @@ void RenderLayerCompositor::updateIfNeeded()
         rootFixedBackgroundsChanged();
         m_needsUpdateFixedBackground = false;
     }
-
-    // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
-    needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
-    if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && inCompositingMode())
-        scrollingCoordinator()->updateAfterCompositingChange();
 
     for (unsigned i = 0; i < layersNeedingRepaint.size(); i++) {
         RenderLayer* layer = layersNeedingRepaint[i];

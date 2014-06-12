@@ -2832,7 +2832,12 @@ void FrameView::updateLayoutAndStyleForPainting()
 
     if (RenderView* view = renderView()) {
         InspectorInstrumentation::willUpdateLayerTree(view->frame());
+
         view->compositor()->updateIfNeededRecursive();
+
+        if (view->compositor()->inCompositingMode() && m_frame->isMainFrame())
+            m_frame->page()->scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
         InspectorInstrumentation::didUpdateLayerTree(view->frame());
     }
 
