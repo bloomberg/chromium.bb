@@ -193,7 +193,7 @@ Static Public Member Functions</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Configures underlying buffer buffers for incoming audio samples. </p>
-<p>If the application doesn't want to drop samples, then the <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</code> should be chosen such that inter-buffer processing time variability won't overrun all input buffers. If all buffers are filled, then samples will be dropped. The application can detect this by examining the timestamp on returned buffers. If <code><a class="el" href="classpp_1_1_media_stream_audio_track.html#ad3572da8199315fc90248f5634358211" title="Configures underlying buffer buffers for incoming audio samples.">Configure()</a></code> is not called, default settings will be used. Example usage from plugin code: </p>
+<p>If the application doesn't want to drop samples, then the <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</code> should be chosen such that inter-buffer processing time variability won't overrun all input buffers. If all buffers are filled, then samples will be dropped. The application can detect this by examining the timestamp on returned buffers. If <code><a class="el" href="classpp_1_1_media_stream_audio_track.html#ad3572da8199315fc90248f5634358211" title="Configures underlying buffer buffers for incoming audio samples.">Configure()</a></code> is not called, default settings will be used. Calls to Configure while the plugin holds buffers will fail. Example usage from plugin code: </p>
 <div class="fragment"><pre class="fragment"> int32_t attribs[] = {
      PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS, 4,
      PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION, 10,

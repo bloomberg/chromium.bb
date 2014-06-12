@@ -31,6 +31,7 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td colspan="2"><div class="groupHeader">PPB_Instance methods for querying the browser:</div></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a147a1c1817a7a1fb2b76f5c87ab08899">BindGraphics</a> (const <a class="el" href="classpp_1_1_graphics2_d.html">Graphics2D</a> &amp;graphics)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#abcfd0eb0995e6273271b4ff4c3df16ae">BindGraphics</a> (const <a class="el" href="classpp_1_1_graphics3_d.html">Graphics3D</a> &amp;graphics)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a845a8736f87b78538c73c9f8d192b77a">BindGraphics</a> (const <a class="el" href="classpp_1_1_compositor.html">Compositor</a> &amp;compositor)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a451fb956e64fd3db891608148a044c01">IsFullFrame</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a2e2d63280786c0cc41b7c6f656cc81b5">RequestInputEvents</a> (uint32_t event_classes)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a6341c14fc54427e45349f5158483e017">RequestFilteringInputEvents</a> (uint32_t event_classes)</td></tr>
@@ -170,6 +171,31 @@ Static Public Member Functions</h2><table class="memberdecls">
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">graphics</td><td>A <code><a class="el" href="classpp_1_1_graphics3_d.html" title="This class represents a 3D rendering context in the browser.">Graphics3D</a></code> to bind.</td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if bind was successful or false if the device was not the correct type. On success, a reference to the device will be held by the instance, so the caller can release its reference if it chooses. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="a845a8736f87b78538c73c9f8d192b77a"></a><!-- doxytag: member="pp::Instance::BindGraphics" ref="a845a8736f87b78538c73c9f8d192b77a" args="(const Compositor &amp;compositor)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">bool <a class="el" href="classpp_1_1_instance.html#a147a1c1817a7a1fb2b76f5c87ab08899">pp::Instance::BindGraphics</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_compositor.html">Compositor</a> &amp;&#160;</td>
+<td class="paramname"><em>compositor</em></td><td>)</td>
+<td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Binds the given <a class="el" href="classpp_1_1_compositor.html" title="The Compositor interface is used for setting CompositorLayer layers to the Chromium compositor for co...">Compositor</a> as the current display surface. </p>
+<p>Refer to <code><a class="el" href="classpp_1_1_instance.html#a147a1c1817a7a1fb2b76f5c87ab08899" title="BindGraphics() binds the given graphics as the current display surface.">BindGraphics(const Graphics2D&amp; graphics)</a></code> for further information.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">compositor</td><td>A <code><a class="el" href="classpp_1_1_compositor.html" title="The Compositor interface is used for setting CompositorLayer layers to the Chromium compositor for co...">Compositor</a></code> to bind.</td></tr>
 </table>
 </dd>
 </dl>

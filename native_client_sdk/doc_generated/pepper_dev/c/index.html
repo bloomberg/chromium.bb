@@ -2,8 +2,8 @@
 
 <span class="target" id="pepper-dev-c-index"></span><section id="pepper-c-api-reference-dev">
 <h1 id="pepper-c-api-reference-dev">Pepper C API Reference (Dev)</h1>
-<p>This page lists the C API for Pepper 36. Apps that use this API can
-run in Chrome 36 or higher.</p>
+<p>This page lists the C API for Pepper 37. Apps that use this API can
+run in Chrome 37 or higher.</p>
 <section id="id1">
 <h2 id="id1"><a class="reference external" href="group___interfaces.html">Interfaces</a></h2>
 <blockquote>
@@ -11,6 +11,8 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="struct_p_p_b___audio__1__1.html">PPB_Audio</a></li>
 <li><a class="reference external" href="struct_p_p_b___audio_buffer__0__1.html">PPB_AudioBuffer</a></li>
 <li><a class="reference external" href="struct_p_p_b___audio_config__1__1.html">PPB_AudioConfig</a></li>
+<li><a class="reference external" href="struct_p_p_b___compositor__0__1.html">PPB_Compositor</a></li>
+<li><a class="reference external" href="struct_p_p_b___compositor_layer__0__1.html">PPB_CompositorLayer</a></li>
 <li><a class="reference external" href="struct_p_p_b___console__1__0.html">PPB_Console</a></li>
 <li><a class="reference external" href="struct_p_p_b___core__1__0.html">PPB_Core</a></li>
 <li><a class="reference external" href="struct_p_p_b___file_i_o__1__1.html">PPB_FileIO</a></li>
@@ -30,7 +32,7 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a></li>
 <li><a class="reference external" href="struct_p_p_b___media_stream_video_track__1__0.html">PPB_MediaStreamVideoTrack</a></li>
 <li><a class="reference external" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a></li>
-<li><a class="reference external" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a></li>
+<li><a class="reference external" href="struct_p_p_b___messaging__1__1.html">PPB_Messaging</a></li>
 <li><a class="reference external" href="struct_p_p_b___mouse_cursor__1__0.html">PPB_MouseCursor</a></li>
 <li><a class="reference external" href="struct_p_p_b___mouse_input_event__1__1.html">PPB_MouseInputEvent</a></li>
 <li><a class="reference external" href="struct_p_p_b___mouse_lock__1__0.html">PPB_MouseLock</a></li>
@@ -57,6 +59,7 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="struct_p_p_p___graphics3_d__1__0.html">PPP_Graphics3D</a></li>
 <li><a class="reference external" href="struct_p_p_p___input_event__0__1.html">PPP_InputEvent</a></li>
 <li><a class="reference external" href="struct_p_p_p___instance__1__1.html">PPP_Instance</a></li>
+<li><a class="reference external" href="struct_p_p_p___message_handler__0__1.html">PPP_MessageHandler</a></li>
 <li><a class="reference external" href="struct_p_p_p___messaging__1__0.html">PPP_Messaging</a></li>
 <li><a class="reference external" href="struct_p_p_p___mouse_lock__1__0.html">PPP_MouseLock</a></li>
 </ul>
@@ -70,6 +73,8 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="struct_p_p___directory_entry.html">PP_DirectoryEntry</a></li>
 <li><a class="reference external" href="struct_p_p___file_info.html">PP_FileInfo</a></li>
 <li><a class="reference external" href="struct_p_p___float_point.html">PP_FloatPoint</a></li>
+<li><a class="reference external" href="struct_p_p___float_rect.html">PP_FloatRect</a></li>
+<li><a class="reference external" href="struct_p_p___float_size.html">PP_FloatSize</a></li>
 <li><a class="reference external" href="struct_p_p___gamepad_sample_data.html">PP_GamepadSampleData</a></li>
 <li><a class="reference external" href="struct_p_p___gamepads_sample_data.html">PP_GamepadsSampleData</a></li>
 <li><a class="reference external" href="struct_p_p___host_resolver___hint.html">PP_HostResolver_Hint</a></li>
@@ -124,6 +129,8 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="ppb__audio_8h.html">ppb_audio.h</a></li>
 <li><a class="reference external" href="ppb__audio__buffer_8h.html">ppb_audio_buffer.h</a></li>
 <li><a class="reference external" href="ppb__audio__config_8h.html">ppb_audio_config.h</a></li>
+<li><a class="reference external" href="ppb__compositor_8h.html">ppb_compositor.h</a></li>
+<li><a class="reference external" href="ppb__compositor__layer_8h.html">ppb_compositor_layer.h</a></li>
 <li><a class="reference external" href="ppb__console_8h.html">ppb_console.h</a></li>
 <li><a class="reference external" href="ppb__core_8h.html">ppb_core.h</a></li>
 <li><a class="reference external" href="ppb__file__io_8h.html">ppb_file_io.h</a></li>
@@ -166,6 +173,7 @@ run in Chrome 36 or higher.</p>
 <li><a class="reference external" href="ppp__graphics__3d_8h.html">ppp_graphics_3d.h</a></li>
 <li><a class="reference external" href="ppp__input__event_8h.html">ppp_input_event.h</a></li>
 <li><a class="reference external" href="ppp__instance_8h.html">ppp_instance.h</a></li>
+<li><a class="reference external" href="ppp__message__handler_8h.html">ppp_message_handler.h</a></li>
 <li><a class="reference external" href="ppp__messaging_8h.html">ppp_messaging.h</a></li>
 <li><a class="reference external" href="ppp__mouse__lock_8h.html">ppp_mouse_lock.h</a></li>
 </ul>

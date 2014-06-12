@@ -19,7 +19,9 @@ Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___point.html">PP_Point</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga15880e8085178758053cc521af33b250">PP_MakePoint</a> (int32_t x, int32_t y)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___float_point.html">PP_FloatPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga0aca79088546fe91d13c97db9033e709">PP_MakeFloatPoint</a> (float x, float y)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___rect.html">PP_Rect</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#gaf868e2929269ef195241b79a015fcf61">PP_MakeRectFromXYWH</a> (int32_t x, int32_t y, int32_t w, int32_t h)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___float_rect.html">PP_FloatRect</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga0d58c0f7ab657c5cdd92afe7b5da0fce">PP_MakeFloatRectFromXYWH</a> (float x, float y, float w, float h)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___size.html">PP_Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga35a97e64d18402d8feff46722b98beb0">PP_MakeSize</a> (int32_t w, int32_t h)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___float_size.html">PP_FloatSize</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#gaa45701f5b00be4d57637165ae9382251">PP_MakeFloatSize</a> (float w, float h)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___touch_point.html">PP_TouchPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#gae7f6d41cbb173c12f474242c2a3bf5e7">PP_MakeTouchPoint</a> (void)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___var.html">PP_Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga0edc8314fc1a92f93dd3d0eab286cb5d">PP_MakeUndefined</a> (void)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___var.html">PP_Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___functions.html#ga75f83ac65ccbf57866d52d45cd5792e7">PP_MakeNull</a> (void)</td></tr>
@@ -162,6 +164,90 @@ Functions</h2><table class="memberdecls">
 </table>
 </div>
 <div class="memdoc">
+</div>
+</div>
+<a class="anchor" id="ga0d58c0f7ab657c5cdd92afe7b5da0fce"></a><!-- doxytag: member="pp_rect.h::PP_MakeFloatRectFromXYWH" ref="ga0d58c0f7ab657c5cdd92afe7b5da0fce" args="(float x, float y, float w, float h)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">struct <a class="el" href="struct_p_p___float_rect.html">PP_FloatRect</a> <a class="el" href="group___functions.html#ga0d58c0f7ab657c5cdd92afe7b5da0fce">PP_MakeFloatRectFromXYWH</a> </td>
+<td>(</td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>x</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>y</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>w</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>h</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td><code> [read]</code></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p><a class="el" href="group___functions.html#ga0d58c0f7ab657c5cdd92afe7b5da0fce" title="PP_MakeFloatRectFromXYWH() creates a PP_FloatRect given x and y coordinates and width and height dime...">PP_MakeFloatRectFromXYWH()</a> creates a <code><a class="el" href="struct_p_p___float_rect.html" title="The PP_FloatRect struct contains the size and location of a 2D rectangle.">PP_FloatRect</a></code> given x and y coordinates and width and height dimensions as float values. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>An float value representing a horizontal coordinate of a point, starting with 0 as the left-most coordinate. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>An float value representing a vertical coordinate of a point, starting with 0 as the top-most coordinate. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">w</td><td>An float value representing a width. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>An float value representing a height.</td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code><a class="el" href="struct_p_p___float_rect.html" title="The PP_FloatRect struct contains the size and location of a 2D rectangle.">PP_FloatRect</a></code> structure. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="gaa45701f5b00be4d57637165ae9382251"></a><!-- doxytag: member="pp_size.h::PP_MakeFloatSize" ref="gaa45701f5b00be4d57637165ae9382251" args="(float w, float h)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">struct <a class="el" href="struct_p_p___float_size.html">PP_FloatSize</a> <a class="el" href="group___functions.html#gaa45701f5b00be4d57637165ae9382251">PP_MakeFloatSize</a> </td>
+<td>(</td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>w</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">float&#160;</td>
+<td class="paramname"><em>h</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td><code> [read]</code></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p><a class="el" href="group___functions.html#gaa45701f5b00be4d57637165ae9382251" title="PP_MakeFloatSize() creates a PP_FloatSize given a width and height as float values.">PP_MakeFloatSize()</a> creates a <code><a class="el" href="struct_p_p___float_size.html" title="The PP_FloatSize struct contains the size of a 2D rectangle.">PP_FloatSize</a></code> given a width and height as float values. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">w</td><td>An float value representing a width. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>An float value representing a height.</td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code><a class="el" href="struct_p_p___float_size.html" title="The PP_FloatSize struct contains the size of a 2D rectangle.">PP_FloatSize</a></code> structure. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="gad14a59fa681d4cc532b3d49c0438f0ca"></a><!-- doxytag: member="pp_var.h::PP_MakeInt32" ref="gad14a59fa681d4cc532b3d49c0438f0ca" args="(int32_t value)" -->

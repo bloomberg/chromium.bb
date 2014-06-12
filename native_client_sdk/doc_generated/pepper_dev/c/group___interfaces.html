@@ -16,6 +16,10 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___audio_buffer__0__1.html">PPB_AudioBuffer</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___audio_config__1__1.html">PPB_AudioConfig</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_AudioConfig</code> interface contains pointers to several functions for establishing your audio configuration within the browser.  <a href="struct_p_p_b___audio_config__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___compositor__0__1.html">PPB_Compositor</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the <code>PPB_Compositor</code> interface.  <a href="struct_p_p_b___compositor__0__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___compositor_layer__0__1.html">PPB_CompositorLayer</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the <code>PPB_CompositorLayer</code> interface.  <a href="struct_p_p_b___compositor_layer__0__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___console__1__0.html">PPB_Console</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___core__1__0.html">PPB_Core</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_Core</code> interface contains pointers to functions related to memory management, time, and threads on the browser.  <a href="struct_p_p_b___core__1__0.html#details">More...</a><br /></td></tr>
@@ -56,8 +60,8 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_video_track__1__0.html">PPB_MediaStreamVideoTrack</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A message loop allows PPAPI calls to be issued on a thread.  <a href="struct_p_p_b___message_loop__1__0.html#details">More...</a><br /></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_Messaging</code> interface is implemented by the browser and is related to sending messages to JavaScript message event listeners on the DOM element associated with specific module instance.  <a href="struct_p_p_b___messaging__1__0.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___messaging__1__1.html">PPB_Messaging</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_Messaging</code> interface is implemented by the browser and is related to sending messages to JavaScript message event listeners on the DOM element associated with specific module instance.  <a href="struct_p_p_b___messaging__1__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___mouse_cursor__1__0.html">PPB_MouseCursor</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_MouseCursor</code> allows setting the mouse cursor.  <a href="struct_p_p_b___mouse_cursor__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___mouse_lock__1__0.html">PPB_MouseLock</a></td></tr>
@@ -101,6 +105,8 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_p___input_event__0__1.html">PPP_InputEvent</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_p___instance__1__1.html">PPP_Instance</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPP_Instance</code> interface contains pointers to a series of functions that you must implement in your module.  <a href="struct_p_p_p___instance__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_p___message_handler__0__1.html">PPP_MessageHandler</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPP_MessageHandler</code> interface is implemented by the plugin if the plugin wants to receive messages from a thread other than the main Pepper thread, or if the plugin wants to handle blocking messages which JavaScript may send via postMessageAndAwaitResponse().  <a href="struct_p_p_p___message_handler__0__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_p___messaging__1__0.html">PPP_Messaging</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPP_Messaging</code> interface contains pointers to functions that you must implement to handle postMessage events on the associated DOM element.  <a href="struct_p_p_p___messaging__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_p___mouse_lock__1__0.html">PPP_MouseLock</a></td></tr>
@@ -136,7 +142,6 @@ Typedefs</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga7eb38be0c7c0450e02840804b0b8b9d3">PPB_MediaStreamAudioTrack</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae3eb3482b0fb57fb6a4eb05c07908788">PPB_MessageLoop</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gac53fe3a3b5941f8b3608349f58ee24f0">PPB_Messaging</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___mouse_cursor__1__0.html">PPB_MouseCursor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae583d9ea6381e1e4cb7b462c35c5d1de">PPB_MouseCursor</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___mouse_lock__1__0.html">PPB_MouseLock</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga9d5fa32b9c90b100400161025fda2617">PPB_MouseLock</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___net_address__1__0.html">PPB_NetAddress</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gad6c325ff5a0a74f318a680971d0a7c52">PPB_NetAddress</a></td></tr>
@@ -403,18 +408,6 @@ Typedefs</h2><table class="memberdecls">
 <table class="memname">
 <tr>
 <td class="memname">typedef struct <a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a> <a class="el" href="group___interfaces.html#gae3eb3482b0fb57fb6a4eb05c07908788">PPB_MessageLoop</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-</div>
-</div>
-<a class="anchor" id="gac53fe3a3b5941f8b3608349f58ee24f0"></a><!-- doxytag: member="ppb_messaging.h::PPB_Messaging" ref="gac53fe3a3b5941f8b3608349f58ee24f0" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname">typedef struct <a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a> <a class="el" href="group___interfaces.html#gac53fe3a3b5941f8b3608349f58ee24f0">PPB_Messaging</a></td>
 </tr>
 </table>
 </div>

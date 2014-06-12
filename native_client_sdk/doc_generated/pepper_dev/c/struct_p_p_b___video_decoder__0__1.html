@@ -66,7 +66,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Decodes a bitstream buffer. </p>
-<p>Copies |size| bytes of data from the plugin's |buffer|. The plugin should maintain the buffer and not call <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> again until the decoder signals completion by returning PP_OK or by running |callback|.</p>
+<p>Copies |size| bytes of data from the plugin's |buffer|. The plugin should wait until the decoder signals completion by returning PP_OK or by running |callback| before calling <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> again.</p>
 <p>In general, each bitstream buffer should contain a demuxed bitstream frame for the selected video codec. For example, H264 decoders expect to receive one AnnexB NAL unit, including the 4 byte start code prefix, while VP8 decoders expect to receive a bitstream frame without the IVF frame header.</p>
 <p>If the call to <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> eventually results in a picture, the |decode_id| parameter is copied into the returned picture. The plugin can use this to associate decoded pictures with <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> calls (e.g. to assign timestamps or frame numbers to pictures.) This value is opaque to the API so the plugin is free to pass any value.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -79,7 +79,7 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_ERROR_FAILED if the decoder isn't initialized or if a <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a56052b4cdde98dbed1f8fdc3df379eb4" title="Flushes the decoder.">Flush()</a> or <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> call is pending. Returns PP_ERROR_INPROGRESS if there is another <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> call pending. Returns PP_ERROR_NOMEMORY if a bitstream buffer can't be created. Returns PP_ERROR_ABORTED when <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> is called while <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> is pending. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a56052b4cdde98dbed1f8fdc3df379eb4"></a><!-- doxytag: member="PPB_VideoDecoder::Flush" ref="a56052b4cdde98dbed1f8fdc3df379eb4" args=")(PP_Resource video_decoder, struct PP_CompletionCallback callback)" -->
@@ -93,7 +93,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Flushes the decoder. </p>
-<p>The plugin should call this when it reaches the end of its video stream in order to stop cleanly. The decoder will run all pending calls to completion. The plugin should make no further calls to the decoder other than <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> and <a class="el" href="struct_p_p_b___video_decoder__0__1.html#ae65877f22dc977a0747271809a741297" title="Recycles a picture that the plugin has received from the decoder.">RecyclePicture()</a> until the decoder signals completion by running the callback. Just before completion, any pending <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> call will complete by running the callback with result PP_ERROR_ABORTED to signal that no more pictures are available.</p>
+<p>The plugin should call <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a56052b4cdde98dbed1f8fdc3df379eb4" title="Flushes the decoder.">Flush()</a> when it reaches the end of its video stream in order to stop cleanly. The decoder will run any pending <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> call to completion. The plugin should make no further calls to the decoder other than <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> and <a class="el" href="struct_p_p_b___video_decoder__0__1.html#ae65877f22dc977a0747271809a741297" title="Recycles a picture that the plugin has received from the decoder.">RecyclePicture()</a> until the decoder signals completion by running |callback|. Just before completion, any pending <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> call will complete by running its callback with result PP_ERROR_ABORTED to signal that no more pictures are available. The plugin should recycle any pictures it is using before resuming decoding.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">video_decoder</td><td>A <code>PP_Resource</code> identifying the video decoder. </td></tr>
@@ -101,7 +101,7 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_ERROR_FAILED if the decoder isn't initialized. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="aa058b25aa12485118536fb42130b367a"></a><!-- doxytag: member="PPB_VideoDecoder::GetPicture" ref="aa058b25aa12485118536fb42130b367a" args=")(PP_Resource video_decoder, struct PP_VideoPicture *picture, struct PP_CompletionCallback callback)" -->
@@ -124,7 +124,7 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_OK if a picture is available. Returns PP_ERROR_ABORTED when <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> is called, or if a call to <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a56052b4cdde98dbed1f8fdc3df379eb4" title="Flushes the decoder.">Flush()</a> completes while <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> is pending. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_ERROR_FAILED if the decoder isn't initialized or if a <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> call is pending. Returns PP_ERROR_INPROGRESS if there is another <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> call pending. Returns PP_ERROR_ABORTED when <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> is called, or if a call to <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a56052b4cdde98dbed1f8fdc3df379eb4" title="Flushes the decoder.">Flush()</a> completes while <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a> is pending. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a477ac82814cc6677b082c6044df81b18"></a><!-- doxytag: member="PPB_VideoDecoder::Initialize" ref="a477ac82814cc6677b082c6044df81b18" args=")(PP_Resource video_decoder, PP_Resource graphics3d_context, PP_VideoProfile profile, PP_Bool allow_software_fallback, struct PP_CompletionCallback callback)" -->
@@ -204,7 +204,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Resets the decoder as quickly as possible. </p>
-<p>The plugin can call <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> to skip to another position in the video stream. Pending calls to <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> and <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a>) are immediately aborted, causing their callbacks to run with PP_ERROR_ABORTED. The plugin should not make any further calls to the decoder until the decoder signals completion by running |callback|.</p>
+<p>The plugin can call <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> to skip to another position in the video stream. After <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a0ad3178247894ca37eadd796d157581a" title="Resets the decoder as quickly as possible.">Reset()</a> returns, any pending calls to <a class="el" href="struct_p_p_b___video_decoder__0__1.html#a8e2c5a3b99eff16845b8335be36e6d4c" title="Decodes a bitstream buffer.">Decode()</a> and <a class="el" href="struct_p_p_b___video_decoder__0__1.html#aa058b25aa12485118536fb42130b367a" title="Gets the next picture from the decoder.">GetPicture()</a>) abort, causing their callbacks to run with PP_ERROR_ABORTED. The plugin should not make further calls to the decoder until the decoder signals completion by running |callback|. The pictures in use by the plugin remain valid until decoding is resumed, but need not be recycled.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">video_decoder</td><td>A <code>PP_Resource</code> identifying the video decoder. </td></tr>
@@ -212,7 +212,7 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_ERROR_FAILED if the decoder isn't initialized. </dd></dl>
 </div>
 </div>
 <hr />The documentation for this struct was generated from the following file:<ul>

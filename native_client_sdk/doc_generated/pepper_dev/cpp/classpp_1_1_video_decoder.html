@@ -145,7 +145,7 @@ Public Member Functions</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Decodes a bitstream buffer. </p>
-<p>Copies |size| bytes of data from the plugin's |buffer|. The plugin should maintain the buffer and not call <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> again until the decoder signals completion by returning PP_OK or by running |callback|.</p>
+<p>Copies |size| bytes of data from the plugin's |buffer|. The plugin should wait until the decoder signals completion by returning PP_OK or by running |callback| before calling <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> again.</p>
 <p>In general, each bitstream buffer should contain a demuxed bitstream frame for the selected video codec. For example, H264 decoders expect to receive one AnnexB NAL unit, including the 4 byte start code prefix, while VP8 decoders expect to receive a bitstream frame without the IVF frame header.</p>
 <p>If the call to <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> eventually results in a picture, the |decode_id| parameter is copied into the returned picture. The plugin can use this to associate decoded pictures with <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> calls (e.g. to assign timestamps or frame numbers to pictures.) This value is opaque to the API so the plugin is free to pass any value.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -157,7 +157,7 @@ Public Member Functions</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Returns PP_ERROR_FAILED if the decoder isn't initialized or if a <a class="el" href="classpp_1_1_video_decoder.html#adb59ebce58f83b1c27e9c427596fb366" title="Flushes the decoder.">Flush()</a> or <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> call is pending. Returns PP_ERROR_INPROGRESS if there is another <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> call pending. Returns PP_ERROR_NOMEMORY if a bitstream buffer can't be created. Returns PP_ERROR_ABORTED when <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> is called while <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> is pending. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="adb59ebce58f83b1c27e9c427596fb366"></a><!-- doxytag: member="pp::VideoDecoder::Flush" ref="adb59ebce58f83b1c27e9c427596fb366" args="(const CompletionCallback &amp;callback)" -->
@@ -175,14 +175,14 @@ Public Member Functions</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Flushes the decoder. </p>
-<p>The plugin should call this when it reaches the end of its video stream in order to stop cleanly. The decoder will run all pending calls to completion. The plugin should make no further calls to the decoder other than <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> and <a class="el" href="classpp_1_1_video_decoder.html#a7b9c4917ebd205572a0fe69a34f1bfd9" title="Recycles a picture that the plugin has received from the decoder.">RecyclePicture()</a> until the decoder signals completion by running the callback. Just before completion, any pending <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> call will complete by running the callback with result PP_ERROR_ABORTED to signal that no more pictures are available.</p>
+<p>The plugin should call <a class="el" href="classpp_1_1_video_decoder.html#adb59ebce58f83b1c27e9c427596fb366" title="Flushes the decoder.">Flush()</a> when it reaches the end of its video stream in order to stop cleanly. The decoder will run any pending <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> call to completion. The plugin should make no further calls to the decoder other than <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> and <a class="el" href="classpp_1_1_video_decoder.html#a7b9c4917ebd205572a0fe69a34f1bfd9" title="Recycles a picture that the plugin has received from the decoder.">RecyclePicture()</a> until the decoder signals completion by running |callback|. Just before completion, any pending <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> call will complete by running its callback with result PP_ERROR_ABORTED to signal that no more pictures are available. The plugin should recycle any pictures it is using before resuming decoding.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called on completion.</td></tr>
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Returns PP_ERROR_FAILED if the decoder isn't initialized. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="aec1a1bc95b8d3eea64b942af48dff02a"></a><!-- doxytag: member="pp::VideoDecoder::GetPicture" ref="aec1a1bc95b8d3eea64b942af48dff02a" args="(const CompletionCallbackWithOutput&lt; PP_VideoPicture &gt; &amp;callback)" -->
@@ -208,7 +208,7 @@ Public Member Functions</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Returns PP_OK if a picture is available. Returns PP_ERROR_ABORTED when <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> is called, or if a call to <a class="el" href="classpp_1_1_video_decoder.html#adb59ebce58f83b1c27e9c427596fb366" title="Flushes the decoder.">Flush()</a> completes while <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> is pending. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Returns PP_ERROR_FAILED if the decoder isn't initialized or if a <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> call is pending. Returns PP_ERROR_INPROGRESS if there is another <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> call pending. Returns PP_ERROR_ABORTED when <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> is called, or if a call to <a class="el" href="classpp_1_1_video_decoder.html#adb59ebce58f83b1c27e9c427596fb366" title="Flushes the decoder.">Flush()</a> completes while <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a> is pending. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a8f576cfbd03dc0ef97a49c9f0a667a16"></a><!-- doxytag: member="pp::VideoDecoder::Initialize" ref="a8f576cfbd03dc0ef97a49c9f0a667a16" args="(const Graphics3D &amp;graphics3d_context, PP_VideoProfile profile, bool allow_software_fallback, const CompletionCallback &amp;callback)" -->
@@ -300,14 +300,14 @@ Public Member Functions</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Resets the decoder as quickly as possible. </p>
-<p>The plugin can call <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> to skip to another position in the video stream. Pending calls to <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> and <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a>) are immediately aborted, causing their callbacks to run with PP_ERROR_ABORTED. The plugin should not make any further calls to the decoder until the decoder signals completion by running |callback|.</p>
+<p>The plugin can call <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> to skip to another position in the video stream. After <a class="el" href="classpp_1_1_video_decoder.html#aa05481906b07e929c9567bc22a48917a" title="Resets the decoder as quickly as possible.">Reset()</a> returns, any pending calls to <a class="el" href="classpp_1_1_video_decoder.html#a2f1a48cf6d2f1854b20e6a747c9b03e3" title="Decodes a bitstream buffer.">Decode()</a> and <a class="el" href="classpp_1_1_video_decoder.html#aec1a1bc95b8d3eea64b942af48dff02a" title="Gets the next picture from the decoder.">GetPicture()</a>) abort, causing their callbacks to run with PP_ERROR_ABORTED. The plugin should not make further calls to the decoder until the decoder signals completion by running |callback|. The pictures in use by the plugin remain valid until decoding is resumed, but need not be recycled.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called on completion.</td></tr>
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Returns PP_ERROR_FAILED if the decoder isn't initialized. </dd></dl>
 </div>
 </div>
 <hr />The documentation for this class was generated from the following file:<ul>
