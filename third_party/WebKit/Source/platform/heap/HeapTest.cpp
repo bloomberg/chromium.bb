@@ -4272,4 +4272,78 @@ TEST(HeapTest, Bind)
     EXPECT_EQ(1, UseMixin::s_traceCount);
 }
 
+typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
+
+// These special traits will remove a set from a map when the set is empty.
+struct EmptyClearingHastSetTraits : HashTraits<WeakSet> {
+    static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
+    static bool shouldRemoveFromCollection(Visitor* visitor, WeakSet& set)
+    {
+        return set.isEmpty(); // Remove this set from any maps it is in.
+    }
+    static void traceInCollection(Visitor* visitor, WeakSet& set, WebCore::ShouldWeakPointersBeMarkedStrongly strongify)
+    {
+        // We just trace normally, which will invoke the normal weak handling
+        // of the set, removing individual items.
+        set.trace(visitor);
+    }
+};
+
+// This is an example to show how you can remove entries from a T->WeakSet map
+// when the weak sets become empty. For this example we are using a type that
+// is given to use (HeapHashSet) rather than a type of our own. This means:
+// 1) We can't just override the HashTrait for the type since this would affect
+//    all collections that use this kind of weak set. Instead we have our own
+//    traits and use a map with custom traits for the value type. These traits
+//    are the 5th template parameter, so we have to supply default values for
+//    the 3rd and 4th template parameters
+// 2) We can't just inherit from WeakHandlingHashTraits, since that trait
+//    assumes we can add methods to the type, but we can't add methods to
+//    HeapHashSet.
+TEST(HeapTest, RemoveEmptySets)
+{
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    OffHeapInt::s_destructorCalls = 0;
+
+    Persistent<IntWrapper> livingInt(IntWrapper::create(42));
+
+    typedef RefPtr<OffHeapInt> Key;
+    typedef HeapHashMap<Key, WeakSet, WTF::DefaultHash<Key>::Hash, HashTraits<Key>, EmptyClearingHastSetTraits> Map;
+    Persistent<Map> map(new Map());
+    map->add(OffHeapInt::create(1), WeakSet());
+    {
+        WeakSet& set = map->begin()->value;
+        set.add(IntWrapper::create(103)); // Weak set can't hold this long.
+        set.add(livingInt); // This prevents the set from being emptied.
+        EXPECT_EQ(2u, set.size());
+    }
+
+    // The set we add here is empty, so the entry will be removed from the map
+    // at the next GC.
+    map->add(OffHeapInt::create(2), WeakSet());
+    EXPECT_EQ(2u, map->size());
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1u, map->size()); // The one with key 2 was removed.
+    EXPECT_EQ(1, OffHeapInt::s_destructorCalls);
+    {
+        WeakSet& set = map->begin()->value;
+        EXPECT_EQ(1u, set.size());
+    }
+
+    livingInt.clear(); // The weak set can no longer keep the '42' alive now.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    if (map->size() == 1u) {
+        // If the weak processing for the set ran after the weak processing for
+        // the map, then the set was not empty, and so the entry in the map was
+        // not removed yet.
+        WeakSet& set = map->begin()->value;
+        EXPECT_EQ(0u, set.size());
+    }
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, map->size());
+}
+
 } // WebCore namespace
