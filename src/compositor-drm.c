@@ -921,7 +921,9 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	struct weston_compositor *ec = output->base.compositor;
 	struct drm_backend *b = (struct drm_backend *)ec->backend;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	struct wl_resource *buffer_resource;
 	struct drm_sprite *s;
+	struct linux_dmabuf_buffer *dmabuf;
 	int found = 0;
 	struct gbm_bo *bo;
 	pixman_region32_t dest_rect, src_rect;
@@ -946,11 +948,12 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 
 	if (ev->surface->buffer_ref.buffer == NULL)
 		return NULL;
+	buffer_resource = ev->surface->buffer_ref.buffer->resource;
 
 	if (ev->alpha != 1.0f)
 		return NULL;
 
-	if (wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource))
+	if (wl_shm_buffer_get(buffer_resource))
 		return NULL;
 
 	if (!drm_view_transform_supported(ev))
@@ -970,9 +973,31 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	if (!found)
 		return NULL;
 
-	bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   ev->surface->buffer_ref.buffer->resource,
-			   GBM_BO_USE_SCANOUT);
+	if ((dmabuf = linux_dmabuf_buffer_get(buffer_resource))) {
+		/* XXX: TODO:
+		 *
+		 * Use AddFB2 directly, do not go via GBM.
+		 * Add support for multiplanar formats.
+		 * Both require refactoring in the DRM-backend to
+		 * support a mix of gbm_bos and drmfbs.
+		 */
+		struct gbm_import_fd_data gbm_dmabuf = {
+			.fd     = dmabuf->dmabuf_fd[0],
+			.width  = dmabuf->width,
+			.height = dmabuf->height,
+			.stride = dmabuf->stride[0],
+			.format = dmabuf->format
+		};
+
+		if (dmabuf->n_planes != 1 || dmabuf->offset[0] != 0)
+			return NULL;
+
+		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
+				   GBM_BO_USE_SCANOUT);
+	} else {
+		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
+				   buffer_resource, GBM_BO_USE_SCANOUT);
+	}
 	if (!bo)
 		return NULL;
 
