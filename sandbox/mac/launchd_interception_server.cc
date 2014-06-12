@@ -55,7 +55,9 @@ void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
   VLOG(3) << "Incoming message #" << request->msgh_id;
 
   pid_t sender_pid = message_server_->GetMessageSenderPID(request);
-  if (sandbox_->PolicyForProcess(sender_pid) == NULL) {
+  const BootstrapSandboxPolicy* policy =
+      sandbox_->PolicyForProcess(sender_pid);
+  if (policy == NULL) {
     // No sandbox policy is in place for the sender of this message, which
     // means it is from the sandbox host process or an unsandboxed child.
     VLOG(3) << "Message from pid " << sender_pid << " forwarded to launchd";
@@ -66,10 +68,10 @@ void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
   if (request->msgh_id == compat_shim_.msg_id_look_up2) {
     // Filter messages sent via bootstrap_look_up to enforce the sandbox policy
     // over the bootstrap namespace.
-    HandleLookUp(request, reply, sender_pid);
+    HandleLookUp(request, reply, policy);
   } else if (request->msgh_id == compat_shim_.msg_id_swap_integer) {
     // Ensure that any vproc_swap_integer requests are safe.
-    HandleSwapInteger(request, reply, sender_pid);
+    HandleSwapInteger(request, reply);
   } else {
     // All other messages are not permitted.
     VLOG(1) << "Rejecting unhandled message #" << request->msgh_id;
@@ -77,16 +79,16 @@ void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
   }
 }
 
-void LaunchdInterceptionServer::HandleLookUp(mach_msg_header_t* request,
-                                             mach_msg_header_t* reply,
-                                             pid_t sender_pid) {
+void LaunchdInterceptionServer::HandleLookUp(
+    mach_msg_header_t* request,
+    mach_msg_header_t* reply,
+    const BootstrapSandboxPolicy* policy) {
   const std::string request_service_name(
       compat_shim_.look_up2_get_request_name(request));
   VLOG(2) << "Incoming look_up2 request for " << request_service_name;
 
-  // Find the Rule for this service. If one is not found, use
-  // a safe default, POLICY_DENY_ERROR.
-  const BootstrapSandboxPolicy* policy = sandbox_->PolicyForProcess(sender_pid);
+  // Find the Rule for this service. If a named rule is not found, use the
+  // default specified by the policy.
   const BootstrapSandboxPolicy::NamedRules::const_iterator it =
       policy->rules.find(request_service_name);
   Rule rule(policy->default_rule);
@@ -131,8 +133,7 @@ void LaunchdInterceptionServer::HandleLookUp(mach_msg_header_t* request,
 }
 
 void LaunchdInterceptionServer::HandleSwapInteger(mach_msg_header_t* request,
-                                                  mach_msg_header_t* reply,
-                                                  pid_t sender_pid) {
+                                                  mach_msg_header_t* reply) {
   // Only allow getting information out of launchd. Do not allow setting
   // values. Two commonly observed values that are retrieved are
   // VPROC_GSK_MGR_PID and VPROC_GSK_TRANSACTIONS_ENABLED.

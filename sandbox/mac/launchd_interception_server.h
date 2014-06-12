@@ -16,6 +16,7 @@
 namespace sandbox {
 
 class BootstrapSandbox;
+struct BootstrapSandboxPolicy;
 
 // This class is used to run a Mach IPC message server. This server can
 // hold the receive right for a bootstrap_port of a process, and it filters
@@ -41,14 +42,13 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   // policy for the service name then formulates and sends the reply message.
   void HandleLookUp(mach_msg_header_t* request,
                     mach_msg_header_t* reply,
-                    pid_t sender_pid);
+                    const BootstrapSandboxPolicy* policy);
 
   // Given a swap_integer request message, this verifies that it is safe, and
   // if so, forwards it on to launchd for servicing. If the request is unsafe,
   // it replies with an error.
   void HandleSwapInteger(mach_msg_header_t* request,
-                         mach_msg_header_t* reply,
-                         pid_t sender_pid);
+                         mach_msg_header_t* reply);
 
   // Forwards the original |request| on to real bootstrap server for handling.
   void ForwardMessage(mach_msg_header_t* request);
