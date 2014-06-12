@@ -6,6 +6,9 @@ import sys
 
 from metrics import histogram_util
 from metrics import Metric
+from telemetry.value import histogram
+from telemetry.value import scalar
+
 
 _HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent',
@@ -93,9 +96,9 @@ class MemoryMetric(Metric):
       # Histogram data may not be available
       if h['name'] not in self._histogram_start:
         continue
-      results.Add(h['display_name'], h['units'],
-                  self._histogram_delta[h['name']],
-                  data_type='unimportant-histogram')
+      results.AddValue(histogram.HistogramValue(
+          results.current_page, h['display_name'], h['units'],
+          raw_value_json=self._histogram_delta[h['name']], important=False))
     self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:
       return
@@ -104,14 +107,17 @@ class MemoryMetric(Metric):
 
     end_commit_charge = self._memory_stats['SystemCommitCharge']
     commit_charge_difference = end_commit_charge - self._start_commit_charge
-    results.Add(trace_name or 'commit_charge', 'kb',
-                commit_charge_difference,
-                chart_name='commit_charge',
-                data_type='unimportant')
-    results.Add(trace_name or 'processes', 'count',
-                self._memory_stats['ProcessCount'],
-                chart_name='processes',
-                data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page,
+        'commit_charge.' + (trace_name or 'commit_charge'),
+        'kb',
+        commit_charge_difference, important=False))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page,
+        'processes.' + (trace_name or 'processes'),
+        'count',
+        self._memory_stats['ProcessCount'],
+        important=False))
 
 
 def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
@@ -163,8 +169,9 @@ def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
         else:
           current_trace = '%s_%s' % (value_name_trace, process_type_trace)
           chart_name = current_trace
-        results.Add(current_trace, 'kb', sum(values) / 1024,
-                    chart_name=chart_name, data_type='unimportant')
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, '%s.%s' % (chart_name, current_trace), 'kb',
+            sum(values) / 1024, important=False))
 
     AddResult('VM', 'vm_%s_size' % chart_trace_name)
     AddResult('WorkingSetSize', 'vm_%s_%s_size' % (metric, chart_trace_name))
