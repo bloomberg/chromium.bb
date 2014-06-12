@@ -407,16 +407,16 @@ private:
     // children.
     virtual RenderBlock* firstLineBlock() const OVERRIDE;
 
-    virtual LayoutRect rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const OVERRIDE FINAL;
-    virtual RenderStyle* outlineStyleForRepaint() const OVERRIDE FINAL;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const OVERRIDE FINAL;
+    virtual RenderStyle* outlineStyleForPaintInvalidation() const OVERRIDE FINAL;
 
     virtual RenderObject* hoverAncestor() const OVERRIDE FINAL;
     virtual void updateDragState(bool dragOn) OVERRIDE FINAL;
     virtual void childBecameNonInline(RenderObject* child) OVERRIDE FINAL;
 
-    virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool /*clipToVisibleContent*/) OVERRIDE FINAL
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool /*clipToVisibleContent*/) OVERRIDE FINAL
     {
-        return selectionGapRectsForRepaint(repaintContainer);
+        return selectionGapRectsForRepaint(paintInvalidationContainer);
     }
     virtual bool shouldPaintSelectionGaps() const OVERRIDE FINAL;
     bool isSelectionRoot() const;

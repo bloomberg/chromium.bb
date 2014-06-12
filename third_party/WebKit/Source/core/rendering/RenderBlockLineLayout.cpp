@@ -1222,7 +1222,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
     for (size_t i = 0; i < floatCount; ++i) {
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
-            if (!f->x() && !f->y() && f->checkForRepaint()) {
+            if (!f->x() && !f->y() && f->checkForPaintInvalidation()) {
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                     f->setShouldDoFullPaintInvalidationAfterLayout(true);
                 else
@@ -1831,7 +1831,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     if (layoutState.isFullLayout()) {
         // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
         if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
-            setNeedsLayoutAndFullRepaint(MarkOnlyThis);
+            setNeedsLayoutAndFullPaintInvalidation(MarkOnlyThis);
             if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                 setShouldDoFullPaintInvalidationAfterLayout(true);
         }

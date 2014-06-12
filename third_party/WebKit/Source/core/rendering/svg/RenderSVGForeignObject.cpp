@@ -159,11 +159,11 @@ void RenderSVGForeignObject::layout()
     repainter.repaintAfterLayout();
 }
 
-void RenderSVGForeignObject::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer,
+void RenderSVGForeignObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer,
     LayoutRect& rect, bool fixed) const
 {
     FloatRect r(rect);
-    SVGRenderSupport::computeFloatRectForRepaint(this, repaintContainer, r, fixed);
+    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, r, fixed);
     rect = enclosingLayoutRect(r);
 }
 

@@ -1574,15 +1574,15 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    bool establishesNewPaintInvalidationContainer = isRepaintContainer();
+    bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationContainer);
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
-    // ASSERT(&newPaintInvalidationContainer == containerForRepaint());
+    // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    setPreviousPaintInvalidationRect(boundsRectForRepaint(&newPaintInvalidationContainer));
-    setPreviousPositionFromPaintInvalidationContainer(positionFromRepaintContainer(&newPaintInvalidationContainer));
+    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(positionFromPaintInvalidationContainer(&newPaintInvalidationContainer));
 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
@@ -1989,7 +1989,7 @@ void RenderBox::deleteLineBoxWrapper()
     }
 }
 
-LayoutRect RenderBox::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
         return LayoutRect();
@@ -2003,11 +2003,11 @@ LayoutRect RenderBox::clippedOverflowRectForRepaint(const RenderLayerModelObject
         r.move(v->layoutDelta());
     }
 
-    mapRectToRepaintBacking(repaintContainer, r);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
     return r;
 }
 
-void RenderBox::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -2015,12 +2015,12 @@ void RenderBox::mapRectToRepaintBacking(const RenderLayerModelObject* repaintCon
     // properly even during layout, since the rect remains flipped all the way until the end.
     //
     // RenderView::computeRectForRepaint then converts the rect to physical coordinates.  We also convert to
-    // physical when we hit a repaintContainer boundary.  Therefore the final rect returned is always in the
-    // physical coordinate space of the repaintContainer.
+    // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
+    // physical coordinate space of the paintInvalidationContainer.
     RenderStyle* styleToUse = style();
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative, non-fixed position repainting
-        if (v->canUseLayoutStateForContainer(repaintContainer) && styleToUse->position() != FixedPosition) {
+        if (v->canUseLayoutStateForContainer(paintInvalidationContainer) && styleToUse->position() != FixedPosition) {
             LayoutState* layoutState = v->layoutState();
 
             if (layer() && layer()->transform())
@@ -2041,14 +2041,14 @@ void RenderBox::mapRectToRepaintBacking(const RenderLayerModelObject* repaintCon
     if (hasReflection())
         rect.unite(reflectedRect(rect));
 
-    if (repaintContainer == this) {
-        if (repaintContainer->style()->isFlippedBlocksWritingMode())
+    if (paintInvalidationContainer == this) {
+        if (paintInvalidationContainer->style()->isFlippedBlocksWritingMode())
             flipForWritingMode(rect);
         return;
     }
 
     bool containerSkipped;
-    RenderObject* o = container(repaintContainer, &containerSkipped);
+    RenderObject* o = container(paintInvalidationContainer, &containerSkipped);
     if (!o)
         return;
 
@@ -2098,13 +2098,13 @@ void RenderBox::mapRectToRepaintBacking(const RenderLayerModelObject* repaintCon
     }
 
     if (containerSkipped) {
-        // If the repaintContainer is below o, then we need to map the rect into repaintContainer's coordinates.
-        LayoutSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
+        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         rect.move(-containerOffset);
         return;
     }
 
-    o->mapRectToRepaintBacking(repaintContainer, rect, fixed);
+    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
 }
 
 void RenderBox::repaintDuringLayoutIfMoved(const LayoutRect& oldRect)
@@ -4639,7 +4639,7 @@ static void markBoxForRelayoutAfterSplit(RenderBox* box)
     } else if (box->isTableSection())
         toRenderTableSection(box)->setNeedsCellRecalc();
 
-    box->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChild)
@@ -4658,7 +4658,7 @@ RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChil
             RenderBox* parentBox = toRenderBox(boxToSplit->parent());
             // We need to invalidate the |parentBox| before inserting the new node
             // so that the table repainting logic knows the structure is dirty.
-            // See for example RenderTableCell:clippedOverflowRectForRepaint.
+            // See for example RenderTableCell:clippedOverflowRectForPaintInvalidation.
             markBoxForRelayoutAfterSplit(parentBox);
             parentBox->virtualChildren()->insertChildNode(parentBox, postBox, boxToSplit->nextSibling());
             boxToSplit->moveChildrenTo(postBox, beforeChild, 0, true);

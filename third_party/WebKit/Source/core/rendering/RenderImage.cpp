@@ -223,7 +223,7 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
     bool containingBlockNeedsToRecomputePreferredSize =  style()->logicalWidth().isPercent() || style()->logicalMaxWidth().isPercent()  || style()->logicalMinWidth().isPercent();
 
     if (needsLayout || containingBlockNeedsToRecomputePreferredSize) {
-        setNeedsLayoutAndFullRepaint();
+        setNeedsLayoutAndFullPaintInvalidation();
         return;
     }
 

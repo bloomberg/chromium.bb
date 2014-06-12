@@ -439,12 +439,12 @@ void RenderFrameSet::layout()
 {
     ASSERT(needsLayout());
 
-    bool doFullRepaint = selfNeedsLayout() && checkForRepaintDuringLayout();
+    bool doFullRepaint = selfNeedsLayout() && checkForPaintInvalidationDuringLayout();
     LayoutRect oldBounds;
     const RenderLayerModelObject* repaintContainer = 0;
     if (doFullRepaint) {
-        repaintContainer = containerForRepaint();
-        oldBounds = boundsRectForRepaint(repaintContainer);
+        repaintContainer = containerForPaintInvalidation();
+        oldBounds = boundsRectForPaintInvalidation(repaintContainer);
     }
 
     if (!parent()->isFrameSet() && !document().printing()) {
@@ -474,7 +474,7 @@ void RenderFrameSet::layout()
 
     if (doFullRepaint) {
         invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationSelfLayout);
-        LayoutRect newBounds = boundsRectForRepaint(repaintContainer);
+        LayoutRect newBounds = boundsRectForPaintInvalidation(repaintContainer);
         if (newBounds != oldBounds)
             invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), InvalidationSelfLayout);
     }
@@ -514,7 +514,7 @@ void RenderFrameSet::positionFrames()
             if (width != child->width() || height != child->height()) {
                 child->setWidth(width);
                 child->setHeight(height);
-                child->setNeedsLayoutAndFullRepaint();
+                child->setNeedsLayoutAndFullPaintInvalidation();
                 child->layout();
             }
 
@@ -554,7 +554,7 @@ void RenderFrameSet::continueResizing(GridAxis& axis, int position)
         return;
     axis.m_deltas[axis.m_splitBeingResized - 1] += delta;
     axis.m_deltas[axis.m_splitBeingResized] -= delta;
-    setNeedsLayoutAndFullRepaint();
+    setNeedsLayoutAndFullPaintInvalidation();
 }
 
 bool RenderFrameSet::userResize(MouseEvent* evt)

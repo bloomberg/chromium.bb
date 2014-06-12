@@ -208,7 +208,7 @@ void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
 void SVGSVGElement::updateCurrentTranslate()
 {
     if (RenderObject* object = renderer())
-        object->setNeedsLayoutAndFullRepaint();
+        object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -357,7 +357,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, cons
         return false;
 
     AffineTransform ctm = toSVGGraphicsElement(element).computeCTM(AncestorScope, DisallowStyleUpdate, this);
-    FloatRect mappedRepaintRect = ctm.mapRect(renderer->repaintRectInLocalCoordinates());
+    FloatRect mappedRepaintRect = ctm.mapRect(renderer->paintInvalidationRectInLocalCoordinates());
 
     bool result = false;
     switch (mode) {

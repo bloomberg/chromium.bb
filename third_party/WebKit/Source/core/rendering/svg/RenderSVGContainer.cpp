@@ -117,7 +117,7 @@ void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
     if (!firstChild() && !selfWillPaint())
         return;
 
-    FloatRect repaintRect = repaintRectInLocalCoordinates();
+    FloatRect repaintRect = paintInvalidationRectInLocalCoordinates();
     if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(repaintRect, localToParentTransform(), paintInfo))
         return;
 
@@ -138,7 +138,7 @@ void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
             continueRendering = renderingContext.isRenderingPrepared();
 
             if (continueRendering && document().settings()->containerCullingEnabled())
-                cullSaver.cull(repaintRectInLocalCoordinates());
+                cullSaver.cull(paintInvalidationRectInLocalCoordinates());
         }
 
         if (continueRendering) {
@@ -162,7 +162,7 @@ void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
 // addFocusRingRects is called from paintOutline and needs to be in the same coordinates as the paintOuline call
 void RenderSVGContainer::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint&, const RenderLayerModelObject*)
 {
-    IntRect paintRectInParent = enclosingIntRect(localToParentTransform().mapRect(repaintRectInLocalCoordinates()));
+    IntRect paintRectInParent = enclosingIntRect(localToParentTransform().mapRect(paintInvalidationRectInLocalCoordinates()));
     if (!paintRectInParent.isEmpty())
         rects.append(paintRectInParent);
 }

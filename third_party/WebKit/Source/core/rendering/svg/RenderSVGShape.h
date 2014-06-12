@@ -84,7 +84,7 @@ private:
     bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
     virtual const AffineTransform& localToParentTransform() const OVERRIDE FINAL { return m_localTransform; }
     virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
 

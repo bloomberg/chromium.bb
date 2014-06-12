@@ -66,7 +66,7 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*,
 
     clearInvalidationMask();
 
-    FloatRect repaintRect = object->repaintRectInLocalCoordinates();
+    FloatRect repaintRect = object->paintInvalidationRectInLocalCoordinates();
     if (repaintRect.isEmpty() || !element()->hasChildren())
         return false;
 
@@ -85,7 +85,7 @@ void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
-    FloatRect repaintRect = object->repaintRectInLocalCoordinates();
+    FloatRect repaintRect = object->paintInvalidationRectInLocalCoordinates();
 
     const SVGRenderStyle* svgStyle = style()->svgStyle();
     ASSERT(svgStyle);
@@ -133,7 +133,7 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
 {
     ASSERT(context);
 
-    // Using strokeBoundingBox (instead of repaintRectInLocalCoordinates) to avoid the intersection
+    // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     context->beginRecording(strokeBoundingBox());
@@ -160,7 +160,7 @@ void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
-        m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->repaintRectInLocalCoordinates()));
+        m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
     }
 }
 

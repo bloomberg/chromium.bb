@@ -40,12 +40,12 @@ LayoutRepainter::LayoutRepainter(RenderObject& object, bool checkForRepaint)
         return;
 
     if (m_checkForRepaint) {
-        m_repaintContainer = m_object.containerForRepaint();
+        m_repaintContainer = m_object.containerForPaintInvalidation();
         {
             // Hits in compositing/video/video-controls-layer-creation.html
             DisableCompositingQueryAsserts disabler;
-            m_oldBounds = m_object.boundsRectForRepaint(m_repaintContainer);
-            m_oldOffset = m_object.positionFromRepaintContainer(m_repaintContainer);
+            m_oldBounds = m_object.boundsRectForPaintInvalidation(m_repaintContainer);
+            m_oldOffset = m_object.positionFromPaintInvalidationContainer(m_repaintContainer);
         }
     }
 }

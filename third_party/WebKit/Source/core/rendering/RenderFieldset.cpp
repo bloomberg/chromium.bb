@@ -66,7 +66,7 @@ RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
     RenderBox* legend = findLegend();
     if (legend) {
         if (relayoutChildren)
-            legend->setNeedsLayoutAndFullRepaint();
+            legend->setNeedsLayoutAndFullPaintInvalidation();
         legend->layoutIfNeeded();
 
         LayoutUnit logicalLeft;

@@ -65,7 +65,7 @@ class RenderLayerRepainter {
 public:
     RenderLayerRepainter(RenderLayerModelObject&);
 
-    // Return a cached repaint rect, computed relative to the layer renderer's containerForRepaint.
+    // Return a cached repaint rect, computed relative to the layer renderer's containerForPaintInvalidation.
     LayoutRect repaintRect() const { return m_repaintRect; }
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 

@@ -736,7 +736,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     RefPtr<FrameView> frameView = ownerRenderer->frame()->view();
 
     // Mark the owner renderer as needing layout.
-    ownerRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    ownerRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 
     // Synchronously enter layout, to layout the view containing the host object/embed/iframe.
     ASSERT(frameView);
@@ -956,7 +956,7 @@ void FrameView::layout(bool allowSubtree)
                     rootRenderer->setChildNeedsLayout();
             }
 
-            // We need to set m_doFullPaintInvalidation before triggering layout as RenderObject::checkForRepaint
+            // We need to set m_doFullPaintInvalidation before triggering layout as RenderObject::checkForPaintInvalidation
             // checks the boolean to disable local paint invalidations.
             m_doFullPaintInvalidation |= renderView()->shouldDoFullRepaintForNextLayout();
         }
@@ -1044,7 +1044,7 @@ void FrameView::invalidateTree(RenderObject* root)
 
     RootLayoutStateScope rootLayoutStateScope(*root);
 
-    root->invalidateTreeAfterLayout(*root->containerForRepaint());
+    root->invalidateTreeAfterLayout(*root->containerForPaintInvalidation());
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1307,13 +1307,13 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
             if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayoutAndFullRepaint();
+                renderer->setNeedsLayoutAndFullPaintInvalidation();
         }
         if (heightChanged) {
             if (style->height().isFixed() && (style->top().isAuto() || style->bottom().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayoutAndFullRepaint();
+                renderer->setNeedsLayoutAndFullPaintInvalidation();
         }
     }
 }
@@ -1414,7 +1414,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
         IntRect updateRect = pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants());
 
-        const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
+        const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForPaintInvalidation();
         if (repaintContainer && !repaintContainer->isRenderView()) {
             // If the fixed-position layer is contained by a composited layer that is not its containing block,
             // then we have to invalidate that enclosing layer, not the RenderView.
@@ -2933,7 +2933,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         LayoutUnit flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
         renderView->setLogicalWidth(flooredPageLogicalWidth);
         renderView->setPageLogicalHeight(flooredPageLogicalHeight);
-        renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         forceLayout();
 
         // If we don't fit in the given page width, we'll lay out again. If we don't fit in the
@@ -2953,7 +2953,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
             renderView->setLogicalWidth(flooredPageLogicalWidth);
             renderView->setPageLogicalHeight(flooredPageLogicalHeight);
-            renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             forceLayout();
 
             const LayoutRect& updatedDocumentRect = renderView->documentRect();

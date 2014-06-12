@@ -62,7 +62,7 @@ public:
         // and we need that layout to know of the new size otherwise
         // the rendering may be incorrectly using the old size.
         if (m_containerSize != containerSize)
-            setNeedsLayoutAndFullRepaint();
+            setNeedsLayoutAndFullPaintInvalidation();
         m_containerSize = containerSize;
     }
 
@@ -96,12 +96,12 @@ private:
 
     virtual FloatRect objectBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const OVERRIDE { return m_strokeBoundingBox; }
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
-    virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed) const OVERRIDE;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE;
+    virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed) const OVERRIDE;
 
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;

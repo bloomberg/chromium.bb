@@ -385,7 +385,7 @@ void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invali
 
             // One of the renderers we're skipping over here may be the child's repaint container,
             // so we can't pass our own repaint container along.
-            const RenderLayerModelObject& repaintContainerForChild = *box->containerForRepaint();
+            const RenderLayerModelObject& repaintContainerForChild = *box->containerForPaintInvalidation();
 
             // If the positioned renderer is absolutely positioned and it is inside
             // a relatively positioend inline element, we need to account for
@@ -707,9 +707,9 @@ void RenderBlock::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
     // get deleted properly.  Because objects moves from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
-    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    post->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlockFlow* newBlockBox, RenderObject* newChild)
@@ -757,10 +757,10 @@ void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, R
     // get deleted properly.  Because objects moved from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
     if (pre)
-        pre->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     if (post)
-        post->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 RenderBlockFlow* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
@@ -1116,7 +1116,7 @@ void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* 
     // destroyed. See crbug.com/282088
     if (child->beingDestroyed())
         return;
-    parent->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     parent->setChildrenInline(child->childrenInline());
     RenderObject* nextSibling = child->nextSibling();
 
@@ -1150,7 +1150,7 @@ void RenderBlock::removeChild(RenderObject* oldChild)
     RenderObject* next = oldChild->nextSibling();
     bool canMergeAnonymousBlocks = canMergeContiguousAnonymousBlocks(oldChild, prev, next);
     if (canMergeAnonymousBlocks && prev && next) {
-        prev->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        prev->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         RenderBlockFlow* nextBlock = toRenderBlockFlow(next);
         RenderBlockFlow* prevBlock = toRenderBlockFlow(prev);
 
@@ -1172,7 +1172,7 @@ void RenderBlock::removeChild(RenderObject* oldChild)
             // Now just put the inlineChildrenBlock inside the blockChildrenBlock.
             blockChildrenBlock->children()->insertChildNode(blockChildrenBlock, inlineChildrenBlock, prev == inlineChildrenBlock ? blockChildrenBlock->firstChild() : 0,
                                                             inlineChildrenBlockHasLayer || blockChildrenBlock->hasLayer());
-            next->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            next->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 
             // inlineChildrenBlock got reparented to blockChildrenBlock, so it is no longer a child
             // of "this". we null out prev or next so that is not used later in the function.
@@ -1717,7 +1717,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
         // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
         if (info == ForcedLayoutAfterContainingBlockMoved)
-            r->setNeedsLayoutAndFullRepaint();
+            r->setNeedsLayoutAndFullPaintInvalidation();
 
         r->layoutIfNeeded();
 
@@ -4470,9 +4470,9 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     }
 }
 
-LayoutRect RenderBlock::rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const
+LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const
 {
-    LayoutRect r(RenderBox::rectWithOutlineForRepaint(repaintContainer, outlineWidth));
+    LayoutRect r(RenderBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth));
     if (isAnonymousBlockContinuation())
         r.inflateY(collapsedMarginBefore()); // FIXME: This is wrong for block-flows that are horizontal.
     return r;
@@ -4490,7 +4490,7 @@ void RenderBlock::updateDragState(bool dragOn)
         continuation()->updateDragState(dragOn);
 }
 
-RenderStyle* RenderBlock::outlineStyleForRepaint() const
+RenderStyle* RenderBlock::outlineStyleForPaintInvalidation() const
 {
     return isAnonymousBlockContinuation() ? continuation()->style() : style();
 }

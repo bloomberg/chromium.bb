@@ -114,7 +114,7 @@ void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChang
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayoutAndFullRepaint();
+        object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 Vector<Gradient::ColorStop> SVGGradientElement::buildStops()

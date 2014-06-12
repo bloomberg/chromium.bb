@@ -381,7 +381,7 @@ void RenderTable::layoutCaption(RenderTableCaption* caption)
     }
     caption->setLogicalLocation(LayoutPoint(caption->marginStart(), captionLogicalTop));
 
-    if (!selfNeedsLayout() && caption->checkForRepaintDuringLayout())
+    if (!selfNeedsLayout() && caption->checkForPaintInvalidationDuringLayout())
         caption->repaintDuringLayoutIfMoved(captionRect);
 
     setLogicalHeight(logicalHeight() + caption->logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
@@ -425,7 +425,7 @@ void RenderTable::layout()
     // to call this before we call borderStart/borderEnd to avoid getting a stale value.
     recalcBordersInRowDirection();
 
-    LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
+    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
     SubtreeLayoutScope layouter(*this);
 
 

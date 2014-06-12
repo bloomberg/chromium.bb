@@ -1002,7 +1002,7 @@ void RenderTableSection::layoutRows()
                 // If the child moved, we have to repaint it as well as any floating/positioned
                 // descendants. An exception is if we need a layout. In this case, we know we're going to
                 // repaint ourselves (and the child) anyway.
-                if (!table()->selfNeedsLayout() && cell->checkForRepaint()) {
+                if (!table()->selfNeedsLayout() && cell->checkForPaintInvalidation()) {
                     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                         cell->setMayNeedPaintInvalidation(true);
                     else
@@ -1516,7 +1516,7 @@ void RenderTableSection::recalcCells()
     }
 
     m_grid.shrinkToFit();
-    setNeedsLayoutAndFullRepaint();
+    setNeedsLayoutAndFullPaintInvalidation();
 }
 
 // FIXME: This function could be made O(1) in certain cases (like for the non-most-constrainive cells' case).

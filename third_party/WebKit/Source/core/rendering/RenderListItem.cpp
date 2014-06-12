@@ -257,7 +257,7 @@ void RenderListItem::updateValue()
     if (!m_hasExplicitValue) {
         m_isValueUpToDate = false;
         if (m_marker)
-            m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     }
 }
 
@@ -448,7 +448,7 @@ const String& RenderListItem::markerText() const
 void RenderListItem::explicitValueChanged()
 {
     if (m_marker)
-        m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     Node* listNode = enclosingList(this);
     for (RenderListItem* item = this; item; item = nextListItem(listNode, item))
         item->updateValue();

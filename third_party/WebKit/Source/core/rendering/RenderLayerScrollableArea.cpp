@@ -378,7 +378,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         updateCompositingLayersAfterScroll();
     }
 
-    const RenderLayerModelObject* repaintContainer = box().containerForRepaint();
+    const RenderLayerModelObject* repaintContainer = box().containerForPaintInvalidation();
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
@@ -792,7 +792,7 @@ void RenderLayerScrollableArea::updateAfterOverflowRecalc()
     bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
     if (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)
-        box().setNeedsLayoutAndFullRepaint();
+        box().setNeedsLayoutAndFullPaintInvalidation();
 }
 
 IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const

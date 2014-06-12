@@ -169,7 +169,7 @@ void RenderListBox::updateFromElement()
 
         setHasVerticalScrollbar(true);
 
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     }
 }
 

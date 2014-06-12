@@ -42,7 +42,7 @@ public:
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
     virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE;
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE;
 
     static RenderSVGText* locateRenderSVGTextAncestor(RenderObject*);
     static const RenderSVGText* locateRenderSVGTextAncestor(const RenderObject*);
@@ -68,7 +68,7 @@ private:
 
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
-    virtual void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;

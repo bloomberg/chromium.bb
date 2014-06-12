@@ -195,7 +195,7 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     // We do have to schedule layouts, though, since a style change can force us to
     // need to relayout.
     if (diff.needsFullLayout()) {
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }
 
@@ -1410,7 +1410,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this RenderText has parent.
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
@@ -1569,7 +1569,7 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
     return rect;
 }
 
-LayoutRect RenderText::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     RenderObject* rendererToRepaint = containingBlock();
 
@@ -1578,14 +1578,14 @@ LayoutRect RenderText::clippedOverflowRectForRepaint(const RenderLayerModelObjec
     if (enclosingLayerRenderer != rendererToRepaint && !rendererToRepaint->isDescendantOf(enclosingLayerRenderer))
         rendererToRepaint = enclosingLayerRenderer;
 
-    // The renderer we chose to repaint may be an ancestor of repaintContainer, but we need to do a repaintContainer-relative repaint.
-    if (repaintContainer && repaintContainer != rendererToRepaint && !rendererToRepaint->isDescendantOf(repaintContainer))
-        return repaintContainer->clippedOverflowRectForRepaint(repaintContainer);
+    // The renderer we chose to repaint may be an ancestor of paintInvalidationContainer, but we need to do a paintInvalidationContainer-relative repaint.
+    if (paintInvalidationContainer && paintInvalidationContainer != rendererToRepaint && !rendererToRepaint->isDescendantOf(paintInvalidationContainer))
+        return paintInvalidationContainer->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 
-    return rendererToRepaint->clippedOverflowRectForRepaint(repaintContainer);
+    return rendererToRepaint->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
-LayoutRect RenderText::selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent)
+LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)
 {
     ASSERT(!needsLayout());
 
@@ -1620,12 +1620,12 @@ LayoutRect RenderText::selectionRectForRepaint(const RenderLayerModelObject* rep
     }
 
     if (clipToVisibleContent)
-        mapRectToRepaintBacking(repaintContainer, rect);
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
     else {
         if (cb->hasColumns())
             cb->adjustRectForColumns(rect);
 
-        rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
+        rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
     }
 
     return rect;

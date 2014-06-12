@@ -42,7 +42,7 @@ public:
 
     RenderSelectionInfoBase(RenderObject* o)
         : m_object(o)
-        , m_repaintContainer(o->containerForRepaint())
+        , m_repaintContainer(o->containerForPaintInvalidation())
         , m_state(o->selectionState())
     {
     }
@@ -62,7 +62,7 @@ class RenderSelectionInfo : public RenderSelectionInfoBase {
 public:
     RenderSelectionInfo(RenderObject* o, bool clipToVisibleContent)
         : RenderSelectionInfoBase(o)
-        , m_rect(o->canUpdateSelectionOnRootLineBoxes() ? o->selectionRectForRepaint(m_repaintContainer, clipToVisibleContent) : LayoutRect())
+        , m_rect(o->canUpdateSelectionOnRootLineBoxes() ? o->selectionRectForPaintInvalidation(m_repaintContainer, clipToVisibleContent) : LayoutRect())
     {
     }
 

@@ -308,7 +308,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // number of columns.
     bool done = false;
     LayoutUnit pageLogicalHeight = 0;
-    LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
+    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
     while (!done)
         done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
 
@@ -632,11 +632,11 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         // repaint ourselves (and the child) anyway.
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && childHadLayout && !selfNeedsLayout())
             child->repaintOverhangingFloats(true);
-        else if (childHadLayout && !selfNeedsLayout() && child->checkForRepaintDuringLayout())
+        else if (childHadLayout && !selfNeedsLayout() && child->checkForPaintInvalidationDuringLayout())
             child->repaintDuringLayoutIfMoved(oldRect);
     }
 
-    if (!childHadLayout && child->checkForRepaint()) {
+    if (!childHadLayout && child->checkForPaintInvalidation()) {
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             child->paintInvalidationForWholeRenderer();
         child->repaintOverhangingFloats(true);
@@ -1181,7 +1181,7 @@ LayoutUnit RenderBlockFlow::collapseMargins(RenderBox* child, MarginInfo& margin
         // floats in the parent that overhang |child|'s new logical top.
         bool logicalTopIntrudesIntoFloat = clearanceForSelfCollapsingBlock > 0 && logicalTop < beforeCollapseLogicalTop;
         if (logicalTopIntrudesIntoFloat && containsFloats() && !child->avoidsFloats() && lowestFloatLogicalBottom() > logicalTop)
-            child->setNeedsLayoutAndFullRepaint();
+            child->setNeedsLayoutAndFullPaintInvalidation();
     }
 
     return logicalTop;
@@ -2389,7 +2389,7 @@ bool RenderBlockFlow::positionNewFloats()
 
         // If the child moved, we have to repaint it.
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
-            && childBox->checkForRepaintDuringLayout())
+            && childBox->checkForPaintInvalidationDuringLayout())
             childBox->repaintDuringLayoutIfMoved(oldRect);
     }
     return true;

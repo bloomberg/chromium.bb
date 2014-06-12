@@ -64,7 +64,7 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
         // that a positioned child got yanked). We also repaint, so that the area exposed when the child
         // disappears gets repainted properly.
         if (!owner->documentBeingDestroyed() && notifyRenderer && oldChild->everHadLayout()) {
-            oldChild->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            oldChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             // We only repaint |oldChild| if we have a RenderLayer as its visual overflow may not be tracked by its parent.
             if (oldChild->isBody())
                 owner->view()->paintInvalidationForWholeRenderer();
@@ -158,7 +158,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
         RenderCounter::rendererSubtreeAttached(newChild);
     }
 
-    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     if (!owner->normalChildNeedsLayout())
         owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.
 

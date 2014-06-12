@@ -193,7 +193,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         bool alwaysCreateLineBoxes = hasSelfPaintingLayer() || hasBoxDecorations() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
         if (oldStyle && alwaysCreateLineBoxes) {
             dirtyLineBoxes(false);
-            setNeedsLayoutAndFullRepaint();
+            setNeedsLayoutAndFullPaintInvalidation();
         }
         m_alwaysCreateLineBoxes = alwaysCreateLineBoxes;
     }
@@ -324,7 +324,7 @@ void RenderInline::addChildIgnoringContinuation(RenderObject* newChild, RenderOb
 
     RenderBoxModelObject::addChild(newChild, beforeChild);
 
-    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 RenderInline* RenderInline::clone() const
@@ -361,7 +361,7 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
         RenderObject* tmp = o;
         o = tmp->nextSibling();
         cloneInline->addChildIgnoringContinuation(children()->removeChildNode(this, tmp), 0);
-        tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     }
 
     // Hook |clone| up as the continuation of the middle block.
@@ -402,7 +402,7 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
                 RenderObject* tmp = o;
                 o = tmp->nextSibling();
                 cloneInline->addChildIgnoringContinuation(inlineCurr->children()->removeChildNode(curr, tmp), 0);
-                tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+                tmp->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             }
         }
 
@@ -463,7 +463,7 @@ void RenderInline::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox
             RenderObject* no = o;
             o = no->nextSibling();
             pre->children()->appendChildNode(pre, block->children()->removeChildNode(block, no));
-            no->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            no->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
     }
 
@@ -478,9 +478,9 @@ void RenderInline::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
     // get deleted properly.  Because objects moves from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
-    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    post->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 void RenderInline::addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild)
@@ -992,7 +992,7 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
     return rect;
 }
 
-LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     ASSERT(!view() || !view()->layoutStateEnabled());
 
@@ -1007,7 +1007,7 @@ LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObj
     RenderBlock* cb = containingBlock();
     for (const RenderObject* inlineFlow = this; inlineFlow && inlineFlow->isRenderInline() && inlineFlow != cb;
          inlineFlow = inlineFlow->parent()) {
-         if (inlineFlow == repaintContainer) {
+        if (inlineFlow == paintInvalidationContainer) {
             hitRepaintContainer = true;
             break;
         }
@@ -1027,36 +1027,36 @@ LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObj
     if (cb->hasOverflowClip())
         cb->applyCachedClipAndScrollOffsetForRepaint(repaintRect);
 
-    cb->mapRectToRepaintBacking(repaintContainer, repaintRect);
+    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, repaintRect);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
             if (!curr->isText())
-                repaintRect.unite(curr->rectWithOutlineForRepaint(repaintContainer, outlineSize));
+                repaintRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
         }
 
         if (continuation() && !continuation()->isInline() && continuation()->parent())
-            repaintRect.unite(continuation()->rectWithOutlineForRepaint(repaintContainer, outlineSize));
+            repaintRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
     }
 
     return repaintRect;
 }
 
-LayoutRect RenderInline::rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const
+LayoutRect RenderInline::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const
 {
-    LayoutRect r(RenderBoxModelObject::rectWithOutlineForRepaint(repaintContainer, outlineWidth));
+    LayoutRect r(RenderBoxModelObject::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth));
     for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->isText())
-            r.unite(curr->rectWithOutlineForRepaint(repaintContainer, outlineWidth));
+            r.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth));
     }
     return r;
 }
 
-void RenderInline::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative repainting
-        if (v->canUseLayoutStateForContainer(repaintContainer)) {
+        if (v->canUseLayoutStateForContainer(paintInvalidationContainer)) {
             LayoutState* layoutState = v->layoutState();
             if (style()->hasInFlowPosition() && layer())
                 rect.move(layer()->offsetForInFlowPosition());
@@ -1067,11 +1067,11 @@ void RenderInline::mapRectToRepaintBacking(const RenderLayerModelObject* repaint
         }
     }
 
-    if (repaintContainer == this)
+    if (paintInvalidationContainer == this)
         return;
 
     bool containerSkipped;
-    RenderObject* o = container(repaintContainer, &containerSkipped);
+    RenderObject* o = container(paintInvalidationContainer, &containerSkipped);
     if (!o)
         return;
 
@@ -1106,13 +1106,13 @@ void RenderInline::mapRectToRepaintBacking(const RenderLayerModelObject* repaint
     }
 
     if (containerSkipped) {
-        // If the repaintContainer is below o, then we need to map the rect into repaintContainer's coordinates.
-        LayoutSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
+        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         rect.move(-containerOffset);
         return;
     }
 
-    o->mapRectToRepaintBacking(repaintContainer, rect, fixed);
+    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
 }
 
 LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
@@ -1356,7 +1356,7 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& 
 
     if (continuation()) {
         // If the continuation doesn't paint into the same container, let its repaint container handle it.
-        if (paintContainer != continuation()->containerForRepaint())
+        if (paintContainer != continuation()->containerForPaintInvalidation())
             return;
         if (continuation()->isInline())
             continuation()->addFocusRingRects(rects, flooredLayoutPoint(additionalOffset + continuation()->containingBlock()->location() - containingBlock()->location()), paintContainer);

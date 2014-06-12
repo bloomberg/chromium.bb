@@ -124,8 +124,8 @@ enum InvalidationReason {
     InvalidationScroll,
     InvalidationSelection,
     InvalidationLayer,
-    InvalidationRepaint,
-    InvalidationRepaintRectangle
+    InvalidationPaint,
+    InvalidationPaintRectangle
 };
 
 const int caretWidth = 1;
@@ -297,7 +297,7 @@ private:
 #endif
 
     void addAbsoluteRectForLayer(LayoutRect& result);
-    void setLayerNeedsFullRepaintForPositionedMovementLayout();
+    void setLayerNeedsFullPaintInvalidationForPositionedMovementLayout();
     bool requiresAnonymousTableWrappers(const RenderObject*) const;
 
     // Gets pseudoStyle from Shadow host(in case of input elements)
@@ -409,7 +409,7 @@ public:
     {
         m_bitfields.setAncestorLineBoxDirty(value);
         if (value)
-            setNeedsLayoutAndFullRepaint();
+            setNeedsLayoutAndFullPaintInvalidation();
     }
 
     enum FlowThreadState {
@@ -461,7 +461,7 @@ public:
 
     // Returns the smallest rectangle enclosing all of the painted content
     // respecting clipping, masking, filters, opacity, stroke-width and markers
-    virtual FloatRect repaintRectInLocalCoordinates() const;
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const;
 
     // This only returns the transform="" value from the element
     // most callsites want localToParentTransform() instead.
@@ -472,7 +472,7 @@ public:
     virtual const AffineTransform& localToParentTransform() const;
 
     // SVG uses FloatPoint precise hit testing, and passes the point in parent
-    // coordinates instead of in repaint container coordinates.  Eventually the
+    // coordinates instead of in paint invalidaiton container coordinates. Eventually the
     // rest of the rendering tree will move to a similar model.
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
@@ -526,10 +526,10 @@ public:
     bool hasBoxDecorations() const { return m_bitfields.boxDecorationState() != NoBoxDecorations; }
     bool backgroundIsKnownToBeObscured();
     bool canRenderBorderImage() const;
-    bool mustRepaintBackgroundOrBorderOnWidthChange() const;
-    bool mustRepaintBackgroundOrBorderOnHeightChange() const;
-    bool mustRepaintFillLayersOnWidthChange(const FillLayer&) const;
-    bool mustRepaintFillLayersOnHeightChange(const FillLayer&) const;
+    bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
+    bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
+    bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
+    bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;
 
@@ -613,9 +613,9 @@ public:
     bool hasOutline() const { return style()->hasOutline() || hasOutlineAnnotation(); }
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
-    // If repaintContainer and repaintContainerSkipped are not null, on return *repaintContainerSkipped
-    // is true if the renderer returned is an ancestor of repaintContainer.
-    RenderObject* container(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
+    // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
+    // is true if the renderer returned is an ancestor of paintInvalidationContainer.
+    RenderObject* container(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     virtual RenderObject* hoverAncestor() const { return parent(); }
 
@@ -623,7 +623,7 @@ public:
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0, SubtreeLayoutScope* = 0);
     void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
-    void setNeedsLayoutAndFullRepaint(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
+    void setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
     void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
@@ -636,9 +636,9 @@ public:
         setNeedsLayout();
         setPreferredLogicalWidthsDirty();
     }
-    void setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint()
+    void setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation()
     {
-        setNeedsLayoutAndFullRepaint();
+        setNeedsLayoutAndFullPaintInvalidation();
         setPreferredLogicalWidthsDirty();
     }
 
@@ -686,8 +686,8 @@ public:
     void forceLayout();
     void forceChildLayout();
 
-    // used for element state updates that cannot be fixed with a
-    // repaint and do not need a relayout
+    // Used for element state updates that cannot be fixed with a
+    // paint invalidation and do not need a relayout.
     virtual void updateFromElement() { }
 
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&);
@@ -739,8 +739,8 @@ public:
     FloatQuad absoluteToLocalQuad(const FloatQuad&, MapCoordinatesFlags mode = 0) const;
 
     // Convert a local quad into the coordinate system of container, taking transforms into account.
-    FloatQuad localToContainerQuad(const FloatQuad&, const RenderLayerModelObject* repaintContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
-    FloatPoint localToContainerPoint(const FloatPoint&, const RenderLayerModelObject* repaintContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
+    FloatQuad localToContainerQuad(const FloatQuad&, const RenderLayerModelObject* paintInvalidatinoContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
+    FloatPoint localToContainerPoint(const FloatPoint&, const RenderLayerModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
 
     // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
@@ -750,7 +750,7 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
-    LayoutPoint positionFromRepaintContainer(const RenderLayerModelObject* repaintContainer) const;
+    LayoutPoint positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer) const;
 
     IntRect absoluteBoundingBoxRect() const;
     // FIXME: This function should go away eventually
@@ -788,8 +788,8 @@ public:
     PassRefPtr<RenderStyle> uncachedFirstLineStyle(RenderStyle*) const;
 
     // Anonymous blocks that are part of of a continuation chain will return their inline continuation's outline style instead.
-    // This is typically only relevant when repainting.
-    virtual RenderStyle* outlineStyleForRepaint() const { return style(); }
+    // This is typically only relevant when invalidating paints.
+    virtual RenderStyle* outlineStyleForPaintInvalidation() const { return style(); }
 
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
@@ -802,23 +802,23 @@ public:
     void getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode = false, bool firstlineStyle = false);
 
     // Return the RenderLayerModelObject in the container chain which is responsible for painting this object, or 0
-    // if painting is root-relative. This is the container that should be passed to the 'forRepaint'
+    // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
     // methods.
-    const RenderLayerModelObject* containerForRepaint() const;
+    const RenderLayerModelObject* containerForPaintInvalidation() const;
     const RenderLayerModelObject* enclosingCompositedContainer() const;
-    const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* repaintContainer) const;
-    bool isRepaintContainer() const;
+    const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* paintInvalidationContainer) const;
+    bool isPaintInvalidationContainer() const;
 
-    LayoutRect computeRepaintRect()
+    LayoutRect computePaintInvalidationRect()
     {
-        return computeRepaintRect(containerForRepaint());
+        return computePaintInvalidationRect(containerForPaintInvalidation());
     }
 
-    // Returns the repaint rect for this RenderObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |repaintContainer|.
-    LayoutRect computeRepaintRect(const RenderLayerModelObject* repaintContainer) const;
+    // Returns the paint invalidation rect for this RenderObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
+    LayoutRect computePaintInvalidationRect(const RenderLayerModelObject* paintInvalidationContainer) const;
 
-    // Returns the rect bounds needed to repaint this object, in the coordinate space of the rendering backing of |repaintContainer|
-    LayoutRect boundsRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
+    // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the rendering backing of |paintInvalidationContainer|
+    LayoutRect boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const;
 
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
     // of paintInvalidationContainer. If paintInvalidationContainer is 0, invalidate paints via the view.
@@ -842,23 +842,23 @@ public:
     virtual void invalidatePaintForOverflow();
     void invalidatePaintForOverflowIfNeeded();
 
-    bool checkForRepaint() const;
-    bool checkForRepaintDuringLayout() const;
+    bool checkForPaintInvalidation() const;
+    bool checkForPaintInvalidationDuringLayout() const;
 
-    // Returns the rect that should be repainted whenever this object changes.  The rect is in the view's
-    // coordinate space.  This method deals with outlines and overflow.
+    // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
+    // coordinate space. This method deals with outlines and overflow.
     LayoutRect absoluteClippedOverflowRect() const
     {
-        return clippedOverflowRectForRepaint(0);
+        return clippedOverflowRectForPaintInvalidation(0);
     }
     IntRect pixelSnappedAbsoluteClippedOverflowRect() const;
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
-    virtual LayoutRect rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const;
 
-    // Given a rect in the object's coordinate space, compute a rect suitable for repainting
-    // that rect in the coordinate space of repaintContainer.
-    virtual void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const;
-    virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed = false) const;
+    // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of
+    // that rect in the coordinate space of paintInvalidationContainer.
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false) const;
+    virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed = false) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
     // lives. This is used to convert a flow-thread point to a visual point.
@@ -890,8 +890,8 @@ public:
 
     // A single rectangle that encompasses all of the selected objects within this object.  Used to determine the tightest
     // possible bounding box for the selection.
-    LayoutRect selectionRect(bool clipToVisibleContent = true) { return selectionRectForRepaint(0, clipToVisibleContent); }
-    virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* /*repaintContainer*/, bool /*clipToVisibleContent*/ = true) { return LayoutRect(); }
+    LayoutRect selectionRect(bool clipToVisibleContent = true) { return selectionRectForPaintInvalidation(0, clipToVisibleContent); }
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* /*paintInvalidationContainer*/, bool /*clipToVisibleContent*/ = true) { return LayoutRect(); }
 
     virtual bool canBeSelectionLeaf() const { return false; }
     bool hasSelectedChildren() const { return selectionState() != SelectionNone; }
@@ -963,7 +963,7 @@ public:
 
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
     // localToAbsolute/absoluteToLocal methods instead.
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
 
     // Pushes state onto RenderGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
@@ -1083,7 +1083,7 @@ protected:
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
 private:
-    RenderBlock* containerForFixedPosition(const RenderLayerModelObject* repaintContainer = 0, bool* repaintContainerSkipped = 0) const;
+    RenderBlock* containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;
     void removeFromRenderFlowThread();
@@ -1270,10 +1270,10 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 
-    // This stores the repaint rect from the previous layout.
+    // This stores the paint invalidation rect from the previous layout.
     LayoutRect m_previousPaintInvalidationRect;
 
-    // This stores the position in the repaint container's coordinate.
+    // This stores the position in the paint invalidation container's coordinate.
     // It is used to detect renderer shifts that forces a full invalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationContainer;
 };
@@ -1323,8 +1323,8 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-// If repaintAfterLayout is enabled, setNeedsLayout() won't cause full repaint as
-// setNeedsLayoutAndFullRepaint() does. Otherwise the two methods are identical.
+// If repaintAfterLayout is enabled, setNeedsLayout() won't cause full paint invalidations as
+// setNeedsLayoutAndFullPaintInvalidation() does. Otherwise the two methods are identical.
 inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
@@ -1336,7 +1336,7 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
     }
 }
 
-inline void RenderObject::setNeedsLayoutAndFullRepaint(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     setNeedsLayout(markParents, layouter);
     setShouldDoFullPaintInvalidationAfterLayout(true);
@@ -1377,7 +1377,7 @@ inline void RenderObject::setNeedsPositionedMovementLayout()
     if (!alreadyNeededLayout) {
         markContainingBlocksForLayout();
         if (hasLayer())
-            setLayerNeedsFullRepaintForPositionedMovementLayout();
+            setLayerNeedsFullPaintInvalidationForPositionedMovementLayout();
     }
 }
 

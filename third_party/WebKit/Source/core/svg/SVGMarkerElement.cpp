@@ -139,7 +139,7 @@ void SVGMarkerElement::childrenChanged(bool changedByParser, Node* beforeChange,
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayoutAndFullRepaint();
+        object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 void SVGMarkerElement::setOrientToAuto()

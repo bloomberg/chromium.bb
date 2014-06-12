@@ -188,7 +188,7 @@ void RenderTextControlSingleLine::layout()
             textOffset += toLayoutSize(containerRenderer->location());
         placeholderBox->setLocation(textOffset);
 
-        if (!placeholderBoxHadLayout && placeholderBox->checkForRepaintDuringLayout()) {
+        if (!placeholderBoxHadLayout && placeholderBox->checkForPaintInvalidationDuringLayout()) {
             // This assumes a shadow tree without floats. If floats are added, the
             // logic should be shared with RenderBlockFlow::layoutBlockChild.
             placeholderBox->paintInvalidationForWholeRenderer();
@@ -242,7 +242,7 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
     }
     RenderObject* innerTextRenderer = innerTextElement()->renderer();
     if (innerTextRenderer && diff.needsFullLayout())
-        innerTextRenderer->setNeedsLayoutAndFullRepaint();
+        innerTextRenderer->setNeedsLayoutAndFullPaintInvalidation();
     if (HTMLElement* placeholder = inputElement()->placeholderElement())
         placeholder->setInlineStyleProperty(CSSPropertyTextOverflow, textShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);
     setHasOverflowClip(false);

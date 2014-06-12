@@ -100,7 +100,7 @@ void RenderHTMLCanvas::canvasSizeChanged()
         return;
 
     if (!selfNeedsLayout())
-        setNeedsLayoutAndFullRepaint();
+        setNeedsLayoutAndFullPaintInvalidation();
 }
 
 CompositingReasons RenderHTMLCanvas::additionalCompositingReasons(CompositingTriggerFlags triggers) const

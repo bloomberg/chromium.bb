@@ -1080,7 +1080,7 @@ RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
 void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 
     RenderBox::styleWillChange(diff, newStyle);
 }
@@ -1350,7 +1350,7 @@ void RenderListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
         return;
 
     if (width() != m_image->imageSize(this, style()->effectiveZoom()).width() || height() != m_image->imageSize(this, style()->effectiveZoom()).height() || m_image->errorOccurred())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     else
         paintInvalidationForWholeRenderer();
 }
@@ -1827,7 +1827,7 @@ void RenderListMarker::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent)
+LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)
 {
     ASSERT(!needsLayout());
 
@@ -1838,9 +1838,9 @@ LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObjec
     LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
 
     if (clipToVisibleContent)
-        mapRectToRepaintBacking(repaintContainer, rect);
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
     else
-        rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
+        rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 
     return rect;
 }

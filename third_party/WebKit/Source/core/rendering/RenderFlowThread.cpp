@@ -68,7 +68,7 @@ void RenderFlowThread::invalidateRegions()
     }
 
     m_regionRangeMap.clear();
-    setNeedsLayoutAndFullRepaint();
+    setNeedsLayoutAndFullPaintInvalidation();
 
     m_regionsInvalidated = true;
 }

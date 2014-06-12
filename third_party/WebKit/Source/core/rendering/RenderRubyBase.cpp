@@ -73,8 +73,8 @@ void RenderRubyBase::moveChildren(RenderRubyBase* toBase, RenderObject* beforeCh
     else
         moveBlockChildren(toBase, beforeChild);
 
-    setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
-    toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 void RenderRubyBase::moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild)

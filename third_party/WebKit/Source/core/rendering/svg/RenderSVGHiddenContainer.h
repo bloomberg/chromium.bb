@@ -42,7 +42,7 @@ private:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject*) const OVERRIDE FINAL { return LayoutRect(); }
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*) const OVERRIDE FINAL { return LayoutRect(); }
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE FINAL;
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE FINAL;

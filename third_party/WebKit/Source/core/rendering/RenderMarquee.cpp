@@ -258,7 +258,7 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
     // Check the loop count to see if we should now stop.
     bool activate = (m_totalLoops <= 0 || m_currentLoop < m_totalLoops);
     if (activate && !m_timer.isActive())
-        setNeedsLayoutAndFullRepaint();
+        setNeedsLayoutAndFullPaintInvalidation();
     else if (!activate && m_timer.isActive())
         m_timer.stop();
 }

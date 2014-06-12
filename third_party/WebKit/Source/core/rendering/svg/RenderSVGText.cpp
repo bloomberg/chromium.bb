@@ -94,10 +94,10 @@ const RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(const RenderObje
     return toRenderSVGText(start);
 }
 
-void RenderSVGText::mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect& rect, bool fixed) const
+void RenderSVGText::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     FloatRect repaintRect = rect;
-    computeFloatRectForRepaint(repaintContainer, repaintRect, fixed);
+    computeFloatRectForPaintInvalidation(paintInvalidationContainer, repaintRect, fixed);
     rect = enclosingLayoutRect(repaintRect);
 }
 
@@ -507,7 +507,7 @@ FloatRect RenderSVGText::strokeBoundingBox() const
     return strokeBoundaries;
 }
 
-FloatRect RenderSVGText::repaintRectInLocalCoordinates() const
+FloatRect RenderSVGText::paintInvalidationRectInLocalCoordinates() const
 {
     FloatRect repaintRect = strokeBoundingBox();
     SVGRenderSupport::intersectRepaintRectWithResources(this, repaintRect);

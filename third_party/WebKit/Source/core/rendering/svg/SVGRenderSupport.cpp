@@ -51,8 +51,8 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* o
 
     // Pass our local paint rect to computeRectForRepaint() which will
     // map to parent coords and recurse up the parent chain.
-    FloatRect repaintRect = object->repaintRectInLocalCoordinates();
-    object->computeFloatRectForRepaint(repaintContainer, repaintRect);
+    FloatRect repaintRect = object->paintInvalidationRectInLocalCoordinates();
+    object->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect);
     return enclosingLayoutRect(repaintRect);
 }
 
@@ -60,9 +60,9 @@ void SVGRenderSupport::computeFloatRectForRepaint(const RenderObject* object, co
 {
     repaintRect.inflate(object->style()->outlineWidth());
 
-    // Translate to coords in our parent renderer, and then call computeFloatRectForRepaint() on our parent.
+    // Translate to coords in our parent renderer, and then call computeFloatRectForPaintInvalidation() on our parent.
     repaintRect = object->localToParentTransform().mapRect(repaintRect);
-    object->parent()->computeFloatRectForRepaint(repaintContainer, repaintRect, fixed);
+    object->parent()->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect, fixed);
 }
 
 void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* repaintContainer, TransformState& transformState, bool* wasFixed)
@@ -110,7 +110,7 @@ bool SVGRenderSupport::parentTransformDidChange(RenderObject* object)
 
 bool SVGRenderSupport::checkForSVGRepaintDuringLayout(RenderObject* object)
 {
-    if (!object->checkForRepaintDuringLayout())
+    if (!object->checkForPaintInvalidationDuringLayout())
         return false;
 
     return parentTransformDidChange(object);
@@ -148,7 +148,7 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
         const AffineTransform& transform = current->localToParentTransform();
         updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current,
             transform.mapRect(current->objectBoundingBox()));
-        strokeBoundingBox.unite(transform.mapRect(current->repaintRectInLocalCoordinates()));
+        strokeBoundingBox.unite(transform.mapRect(current->paintInvalidationRectInLocalCoordinates()));
     }
 
     repaintBoundingBox = strokeBoundingBox;

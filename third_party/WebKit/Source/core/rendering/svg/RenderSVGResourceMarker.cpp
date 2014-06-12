@@ -78,7 +78,7 @@ void RenderSVGResourceMarker::applyViewportClip(PaintInfo& paintInfo)
 
 FloatRect RenderSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
 {
-    FloatRect coordinates = RenderSVGContainer::repaintRectInLocalCoordinates();
+    FloatRect coordinates = RenderSVGContainer::paintInvalidationRectInLocalCoordinates();
 
     // Map repaint rect into parent coordinate space, in which the marker boundaries have to be evaluated
     coordinates = localToParentTransform().mapRect(coordinates);

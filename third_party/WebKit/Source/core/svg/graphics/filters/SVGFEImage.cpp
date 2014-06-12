@@ -69,7 +69,7 @@ PassRefPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, TreeScope& t
 static FloatRect getRendererRepaintRect(RenderObject* renderer)
 {
     return renderer->localToParentTransform().mapRect(
-        renderer->repaintRectInLocalCoordinates());
+        renderer->paintInvalidationRectInLocalCoordinates());
 }
 
 FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)

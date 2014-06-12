@@ -425,7 +425,7 @@ void RenderCounter::invalidate()
     ASSERT(!m_counterNode);
     if (documentBeingDestroyed())
         return;
-    setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier, CounterNode* node)

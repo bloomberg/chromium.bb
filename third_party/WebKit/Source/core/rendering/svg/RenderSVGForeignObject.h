@@ -42,9 +42,9 @@ public:
 
     virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
     virtual FloatRect strokeBoundingBox() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
 
-    virtual void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
     virtual bool isSVGForeignObject() const OVERRIDE { return true; }
 

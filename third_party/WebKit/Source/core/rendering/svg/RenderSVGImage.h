@@ -53,7 +53,7 @@ private:
 
     virtual FloatRect objectBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 

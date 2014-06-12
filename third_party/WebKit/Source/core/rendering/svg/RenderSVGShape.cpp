@@ -241,7 +241,7 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
         || isShapeEmpty())
         return;
 
-    FloatRect boundingBox = repaintRectInLocalCoordinates();
+    FloatRect boundingBox = paintInvalidationRectInLocalCoordinates();
     if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(boundingBox, m_localTransform, paintInfo))
         return;
 
@@ -295,7 +295,7 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 // while transformed to our coord system, return local coords
 void RenderSVGShape::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint&, const RenderLayerModelObject*)
 {
-    IntRect rect = enclosingIntRect(repaintRectInLocalCoordinates());
+    IntRect rect = enclosingIntRect(paintInvalidationRectInLocalCoordinates());
     if (!rect.isEmpty())
         rects.append(rect);
 }

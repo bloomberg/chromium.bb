@@ -73,7 +73,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
         // LayoutState outside the layout() phase and use it here.
         ASSERT(!view->layoutStateEnabled());
 
-        const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
+        const RenderLayerModelObject* repaintContainer = m_renderer.containerForPaintInvalidation();
         LayoutRect oldRepaintRect = m_repaintRect;
         LayoutPoint oldOffset = m_offset;
         computeRepaintRects();
@@ -107,8 +107,8 @@ void RenderLayerRepainter::clearRepaintRects()
 
 void RenderLayerRepainter::computeRepaintRects()
 {
-    const RenderLayerModelObject* repaintContainer = m_renderer.containerForRepaint();
-    LayoutRect repaintRect = m_renderer.boundsRectForRepaint(repaintContainer);
+    const RenderLayerModelObject* repaintContainer = m_renderer.containerForPaintInvalidation();
+    LayoutRect repaintRect = m_renderer.boundsRectForPaintInvalidation(repaintContainer);
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
@@ -116,7 +116,7 @@ void RenderLayerRepainter::computeRepaintRects()
         m_renderer.setPreviousPaintInvalidationRect(repaintRect);
     } else {
         m_repaintRect = repaintRect;
-        m_offset = m_renderer.positionFromRepaintContainer(repaintContainer);
+        m_offset = m_renderer.positionFromPaintInvalidationContainer(repaintContainer);
     }
 }
 
@@ -149,12 +149,12 @@ inline bool RenderLayerRepainter::shouldRepaintLayer() const
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
 {
-    repaintIncludingNonCompositingDescendantsInternal(m_renderer.containerForRepaint());
+    repaintIncludingNonCompositingDescendantsInternal(m_renderer.containerForPaintInvalidation());
 }
 
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer)
 {
-    m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.boundsRectForRepaint(repaintContainer)), InvalidationLayer);
+    m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer.boundsRectForPaintInvalidation(repaintContainer)), InvalidationLayer);
 
     // FIXME: Repaints can be issued during style recalc at present, via RenderLayerModelObject::styleWillChange. This happens in scenarios when
     // repaint is needed but not layout.

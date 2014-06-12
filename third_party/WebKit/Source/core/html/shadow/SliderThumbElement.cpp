@@ -186,7 +186,7 @@ void RenderSliderContainer::layout()
     else
         thumbLocation.setX(thumbLocation.x() - offset);
     thumb->setLocation(thumbLocation);
-    if (checkForRepaintDuringLayout() && parent()
+    if (checkForPaintInvalidationDuringLayout() && parent()
         && (parent()->style()->appearance() == MediaVolumeSliderPart || parent()->style()->appearance() == MediaSliderPart)) {
         // This will sometimes repaint too much. However, it is necessary to
         // correctly repaint media controls (volume and timeline sliders) -
@@ -218,7 +218,7 @@ void SliderThumbElement::setPositionFromValue()
     // path, we don't actually update the value here. Instead, we poke at the
     // renderer directly to trigger layout.
     if (renderer())
-        renderer()->setNeedsLayoutAndFullRepaint();
+        renderer()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 RenderObject* SliderThumbElement::createRenderer(RenderStyle*)
@@ -308,7 +308,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     // FIXME: This is no longer being set from renderer. Consider updating the method name.
     input->setValueFromRenderer(valueString);
     if (renderer())
-        renderer()->setNeedsLayoutAndFullRepaint();
+        renderer()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 void SliderThumbElement::startDragging()
@@ -328,7 +328,7 @@ void SliderThumbElement::stopDragging()
         frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     m_inDragMode = false;
     if (renderer())
-        renderer()->setNeedsLayoutAndFullRepaint();
+        renderer()->setNeedsLayoutAndFullPaintInvalidation();
     if (hostInput())
         hostInput()->dispatchFormControlChangeEvent();
 }

@@ -66,7 +66,7 @@ void RenderTableCol::updateFromElement()
     } else
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
     if (m_span != oldSpan && style() && parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 void RenderTableCol::insertedIntoTree()
@@ -94,17 +94,17 @@ bool RenderTableCol::canHaveChildren() const
     return isTableColumnGroup();
 }
 
-LayoutRect RenderTableCol::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     // For now, just repaint the whole table.
     // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
     // might have propagated a background color or borders into.
-    // FIXME: check for repaintContainer each time here?
+    // FIXME: check for paintInvalidationContainer each time here?
 
     RenderTable* parentTable = table();
     if (!parentTable)
         return LayoutRect();
-    return parentTable->clippedOverflowRectForRepaint(repaintContainer);
+    return parentTable->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
 void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)

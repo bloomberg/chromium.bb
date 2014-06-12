@@ -43,10 +43,10 @@ public:
     // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
     // RenderObject's default implementations ASSERT_NOT_REACHED()
     // https://bugs.webkit.org/show_bug.cgi?id=20400
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject*) const OVERRIDE { return LayoutRect(); }
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*) const OVERRIDE { return LayoutRect(); }
     virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(); }
     virtual FloatRect strokeBoundingBox() const OVERRIDE { return FloatRect(); }
-    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return FloatRect(); }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return FloatRect(); }
 
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;

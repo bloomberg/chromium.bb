@@ -262,7 +262,7 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
     RenderGeometryMap geometryMap(UseTransforms);
     if (this != rootLayer)
         geometryMap.pushMappingsToAncestor(parent(), 0);
-    updateLayerPositionRecursive(&geometryMap, rootLayer->renderer()->containerForRepaint(), flags);
+    updateLayerPositionRecursive(&geometryMap, rootLayer->renderer()->containerForPaintInvalidation(), flags);
 }
 
 void RenderLayer::updateLayerPositionRecursive(RenderGeometryMap* geometryMap, const RenderLayerModelObject* paintInvalidationContainer, UpdateLayerPositionsFlags flags)
@@ -477,7 +477,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(UpdateLayerPositionsAfterScrol
     } else {
         // Check that RenderLayerRepainter's cached rects are correct.
         // FIXME: re-enable these assertions when the issue with table cells is resolved: https://bugs.webkit.org/show_bug.cgi?id=103432
-        // ASSERT(repainter().m_repaintRect == renderer()->clippedOverflowRectForRepaint(renderer()->containerForRepaint()));
+        // ASSERT(repainter().m_repaintRect == renderer()->clippedOverflowRectForPaintInvalidation(renderer()->containerForPaintInvalidation()));
     }
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
@@ -679,7 +679,7 @@ void RenderLayer::updatePagination()
 void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer, LayoutRect& rect)
 {
     if (!repaintContainer->groupedMapping()) {
-        renderObject->mapRectToRepaintBacking(repaintContainer, rect);
+        renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
         return;
     }
 
@@ -703,7 +703,7 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
-    renderObject->mapRectToRepaintBacking(transformedAncestor, rect);
+    renderObject->mapRectToPaintInvalidationBacking(transformedAncestor, rect);
     rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 
     return;
@@ -712,8 +712,8 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
 LayoutRect RenderLayer::computeRepaintRect(const RenderObject* renderObject, const RenderLayer* repaintContainer)
 {
     if (!repaintContainer->groupedMapping())
-        return renderObject->computeRepaintRect(repaintContainer->renderer());
-    LayoutRect rect = renderObject->clippedOverflowRectForRepaint(repaintContainer->renderer());
+        return renderObject->computePaintInvalidationRect(repaintContainer->renderer());
+    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(repaintContainer->renderer());
     mapRectToRepaintBacking(repaintContainer->renderer(), repaintContainer->renderer(), rect);
     return rect;
 }

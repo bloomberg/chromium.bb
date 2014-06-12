@@ -75,7 +75,7 @@ public:
 
     FrameView* frameView() const { return m_frameView; }
 
-    virtual void mapRectToRepaintBacking(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
     void repaintViewRectangle(const LayoutRect&) const;
 
     void repaintViewAndCompositedLayers();

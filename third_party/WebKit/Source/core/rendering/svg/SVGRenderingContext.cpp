@@ -119,7 +119,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     bool hasBlendMode = style->hasBlendMode() && !isRenderingMask;
 
     if (opacity < 1 || hasBlendMode || style->hasIsolation()) {
-        FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
+        FloatRect repaintRect = m_object->paintInvalidationRectInLocalCoordinates();
         m_paintInfo->context->clip(repaintRect);
 
         if (hasBlendMode) {

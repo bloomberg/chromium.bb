@@ -79,7 +79,7 @@ bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, Graph
 
     clearInvalidationMask();
 
-    return applyClippingToContext(object, object->objectBoundingBox(), object->repaintRectInLocalCoordinates(), context, clipperContext);
+    return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperContext);
 }
 
 bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
@@ -258,7 +258,7 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
     ASSERT(context);
     ASSERT(frame());
 
-    // Using strokeBoundingBox (instead of repaintRectInLocalCoordinates) to avoid the intersection
+    // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     context->beginRecording(strokeBoundingBox());
@@ -320,7 +320,7 @@ void RenderSVGResourceClipper::calculateClipContentRepaintRect()
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;
-        m_clipBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->repaintRectInLocalCoordinates()));
+        m_clipBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
     }
     m_clipBoundaries = toSVGClipPathElement(element())->animatedLocalTransform().mapRect(m_clipBoundaries);
 }

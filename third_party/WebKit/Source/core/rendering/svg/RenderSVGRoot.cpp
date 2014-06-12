@@ -170,7 +170,7 @@ void RenderSVGRoot::layout()
     LayoutStateDisabler layoutStateDisabler(*this);
 
     bool needsLayout = selfNeedsLayout();
-    LayoutRepainter repainter(*this, checkForRepaintDuringLayout() && needsLayout);
+    LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout() && needsLayout);
 
     LayoutSize oldSize = size();
     updateLogicalWidth();
@@ -195,7 +195,7 @@ void RenderSVGRoot::layout()
     addVisualEffectOverflow();
 
     if (!shouldApplyViewportClip()) {
-        FloatRect contentRepaintRect = repaintRectInLocalCoordinates();
+        FloatRect contentRepaintRect = paintInvalidationRectInLocalCoordinates();
         contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
         addVisualOverflow(enclosingLayoutRect(contentRepaintRect));
     }
@@ -354,10 +354,10 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
     return m_localToParentTransform;
 }
 
-LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
-    // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForRepaint,
-    // RenderSVGRoot::computeFloatRectForRepaint and RenderReplaced::clippedOverflowRectForRepaint.
+    // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForPaintInvalidation,
+    // RenderSVGRoot::computeFloatRectForPaintInvalidation and RenderReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the repaint rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
@@ -366,7 +366,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelOb
         return LayoutRect();
 
     // Compute the repaint rect of the content of the SVG in the border-box coordinate space.
-    FloatRect contentRepaintRect = repaintRectInLocalCoordinates();
+    FloatRect contentRepaintRect = paintInvalidationRectInLocalCoordinates();
     contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
 
     // Apply initial viewport clip, overflow:visible content is added to visualOverflow
@@ -384,23 +384,23 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelOb
 
     // Compute the repaint rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(repaintRect);
-    RenderReplaced::mapRectToRepaintBacking(repaintContainer, rect);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
     return rect;
 }
 
-void RenderSVGRoot::computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed) const
+void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed) const
 {
     // Apply our local transforms (except for x/y translation), then our shadow,
     // and then call RenderBox's method to handle all the normal CSS Box model bits
-    repaintRect = m_localToBorderBoxTransform.mapRect(repaintRect);
+    paintInvalidationRect = m_localToBorderBoxTransform.mapRect(paintInvalidationRect);
 
     // Apply initial viewport clip
     if (shouldApplyViewportClip())
-        repaintRect.intersect(pixelSnappedBorderBoxRect());
+        paintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
-    LayoutRect rect = enclosingIntRect(repaintRect);
-    RenderReplaced::mapRectToRepaintBacking(repaintContainer, rect, fixed);
-    repaintRect = rect;
+    LayoutRect rect = enclosingIntRect(paintInvalidationRect);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
+    paintInvalidationRect = rect;
 }
 
 // This method expects local CSS box coordinates.
