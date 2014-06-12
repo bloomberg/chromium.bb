@@ -117,6 +117,15 @@ void RecordVaryHeaderHistogram(const net::HttpResponseInfo* response) {
   UMA_HISTOGRAM_ENUMERATION("HttpCache.Vary", vary, VARY_MAX);
 }
 
+void RecordNoStoreHeaderHistogram(int load_flags,
+                                  const net::HttpResponseInfo* response) {
+  if (load_flags & net::LOAD_MAIN_FRAME) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.MainFrameNoStore",
+        response->headers->HasHeaderValue("cache-control", "no-store"));
+  }
+}
+
 }  // namespace
 
 namespace net {
@@ -1027,6 +1036,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
   }
 
   RecordVaryHeaderHistogram(new_response);
+  RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
 
   if (new_response_->headers->response_code() == 416 &&
       (request_->method == "GET" || request_->method == "POST")) {

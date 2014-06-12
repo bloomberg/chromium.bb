@@ -13784,6 +13784,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.MainFrameNoStore" enum="MainFrameStorable">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The distribution of storable vs &quot;cache-control: no-store&quot;
+    main-frame resources.
+
+    Counted after response headers have completed and before the content has
+    completed. Redirects are counted. All HTTP cache transactions are counted,
+    not just those that require the network.
+  </summary>
+</histogram>
+
 <histogram name="Net.MTPR_GetProxyForUrl_Thread_Wait_Time" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -39029,6 +39041,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="INCOGNITO_DEVELOPER">Incognito Dev</int>
   <int value="4" label="OWNER_DEVELOPER">Owner Dev</int>
   <int value="5" label="OTHER_DEVELOPER">Other Dev</int>
+</enum>
+
+<enum name="MainFrameStorable" type="int">
+  <int value="0" label="Storable"/>
+  <int value="1" label="cache-control: no-store"/>
 </enum>
 
 <enum name="ManagedUserPasswordChange" type="int">
