@@ -615,6 +615,11 @@ crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ P
 
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
+crbug.com/382732 [ Linux ] crypto/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
+crbug.com/382732 [ Linux ] crypto/rsa-oaep-key-manipulation.html [ Failure Pass ]
+crbug.com/382732 [ Linux ] crypto/rsa-oaep-plaintext-length.html [ Failure Pass ]
+crbug.com/382732 [ Linux ] crypto/rsa-oaep-wrap-unwrap-aes.html [ Failure Pass ]
+
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
