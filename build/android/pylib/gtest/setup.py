@@ -130,6 +130,7 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
       '--isolated', isolated_abs_path,
       '--outdir', constants.ISOLATE_DEPS_DIR,
 
+      '--path-variable', 'DEPTH', constants.DIR_SOURCE_ROOT,
       '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
 
       '--config-variable', 'OS', 'android',

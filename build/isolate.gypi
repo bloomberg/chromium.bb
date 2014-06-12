@@ -82,6 +82,7 @@
 
         # Path variables are used to replace file paths when loading a .isolate
         # file
+        '--path-variable', 'DEPTH', '<(DEPTH)',
         '--path-variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
 
         # Extra variables are replaced on the 'command' entry and on paths in
