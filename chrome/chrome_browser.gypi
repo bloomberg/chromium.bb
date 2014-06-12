@@ -61,6 +61,7 @@
         '../components/components.gyp:sync_driver',
         '../components/components.gyp:translate_core_browser',
         '../components/components.gyp:translate_core_common',
+        '../components/components.gyp:url_fixer',
         '../components/components.gyp:user_prefs',
         '../components/components_strings.gyp:components_strings',
         # This depends directly on the variations target, rather than just

@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -495,7 +495,7 @@ GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
 bool ExtensionTabUtil::IsCrashURL(const GURL& url) {
   // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
   GURL fixed_url =
-      URLFixerUpper::FixupURL(url.possibly_invalid_spec(), std::string());
+      url_fixer::FixupURL(url.possibly_invalid_spec(), std::string());
   return (fixed_url.SchemeIs(content::kChromeUIScheme) &&
           (fixed_url.host() == content::kChromeUIBrowserCrashHost ||
            fixed_url.host() == chrome::kChromeUICrashHost));

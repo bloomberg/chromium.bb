@@ -9,9 +9,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/url_fixer/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -101,7 +101,7 @@
 // If possible, return a valid GURL from the URL text field.
 - (GURL)GURLFromUrlField {
   NSString* url = [self displayURL];
-  return URLFixerUpper::FixupURL([url UTF8String], std::string());
+  return url_fixer::FixupURL([url UTF8String], std::string());
 }
 
 // Enable the OK button if there is a valid URL.

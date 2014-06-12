@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_URL_FIXER_UPPER_H_
-#define CHROME_COMMON_NET_URL_FIXER_UPPER_H_
+#ifndef COMPONENTS_URL_FIXER_URL_FIXER_H_
+#define COMPONENTS_URL_FIXER_URL_FIXER_H_
 
 #include <string>
 
@@ -23,7 +23,7 @@ struct Parsed;
 // know are valid. For example, user typing in the URL bar or command line
 // options. This is NOT the place for converting between different types of
 // URLs or parsing them, see net_util.h for that.
-namespace URLFixerUpper {
+namespace url_fixer {
 
   // Segments the given text string into parts of a URL.  This is most useful
   // for schemes such as http, https, and ftp where |SegmentURL| will find many
@@ -80,6 +80,6 @@ base::string16 SegmentURL(const base::string16& text, url::Parsed* parts);
   // by this variable.
   extern const char* home_directory_override;
 
-}  // namespace URLFixerUpper
+}  // namespace url_fixer
 
-#endif  // CHROME_COMMON_NET_URL_FIXER_UPPER_H_
+#endif  // COMPONENTS_URL_FIXER_URL_FIXER_H_

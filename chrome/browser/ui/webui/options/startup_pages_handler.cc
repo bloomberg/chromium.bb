@@ -15,8 +15,8 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -153,7 +153,7 @@ void StartupPagesHandler::AddStartupPage(const base::ListValue* args) {
   std::string url_string;
   CHECK(args->GetString(0, &url_string));
 
-  GURL url = URLFixerUpper::FixupURL(url_string, std::string());
+  GURL url = url_fixer::FixupURL(url_string, std::string());
   if (!url.is_valid())
     return;
 
@@ -178,7 +178,7 @@ void StartupPagesHandler::EditStartupPage(const base::ListValue* args) {
     return;
   }
 
-  fixed_url = URLFixerUpper::FixupURL(url_string, std::string());
+  fixed_url = url_fixer::FixupURL(url_string, std::string());
   if (!fixed_url.is_empty()) {
     std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
     urls[index] = fixed_url;

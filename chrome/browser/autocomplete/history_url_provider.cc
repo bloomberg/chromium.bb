@@ -30,11 +30,11 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/url_fixer/url_fixer.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -481,7 +481,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   if (!fixup_return.first)
     return;
   url::Parsed parts;
-  URLFixerUpper::SegmentURL(fixup_return.second, &parts);
+  url_fixer::SegmentURL(fixup_return.second, &parts);
   AutocompleteInput fixed_up_input(input);
   fixed_up_input.UpdateText(fixup_return.second, base::string16::npos, parts);
 

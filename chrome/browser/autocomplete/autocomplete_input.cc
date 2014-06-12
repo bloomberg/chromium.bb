@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/common/net/url_fixer_upper.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -147,7 +147,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   url::Parsed local_parts;
   if (!parts)
     parts = &local_parts;
-  const base::string16 parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
+  const base::string16 parsed_scheme(url_fixer::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
 
@@ -157,8 +157,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   GURL placeholder_canonicalized_url;
   if (!canonicalized_url)
     canonicalized_url = &placeholder_canonicalized_url;
-  *canonicalized_url = URLFixerUpper::FixupURL(base::UTF16ToUTF8(text),
-                                               base::UTF16ToUTF8(desired_tld));
+  *canonicalized_url = url_fixer::FixupURL(base::UTF16ToUTF8(text),
+                                           base::UTF16ToUTF8(desired_tld));
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
@@ -241,7 +241,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
             &http_parts.ref,
           };
           for (size_t i = 0; i < arraysize(components); ++i) {
-            URLFixerUpper::OffsetComponent(
+            url_fixer::OffsetComponent(
                 -static_cast<int>(http_scheme_prefix.length()), components[i]);
           }
 

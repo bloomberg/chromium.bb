@@ -27,10 +27,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -883,8 +883,8 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
     if ((match_type == AutocompleteMatchType::NAVSUGGEST) ||
         (match_type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED)) {
       // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(
-          base::UTF16ToUTF8(suggestion), std::string()));
+      GURL url(
+          url_fixer::FixupURL(base::UTF16ToUTF8(suggestion), std::string()));
       if (url.is_valid() && allow_navsuggest) {
         base::string16 title;
         if (descriptions != NULL)

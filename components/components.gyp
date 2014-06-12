@@ -45,6 +45,7 @@
     'signin.gypi',
     'startup_metric_utils.gypi',
     'translate.gypi',
+    'url_fixer.gypi',
     'url_matcher.gypi',
     'user_prefs.gypi',
     'variations.gypi',

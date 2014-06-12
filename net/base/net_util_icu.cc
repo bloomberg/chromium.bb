@@ -692,7 +692,7 @@ base::string16 FormatUrlWithAdjustments(
       spec.begin() + parsed.CountCharactersBefore(url::Parsed::USERNAME, true));
   const char kHTTP[] = "http://";
   const char kFTP[] = "ftp.";
-  // URLFixerUpper::FixupURL() treats "ftp.foo.com" as ftp://ftp.foo.com.  This
+  // url_fixer::FixupURL() treats "ftp.foo.com" as ftp://ftp.foo.com.  This
   // means that if we trim "http://" off a URL whose host starts with "ftp." and
   // the user inputs this into any field subject to fixup (which is basically
   // all input fields), the meaning would be changed.  (In fact, often the

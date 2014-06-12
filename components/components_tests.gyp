@@ -184,6 +184,7 @@
             'url_matcher/substring_set_matcher_unittest.cc',
             'url_matcher/url_matcher_factory_unittest.cc',
             'url_matcher/url_matcher_unittest.cc',
+            'url_fixer/url_fixer_unittest.cc',
             'variations/active_field_trials_unittest.cc',
             'variations/caching_permuted_entropy_provider_unittest.cc',
             'variations/entropy_provider_unittest.cc',
@@ -318,6 +319,10 @@
             'components.gyp:translate_core_common',
             'components.gyp:translate_core_language_detection',
 
+            # Dependencies of url_fixer
+            'components.gyp:url_fixer',
+            '../url/url.gyp:url_lib',
+
             # Dependencies of variations
             'components.gyp:variations',
           ],
@@ -403,6 +408,7 @@
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
+                ['include', '^url_fixer/'],
                 ['include', '^variations/'],
               ],
               'dependencies': [

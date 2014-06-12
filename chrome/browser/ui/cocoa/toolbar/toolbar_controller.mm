@@ -49,8 +49,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -815,8 +815,8 @@ class NotificationBridge
     NOTIMPLEMENTED();
 
   // Get the first URL and fix it up.
-  GURL url(URLFixerUpper::FixupURL(
-      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+  GURL url(url_fixer::FixupURL(base::SysNSStringToUTF8([urls objectAtIndex:0]),
+                               std::string()));
 
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(

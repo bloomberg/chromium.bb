@@ -1896,7 +1896,6 @@
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/multi_process_lock_unittest.cc',
-        'common/net/url_fixer_upper_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
         'common/partial_circular_buffer_unittest.cc',
         'common/pepper_permission_util_unittest.cc',

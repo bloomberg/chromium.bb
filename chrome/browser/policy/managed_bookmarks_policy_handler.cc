@@ -6,11 +6,11 @@
 
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/policy/core/browser/managed_bookmarks_tracker.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/url_fixer/url_fixer.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 #include "url/gurl.h"
@@ -70,7 +70,7 @@ void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {
     } else {
       // Make sure the URL is valid before passing a bookmark to the pref.
       dict->Remove(ManagedBookmarksTracker::kChildren, NULL);
-      GURL gurl = URLFixerUpper::FixupURL(url, "");
+      GURL gurl = url_fixer::FixupURL(url, "");
       if (!gurl.is_valid()) {
         it = list->Erase(it, NULL);
         continue;

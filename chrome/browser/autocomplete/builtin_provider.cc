@@ -10,9 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/url_fixer/url_fixer.h"
 
 namespace {
 
@@ -102,7 +102,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
              base::string16(), styles);
   } else {
     // Match input about: or chrome: URL input against builtin chrome URLs.
-    GURL url = URLFixerUpper::FixupURL(base::UTF16ToUTF8(text), std::string());
+    GURL url = url_fixer::FixupURL(base::UTF16ToUTF8(text), std::string());
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
     // extensions to chrome: URLs.
     if (url.SchemeIs(content::kChromeUIScheme) && url.has_host() &&

@@ -33,7 +33,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"

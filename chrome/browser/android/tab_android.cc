@@ -35,10 +35,10 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/infobars/core/infobar_container.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -401,8 +401,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
     }
   }
 
-  GURL fixed_url(URLFixerUpper::FixupURL(gurl.possibly_invalid_spec(),
-                                         std::string()));
+  GURL fixed_url(
+      url_fixer::FixupURL(gurl.possibly_invalid_spec(), std::string()));
   if (!fixed_url.is_valid())
     return PAGE_LOAD_FAILED;
 

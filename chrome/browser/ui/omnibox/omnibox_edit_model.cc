@@ -53,10 +53,10 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -332,8 +332,7 @@ bool OmniboxEditModel::UpdatePermanentText() {
 }
 
 GURL OmniboxEditModel::PermanentURL() {
-  return URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
-                                 std::string());
+  return url_fixer::FixupURL(base::UTF16ToUTF8(permanent_text_), std::string());
 }
 
 void OmniboxEditModel::SetUserText(const base::string16& text) {

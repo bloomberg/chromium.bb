@@ -18,9 +18,9 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/options_util.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -577,7 +577,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
         NOTREACHED();
         return;
       }
-      GURL fixed = URLFixerUpper::FixupURL(original, std::string());
+      GURL fixed = url_fixer::FixupURL(original, std::string());
       temp_value.reset(new base::StringValue(fixed.spec()));
       value = temp_value.get();
       break;

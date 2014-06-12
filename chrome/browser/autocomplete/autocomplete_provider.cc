@@ -11,9 +11,9 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
@@ -140,8 +140,8 @@ AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
   const FixupReturn failed(false, input_text);
 
   // Fixup and canonicalize user input.
-  const GURL canonical_gurl(URLFixerUpper::FixupURL(
-      base::UTF16ToUTF8(input_text), std::string()));
+  const GURL canonical_gurl(
+      url_fixer::FixupURL(base::UTF16ToUTF8(input_text), std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
     // This probably won't happen, but there are no guarantees.

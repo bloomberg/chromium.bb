@@ -10,20 +10,20 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
+#include "components/url_fixer/url_fixer.h"
 
 bool WillHandleBrowserAboutURL(GURL* url,
                                content::BrowserContext* browser_context) {
   // TODO(msw): Eliminate "about:*" constants and literals from code and tests,
   //            then hopefully we can remove this forced fixup.
-  *url = URLFixerUpper::FixupURL(url->possibly_invalid_spec(), std::string());
+  *url = url_fixer::FixupURL(url->possibly_invalid_spec(), std::string());
 
-  // Check that about: URLs are fixed up to chrome: by URLFixerUpper::FixupURL.
+  // Check that about: URLs are fixed up to chrome: by url_fixer::FixupURL.
   DCHECK((*url == GURL(url::kAboutBlankURL)) ||
          !url->SchemeIs(url::kAboutScheme));
 
-  // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.
+  // Only handle chrome://foo/, url_fixer::FixupURL translates about:foo.
   if (!url->SchemeIs(content::kChromeUIScheme))
     return false;
 

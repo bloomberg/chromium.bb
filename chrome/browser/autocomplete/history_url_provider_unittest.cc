@@ -22,10 +22,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -650,9 +650,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
               NULL, 0);
     } else {
       const UrlAndLegalDefault output[] = {
-        { URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec(),
-          true }
-      };
+          {url_fixer::FixupURL(test_cases[i].input, std::string()).spec(),
+           true}};
       ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                               base::string16(), false,
                               output, arraysize(output)));
@@ -682,9 +681,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     const UrlAndLegalDefault output[] = {
-      { URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec(),
-        true }
-    };
+        {url_fixer::FixupURL(test_cases[i].input, std::string()).spec(), true}};
     AutocompleteInput::Type type;
     ASSERT_NO_FATAL_FAILURE(
         RunTest(ASCIIToUTF16(test_cases[i].input),
@@ -993,8 +990,9 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     for (max_matches = 0; max_matches < kMaxMatches; ++max_matches) {
       if (test_cases[i].matches[max_matches].url == NULL)
         break;
-      output[max_matches].url = URLFixerUpper::FixupURL(
-          test_cases[i].matches[max_matches].url, std::string()).spec();
+      output[max_matches].url =
+          url_fixer::FixupURL(test_cases[i].matches[max_matches].url,
+                              std::string()).spec();
       output[max_matches].allowed_to_be_default_match = true;
     }
     autocomplete_->scoring_params_ = test_cases[i].scoring_params;

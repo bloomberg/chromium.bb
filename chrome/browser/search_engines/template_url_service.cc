@@ -38,8 +38,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_util.h"
@@ -1882,8 +1882,8 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   if (!history)
     return;
 
-  GURL url(URLFixerUpper::FixupURL(base::UTF16ToUTF8(t_url.keyword()),
-                                   std::string()));
+  GURL url(
+      url_fixer::FixupURL(base::UTF16ToUTF8(t_url.keyword()), std::string()));
   if (!url.is_valid())
     return;
 

@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/url_fixer/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -92,7 +92,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   std::string query;
   bool match_subdomains = true;
   URLBlacklist::SegmentURLCallback callback =
-      static_cast<URLBlacklist::SegmentURLCallback>(URLFixerUpper::SegmentURL);
+      static_cast<URLBlacklist::SegmentURLCallback>(url_fixer::SegmentURL);
   if (!URLBlacklist::FilterToComponents(
           callback, pattern,
           &scheme, &host, &match_subdomains, &port, &path, &query)) {
