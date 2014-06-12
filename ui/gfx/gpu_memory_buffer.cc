@@ -6,6 +6,20 @@
 
 namespace gfx {
 
+GpuMemoryBufferHandle::GpuMemoryBufferHandle()
+    : type(EMPTY_BUFFER),
+      handle(base::SharedMemory::NULLHandle())
+#if defined(OS_MACOSX)
+      ,
+      io_surface_id(0u)
+#endif
+#if defined(OS_ANDROID)
+      ,
+      native_buffer(NULL)
+#endif
+{
+}
+
 GpuMemoryBuffer::GpuMemoryBuffer() {}
 
 GpuMemoryBuffer::~GpuMemoryBuffer() {}

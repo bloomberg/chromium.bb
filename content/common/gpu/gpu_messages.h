@@ -282,6 +282,18 @@ IPC_MESSAGE_CONTROL3(GpuMsg_DeleteImage,
                      int32, /* image_id */
                      int32 /* sync_point */)
 
+// Tells the GPU process to create a new gpu memory buffer for |handle|.
+IPC_MESSAGE_CONTROL4(GpuMsg_CreateGpuMemoryBuffer,
+                     gfx::GpuMemoryBufferHandle, /* handle */
+                     gfx::Size, /* size */
+                     unsigned, /* internalformat */
+                     unsigned /* usage */)
+
+// Tells the GPU process to destroy buffer.
+IPC_MESSAGE_CONTROL2(GpuMsg_DestroyGpuMemoryBuffer,
+                     gfx::GpuMemoryBufferHandle, /* handle */
+                     int32 /* sync_point */)
+
 // Tells the GPU process to create a context for collecting graphics card
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
@@ -367,6 +379,10 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyCommandBuffer,
 // Response from GPU to a GpuMsg_CreateImage message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ImageCreated,
                      gfx::Size /* size */)
+
+// Response from GPU to a GpuMsg_CreateGpuMemoryBuffer message.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,
+                     gfx::GpuMemoryBufferHandle /* handle */)
 
 // Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,

@@ -110,6 +110,8 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateImage, OnCreateImage)
     IPC_MESSAGE_HANDLER(GpuMsg_DeleteImage, OnDeleteImage)
+    IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBuffer, OnCreateGpuMemoryBuffer)
+    IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -253,6 +255,19 @@ void GpuChannelManager::OnDeleteImageSyncPointRetired(
     delete image_operations_.front();
     image_operations_.pop_front();
   }
+}
+
+void GpuChannelManager::OnCreateGpuMemoryBuffer(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage) {
+  Send(new GpuHostMsg_GpuMemoryBufferCreated(gfx::GpuMemoryBufferHandle()));
+}
+
+void GpuChannelManager::OnDestroyGpuMemoryBuffer(
+    const gfx::GpuMemoryBufferHandle& handle,
+    int32 sync_point) {
 }
 
 void GpuChannelManager::OnLoadedShader(std::string program_proto) {

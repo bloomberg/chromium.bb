@@ -67,9 +67,15 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::SurfaceTextureId)
 IPC_STRUCT_TRAITS_END()
 #endif
 
+IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferId)
+  IPC_STRUCT_TRAITS_MEMBER(primary_id)
+  IPC_STRUCT_TRAITS_MEMBER(secondary_id)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(handle)
+  IPC_STRUCT_TRAITS_MEMBER(global_id)
 #if defined(OS_MACOSX)
   IPC_STRUCT_TRAITS_MEMBER(io_surface_id)
 #endif

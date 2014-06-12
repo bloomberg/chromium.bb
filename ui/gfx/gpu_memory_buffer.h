@@ -24,6 +24,8 @@ enum GpuMemoryBufferType {
   GPU_MEMORY_BUFFER_TYPE_LAST = SURFACE_TEXTURE_BUFFER
 };
 
+// TODO(alexst): Merge this with GpuMemoryBufferId as part of switchover to
+// the new API for GpuMemoryBuffer allocation when it's done.
 #if defined(OS_ANDROID)
 struct SurfaceTextureId {
   SurfaceTextureId() : primary_id(0), secondary_id(0) {}
@@ -34,23 +36,20 @@ struct SurfaceTextureId {
 };
 #endif
 
-struct GpuMemoryBufferHandle {
-  GpuMemoryBufferHandle()
-      : type(EMPTY_BUFFER),
-        handle(base::SharedMemory::NULLHandle())
-#if defined(OS_MACOSX)
-        ,
-        io_surface_id(0u)
-#endif
-#if defined(OS_ANDROID)
-        ,
-        native_buffer(NULL)
-#endif
-  {
-  }
+struct GpuMemoryBufferId {
+  GpuMemoryBufferId() : primary_id(0), secondary_id(0) {}
+  GpuMemoryBufferId(int32 primary_id, int32 secondary_id)
+      : primary_id(primary_id), secondary_id(secondary_id) {}
+  int32 primary_id;
+  int32 secondary_id;
+};
+
+struct GFX_EXPORT GpuMemoryBufferHandle {
+  GpuMemoryBufferHandle();
   bool is_null() const { return type == EMPTY_BUFFER; }
   GpuMemoryBufferType type;
   base::SharedMemoryHandle handle;
+  GpuMemoryBufferId global_id;
 #if defined(OS_MACOSX)
   uint32 io_surface_id;
 #endif
