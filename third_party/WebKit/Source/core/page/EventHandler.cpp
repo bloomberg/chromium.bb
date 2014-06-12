@@ -295,6 +295,7 @@ void EventHandler::clear()
     m_previousWheelScrolledNode = nullptr;
     m_targetForTouchID.clear();
     m_touchSequenceDocument.clear();
+    m_touchSequenceUserGestureToken.clear();
     m_scrollGestureHandlingNode = nullptr;
     m_lastHitTestResultOverWidget = false;
     m_previousGestureScrolledNode = nullptr;
@@ -3403,8 +3404,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
 
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
-
     unsigned i;
     bool freshTouchEvents = true;
     bool allTouchReleased = true;
@@ -3422,7 +3421,17 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         // there may be cases where the browser doesn't reliably release all
         // touches. http://crbug.com/345372 tracks this.
         m_touchSequenceDocument.clear();
+        m_touchSequenceUserGestureToken.clear();
     }
+
+    OwnPtr<UserGestureIndicator> gestureIndicator;
+
+    if (m_touchSequenceUserGestureToken)
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release()));
+    else
+        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
+
+    m_touchSequenceUserGestureToken = gestureIndicator->currentToken();
 
     ASSERT(m_frame->view());
     if (m_touchSequenceDocument && (!m_touchSequenceDocument->frame() || !m_touchSequenceDocument->frame()->view())) {
@@ -3486,8 +3495,10 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     // document set to receive the events, then we can skip all the rest of
     // this work.
     if (!m_touchSequenceDocument || !m_touchSequenceDocument->hasTouchEventHandlers() || !m_touchSequenceDocument->frame()) {
-        if (allTouchReleased)
+        if (allTouchReleased) {
             m_touchSequenceDocument.clear();
+            m_touchSequenceUserGestureToken.clear();
+        }
         return false;
     }
 
@@ -3601,8 +3612,10 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             changedTouches[pointState].m_targets.add(touchTarget);
         }
     }
-    if (allTouchReleased)
+    if (allTouchReleased) {
         m_touchSequenceDocument.clear();
+        m_touchSequenceUserGestureToken.clear();
+    }
 
     // Now iterate the changedTouches list and m_targets within it, sending
     // events to the targets as required.

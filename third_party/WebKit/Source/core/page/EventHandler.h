@@ -373,6 +373,7 @@ private:
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.
     RefPtrWillBeMember<Document> m_touchSequenceDocument;
+    RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
 
     bool m_touchPressed;
 
