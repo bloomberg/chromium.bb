@@ -248,12 +248,15 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   // TODO(tdresser): Always return floating point location. See
   // crbug.com/337824.
   gfx::Point location() const { return gfx::ToFlooredPoint(location_); }
-  gfx::PointF location_f() const { return location_; }
+  const gfx::PointF& location_f() const { return location_; }
   void set_root_location(const gfx::PointF& root_location) {
     root_location_ = root_location;
   }
   gfx::Point root_location() const {
     return gfx::ToFlooredPoint(root_location_);
+  }
+  const gfx::PointF& root_location_f() const {
+    return root_location_;
   }
 
   // Transform the locations using |inverted_root_transform|.
