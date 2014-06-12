@@ -710,4 +710,8 @@ void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
   provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
 }
 
+bool RenderWidgetCompositor::usesGpuRasterization() {
+  return layer_tree_host_->UseGpuRasterization();
+}
+
 }  // namespace content

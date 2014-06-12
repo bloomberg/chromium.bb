@@ -59,6 +59,7 @@ class WebLayerTreeViewImplForTesting
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) OVERRIDE;
   virtual void clearViewportLayers() OVERRIDE;
+  virtual bool usesGpuRasterization() OVERRIDE;
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
