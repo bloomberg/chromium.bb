@@ -5,12 +5,14 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_MAC_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_MAC_H_
 
-#include "ui/native_theme/native_theme_base.h"
+#include "ui/native_theme/fallback_theme.h"
+#include "ui/native_theme/native_theme_export.h"
 
 namespace ui {
 
 // Mac implementation of native theme support.
-class NativeThemeMac : public NativeThemeBase {
+// TODO(tapted): This should not use FallbackTheme. http://crbug.com/379086.
+class NativeThemeMac : public FallbackTheme {
  public:
   static NativeThemeMac* instance();
 

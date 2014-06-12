@@ -36,7 +36,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_DialogBackground:
       return kDialogBackgroundColor;
     default:
-      NOTREACHED() << "Invalid color_id: " << color_id;
+      NOTIMPLEMENTED() << " Invalid color_id: " << color_id;
+      return FallbackTheme::GetSystemColor(color_id);
   }
 
   return kInvalidColorIdColor;

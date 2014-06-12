@@ -7,6 +7,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "ui/gfx/font_list.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace views {
 
@@ -347,8 +348,7 @@ void NativeWidgetMac::SetVisibilityChangedAnimationsEnabled(bool value) {
 }
 
 ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
-  NOTIMPLEMENTED();
-  return NULL;
+  return ui::NativeTheme::instance();
 }
 
 void NativeWidgetMac::OnRootViewLayout() const {
@@ -376,8 +376,7 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return new NativeWidgetMac(delegate);
 }
 
 // static
