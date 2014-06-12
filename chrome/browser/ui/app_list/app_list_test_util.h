@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_TEST_UTIL_H_
 
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 
 // Base class for app list unit tests that use the "app_list" test profile.
-class AppListTestBase : public ExtensionServiceTestBase {
+class AppListTestBase : public extensions::ExtensionServiceTestBase {
  public:
   static const char kHostedAppId[];
   static const char kPackagedApp1Id[];

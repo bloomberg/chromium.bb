@@ -9,7 +9,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -75,7 +76,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
   service_->Init();
   GarbageCollectExtensions();
 
-  base::FileEnumerator dirs(extensions_install_dir_,
+  base::FileEnumerator dirs(extensions_install_dir(),
                             false,  // not recursive
                             base::FileEnumerator::DIRECTORIES);
   size_t count = 0;
@@ -87,7 +88,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
 
   // And extension1 dir should now be toast.
   base::FilePath extension_dir =
-      extensions_install_dir_.AppendASCII(kExtensionId);
+      extensions_install_dir().AppendASCII(kExtensionId);
   ASSERT_FALSE(base::PathExists(extension_dir));
 }
 
@@ -117,7 +118,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, NoCleanupDuringInstall) {
 
   // extension1 dir should still exist.
   base::FilePath extension_dir =
-      extensions_install_dir_.AppendASCII(kExtensionId);
+      extensions_install_dir().AppendASCII(kExtensionId);
   ASSERT_TRUE(base::PathExists(extension_dir));
 
   // Finish CRX installation and re-run garbage collection.
@@ -134,7 +135,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, GarbageCollectWithPendingUpdates) {
   InitPluginService();
 
   base::FilePath source_install_dir =
-      data_dir_.AppendASCII("pending_updates").AppendASCII("Extensions");
+      data_dir().AppendASCII("pending_updates").AppendASCII("Extensions");
   base::FilePath pref_path =
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
@@ -143,20 +144,20 @@ TEST_F(ExtensionGarbageCollectorUnitTest, GarbageCollectWithPendingUpdates) {
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.
-  ASSERT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  ASSERT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   GarbageCollectExtensions();
 
   // Verify that the pending update for the first extension didn't get
   // deleted.
-  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
-  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
-  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/2")));
-  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 }
 
@@ -165,7 +166,7 @@ TEST_F(ExtensionGarbageCollectorUnitTest, UpdateOnStartup) {
   InitPluginService();
 
   base::FilePath source_install_dir =
-      data_dir_.AppendASCII("pending_updates").AppendASCII("Extensions");
+      data_dir().AppendASCII("pending_updates").AppendASCII("Extensions");
   base::FilePath pref_path =
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
@@ -174,20 +175,20 @@ TEST_F(ExtensionGarbageCollectorUnitTest, UpdateOnStartup) {
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.
-  ASSERT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  ASSERT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->Init();
   GarbageCollectExtensions();
 
   // Verify that the pending update for the first extension got installed.
-  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir().AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
-  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
-  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/2")));
-  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir().AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   // Make sure update information got deleted.

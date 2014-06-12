@@ -11,7 +11,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -64,9 +65,8 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     chromeos::ServicesCustomizationDocument::RegisterPrefs(
         local_state_.registry());
 
-    external_externsions_overrides_.reset(
-        new base::ScopedPathOverride(chrome::DIR_EXTERNAL_EXTENSIONS,
-                                     data_dir_.Append("external")));
+    external_externsions_overrides_.reset(new base::ScopedPathOverride(
+        chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
 
     chromeos::system::StatisticsProvider::SetTestProvider(
         &mock_statistics_provider_);

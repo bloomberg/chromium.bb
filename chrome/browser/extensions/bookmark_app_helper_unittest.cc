@@ -5,7 +5,8 @@
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,13 +43,14 @@ class BookmarkAppHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
 
-class BookmarkAppHelperExtensionServiceTest : public ExtensionServiceTestBase {
+class BookmarkAppHelperExtensionServiceTest
+    : public extensions::ExtensionServiceTestBase {
  public:
   BookmarkAppHelperExtensionServiceTest() {}
   virtual ~BookmarkAppHelperExtensionServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ExtensionServiceTestBase::SetUp();
+    extensions::ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
     service_->Init();
     EXPECT_EQ(0u, service_->extensions()->size());
@@ -222,7 +224,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
-  EXPECT_EQ(0u, registry_->enabled_extensions().size());
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
   web_app_info.title = base::UTF8ToUTF16(kAppTitle);
@@ -234,7 +236,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   base::RunLoop().RunUntilIdle();
 
   {
-    EXPECT_EQ(1u, registry_->enabled_extensions().size());
+    EXPECT_EQ(1u, registry()->enabled_extensions().size());
     const Extension* extension = service_->extensions()->begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAppTitle, extension->name());
@@ -252,7 +254,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   base::RunLoop().RunUntilIdle();
 
   {
-    EXPECT_EQ(1u, registry_->enabled_extensions().size());
+    EXPECT_EQ(1u, registry()->enabled_extensions().size());
     const Extension* extension = service_->extensions()->begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAlternativeAppTitle, extension->name());
@@ -281,7 +283,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
   extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, registry_->enabled_extensions().size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
   base::RunLoop run_loop;
   extensions::GetWebApplicationInfoFromApp(
       profile_.get(),

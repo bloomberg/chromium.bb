@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window.h"

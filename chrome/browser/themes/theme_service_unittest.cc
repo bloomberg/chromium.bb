@@ -7,7 +7,8 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -27,7 +28,7 @@ using extensions::ExtensionRegistry;
 
 namespace theme_service_internal {
 
-class ThemeServiceTest : public ExtensionServiceTestBase {
+class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
  public:
   ThemeServiceTest() : is_managed_(false),
                        registry_(NULL) {}
@@ -82,8 +83,8 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   }
 
   virtual void SetUp() {
-    ExtensionServiceTestBase::SetUp();
-    ExtensionServiceTestBase::ExtensionServiceInitParams params =
+    extensions::ExtensionServiceTestBase::SetUp();
+    extensions::ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();
     params.profile_is_managed = is_managed_;
     InitializeExtensionService(params);

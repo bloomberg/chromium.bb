@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 
 #include "base/files/file_path.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "extensions/common/extension_set.h"
 
@@ -20,7 +21,7 @@ AppListTestBase::AppListTestBase() {}
 AppListTestBase::~AppListTestBase() {}
 
 void AppListTestBase::SetUp() {
-  ExtensionServiceTestBase::SetUp();
+  extensions::ExtensionServiceTestBase::SetUp();
 
   // Load "app_list" extensions test profile.
   // The test profile has 5 extensions:
@@ -28,9 +29,8 @@ void AppListTestBase::SetUp() {
   // - 2 packaged extension apps
   // - 1 hosted extension app
   // - 1 ephemeral app (which should not be visible in the launcher)
-  base::FilePath source_install_dir = data_dir_
-      .AppendASCII("app_list")
-      .AppendASCII("Extensions");
+  base::FilePath source_install_dir =
+      data_dir().AppendASCII("app_list").AppendASCII("Extensions");
   base::FilePath pref_path = source_install_dir
       .DirName()
       .Append(chrome::kPreferencesFilename);

@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,7 +41,8 @@ base::FilePath bogus_file_pathname(const std::string& name) {
       .AppendASCII(name);
 }
 
-class BackgroundApplicationListModelTest : public ExtensionServiceTestBase {
+class BackgroundApplicationListModelTest
+    : public extensions::ExtensionServiceTestBase {
  public:
   BackgroundApplicationListModelTest() {}
   virtual ~BackgroundApplicationListModelTest() {}

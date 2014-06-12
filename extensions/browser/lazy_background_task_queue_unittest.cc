@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,7 +44,8 @@ class TestProcessManager : public ProcessManager {
 
 // Derives from ExtensionServiceTestBase because ExtensionService is difficult
 // to initialize alone.
-class LazyBackgroundTaskQueueTest : public ExtensionServiceTestBase {
+class LazyBackgroundTaskQueueTest
+    : public extensions::ExtensionServiceTestBase {
  public:
   LazyBackgroundTaskQueueTest() : task_run_count_(0) {}
   virtual ~LazyBackgroundTaskQueueTest() {}

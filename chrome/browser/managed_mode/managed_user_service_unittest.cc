@@ -7,7 +7,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service_factory.h"
@@ -165,7 +165,8 @@ TEST_F(ManagedUserServiceTest, ShutDownCustodianProfileDownloader) {
 }
 
 #if !defined(OS_ANDROID)
-class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
+class ManagedUserServiceExtensionTestBase
+    : public extensions::ExtensionServiceTestBase {
  public:
   explicit ManagedUserServiceExtensionTestBase(bool is_managed)
       : is_managed_(is_managed),
