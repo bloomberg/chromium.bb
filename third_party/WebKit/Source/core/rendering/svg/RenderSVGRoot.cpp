@@ -167,7 +167,7 @@ void RenderSVGRoot::layout()
     ASSERT(needsLayout());
 
     // Arbitrary affine transforms are incompatible with LayoutState.
-    LayoutStateDisabler layoutStateDisabler(*this);
+    ForceHorriblySlowRectMapping slowRectMapping(*this);
 
     bool needsLayout = selfNeedsLayout();
     LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout() && needsLayout);

@@ -240,7 +240,7 @@ private:
     void popLayoutStateForCurrentFlowThread();
 
     friend class LayoutStateMaintainer;
-    friend class LayoutStateDisabler;
+    friend class ForceHorriblySlowRectMapping;
     friend class RootLayoutStateScope;
 
     bool shouldUsePrintingLayout() const;
@@ -366,16 +366,16 @@ private:
     bool m_didCreateLayoutState : 1; // true if we actually made a layout state.
 };
 
-class LayoutStateDisabler {
-    WTF_MAKE_NONCOPYABLE(LayoutStateDisabler);
+class ForceHorriblySlowRectMapping {
+    WTF_MAKE_NONCOPYABLE(ForceHorriblySlowRectMapping);
 public:
-    LayoutStateDisabler(const RenderObject& root)
+    ForceHorriblySlowRectMapping(const RenderObject& root)
         : m_view(*root.view())
     {
         m_view.disableLayoutState();
     }
 
-    ~LayoutStateDisabler()
+    ~ForceHorriblySlowRectMapping()
     {
         m_view.enableLayoutState();
     }

@@ -133,7 +133,7 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    LayoutStateDisabler layoutStateDisabler(*this);
+    ForceHorriblySlowRectMapping slowRectMapping(*this);
 
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();

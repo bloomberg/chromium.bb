@@ -696,7 +696,7 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     // confused and think that we can use LayoutState. Ideally, we'd made
     // LayoutState work for all composited layers as well, but until then
     // we need to disable LayoutState for squashed layers.
-    LayoutStateDisabler layoutStateDisabler(*transformedAncestor);
+    ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
 
     // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is

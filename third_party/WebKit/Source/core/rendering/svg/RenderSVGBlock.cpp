@@ -117,7 +117,7 @@ void RenderSVGBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& pai
     if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    LayoutStateDisabler layoutStateDisabler(*this);
+    ForceHorriblySlowRectMapping slowRectMapping(*this);
     RenderBlockFlow::invalidateTreeAfterLayout(paintInvalidationContainer);
 }
 

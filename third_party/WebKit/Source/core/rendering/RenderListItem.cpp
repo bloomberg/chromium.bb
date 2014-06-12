@@ -293,7 +293,7 @@ void RenderListItem::updateMarkerLocation()
 
             // Removing and adding the marker can trigger repainting in
             // containers other than ourselves, so we need to disable LayoutState.
-            LayoutStateDisabler layoutStateDisabler(*this);
+            ForceHorriblySlowRectMapping slowRectMapping(*this);
             updateFirstLetter();
             m_marker->remove();
             if (markerParent)

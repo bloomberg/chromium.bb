@@ -202,7 +202,7 @@ void RenderListBox::layout()
     }
 
     if (m_scrollToRevealSelectionAfterLayout) {
-        LayoutStateDisabler layoutStateDisabler(*this);
+        ForceHorriblySlowRectMapping slowRectMapping(*this);
         scrollToRevealSelection();
     }
 }
