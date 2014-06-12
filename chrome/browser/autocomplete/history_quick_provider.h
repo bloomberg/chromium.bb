@@ -35,8 +35,6 @@ class HistoryQuickProvider : public HistoryProvider {
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
-
   // Disable this provider. For unit testing purposes only. This is required
   // because this provider is closely associated with the HistoryURLProvider
   // and in order to properly test the latter the HistoryQuickProvider must
