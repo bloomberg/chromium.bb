@@ -194,7 +194,7 @@ private:
         return bits | (static_cast<uintptr_t>(1) << maxInlineBits());
     }
 
-    class OutOfLineBits {
+    class WTF_EXPORT OutOfLineBits {
     public:
         size_t numBits() const { return m_numBits; }
         size_t numWords() const { return (m_numBits + bitsInPointer() - 1) / bitsInPointer(); }
