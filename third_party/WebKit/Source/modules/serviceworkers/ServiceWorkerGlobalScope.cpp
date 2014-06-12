@@ -31,6 +31,7 @@
 #include "ServiceWorkerGlobalScope.h"
 
 #include "CachePolyfill.h"
+#include "CacheStoragePolyfill.h"
 #include "FetchPolyfill.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
@@ -52,6 +53,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
     context->script()->evaluate(String(fetchPolyfillJs, sizeof(fetchPolyfillJs)));
     context->script()->evaluate(String(cachePolyfillJs, sizeof(cachePolyfillJs)));
+    context->script()->evaluate(String(cacheStoragePolyfillJs, sizeof(cacheStoragePolyfillJs)));
 
     return context.release();
 }

@@ -5,11 +5,10 @@
 // A simple, incomplete implementation of the Cache API, intended to facilitate
 // end to end serviceworker testing.
 
-// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache
+// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-objects
 
 // FIXME: Support AbstractResponse/OpaqueResponse correctly.
 // FIXME: Serialize the cache.
-// FIXME: Implement CacheStorage API.
 // FIXME: Bind all function references.
 (function(global) {
     var _castToRequest = function(item) {

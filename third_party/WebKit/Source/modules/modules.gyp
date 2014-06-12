@@ -109,6 +109,31 @@
             '<@(resources)',
         ],
       },
+      {
+        'action_name': 'CacheStoragePolyfill',
+        'process_outputs_as_sources': 1,
+        'variables': {
+            'resources': [
+                 'serviceworkers/polyfills/cacheStoragePolyfill.js',
+            ],
+        },
+        'inputs': [
+            '../build/scripts/make-file-arrays.py',
+            '<@(resources)',
+        ],
+        'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CacheStoragePolyfill.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/CacheStoragePolyfill.cpp',
+        ],
+        'action': [
+            'python',
+            '../build/scripts/make-file-arrays.py',
+            '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CacheStoragePolyfill.h',
+            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CacheStoragePolyfill.cpp',
+            '--namespace=WebCore',
+            '<@(resources)',
+        ],
+      },
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]
