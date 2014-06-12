@@ -272,8 +272,9 @@ BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
 gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
+  bool anchor_minimized = anchor_widget() && anchor_widget()->IsMinimized();
   return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
-      GetPreferredSize(), adjust_if_offscreen_);
+      GetPreferredSize(), adjust_if_offscreen_ && !anchor_minimized);
 }
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
