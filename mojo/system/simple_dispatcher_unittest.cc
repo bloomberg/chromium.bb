@@ -28,31 +28,36 @@ namespace {
 class MockSimpleDispatcher : public SimpleDispatcher {
  public:
   MockSimpleDispatcher()
-      : satisfied_flags_(MOJO_WAIT_FLAG_NONE),
-        satisfiable_flags_(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE) {}
+      : state_(MOJO_WAIT_FLAG_NONE,
+               MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE) {}
 
   void SetSatisfiedFlags(MojoWaitFlags new_satisfied_flags) {
     base::AutoLock locker(lock());
 
     // Any new flags that are set should be satisfiable.
-    CHECK_EQ(new_satisfied_flags & ~satisfied_flags_,
-             new_satisfied_flags & ~satisfied_flags_ & satisfiable_flags_);
+    CHECK_EQ(new_satisfied_flags & ~state_.satisfied_flags,
+             new_satisfied_flags & ~state_.satisfied_flags &
+                 state_.satisfiable_flags);
 
-    if (new_satisfied_flags == satisfied_flags_)
+    if (new_satisfied_flags == state_.satisfied_flags)
       return;
 
-    satisfied_flags_ = new_satisfied_flags;
-    StateChangedNoLock();
+    state_.satisfied_flags = new_satisfied_flags;
+    WaitFlagsStateChangedNoLock();
   }
 
   void SetSatisfiableFlags(MojoWaitFlags new_satisfiable_flags) {
     base::AutoLock locker(lock());
 
-    if (new_satisfiable_flags == satisfiable_flags_)
+    // Satisfied implies satisfiable.
+    CHECK_EQ(new_satisfiable_flags & state_.satisfied_flags,
+             state_.satisfied_flags);
+
+    if (new_satisfiable_flags == state_.satisfiable_flags)
       return;
 
-    satisfiable_flags_ = new_satisfiable_flags;
-    StateChangedNoLock();
+    state_.satisfiable_flags = new_satisfiable_flags;
+    WaitFlagsStateChangedNoLock();
   }
 
   virtual Type GetType() const OVERRIDE {
@@ -66,25 +71,18 @@ class MockSimpleDispatcher : public SimpleDispatcher {
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
     scoped_refptr<MockSimpleDispatcher> rv(new MockSimpleDispatcher());
-    rv->satisfied_flags_ = satisfied_flags_;
-    rv->satisfiable_flags_ = satisfiable_flags_;
+    rv->state_ = state_;
     return scoped_refptr<Dispatcher>(rv.get());
   }
 
   // |SimpleDispatcher| implementation:
-  virtual MojoWaitFlags SatisfiedFlagsNoLock() const OVERRIDE {
+  virtual WaitFlagsState GetWaitFlagsStateNoLock() const OVERRIDE {
     lock().AssertAcquired();
-    return satisfied_flags_;
-  }
-
-  virtual MojoWaitFlags SatisfiableFlagsNoLock() const OVERRIDE {
-    lock().AssertAcquired();
-    return satisfiable_flags_;
+    return state_;
   }
 
   // Protected by |lock()|:
-  MojoWaitFlags satisfied_flags_;
-  MojoWaitFlags satisfiable_flags_;
+  WaitFlagsState state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSimpleDispatcher);
 };

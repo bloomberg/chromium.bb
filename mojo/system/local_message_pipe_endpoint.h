@@ -10,6 +10,7 @@
 #include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
+#include "mojo/system/wait_flags_state.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
@@ -44,8 +45,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   MessageInTransitQueue* message_queue() { return &message_queue_; }
 
  private:
-  MojoWaitFlags SatisfiedFlags();
-  MojoWaitFlags SatisfiableFlags();
+  WaitFlagsState GetWaitFlagsState();
 
   bool is_open_;
   bool is_peer_open_;

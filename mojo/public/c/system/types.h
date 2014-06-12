@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#include "mojo/public/c/system/macros.h"
+
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.
 
@@ -161,5 +163,16 @@ const MojoWaitFlags MOJO_WAIT_FLAG_EVERYTHING = ~0;
 #define MOJO_WAIT_FLAG_WRITABLE ((MojoWaitFlags) 1 << 1)
 #define MOJO_WAIT_FLAG_EVERYTHING (~((MojoWaitFlags) 0))
 #endif
+
+// TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.
+// Note: This struct is not extensible (and only has 32-bit quantities), so it's
+// 32-bit-aligned.
+MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int32_t) == 4, int32_t_has_weird_alignment);
+struct MOJO_ALIGNAS(4) MojoWaitFlagsState {
+  MojoWaitFlags satisfied_flags;
+  MojoWaitFlags satisfiable_flags;
+};
+MOJO_COMPILE_ASSERT(sizeof(MojoWaitFlagsState) == 8,
+                    MojoWaitFlagsState_has_wrong_size);
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_TYPES_H_

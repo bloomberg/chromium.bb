@@ -263,14 +263,9 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
   return true;
 }
 
-MojoWaitFlags SharedBufferDispatcher::SatisfiedFlagsNoLock() const {
+WaitFlagsState SharedBufferDispatcher::GetWaitFlagsStateNoLock() const {
   // TODO(vtl): Add transferrable flag.
-  return MOJO_WAIT_FLAG_NONE;
-}
-
-MojoWaitFlags SharedBufferDispatcher::SatisfiableFlagsNoLock() const {
-  // TODO(vtl): Add transferrable flag.
-  return MOJO_WAIT_FLAG_NONE;
+  return WaitFlagsState();
 }
 
 }  // namespace system

@@ -12,6 +12,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/system_impl_export.h"
+#include "mojo/system/wait_flags_state.h"
 
 namespace mojo {
 namespace system {
@@ -105,8 +106,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) = 0;
   // Note: A producer should not be writable during a two-phase write.
-  virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() = 0;
-  virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() = 0;
+  virtual WaitFlagsState ProducerGetWaitFlagsStateNoLock() const = 0;
 
   virtual void ConsumerCloseImplNoLock() = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
@@ -122,8 +122,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                                      bool all_or_none) = 0;
   virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
   // Note: A consumer should not be writable during a two-phase read.
-  virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() = 0;
-  virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
+  virtual WaitFlagsState ConsumerGetWaitFlagsStateNoLock() const = 0;
 
   // Thread-safe and fast (they don't take the lock):
   bool may_discard() const { return may_discard_; }

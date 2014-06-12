@@ -31,17 +31,12 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
-  MojoWaitFlags old_satisfied_flags = SatisfiedFlags();
-  MojoWaitFlags old_satisfiable_flags = SatisfiableFlags();
+  WaitFlagsState old_state = GetWaitFlagsState();
   is_peer_open_ = false;
-  MojoWaitFlags new_satisfied_flags = SatisfiedFlags();
-  MojoWaitFlags new_satisfiable_flags = SatisfiableFlags();
+  WaitFlagsState new_state = GetWaitFlagsState();
 
-  if (new_satisfied_flags != old_satisfied_flags ||
-      new_satisfiable_flags != old_satisfiable_flags) {
-    waiter_list_.AwakeWaitersForStateChange(new_satisfied_flags,
-                                            new_satisfiable_flags);
-  }
+  if (!new_state.equals(old_state))
+    waiter_list_.AwakeWaitersForStateChange(new_state);
 
   return true;
 }
@@ -53,10 +48,8 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
 
   bool was_empty = message_queue_.IsEmpty();
   message_queue_.AddMessage(message.Pass());
-  if (was_empty) {
-    waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
-                                            SatisfiableFlags());
-  }
+  if (was_empty)
+    waiter_list_.AwakeWaitersForStateChange(GetWaitFlagsState());
 }
 
 void LocalMessagePipeEndpoint::Close() {
@@ -124,8 +117,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
     if (message_queue_.IsEmpty()) {
       // It's currently not possible to wait for non-readability, but we should
       // do the state change anyway.
-      waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
-                                              SatisfiableFlags());
+      waiter_list_.AwakeWaitersForStateChange(GetWaitFlagsState());
     }
   }
 
@@ -140,9 +132,10 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
                                                MojoResult wake_result) {
   DCHECK(is_open_);
 
-  if ((flags & SatisfiedFlags()))
+  WaitFlagsState state = GetWaitFlagsState();
+  if (state.satisfies(flags))
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!(flags & SatisfiableFlags()))
+  if (!state.can_satisfy(flags))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   waiter_list_.AddWaiter(waiter, flags, wake_result);
@@ -154,22 +147,17 @@ void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter) {
   waiter_list_.RemoveWaiter(waiter);
 }
 
-MojoWaitFlags LocalMessagePipeEndpoint::SatisfiedFlags() {
-  MojoWaitFlags satisfied_flags = 0;
-  if (!message_queue_.IsEmpty())
-    satisfied_flags |= MOJO_WAIT_FLAG_READABLE;
-  if (is_peer_open_)
-    satisfied_flags |= MOJO_WAIT_FLAG_WRITABLE;
-  return satisfied_flags;
-}
-
-MojoWaitFlags LocalMessagePipeEndpoint::SatisfiableFlags() {
-  MojoWaitFlags satisfiable_flags = 0;
-  if (!message_queue_.IsEmpty() || is_peer_open_)
-    satisfiable_flags |= MOJO_WAIT_FLAG_READABLE;
-  if (is_peer_open_)
-    satisfiable_flags |= MOJO_WAIT_FLAG_WRITABLE;
-  return satisfiable_flags;
+WaitFlagsState LocalMessagePipeEndpoint::GetWaitFlagsState() {
+  WaitFlagsState rv;
+  if (!message_queue_.IsEmpty()) {
+    rv.satisfied_flags |= MOJO_WAIT_FLAG_READABLE;
+    rv.satisfiable_flags |= MOJO_WAIT_FLAG_READABLE;
+  }
+  if (is_peer_open_) {
+    rv.satisfied_flags |= MOJO_WAIT_FLAG_WRITABLE;
+    rv.satisfiable_flags |= MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE;
+  }
+  return rv;
 }
 
 }  // namespace system

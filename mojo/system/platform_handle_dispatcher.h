@@ -50,9 +50,8 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
       size_t* actual_size,
       embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
-  // |SimpleDispatcher| methods:
-  virtual MojoWaitFlags SatisfiedFlagsNoLock() const OVERRIDE;
-  virtual MojoWaitFlags SatisfiableFlagsNoLock() const OVERRIDE;
+  // |SimpleDispatcher| method:
+  virtual WaitFlagsState GetWaitFlagsStateNoLock() const OVERRIDE;
 
   embedder::ScopedPlatformHandle platform_handle_;
 
