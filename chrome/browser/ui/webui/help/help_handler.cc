@@ -79,6 +79,10 @@ base::string16 BuildBrowserVersionString() {
   browser_version += ")";
 #endif
 
+#if defined(ARCH_CPU_64_BITS)
+  browser_version += " (64-bit)";
+#endif
+
   return base::UTF8ToUTF16(browser_version);
 }
 
