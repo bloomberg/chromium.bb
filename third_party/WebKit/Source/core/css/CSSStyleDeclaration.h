@@ -21,8 +21,8 @@
 #ifndef CSSStyleDeclaration_h
 #define CSSStyleDeclaration_h
 
-#include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/CSSPropertyNames.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

@@ -31,7 +31,7 @@
 #ifndef AnimatedStyleBuilder_h
 #define AnimatedStyleBuilder_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 
 namespace WebCore {
 

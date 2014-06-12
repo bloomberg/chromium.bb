@@ -29,10 +29,9 @@
 #include "config.h"
 #include "core/css/resolver/StyleResolver.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
-#include "StylePropertyShorthand.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
@@ -81,6 +80,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace std;

@@ -29,8 +29,7 @@
 #include "config.h"
 #include "core/css/RuleFeature.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
@@ -38,6 +37,7 @@
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitVector.h"
 
 namespace WebCore {

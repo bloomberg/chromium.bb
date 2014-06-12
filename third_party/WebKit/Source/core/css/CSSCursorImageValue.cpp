@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/css/CSSCursorImageValue.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"

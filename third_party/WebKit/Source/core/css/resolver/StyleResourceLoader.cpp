@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSSVGDocumentValue.h"

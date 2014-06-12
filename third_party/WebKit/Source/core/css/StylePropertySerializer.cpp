@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/css/StylePropertySerializer.h"
 
-#include "CSSValueKeywords.h"
-#include "StylePropertyShorthand.h"
+#include "core/CSSValueKeywords.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"

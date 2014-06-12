@@ -22,7 +22,7 @@
 
 #include "core/css/CSSComputedStyleDeclaration.h"
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/rendering/style/RenderStyle.h"

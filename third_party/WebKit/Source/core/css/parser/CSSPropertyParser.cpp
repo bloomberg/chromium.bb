@@ -26,13 +26,10 @@
 
 #include "config.h"
 #include "core/css/parser/CSSPropertyParser.h"
-#include "RuntimeEnabledFeatures.h"
-#include "core/rendering/RenderTheme.h"
-#include "core/svg/SVGPaint.h"
+
 // FIXME: Way too many!
-#include "CSSValueKeywords.h"
-#include "RuntimeEnabledFeatures.h"
-#include "StylePropertyShorthand.h"
+#include "core/CSSValueKeywords.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
@@ -74,8 +71,10 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/svg/SVGPaint.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/FloatConversion.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
 #include "wtf/HexNumber.h"
 #include "wtf/text/StringBuffer.h"

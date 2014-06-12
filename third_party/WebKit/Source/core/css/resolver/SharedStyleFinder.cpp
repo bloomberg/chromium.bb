@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/css/resolver/SharedStyleFinder.h"
 
-#include "HTMLNames.h"
-#include "XMLNames.h"
+#include "core/HTMLNames.h"
+#include "core/XMLNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/ContainerNode.h"

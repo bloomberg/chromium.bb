@@ -31,7 +31,7 @@
 #ifndef StyleBuilder_h
 #define StyleBuilder_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

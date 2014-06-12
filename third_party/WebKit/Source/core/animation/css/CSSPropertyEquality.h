@@ -5,7 +5,7 @@
 #ifndef CSSPropertyEquality_h
 #define CSSPropertyEquality_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 
 namespace WebCore {
 

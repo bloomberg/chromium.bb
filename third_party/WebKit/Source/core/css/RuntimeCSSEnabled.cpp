@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/css/RuntimeCSSEnabled.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
 
 namespace WebCore {

@@ -5,7 +5,7 @@
 #ifndef CSSTransitionData_h
 #define CSSTransitionData_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/animation/css/CSSTimingData.h"
 #include "wtf/Vector.h"
 

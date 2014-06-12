@@ -31,8 +31,8 @@
 #ifndef FontFace_h
 #define FontFace_h
 
-#include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
 #include "core/dom/DOMError.h"
 #include "platform/fonts/FontTraits.h"

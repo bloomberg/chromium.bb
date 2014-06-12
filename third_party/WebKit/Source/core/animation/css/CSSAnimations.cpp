@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/css/CSSAnimations.h"
 
-#include "StylePropertyShorthand.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"

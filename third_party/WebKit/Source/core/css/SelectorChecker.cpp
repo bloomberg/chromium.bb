@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/css/SelectorChecker.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"

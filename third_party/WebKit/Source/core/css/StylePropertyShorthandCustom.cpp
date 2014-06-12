@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "StylePropertyShorthand.h"
+#include "core/StylePropertyShorthand.h"
 
 namespace WebCore {
 

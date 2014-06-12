@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "SizesAttributeParser.h"
+#include "core/css/parser/SizesAttributeParser.h"
 
-#include "MediaTypeNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
 #include "core/css/parser/SizesCalcParser.h"

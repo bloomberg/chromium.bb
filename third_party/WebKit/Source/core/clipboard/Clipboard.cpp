@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/clipboard/Clipboard.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"

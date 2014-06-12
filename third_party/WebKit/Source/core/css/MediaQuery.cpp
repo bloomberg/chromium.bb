@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/css/MediaQuery.h"
 
-#include "MediaTypeNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/NonCopyingSort.h"

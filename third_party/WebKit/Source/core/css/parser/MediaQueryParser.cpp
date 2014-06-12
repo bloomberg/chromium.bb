@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/parser/MediaQueryParser.h"
 
-#include "MediaTypeNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
 

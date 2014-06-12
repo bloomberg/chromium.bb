@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/StyleSheetList.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/html/HTMLStyleElement.h"

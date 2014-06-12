@@ -22,9 +22,8 @@
 #include "config.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
@@ -32,6 +31,7 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 using namespace std;
 

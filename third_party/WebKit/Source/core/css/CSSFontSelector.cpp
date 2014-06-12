@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/css/CSSFontSelector.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
@@ -37,6 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/text/AtomicString.h"

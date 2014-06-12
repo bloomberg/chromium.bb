@@ -31,7 +31,7 @@
 #ifndef DocumentAnimations_h
 #define DocumentAnimations_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 
 namespace WebCore {
 

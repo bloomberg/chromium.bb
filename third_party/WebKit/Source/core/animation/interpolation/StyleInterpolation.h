@@ -5,7 +5,7 @@
 #ifndef StyleInterpolation_h
 #define StyleInterpolation_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/animation/interpolation/Interpolation.h"
 
 namespace WebCore {

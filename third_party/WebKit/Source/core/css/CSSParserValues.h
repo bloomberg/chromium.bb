@@ -21,7 +21,7 @@
 #ifndef CSSParserValues_h
 #define CSSParserValues_h
 
-#include "CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"

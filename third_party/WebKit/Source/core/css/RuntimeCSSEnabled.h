@@ -30,7 +30,7 @@
 #ifndef RuntimeCSSEnabled_h
 #define RuntimeCSSEnabled_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

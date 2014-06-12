@@ -37,11 +37,11 @@
  */
 
 #include "config.h"
-#include "StyleBuilderFunctions.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
-#include "StylePropertyShorthand.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/StyleBuilderFunctions.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSCursorImageValue.h"

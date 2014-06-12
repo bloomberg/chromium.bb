@@ -26,7 +26,7 @@
 
 #include "core/css/CSSSVGDocumentValue.h"
 
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"

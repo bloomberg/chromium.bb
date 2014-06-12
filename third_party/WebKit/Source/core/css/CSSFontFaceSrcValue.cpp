@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"

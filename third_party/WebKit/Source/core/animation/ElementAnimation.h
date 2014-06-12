@@ -31,12 +31,12 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Element.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

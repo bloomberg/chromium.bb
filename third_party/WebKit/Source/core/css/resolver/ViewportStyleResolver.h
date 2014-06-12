@@ -30,7 +30,7 @@
 #ifndef ViewportStyleResolver_h
 #define ViewportStyleResolver_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/RuleSet.h"
 #include "platform/Length.h"
 #include "wtf/RefCounted.h"

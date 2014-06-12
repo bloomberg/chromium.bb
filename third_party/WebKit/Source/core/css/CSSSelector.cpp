@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/css/CSSSelector.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSOMUtils.h"
 #include "core/css/CSSSelectorList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"

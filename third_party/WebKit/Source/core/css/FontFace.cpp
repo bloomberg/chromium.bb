@@ -31,12 +31,11 @@
 #include "config.h"
 #include "core/css/FontFace.h"
 
-#include "CSSValueKeywords.h"
-#include "FontFamilyNames.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -58,6 +57,7 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGFontFaceSource.h"
 #include "core/svg/SVGRemoteFontFaceSource.h"
+#include "platform/FontFamilyNames.h"
 #include "platform/SharedBuffer.h"
 
 namespace WebCore {

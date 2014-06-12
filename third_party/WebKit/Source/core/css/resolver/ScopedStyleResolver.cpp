@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/PageRuleCollector.h"
 #include "core/css/RuleFeature.h"

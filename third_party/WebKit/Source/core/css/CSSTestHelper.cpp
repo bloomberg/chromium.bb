@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "CSSTestHelper.h"
+#include "core/css/CSSTestHelper.h"
 
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"

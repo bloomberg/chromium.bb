@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 
-#include "MathMLNames.h"
-#include "UserAgentStyleSheets.h"
+#include "core/MathMLNames.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"

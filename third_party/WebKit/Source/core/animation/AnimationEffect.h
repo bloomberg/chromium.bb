@@ -31,7 +31,7 @@
 #ifndef AnimationEffect_h
 #define AnimationEffect_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"

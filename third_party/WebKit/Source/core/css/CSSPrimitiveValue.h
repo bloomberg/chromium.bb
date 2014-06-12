@@ -22,8 +22,8 @@
 #ifndef CSSPrimitiveValue_h
 #define CSSPrimitiveValue_h
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSValue.h"
 #include "platform/graphics/Color.h"
 #include "wtf/Forward.h"

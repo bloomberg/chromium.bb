@@ -26,9 +26,8 @@
 
 
 #include "config.h"
-#include "FontFaceCache.h"
+#include "core/css/FontFaceCache.h"
 
-#include "FontFamilyNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
@@ -36,6 +35,7 @@
 #include "core/css/StyleRule.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/text/AtomicString.h"
 

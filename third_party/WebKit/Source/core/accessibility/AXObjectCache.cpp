@@ -30,7 +30,7 @@
 
 #include "core/accessibility/AXObjectCache.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXARIAGrid.h"
 #include "core/accessibility/AXARIAGridCell.h"
 #include "core/accessibility/AXARIAGridRow.h"

@@ -6,7 +6,7 @@
 #include "core/css/parser/MediaQueryTokenizer.h"
 
 namespace WebCore {
-#include "MediaQueryTokenizerCodepoints.cpp"
+#include "core/MediaQueryTokenizerCodepoints.cpp"
 }
 
 #include "core/css/parser/MediaQueryInputStream.h"
