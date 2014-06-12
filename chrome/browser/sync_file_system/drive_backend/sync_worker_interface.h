@@ -80,7 +80,7 @@ class SyncWorkerInterface {
   virtual void OnNotificationReceived() = 0;
 
   // See drive::DriveServiceObserver for the details.
-  virtual void OnReadyToSendRequests(const std::string& account_id) = 0;
+  virtual void OnReadyToSendRequests() = 0;
   virtual void OnRefreshTokenInvalid() = 0;
 
   // See net::NetworkChangeNotifier::NetworkChangeObserver for the details.

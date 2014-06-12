@@ -170,8 +170,8 @@ void DeleteSoon(const tracked_objects::Location& from_here,
 scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     content::BrowserContext* context,
     TaskLogger* task_logger) {
-  scoped_refptr<base::SequencedWorkerPool> worker_pool(
-      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedWorkerPool> worker_pool =
+      content::BrowserThread::GetBlockingPool();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       base::MessageLoopProxy::current();
@@ -229,14 +229,17 @@ void SyncEngine::AppendDependsOnFactories(
 
 SyncEngine::~SyncEngine() {
   Reset();
+
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  if (signin_manager_)
+    signin_manager_->RemoveObserver(this);
+  if (notification_manager_)
+    notification_manager_->RemoveObserver(this);
 }
 
 void SyncEngine::Reset() {
-  if (notification_manager_)
-    notification_manager_->RemoveObserver(this);
   if (drive_service_)
     drive_service_->RemoveObserver(this);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 
   DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
   DeleteSoon(FROM_HERE, worker_task_runner_, sync_worker_.Pass());
@@ -253,6 +256,10 @@ void SyncEngine::Reset() {
 
 void SyncEngine::Initialize() {
   Reset();
+
+  if (!signin_manager_ ||
+      signin_manager_->GetAuthenticatedAccountId().empty())
+    return;
 
   scoped_ptr<drive::DriveServiceInterface> drive_service(
       new drive::DriveAPIService(
@@ -334,10 +341,7 @@ void SyncEngine::InitializeInternal(
       base::Bind(&SyncWorkerInterface::Initialize,
                  base::Unretained(sync_worker_.get())));
 
-  if (notification_manager_)
-    notification_manager_->AddObserver(this);
   drive_service_->AddObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
   service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
   SetSyncEnabled(sync_enabled_);
@@ -354,6 +358,17 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 
 void SyncEngine::RegisterOrigin(const GURL& origin,
                                 const SyncStatusCallback& callback) {
+  if (!sync_worker_) {
+    // TODO(tzik): Record |origin| and retry the registration after late
+    // sign-in.  Then, return SYNC_STATUS_OK.
+    if (!signin_manager_ ||
+        signin_manager_->GetAuthenticatedAccountId().empty())
+      callback.Run(SYNC_STATUS_AUTHENTICATION_FAILED);
+    else
+      callback.Run(SYNC_STATUS_ABORT);
+    return;
+  }
+
   SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, base::Bind(&DidRegisterOrigin, base::TimeTicks::Now(),
                             TrackCallback(callback)));
@@ -367,6 +382,13 @@ void SyncEngine::RegisterOrigin(const GURL& origin,
 
 void SyncEngine::EnableOrigin(
     const GURL& origin, const SyncStatusCallback& callback) {
+  if (!sync_worker_) {
+    // It's safe to return OK immediately since this is also checked in
+    // SyncWorker initialization.
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, TrackCallback(callback));
 
@@ -379,6 +401,13 @@ void SyncEngine::EnableOrigin(
 
 void SyncEngine::DisableOrigin(
     const GURL& origin, const SyncStatusCallback& callback) {
+  if (!sync_worker_) {
+    // It's safe to return OK immediately since this is also checked in
+    // SyncWorker initialization.
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, TrackCallback(callback));
 
@@ -394,6 +423,13 @@ void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
+  if (!sync_worker_) {
+    // It's safe to return OK immediately since this is also checked in
+    // SyncWorker initialization.
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
@@ -404,9 +440,16 @@ void SyncEngine::UninstallOrigin(
 }
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
+  base::Closure abort_closure =
+      base::Bind(callback, SYNC_STATUS_ABORT, fileapi::FileSystemURL());
+
+  if (!sync_worker_) {
+    abort_closure.Run();
+    return;
+  }
+
   SyncFileCallback tracked_callback = callback_tracker_.Register(
-      base::Bind(callback, SYNC_STATUS_ABORT, fileapi::FileSystemURL()),
-      callback);
+      abort_closure, callback);
   SyncFileCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, tracked_callback);
   worker_task_runner_->PostTask(
@@ -418,6 +461,10 @@ void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
 
 void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
   remote_change_processor_ = processor;
+
+  if (!sync_worker_)
+    return;
+
   remote_change_processor_wrapper_.reset(
       new RemoteChangeProcessorWrapper(processor));
 
@@ -441,11 +488,16 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 }
 
 void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
-  StatusMapCallback tracked_callback =
-      callback_tracker_.Register(
-          base::Bind(callback, base::Passed(scoped_ptr<OriginStatusMap>())),
-          callback);
+  base::Closure abort_closure =
+      base::Bind(callback, base::Passed(scoped_ptr<OriginStatusMap>()));
 
+  if (!sync_worker_) {
+    abort_closure.Run();
+    return;
+  }
+
+  StatusMapCallback tracked_callback =
+      callback_tracker_.Register(abort_closure, callback);
   StatusMapCallback relayed_callback =
       RelayCallbackToCurrentThread(FROM_HERE, tracked_callback);
 
@@ -458,10 +510,16 @@ void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
 
 void SyncEngine::DumpFiles(const GURL& origin,
                            const ListCallback& callback) {
+  base::Closure abort_closure =
+      base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>()));
+
+  if (!sync_worker_) {
+    abort_closure.Run();
+    return;
+  }
+
   ListCallback tracked_callback =
-      callback_tracker_.Register(
-          base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>())),
-          callback);
+      callback_tracker_.Register(abort_closure, callback);
 
   PostTaskAndReplyWithResult(
       worker_task_runner_,
@@ -473,10 +531,16 @@ void SyncEngine::DumpFiles(const GURL& origin,
 }
 
 void SyncEngine::DumpDatabase(const ListCallback& callback) {
+  base::Closure abort_closure =
+      base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>()));
+
+  if (!sync_worker_) {
+    abort_closure.Run();
+    return;
+  }
+
   ListCallback tracked_callback =
-      callback_tracker_.Register(
-          base::Bind(callback, base::Passed(scoped_ptr<base::ListValue>())),
-          callback);
+      callback_tracker_.Register(abort_closure, callback);
 
   PostTaskAndReplyWithResult(
       worker_task_runner_,
@@ -488,6 +552,10 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
 
 void SyncEngine::SetSyncEnabled(bool sync_enabled) {
   sync_enabled_ = sync_enabled;
+
+  if (!sync_worker_)
+    return;
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::SetSyncEnabled,
@@ -496,6 +564,9 @@ void SyncEngine::SetSyncEnabled(bool sync_enabled) {
 }
 
 void SyncEngine::PromoteDemotedChanges() {
+  if (!sync_worker_)
+    return;
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::PromoteDemotedChanges,
@@ -508,6 +579,11 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
+  if (!sync_worker_) {
+    callback.Run(SYNC_STATUS_ABORT);
+    return;
+  }
+
   SyncStatusCallback relayed_callback = RelayCallbackToCurrentThread(
       FROM_HERE, TrackCallback(callback));
   worker_task_runner_->PostTask(
@@ -522,6 +598,9 @@ void SyncEngine::ApplyLocalChange(
 }
 
 void SyncEngine::OnNotificationReceived() {
+  if (!sync_worker_)
+    return;
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::OnNotificationReceived,
@@ -531,19 +610,19 @@ void SyncEngine::OnNotificationReceived() {
 void SyncEngine::OnPushNotificationEnabled(bool) {}
 
 void SyncEngine::OnReadyToSendRequests() {
-  // TODO(tzik): Drop current Syncworker and replace with new one.
-
-  const std::string account_id =
-      signin_manager_ ? signin_manager_->GetAuthenticatedAccountId() : "";
+  if (!sync_worker_)
+    return;
 
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::OnReadyToSendRequests,
-                 base::Unretained(sync_worker_.get()),
-                 account_id));
+                 base::Unretained(sync_worker_.get())));
 }
 
 void SyncEngine::OnRefreshTokenInvalid() {
+  if (!sync_worker_)
+    return;
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::OnRefreshTokenInvalid,
@@ -552,11 +631,31 @@ void SyncEngine::OnRefreshTokenInvalid() {
 
 void SyncEngine::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  if (!sync_worker_)
+    return;
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::OnNetworkChanged,
                  base::Unretained(sync_worker_.get()),
                  type));
+}
+
+void SyncEngine::GoogleSigninFailed(const GoogleServiceAuthError& error) {
+  Reset();
+  UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                     "Failed to sign in.");
+}
+
+void SyncEngine::GoogleSigninSucceeded(const std::string& username,
+                                       const std::string& password) {
+  Initialize();
+}
+
+void SyncEngine::GoogleSignedOut(const std::string& username) {
+  Reset();
+  UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                     "User signed out.");
 }
 
 SyncEngine::SyncEngine(
@@ -589,11 +688,16 @@ SyncEngine::SyncEngine(
       env_override_(env_override),
       weak_ptr_factory_(this) {
   DCHECK(sync_file_system_dir_.IsAbsolute());
+  if (notification_manager_)
+    notification_manager_->AddObserver(this);
+  if (signin_manager_)
+    signin_manager_->AddObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 void SyncEngine::OnPendingFileListUpdated(int item_count) {
   FOR_EACH_OBSERVER(
-      Observer,
+      SyncServiceObserver,
       service_observers_,
       OnRemoteChangeQueueUpdated(item_count));
 }
@@ -613,7 +717,7 @@ void SyncEngine::UpdateServiceState(RemoteServiceState state,
   service_state_ = state;
 
   FOR_EACH_OBSERVER(
-      Observer, service_observers_,
+      SyncServiceObserver, service_observers_,
       OnRemoteServiceStateUpdated(state, description));
 }
 

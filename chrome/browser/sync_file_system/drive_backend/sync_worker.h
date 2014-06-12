@@ -125,7 +125,7 @@ class SyncWorker : public SyncWorkerInterface,
 
   virtual void OnNotificationReceived() OVERRIDE;
 
-  virtual void OnReadyToSendRequests(const std::string& account_id) OVERRIDE;
+  virtual void OnReadyToSendRequests() OVERRIDE;
   virtual void OnRefreshTokenInvalid() OVERRIDE;
 
   virtual void OnNetworkChanged(

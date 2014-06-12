@@ -15,7 +15,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
-#include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"

@@ -337,7 +337,7 @@ void SyncWorker::OnNotificationReceived() {
   MaybeScheduleNextTask();
 }
 
-void SyncWorker::OnReadyToSendRequests(const std::string& account_id) {
+void SyncWorker::OnReadyToSendRequests() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   has_refresh_token_ = true;
@@ -346,8 +346,7 @@ void SyncWorker::OnReadyToSendRequests(const std::string& account_id) {
     return;
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
-  if (!GetMetadataDatabase() && !account_id.empty()) {
-    GetDriveService()->Initialize(account_id);
+  if (!GetMetadataDatabase()) {
     PostInitializeTask();
     return;
   }
