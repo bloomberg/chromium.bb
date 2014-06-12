@@ -195,17 +195,28 @@ def GetGitCacheURL(cache_dir, url):
   Args:
     url: original Git URL that is already populated within the cache directory.
     cache_dir: Git cache directory that has already populated the URL.
+
+  Returns:
+    Git Cache URL where a git repository can clone/fetch from.
   """
   # Make sure we are using absolute paths or else cache exists return relative.
   cache_dir = os.path.abspath(cache_dir)
 
   # For CygWin, we must first convert the cache_dir name to a non-cygwin path.
-  if platform.IsWindows() and cache_dir.startswith('/cygdrive/'):
+  cygwin_path = False
+  if platform.IsCygWin() and cache_dir.startswith('/cygdrive/'):
+    cygwin_path = True
     drive, file_path = cache_dir[len('/cygdrive/'):].split('/', 1)
-    cache_dir = drive.upper() + ':\\' + file_path.replace('/', '\\')
+    cache_dir = drive + ':\\' + file_path.replace('/', '\\')
 
-  return log_tools.CheckOutput(GitCmd() + ['cache', 'exists', '-c', cache_dir,
-                                           url]).strip()
+  git_url = log_tools.CheckOutput(GitCmd() + ['cache', 'exists',
+                                              '-c', cache_dir,
+                                              url]).strip()
+
+  # For cygwin paths, convert forward slashes to backslashes to mimic URLs.
+  if cygwin_path:
+    git_url = git_url.replace('\\', '/')
+  return git_url
 
 
 def GitRevInfo(directory):
