@@ -250,13 +250,35 @@ def generate_interface(interface):
                for method in interface.operations
                if method.name]  # Skip anonymous special operations (methods)
     generate_method_overloads(methods)
-    for method in methods:
-        method['do_generate_method_configuration'] = (
-            method['do_not_check_signature'] and
-            not method['per_context_enabled_function'] and
-            # For overloaded methods, only generate one accessor
-            ('overload_index' not in method or method['overload_index'] == 1))
 
+    per_context_enabled_methods = []
+    custom_registration_methods = []
+    method_configuration_methods = []
+
+    for method in methods:
+        # Skip all but one method in each set of overloaded methods.
+        if 'overload_index' in method and 'overloads' not in method:
+            continue
+
+        if 'overloads' in method:
+            overloads = method['overloads']
+            per_context_enabled_function = overloads['per_context_enabled_function_all']
+            runtime_enabled_function = overloads['runtime_enabled_function_all']
+            has_custom_registration = overloads['has_custom_registration_all']
+        else:
+            per_context_enabled_function = method['per_context_enabled_function']
+            runtime_enabled_function = method['runtime_enabled_function']
+            has_custom_registration = method['has_custom_registration']
+
+        if per_context_enabled_function:
+            per_context_enabled_methods.append(method)
+            continue
+        if runtime_enabled_function or has_custom_registration:
+            custom_registration_methods.append(method)
+            continue
+        method_configuration_methods.append(method)
+
+    for method in methods:
         # The value of the Function object’s “length” property is a Number
         # determined as follows:
         # 1. Let S be the effective overload set for regular operations (if the
@@ -272,11 +294,12 @@ def generate_interface(interface):
                             method['number_of_required_arguments'])
 
     template_contents.update({
+        'custom_registration_methods': custom_registration_methods,
         'has_origin_safe_method_setter': any(
             method['is_check_security_for_frame'] and not method['is_read_only']
             for method in methods),
-        'has_method_configuration': any(method['do_generate_method_configuration'] for method in methods),
-        'has_per_context_enabled_methods': any(method['per_context_enabled_function'] for method in methods),
+        'method_configuration_methods': method_configuration_methods,
+        'per_context_enabled_methods': per_context_enabled_methods,
         'methods': methods,
     })
 
@@ -370,6 +393,7 @@ def generate_overloads(overloads):
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)
     lengths = [length for length, _ in effective_overloads_by_length]
+    name = overloads[0].get('name', '<constructor>')
 
     # Check and fail if all overloads with the shortest acceptable arguments
     # list are runtime enabled, since we would otherwise set 'length' on the
@@ -381,7 +405,20 @@ def generate_overloads(overloads):
     if (all(method.get('runtime_enabled_function')
             for method, _, _ in shortest_overloads) and
         not common_value(overloads, 'runtime_enabled_function')):
-        raise ValueError('Function.length of %s depends on runtime enabled features' % overloads[0]['name'])
+        raise ValueError('Function.length of %s depends on runtime enabled features' % name)
+
+    # Check and fail if overloads disagree on any of the extended attributes
+    # that affect how the method should be registered.
+    # Skip the check for overloaded constructors, since they don't support any
+    # of the extended attributes in question.
+    if not overloads[0].get('is_constructor'):
+        overload_extended_attributes = [
+            method['custom_registration_extended_attributes']
+            for method in overloads]
+        for extended_attribute in v8_methods.CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES:
+            if common_key(overload_extended_attributes, extended_attribute) is None:
+                raise ValueError('Overloads of %s have conflicting extended attribute %s'
+                                 % (name, extended_attribute))
 
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
@@ -391,6 +428,9 @@ def generate_overloads(overloads):
         # entries in S.
         'maxarg': lengths[-1],
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
+        'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
+        'per_context_enabled_function_all': common_value(overloads, 'per_context_enabled_function'),  # [PerContextEnabled]
+        'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
         'valid_arities': lengths
             # Only need to report valid arities if there is a gap in the
             # sequence of possible lengths, otherwise invalid length means
@@ -751,17 +791,34 @@ def Counter(iterable):
     return counter
 
 
+def common(dicts, f):
+    """Returns common result of f across an iterable of dicts, or None.
+
+    Call f for each dict and return its result if the same across all dicts.
+    """
+    values = (f(d) for d in dicts)
+    first_value = next(values)
+    if all(value == first_value for value in values):
+        return first_value
+    return None
+
+
+def common_key(dicts, key):
+    """Returns common presence of a key across an iterable of dicts, or None.
+
+    True if all dicts have the key, False if none of the dicts have the key,
+    and None if some but not all dicts have the key.
+    """
+    return common(dicts, lambda d: key in d)
+
+
 def common_value(dicts, key):
     """Returns common value of a key across an iterable of dicts, or None.
 
     Auxiliary function for overloads, so can consolidate an extended attribute
     that appears with the same value on all items in an overload set.
     """
-    values = (d.get(key) for d in dicts)
-    first_value = next(values)
-    if all(value == first_value for value in values):
-        return first_value
-    return None
+    return common(dicts, lambda d: d.get(key))
 
 
 def sort_and_groupby(l, key=None):

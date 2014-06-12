@@ -153,7 +153,7 @@ public:
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, {{cpp_class}}*, v8::Isolate*){% if has_per_context_enabled_attributes %};
     {% else %} { }
     {% endif %}
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if has_per_context_enabled_methods %};
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if per_context_enabled_methods %};
     {% else %} { }
     {% endif %}
     {# Element wrappers #}

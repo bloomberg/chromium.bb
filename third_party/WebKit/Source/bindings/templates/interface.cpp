@@ -780,9 +780,9 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {##############################################################################}
 {% block class_methods %}
 {# FIXME: rename to install_methods and put into configure_class_template #}
-{% if has_method_configuration %}
+{% if method_configuration_methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
-    {% for method in methods if method.do_generate_method_configuration %}
+    {% for method in method_configuration_methods %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
@@ -904,7 +904,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
         {% set methods_name, methods_length =
                ('%sMethods' % v8_class,
                 'WTF_ARRAY_LENGTH(%sMethods)' % v8_class)
-           if has_method_configuration else (0, 0) %}
+           if method_configuration_methods else (0, 0) %}
         {{attributes_name}}, {{attributes_length}},
         {{accessors_name}}, {{accessors_length}},
         {{methods_name}}, {{methods_length}},
@@ -985,10 +985,8 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {# Needed for legacy support of document.all #}
     functionTemplate->InstanceTemplate()->MarkAsUndetectable();
     {% endif %}
-    {% for method in methods if not method.do_not_check_signature %}
+    {% for method in custom_registration_methods %}
     {# install_custom_signature #}
-    {% if not method.overload_index or method.overload_index == 1 %}
-    {# For overloaded methods, only generate one accessor #}
     {% filter conditional(method.conditional_string) %}
     {% if method.is_do_not_check_security %}
     {% if method.is_per_world_bindings %}
@@ -1018,7 +1016,6 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
     {% endif %}{# is_do_not_check_security #}
     {% endfilter %}
-    {% endif %}{# install_custom_signature #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
@@ -1174,14 +1171,14 @@ void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 
 {##############################################################################}
 {% block install_per_context_methods %}
-{% if has_per_context_enabled_methods %}
+{% if per_context_enabled_methods %}
 void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     {# Define per-context enabled operations #}
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
-    {% for method in methods if method.per_context_enabled_function %}
+    {% for method in per_context_enabled_methods %}
     if (context && context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context)))
         prototypeTemplate->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}

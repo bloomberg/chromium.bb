@@ -40,6 +40,17 @@ import v8_utilities
 from v8_utilities import has_extended_attribute_value
 
 
+# Methods with any of these require custom method registration code in the
+# interface's configure*Template() function.
+CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
+    'DoNotCheckSecurity',
+    'DoNotCheckSignature',
+    'NotEnumerable',
+    'ReadOnly',
+    'Unforgeable',
+])
+
+
 def argument_needs_try_catch(argument):
     idl_type = argument.idl_type
     base_type = not idl_type.array_or_sequence_type and idl_type.base_type
@@ -106,13 +117,14 @@ def generate_method(interface, method):
         'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': idl_type.cpp_type,
         'cpp_value': this_cpp_value,
+        'custom_registration_extended_attributes':
+            CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
+                extended_attributes.iterkeys()),
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
-        'do_not_check_signature': not(is_static or
-            v8_utilities.has_extended_attribute(method,
-                ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
-                 'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
-        'idl_type': idl_type.base_type,
+        'has_custom_registration': is_static or
+            v8_utilities.has_extended_attribute(
+                method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_event_listener_argument': has_event_listener_argument,
         'has_exception_state':
             has_event_listener_argument or
@@ -121,6 +133,7 @@ def generate_method(interface, method):
             any(argument for argument in arguments
                 if argument.idl_type.name in ('ByteString', 'SerializedScriptValue') or
                    argument.idl_type.is_integer_type),
+        'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
