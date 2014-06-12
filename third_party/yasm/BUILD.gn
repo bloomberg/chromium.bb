@@ -27,7 +27,7 @@
 #   6) compile_gperf, compile_re2c, etc. -- Actions that invoke programs that
 #              turn intermediate files into .c files.
 
-if (default_toolchain == host_toolchain) {
+if (current_toolchain == host_toolchain) {
 
   # Various files referenced by multiple targets.
   yasm_gen_include_dir = "$target_gen_dir/include"
