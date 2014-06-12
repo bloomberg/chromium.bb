@@ -106,7 +106,7 @@ GYP_CONDITIONAL_ITEM_STANZA_END = """        ],
 """
 
 GN_HEADER = """import("//build/config/arm.gni")
-import("ffmpeg_config.gni")
+import("ffmpeg_options.gni")
 
 # Declare empty versions of each variable for easier +=ing later.
 ffmpeg_c_sources = []

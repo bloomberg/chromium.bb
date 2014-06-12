@@ -23,23 +23,26 @@ if (cpu_arch != "arm" && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
     sources = ffmpeg_yasm_sources
-    yasm_output_path = "$target_gen_dir/yasm"
 
-    # Ensure the architecture define goes early in the commandline so
-    # all input files (eg, the one listed in -P below) get them.
+    # Ensure the architecture defines go in the command line before the -P
+    # file below, so don't use defines.
+    yasm_flags = []
     if (cpu_arch == "x86") {
-      yasm_flags = [ "-DARCH_X86_32" ]
+      yasm_flags += [ "-DARCH_X86_32" ]
     } else if (cpu_arch == "x64") {
-      yasm_flags = [ "-DARCH_X86_64" ]
+      yasm_flags += [ "-DARCH_X86_64" ]
     }
 
+    defines = [ "PIC" ]
+    include_dirs = [
+      platform_config_root,
+      "libavcodec/x86",
+      "libavutil/x86",
+      ".",
+    ]
+
+    # Disable warnings, prevents log spam for things we won't fix.
     yasm_flags += [
-      "-DPIC",
-      "-I", rebase_path(platform_config_root, root_build_dir),
-      "-I", rebase_path("libavcodec/x86", root_build_dir),
-      "-I", rebase_path("libavutil/x86", root_build_dir),
-      "-I", rebase_path(".", root_build_dir),
-      # Disable warnings, prevents log spam for things we won't fix.
       "-w",
       "-P", rebase_path("$platform_config_root/config.asm", root_build_dir),
     ]
@@ -47,7 +50,7 @@ if (cpu_arch != "arm" && os_config != "linux-noasm") {
     if (is_mac) {
       # Necessary to ensure symbols end up with a _ prefix; added by
       # yasm_compile.gypi for Windows, but not Mac.
-      yasm_flags += [ "-DPREFIX" ]
+      defines += [ "PREFIX" ]
     }
   }
 }
