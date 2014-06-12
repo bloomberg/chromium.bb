@@ -322,7 +322,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
     } else {
         // When alpha is false, we should draw to opaque black.
         if (m_context && !m_context->hasAlpha())
-            context->fillRect(FloatRect(0, 0, width(), height()), Color(0, 0, 0));
+            context->fillRect(FloatRect(r), Color(0, 0, 0));
     }
 
     if (is3D())

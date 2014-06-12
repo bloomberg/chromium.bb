@@ -1086,3 +1086,6 @@ crbug.com/308768 http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Skip ]
 crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
 
 crbug.com/381102 inspector/sources/debugger/debugger-step-into-custom-element-callbacks.html [ Skip ]
+
+crbug.com/382884 fast/canvas/alpha.html [ NeedsRebaseline ]
+crbug.com/382884 virtual/gpu/fast/canvas/alpha.html [ NeedsRebaseline ]
