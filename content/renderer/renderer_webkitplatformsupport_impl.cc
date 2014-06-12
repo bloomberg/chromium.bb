@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -1083,7 +1084,8 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
 // static
 void RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting()
 {
-  g_test_screen_orientation_controller.Get().ResetData();
+  if (!(g_test_screen_orientation_controller == 0))
+    g_test_screen_orientation_controller.Get().ResetData();
 }
 
 //------------------------------------------------------------------------------
@@ -1177,9 +1179,10 @@ void RendererWebKitPlatformSupportImpl::unlockOrientation() {
 
 // static
 void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(
+    RenderView* render_view,
     blink::WebScreenOrientationType orientation) {
   g_test_screen_orientation_controller.Get()
-      .UpdateDeviceOrientation(orientation);
+      .UpdateDeviceOrientation(render_view, orientation);
 }
 
 //------------------------------------------------------------------------------
