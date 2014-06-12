@@ -187,8 +187,9 @@ def runtime_enabled_if(code, runtime_enabled_function_name):
         return code
     # Indent if statement to level of original code
     indent = re.match(' *', code).group(0)
-    return ('%sif (%s())\n' % (indent, runtime_enabled_function_name) +
-            '    %s' % code)
+    return ('%sif (%s()) {\n' % (indent, runtime_enabled_function_name) +
+            '    %s\n' % '\n    '.join(code.splitlines()) +
+            '%s}\n' % indent)
 
 
 ################################################################################

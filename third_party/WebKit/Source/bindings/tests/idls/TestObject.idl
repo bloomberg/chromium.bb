@@ -481,6 +481,11 @@ interface TestObject {
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
     [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
     [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
+    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(long longArg);
+    [RuntimeEnabled=FeatureName1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterface);
+    void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);

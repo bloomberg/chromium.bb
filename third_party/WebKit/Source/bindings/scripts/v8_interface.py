@@ -753,7 +753,9 @@ def resolution_tests_methods(effective_overloads):
                 pass
 
     # (Perform automatic type conversion, in order. If any of these match,
-    # that’s the end, and no other tests are needed.)
+    # that’s the end, and no other tests are needed.) To keep this code simple,
+    # we rely on the C++ compiler's dead code elimination to deal with the
+    # redundancy if both cases below trigger.
 
     # 11. Otherwise: if there is an entry in S that has one of the following
     # types at position i of its type list,
@@ -763,7 +765,6 @@ def resolution_tests_methods(effective_overloads):
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.name == 'String' or idl_type.is_enum)
         yield 'true', method
-        return
     except StopIteration:
         pass
 
@@ -774,7 +775,6 @@ def resolution_tests_methods(effective_overloads):
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.is_numeric_type)
         yield 'true', method
-        return
     except StopIteration:
         pass
 

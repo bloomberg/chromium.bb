@@ -6915,6 +6915,10 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
             overloadedMethodB2Method(info);
             return;
         }
+        if (true) {
+            overloadedMethodB1Method(info);
+            return;
+        }
         break;
     case 2:
         if (true) {
@@ -7160,6 +7164,10 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
             overloadedMethodF1Method(info);
             return;
         }
+        if (true) {
+            overloadedMethodF2Method(info);
+            return;
+        }
         break;
     default:
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
@@ -7326,6 +7334,10 @@ static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         if (true) {
             overloadedMethodI1Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodI2Method(info);
             return;
         }
         break;
@@ -8782,6 +8794,142 @@ static void perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld(c
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void runtimeEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> stringArg;
+    {
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+    }
+    impl->runtimeEnabledOverloadedVoidMethod(stringArg);
+}
+
+static void runtimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "runtimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    int longArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
+    impl->runtimeEnabledOverloadedVoidMethod(longArg);
+}
+
+static void runtimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "runtimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), isolate);
+    switch (std::min(1, info.Length())) {
+    case 1:
+        if (info[0]->IsNumber()) {
+            runtimeEnabledOverloadedVoidMethod2Method(info);
+            return;
+        }
+        if (true) {
+            runtimeEnabledOverloadedVoidMethod1Method(info);
+            return;
+        }
+        if (true) {
+            runtimeEnabledOverloadedVoidMethod2Method(info);
+            return;
+        }
+        break;
+    default:
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void runtimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void partiallyRuntimeEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> stringArg;
+    {
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+    }
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(stringArg);
+}
+
+static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TestInterfaceImplementation* testInterface;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_INTERNAL(testInterface, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterface);
+}
+
+static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    int longArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg);
+}
+
+static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), isolate);
+    switch (std::min(1, info.Length())) {
+    case 1:
+        if (RuntimeEnabledFeatures::featureName2Enabled()) {
+            if (V8TestInterface::hasInstance(info[0], isolate)) {
+                partiallyRuntimeEnabledOverloadedVoidMethod2Method(info);
+                return;
+            }
+        }
+        if (info[0]->IsNumber()) {
+            partiallyRuntimeEnabledOverloadedVoidMethod3Method(info);
+            return;
+        }
+        if (RuntimeEnabledFeatures::featureName1Enabled()) {
+            if (true) {
+                partiallyRuntimeEnabledOverloadedVoidMethod1Method(info);
+                return;
+            }
+        }
+        if (true) {
+            partiallyRuntimeEnabledOverloadedVoidMethod3Method(info);
+            return;
+        }
+        break;
+    default:
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void treatReturnedNullStringAsNullStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -9351,6 +9499,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0},
     {"raisesExceptionTestInterfaceEmptyVoidMethod", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback, 0, 0},
     {"callWithExecutionContextRaisesExceptionVoidMethodLongArg", TestObjectV8Internal::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback, 0, 1},
+    {"partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, 1},
     {"treatReturnedNullStringAsNullStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullStringMethodMethodCallback, 0, 0},
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
@@ -9438,14 +9587,18 @@ static void configureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> funct
     prototypeTemplate->Set(v8AtomicString(isolate, "notEnumerableVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::notEnumerableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
     prototypeTemplate->Set(v8AtomicString(isolate, "readOnlyVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     prototypeTemplate->Set(v8AtomicString(isolate, "notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
-    if (RuntimeEnabledFeatures::featureNameEnabled())
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
         prototypeTemplate->Set(v8AtomicString(isolate, "runtimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        if (RuntimeEnabledFeatures::featureNameEnabled())
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        if (DOMWrapperWorld::current(isolate).isMainWorld()) {
             prototypeTemplate->Set(v8AtomicString(isolate, "perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, v8Undefined(), defaultSignature, 0));
-    } else {
-        if (RuntimeEnabledFeatures::featureNameEnabled())
+        } else {
             prototypeTemplate->Set(v8AtomicString(isolate, "perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+        }
+    }
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        prototypeTemplate->Set(v8AtomicString(isolate, "runtimeEnabledOverloadedVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, v8Undefined(), defaultSignature, 1));
     }
     instanceTemplate->Set(v8AtomicString(isolate, "unforgeableVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::unforgeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticStringAttribute"), TestObjectV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));

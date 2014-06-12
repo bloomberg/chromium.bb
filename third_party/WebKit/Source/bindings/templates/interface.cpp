@@ -988,6 +988,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% for method in custom_registration_methods %}
     {# install_custom_signature #}
     {% filter conditional(method.conditional_string) %}
+    {% filter runtime_enabled(method.overloads.runtime_enabled_function_all
+                              if method.overloads else
+                              method.runtime_enabled_function) %}
     {% if method.is_do_not_check_security %}
     {% if method.is_per_world_bindings %}
     if (DOMWrapperWorld::current(isolate).isMainWorld()) {
@@ -1001,21 +1004,16 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% else %}{# is_do_not_check_security #}
     {% if method.is_per_world_bindings %}
     if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method, 'ForMainWorld')}}
-        {% endfilter %}
     } else {
-        {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method)}}
-        {% endfilter %}
     }
     {% else %}
-    {% filter runtime_enabled(method.runtime_enabled_function) %}
     {{install_custom_signature(method)}}
-    {% endfilter %}
     {% endif %}
     {% endif %}{# is_do_not_check_security #}
-    {% endfilter %}
+    {% endfilter %}{# runtime_enabled() #}
+    {% endfilter %}{# conditional() #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %

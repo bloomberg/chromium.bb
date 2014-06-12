@@ -347,10 +347,12 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     switch (std::min({{overloads.maxarg}}, info.Length())) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
     {% for length, tests_methods in overloads.length_tests_methods %}
+    {# 10. If i = d, then: #}
     case {{length}}:
         {# Then resolve by testing argument #}
         {% for test, method in tests_methods %}
-        {# 10. If i = d, then: #}
+        {% filter runtime_enabled(not overloads.runtime_enabled_function_all and
+                                  method.runtime_enabled_function) %}
         if ({{test}}) {
             {% if method.measure_as and not overloads.measure_all_as %}
             UseCounter::count(callingExecutionContext(isolate), UseCounter::{{method.measure_as}});
@@ -361,6 +363,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
             {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
             return;
         }
+        {% endfilter %}
         {% endfor %}
         break;
     {% endfor %}
