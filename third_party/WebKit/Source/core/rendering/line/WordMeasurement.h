@@ -2,6 +2,7 @@
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Adobe Systems Incorporated.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -20,44 +21,33 @@
  *
  */
 
-#ifndef LineBreaker_h
-#define LineBreaker_h
+#ifndef WordMeasurement_h
+#define WordMeasurement_h
 
-#include "core/rendering/InlineIterator.h"
-#include "core/rendering/line/LineInfo.h"
-#include "wtf/Vector.h"
+#include "platform/fonts/SimpleFontData.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 
-enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
+class RenderText;
 
-struct RenderTextInfo;
-
-class LineBreaker {
+class WordMeasurement {
 public:
-    friend class BreakingContext;
-    LineBreaker(RenderBlockFlow* block)
-        : m_block(block)
+    WordMeasurement()
+        : renderer(0)
+        , width(0)
+        , startOffset(0)
+        , endOffset(0)
     {
-        reset();
     }
 
-    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements&);
-
-    bool lineWasHyphenated() { return m_hyphenated; }
-    const Vector<RenderBox*>& positionedObjects() { return m_positionedObjects; }
-    EClear clear() { return m_clear; }
-private:
-    void reset();
-
-    void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
-
-    RenderBlockFlow* m_block;
-    bool m_hyphenated;
-    EClear m_clear;
-    Vector<RenderBox*> m_positionedObjects;
+    RenderText* renderer;
+    float width;
+    int startOffset;
+    int endOffset;
+    HashSet<const SimpleFontData*> fallbackFonts;
 };
 
-}
+} // namespace WebCore
 
-#endif // LineBreaker_h
+#endif // WordMeasurement_h

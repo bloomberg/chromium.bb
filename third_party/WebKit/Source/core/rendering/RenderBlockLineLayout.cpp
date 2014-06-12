@@ -35,6 +35,8 @@
 #include "core/rendering/line/BreakingContextInlineHeaders.h"
 #include "core/rendering/line/LineLayoutState.h"
 #include "core/rendering/line/LineWidth.h"
+#include "core/rendering/line/RenderTextInfo.h"
+#include "core/rendering/line/WordMeasurement.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 #include "platform/fonts/Character.h"
 #include "platform/text/BidiResolver.h"
@@ -916,16 +918,6 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
     layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus, consecutiveHyphenatedLines);
     linkToEndLineIfNeeded(layoutState);
     repaintDirtyFloats(layoutState.floats());
-}
-
-RenderTextInfo::RenderTextInfo()
-    : m_text(0)
-    , m_font(0)
-{
-}
-
-RenderTextInfo::~RenderTextInfo()
-{
 }
 
 // Before restarting the layout loop with a new logicalHeight, remove all floats that were added and reset the resolver.

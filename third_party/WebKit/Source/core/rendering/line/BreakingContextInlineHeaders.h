@@ -35,30 +35,15 @@
 #include "core/rendering/line/LineBreaker.h"
 #include "core/rendering/line/LineInfo.h"
 #include "core/rendering/line/LineWidth.h"
+#include "core/rendering/line/RenderTextInfo.h"
 #include "core/rendering/line/TrailingObjects.h"
+#include "core/rendering/line/WordMeasurement.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 namespace WebCore {
 
 // We don't let our line box tree for a single line get any deeper than this.
 const unsigned cMaxLineDepth = 200;
-
-class WordMeasurement {
-public:
-    WordMeasurement()
-        : renderer(0)
-        , width(0)
-        , startOffset(0)
-        , endOffset(0)
-    {
-    }
-
-    RenderText* renderer;
-    float width;
-    int startOffset;
-    int endOffset;
-    HashSet<const SimpleFontData*> fallbackFonts;
-};
 
 class BreakingContext {
 public:
