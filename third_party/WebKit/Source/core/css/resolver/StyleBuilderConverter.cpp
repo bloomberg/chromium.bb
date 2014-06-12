@@ -404,8 +404,6 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == CSSValueNormal)
         return 0;
-    if (state.useSVGZoomRules())
-        return primitiveValue->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1));
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 

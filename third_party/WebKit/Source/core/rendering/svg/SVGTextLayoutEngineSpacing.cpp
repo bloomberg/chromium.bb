@@ -33,13 +33,15 @@
 
 namespace WebCore {
 
-SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font)
+SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font, float effectiveZoom)
     : m_font(font)
     , m_lastCharacter(0)
+    , m_effectiveZoom(effectiveZoom)
 #if ENABLE(SVG_FONTS)
     , m_lastGlyph(0)
 #endif
 {
+    ASSERT(m_effectiveZoom);
 }
 
 float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, Glyph currentGlyph)
@@ -95,6 +97,9 @@ float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter)
         if (Character::treatAsSpace(currentCharacter) && !Character::treatAsSpace(lastCharacter))
             spacing += m_font.fontDescription().wordSpacing();
     }
+
+    if (m_effectiveZoom != 1)
+        spacing = spacing / m_effectiveZoom;
 
     return spacing;
 }

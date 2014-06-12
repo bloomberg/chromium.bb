@@ -445,7 +445,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
 
     const Font& font = style->font();
 
-    SVGTextLayoutEngineSpacing spacingLayout(font);
+    SVGTextLayoutEngineSpacing spacingLayout(font, style->effectiveZoom());
     SVGTextLayoutEngineBaseline baselineLayout(font);
 
     bool didStartTextFragment = false;

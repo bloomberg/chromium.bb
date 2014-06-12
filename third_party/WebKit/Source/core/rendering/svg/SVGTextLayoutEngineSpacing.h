@@ -32,7 +32,7 @@ class SVGElement;
 class SVGTextLayoutEngineSpacing {
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);
 public:
-    SVGTextLayoutEngineSpacing(const Font&);
+    SVGTextLayoutEngineSpacing(const Font&, float effectiveZoom);
 
     float calculateSVGKerning(bool isVerticalText, Glyph currentGlyph);
     float calculateCSSSpacing(UChar currentCharacter);
@@ -40,6 +40,7 @@ public:
 private:
     const Font& m_font;
     UChar m_lastCharacter;
+    float m_effectiveZoom;
 
 #if ENABLE(SVG_FONTS)
     Glyph m_lastGlyph;
