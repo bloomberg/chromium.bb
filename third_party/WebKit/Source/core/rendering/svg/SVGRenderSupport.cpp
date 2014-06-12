@@ -100,14 +100,20 @@ const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject*
     return parent;
 }
 
-bool SVGRenderSupport::checkForSVGRepaintDuringLayout(RenderObject* object)
+bool SVGRenderSupport::parentTransformDidChange(RenderObject* object)
 {
-    if (!object->checkForRepaintDuringLayout())
-        return false;
     // When a parent container is transformed in SVG, all children will be painted automatically
     // so we are able to skip redundant repaint checks.
     RenderObject* parent = object->parent();
     return !(parent && parent->isSVGContainer() && toRenderSVGContainer(parent)->didTransformToRootUpdate());
+}
+
+bool SVGRenderSupport::checkForSVGRepaintDuringLayout(RenderObject* object)
+{
+    if (!object->checkForRepaintDuringLayout())
+        return false;
+
+    return parentTransformDidChange(object);
 }
 
 // Update a bounding box taking into account the validity of the other bounding box.

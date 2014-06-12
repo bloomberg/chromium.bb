@@ -142,6 +142,13 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     setPreviousPaintInvalidationRect(clippedOverflowRectForRepaint(&newPaintInvalidationContainer));
     setPreviousPositionFromPaintInvalidationContainer(positionFromRepaintContainer(&newPaintInvalidationContainer));
 
+    // If an ancestor container had its transform changed, then we just
+    // need to update the RenderSVGModelObject's repaint rect above. The invalidation
+    // will be handled by the container where the transform changed. This essentially
+    // means that we prune the entire branch for performance.
+    if (!SVGRenderSupport::parentTransformDidChange(this))
+        return;
+
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.

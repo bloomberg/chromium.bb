@@ -66,6 +66,8 @@ public:
 
     static bool paintInfoIntersectsRepaintRect(const FloatRect& localRepaintRect, const AffineTransform& localTransform, const PaintInfo&);
 
+    static bool parentTransformDidChange(RenderObject*);
+
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / repaint rect calculations
     static LayoutRect clippedOverflowRectForRepaint(const RenderObject*, const RenderLayerModelObject* repaintContainer);
     static void computeFloatRectForRepaint(const RenderObject*, const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed);
