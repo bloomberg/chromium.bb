@@ -140,17 +140,23 @@ BASE_EXPORT bool IsOSMountainLionOrLater();
 
 // Mavericks is Mac OS X 10.9, Darwin 13.
 BASE_EXPORT bool IsOSMavericks();
+BASE_EXPORT bool IsOSMavericksOrEarlier();
 BASE_EXPORT bool IsOSMavericksOrLater();
+
+// Yosemite is Mac OS X 10.10, Darwin 14.
+BASE_EXPORT bool IsOSYosemite();
+BASE_EXPORT bool IsOSYosemiteOrLater();
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
 // unborn) OS releases, or to log when the OS is newer than any known version.
-BASE_EXPORT bool IsOSLaterThanMavericks_DontCallThis();
+BASE_EXPORT bool IsOSLaterThanYosemite_DontCallThis();
 
 // Inline functions that are redundant due to version ranges being mutually-
 // exclusive.
 inline bool IsOSLionOrEarlier() { return !IsOSMountainLionOrLater(); }
 inline bool IsOSMountainLionOrEarlier() { return !IsOSMavericksOrLater(); }
+inline bool IsOSMavericksOrEarlier() { return !IsOSYosemiteOrLater(); }
 
 // When the deployment target is set, the code produced cannot run on earlier
 // OS releases. That enables some of the IsOS* family to be implemented as
@@ -192,7 +198,19 @@ inline bool IsOSMavericksOrLater() { return true; }
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_9
 #define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_9
 inline bool IsOSMavericks() { return false; }
-inline bool IsOSLaterThanMavericks_DontCallThis() { return true; }
+#endif
+
+#if defined(MAC_OS_X_VERSION_10_10) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10
+#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_10
+inline bool IsOSYosemiteOrLater() { return true; }
+#endif
+
+#if defined(MAC_OS_X_VERSION_10_10) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_10
+#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10
+inline bool IsOSYosemite() { return false; }
+inline bool IsOSLaterThanYosemite_DontCallThis() { return true; }
 #endif
 
 // Retrieve the system's model identifier string from the IOKit registry:

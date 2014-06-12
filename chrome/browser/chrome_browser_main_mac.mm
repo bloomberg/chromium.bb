@@ -60,6 +60,11 @@ enum CatSixtyFour {
   MOUNTAIN_LION_DUNNO,
   MAVERICKS_DUNNO,
 
+  // More known cats.
+  YOSEMITE_32,  // Unexpected, Yosemite requires a 64-bit CPU.
+  YOSEMITE_64,
+  YOSEMITE_DUNNO,
+
   // Newer than any known cat.
   FUTURE_CAT_32,  // Unexpected, it's unlikely Apple will un-obsolete old CPUs.
   FUTURE_CAT_64,
@@ -113,7 +118,11 @@ CatSixtyFour CatSixtyFourValue() {
     return cpu64_known ? (cpu64 ? MAVERICKS_64 : MAVERICKS_32) :
                          MAVERICKS_DUNNO;
   }
-  if (base::mac::IsOSLaterThanMavericks_DontCallThis()) {
+  if (base::mac::IsOSYosemite()) {
+    return cpu64_known ? (cpu64 ? YOSEMITE_64 : YOSEMITE_32) :
+                         YOSEMITE_DUNNO;
+  }
+  if (base::mac::IsOSLaterThanYosemite_DontCallThis()) {
     return cpu64_known ? (cpu64 ? FUTURE_CAT_64 : FUTURE_CAT_32) :
                          FUTURE_CAT_DUNNO;
   }

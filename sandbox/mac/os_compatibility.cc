@@ -112,7 +112,7 @@ const LaunchdCompatibilityShim GetLaunchdCompatibilityShim() {
     shim.look_up2_get_request_name =
         &LaunchdLookUp2GetRequestName<look_up2_request_10_6>;
   } else if (base::mac::IsOSLionOrLater() &&
-             !base::mac::IsOSLaterThanMavericks_DontCallThis()) {
+             !base::mac::IsOSYosemiteOrLater()) {
     shim.look_up2_get_request_name =
         &LaunchdLookUp2GetRequestName<look_up2_request_10_7>;
   } else {

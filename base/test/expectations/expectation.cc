@@ -50,7 +50,8 @@ static bool IsValidPlatform(const Platform* platform) {
         variant != "10.6" &&
         variant != "10.7" &&
         variant != "10.8" &&
-        variant != "10.9") {
+        variant != "10.9" &&
+        variant != "10.10") {
       return false;
     }
   } else if (name == "Linux") {
@@ -111,6 +112,8 @@ Platform GetCurrentPlatform() {
     platform.variant = "10.8";
   else if (base::mac::IsOSMavericks())
     platform.variant = "10.9";
+  else if (base::mac::IsOSYosemite())
+    platform.variant = "10.10";
 #elif defined(OS_CHROMEOS)
   platform.name = "ChromeOS";
 #elif defined(OS_ANDROID)

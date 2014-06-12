@@ -33755,9 +33755,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="12" label="Lion (10.7), 8-bit (?)"/>
   <int value="13" label="Mountain Lion (10.8), 8-bit (?)"/>
   <int value="14" label="Mavericks (10.9), 8-bit (?)"/>
-  <int value="15" label="FutureCat (&gt;10.9), 32-bit (?)"/>
-  <int value="16" label="FutureCat (&gt;10.9), 64-bit"/>
-  <int value="17" label="FutureCat (&gt;10.9), 8-bit (?)"/>
+  <int value="15" label="Yosemite (10.10), 32-bit (?)"/>
+  <int value="16" label="Yosemite (10.10), 64-bit"/>
+  <int value="17" label="Yosemite (10.10), 8-bit (?)"/>
+  <int value="18" label="FutureCat (&gt;10.10), 32-bit (?)"/>
+  <int value="19" label="FutureCat (&gt;10.10), 64-bit"/>
+  <int value="20" label="FutureCat (&gt;10.10), 8-bit (?)"/>
 </enum>
 
 <enum name="ChannelLayout" type="int">
