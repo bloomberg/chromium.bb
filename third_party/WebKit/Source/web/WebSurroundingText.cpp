@@ -55,7 +55,8 @@ WebString WebSurroundingText::textContent() const
 
 size_t WebSurroundingText::hitOffsetInTextContent() const
 {
-    return m_private->positionOffsetInContent();
+    ASSERT(m_private->startOffsetInContent() == m_private->endOffsetInContent());
+    return m_private->startOffsetInContent();
 }
 
 WebRange WebSurroundingText::rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent)

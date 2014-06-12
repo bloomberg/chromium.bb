@@ -42,16 +42,21 @@ class Range;
 class SurroundingText {
     WTF_MAKE_NONCOPYABLE(SurroundingText);
 public:
+    SurroundingText(const Range&, unsigned maxLength);
     SurroundingText(const Position&, unsigned maxLength);
 
     String content() const;
-    unsigned positionOffsetInContent() const;
+    unsigned startOffsetInContent() const;
+    unsigned endOffsetInContent() const;
 
     PassRefPtrWillBeRawPtr<Range> rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent);
 
 private:
+    void initialize(const Position&, const Position&, unsigned maxLength);
+
     RefPtrWillBePersistent<Range> m_contentRange;
-    size_t m_positionOffsetInContent;
+    size_t m_startOffsetInContent;
+    size_t m_endOffsetInContent;
 };
 
 } // namespace WebCore

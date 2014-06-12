@@ -39,26 +39,42 @@
 
 namespace WebCore {
 
-SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
-    : m_positionOffsetInContent(0)
+SurroundingText::SurroundingText(const Range& range, unsigned maxLength)
+    : m_startOffsetInContent(0)
+    , m_endOffsetInContent(0)
 {
+    initialize(range.startPosition(), range.endPosition(), maxLength);
+}
+
+SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
+    : m_startOffsetInContent(0)
+    , m_endOffsetInContent(0)
+{
+    initialize(position, position, maxLength);
+}
+
+void SurroundingText::initialize(const Position& startPosition, const Position& endPosition, unsigned maxLength)
+{
+    ASSERT(startPosition.document() == endPosition.document());
+
     const unsigned halfMaxLength = maxLength / 2;
 
-    Document* document = position.document();
-    // The |position| will have no document if it is null (as in no position).
+    Document* document = startPosition.document();
+    // The position will have no document if it is null (as in no position).
     if (!document)
         return;
 
     // The forward range starts at the selection end and ends at the document's
     // end. It will then be updated to only contain the text in the text in the
     // right range around the selection.
-    RefPtrWillBeRawPtr<Range> forwardRange = Range::create(*document, position, lastPositionInNode(document->documentElement()).parentAnchoredEquivalent());
+    RefPtrWillBeRawPtr<Range> forwardRange = Range::create(*document, endPosition, lastPositionInNode(document->documentElement()).parentAnchoredEquivalent());
     CharacterIterator forwardIterator(forwardRange.get(), TextIteratorStopsOnFormControls);
+    // FIXME: why do we stop going trough the text if we were not able to select something on the right?
     if (!forwardIterator.atEnd())
         forwardIterator.advance(maxLength - halfMaxLength);
 
     forwardRange = forwardIterator.range();
-    if (!forwardRange || !Range::create(*document, position, forwardRange->startPosition())->text().length()) {
+    if (!forwardRange || !Range::create(*document, endPosition, forwardRange->startPosition())->text().length()) {
         ASSERT(forwardRange);
         return;
     }
@@ -66,7 +82,7 @@ SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
     // Same as with the forward range but with the backward range. The range
     // starts at the document's start and ends at the selection start and will
     // be updated.
-    RefPtrWillBeRawPtr<Range> backwardsRange = Range::create(*document, firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), position);
+    RefPtrWillBeRawPtr<Range> backwardsRange = Range::create(*document, firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), startPosition);
     BackwardsCharacterIterator backwardsIterator(backwardsRange.get(), TextIteratorStopsOnFormControls);
     if (!backwardsIterator.atEnd())
         backwardsIterator.advance(halfMaxLength);
@@ -77,7 +93,8 @@ SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
         return;
     }
 
-    m_positionOffsetInContent = Range::create(*document, backwardsRange->endPosition(), position)->text().length();
+    m_startOffsetInContent = Range::create(*document, backwardsRange->endPosition(), startPosition)->text().length();
+    m_endOffsetInContent = Range::create(*document, backwardsRange->endPosition(), endPosition)->text().length();
     m_contentRange = Range::create(*document, backwardsRange->endPosition(), forwardRange->startPosition());
     ASSERT(m_contentRange);
 }
@@ -112,9 +129,14 @@ String SurroundingText::content() const
     return String();
 }
 
-unsigned SurroundingText::positionOffsetInContent() const
+unsigned SurroundingText::startOffsetInContent() const
 {
-    return m_positionOffsetInContent;
+    return m_startOffsetInContent;
+}
+
+unsigned SurroundingText::endOffsetInContent() const
+{
+    return m_endOffsetInContent;
 }
 
 } // namespace WebCore

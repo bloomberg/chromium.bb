@@ -58,7 +58,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
         SurroundingText surroundingText(selection.start(), 1);
 
         EXPECT_EQ("f", surroundingText.content());
-        EXPECT_EQ(0u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -67,7 +68,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
 
         // maxlength/2 is used on the left and right.
         EXPECT_EQ("foo", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(1u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -75,7 +77,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
         SurroundingText surroundingText(selection.start(), 42);
 
         EXPECT_EQ("foo bar", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(1u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -85,7 +88,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
         SurroundingText surroundingText(selection.start(), 42);
 
         EXPECT_EQ(0u, surroundingText.content().length());
-        EXPECT_EQ(0u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -93,7 +97,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
         SurroundingText surroundingText(selection.start(), 2);
 
         EXPECT_EQ("ar", surroundingText.content());
-        EXPECT_EQ(1u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -101,7 +106,58 @@ TEST_F(SurroundingTextTest, BasicCaretSelection)
         SurroundingText surroundingText(selection.start(), 42);
 
         EXPECT_EQ("foo bar", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(7u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(7u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(7u, surroundingText.endOffsetInContent());
+    }
+}
+
+TEST_F(SurroundingTextTest, BasicRangeSelection)
+{
+    setHTML(String("<p id='selection'>Lorem ipsum dolor sit amet</p>"));
+
+    {
+        VisibleSelection selection = select(0, 5);
+        SurroundingText surroundingText(*selection.firstRange(), 1);
+
+        EXPECT_EQ("Lorem ", surroundingText.content());
+        EXPECT_EQ(0u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(5u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(0, 5);
+        SurroundingText surroundingText(*selection.firstRange(), 5);
+
+        EXPECT_EQ("Lorem ip", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(0, 5);
+        SurroundingText surroundingText(*selection.firstRange(), 42);
+
+        EXPECT_EQ("Lorem ipsum dolor sit amet", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(6, 11);
+        SurroundingText surroundingText(*selection.firstRange(), 2);
+
+        EXPECT_EQ(" ipsum ", surroundingText.content());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(6, 11);
+        SurroundingText surroundingText(*selection.firstRange(), 42);
+
+        EXPECT_EQ("Lorem ipsum dolor sit amet", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(7u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(12u, surroundingText.endOffsetInContent());
     }
 }
 
@@ -114,7 +170,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection)
         SurroundingText surroundingText(selection.start(), 1);
 
         EXPECT_EQ("f", surroundingText.content());
-        EXPECT_EQ(0u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(0u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -122,7 +179,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection)
         SurroundingText surroundingText(selection.start(), 5);
 
         EXPECT_EQ("foo", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(1u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -130,7 +188,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection)
         SurroundingText surroundingText(selection.start(), 1337);
 
         EXPECT_EQ("This is outside of foo bar the selected node", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(20u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(20u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(20u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -138,7 +197,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection)
         SurroundingText surroundingText(selection.start(), 2);
 
         EXPECT_EQ("ar", surroundingText.content());
-        EXPECT_EQ(1u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
     }
 
     {
@@ -146,7 +206,58 @@ TEST_F(SurroundingTextTest, TreeCaretSelection)
         SurroundingText surroundingText(selection.start(), 1337);
 
         EXPECT_EQ("This is outside of foo bar the selected node", surroundingText.content().simplifyWhiteSpace());
-        EXPECT_EQ(26u, surroundingText.positionOffsetInContent());
+        EXPECT_EQ(26u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(26u, surroundingText.endOffsetInContent());
+    }
+}
+
+TEST_F(SurroundingTextTest, TreeRangeSelection)
+{
+    setHTML(String("<div>This is outside of <p id='selection'>foo bar</p> the selected node</div>"));
+
+    {
+        VisibleSelection selection = select(0, 1);
+        SurroundingText surroundingText(*selection.firstRange(), 1);
+
+        EXPECT_EQ("fo", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(0u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(0, 3);
+        SurroundingText surroundingText(*selection.firstRange(), 12);
+
+        EXPECT_EQ("e of foo bar", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(5u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(8u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(0, 3);
+        SurroundingText surroundingText(*selection.firstRange(), 1337);
+
+        EXPECT_EQ("This is outside of foo bar the selected node", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(20u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(23u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(4, 7);
+        SurroundingText surroundingText(*selection.firstRange(), 12);
+
+        EXPECT_EQ("foo bar the se", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(5u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(8u, surroundingText.endOffsetInContent());
+    }
+
+    {
+        VisibleSelection selection = select(0, 7);
+        SurroundingText surroundingText(*selection.firstRange(), 1337);
+
+        EXPECT_EQ("This is outside of foo bar the selected node", surroundingText.content().simplifyWhiteSpace());
+        EXPECT_EQ(20u, surroundingText.startOffsetInContent());
+        EXPECT_EQ(27u, surroundingText.endOffsetInContent());
     }
 }
 
