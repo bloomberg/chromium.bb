@@ -1000,39 +1000,48 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
   return PP_FALSE;
 }
 
-PP_Bool ManifestResolveKey(PP_Instance instance,
-                           PP_Bool is_helper_process,
-                           const char* key,
-                           PP_Var* pp_full_url,
-                           PP_PNaClOptions* pnacl_options) {
+bool ManifestResolveKey(PP_Instance instance,
+                        bool is_helper_process,
+                        const std::string& key,
+                        std::string* full_url,
+                        PP_PNaClOptions* pnacl_options) {
   // For "helper" processes (llc and ld), we resolve keys manually as there is
   // no existing .nmf file to parse.
-  if (PP_ToBool(is_helper_process)) {
+  if (is_helper_process) {
     pnacl_options->translate = PP_FALSE;
     // We can only resolve keys in the files/ namespace.
     const std::string kFilesPrefix = "files/";
-    std::string key_string(key);
-    if (key_string.find(kFilesPrefix) == std::string::npos) {
+    if (key.find(kFilesPrefix) == std::string::npos) {
       nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
       if (load_manager)
         load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                                       "key did not start with files/");
-      return PP_FALSE;
+      return false;
     }
-    std::string key_basename = key_string.substr(kFilesPrefix.length());
-    std::string pnacl_url =
-        std::string(kPNaClTranslatorBaseUrl) + GetSandboxArch() + "/" +
-        key_basename;
-    *pp_full_url = ppapi::StringVar::StringToPPVar(pnacl_url);
-    return PP_TRUE;
+    std::string key_basename = key.substr(kFilesPrefix.length());
+    *full_url = std::string(kPNaClTranslatorBaseUrl) + GetSandboxArch() + "/" +
+                key_basename;
+    return true;
   }
 
   JsonManifest* manifest = GetJsonManifest(instance);
   if (manifest == NULL)
-    return PP_FALSE;
+    return false;
 
+  return manifest->ResolveKey(key, full_url, pnacl_options);
+}
+
+PP_Bool ExternalManifestResolveKey(PP_Instance instance,
+                                   PP_Bool is_helper_process,
+                                   const char* key,
+                                   PP_Var* pp_full_url,
+                                   PP_PNaClOptions* pnacl_options) {
   std::string full_url;
-  bool ok = manifest->ResolveKey(key, &full_url, pnacl_options);
+  bool ok = ManifestResolveKey(instance,
+                               PP_ToBool(is_helper_process),
+                               std::string(key),
+                               &full_url,
+                               pnacl_options);
   if (ok)
     *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
   return PP_FromBool(ok);
@@ -1499,7 +1508,7 @@ const PPB_NaCl_Private nacl_interface = {
   &ProcessNaClManifest,
   &DevInterfacesEnabled,
   &ManifestGetProgramURL,
-  &ManifestResolveKey,
+  &ExternalManifestResolveKey,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
   &PostMessageToJavaScript,
