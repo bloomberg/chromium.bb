@@ -124,18 +124,14 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
   // Only ARGB888 and RGB565 supported as of now.
   bool format_support = ((config == SkBitmap::kRGB_565_Config) ||
                          (config == SkBitmap::kARGB_8888_Config));
-  if (!format_support) {
-    DCHECK(format_support);
-    callback.Run(false, SkBitmap());
-    return;
-  }
+  DCHECK(format_support);
   if (!CanCopyToBitmap()) {
     callback.Run(false, SkBitmap());
     return;
   }
 
-  const gfx::Size& dst_size_in_pixel = client_->ConvertViewSizeToPixel(
-      dst_size);
+  const gfx::Size& dst_size_in_pixel =
+      client_->ConvertViewSizeToPixel(dst_size);
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResult,
@@ -275,7 +271,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     float frame_device_scale_factor,
     const std::vector<ui::LatencyInfo>& latency_info) {
   RenderWidgetHostImpl* host = client_->GetHost();
-  DCHECK_NE(0u, frame_data->render_pass_list.size());
+  DCHECK(!frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame_data->render_pass_list.back();
 
@@ -336,7 +332,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     last_output_surface_id_ = output_surface_id;
   }
   if (frame_size.IsEmpty()) {
-    DCHECK_EQ(0u, frame_data->resource_list.size());
+    DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
   } else {
     if (!resource_collection_) {
@@ -504,8 +500,6 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
   scoped_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
 
   ignore_result(scoped_callback_runner.Release());
 
@@ -537,16 +531,8 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
     return;
   }
   DCHECK(result->HasBitmap());
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-
   scoped_ptr<SkBitmap> source = result->TakeBitmap();
   DCHECK(source);
-  if (!source)
-    return;
-
-  ignore_result(scoped_callback_runner.Release());
-
   SkBitmap bitmap = skia::ImageOperations::Resize(
       *source,
       skia::ImageOperations::RESIZE_BEST,
@@ -673,8 +659,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   scoped_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
 
   gfx::Rect result_rect(result->size());
 
