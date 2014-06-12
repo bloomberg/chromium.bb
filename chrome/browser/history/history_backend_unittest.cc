@@ -942,20 +942,28 @@ TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   EXPECT_NE(0, backend_->db_->GetRowForURL(row3.url(), &stored_row3));
   EXPECT_EQ(0, backend_->db_->GetRowForURL(row4.url(), &stored_row4));
 
-  // Ensure that a notification was fired, and further verify that the IDs in
-  // the notification are set to those that are in effect in the main database.
-  // The InMemoryHistoryBackend relies on this for caching.
+  // Ensure that a notification was fired for both typed and non-typed URLs.
+  // Further verify that the IDs in the notification are set to those that are
+  // in effect in the main database. The InMemoryHistoryBackend relies on this
+  // for caching.
   ASSERT_EQ(1u, broadcasted_notifications().size());
   ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
             broadcasted_notifications()[0].first);
   const URLsModifiedDetails* details = static_cast<const URLsModifiedDetails*>(
       broadcasted_notifications()[0].second);
-  EXPECT_EQ(2u, details->changed_urls.size());
+  EXPECT_EQ(3u, details->changed_urls.size());
 
-  URLRows::const_iterator it_row2 = std::find_if(
+  URLRows::const_iterator it_row1 = std::find_if(
       details->changed_urls.begin(),
       details->changed_urls.end(),
-      history::URLRow::URLRowHasURL(row2.url()));
+      history::URLRow::URLRowHasURL(row1.url()));
+  ASSERT_NE(details->changed_urls.end(), it_row1);
+  EXPECT_EQ(stored_row1.id(), it_row1->id());
+
+  URLRows::const_iterator it_row2 = std::find_if(
+        details->changed_urls.begin(),
+        details->changed_urls.end(),
+        history::URLRow::URLRowHasURL(row2.url()));
   ASSERT_NE(details->changed_urls.end(), it_row2);
   EXPECT_EQ(stored_row2.id(), it_row2->id());
 

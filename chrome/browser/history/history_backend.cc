@@ -792,10 +792,8 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
         return;
       }
 
-      if (i->typed_count() > 0) {
-        modified->changed_urls.push_back(*i);
-        modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
-      }
+      modified->changed_urls.push_back(*i);
+      modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
     }
 
     // Sync code manages the visits itself.
