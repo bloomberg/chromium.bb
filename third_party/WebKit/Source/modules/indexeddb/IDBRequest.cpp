@@ -47,7 +47,7 @@ namespace WebCore {
 
 IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
 {
-    IDBRequest* request(adoptRefCountedGarbageCollected(new IDBRequest(scriptState, source, transaction)));
+    IDBRequest* request = adoptRefCountedGarbageCollectedWillBeNoop(new IDBRequest(scriptState, source, transaction));
     request->suspendIfNeeded();
     // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
     if (transaction)

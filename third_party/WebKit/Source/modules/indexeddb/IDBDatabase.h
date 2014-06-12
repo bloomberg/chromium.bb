@@ -51,11 +51,11 @@ class ExceptionState;
 class ExecutionContext;
 
 class IDBDatabase FINAL
-    : public RefCountedGarbageCollected<IDBDatabase>
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<IDBDatabase>
     , public ScriptWrappable
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBDatabase>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBDatabase>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
 public:
     static IDBDatabase* create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, IDBDatabaseCallbacks*);

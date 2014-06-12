@@ -39,7 +39,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<SpeechRecognition> speechRecognition(adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognition(context)));
+    RefPtrWillBeRawPtr<SpeechRecognition> speechRecognition = adoptRefWillBeNoop(new SpeechRecognition(context));
     speechRecognition->suspendIfNeeded();
     return speechRecognition.release();
 }

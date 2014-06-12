@@ -44,8 +44,8 @@ namespace WebCore {
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
-class SpeechSynthesis FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SpeechSynthesis);
+class SpeechSynthesis FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<SpeechSynthesis>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesis> create(ExecutionContext*);

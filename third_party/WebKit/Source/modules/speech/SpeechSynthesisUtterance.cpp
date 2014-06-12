@@ -30,7 +30,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisUtterance(context, text));
+    return adoptRefWillBeNoop(new SpeechSynthesisUtterance(context, text));
 }
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, const String& text)

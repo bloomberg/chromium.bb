@@ -44,8 +44,8 @@ class ExecutionContext;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class SpeechRecognition FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(SpeechRecognition);
+class SpeechRecognition FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<SpeechRecognition>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognition> create(ExecutionContext*);

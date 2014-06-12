@@ -62,7 +62,7 @@ MediaKeySession::PendingAction::~PendingAction()
 
 MediaKeySession* MediaKeySession::create(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, MediaKeys* keys)
 {
-    MediaKeySession* session = adoptRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys));
+    MediaKeySession* session = adoptRefCountedGarbageCollectedWillBeNoop(new MediaKeySession(context, cdm, keys));
     session->suspendIfNeeded();
     return session;
 }

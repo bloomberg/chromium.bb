@@ -44,7 +44,7 @@ namespace WebCore {
 Notification* Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
     NotificationClient& client = NotificationController::clientFrom(toDocument(context)->frame());
-    Notification* notification = adoptRefCountedGarbageCollected(new Notification(title, context, &client));
+    Notification* notification = adoptRefCountedGarbageCollectedWillBeNoop(new Notification(title, context, &client));
 
     String argument;
     if (options.get("body", argument))

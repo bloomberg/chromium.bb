@@ -49,11 +49,11 @@ class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
 class IDBTransaction FINAL
-    : public RefCountedGarbageCollected<IDBTransaction>
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<IDBTransaction>
     , public ScriptWrappable
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<IDBTransaction>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBTransaction>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
 public:
     static IDBTransaction* create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, blink::WebIDBDatabase::TransactionMode, IDBDatabase*);

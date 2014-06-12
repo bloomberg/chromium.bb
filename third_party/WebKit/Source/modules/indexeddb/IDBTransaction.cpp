@@ -46,14 +46,14 @@ namespace WebCore {
 IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
-    IDBTransaction* transaction = adoptRefCountedGarbageCollected(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
     transaction->suspendIfNeeded();
     return transaction;
 }
 
 IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    IDBTransaction* transaction = adoptRefCountedGarbageCollected(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata));
     transaction->suspendIfNeeded();
     return transaction;
 }

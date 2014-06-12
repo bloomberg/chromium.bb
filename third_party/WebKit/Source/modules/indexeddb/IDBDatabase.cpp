@@ -69,7 +69,7 @@ const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection 
 
 IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, IDBDatabaseCallbacks* callbacks)
 {
-    IDBDatabase* idbDatabase = adoptRefCountedGarbageCollected(new IDBDatabase(context, database, callbacks));
+    IDBDatabase* idbDatabase = adoptRefCountedGarbageCollectedWillBeNoop(new IDBDatabase(context, database, callbacks));
     idbDatabase->suspendIfNeeded();
     return idbDatabase;
 }

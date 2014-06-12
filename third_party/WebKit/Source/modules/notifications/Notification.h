@@ -48,8 +48,8 @@ class Dictionary;
 class ExecutionContext;
 class NotificationPermissionCallback;
 
-class Notification : public RefCountedGarbageCollected<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<Notification>);
+class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:
     static Notification* create(ExecutionContext*, const String& title, const Dictionary& options);

@@ -64,9 +64,9 @@ class MediaKeys;
 // it may outlive any JavaScript references as long as the MediaKeys object is alive.
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession FINAL
-    : public RefCountedGarbageCollected<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
     , private blink::WebContentDecryptionModuleSession::Client {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<MediaKeySession>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static MediaKeySession* create(ExecutionContext*, blink::WebContentDecryptionModule*, MediaKeys*);
