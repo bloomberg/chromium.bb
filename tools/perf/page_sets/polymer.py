@@ -37,22 +37,18 @@ class PolymerCalculatorPage(PolymerPage):
     self.SlidePanel(action_runner)
 
   def TapButton(self, action_runner):
-    action_runner.RunAction(TapAction(
-      {
-        'element_function': '''
-          function(callback) {
-            callback(
-              document.querySelector(
-                'body /deep/ #outerPanels'
-              ).querySelector(
-                '#standard'
-              ).shadowRoot.querySelector(
-                'paper-calculator-key[label="5"]'
-              )
-            );
-          }''',
-        'wait_after': { 'seconds': 2 }
-      }))
+    interaction = action_runner.BeginInteraction(
+        'Action_TapAction', is_smooth=True)
+    action_runner.TapElement(element_function='''
+        document.querySelector(
+            'body /deep/ #outerPanels'
+        ).querySelector(
+            '#standard'
+        ).shadowRoot.querySelector(
+            'paper-calculator-key[label="5"]'
+        )''')
+    action_runner.Wait(2)
+    interaction.End()
 
   def SlidePanel(self, action_runner):
     action_runner.RunAction(SwipeAction(

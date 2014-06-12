@@ -15,9 +15,9 @@ class BrowserControlClickPage(page_module.Page):
 
   def __init__(self, page_set):
     super(BrowserControlClickPage, self).__init__(
-      url='file://endure/browser_control_click.html',
-      page_set=page_set,
-     name='browser_control_click')
+        url='file://endure/browser_control_click.html',
+        page_set=page_set,
+        name='browser_control_click')
     self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
@@ -25,15 +25,9 @@ class BrowserControlClickPage(page_module.Page):
     action_runner.WaitForElement('#attach')
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'xpath': 'id("attach")'
-      }))
+    action_runner.ClickElement('#attach')
     action_runner.Wait(0.5)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'xpath': 'id("detach")'
-      }))
+    action_runner.ClickElement('#detach')
     action_runner.Wait(0.5)
 
 
@@ -43,6 +37,6 @@ class BrowserControlClickPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(BrowserControlClickPageSet, self).__init__(
-      user_agent_type='desktop')
+        user_agent_type='desktop')
 
     self.AddPage(BrowserControlClickPage(self))

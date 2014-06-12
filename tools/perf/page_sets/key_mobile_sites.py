@@ -245,10 +245,7 @@ class Page16(KeyMobileSitesPage):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     action_runner.WaitForElement(text='Other Answers (1 - 20 of 149)')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text': 'Other Answers (1 - 20 of 149)'
-      }))
+    action_runner.ClickElement(text='Other Answers (1 - 20 of 149)')
 
 
 class Page17(KeyMobileSitesPage):

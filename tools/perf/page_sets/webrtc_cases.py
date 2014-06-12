@@ -38,36 +38,18 @@ class Page2(WebrtcCasesPage):
       page_set=page_set)
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn1"]'
-      }))
+    action_runner.ClickElement('button[id="btn1"]')
     action_runner.Wait(2)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn2"]'
-      }))
+    action_runner.ClickElement('button[id="btn2"]')
     action_runner.Wait(10)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn3"]'
-      }))
+    action_runner.ClickElement('button[id="btn3"]')
 
   def RunWebrtc(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn1"]'
-      }))
+    action_runner.ClickElement('button[id="btn1"]')
     action_runner.Wait(2)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn2"]'
-      }))
+    action_runner.ClickElement('button[id="btn2"]')
     action_runner.Wait(10)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'button[id="btn3"]'
-      }))
+    action_runner.ClickElement('button[id="btn3"]')
 
 
 class WebrtcCasesPageSet(page_set_module.PageSet):

@@ -7,6 +7,15 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
+def _GetCurrentLocation(action_runner):
+  return action_runner.EvaluateJavaScript('document.location.href')
+
+
+def _WaitForLocationChange(action_runner, old_href):
+  action_runner.WaitForJavaScriptCondition(
+      'document.location.href != "%s"' % old_href)
+
+
 class Top25Page(page_module.Page):
 
   def __init__(self, url, page_set, name=''):
@@ -40,67 +49,39 @@ class GoogleWebSearchPage(Top25Page):
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Next',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Next')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Next')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Next',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Next')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Next')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Next',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Next')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Previous',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Previous')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Previous',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Previous')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Previous',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Previous')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Images')
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Images',
-        'wait_until': {
-          'condition': 'href_change'
-        }
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(text='Images')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Images')
 
 
@@ -122,20 +103,14 @@ class GmailPage(Top25Page):
         'document.getElementById("gb") !== null')
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'wait_until': {
-          'condition': 'href_change'
-        },
-        'selector': 'a[href="https://mail.google.com/mail/u/0/?shva=1#starred"]'
-      }))
-    action_runner.RunAction(ClickElementAction(
-      {
-        'wait_until': {
-          'condition': 'href_change'
-        },
-        'selector': 'a[href="https://mail.google.com/mail/u/0/?shva=1#inbox"]'
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(
+        'a[href="https://mail.google.com/mail/u/0/?shva=1#starred"]')
+    _WaitForLocationChange(action_runner, old_href)
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(
+        'a[href="https://mail.google.com/mail/u/0/?shva=1#inbox"]')
+    _WaitForLocationChange(action_runner, old_href)
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction(
@@ -174,52 +149,28 @@ class GoogleCalendarPage(Top25Page):
     action_runner.Wait(1)
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
 
@@ -290,34 +241,19 @@ class GooglePlusPage(Top25Page):
     action_runner.WaitForElement(text='Home')
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Home'
-      }))
+    action_runner.ClickElement(text='Home')
     action_runner.Wait(2)
     action_runner.WaitForElement(text='Profile')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Profile'
-      }))
+    action_runner.ClickElement(text='Profile')
     action_runner.Wait(2)
     action_runner.WaitForElement(text='Explore')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Explore'
-      }))
+    action_runner.ClickElement(text='Explore')
     action_runner.Wait(2)
     action_runner.WaitForElement(text='Events')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Events'
-      }))
+    action_runner.ClickElement(text='Events')
     action_runner.Wait(2)
     action_runner.WaitForElement(text='Communities')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Communities'
-      }))
+    action_runner.ClickElement(text='Communities')
     action_runner.Wait(2)
     action_runner.WaitForElement(text='Home')
 
@@ -360,16 +296,16 @@ class BlogspotPage(Top25Page):
     action_runner.WaitForElement(text='accessibility')
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction({'text' : 'accessibility'}))
+    action_runner.ClickElement(text='accessibility')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction({'text' : 'advanced'}))
+    action_runner.ClickElement(text='advanced')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction({'text' : 'beginner'}))
+    action_runner.ClickElement(text='beginner')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction({'text' : 'Home'}))
+    action_runner.ClickElement(text='Home')
     action_runner.WaitForNavigate()
 
 
@@ -392,17 +328,15 @@ class WordpressPage(Top25Page):
 
   def RunStressMemory(self, action_runner):
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction(
-      {'selector':
-          # pylint: disable=C0301
-          'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]'
-      }))
+    action_runner.ClickElement(
+        # pylint: disable=C0301
+        'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction({'text' : 'Features'}))
+    action_runner.ClickElement(text='Features')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
-    action_runner.RunAction(ClickElementAction({'text' : 'News'}))
+    action_runner.ClickElement(text='News')
     action_runner.WaitForNavigate()
     action_runner.RunAction(ScrollAction())
 
@@ -423,32 +357,17 @@ class FacebookPage(Top25Page):
     action_runner.WaitForElement(text='About')
 
   def RunStressMemory(self, action_runner):
-    action_runner.RunAction(ClickElementAction({'text' : 'About'}))
+    action_runner.ClickElement(text='About')
     action_runner.WaitForNavigate()
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'The Audacity of Hope',
-      }))
+    action_runner.ClickElement(text='The Audacity of Hope')
     action_runner.WaitForNavigate()
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Back to Barack Obama\'s Timeline',
-      }))
+    action_runner.ClickElement(text='Back to Barack Obama\'s Timeline')
     action_runner.WaitForNavigate()
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'About',
-      }))
+    action_runner.ClickElement(text='About')
     action_runner.WaitForNavigate()
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Elected to U.S. Senate',
-      }))
+    action_runner.ClickElement(text='Elected to U.S. Senate')
     action_runner.WaitForNavigate()
-    action_runner.RunAction(ClickElementAction(
-      {
-        'text' : 'Home',
-      }))
+    action_runner.ClickElement(text='Home')
     action_runner.WaitForNavigate()
 
   def RunSmoothness(self, action_runner):

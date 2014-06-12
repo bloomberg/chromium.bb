@@ -34,52 +34,28 @@ class CalendarForwardBackwardPage(page_module.Page):
         })();''')
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navForward"]'
-      }))
+    action_runner.ClickElement('div[class~="navForward"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navBack"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="navBack"]'
-      }))
+    action_runner.ClickElement('div[class~="navBack"]')
     action_runner.Wait(2)
     action_runner.WaitForElement('div[class~="navForward"]')
 

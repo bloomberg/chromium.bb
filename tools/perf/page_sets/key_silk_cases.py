@@ -364,11 +364,11 @@ class Page18(KeySilkCasesPage):
       self.ToggleDrawer(action_runner)
 
   def ToggleDrawer(self, action_runner):
-    action_runner.RunAction(TapAction(
-      {
-        'selector': '#menu-button',
-        'wait_after' : {'seconds': 1}
-      }))
+    interaction = action_runner.BeginInteraction(
+        'Action_TapAction', is_smooth=True)
+    action_runner.TapElement('#menu-button')
+    action_runner.Wait(1)
+    interaction.End()
 
 
 class Page19(KeySilkCasesPage):
@@ -379,10 +379,11 @@ class Page19(KeySilkCasesPage):
       page_set=page_set)
 
   def ToggleDrawer(self, action_runner):
-    action_runner.RunAction(TapAction(
-      {
-        'selector': '#menu-button'
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'TapAction', is_smooth=True)
+    action_runner.TapElement('#menu-button')
+    interaction.End()
+
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("nav-drawer").active')
@@ -456,14 +457,12 @@ class Page21(KeySilkCasesPage):
 
   def ExpandKnowledgeCard(self, action_runner):
     # expand card
-    action_runner.RunAction(TapAction(
-      {
-        'element_function': '''
-          function(callback) {
-            callback(document.getElementsByClassName("vk_arc")[0]);
-          }''',
-        'wait_after': {'seconds': 2}
-      }))
+    interaction = action_runner.BeginInteraction(
+        'Action_TapAction', is_smooth=True)
+    action_runner.TapElement(
+        element_function='document.getElementsByClassName("vk_arc")[0]')
+    action_runner.Wait(2)
+    interaction.End()
 
 
   def RunNavigateSteps(self, action_runner):

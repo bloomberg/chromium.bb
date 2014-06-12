@@ -56,10 +56,7 @@ class GmailComposeDiscardPage(page_module.Page):
     action_runner.Wait(1)
     action_runner.WaitForElement(
         'div[class~="oh"][data-tooltip="Discard draft"]')
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'div[class~="oh"][data-tooltip="Discard draft"]'
-      }))
+    action_runner.ClickElement('div[class~="oh"][data-tooltip="Discard draft"]')
     action_runner.Wait(1)
 
 

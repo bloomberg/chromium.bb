@@ -28,17 +28,11 @@ class PlusAltPostsPhotosPage(page_module.Page):
         'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]')
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'span[guidedhelpid="posts_tab_profile"]'
-      }))
+    action_runner.ClickElement('span[guidedhelpid="posts_tab_profile"]')
     action_runner.WaitForElement(
         'span[guidedhelpid="posts_tab_profile"][class*="s6U8x"]')
     action_runner.Wait(5)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'selector': 'span[guidedhelpid="photos_tab_profile"]'
-      }))
+    action_runner.ClickElement('span[guidedhelpid="photos_tab_profile"]')
     action_runner.WaitForElement(
         'span[guidedhelpid="photos_tab_profile"][class*="s6U8x"]')
     action_runner.Wait(5)

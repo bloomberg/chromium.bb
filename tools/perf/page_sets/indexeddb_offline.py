@@ -36,18 +36,12 @@ class IndexeddbOfflinePage(page_module.Page):
 
   def RunEndure(self, action_runner):
     action_runner.WaitForElement('button[id="online"]:not(disabled)')
-    action_runner.RunAction(ClickElementAction(
-        {
-            'selector': 'button[id="online"]:not(disabled)'
-        }))
+    action_runner.ClickElement('button[id="online"]:not(disabled)')
     action_runner.WaitForElement(
         element_function=_CreateXpathFunction('id("state")[text()="online"]'))
     action_runner.Wait(1)
     action_runner.WaitForElement('button[id="offline"]:not(disabled)')
-    action_runner.RunAction(ClickElementAction(
-        {
-            'selector': 'button[id="offline"]:not(disabled)'
-        }))
+    action_runner.ClickElement('button[id="offline"]:not(disabled)')
     action_runner.WaitForElement(
         element_function=_CreateXpathFunction('id("state")[text()="offline"]'))
 

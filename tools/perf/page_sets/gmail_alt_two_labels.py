@@ -7,6 +7,15 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
+def _GetCurrentLocation(action_runner):
+  return action_runner.EvaluateJavaScript('document.location.href')
+
+
+def _WaitForLocationChange(action_runner, old_href):
+  action_runner.WaitForJavaScriptCondition(
+      'document.location.href != "%s"' % old_href)
+
+
 class GmailAltTwoLabelsPage(page_module.Page):
 
   """ Why: Alternate between Inbox and Sent Mail """
@@ -29,17 +38,15 @@ class GmailAltTwoLabelsPage(page_module.Page):
         'document.getElementById("gb") !== null')
 
   def RunEndure(self, action_runner):
-    action_runner.RunAction(ClickElementAction(
-      {
-        'wait_until': {'condition': 'href_change'},
-        'selector': 'a[href="https://mail.google.com/mail/u/0/?shva=1#sent"]'
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(
+        'a[href="https://mail.google.com/mail/u/0/?shva=1#sent"]')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.Wait(1)
-    action_runner.RunAction(ClickElementAction(
-      {
-        'wait_until': {'condition': 'href_change'},
-        'selector': 'a[href="https://mail.google.com/mail/u/0/?shva=1#inbox"]'
-      }))
+    old_href = _GetCurrentLocation(action_runner)
+    action_runner.ClickElement(
+        'a[href="https://mail.google.com/mail/u/0/?shva=1#inbox"]')
+    _WaitForLocationChange(action_runner, old_href)
     action_runner.Wait(1)
 
 
