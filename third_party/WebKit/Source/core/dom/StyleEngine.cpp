@@ -362,7 +362,12 @@ void StyleEngine::enableExitTransitionStylesheets()
     collection->enableExitTransitionStylesheets();
 }
 
-bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
+bool StyleEngine::shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode updateMode) const
+{
+    return m_documentScopeDirty || updateMode == FullStyleUpdate;
+}
+
+bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode) const
 {
     return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
@@ -394,17 +399,16 @@ void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentC
     documentStyleSheetCollection()->swapSheetsForSheetList(sheetsForList);
 }
 
-bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
+void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
     ASSERT(isMaster());
     ASSERT(!document().inStyleRecalc());
 
     if (!document().isActive())
-        return false;
+        return;
 
-    bool requiresFullStyleRecalc = false;
-    if (m_documentScopeDirty || updateMode == FullStyleUpdate)
-        requiresFullStyleRecalc = documentStyleSheetCollection()->updateActiveStyleSheets(this, updateMode);
+    if (shouldUpdateDocumentStyleSheetCollection(updateMode))
+        documentStyleSheetCollection()->updateActiveStyleSheets(this, updateMode);
 
     if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
         TreeScopeSet treeScopes = updateMode == FullStyleUpdate ? m_activeTreeScopes : m_dirtyTreeScopes;
@@ -427,8 +431,6 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 
     m_dirtyTreeScopes.clear();
     m_documentScopeDirty = false;
-
-    return requiresFullStyleRecalc;
 }
 
 const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
@@ -527,21 +529,19 @@ bool StyleEngine::shouldApplyXSLTransform() const
     return m_xslStyleSheet && !m_document->transformSourceDocument();
 }
 
-StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
+void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
-    StyleResolverChange change;
-
     if (!isMaster()) {
         if (Document* master = this->master())
             master->styleResolverChanged(mode);
-        return change;
+        return;
     }
 
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
     if (!document().isActive() || shouldClearResolver()) {
         clearResolver();
-        return change;
+        return;
     }
 
     if (shouldApplyXSLTransform()) {
@@ -550,17 +550,11 @@ StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
         // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
         if (!m_document->parsing() && !m_xslStyleSheet->isLoading())
             m_document->applyXSLTransform(m_xslStyleSheet.get());
-        return change;
+        return;
     }
 
     m_didCalculateResolver = true;
-    if (document().didLayoutWithPendingStylesheets() && !hasPendingSheets())
-        change.setNeedsRepaint();
-
-    if (updateActiveStyleSheets(mode))
-        change.setNeedsStyleRecalc();
-
-    return change;
+    updateActiveStyleSheets(mode);
 }
 
 void StyleEngine::clearFontCache()

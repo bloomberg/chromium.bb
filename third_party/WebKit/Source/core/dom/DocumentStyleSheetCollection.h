@@ -42,7 +42,7 @@ class DocumentStyleSheetCollection FINAL : public TreeScopeStyleSheetCollection 
 public:
     explicit DocumentStyleSheetCollection(TreeScope&);
 
-    bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
+    void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
     void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
 
     virtual void trace(Visitor* visitor) OVERRIDE

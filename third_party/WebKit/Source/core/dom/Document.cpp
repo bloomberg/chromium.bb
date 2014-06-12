@@ -3444,19 +3444,16 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
     if (!m_styleEngine)
         return;
 
-    StyleResolverChange change = m_styleEngine->resolverChanged(updateMode);
-    if (change.needsRepaint()) {
+    m_styleEngine->resolverChanged(updateMode);
+
+    if (didLayoutWithPendingStylesheets() && haveStylesheetsLoaded()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
         renderView()->repaintViewAndCompositedLayers();
     }
 
-    if (!change.needsStyleRecalc())
-        return;
-
     m_evaluateMediaQueriesOnStyleRecalc = true;
-    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void Document::styleResolverMayHaveChanged()

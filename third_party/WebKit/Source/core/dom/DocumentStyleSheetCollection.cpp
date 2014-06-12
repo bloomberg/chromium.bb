@@ -90,7 +90,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Docum
     collectStyleSheetsFromCandidates(engine, collector);
 }
 
-bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
     StyleSheetCollection collection;
     ActiveDocumentStyleSheetCollector collector(collection);
@@ -118,13 +118,14 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
             styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
     }
+    if (change.requiresFullStyleRecalc)
+        document().setNeedsStyleRecalc(SubtreeStyleChange);
+
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
 
     collection.swap(*this);
 
     updateUsesRemUnits();
-
-    return change.requiresFullStyleRecalc;
 }
 
 }

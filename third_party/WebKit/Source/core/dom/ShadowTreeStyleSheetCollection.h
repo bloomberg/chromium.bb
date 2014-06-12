@@ -44,7 +44,7 @@ class ShadowTreeStyleSheetCollection FINAL : public TreeScopeStyleSheetCollectio
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
-    bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
+    void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
 
     virtual void trace(Visitor* visitor) OVERRIDE
     {

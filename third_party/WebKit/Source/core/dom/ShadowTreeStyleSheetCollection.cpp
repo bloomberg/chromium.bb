@@ -87,7 +87,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
     }
 }
 
-bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
     StyleSheetCollection collection;
     collectStyleSheets(engine, collection);
@@ -115,8 +115,6 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     collection.swap(*this);
     updateUsesRemUnits();
-
-    return change.requiresFullStyleRecalc;
 }
 
 }
