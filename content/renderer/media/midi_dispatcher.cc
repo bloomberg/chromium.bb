@@ -44,9 +44,7 @@ void MidiDispatcher::requestSysexPermission(
 
 void MidiDispatcher::cancelSysexPermissionRequest(
     const WebMIDIPermissionRequest& request) {
-  for (IDMap<WebMIDIPermissionRequest>::iterator it(&requests_);
-       !it.IsAtEnd();
-       it.Advance()) {
+  for (Requests::iterator it(&requests_); !it.IsAtEnd(); it.Advance()) {
     WebMIDIPermissionRequest* value = it.GetCurrentValue();
     if (value->equals(request)) {
       base::string16 origin = request.securityOrigin().toString();

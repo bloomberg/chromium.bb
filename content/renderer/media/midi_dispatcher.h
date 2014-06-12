@@ -44,7 +44,8 @@ class MidiDispatcher : public RenderViewObserver,
   // Each WebMIDIPermissionRequest object is valid until
   // cancelSysexPermissionRequest() is called with the object, or used to call
   // WebMIDIPermissionRequest::setIsAllowed().
-  IDMap<blink::WebMIDIPermissionRequest> requests_;
+  typedef IDMap<blink::WebMIDIPermissionRequest, IDMapOwnPointer> Requests;
+  Requests requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiDispatcher);
 };
