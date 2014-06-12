@@ -175,12 +175,6 @@ class AutocompleteResult {
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);
 
-  // Adds a single match. The match is inserted at the appropriate position
-  // based on relevancy and display order. This is ONLY for use after
-  // SortAndCull() has been invoked, and preserves default_match_.
-  void AddMatch(AutocompleteInput::PageClassification page_classification,
-                const AutocompleteMatch& match);
-
   // Populates |provider_to_matches| from |matches_|.
   void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
 

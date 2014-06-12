@@ -406,23 +406,6 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
-void AutocompleteResult::AddMatch(
-    AutocompleteInput::PageClassification page_classification,
-    const AutocompleteMatch& match) {
-  DCHECK(default_match_ != end());
-  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
-  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
-            match.description);
-  CompareWithDemoteByType comparing_object(page_classification);
-  ACMatches::iterator insertion_point =
-      std::upper_bound(begin(), end(), match, comparing_object);
-  matches_difference_type default_offset = default_match_ - begin();
-  if ((insertion_point - begin()) <= default_offset)
-    ++default_offset;
-  matches_.insert(insertion_point, match);
-  default_match_ = begin() + default_offset;
-}
-
 void AutocompleteResult::BuildProviderToMatches(
     ProviderToMatches* provider_to_matches) const {
   for (ACMatches::const_iterator i(begin()); i != end(); ++i)
@@ -461,7 +444,7 @@ void AutocompleteResult::MergeMatchesByProvider(
       AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
-      AddMatch(page_classification, match);
+      matches_.push_back(match);
       delta--;
     }
   }
