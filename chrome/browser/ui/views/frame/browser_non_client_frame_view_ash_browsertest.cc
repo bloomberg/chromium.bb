@@ -25,7 +25,34 @@
 
 using views::Widget;
 
-typedef InProcessBrowserTest BrowserNonClientFrameViewAshTest;
+namespace {
+
+class BrowserNonClientFrameViewAshTest : public InProcessBrowserTest {
+ public:
+  BrowserNonClientFrameViewAshTest() {}
+  virtual ~BrowserNonClientFrameViewAshTest() {}
+
+  // InProcessBrowserTest:
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
+ private:
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAshTest);
+};
+
+void BrowserNonClientFrameViewAshTest::SetUp() {
+  zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+  InProcessBrowserTest::SetUp();
+}
+
+void BrowserNonClientFrameViewAshTest::TearDown() {
+  zero_duration_mode_.reset();
+  InProcessBrowserTest::TearDown();
+}
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());

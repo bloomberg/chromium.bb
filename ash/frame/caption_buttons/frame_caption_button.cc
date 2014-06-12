@@ -5,9 +5,11 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -36,6 +38,10 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       pressed_background_image_id_(-1),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   swap_images_animation_->Reset(1);
+
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  set_layer_owner_delegate(this);
 
   // Do not flip the gfx::Canvas passed to the OnPaint() method. The snap left
   // and snap right button icons should not be flipped. The other icons are
@@ -172,6 +178,11 @@ void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
                        (width() - to_center.width()) / 2,
                        (height() - to_center.height()) / 2,
                        paint);
+}
+
+void FrameCaptionButton::OnLayerRecreated(ui::Layer* old_layer,
+                                          ui::Layer* new_layer) {
+  GetWidget()->UpdateRootLayers();
 }
 
 }  // namespace ash

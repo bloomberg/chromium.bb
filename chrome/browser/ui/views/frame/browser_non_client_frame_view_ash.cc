@@ -378,6 +378,20 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// views::View:
+
+void BrowserNonClientFrameViewAsh::
+    ChildPreferredSizeChanged(views::View* child) {
+// FrameCaptionButtonContainerView animates the visibility changes in
+// UpdateSizeButtonVisibility(false). Due to this a new size is not available
+// until the completion of the animation. Layout in response to the preferred
+// size changes.
+  if (child != caption_button_container_)
+    return;
+  frame()->GetRootView()->Layout();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
