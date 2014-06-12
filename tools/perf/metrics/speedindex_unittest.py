@@ -36,6 +36,15 @@ class FakeTimelineModel(object):
     return self._events
 
 
+class FakeVideo(object):
+
+  def __init__(self, frames):
+    self._frames = frames
+
+  def GetVideoFrameIter(self):
+    for frame in self._frames:
+      yield frame
+
 class FakeBitmap(object):
 
   def __init__(self, r, g, b):
@@ -51,7 +60,7 @@ class FakeTab(object):
   def __init__(self, video_capture_result=None):
     self._timeline_model = FakeTimelineModel()
     self._javascript_result = None
-    self._video_capture_result = video_capture_result
+    self._video_capture_result = FakeVideo(video_capture_result)
 
   @property
   def timeline_model(self):

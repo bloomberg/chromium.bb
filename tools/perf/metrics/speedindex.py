@@ -138,9 +138,10 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     # previous page to white. The tolerance of 8 experimentally does well with
     # video capture at 4mbps. We should keep this as low as possible with
     # supported video compression settings.
+    video_capture = tab.StopVideoCapture()
     histograms = [(time, bmp.ColorHistogram(ignore_color=bitmap.WHITE,
                                             tolerance=8))
-                  for time, bmp in tab.StopVideoCapture()]
+                  for time, bmp in video_capture.GetVideoFrameIter()]
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]
