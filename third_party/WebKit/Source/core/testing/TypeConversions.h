@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class TypeConversions : public RefCountedWillBeGarbageCollected<TypeConversions> {
+class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions> {
 public:
     static PassRefPtrWillBeRawPtr<TypeConversions> create()
     {
