@@ -428,7 +428,6 @@ void WebSettingsImpl::setEditingBehavior(EditingBehavior behavior)
 void WebSettingsImpl::setAcceleratedCompositingEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingEnabled(enabled);
-    m_settings->setScrollingCoordinatorEnabled(enabled);
 }
 
 void WebSettingsImpl::setMockScrollbarsEnabled(bool enabled)

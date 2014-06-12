@@ -123,7 +123,6 @@ allowConnectingInsecureWebSocket initial=false
 mediaControlsOverlayPlayButtonEnabled initial=false
 mediaPlaybackRequiresUserGesture initial=false
 
-scrollingCoordinatorEnabled initial=false
 scrollAnimatorEnabled initial=true
 
 shouldRespectImageOrientation initial=false

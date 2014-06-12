@@ -166,7 +166,7 @@ ViewportDescription Page::viewportDescription() const
 
 ScrollingCoordinator* Page::scrollingCoordinator()
 {
-    if (!m_scrollingCoordinator && m_settings->scrollingCoordinatorEnabled())
+    if (!m_scrollingCoordinator && m_settings->acceleratedCompositingEnabled())
         m_scrollingCoordinator = ScrollingCoordinator::create(this);
 
     return m_scrollingCoordinator.get();
