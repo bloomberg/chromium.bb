@@ -26,7 +26,7 @@ class PanelResizeController {
   // |mouse_location| is in screen coordinate system.
   void StartResizing(Panel* panel,
                      const gfx::Point& mouse_location,
-                     panel::ResizingSides sides);
+                     int component);
   void Resize(const gfx::Point& mouse_location);
 
   // Returns the panel that was resized.
@@ -43,8 +43,8 @@ class PanelResizeController {
   // Panel currently being resized.
   Panel* resizing_panel_;
 
-  // Resizing at which side?
-  panel::ResizingSides sides_resized_;
+  // The part of the border used to resize the window.
+  int component_;
 
   // The mouse location, in screen coordinates, when StartResizing
   // previously called.

@@ -20,6 +20,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
@@ -34,6 +36,11 @@
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/views/win/hwnd_util.h"
+#endif
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/panels/x11_panel_resizer.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
 namespace {
@@ -306,6 +313,18 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
           base::UTF8ToWide(panel->app_name()), panel->profile()->GetPath()),
       views::HWNDForWidget(window_));
   ui::win::PreventWindowFromPinning(views::HWNDForWidget(window_));
+#endif
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  // Swap the default non client event handler with one which handles resizes
+  // for panels entirely within Chrome. This is needed because it is not
+  // possible to tell when a resize performed by the window manager ends.
+  views::DesktopWindowTreeHostX11* host =
+      views::DesktopWindowTreeHostX11::GetHostForXID(
+          window_->GetNativeView()->GetHost()->GetAcceleratedWidget());
+  scoped_ptr<ui::EventHandler> resizer(
+      new X11PanelResizer(panel_.get(), window_->GetNativeWindow()));
+  host->SwapNonClientEventHandler(resizer.Pass());
 #endif
 }
 

@@ -7,71 +7,72 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "ui/base/hit_test.h"
 
 namespace {
-  static bool ResizingLeft(panel::ResizingSides sides) {
-    return sides == panel::RESIZE_TOP_LEFT ||
-           sides == panel::RESIZE_LEFT ||
-           sides == panel::RESIZE_BOTTOM_LEFT;
+  bool ResizingLeft(int component) {
+    return component == HTTOPLEFT ||
+           component == HTLEFT ||
+           component == HTBOTTOMLEFT;
   }
 
-  static bool ResizingRight(panel::ResizingSides sides) {
-    return sides == panel::RESIZE_TOP_RIGHT ||
-           sides == panel::RESIZE_RIGHT ||
-           sides == panel::RESIZE_BOTTOM_RIGHT;
+  bool ResizingRight(int component) {
+    return component == HTTOPRIGHT ||
+           component == HTRIGHT ||
+           component == HTBOTTOMRIGHT;
   }
 
-  static bool ResizingTop(panel::ResizingSides sides) {
-    return sides == panel::RESIZE_TOP_LEFT ||
-           sides == panel::RESIZE_TOP ||
-           sides == panel::RESIZE_TOP_RIGHT;
+  bool ResizingTop(int component) {
+    return component == HTTOPLEFT ||
+           component == HTTOP ||
+           component == HTTOPRIGHT;
   }
 
-  static bool ResizingBottom(panel::ResizingSides sides) {
-    return sides == panel::RESIZE_BOTTOM_RIGHT ||
-           sides == panel::RESIZE_BOTTOM ||
-           sides == panel::RESIZE_BOTTOM_LEFT;
+  bool ResizingBottom(int component) {
+    return component == HTBOTTOMRIGHT ||
+           component == HTBOTTOM ||
+           component == HTBOTTOMLEFT;
   }
-}
+}  // namespace
 
 PanelResizeController::PanelResizeController(PanelManager* panel_manager)
   : panel_manager_(panel_manager),
     resizing_panel_(NULL),
-    sides_resized_(panel::RESIZE_NONE) {
+    component_(HTNOWHERE) {
 }
 
 void PanelResizeController::StartResizing(Panel* panel,
                                           const gfx::Point& mouse_location,
-                                          panel::ResizingSides sides) {
+                                          int component) {
   DCHECK(!IsResizing());
-  DCHECK_NE(panel::RESIZE_NONE, sides);
+  DCHECK_NE(HTNOWHERE, component);
 
   panel::Resizability resizability = panel->CanResizeByMouse();
   DCHECK_NE(panel::NOT_RESIZABLE, resizability);
   panel::Resizability resizability_to_test;
-  switch (sides) {
-    case panel::RESIZE_TOP_LEFT:
+  switch (component) {
+    case HTTOPLEFT:
       resizability_to_test = panel::RESIZABLE_TOP_LEFT;
       break;
-    case panel::RESIZE_TOP:
+    case HTTOP:
       resizability_to_test = panel::RESIZABLE_TOP;
       break;
-    case panel::RESIZE_TOP_RIGHT:
+    case HTTOPRIGHT:
       resizability_to_test = panel::RESIZABLE_TOP_RIGHT;
       break;
-    case panel::RESIZE_LEFT:
+    case HTLEFT:
       resizability_to_test = panel::RESIZABLE_LEFT;
       break;
-    case panel::RESIZE_RIGHT:
+    case HTRIGHT:
       resizability_to_test = panel::RESIZABLE_RIGHT;
       break;
-    case panel::RESIZE_BOTTOM_LEFT:
+    case HTBOTTOMLEFT:
       resizability_to_test = panel::RESIZABLE_BOTTOM_LEFT;
       break;
-    case panel::RESIZE_BOTTOM:
+    case HTBOTTOM:
       resizability_to_test = panel::RESIZABLE_BOTTOM;
       break;
-    case panel::RESIZE_BOTTOM_RIGHT:
+    case HTBOTTOMRIGHT:
       resizability_to_test = panel::RESIZABLE_BOTTOM_RIGHT;
       break;
     default:
@@ -85,7 +86,7 @@ void PanelResizeController::StartResizing(Panel* panel,
 
   mouse_location_at_start_ = mouse_location;
   bounds_at_start_ = panel->GetBounds();
-  sides_resized_ = sides;
+  component_ = component;
   resizing_panel_ = panel;
   resizing_panel_->OnPanelStartUserResizing();
 }
@@ -99,19 +100,19 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
   }
   gfx::Rect bounds = resizing_panel_->GetBounds();
 
-  if (ResizingRight(sides_resized_)) {
+  if (ResizingRight(component_)) {
     bounds.set_width(std::max(bounds_at_start_.width() +
                      mouse_location.x() - mouse_location_at_start_.x(), 0));
   }
-  if (ResizingBottom(sides_resized_)) {
+  if (ResizingBottom(component_)) {
     bounds.set_height(std::max(bounds_at_start_.height() +
                       mouse_location.y() - mouse_location_at_start_.y(), 0));
   }
-  if (ResizingLeft(sides_resized_)) {
+  if (ResizingLeft(component_)) {
     bounds.set_width(std::max(bounds_at_start_.width() +
                      mouse_location_at_start_.x() - mouse_location.x(), 0));
   }
-  if (ResizingTop(sides_resized_)) {
+  if (ResizingTop(component_)) {
     int new_height = std::max(bounds_at_start_.height() +
                      mouse_location_at_start_.y() - mouse_location.y(), 0);
     int new_y = bounds_at_start_.bottom() - new_height;
@@ -136,10 +137,10 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
   // updated above.
   bounds.set_size(resizing_panel_->ClampSize(bounds.size()));
 
-  if (ResizingLeft(sides_resized_))
+  if (ResizingLeft(component_))
     bounds.set_x(bounds_at_start_.right() - bounds.width());
 
-  if (ResizingTop(sides_resized_))
+  if (ResizingTop(component_))
     bounds.set_y(bounds_at_start_.bottom() - bounds.height());
 
   if (bounds != resizing_panel_->GetBounds()) {
@@ -160,7 +161,7 @@ Panel* PanelResizeController::EndResizing(bool cancelled) {
   resizing_panel_->OnPanelEndUserResizing();
   Panel* resized_panel = resizing_panel_;
   resizing_panel_ = NULL;
-  sides_resized_ = panel::RESIZE_NONE;
+  component_ = HTNOWHERE;
   bounds_at_start_ = gfx::Rect();
   mouse_location_at_start_ = gfx::Point();
   return resized_panel;

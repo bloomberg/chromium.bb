@@ -65,19 +65,6 @@ enum ClickModifier {
   APPLY_TO_ALL,  // Apply the click behavior to all panels in the collection.
 };
 
-// Edge at which a panel is being resized using the mouse.
-enum ResizingSides {
-  RESIZE_NONE = 0,
-  RESIZE_TOP,
-  RESIZE_TOP_RIGHT,
-  RESIZE_RIGHT,
-  RESIZE_BOTTOM_RIGHT,
-  RESIZE_BOTTOM,
-  RESIZE_BOTTOM_LEFT,
-  RESIZE_LEFT,
-  RESIZE_TOP_LEFT
-};
-
 // Ways a panel can be resized.
 enum Resizability {
   NOT_RESIZABLE = 0,

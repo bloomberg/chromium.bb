@@ -93,6 +93,9 @@ UI_BASE_EXPORT void HideHostCursor();
 // Returns an invisible cursor.
 UI_BASE_EXPORT ::Cursor CreateInvisibleCursor();
 
+// Sets whether |window| should use the OS window frame.
+UI_BASE_EXPORT void SetUseOSWindowFrame(XID window, bool use_os_window_frame);
+
 // These functions do not cache their results --------------------------
 
 // Returns true if the shape extension is supported.

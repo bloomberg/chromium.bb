@@ -222,6 +222,16 @@ void DesktopWindowTreeHostX11::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+void DesktopWindowTreeHostX11::SwapNonClientEventHandler(
+    scoped_ptr<ui::EventHandler> handler) {
+  wm::CompoundEventFilter* compound_event_filter =
+      desktop_native_widget_aura_->root_window_event_filter();
+  if (x11_non_client_event_filter_)
+    compound_event_filter->RemoveHandler(x11_non_client_event_filter_.get());
+  compound_event_filter->AddHandler(handler.get());
+  x11_non_client_event_filter_ = handler.Pass();
+}
+
 void DesktopWindowTreeHostX11::CleanUpWindowList() {
   delete open_windows_;
   open_windows_ = NULL;
@@ -258,11 +268,10 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   X11DesktopHandler::get();
 
   // TODO(erg): Unify this code once the other consumer goes away.
-  x11_window_event_filter_.reset(new X11WindowEventFilter(this));
+  SwapNonClientEventHandler(
+      scoped_ptr<ui::EventHandler>(new X11WindowEventFilter(this)).Pass());
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
-  desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
-      x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(window(), x11_window_move_client_.get());
@@ -326,7 +335,8 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~WindowEventDispatcher().
   desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
-      x11_window_event_filter_.get());
+      x11_non_client_event_filter_.get());
+  x11_non_client_event_filter_.reset();
 
   // Destroy the compositor before destroying the |xwindow_| since shutdown
   // may try to swap, and the swap without a window causes an X error, which
@@ -1271,7 +1281,7 @@ bool DesktopWindowTreeHostX11::HasWMSpecProperty(const char* property) const {
 
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
-  x11_window_event_filter_->SetUseHostWindowBorders(use_native_frame);
+  ui::SetUseOSWindowFrame(xwindow_, use_native_frame);
   ResetWindowRegion();
 }
 

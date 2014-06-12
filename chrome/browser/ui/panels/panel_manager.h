@@ -98,7 +98,7 @@ class PanelManager : public DisplaySettingsProvider::DisplayObserver,
   // Resizes the given panel.
   // |mouse_location| is in screen coordinate system.
   void StartResizingByMouse(Panel* panel, const gfx::Point& mouse_location,
-                            panel::ResizingSides sides);
+                            int component);
   void ResizeByMouse(const gfx::Point& mouse_location);
   void EndResizingByMouse(bool cancelled);
 

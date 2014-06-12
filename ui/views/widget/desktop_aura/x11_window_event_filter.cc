@@ -38,24 +38,7 @@ const int k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT =  6;
 const int k_NET_WM_MOVERESIZE_SIZE_LEFT =        7;
 const int k_NET_WM_MOVERESIZE_MOVE =             8;
 
-// This data structure represents additional hints that we send to the window
-// manager and has a direct lineage back to Motif, which defined this de facto
-// standard. This struct doesn't seem 64-bit safe though, but it's what GDK
-// does.
-typedef struct {
-  unsigned long flags;
-  unsigned long functions;
-  unsigned long decorations;
-  long input_mode;
-  unsigned long status;
-} MotifWmHints;
-
-// The bitflag in |flags| in MotifWmHints that signals that the reader should
-// pay attention to the value in |decorations|.
-const unsigned long kHintsDecorations = (1L << 1);
-
 const char* kAtomsToCache[] = {
-  "_MOTIF_WM_HINTS",
   "_NET_WM_MOVERESIZE",
   NULL
 };
@@ -76,23 +59,6 @@ X11WindowEventFilter::X11WindowEventFilter(
 }
 
 X11WindowEventFilter::~X11WindowEventFilter() {
-}
-
-void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
-  MotifWmHints motif_hints;
-  memset(&motif_hints, 0, sizeof(motif_hints));
-  motif_hints.flags = kHintsDecorations;
-  motif_hints.decorations = use_os_border ? 1 : 0;
-
-  ::Atom hint_atom = atom_cache_.GetAtom("_MOTIF_WM_HINTS");
-  XChangeProperty(gfx::GetXDisplay(),
-                  xwindow_,
-                  hint_atom,
-                  hint_atom,
-                  32,
-                  PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&motif_hints),
-                  sizeof(MotifWmHints)/sizeof(long));
 }
 
 void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {

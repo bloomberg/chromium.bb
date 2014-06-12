@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/base/hit_test.h"
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "base/environment.h"
@@ -455,11 +456,12 @@ void PanelManager::EndDragging(bool cancelled) {
 }
 
 void PanelManager::StartResizingByMouse(Panel* panel,
-    const gfx::Point& mouse_location,
-    panel::ResizingSides sides) {
+                                        const gfx::Point& mouse_location,
+                                        int component) {
   if (panel->CanResizeByMouse() != panel::NOT_RESIZABLE &&
-      sides != panel::RESIZE_NONE)
-    resize_controller_->StartResizing(panel, mouse_location, sides);
+      component != HTNOWHERE) {
+    resize_controller_->StartResizing(panel, mouse_location, component);
+  }
 }
 
 void PanelManager::ResizeByMouse(const gfx::Point& mouse_location) {

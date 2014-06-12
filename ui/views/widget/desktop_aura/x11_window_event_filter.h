@@ -32,9 +32,6 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
   explicit X11WindowEventFilter(DesktopWindowTreeHost* window_tree_host);
   virtual ~X11WindowEventFilter();
 
-  // Changes whether borders are shown on this |root_window|.
-  void SetUseHostWindowBorders(bool use_os_border);
-
   // Overridden from ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
