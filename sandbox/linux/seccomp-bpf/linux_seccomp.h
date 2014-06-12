@@ -19,7 +19,7 @@
 // Old Bionic versions do not have sys/user.h.  The if can be removed once we no
 // longer need to support these old Bionic versions.
 #include <sys/cdefs.h>
-#if !defined(__BIONIC__)
+#if !defined(__BIONIC__) || defined(__x86_64__)
 #include <sys/user.h>
 #endif
 
