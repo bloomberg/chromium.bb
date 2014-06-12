@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
-class SpeechSynthesisVoice FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechSynthesisVoice>, public ScriptWrappable {
+class SpeechSynthesisVoice FINAL : public GarbageCollectedFinalized<SpeechSynthesisVoice>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
+    static SpeechSynthesisVoice* create(PassRefPtr<PlatformSpeechSynthesisVoice>);
 
     const String& voiceURI() const { return m_platformVoice->voiceURI(); }
     const String& name() const { return m_platformVoice->name(); }

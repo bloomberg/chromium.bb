@@ -29,14 +29,12 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class SpeechRecognitionResultList : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
+class SpeechRecognitionResultList : public GarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >&);
+    static SpeechRecognitionResultList* create(const HeapVector<Member<SpeechRecognitionResult> >&);
 
     unsigned long length() { return m_results.size(); }
     SpeechRecognitionResult* item(unsigned long index);
@@ -44,9 +42,9 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit SpeechRecognitionResultList(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >&);
+    explicit SpeechRecognitionResultList(const HeapVector<Member<SpeechRecognitionResult> >&);
 
-    WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> > m_results;
+    HeapVector<Member<SpeechRecognitionResult> > m_results;
 };
 
 } // namespace WebCore

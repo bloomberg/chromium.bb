@@ -29,16 +29,14 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/speech/SpeechGrammar.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class SpeechGrammarList : public RefCountedWillBeGarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
+class SpeechGrammarList : public GarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<SpeechGrammarList> create();
+    static SpeechGrammarList* create();
 
     unsigned long length() const { return m_grammars.size(); }
     SpeechGrammar* item(unsigned long) const;
@@ -51,7 +49,7 @@ public:
 private:
     SpeechGrammarList();
 
-    WillBeHeapVector<RefPtrWillBeMember<SpeechGrammar> > m_grammars;
+    HeapVector<Member<SpeechGrammar> > m_grammars;
 };
 
 } // namespace WebCore

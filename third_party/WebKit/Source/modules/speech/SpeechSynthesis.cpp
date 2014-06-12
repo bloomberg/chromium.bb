@@ -34,9 +34,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext* context)
+SpeechSynthesis* SpeechSynthesis::create(ExecutionContext* context)
 {
-    return adoptRefWillBeNoop(new SpeechSynthesis(context));
+    return adoptRefCountedGarbageCollectedWillBeNoop(new SpeechSynthesis(context));
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
@@ -64,7 +64,7 @@ void SpeechSynthesis::voicesDidChange()
         dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
-const WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
+const HeapVector<Member<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
 {
     if (m_voiceList.size())
         return m_voiceList;
@@ -152,10 +152,6 @@ void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtteran
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)
 {
     ASSERT(utterance);
-
-    // Keep the utterance around long enough to fire an event on it in case m_utteranceQueue
-    // is holding the last reference to it.
-    RefPtrWillBeRawPtr<SpeechSynthesisUtterance> protect(utterance);
 
     bool didJustFinishCurrentUtterance = false;
     // If the utterance that completed was the one we're currently speaking,

@@ -34,21 +34,18 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
-#include "wtf/Deque.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
-class SpeechSynthesis FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<SpeechSynthesis>);
+class SpeechSynthesis FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesis>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 public:
-    static PassRefPtrWillBeRawPtr<SpeechSynthesis> create(ExecutionContext*);
+    static SpeechSynthesis* create(ExecutionContext*);
 
     bool pending() const;
     bool speaking() const;
@@ -59,7 +56,7 @@ public:
     void pause();
     void resume();
 
-    const WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> >& getVoices();
+    const HeapVector<Member<SpeechSynthesisVoice> >& getVoices();
 
     // Used in testing to use a mock platform synthesizer
     void setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer>);
@@ -90,8 +87,8 @@ private:
     SpeechSynthesisUtterance* currentSpeechUtterance() const;
 
     OwnPtr<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
-    WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> > m_voiceList;
-    Deque<RefPtrWillBeMember<SpeechSynthesisUtterance> > m_utteranceQueue;
+    HeapVector<Member<SpeechSynthesisVoice> > m_voiceList;
+    HeapDeque<Member<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
 
     // EventTarget
