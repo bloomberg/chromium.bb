@@ -136,9 +136,6 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
             directReasons |= CompositingReasonOverflowScrollingTouch;
     }
 
-    if (requiresCompositingForPositionSticky(renderer, layer))
-        directReasons |= CompositingReasonPositionSticky;
-
     if (requiresCompositingForPositionFixed(renderer, layer, 0))
         directReasons |= CompositingReasonPositionFixed;
 
@@ -154,22 +151,6 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderStyle* style
         return style->isRunningAnimationOnCompositor();
 
     return style->shouldCompositeForCurrentAnimations();
-}
-
-bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
-{
-    return requiresCompositingForPositionSticky(renderer, layer) || requiresCompositingForPositionFixed(renderer, layer, viewportConstrainedNotCompositedReason);
-}
-
-bool CompositingReasonFinder::requiresCompositingForPositionSticky(RenderObject* renderer, const RenderLayer* layer) const
-{
-    if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
-        return false;
-    if (renderer->style()->position() != StickyPosition)
-        return false;
-    // FIXME: This probably isn't correct for accelerated overflow scrolling. crbug.com/361723
-    // Instead it should return false only if the layer is not inside a scrollable region.
-    return !layer->enclosingOverflowClipLayer(ExcludeSelf);
 }
 
 bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const

@@ -24,7 +24,7 @@ const uint64_t CompositingReasonActiveAnimation                        = UINT64_
 const uint64_t CompositingReasonTransitionProperty                     = UINT64_C(1) << 7;
 const uint64_t CompositingReasonFilters                                = UINT64_C(1) << 8;
 const uint64_t CompositingReasonPositionFixed                          = UINT64_C(1) << 9;
-const uint64_t CompositingReasonPositionSticky                         = UINT64_C(1) << 10;
+// Bit 10 is available.
 const uint64_t CompositingReasonOverflowScrollingTouch                 = UINT64_C(1) << 11;
 const uint64_t CompositingReasonOverflowScrollingParent                = UINT64_C(1) << 12;
 const uint64_t CompositingReasonOutOfFlowClipping                      = UINT64_C(1) << 13;
@@ -83,7 +83,6 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonTransitionProperty
     | CompositingReasonFilters
     | CompositingReasonPositionFixed
-    | CompositingReasonPositionSticky
     | CompositingReasonOverflowScrollingTouch
     | CompositingReasonOverflowScrollingParent
     | CompositingReasonOutOfFlowClipping
@@ -173,9 +172,7 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonPositionFixed,
         "positionFixed",
         "Is fixed position" },
-    { CompositingReasonPositionSticky,
-        "positionSticky",
-        "Is sticky position" },
+    { 0, 0, 0 }, // Available.
     { CompositingReasonOverflowScrollingTouch,
         "overflowScrollingTouch",
         "Is a scrollable overflow element" },
