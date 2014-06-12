@@ -47,7 +47,8 @@ class CastTransportSenderIPC
       const std::string& c_name) OVERRIDE;
   virtual void ResendPackets(
       bool is_audio,
-      const media::cast::transport::MissingFramesAndPacketsMap& missing_packets)
+      const media::cast::transport::MissingFramesAndPacketsMap& missing_packets,
+      bool cancel_rtx_if_not_in_list)
       OVERRIDE;
 
   void OnReceivedPacket(const media::cast::transport::Packet& packet);

@@ -74,7 +74,8 @@ void RtpSender::SendFrame(const EncodedFrame& frame) {
 }
 
 void RtpSender::ResendPackets(
-    const MissingFramesAndPacketsMap& missing_frames_and_packets) {
+    const MissingFramesAndPacketsMap& missing_frames_and_packets,
+    bool cancel_rtx_if_not_in_list) {
   DCHECK(storage_);
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
@@ -98,7 +99,8 @@ void RtpSender::ResendPackets(
 
       // If the resend request doesn't include this packet then cancel
       // re-transmission already in queue.
-      if (!missing_packet_set.empty() &&
+      if (cancel_rtx_if_not_in_list &&
+          !missing_packet_set.empty() &&
           missing_packet_set.find(packet_id) == missing_packet_set.end()) {
         transport_->CancelSendingPacket(it->first);
       } else {

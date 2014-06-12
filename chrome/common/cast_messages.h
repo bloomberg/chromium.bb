@@ -133,11 +133,12 @@ IPC_MESSAGE_CONTROL3(
     media::cast::transport::SendRtcpFromRtpSenderData /* data */,
     media::cast::transport::RtcpDlrrReportBlock /* dlrr */)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL4(
     CastHostMsg_ResendPackets,
     int32 /* channel_id */,
     bool /* is_audio */,
-    media::cast::MissingFramesAndPacketsMap /* missing_packets */)
+    media::cast::MissingFramesAndPacketsMap /* missing_packets */,
+    bool /* cancel_rtx_if_not_in_list */)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_New,

@@ -318,8 +318,10 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     // Only count duplicated ACKs if there is no NACK request in between.
     // This is to avoid aggresive resend.
     duplicate_ack_counter_ = 0;
+
+    // A NACK is also used to cancel pending re-transmissions.
     transport_sender_->ResendPackets(
-        false, cast_feedback.missing_frames_and_packets_);
+        false, cast_feedback.missing_frames_and_packets_, true);
   }
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -370,7 +372,11 @@ void VideoSender::ResendForKickstart() {
   missing_frames_and_packets.insert(
       std::make_pair(last_sent_frame_id_, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-  transport_sender_->ResendPackets(false, missing_frames_and_packets);
+
+  // Sending this extra packet is to kick-start the session. There is
+  // no need to optimize re-transmission for this case.
+  transport_sender_->ResendPackets(false, missing_frames_and_packets,
+                                   false);
 }
 
 }  // namespace cast

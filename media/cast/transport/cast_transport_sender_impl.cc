@@ -177,13 +177,16 @@ void CastTransportSenderImpl::SendRtcpFromRtpSender(
 
 void CastTransportSenderImpl::ResendPackets(
     bool is_audio,
-    const MissingFramesAndPacketsMap& missing_packets) {
+    const MissingFramesAndPacketsMap& missing_packets,
+    bool cancel_rtx_if_not_in_list) {
   if (is_audio) {
     DCHECK(audio_sender_) << "Audio sender uninitialized";
-    audio_sender_->ResendPackets(missing_packets);
+    audio_sender_->ResendPackets(missing_packets,
+                                 cancel_rtx_if_not_in_list);
   } else {
     DCHECK(video_sender_) << "Video sender uninitialized";
-    video_sender_->ResendPackets(missing_packets);
+    video_sender_->ResendPackets(missing_packets,
+                                 cancel_rtx_if_not_in_list);
   }
 }
 

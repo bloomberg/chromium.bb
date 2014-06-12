@@ -178,11 +178,12 @@ void CastTransportHostFilter::OnSendRtcpFromRtpSender(
 void CastTransportHostFilter::OnResendPackets(
     int32 channel_id,
     bool is_audio,
-    const media::cast::MissingFramesAndPacketsMap& missing_packets) {
+    const media::cast::MissingFramesAndPacketsMap& missing_packets,
+    bool cancel_rtx_if_not_in_list) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
-    sender->ResendPackets(is_audio, missing_packets);
+    sender->ResendPackets(is_audio, missing_packets, cancel_rtx_if_not_in_list);
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnResendPackets on non-existing channel";

@@ -132,7 +132,7 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   missing_packets[1].insert(4);
   missing_packets[1].insert(7);
   CastHostMsg_ResendPackets resend_msg(
-      kChannelId, false, missing_packets);
+      kChannelId, false, missing_packets, true);
   FakeSend(resend_msg);
 
   CastHostMsg_Delete delete_msg(kChannelId);

@@ -92,9 +92,15 @@ class CastTransportSender : public base::NonThreadSafe {
                                      const std::string& c_name) = 0;
 
   // Retransmission request.
+  // |missing_packets| includes the list of frames and packets in each
+  // frame to be re-transmitted.
+  // If |cancel_rtx_if_not_in_list| is used as an optimization to cancel
+  // pending re-transmission requests of packets not listed in
+  // |missing_packets|.
   virtual void ResendPackets(
       bool is_audio,
-      const MissingFramesAndPacketsMap& missing_packets) = 0;
+      const MissingFramesAndPacketsMap& missing_packets,
+      bool cancel_rtx_if_not_in_list) = 0;
 };
 
 }  // namespace transport

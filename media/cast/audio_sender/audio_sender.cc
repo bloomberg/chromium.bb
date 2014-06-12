@@ -106,7 +106,7 @@ void AudioSender::SendEncodedAudioFrame(
 void AudioSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  transport_sender_->ResendPackets(true, missing_frames_and_packets);
+  transport_sender_->ResendPackets(true, missing_frames_and_packets, false);
 }
 
 void AudioSender::IncomingRtcpPacket(scoped_ptr<Packet> packet) {

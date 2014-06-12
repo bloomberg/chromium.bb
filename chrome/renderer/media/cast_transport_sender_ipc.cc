@@ -78,10 +78,12 @@ void CastTransportSenderIPC::SendRtcpFromRtpSender(
 
 void CastTransportSenderIPC::ResendPackets(
     bool is_audio,
-    const media::cast::MissingFramesAndPacketsMap& missing_packets) {
+    const media::cast::MissingFramesAndPacketsMap& missing_packets,
+    bool cancel_rtx_if_not_in_list) {
   Send(new CastHostMsg_ResendPackets(channel_id_,
                                      is_audio,
-                                     missing_packets));
+                                     missing_packets,
+                                     cancel_rtx_if_not_in_list));
 }
 
 void CastTransportSenderIPC::OnReceivedPacket(
