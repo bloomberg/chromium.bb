@@ -65,7 +65,7 @@ inline MeterInnerElement::MeterInnerElement(Document& document)
 
 PassRefPtrWillBeRawPtr<MeterInnerElement> MeterInnerElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<MeterInnerElement> element = adoptRefWillBeRefCountedGarbageCollected(new MeterInnerElement(document));
+    RefPtrWillBeRawPtr<MeterInnerElement> element = adoptRefWillBeNoop(new MeterInnerElement(document));
     element->setShadowPseudoId(AtomicString("-webkit-meter-inner-element", AtomicString::ConstructFromLiteral));
     return element.release();
 }
@@ -91,7 +91,7 @@ inline MeterBarElement::MeterBarElement(Document& document)
 
 PassRefPtrWillBeRawPtr<MeterBarElement> MeterBarElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<MeterBarElement> element = adoptRefWillBeRefCountedGarbageCollected(new MeterBarElement(document));
+    RefPtrWillBeRawPtr<MeterBarElement> element = adoptRefWillBeNoop(new MeterBarElement(document));
     element->setShadowPseudoId(AtomicString("-webkit-meter-bar", AtomicString::ConstructFromLiteral));
     return element.release();
 }
@@ -103,7 +103,7 @@ inline MeterValueElement::MeterValueElement(Document& document)
 
 PassRefPtrWillBeRawPtr<MeterValueElement> MeterValueElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<MeterValueElement> element = adoptRefWillBeRefCountedGarbageCollected(new MeterValueElement(document));
+    RefPtrWillBeRawPtr<MeterValueElement> element = adoptRefWillBeNoop(new MeterValueElement(document));
     element->updatePseudo();
     return element.release();
 }

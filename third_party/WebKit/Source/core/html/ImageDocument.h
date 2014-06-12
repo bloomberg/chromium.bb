@@ -37,7 +37,7 @@ class ImageDocument FINAL : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<ImageDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ImageDocument(initializer));
+        return adoptRefWillBeNoop(new ImageDocument(initializer));
     }
 
     ImageResource* cachedImage();

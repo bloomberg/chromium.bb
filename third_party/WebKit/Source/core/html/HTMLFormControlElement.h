@@ -109,8 +109,10 @@ public:
 
     virtual void setFocus(bool flag) OVERRIDE;
 
+#if !ENABLE(OILPAN)
     using Node::ref;
     using Node::deref;
+#endif
 
 protected:
     HTMLFormControlElement(const QualifiedName& tagName, Document&, HTMLFormElement*);

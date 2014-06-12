@@ -47,7 +47,7 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByPars
 
 PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<HTMLEmbedElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLEmbedElement(document, createdByParser));
+    RefPtrWillBeRawPtr<HTMLEmbedElement> element = adoptRefWillBeNoop(new HTMLEmbedElement(document, createdByParser));
     element->ensureUserAgentShadowRoot();
     return element.release();
 }

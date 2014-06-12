@@ -47,7 +47,7 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
 PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::DataListElement);
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLDataListElement(document));
+    return adoptRefWillBeNoop(new HTMLDataListElement(document));
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLDataListElement::options()

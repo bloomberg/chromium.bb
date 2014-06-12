@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLSummaryElement> summary = adoptRefWillBeRefCountedGarbageCollected(new HTMLSummaryElement(document));
+    RefPtrWillBeRawPtr<HTMLSummaryElement> summary = adoptRefWillBeNoop(new HTMLSummaryElement(document));
     summary->ensureUserAgentShadowRoot();
     return summary.release();
 }

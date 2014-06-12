@@ -72,12 +72,12 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
 
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document));
+    return adoptRefWillBeNoop(new HTMLImageElement(document));
 }
 
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document, form, createdByParser));
+    return adoptRefWillBeNoop(new HTMLImageElement(document, form, createdByParser));
 }
 
 HTMLImageElement::~HTMLImageElement()
@@ -97,7 +97,7 @@ void HTMLImageElement::trace(Visitor* visitor)
 
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document));
+    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
     if (width)
         image->setWidth(width);
     if (height)

@@ -62,8 +62,10 @@ public:
     bool checkValidity() { return true; }
     virtual void setCustomValidity(const String&) OVERRIDE { }
 
+#if !ENABLE(OILPAN)
     using Node::ref;
     using Node::deref;
+#endif
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return useFallbackContent(); }
 

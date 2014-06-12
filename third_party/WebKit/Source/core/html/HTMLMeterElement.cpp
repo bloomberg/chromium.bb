@@ -49,7 +49,7 @@ HTMLMeterElement::~HTMLMeterElement()
 
 PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeRefCountedGarbageCollected(new HTMLMeterElement(document));
+    RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeNoop(new HTMLMeterElement(document));
     meter->ensureUserAgentShadowRoot();
     return meter.release();
 }

@@ -36,8 +36,10 @@ class SVGViewElement FINAL : public SVGElement,
 public:
     DECLARE_NODE_FACTORY(SVGViewElement);
 
+#if !ENABLE(OILPAN)
     using SVGElement::ref;
     using SVGElement::deref;
+#endif
 
     SVGStringListTearOff* viewTarget() { return m_viewTarget->tearOff(); }
 

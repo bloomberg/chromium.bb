@@ -114,6 +114,7 @@ public:
     }
 
     void assign(T* ptr) { assign(RawPtr<T>(ptr)); }
+    template<typename U> void assign(const RawPtr<U>& val) { assign(RawPtr<T>(val)); }
 
     void assign(const PtrStorageImpl& other) { assign(other.get()); }
 

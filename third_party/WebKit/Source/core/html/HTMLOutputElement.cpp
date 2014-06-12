@@ -47,7 +47,7 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement*
 
 PassRefPtrWillBeRawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOutputElement(document, form));
+    return adoptRefWillBeNoop(new HTMLOutputElement(document, form));
 }
 
 const AtomicString& HTMLOutputElement::formControlType() const

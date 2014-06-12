@@ -47,7 +47,7 @@ static DetailsEventSender& detailsToggleEventSender()
 
 PassRefPtrWillBeRawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLDetailsElement> details = adoptRefWillBeRefCountedGarbageCollected(new HTMLDetailsElement(document));
+    RefPtrWillBeRawPtr<HTMLDetailsElement> details = adoptRefWillBeNoop(new HTMLDetailsElement(document));
     details->ensureUserAgentShadowRoot();
     return details.release();
 }

@@ -34,7 +34,7 @@ class MediaDocument FINAL : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MediaDocument(initializer));
+        return adoptRefWillBeNoop(new MediaDocument(initializer));
     }
 
 private:

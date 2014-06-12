@@ -45,7 +45,7 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInserted
 
 PassRefPtrWillBeRawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted));
+    return adoptRefWillBeNoop(new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted));
 }
 
 bool HTMLScriptElement::isURLAttribute(const Attribute& attribute) const
@@ -172,7 +172,7 @@ void HTMLScriptElement::dispatchLoadEvent()
 
 PassRefPtrWillBeRawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
+    return adoptRefWillBeNoop(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
 }
 
 }

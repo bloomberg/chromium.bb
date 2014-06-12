@@ -787,7 +787,6 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 #define ThreadSafeRefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
 #define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WebCore::ThreadSafeRefCountedGarbageCollected
-#define TreeSharedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define PersistentWillBeMember WebCore::Member
 #define RefPtrWillBePersistent WebCore::Persistent
 #define RefPtrWillBeRawPtr WTF::RawPtr
@@ -902,7 +901,6 @@ public:
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WTF::ThreadSafeRefCounted
-#define TreeSharedWillBeRefCountedGarbageCollected WebCore::TreeShared
 #define PersistentWillBeMember WebCore::Persistent
 #define RefPtrWillBePersistent WTF::RefPtr
 #define RefPtrWillBeRawPtr WTF::RefPtr

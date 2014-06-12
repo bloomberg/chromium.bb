@@ -237,7 +237,7 @@ class Document : public ContainerNode, public TreeScope, public SecurityContext,
 public:
     static PassRefPtrWillBeRawPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new Document(initializer));
+        return adoptRefWillBeNoop(new Document(initializer));
     }
     virtual ~Document();
 
@@ -245,8 +245,10 @@ public:
 
     void mediaQueryAffectingValueChanged();
 
+#if !ENABLE(OILPAN)
     using ContainerNode::ref;
     using ContainerNode::deref;
+#endif
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
     using ExecutionContextClient::addConsoleMessage;

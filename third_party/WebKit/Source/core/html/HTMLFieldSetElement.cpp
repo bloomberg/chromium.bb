@@ -46,7 +46,7 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElem
 
 PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFieldSetElement(document, form));
+    return adoptRefWillBeNoop(new HTMLFieldSetElement(document, form));
 }
 
 void HTMLFieldSetElement::trace(Visitor* visitor)

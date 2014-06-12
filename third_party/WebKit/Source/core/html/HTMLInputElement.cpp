@@ -132,7 +132,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
 
 PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> inputElement = adoptRefWillBeRefCountedGarbageCollected(new HTMLInputElement(document, form, createdByParser));
+    RefPtrWillBeRawPtr<HTMLInputElement> inputElement = adoptRefWillBeNoop(new HTMLInputElement(document, form, createdByParser));
     inputElement->ensureUserAgentShadowRoot();
     return inputElement.release();
 }

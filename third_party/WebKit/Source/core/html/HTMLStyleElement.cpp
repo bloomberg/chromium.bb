@@ -64,7 +64,7 @@ HTMLStyleElement::~HTMLStyleElement()
 
 PassRefPtrWillBeRawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLStyleElement(document, createdByParser));
+    return adoptRefWillBeNoop(new HTMLStyleElement(document, createdByParser));
 }
 
 void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

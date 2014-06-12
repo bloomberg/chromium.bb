@@ -50,7 +50,7 @@ HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
 
 PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtrWillBeRawPtr<HTMLKeygenElement> keygen = adoptRefWillBeRefCountedGarbageCollected(new HTMLKeygenElement(document, form));
+    RefPtrWillBeRawPtr<HTMLKeygenElement> keygen = adoptRefWillBeNoop(new HTMLKeygenElement(document, form));
     keygen->ensureUserAgentShadowRoot();
     return keygen.release();
 }

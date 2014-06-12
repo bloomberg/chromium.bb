@@ -143,7 +143,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
 
 PassRefPtrWillBeRawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLLinkElement(document, createdByParser));
+    return adoptRefWillBeNoop(new HTMLLinkElement(document, createdByParser));
 }
 
 HTMLLinkElement::~HTMLLinkElement()

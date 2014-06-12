@@ -81,7 +81,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
 PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::FormElement);
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLFormElement(document));
+    return adoptRefWillBeNoop(new HTMLFormElement(document));
 }
 
 HTMLFormElement::~HTMLFormElement()

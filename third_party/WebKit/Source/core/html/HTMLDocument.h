@@ -37,7 +37,7 @@ class HTMLDocument : public Document, public ResourceClient {
 public:
     static PassRefPtrWillBeRawPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HTMLDocument(initializer));
+        return adoptRefWillBeNoop(new HTMLDocument(initializer));
     }
     virtual ~HTMLDocument();
 

@@ -55,7 +55,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLVideoElement> video = adoptRefWillBeRefCountedGarbageCollected(new HTMLVideoElement(document));
+    RefPtrWillBeRawPtr<HTMLVideoElement> video = adoptRefWillBeNoop(new HTMLVideoElement(document));
     video->ensureUserAgentShadowRoot();
     video->suspendIfNeeded();
     return video.release();

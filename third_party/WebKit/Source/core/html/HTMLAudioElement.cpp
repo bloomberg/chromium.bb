@@ -41,7 +41,7 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeRefCountedGarbageCollected(new HTMLAudioElement(document));
+    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeNoop(new HTMLAudioElement(document));
     audio->ensureUserAgentShadowRoot();
     audio->suspendIfNeeded();
     return audio.release();
@@ -49,7 +49,7 @@ PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& docu
 
 PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
 {
-    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeRefCountedGarbageCollected(new HTMLAudioElement(document));
+    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeNoop(new HTMLAudioElement(document));
     audio->ensureUserAgentShadowRoot();
     audio->setPreload(AtomicString("auto", AtomicString::ConstructFromLiteral));
     if (!src.isNull())

@@ -100,7 +100,7 @@ private:
 public:
     static PassRefPtrWillBeRawPtr<DataListIndicatorElement> create(Document& document)
     {
-        RefPtrWillBeRawPtr<DataListIndicatorElement> element = adoptRefWillBeRefCountedGarbageCollected(new DataListIndicatorElement(document));
+        RefPtrWillBeRawPtr<DataListIndicatorElement> element = adoptRefWillBeNoop(new DataListIndicatorElement(document));
         element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
         element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
         return element.release();

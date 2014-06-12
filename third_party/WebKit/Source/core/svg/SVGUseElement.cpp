@@ -67,7 +67,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
 PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
-    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeRefCountedGarbageCollected(new SVGUseElement(document));
+    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeNoop(new SVGUseElement(document));
     use->ensureUserAgentShadowRoot();
     return use.release();
 }

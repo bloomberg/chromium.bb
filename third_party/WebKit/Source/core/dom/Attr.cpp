@@ -57,14 +57,14 @@ Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& st
 
 PassRefPtrWillBeRawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
 {
-    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeRefCountedGarbageCollected(new Attr(element, name));
+    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeNoop(new Attr(element, name));
     attr->createTextChild();
     return attr.release();
 }
 
 PassRefPtrWillBeRawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
 {
-    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeRefCountedGarbageCollected(new Attr(document, name, value));
+    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeNoop(new Attr(document, name, value));
     attr->createTextChild();
     return attr.release();
 }
@@ -153,7 +153,7 @@ void Attr::setNodeValue(const String& v)
 
 PassRefPtrWillBeRawPtr<Node> Attr::cloneNode(bool /*deep*/)
 {
-    RefPtrWillBeRawPtr<Attr> clone = adoptRefWillBeRefCountedGarbageCollected(new Attr(document(), m_name, value()));
+    RefPtrWillBeRawPtr<Attr> clone = adoptRefWillBeNoop(new Attr(document(), m_name, value()));
     cloneChildNodes(clone.get());
     return clone.release();
 }

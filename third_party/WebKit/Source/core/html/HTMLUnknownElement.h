@@ -38,7 +38,7 @@ class HTMLUnknownElement FINAL : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLUnknownElement> create(const QualifiedName& tagName, Document& document)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HTMLUnknownElement(tagName, document));
+        return adoptRefWillBeNoop(new HTMLUnknownElement(tagName, document));
     }
 
     virtual bool isHTMLUnknownElement() const OVERRIDE { return true; }

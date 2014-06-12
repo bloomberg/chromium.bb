@@ -81,12 +81,12 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
 
 PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSelectElement(document, 0));
+    return adoptRefWillBeNoop(new HTMLSelectElement(document, 0));
 }
 
 PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLSelectElement(document, form));
+    return adoptRefWillBeNoop(new HTMLSelectElement(document, form));
 }
 
 const AtomicString& HTMLSelectElement::formControlType() const

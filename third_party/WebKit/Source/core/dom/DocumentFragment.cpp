@@ -37,7 +37,7 @@ DocumentFragment::DocumentFragment(Document* document, ConstructionType construc
 
 PassRefPtrWillBeRawPtr<DocumentFragment> DocumentFragment::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new DocumentFragment(&document, Node::CreateDocumentFragment));
+    return adoptRefWillBeNoop(new DocumentFragment(&document, Node::CreateDocumentFragment));
 }
 
 String DocumentFragment::nodeName() const

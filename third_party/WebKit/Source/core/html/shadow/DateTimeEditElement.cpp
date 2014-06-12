@@ -494,7 +494,7 @@ void DateTimeEditElement::blurByOwner()
 
 PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document& document, EditControlOwner& editControlOwner)
 {
-    RefPtrWillBeRawPtr<DateTimeEditElement> container = adoptRefWillBeRefCountedGarbageCollected(new DateTimeEditElement(document, editControlOwner));
+    RefPtrWillBeRawPtr<DateTimeEditElement> container = adoptRefWillBeNoop(new DateTimeEditElement(document, editControlOwner));
     container->setShadowPseudoId(AtomicString("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
     container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     return container.release();

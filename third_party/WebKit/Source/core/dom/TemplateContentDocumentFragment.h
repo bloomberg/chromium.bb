@@ -35,7 +35,7 @@ class TemplateContentDocumentFragment FINAL : public DocumentFragment {
 public:
     static PassRefPtrWillBeRawPtr<TemplateContentDocumentFragment> create(Document& document, Element* host)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TemplateContentDocumentFragment(document, host));
+        return adoptRefWillBeNoop(new TemplateContentDocumentFragment(document, host));
     }
 
     Element* host() const { return m_host; }

@@ -36,7 +36,7 @@ class PluginDocument FINAL : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PluginDocument(initializer));
+        return adoptRefWillBeNoop(new PluginDocument(initializer));
     }
 
     void setPluginNode(Node* pluginNode) { m_pluginNode = pluginNode; }

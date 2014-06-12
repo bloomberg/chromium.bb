@@ -883,7 +883,7 @@ inline bool isShadowHost(const Element* element)
 #define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
     PassRefPtrWillBeRawPtr<T> T::create(const QualifiedName& tagName, Document& document) \
     { \
-        return adoptRefWillBeRefCountedGarbageCollected(new T(tagName, document)); \
+        return adoptRefWillBeNoop(new T(tagName, document)); \
     }
 
 } // namespace

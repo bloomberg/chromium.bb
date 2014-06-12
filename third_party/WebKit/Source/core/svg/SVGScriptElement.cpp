@@ -42,7 +42,7 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
 
 PassRefPtrWillBeRawPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SVGScriptElement(document, insertedByParser, false));
+    return adoptRefWillBeNoop(new SVGScriptElement(document, insertedByParser, false));
 }
 
 bool SVGScriptElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -182,7 +182,7 @@ bool SVGScriptElement::hasSourceAttribute() const
 
 PassRefPtrWillBeRawPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SVGScriptElement(document(), false, m_loader->alreadyStarted()));
+    return adoptRefWillBeNoop(new SVGScriptElement(document(), false, m_loader->alreadyStarted()));
 }
 
 void SVGScriptElement::dispatchLoadEvent()

@@ -119,7 +119,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
 
 PassRefPtrWillBeRawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLAnchorElement(aTag, document));
+    return adoptRefWillBeNoop(new HTMLAnchorElement(aTag, document));
 }
 
 HTMLAnchorElement::~HTMLAnchorElement()

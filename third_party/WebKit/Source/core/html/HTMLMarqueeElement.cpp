@@ -43,7 +43,7 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLMarqueeElement> marqueeElement(adoptRefWillBeRefCountedGarbageCollected(new HTMLMarqueeElement(document)));
+    RefPtrWillBeRawPtr<HTMLMarqueeElement> marqueeElement(adoptRefWillBeNoop(new HTMLMarqueeElement(document)));
     marqueeElement->suspendIfNeeded();
     return marqueeElement.release();
 }

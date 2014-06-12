@@ -207,7 +207,7 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 
 PassRefPtrWillBeRawPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<SliderThumbElement> element = adoptRefWillBeRefCountedGarbageCollected(new SliderThumbElement(document));
+    RefPtrWillBeRawPtr<SliderThumbElement> element = adoptRefWillBeNoop(new SliderThumbElement(document));
     element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
     return element.release();
 }

@@ -56,13 +56,13 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLOptionElement(document));
+    return adoptRefWillBeNoop(new HTMLOptionElement(document));
 }
 
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLOptionElement(document));
+    RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeNoop(new HTMLOptionElement(document));
     element->appendChild(Text::create(document, data.isNull() ? "" : data), exceptionState);
     if (exceptionState.hadException())
         return nullptr;

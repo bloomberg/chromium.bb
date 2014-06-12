@@ -51,7 +51,7 @@ HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
 
 PassRefPtrWillBeRawPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<HTMLAppletElement> element = adoptRefWillBeRefCountedGarbageCollected(new HTMLAppletElement(document, createdByParser));
+    RefPtrWillBeRawPtr<HTMLAppletElement> element = adoptRefWillBeNoop(new HTMLAppletElement(document, createdByParser));
     element->ensureUserAgentShadowRoot();
     return element.release();
 }

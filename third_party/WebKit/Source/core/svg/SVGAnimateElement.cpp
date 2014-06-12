@@ -42,7 +42,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& doc
 
 PassRefPtrWillBeRawPtr<SVGAnimateElement> SVGAnimateElement::create(Document& document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SVGAnimateElement(SVGNames::animateTag, document));
+    return adoptRefWillBeNoop(new SVGAnimateElement(SVGNames::animateTag, document));
 }
 
 SVGAnimateElement::~SVGAnimateElement()

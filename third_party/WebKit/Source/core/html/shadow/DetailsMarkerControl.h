@@ -52,7 +52,7 @@ private:
 
 inline PassRefPtrWillBeRawPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document& document)
 {
-    RefPtrWillBeRawPtr<DetailsMarkerControl> element = adoptRefWillBeRefCountedGarbageCollected(new DetailsMarkerControl(document));
+    RefPtrWillBeRawPtr<DetailsMarkerControl> element = adoptRefWillBeNoop(new DetailsMarkerControl(document));
     element->setShadowPseudoId(AtomicString("-webkit-details-marker", AtomicString::ConstructFromLiteral));
     return element.release();
 }

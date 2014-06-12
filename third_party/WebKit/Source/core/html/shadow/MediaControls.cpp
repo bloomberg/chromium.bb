@@ -64,7 +64,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
 
 PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
 {
-    RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeRefCountedGarbageCollected(new MediaControls(mediaElement));
+    RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeNoop(new MediaControls(mediaElement));
 
     if (controls->initializeControls())
         return controls.release();

@@ -34,7 +34,7 @@ inline Comment::Comment(Document& document, const String& text)
 
 PassRefPtrWillBeRawPtr<Comment> Comment::create(Document& document, const String& text)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new Comment(document, text));
+    return adoptRefWillBeNoop(new Comment(document, text));
 }
 
 String Comment::nodeName() const

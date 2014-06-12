@@ -282,7 +282,7 @@ private:
     WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents> > m_textToSheetCache;
     WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 
-    RefPtr<ProcessingInstruction> m_xslStyleSheet;
+    RefPtrWillBeMember<ProcessingInstruction> m_xslStyleSheet;
 };
 
 }

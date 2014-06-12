@@ -54,7 +54,7 @@ inline SpinButtonElement::SpinButtonElement(Document& document, SpinButtonOwner&
 
 PassRefPtrWillBeRawPtr<SpinButtonElement> SpinButtonElement::create(Document& document, SpinButtonOwner& spinButtonOwner)
 {
-    RefPtrWillBeRawPtr<SpinButtonElement> element = adoptRefWillBeRefCountedGarbageCollected(new SpinButtonElement(document, spinButtonOwner));
+    RefPtrWillBeRawPtr<SpinButtonElement> element = adoptRefWillBeNoop(new SpinButtonElement(document, spinButtonOwner));
     element->setShadowPseudoId(AtomicString("-webkit-inner-spin-button", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::spinButton());
     return element.release();

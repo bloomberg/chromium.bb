@@ -78,7 +78,7 @@ private:
     Timer<FontResource> m_fontLoadWaitLimitTimer;
 
 #if ENABLE(SVG_FONTS)
-    RefPtr<WebCore::Document> m_externalSVGDocument;
+    RefPtrWillBePersistent<Document> m_externalSVGDocument;
 #endif
 
     friend class MemoryCache;

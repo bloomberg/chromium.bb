@@ -162,7 +162,7 @@ static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const Qualifie
 
 PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new Element(tagName, document, CreateElement));
+    return adoptRefWillBeNoop(new Element(tagName, document, CreateElement));
 }
 
 Element::Element(const QualifiedName& tagName, Document* document, ConstructionType type)

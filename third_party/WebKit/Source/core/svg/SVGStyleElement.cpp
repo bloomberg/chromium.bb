@@ -45,7 +45,7 @@ SVGStyleElement::~SVGStyleElement()
 
 PassRefPtrWillBeRawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SVGStyleElement(document, createdByParser));
+    return adoptRefWillBeNoop(new SVGStyleElement(document, createdByParser));
 }
 
 bool SVGStyleElement::disabled() const

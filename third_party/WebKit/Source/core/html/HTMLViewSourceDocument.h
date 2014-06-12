@@ -42,7 +42,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HTMLViewSourceDocument(initializer, mimeType));
+        return adoptRefWillBeNoop(new HTMLViewSourceDocument(initializer, mimeType));
     }
 
     void addSource(const String&, HTMLToken&, SourceAnnotation);

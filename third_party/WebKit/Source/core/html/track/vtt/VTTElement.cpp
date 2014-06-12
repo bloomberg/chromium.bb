@@ -73,7 +73,7 @@ VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
 
 PassRefPtrWillBeRawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new VTTElement(nodeType, document));
+    return adoptRefWillBeNoop(new VTTElement(nodeType, document));
 }
 
 PassRefPtrWillBeRawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()

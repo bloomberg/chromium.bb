@@ -46,8 +46,10 @@ class SVGSVGElement FINAL : public SVGGraphicsElement,
 public:
     DECLARE_NODE_FACTORY(SVGSVGElement);
 
+#if !ENABLE(OILPAN)
     using SVGGraphicsElement::ref;
     using SVGGraphicsElement::deref;
+#endif
 
     // 'SVGSVGElement' functions
     PassRefPtr<SVGRectTearOff> viewport() const;

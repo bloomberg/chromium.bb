@@ -33,7 +33,7 @@ class TextDocument FINAL : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TextDocument(initializer));
+        return adoptRefWillBeNoop(new TextDocument(initializer));
     }
 
 private:

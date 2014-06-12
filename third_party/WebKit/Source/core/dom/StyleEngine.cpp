@@ -702,6 +702,7 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
+    visitor->trace(m_xslStyleSheet);
     CSSFontSelectorClient::trace(visitor);
 }
 

@@ -34,7 +34,7 @@ class SinkDocument FINAL : public HTMLDocument {
 public:
     static PassRefPtrWillBeRawPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SinkDocument(initializer));
+        return adoptRefWillBeNoop(new SinkDocument(initializer));
     }
 
 private:

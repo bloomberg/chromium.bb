@@ -107,12 +107,20 @@ private:
     RenderObject* m_renderer;
 };
 
-class Node : public EventTarget, public ScriptWrappable, public TreeSharedWillBeRefCountedGarbageCollected<Node> {
+#if ENABLE(OILPAN)
+#define NODE_BASE_CLASSES public GarbageCollectedFinalized<Node>, public EventTarget, public ScriptWrappable
+#else
+// TreeShared should be the last to pack TreeShared::m_refCount and
+// Node::m_nodeFlags on 64bit platforms.
+#define NODE_BASE_CLASSES public EventTarget, public ScriptWrappable, public TreeShared<Node>
+#endif
+
+class Node : NODE_BASE_CLASSES {
     friend class Document;
     friend class TreeScope;
     friend class TreeScopeAdopter;
 
-    DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<Node>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Node);
 public:
     enum NodeType {
@@ -893,7 +901,7 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
 #define DEFINE_NODE_FACTORY(T) \
 PassRefPtrWillBeRawPtr<T> T::create(Document& document) \
 { \
-    return adoptRefWillBeRefCountedGarbageCollected(new T(document)); \
+    return adoptRefWillBeNoop(new T(document)); \
 }
 
 } // namespace WebCore

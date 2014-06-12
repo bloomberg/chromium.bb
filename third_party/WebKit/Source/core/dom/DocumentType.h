@@ -34,7 +34,7 @@ class DocumentType FINAL : public Node {
 public:
     static PassRefPtrWillBeRawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DocumentType(document, name, publicId, systemId));
+        return adoptRefWillBeNoop(new DocumentType(document, name, publicId, systemId));
     }
 
     const String& name() const { return m_name; }

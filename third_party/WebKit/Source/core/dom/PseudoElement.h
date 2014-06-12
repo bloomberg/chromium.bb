@@ -36,7 +36,7 @@ class PseudoElement FINAL : public Element {
 public:
     static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId pseudoId)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PseudoElement(parent, pseudoId));
+        return adoptRefWillBeNoop(new PseudoElement(parent, pseudoId));
     }
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;

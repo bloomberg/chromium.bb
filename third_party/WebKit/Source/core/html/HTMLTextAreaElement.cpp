@@ -90,7 +90,7 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
 
 PassRefPtrWillBeRawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtrWillBeRawPtr<HTMLTextAreaElement> textArea = adoptRefWillBeRefCountedGarbageCollected(new HTMLTextAreaElement(document, form));
+    RefPtrWillBeRawPtr<HTMLTextAreaElement> textArea = adoptRefWillBeNoop(new HTMLTextAreaElement(document, form));
     textArea->ensureUserAgentShadowRoot();
     return textArea.release();
 }

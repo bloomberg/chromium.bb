@@ -34,7 +34,7 @@ inline CDATASection::CDATASection(Document& document, const String& data)
 
 PassRefPtrWillBeRawPtr<CDATASection> CDATASection::create(Document& document, const String& data)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new CDATASection(document, data));
+    return adoptRefWillBeNoop(new CDATASection(document, data));
 }
 
 String CDATASection::nodeName() const

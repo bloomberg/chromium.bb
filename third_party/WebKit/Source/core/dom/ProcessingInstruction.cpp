@@ -50,7 +50,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document, const St
 
 PassRefPtrWillBeRawPtr<ProcessingInstruction> ProcessingInstruction::create(Document& document, const String& target, const String& data)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new ProcessingInstruction(document, target, data));
+    return adoptRefWillBeNoop(new ProcessingInstruction(document, target, data));
 }
 
 ProcessingInstruction::~ProcessingInstruction()
