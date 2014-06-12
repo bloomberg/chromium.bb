@@ -10986,6 +10986,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="WindowCycleController_Cycle">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <description>
+    Starting a window selection cycle by pressing alt-tab.
+  </description>
+</action>
+
 <action name="WindowDrag_MaximizeLeft">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -10997,13 +11005,26 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="WindowSelector_Overview">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <description>Starting the window overview mode.</description>
+</action>
+
+<action name="WindowSelector_OverviewEnterKey">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <description>
+    Using the enter key to select a window in the overview.
+  </description>
 </action>
 
 <action name="WindowSelector_Selection">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 06/2014. No longer relevant since alt tab window switching
+    was separated from overview mode.
+  </obsolete>
 </action>
 
 <action name="WorkerProcess_BadProcessToKill">

@@ -124,15 +124,23 @@ class ASH_EXPORT WindowSelector
   // List of all the window overview grids, one for each root window.
   ScopedVector<WindowGrid> grid_list_;
 
-  // The time when overview was started.
-  base::Time overview_start_time_;
-
   // Tracks windows which were hidden because they were not part of the
   // overview.
   aura::WindowTracker hidden_windows_;
 
   // Tracks the index of the root window the selection widget is in.
   size_t selected_grid_index_;
+
+  // The following variables are used for metric collection purposes. All of
+  // them refer to this particular overview session and are not cumulative:
+  // The time when overview was started.
+  base::Time overview_start_time_;
+
+  // The number of arrow key presses.
+  size_t num_key_presses_;
+
+  // The number of items in the overview.
+  size_t num_items_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

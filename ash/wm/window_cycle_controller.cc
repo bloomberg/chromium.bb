@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_list.h"
+#include "base/metrics/histogram.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
@@ -79,6 +80,8 @@ void WindowCycleController::StartCycling() {
   window_cycle_list_.reset(new WindowCycleList(ash::Shell::GetInstance()->
       mru_window_tracker()->BuildMruWindowList()));
   event_handler_.reset(new WindowCycleEventFilter());
+  cycle_start_time_ = base::Time::Now();
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -93,6 +96,8 @@ void WindowCycleController::StopCycling() {
   window_cycle_list_.reset();
   // Remove our key event filter.
   event_handler_.reset();
+  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowCycleController.CycleTime",
+                             base::Time::Now() - cycle_start_time_);
 }
 
 }  // namespace ash

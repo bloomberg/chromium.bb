@@ -67,8 +67,6 @@ void WindowSelectorController::OnSelectionEnded() {
 }
 
 void WindowSelectorController::OnSelectionStarted() {
-  Shell* shell = Shell::GetInstance();
-  shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
   if (!last_selection_time_.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES(
         "Ash.WindowSelector.TimeBetweenUse",

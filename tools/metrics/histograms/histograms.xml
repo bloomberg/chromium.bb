@@ -682,7 +682,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowCycleController.CycleTime" units="milliseconds">
+  <owner>flackr@chromium.org</owner>
+  <owner>kuscher@google.com</owner>
+  <summary>
+    The amount of time the Alt key is held after pressing Alt+Tab to begin
+    cycling through windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.ArrowKeyPresses">
+  <owner>flackr@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of times the arrow keys are pressed in overview mode per session,
+    i.e. between bringing up overview mode and ending it. This is only measured
+    for the sessions that end by selecting a window with the enter key.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.CycleTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 06/2014. No longer relevant since alt-tab switching was
+    separated from WindowSelector.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>
   <summary>
@@ -696,8 +719,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kuscher@google.com</owner>
   <summary>
     The number of items (single windows or groups of windows such as panels) in
-    the window selection. Window selection occurs when a user begins alt-tabbing
-    or presses the overview button (F5 key).
+    the overview mode, present at the start of each session.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.KeyPressesOverItemsRatio" units="%">
+  <owner>flackr@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The ratio between the arrow key presses and the number of overview items,
+    expressed as a percentage for a single session.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.OverviewClosedItems">
+  <owner>flackr@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of items closed from the window overview for a single session.
   </summary>
 </histogram>
 
@@ -705,9 +744,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>
   <summary>
-    The amount of time between uses of window selection to switch between
-    windows. Window selection is entered by alt-tabbing or by pressing the
-    overview button (F5 key).
+    The amount of time between uses of overview mode to switch between windows.
   </summary>
 </histogram>
 
@@ -715,11 +752,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>
   <summary>
-    The amount of time spent in overview mode. Overview mode is engaged when
-    lingering on a window while alt-tabbing or by pressing the overview button.
-    The time is measured from the moment the windows begin animating to a
-    thumbnail size preview to when a window is selected or selection is
-    canceled.
+    The amount of time spent in overview mode. Overview mode is engaged by
+    pressing the overview button. The time is measured from the moment the
+    windows begin animating to a thumbnail size preview to when a window is
+    selected or selection is canceled.
   </summary>
 </histogram>
 

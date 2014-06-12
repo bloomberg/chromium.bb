@@ -95,8 +95,10 @@ WindowSelector::WindowSelector(const WindowList& windows,
       restore_focus_window_(aura::client::GetFocusClient(
           Shell::GetPrimaryRootWindow())->GetFocusedWindow()),
       ignore_activations_(false),
+      selected_grid_index_(0),
       overview_start_time_(base::Time::Now()),
-      selected_grid_index_(0) {
+      num_key_presses_(0),
+      num_items_(0) {
   DCHECK(delegate_);
   Shell* shell = Shell::GetInstance();
   shell->OnOverviewModeStarting();
@@ -105,7 +107,6 @@ WindowSelector::WindowSelector(const WindowList& windows,
     restore_focus_window_->AddObserver(this);
 
   const aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  size_t items = 0;
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); iter++) {
     // Observed switchable containers for newly created windows on all root
@@ -119,12 +120,12 @@ WindowSelector::WindowSelector(const WindowList& windows,
     scoped_ptr<WindowGrid> grid(new WindowGrid(*iter, windows, this));
     if (grid->empty())
       continue;
+    num_items_ += grid->size();
     grid_list_.push_back(grid.release());
-    items += grid_list_.size();
   }
 
   DCHECK(!grid_list_.empty());
-  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", items);
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
   shell->activation_client()->AddObserver(this);
 
@@ -169,9 +170,18 @@ WindowSelector::~WindowSelector() {
 
   shell->RemovePreTargetHandler(this);
   shell->GetScreen()->RemoveObserver(this);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Ash.WindowSelector.TimeInOverview",
-      base::Time::Now() - overview_start_time_);
+
+  size_t remaining_items = 0;
+  for (ScopedVector<WindowGrid>::iterator iter = grid_list_.begin();
+      iter != grid_list_.end(); iter++) {
+    remaining_items += (*iter)->size();
+  }
+
+  DCHECK(num_items_ >= remaining_items);
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.OverviewClosedItems",
+                           num_items_ - remaining_items);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
+                             base::Time::Now() - overview_start_time_);
 
   // TODO(nsatragno): Change this to OnOverviewModeEnded and move it to when
   // everything is done.
@@ -206,21 +216,32 @@ void WindowSelector::OnKeyEvent(ui::KeyEvent* event) {
       CancelSelection();
       break;
     case ui::VKEY_UP:
+      num_key_presses_++;
       Move(WindowSelector::UP);
       break;
     case ui::VKEY_DOWN:
+      num_key_presses_++;
       Move(WindowSelector::DOWN);
       break;
     case ui::VKEY_RIGHT:
+      num_key_presses_++;
       Move(WindowSelector::RIGHT);
       break;
     case ui::VKEY_LEFT:
+      num_key_presses_++;
       Move(WindowSelector::LEFT);
       break;
     case ui::VKEY_RETURN:
       // Ignore if no item is selected.
       if (!grid_list_[selected_grid_index_]->is_selecting())
         return;
+      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
+                               num_key_presses_);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Ash.WindowSelector.KeyPressesOverItemsRatio",
+          (num_key_presses_ * 100) / num_items_, 1, 300, 30);
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          UMA_WINDOW_OVERVIEW_ENTER_KEY);
       wm::GetWindowState(grid_list_[selected_grid_index_]->
                          SelectedWindow()->SelectionWindow())->Activate();
       break;

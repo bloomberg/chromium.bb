@@ -368,9 +368,13 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_Overview"));
       break;
-    case ash::UMA_WINDOW_SELECTION:
+    case ash::UMA_WINDOW_OVERVIEW_ENTER_KEY:
       base::RecordAction(
-          base::UserMetricsAction("WindowSelector_Selection"));
+          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
+      break;
+    case ash::UMA_WINDOW_CYCLE:
+      base::RecordAction(
+          base::UserMetricsAction("WindowCycleController_Cycle"));
       break;
   }
 }
@@ -401,7 +405,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
       ACTIVE_WINDOW_STATE_TYPE_NO_ACTIVE_WINDOW;
   wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
   if (active_window_state) {
-    switch(active_window_state->GetStateType()) {
+    switch (active_window_state->GetStateType()) {
       case wm::WINDOW_STATE_TYPE_MAXIMIZED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED;
         break;

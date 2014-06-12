@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 
 namespace ui {
 class EventHandler;
@@ -64,6 +65,8 @@ class ASH_EXPORT WindowCycleController {
 
   // Event handler to watch for release of alt key.
   scoped_ptr<ui::EventHandler> event_handler_;
+
+  base::Time cycle_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleController);
 };
