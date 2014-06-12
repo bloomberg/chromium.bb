@@ -94,6 +94,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 // Autofill messages sent from the browser to the renderer.
 
+// Instructs the renderer to immediately return an IPC acknowledging the ping.
+// This is used to correctly sequence events, since IPCs are guaranteed to be
+// processed in order.
+IPC_MESSAGE_ROUTED0(AutofillMsg_Ping)
+
 // Instructs the renderer to fill the active form with the given form data.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FillForm,
                     int /* query_id */,
@@ -226,6 +231,9 @@ IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
 
 // Sent when a form is previewed with Autofill suggestions.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidPreviewAutofillFormData)
+
+// Sent immediately after the renderer receives a ping IPC.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_PingAck)
 
 // Sent when a form is filled with Autofill suggestions.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidFillAutofillFormData,

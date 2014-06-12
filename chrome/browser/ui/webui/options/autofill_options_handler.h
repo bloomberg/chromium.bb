@@ -46,6 +46,13 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // Loads Autofill addresses and credit cards using the PersonalDataManager.
   void LoadAutofillData();
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The user wants to grant Chrome access to the user's Address Book.
+  // Immediately try to access the Address Book so that the blocking dialog is
+  // shown in context, rather than at a later, surprising time.
+  void AccessAddressBook(const base::ListValue* args);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   // Removes data from the PersonalDataManager.
   // |args| - A string, the GUID of the address or credit card to remove.
   void RemoveData(const base::ListValue* args);

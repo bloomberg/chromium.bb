@@ -110,4 +110,11 @@
     This type of card is not supported by Google Wallet for this merchant. Please select a different card.
   </message>
 
+  <!-- Autofill on OSX -->
+  <if expr="is_macosx">
+    <message name="IDS_AUTOFILL_ACCESS_MAC_CONTACTS" desc="When the user selects this Autofill entry, the browser prompts the user for access to the user's OSX contacts.">
+      Enable Autofill using Contacts…
+    </message>
+  </if>
+
 </grit-part>

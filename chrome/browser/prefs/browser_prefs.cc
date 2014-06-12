@@ -522,6 +522,10 @@ void MigrateUserPrefs(Profile* profile) {
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserService::MigrateUserPrefs(prefs);
 #endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  autofill::AutofillManager::MigrateUserPrefs(prefs);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {

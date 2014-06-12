@@ -73,6 +73,10 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Registers our Enable/Disable Autofill pref.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  static void MigrateUserPrefs(PrefService* prefs);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
                   const std::string& app_locale,
@@ -83,6 +87,19 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
   void ShowAutofillSettings();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Whether the field represented by |fieldData| should show an entry to prompt
+  // the user to give Chrome access to the user's address book.
+  bool ShouldShowAccessAddressBookSuggestion(const FormData& data,
+                                             const FormFieldData& field_data);
+
+  // If Chrome has not prompted for access to the user's address book, the
+  // method prompts the user for permission and blocks the process. Otherwise,
+  // this method has no effect. The return value reflects whether the user was
+  // prompted with a modal dialog.
+  bool AccessAddressBook();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
