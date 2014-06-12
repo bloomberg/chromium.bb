@@ -218,6 +218,13 @@ frame_double_click(struct frame *frame, void *pointer,
 		   uint32_t button, enum frame_button_state state);
 
 void
+frame_double_touch_down(struct frame *frame, void *data, int32_t id,
+			int x, int y);
+
+void
+frame_double_touch_up(struct frame *frame, void *data, int32_t id);
+
+void
 frame_repaint(struct frame *frame, cairo_t *cr);
 
 #endif

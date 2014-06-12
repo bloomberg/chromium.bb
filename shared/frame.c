@@ -869,6 +869,55 @@ frame_double_click(struct frame *frame, void *data,
 }
 
 void
+frame_double_touch_down(struct frame *frame, void *data, int32_t id,
+			int x, int y)
+{
+	struct frame_touch *touch = frame_touch_get(frame, data);
+	struct frame_button *button = frame_find_button(frame, x, y);
+	enum theme_location location;
+
+	if (touch && button) {
+		touch->button = button;
+		frame_button_press(touch->button);
+		return;
+	}
+
+	location = theme_get_location(frame->theme, x, y,
+				      frame->width, frame->height,
+				      frame->flags & FRAME_FLAG_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
+
+	switch (location) {
+	case THEME_LOCATION_TITLEBAR:
+		frame->status |= FRAME_STATUS_MAXIMIZE;
+		break;
+	case THEME_LOCATION_RESIZING_TOP:
+	case THEME_LOCATION_RESIZING_BOTTOM:
+	case THEME_LOCATION_RESIZING_LEFT:
+	case THEME_LOCATION_RESIZING_RIGHT:
+	case THEME_LOCATION_RESIZING_TOP_LEFT:
+	case THEME_LOCATION_RESIZING_TOP_RIGHT:
+	case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
+	case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
+		frame->status |= FRAME_STATUS_RESIZE;
+		break;
+	default:
+		break;
+	}
+}
+
+void
+frame_double_touch_up(struct frame *frame, void *data, int32_t id)
+{
+	struct frame_touch *touch = frame_touch_get(frame, data);
+
+	if (touch && touch->button) {
+		frame_button_release(touch->button);
+		frame_touch_destroy(touch);
+	}
+}
+
+void
 frame_repaint(struct frame *frame, cairo_t *cr)
 {
 	struct frame_button *button;

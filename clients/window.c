@@ -370,6 +370,7 @@ struct window_frame {
 
 	uint32_t last_time;
 	uint32_t did_double, double_click;
+	int32_t last_id, double_id;
 };
 
 struct menu {
@@ -2429,7 +2430,23 @@ frame_touch_down_handler(struct widget *widget, struct input *input,
 {
 	struct window_frame *frame = data;
 
-	frame_touch_down(frame->frame, input, id, x, y);
+	frame->double_click = 0;
+	if (time - frame->last_time <= DOUBLE_CLICK_PERIOD &&
+	    frame->last_id == id) {
+		frame->double_click = 1;
+		frame->did_double = 1;
+		frame->double_id = id;
+	} else
+		frame->did_double = 0;
+
+	frame->last_time = time;
+	frame->last_id = id;
+
+	if (frame->double_click)
+		frame_double_touch_down(frame->frame, input, id, x, y);
+	else
+		frame_touch_down(frame->frame, input, id, x, y);
+
 	frame_handle_status(frame, input, time, THEME_LOCATION_CLIENT_AREA);
 }
 
@@ -2440,7 +2457,12 @@ frame_touch_up_handler(struct widget *widget,
 {
 	struct window_frame *frame = data;
 
-	frame_touch_up(frame->frame, input, id);
+	if (frame->double_id == id && frame->did_double) {
+		frame->did_double = 0;
+		frame->double_id = 0;
+		frame_double_touch_up(frame->frame, input, id);
+	} else
+		frame_touch_up(frame->frame, input, id);
 	frame_handle_status(frame, input, time, THEME_LOCATION_CLIENT_AREA);
 }
 
