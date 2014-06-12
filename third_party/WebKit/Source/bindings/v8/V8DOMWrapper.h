@@ -148,11 +148,10 @@ struct WrapperTypeInfo;
             : m_didEnterContext(false)
             , m_context(isolate->GetCurrentContext())
         {
-            // FIXME: Remove all empty creationContexts from caller sites.
-            // If a creationContext is empty, we will end up creating a new object
-            // in the context currently entered. This is wrong.
-            if (creationContext.IsEmpty())
-                return;
+            // creationContext should not be empty. Because if we have an
+            // empty creationContext, we will end up creating
+            // a new object in the context currently entered. This is wrong.
+            RELEASE_ASSERT(!creationContext.IsEmpty());
             v8::Handle<v8::Context> contextForWrapper = creationContext->CreationContext();
             // For performance, we enter the context only if the currently running context
             // is different from the context that we are about to enter.

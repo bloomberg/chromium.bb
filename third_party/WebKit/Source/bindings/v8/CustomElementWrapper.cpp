@@ -90,10 +90,8 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
 {
     ASSERT(DOMDataStore::getWrapper<V8Element>(element.get(), isolate).IsEmpty());
 
-    // FIXME: creationContext.IsEmpty() should never happen. Remove
-    // this when callers (like InspectorController::inspect) are fixed
-    // to never pass an empty creation context.
-    v8::Handle<v8::Context> context = creationContext.IsEmpty() ? isolate->GetCurrentContext() : creationContext->CreationContext();
+    ASSERT(!creationContext.IsEmpty());
+    v8::Handle<v8::Context> context = creationContext->CreationContext();
 
     if (!element->isUpgradedCustomElement() || DOMWrapperWorld::world(context).isIsolatedWorld())
         return createUpgradeCandidateWrapper(element.get(), creationContext, isolate, createSpecificWrapper);
