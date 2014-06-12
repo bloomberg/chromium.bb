@@ -1977,4 +1977,16 @@ TEST_F(RenderTextTest, HarfBuzz_CharToGlyph) {
 
 }
 
+TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
+  RenderTextHarfBuzz render_text;
+  const base::string16 mixed =
+      WideToUTF16(L"\x05D0\x05D1" L"1234" L"\x05D2\x05D3");
+  render_text.SetText(mixed);
+  render_text.EnsureLayout();
+  ASSERT_EQ(3U, render_text.runs_.size());
+  EXPECT_TRUE(render_text.runs_[0]->is_rtl);
+  EXPECT_FALSE(render_text.runs_[1]->is_rtl);
+  EXPECT_TRUE(render_text.runs_[2]->is_rtl);
+}
+
 }  // namespace gfx

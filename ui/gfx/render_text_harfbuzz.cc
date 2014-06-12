@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/debug/leak_annotations.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
@@ -193,6 +194,7 @@ hb_font_funcs_t* GetFontFuncs() {
   if (!font_funcs) {
     // The object created by |hb_font_funcs_create()| below lives indefinitely
     // and is intentionally leaked.
+    ANNOTATE_SCOPED_MEMORY_LEAK;
     font_funcs = hb_font_funcs_create();
     hb_font_funcs_set_glyph_func(font_funcs, GetGlyph, 0, 0);
     hb_font_funcs_set_glyph_h_advance_func(
@@ -253,6 +255,8 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
 
   FaceCache* face_cache = &face_caches[skia_face->uniqueID()];
   if (face_cache->first == 0) {
+    // These HarfBuzz faces live indefinitely and are intentionally leaked.
+    ANNOTATE_SCOPED_MEMORY_LEAK;
     hb_face_t* harfbuzz_face = CreateHarfBuzzFace(skia_face);
     *face_cache = FaceCache(harfbuzz_face, GlyphCache());
   }
@@ -863,12 +867,17 @@ void RenderTextHarfBuzz::ItemizeText() {
   const bool is_text_rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
   DCHECK_NE(0U, text.length());
 
-  // If ICU fails to itemize the text, we set |fake_runs| and create a run that
-  // spans the entire text. This is needed because early returning and leaving
-  // the runs set empty causes some clients to crash/misbehave since they expect
-  // non-zero text metrics from a non-empty text.
+  // If ICU fails to itemize the text, we create a run that spans the entire
+  // text. This is needed because leaving the runs set empty causes some clients
+  // to misbehave since they expect non-zero text metrics from a non-empty text.
   base::i18n::BiDiLineIterator bidi_iterator;
-  bool fake_runs = !bidi_iterator.Open(text, is_text_rtl, false);
+  if (!bidi_iterator.Open(text, is_text_rtl, false)) {
+    internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
+    run->range = Range(0, text.length());
+    runs_.push_back(run);
+    visual_to_logical_ = logical_to_visual_ = std::vector<int32_t>(1, 0);
+    return;
+  }
 
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
@@ -888,36 +897,34 @@ void RenderTextHarfBuzz::ItemizeText() {
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
 
-    if (fake_runs) {
-      run_break = text.length();
-    } else {
-      int32 script_item_break = 0;
-      bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
-      // Find the length and script of this script run.
-      script_item_break = ScriptInterval(text, run_break,
-          script_item_break - run_break, &run->script) + run_break;
+    int32 script_item_break = 0;
+    bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
+    // Odd BiDi embedding levels correspond to RTL runs.
+    run->is_rtl = (run->level % 2) == 1;
+    // Find the length and script of this script run.
+    script_item_break = ScriptInterval(text, run_break,
+        script_item_break - run_break, &run->script) + run_break;
 
-      // Find the next break and advance the iterators as needed.
-      run_break = std::min(static_cast<size_t>(script_item_break),
-                           TextIndexToLayoutIndex(style.GetRange().end()));
+    // Find the next break and advance the iterators as needed.
+    run_break = std::min(static_cast<size_t>(script_item_break),
+                         TextIndexToLayoutIndex(style.GetRange().end()));
 
-      // Break runs adjacent to character substrings in certain code blocks.
-      // This avoids using their fallback fonts for more characters than needed,
-      // in cases like "\x25B6 Media Title", etc. http://crbug.com/278913
-      if (run_break > run->range.start()) {
-        const size_t run_start = run->range.start();
-        const int32 run_length = static_cast<int32>(run_break - run_start);
-        base::i18n::UTF16CharIterator iter(text.c_str() + run_start,
-                                           run_length);
-        const UBlockCode first_block_code = ublock_getCode(iter.get());
-        const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
-        while (iter.Advance() && iter.array_pos() < run_length) {
-          const UBlockCode current_block_code = ublock_getCode(iter.get());
-          if (current_block_code != first_block_code &&
-              (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
-            run_break = run_start + iter.array_pos();
-            break;
-          }
+    // Break runs adjacent to character substrings in certain code blocks.
+    // This avoids using their fallback fonts for more characters than needed,
+    // in cases like "\x25B6 Media Title", etc. http://crbug.com/278913
+    if (run_break > run->range.start()) {
+      const size_t run_start = run->range.start();
+      const int32 run_length = static_cast<int32>(run_break - run_start);
+      base::i18n::UTF16CharIterator iter(text.c_str() + run_start,
+                                         run_length);
+      const UBlockCode first_block_code = ublock_getCode(iter.get());
+      const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
+      while (iter.Advance() && iter.array_pos() < run_length) {
+        const UBlockCode current_block_code = ublock_getCode(iter.get());
+        if (current_block_code != first_block_code &&
+            (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
+          run_break = run_start + iter.array_pos();
+          break;
         }
       }
     }
@@ -925,12 +932,7 @@ void RenderTextHarfBuzz::ItemizeText() {
     DCHECK(IsValidCodePointIndex(text, run_break));
     style.UpdatePosition(LayoutIndexToTextIndex(run_break));
     run->range.set_end(run_break);
-    UBiDiDirection direction = ubidi_getBaseDirection(
-        text.c_str() + run->range.start(), run->range.length());
-    if (direction == UBIDI_NEUTRAL)
-      run->is_rtl = is_text_rtl;
-    else
-      run->is_rtl = direction == UBIDI_RTL;
+
     runs_.push_back(run);
   }
 
