@@ -172,7 +172,6 @@
           '-fvisibility=default',
           '-ffunction-sections',
           '-funwind-tables',
-          '-g',
           '-fstack-protector',
           '-fno-short-enums',
           '-finline-limit=64',
