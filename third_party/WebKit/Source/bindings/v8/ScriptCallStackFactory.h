@@ -48,10 +48,10 @@ const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::Stac
     | v8::StackTrace::kScriptNameOrSourceURL
     | v8::StackTrace::kFunctionName);
 
-PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace>, size_t maxStackSize, v8::Isolate*);
-PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed = false);
-PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState*, size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture);
-PassRefPtr<ScriptArguments> createScriptArguments(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);
+PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace>, size_t maxStackSize, v8::Isolate*);
+PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed = false);
+PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState*, size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture);
+PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);
 
 } // namespace WebCore
 

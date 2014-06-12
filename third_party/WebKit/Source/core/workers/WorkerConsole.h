@@ -57,7 +57,7 @@ public:
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;
-    virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
+    virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);

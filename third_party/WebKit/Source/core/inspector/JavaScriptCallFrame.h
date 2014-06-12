@@ -43,13 +43,14 @@ namespace WebCore {
 
 class ScriptValue;
 
-class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame>, public ScriptWrappable {
+class JavaScriptCallFrame : public RefCountedWillBeGarbageCollectedFinalized<JavaScriptCallFrame>, public ScriptWrappable {
 public:
-    static PassRefPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
+    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
     {
-        return adoptRef(new JavaScriptCallFrame(debuggerContext, callFrame));
+        return adoptRefWillBeNoop(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
+    void trace(Visitor*);
 
     JavaScriptCallFrame* caller();
 
@@ -77,7 +78,7 @@ private:
     String callV8FunctionReturnString(const char* name) const;
 
     v8::Isolate* m_isolate;
-    RefPtr<JavaScriptCallFrame> m_caller;
+    RefPtrWillBeMember<JavaScriptCallFrame> m_caller;
     ScopedPersistent<v8::Context> m_debuggerContext;
     ScopedPersistent<v8::Object> m_callFrame;
 };

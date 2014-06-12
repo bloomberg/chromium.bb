@@ -34,18 +34,16 @@
 
 namespace WebCore {
 
-PassRefPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
+
+PassRefPtrWillBeRawPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
 {
-    return adoptRef(new ScriptCallStack(frames));
+    return adoptRefWillBeNoop(new ScriptCallStack(frames));
 }
 
 ScriptCallStack::ScriptCallStack(Vector<ScriptCallFrame>& frames)
 {
     m_frames.swap(frames);
-}
-
-ScriptCallStack::~ScriptCallStack()
-{
 }
 
 const ScriptCallFrame &ScriptCallStack::at(size_t index) const

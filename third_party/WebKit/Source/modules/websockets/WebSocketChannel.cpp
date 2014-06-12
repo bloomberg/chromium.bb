@@ -55,7 +55,7 @@ PassRefPtrWillBeRawPtr<WebSocketChannel> WebSocketChannel::create(ExecutionConte
 
     String sourceURL;
     unsigned lineNumber = 0;
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
     if (callStack && callStack->size()) {
         sourceURL = callStack->at(0).sourceURL();
         lineNumber = callStack->at(0).lineNumber();

@@ -181,4 +181,9 @@ ScriptValue JavaScriptCallFrame::setVariableValue(ScriptState* scriptState, int 
     return ScriptValue(scriptState, setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv));
 }
 
+void JavaScriptCallFrame::trace(Visitor* visitor)
+{
+    visitor->trace(m_caller);
+}
+
 } // namespace WebCore

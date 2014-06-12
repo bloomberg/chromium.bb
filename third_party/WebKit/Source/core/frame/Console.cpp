@@ -63,14 +63,14 @@ ExecutionContext* Console::context()
     return m_frame->document();
 }
 
-void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
+void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     if (!m_frame || !m_frame->host() || !callStack.get())
         return;
 
     String stackTrace;
     if (m_frame->chromeClient().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
-        RefPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+        RefPtrWillBeRawPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
         stackTrace = FrameConsole::formatStackTraceString(message, fullStack);
     }
     m_frame->chromeClient().addMessageToConsole(m_frame, ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);

@@ -32,7 +32,7 @@ namespace {
 
 class JSCallStack : public TraceEvent::ConvertableToTraceFormat  {
 public:
-    explicit JSCallStack(PassRefPtr<ScriptCallStack> callstack) : m_callstack(callstack) { }
+    explicit JSCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callstack) : m_callstack(callstack) { }
     virtual String asTraceFormat() const
     {
         if (!m_callstack)
@@ -41,7 +41,7 @@ public:
     }
 
 private:
-    RefPtr<ScriptCallStack> m_callstack;
+    RefPtrWillBePersistent<ScriptCallStack> m_callstack;
 };
 
 String toHexString(void* p)

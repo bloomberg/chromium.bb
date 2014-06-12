@@ -101,7 +101,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     String errorMessage = toCoreString(message->Get());
 
     v8::Handle<v8::StackTrace> stackTrace = message->GetStackTrace();
-    RefPtr<ScriptCallStack> callStack;
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
         callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);

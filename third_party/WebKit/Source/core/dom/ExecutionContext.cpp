@@ -41,10 +41,10 @@
 
 namespace WebCore {
 
-class ExecutionContext::PendingException {
+class ExecutionContext::PendingException : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContext::PendingException> {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
-    PendingException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
+    PendingException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_errorMessage(errorMessage)
         , m_lineNumber(lineNumber)
         , m_columnNumber(columnNumber)
@@ -52,11 +52,15 @@ public:
         , m_callStack(callStack)
     {
     }
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_callStack);
+    }
     String m_errorMessage;
     int m_lineNumber;
     int m_columnNumber;
     String m_sourceURL;
-    RefPtr<ScriptCallStack> m_callStack;
+    RefPtrWillBeMember<ScriptCallStack> m_callStack;
 };
 
 ExecutionContext::ExecutionContext()
@@ -128,13 +132,13 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtrWillBeRawPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
-            m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException> >());
-        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), errorEvent->filename(), callStack)));
+            m_pendingExceptions = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<PendingException> >());
+        m_pendingExceptions->append(adoptPtrWillBeNoop(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), errorEvent->filename(), callStack)));
         return;
     }
 
@@ -330,6 +334,14 @@ void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
         m_client->securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
         m_client->didUpdateSecurityOrigin();
     }
+}
+
+void ExecutionContext::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_pendingExceptions);
+#endif
+    Supplementable<WebCore::ExecutionContext>::trace(visitor);
 }
 
 } // namespace WebCore

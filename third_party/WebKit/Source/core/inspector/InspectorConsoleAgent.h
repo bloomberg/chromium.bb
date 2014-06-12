@@ -76,11 +76,11 @@ public:
     virtual void clearFrontend() OVERRIDE FINAL;
     virtual void restore() OVERRIDE FINAL;
 
-    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, ScriptArguments*, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long requestIdentifier = 0);
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
 
     // FIXME: Remove once we no longer generate stacks outside of Inspector.
-    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptCallStack*, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long requestIdentifier = 0);
 
     Vector<unsigned> consoleMessageArgumentCounts();
 
@@ -89,7 +89,7 @@ public:
     void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
     void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
-    void consoleCount(ScriptState*, PassRefPtr<ScriptArguments>);
+    void consoleCount(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
 
     void frameWindowDiscarded(DOMWindow*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
@@ -97,7 +97,7 @@ public:
     void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url, const String& sendURL, unsigned sendLineNumber);
     void didReceiveResourceResponse(LocalFrame*, unsigned long requestIdentifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
-    void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
+    void addProfileFinishedMessageToConsole(PassRefPtrWillBeRawPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
     virtual void setMonitoringXHREnabled(ErrorString*, bool enabled) OVERRIDE;
     virtual void addInspectedNode(ErrorString*, int nodeId) = 0;

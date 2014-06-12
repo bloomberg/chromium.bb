@@ -68,6 +68,7 @@ class ExecutionContext
 public:
     ExecutionContext();
     virtual ~ExecutionContext();
+    virtual void trace(Visitor*);
 
     // Delegating to ExecutionContextClient
     bool isDocument() const { return m_client && m_client->isDocument(); }
@@ -85,7 +86,7 @@ public:
     double timerAlignmentInterval() const;
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
 
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber);
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, ScriptState* = 0);
@@ -157,7 +158,7 @@ private:
 
     bool m_inDispatchErrorEvent;
     class PendingException;
-    OwnPtr<Vector<OwnPtr<PendingException> > > m_pendingExceptions;
+    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<PendingException> > > m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;

@@ -238,7 +238,7 @@ ScriptState* scriptState = ScriptState::current(info.GetIsolate());
 ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
-RefPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, {{method.number_of_arguments}}));
+RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, {{method.number_of_arguments}}));
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}

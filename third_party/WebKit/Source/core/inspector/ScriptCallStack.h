@@ -33,27 +33,29 @@
 
 #include "InspectorTypeBuilder.h"
 #include "core/inspector/ScriptCallFrame.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ScriptCallStack : public RefCounted<ScriptCallStack> {
+class ScriptCallStack : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 
-    static PassRefPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
-
-    ~ScriptCallStack();
+    static PassRefPtrWillBeRawPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
 
     const ScriptCallFrame &at(size_t) const;
     size_t size() const;
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
 
+    void trace(Visitor*) { }
+
 private:
-    ScriptCallStack(Vector<ScriptCallFrame>&);
+    explicit ScriptCallStack(Vector<ScriptCallFrame>&);
 
     Vector<ScriptCallFrame> m_frames;
 };

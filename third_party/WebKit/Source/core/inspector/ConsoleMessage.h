@@ -52,8 +52,8 @@ class ConsoleMessage {
 public:
     ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message);
     ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, ScriptState*, unsigned long requestIdentifier);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>, unsigned long requestIdentifier);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
+    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long requestIdentifier);
+    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
     ~ConsoleMessage();
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
@@ -73,8 +73,8 @@ private:
     MessageLevel m_level;
     String m_message;
     ScriptStateProtectingContext m_scriptState;
-    RefPtr<ScriptArguments> m_arguments;
-    RefPtr<ScriptCallStack> m_callStack;
+    RefPtrWillBePersistent<ScriptArguments> m_arguments;
+    RefPtrWillBePersistent<ScriptCallStack> m_callStack;
     String m_url;
     unsigned m_line;
     unsigned m_column;

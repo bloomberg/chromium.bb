@@ -56,12 +56,12 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
     addMessage(source, level, message, String(), 0, 0, nullptr, 0, 0);
 }
 
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     addMessage(source, level, message, String(), 0, 0, callStack, 0);
 }
 
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* scriptState, unsigned long requestIdentifier)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState, unsigned long requestIdentifier)
 {
     if (muteCount)
         return;
@@ -91,7 +91,7 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
     m_frame.chromeClient().addMessageToConsole(&m_frame, source, level, message, lineNumber, messageURL, stackTrace);
 }
 
-String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
+String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     StringBuilder stackTrace;
     for (size_t i = 0; i < callStack->size(); ++i) {

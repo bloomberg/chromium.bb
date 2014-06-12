@@ -325,7 +325,7 @@ int ScriptDebugServer::frameCount()
     return 0;
 }
 
-PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
 {
     const int scopeBits = 2;
     COMPILE_ASSERT(NoScopes < (1 << scopeBits), not_enough_bits_to_encode_ScopeInfoDetails);
@@ -342,7 +342,7 @@ PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLim
     }
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
-        return PassRefPtr<JavaScriptCallFrame>();
+        return nullptr;
     return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
 }
 
@@ -352,7 +352,7 @@ ScriptValue ScriptDebugServer::currentCallFramesInner(ScopeInfoDetails scopeDeta
         return ScriptValue();
     v8::HandleScope handleScope(m_isolate);
 
-    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
     if (!currentCallFrame)
         return ScriptValue();
 
@@ -371,7 +371,7 @@ ScriptValue ScriptDebugServer::currentCallFramesForAsyncStack()
     return currentCallFramesInner(FastAsyncScopes);
 }
 
-PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::topCallFrameNoScopes()
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::topCallFrameNoScopes()
 {
     return wrapCallFrames(1, NoScopes);
 }
@@ -569,7 +569,7 @@ bool ScriptDebugServer::isPaused()
     return m_pausedScriptState;
 }
 
-void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
+void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
     if (scriptState->contextIsEmpty())
         return;
@@ -600,7 +600,7 @@ void ScriptDebugServer::clearCompiledScripts()
     m_compiledScripts.clear();
 }
 
-void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtr<ScriptCallStack>* stackTrace)
+void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
     if (!m_compiledScripts.contains(scriptId))
         return;

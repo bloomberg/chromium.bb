@@ -37,19 +37,17 @@
 
 namespace WebCore {
 
-PassRefPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptArguments)
+
+PassRefPtrWillBeRawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
 {
-    return adoptRef(new ScriptArguments(scriptState, arguments));
+    return adoptRefWillBeNoop(new ScriptArguments(scriptState, arguments));
 }
 
 ScriptArguments::ScriptArguments(ScriptState* scriptState, Vector<ScriptValue>& arguments)
     : m_scriptState(scriptState)
 {
     m_arguments.swap(arguments);
-}
-
-ScriptArguments::~ScriptArguments()
-{
 }
 
 const ScriptValue &ScriptArguments::argumentAt(size_t index) const

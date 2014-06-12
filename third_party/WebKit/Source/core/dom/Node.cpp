@@ -701,7 +701,7 @@ namespace {
 PassRefPtr<JSONArray> jsStackAsJSONArray()
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
-    RefPtr<ScriptCallStack> stack = createScriptCallStack(10);
+    RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(10);
     if (!stack)
         return jsonArray.release();
     for (size_t i = 0; i < stack->size(); i++)

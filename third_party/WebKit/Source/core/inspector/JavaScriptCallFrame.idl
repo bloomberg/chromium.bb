@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface JavaScriptCallFrame {

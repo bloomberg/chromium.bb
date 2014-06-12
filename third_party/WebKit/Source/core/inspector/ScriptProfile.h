@@ -32,19 +32,21 @@
 #define ScriptProfile_h
 
 #include "InspectorTypeBuilder.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 #include <v8-profiler.h>
 
 namespace WebCore {
 
-class ScriptProfile FINAL : public RefCounted<ScriptProfile> {
+class ScriptProfile FINAL : public RefCountedWillBeGarbageCollectedFinalized<ScriptProfile> {
 public:
-    static PassRefPtr<ScriptProfile> create(v8::CpuProfile* profile, double idleTime)
+    static PassRefPtrWillBeRawPtr<ScriptProfile> create(v8::CpuProfile* profile, double idleTime)
     {
-        return adoptRef(new ScriptProfile(profile, idleTime));
+        return adoptRefWillBeNoop(new ScriptProfile(profile, idleTime));
     }
     ~ScriptProfile();
+    void trace(Visitor*) { }
 
     String title() const;
     double idleTime() const;

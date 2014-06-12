@@ -52,7 +52,7 @@ PassRefPtr<TimelineEvent> TimelineRecordFactory::createGenericRecord(double star
         .setData(data)
         .setStartTime(startTime);
     if (maxCallStackDepth) {
-        RefPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxCallStackDepth, true);
+        RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxCallStackDepth, true);
         if (stackTrace && stackTrace->size())
             record->setStackTrace(stackTrace->buildInspectorArray());
     }

@@ -43,57 +43,57 @@ ConsoleBase::~ConsoleBase()
 {
 }
 
-void ConsoleBase::debug(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::debug(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(LogMessageType, DebugMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::error(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::error(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(LogMessageType, ErrorMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::info(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::info(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(LogMessageType, InfoMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::log(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::log(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(LogMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::warn(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::warn(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(LogMessageType, WarningMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::dir(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::dir(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(DirMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::dirxml(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::dirxml(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(DirXMLMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::table(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::table(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(TableMessageType, LogMessageLevel, scriptState, arguments);
 }
 
-void ConsoleBase::clear(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::clear(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, ClearMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
 
-void ConsoleBase::trace(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::trace(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     internalAddMessage(TraceMessageType, LogMessageLevel, scriptState, arguments, true, true);
 }
 
-void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments, bool condition)
+void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, bool condition)
 {
     if (condition)
         return;
@@ -101,7 +101,7 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtr<ScriptArg
     internalAddMessage(AssertMessageType, ErrorMessageLevel, scriptState, arguments, true);
 }
 
-void ConsoleBase::count(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     InspectorInstrumentation::consoleCount(context(), scriptState, arguments);
 }
@@ -148,12 +148,12 @@ void ConsoleBase::timelineEnd(ScriptState* scriptState, const String& title)
     InspectorInstrumentation::consoleTimelineEnd(context(), title, scriptState);
 }
 
-void ConsoleBase::group(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::group(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, StartGroupMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
 
-void ConsoleBase::groupCollapsed(ScriptState* scriptState, PassRefPtr<ScriptArguments> arguments)
+void ConsoleBase::groupCollapsed(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
     InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, StartGroupCollapsedMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
@@ -163,17 +163,17 @@ void ConsoleBase::groupEnd()
     InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), nullptr);
 }
 
-void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
+void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
 {
     if (!context())
         return;
 
-    RefPtr<ScriptArguments> arguments = scriptArguments;
+    RefPtrWillBeRawPtr<ScriptArguments> arguments = scriptArguments;
     if (!acceptNoArguments && !arguments->argumentCount())
         return;
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, stackSize));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, stackSize));
 
     String message;
     bool gotStringMessage = arguments->getFirstArgumentAsString(message);
