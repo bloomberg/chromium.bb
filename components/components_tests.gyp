@@ -68,6 +68,7 @@
             'bookmarks/browser/bookmark_index_unittest.cc',
             'bookmarks/browser/bookmark_model_unittest.cc',
             'bookmarks/browser/bookmark_utils_unittest.cc',
+            'breakpad/app/crash_keys_win_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
@@ -227,6 +228,9 @@
             'components_strings.gyp:components_strings',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
+            # Dependencies of breakpad
+            'components.gyp:breakpad_test_support',
+
             # Dependencies of bookmarks
             'components.gyp:bookmarks_browser',
             'components.gyp:bookmarks_test_support',
@@ -257,7 +261,7 @@
 
             # Dependencies of feedback
             'components.gyp:feedback_component',
-            
+
             # Dependencies of gcm
             'components.gyp:gcm_driver',
             'components.gyp:gcm_driver_test_support',
