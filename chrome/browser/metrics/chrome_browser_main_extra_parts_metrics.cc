@@ -29,6 +29,7 @@
 #include <gnu/libc-version.h>
 
 #include "base/version.h"
+#include "ui/base/x/x11_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -43,8 +44,26 @@ enum UMALinuxGlibcVersion {
   UMA_LINUX_GLIBC_2_11,
   UMA_LINUX_GLIBC_2_19 = UMA_LINUX_GLIBC_2_11 + 8,
   // NOTE: Add new version above this line and update the enum list in
-  // tools/histograms/histograms.xml accordingly.
+  // tools/metrics/histograms/histograms.xml accordingly.
   UMA_LINUX_GLIBC_VERSION_COUNT
+};
+
+enum UMALinuxWindowManager {
+  UMA_LINUX_WINDOW_MANAGER_OTHER,
+  UMA_LINUX_WINDOW_MANAGER_BLACKBOX,
+  UMA_LINUX_WINDOW_MANAGER_CHROME_OS,
+  UMA_LINUX_WINDOW_MANAGER_COMPIZ,
+  UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT,
+  UMA_LINUX_WINDOW_MANAGER_ICE_WM,
+  UMA_LINUX_WINDOW_MANAGER_KWIN,
+  UMA_LINUX_WINDOW_MANAGER_METACITY,
+  UMA_LINUX_WINDOW_MANAGER_MUFFIN,
+  UMA_LINUX_WINDOW_MANAGER_MUTTER,
+  UMA_LINUX_WINDOW_MANAGER_OPENBOX,
+  UMA_LINUX_WINDOW_MANAGER_XFWM4,
+  // NOTE: Add new window managers above this line and update the enum list in
+  // tools/metrics/histograms/histograms.xml accordingly.
+  UMA_LINUX_WINDOW_MANAGER_COUNT
 };
 
 enum UMATouchEventsState {
@@ -53,7 +72,8 @@ enum UMATouchEventsState {
   UMA_TOUCH_EVENTS_AUTO_DISABLED,
   UMA_TOUCH_EVENTS_DISABLED,
   // NOTE: Add states only immediately above this line. Make sure to
-  // update the enum list in tools/histograms/histograms.xml accordingly.
+  // update the enum list in tools/metrics/histograms/histograms.xml
+  // accordingly.
   UMA_TOUCH_EVENTS_STATE_COUNT
 };
 
@@ -103,6 +123,53 @@ void RecordLinuxGlibcVersion() {
 #endif
 }
 
+void RecordLinuxWindowManager() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::WindowManagerName name = ui::GuessWindowManager();
+  UMALinuxWindowManager uma_name = UMA_LINUX_WINDOW_MANAGER_OTHER;
+  switch (name) {
+    case ui::WM_UNKNOWN:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_OTHER;
+      break;
+    case ui::WM_BLACKBOX:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_BLACKBOX;
+      break;
+    case ui::WM_CHROME_OS:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_CHROME_OS;
+      break;
+    case ui::WM_COMPIZ:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_COMPIZ;
+      break;
+    case ui::WM_ENLIGHTENMENT:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT;
+      break;
+    case ui::WM_ICE_WM:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_ICE_WM;
+      break;
+    case ui::WM_KWIN:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_KWIN;
+      break;
+    case ui::WM_METACITY:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_METACITY;
+      break;
+    case ui::WM_MUFFIN:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_MUFFIN;
+      break;
+    case ui::WM_MUTTER:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_MUTTER;
+      break;
+    case ui::WM_OPENBOX:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_OPENBOX;
+      break;
+    case ui::WM_XFWM4:
+      uma_name = UMA_LINUX_WINDOW_MANAGER_XFWM4;
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", uma_name,
+                            UMA_LINUX_WINDOW_MANAGER_COUNT);
+#endif
+}
+
 void RecordTouchEventState() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   const std::string touch_enabled_switch =
@@ -148,6 +215,7 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordLinuxGlibcVersion();
+  RecordLinuxWindowManager();
   RecordTouchEventState();
 
   const int kStartupMetricsGatheringDelaySeconds = 45;

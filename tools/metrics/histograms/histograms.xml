@@ -9344,6 +9344,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Linux.WindowManager" enum="LinuxWindowManagerName">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>The window manager used. (Linux only) Logged at startup.</summary>
+</histogram>
+
 <histogram name="LocalDiscovery.ClientRestartAttempts">
   <owner>noamsml@chromium.org</owner>
   <owner>vitalybuka@chromium.org</owner>
@@ -38617,6 +38622,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="2.17"/>
   <int value="9" label="2.18"/>
   <int value="10" label="2.19"/>
+</enum>
+
+<enum name="LinuxWindowManagerName" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Blackbox"/>
+  <int value="2" label="Chrome OS"/>
+  <int value="3" label="Compiz"/>
+  <int value="4" label="Enlightment"/>
+  <int value="5" label="IceWM"/>
+  <int value="6" label="KWin"/>
+  <int value="7" label="Metacity"/>
+  <int value="8" label="Muffin"/>
+  <int value="9" label="Mutter"/>
+  <int value="10" label="Openbox"/>
+  <int value="11" label="Xfwm4"/>
 </enum>
 
 <enum name="LoadType" type="int">
