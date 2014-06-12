@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "sql/init_status.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -42,6 +43,11 @@ class HistoryClient : public KeyedService {
   //
   // If not on the main thread, then BlockUntilBookmarksLoaded must be called.
   virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
+
+  // Notifies the embedder that there was a problem reading the database.
+  //
+  // Must be called from the main thread.
+  virtual void NotifyProfileError(sql::InitStatus init_status);
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(HistoryClient);

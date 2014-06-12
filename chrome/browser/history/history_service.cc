@@ -46,7 +46,6 @@
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
@@ -1034,10 +1033,8 @@ void HistoryService::SetInMemoryBackend(
 
 void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ShowProfileErrorDialog(
-      PROFILE_ERROR_HISTORY,
-      (init_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+  if (history_client_)
+    history_client_->NotifyProfileError(init_status);
 }
 
 void HistoryService::DeleteURL(const GURL& url) {

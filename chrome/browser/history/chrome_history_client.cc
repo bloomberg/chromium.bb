@@ -5,7 +5,10 @@
 #include "chrome/browser/history/chrome_history_client.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 ChromeHistoryClient::ChromeHistoryClient(BookmarkModel* bookmark_model)
     : bookmark_model_(bookmark_model) {
@@ -33,6 +36,13 @@ void ChromeHistoryClient::GetBookmarks(
     };
     bookmarks->push_back(value);
   }
+}
+
+void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {
+  ShowProfileErrorDialog(
+      PROFILE_ERROR_HISTORY,
+      (init_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
 void ChromeHistoryClient::Shutdown() {
