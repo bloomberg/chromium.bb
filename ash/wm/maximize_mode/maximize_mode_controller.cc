@@ -146,6 +146,22 @@ MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->accelerometer_controller()->RemoveObserver(this);
 }
 
+void MaximizeModeController::SetRotationLocked(bool rotation_locked) {
+  if (rotation_locked_ == rotation_locked)
+    return;
+  rotation_locked_ = rotation_locked;
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnRotationLockChanged(rotation_locked_));
+}
+
+void MaximizeModeController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MaximizeModeController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool MaximizeModeController::CanEnterMaximizeMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger maximize mode at some point in the future.
@@ -199,6 +215,22 @@ void MaximizeModeController::OnAccelerometerUpdated(
   HandleScreenRotation(lid);
 }
 
+void MaximizeModeController::OnDisplayConfigurationChanged() {
+  if (in_set_screen_rotation_)
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  gfx::Display::Rotation user_rotation = display_manager->
+      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  if (user_rotation != current_rotation_) {
+    // A user may change other display configuration settings. When the user
+    // does change the rotation setting, then lock rotation to prevent the
+    // accelerometer from erasing their change.
+    SetRotationLocked(true);
+    user_rotation_ = user_rotation;
+    current_rotation_ = user_rotation;
+  }
+}
+
 void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
                                                  const gfx::Vector3dF& lid) {
   static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
@@ -239,6 +271,9 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
 void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
   bool maximize_mode_engaged = IsMaximizeModeWindowManagerEnabled();
 
+  // TODO(jonross): track the updated rotation angle even when locked. So that
+  // when rotation lock is removed the accelerometer rotation can be applied
+  // without waiting for the next update.
   if (!maximize_mode_engaged || rotation_locked_)
     return;
 
@@ -301,35 +336,34 @@ void MaximizeModeController::SetDisplayRotation(
     gfx::Display::Rotation rotation) {
   base::AutoReset<bool> auto_in_set_screen_rotation(
       &in_set_screen_rotation_, true);
+  current_rotation_ = rotation;
   display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
                                       rotation);
 }
 
 void MaximizeModeController::EnterMaximizeMode() {
-  // TODO(jonross): Listen for display configuration changes. If the user
-  // causes a rotation change a rotation lock should be applied.
-  // https://crbug.com/369505
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  user_rotation_ = display_manager->
+  current_rotation_ = user_rotation_ = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
   EnableMaximizeModeWindowManager(true);
   event_blocker_.reset(new MaximizeModeEventBlocker);
 #if defined(OS_CHROMEOS)
   event_handler_.reset(new ScreenshotActionHandler);
 #endif
+  Shell::GetInstance()->display_controller()->AddObserver(this);
 }
 
 void MaximizeModeController::LeaveMaximizeMode() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayInfo info = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId());
-  gfx::Display::Rotation current_rotation = info.rotation();
+  gfx::Display::Rotation current_rotation = display_manager->
+      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
   if (current_rotation != user_rotation_)
     SetDisplayRotation(display_manager, user_rotation_);
   rotation_locked_ = false;
   EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
   event_handler_.reset();
+  Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
 }  // namespace ash

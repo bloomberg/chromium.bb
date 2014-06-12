@@ -7,9 +7,11 @@
 
 #include "ash/accelerometer/accelerometer_observer.h"
 #include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "ui/gfx/display.h"
 
 namespace ui {
@@ -26,8 +28,20 @@ class MaximizeModeWindowManagerTest;
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in maximize mode.
-class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
+class ASH_EXPORT MaximizeModeController : public AccelerometerObserver,
+                                          public DisplayController::Observer {
  public:
+  // Observer that reports changes to the state of MaximizeModeController's
+  // rotation lock.
+  class Observer {
+   public:
+    // Invoked whenever |rotation_locked_| is changed.
+    virtual void OnRotationLockChanged(bool rotation_locked) {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   MaximizeModeController();
   virtual ~MaximizeModeController();
 
@@ -43,9 +57,11 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
 
   // If |rotation_locked| future calls to OnAccelerometerUpdated will not
   // change the display rotation.
-  void set_rotation_locked(bool rotation_locked) {
-    rotation_locked_ = rotation_locked;
-  }
+  void SetRotationLocked(bool rotation_locked);
+
+  // Add/Remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // True if it is possible to enter maximize mode in the current
   // configuration. If this returns false, it should never be the case that
@@ -72,6 +88,9 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // AccelerometerObserver:
   virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
                                       const gfx::Vector3dF& lid) OVERRIDE;
+
+  // DisplayController::Observer:
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
  private:
   friend class MaximizeModeControllerTest;
@@ -120,6 +139,14 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // The rotation of the display set by the user. This rotation will be
   // restored upon exiting maximize mode.
   gfx::Display::Rotation user_rotation_;
+
+  // The current rotation set by MaximizeModeController for the internal
+  // display. Compared in OnDisplayConfigurationChanged to determine user
+  // display setting changes.
+  gfx::Display::Rotation current_rotation_;
+
+  // Rotation Lock observers.
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };

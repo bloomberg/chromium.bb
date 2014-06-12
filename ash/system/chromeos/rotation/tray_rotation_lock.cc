@@ -56,16 +56,9 @@ RotationLockDefaultView::~RotationLockDefaultView() {
 bool RotationLockDefaultView::PerformAction(const ui::Event& event) {
   MaximizeModeController* maximize_mode_controller = Shell::GetInstance()->
       maximize_mode_controller();
-  bool rotation_locked = !maximize_mode_controller->rotation_locked();
-  maximize_mode_controller->set_rotation_locked(rotation_locked);
-
+  maximize_mode_controller->SetRotationLocked(
+      !maximize_mode_controller->rotation_locked());
   UpdateImage();
-
-  // RotationLockDefaultView can only be created by a TrayRotationLock. The
-  // owner needs to be told of the action so that it can update its visibility.
-  static_cast<TrayRotationLock*>(owner())->tray_view()->
-      SetVisible(rotation_locked);
-
   return true;
 }
 
@@ -116,6 +109,10 @@ TrayRotationLock::~TrayRotationLock() {
     Shell::GetInstance()->RemoveShellObserver(this);
 }
 
+void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
+  tray_view()->SetVisible(ShouldBeVisible());
+}
+
 views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
   if (on_primary_display_)
     return new tray::RotationLockDefaultView(this);
@@ -125,13 +122,19 @@ views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
 void TrayRotationLock::OnMaximizeModeStarted() {
   tray_view()->SetVisible(
       Shell::GetInstance()->maximize_mode_controller()->rotation_locked());
+  Shell::GetInstance()->maximize_mode_controller()->AddObserver(this);
 }
 
 void TrayRotationLock::OnMaximizeModeEnded() {
   tray_view()->SetVisible(false);
+  Shell::GetInstance()->maximize_mode_controller()->RemoveObserver(this);
 }
 
 bool TrayRotationLock::GetInitialVisibility() {
+  return ShouldBeVisible();
+}
+
+bool TrayRotationLock::ShouldBeVisible() {
   MaximizeModeController* controller = Shell::GetInstance()->
       maximize_mode_controller();
   return on_primary_display_ &&

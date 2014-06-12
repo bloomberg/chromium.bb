@@ -526,7 +526,7 @@ TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
 
   gfx::Vector3dF gravity(-1.0f, 0.0f, 0.0f);
 
-  maximize_mode_controller()->set_rotation_locked(true);
+  maximize_mode_controller()->SetRotationLocked(true);
 
   // Turn past the threshold for rotation.
   float degrees = 90.0;
@@ -535,7 +535,7 @@ TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
   TriggerAccelerometerUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
-  maximize_mode_controller()->set_rotation_locked(false);
+  maximize_mode_controller()->SetRotationLocked(false);
   TriggerAccelerometerUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
@@ -551,7 +551,7 @@ TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
   gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
-  maximize_mode_controller()->set_rotation_locked(true);
+  maximize_mode_controller()->SetRotationLocked(true);
 
   // Open 90 degrees.
   TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
@@ -602,6 +602,7 @@ TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
   // adjusting the screen rotation directly when in maximize mode
   ASSERT_NE(gfx::Display::ROTATE_270, GetInternalDisplayRotation());
   SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  maximize_mode_controller()->SetRotationLocked(false);
   EXPECT_EQ(gfx::Display::ROTATE_270, GetInternalDisplayRotation());
   EXPECT_EQ(1u, message_center->NotificationCount());
   EXPECT_TRUE(message_center->HasPopupNotifications());
@@ -644,6 +645,35 @@ TEST_F(MaximizeModeControllerTest, ResetUserRotationUponExit) {
                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
+}
+
+// Tests that if a user sets a display rotation that accelerometer rotation
+// becomes locked.
+TEST_F(MaximizeModeControllerTest,
+       NonAccelerometerRotationChangesLockRotation) {
+  // Trigger maximize mode by opening to 270.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  ASSERT_FALSE(maximize_mode_controller()->rotation_locked());
+  SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  EXPECT_TRUE(maximize_mode_controller()->rotation_locked());
+}
+
+// Tests that if a user changes the display rotation, while rotation is locked,
+// that the updates are recorded. Upon exiting maximize mode the latest user
+// rotation should be applied.
+TEST_F(MaximizeModeControllerTest, UpdateUserRotationWhileRotationLocked) {
+  // Trigger maximize mode by opening to 270.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  // User sets rotation to the same rotation that the display was at when
+  // maximize mode was activated.
+  SetInternalDisplayRotation(gfx::Display::ROTATE_0);
+  // Exit maximize mode
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
 }  // namespace ash

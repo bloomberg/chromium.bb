@@ -7,6 +7,7 @@
 
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 namespace ash {
 
@@ -20,10 +21,14 @@ class RotationLockDefaultView;
 // be interacted with, it toggles the state of the rotation lock.
 // TrayRotationLock is only available on the primary display.
 class ASH_EXPORT TrayRotationLock : public TrayImageItem,
+                                    public MaximizeModeController::Observer,
                                     public ShellObserver {
  public:
   explicit TrayRotationLock(SystemTray* system_tray);
   virtual ~TrayRotationLock();
+
+  // MaximizeModeController::Observer:
+  virtual void OnRotationLockChanged(bool rotation_locked) OVERRIDE;
 
   // SystemTrayItem:
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
@@ -38,6 +43,10 @@ class ASH_EXPORT TrayRotationLock : public TrayImageItem,
 
  private:
   friend class TrayRotationLockTest;
+
+  // True if |on_primary_display_|, maximize mode is enabled, and rotation is
+  // locked.
+  bool ShouldBeVisible();
 
   // True if this has been created by a SystemTray on the primary display.
   bool on_primary_display_;
