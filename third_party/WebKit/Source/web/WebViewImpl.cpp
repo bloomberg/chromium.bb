@@ -2489,7 +2489,7 @@ WebFrame* WebViewImpl::findFrameByName(
         relativeToFrame = mainFrame();
     Frame* frame = toWebLocalFrameImpl(relativeToFrame)->frame();
     frame = frame->tree().find(name);
-    if (!frame->isLocalFrame())
+    if (!frame || !frame->isLocalFrame())
         return 0;
     return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
 }
