@@ -32075,6 +32075,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebFont.PackageFormat" enum="WebFontPackageFormat">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The packaging format of the font file (e.g. SFNT, WOFF ...) upon a webfont
+    load.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.Resource.StyleRecalcToDownloadLatency"
     units="milliseconds">
   <owner>kenjibaheux@chromium.org</owner>
@@ -44906,6 +44915,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Not in the cache"/>
   <int value="1" label="In the cache"/>
   <int value="2" label="Previously in the cache"/>
+</enum>
+
+<enum name="WebFontPackageFormat" type="int">
+  <int value="0" label="Unknown / Decode error"/>
+  <int value="1" label="SFNT"/>
+  <int value="2" label="WOFF"/>
+  <int value="3" label="WOFF 2.0"/>
+  <int value="4" label="SVG"/>
 </enum>
 
 <enum name="WebFontUsageType" type="int">
