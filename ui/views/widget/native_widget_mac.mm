@@ -129,7 +129,7 @@ InputMethod* NativeWidgetMac::CreateInputMethod() {
   return NULL;
 }
 
-InputMethodDelegate* NativeWidgetMac::GetInputMethodDelegate() {
+internal::InputMethodDelegate* NativeWidgetMac::GetInputMethodDelegate() {
   NOTIMPLEMENTED();
   return NULL;
 }

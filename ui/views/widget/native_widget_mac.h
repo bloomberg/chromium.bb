@@ -40,7 +40,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void ReleaseCapture() OVERRIDE;
   virtual bool HasCapture() const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
-  virtual InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
+  virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual ui::InputMethod* GetHostInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(

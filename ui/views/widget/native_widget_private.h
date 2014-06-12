@@ -24,9 +24,9 @@ class OSExchangeData;
 
 namespace views {
 class InputMethod;
-class InputMethodDelegate;
 class TooltipManager;
 namespace internal {
+class InputMethodDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetPrivate interface
