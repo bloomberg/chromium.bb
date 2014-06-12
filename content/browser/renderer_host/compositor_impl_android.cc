@@ -505,7 +505,7 @@ void CompositorImpl::SetNeedsComposite() {
   DCHECK(!needs_composite_ || WillComposite());
 
   needs_composite_ = true;
-  PostComposite(COMPOSITE_EVENTUALLY);
+  PostComposite(COMPOSITE_IMMEDIATELY);
 }
 
 cc::UIResourceId CompositorImpl::GenerateUIResourceFromUIResourceBitmap(
