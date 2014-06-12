@@ -33,6 +33,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"
+#include <ApplicationServices/ApplicationServices.h>
 
 typedef unsigned short CGGlyph;
 

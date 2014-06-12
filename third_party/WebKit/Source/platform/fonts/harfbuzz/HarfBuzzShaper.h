@@ -138,8 +138,6 @@ private:
     void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
-    GlyphBufferAdvance createGlyphBufferAdvance(float, float);
-
     const Font* m_font;
     OwnPtr<UChar[]> m_normalizedBuffer;
     unsigned m_normalizedBufferLength;

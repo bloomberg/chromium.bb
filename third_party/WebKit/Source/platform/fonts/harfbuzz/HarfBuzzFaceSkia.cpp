@@ -235,9 +235,4 @@ hb_font_t* HarfBuzzFace::createFont()
     return font;
 }
 
-GlyphBufferAdvance HarfBuzzShaper::createGlyphBufferAdvance(float width, float height)
-{
-    return GlyphBufferAdvance(width, height);
-}
-
 } // namespace WebCore

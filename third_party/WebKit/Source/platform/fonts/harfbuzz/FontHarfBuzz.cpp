@@ -153,7 +153,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     // text drawing can proceed faster. However, it's unclear when those
     // patches may be upstreamed to WebKit so we always use the slower path
     // here.
-    const GlyphBufferAdvance* adv = glyphBuffer.advances(from);
+    const FloatSize* adv = glyphBuffer.advances(from);
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(x, y);
         x += SkFloatToScalar(adv[i].width());
