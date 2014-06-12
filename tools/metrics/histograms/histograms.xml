@@ -11515,6 +11515,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on a 2G connection,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11523,6 +11528,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on a 3G connection,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11531,6 +11541,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on a 4G connection,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change. This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FastestRTTOnBluetooth" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time seen on a Bluetooth
+    connection, before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11539,6 +11567,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on an Ethernet
     connection, before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11548,6 +11581,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Rough estimate of the fastest round-trip-time seen while the
     NetworkChangeNotifier thought there was no network connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11556,6 +11594,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on an unknown connection
     type, before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11564,6 +11607,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of the fastest round-trip-time seen on a Wifi connection,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11572,6 +11620,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to a 2G connection and receiving the first network
     data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11580,6 +11633,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to a 3G connection and receiving the first network
     data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11588,6 +11646,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to a 4G connection and receiving the first network
     data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.FirstReadOnBluetooth" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Time between switching to a Bluetooth connection and receiving the first
+    network data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11596,6 +11672,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to an Ethernet connection and receiving the first
     network data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11603,6 +11684,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>pauljensen@chromium.org</owner>
   <summary>
     Time between disconnecting and receiving the first network data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11611,6 +11697,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to an unknown connection type and receiving the first
     network data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11619,6 +11710,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time between switching to a Wifi connection and receiving the first network
     data.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11627,6 +11723,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via a 2G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11635,6 +11736,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via a 3G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11643,6 +11749,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via a 4G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.KBTransferedOnBluetooth" units="KB">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How much data was transfered while connected via a Bluetooth connection,
+    before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11651,6 +11775,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via an Ethernet connection,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11660,6 +11789,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     How much data was transfered while the NetworkChangeNotifier thought there
     was no network connection, before the NetworkChangeNotifier detected a
     connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11668,6 +11802,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via an unknown connection type,
     before the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11676,6 +11815,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How much data was transfered while connected via a Wifi connection, before
     the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11684,6 +11828,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on a 2G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11692,6 +11841,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on a 3G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11700,6 +11854,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on a 4G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.PeakKbpsOnBluetooth" units="Kbps">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput seen on a Bluetooth connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11708,6 +11880,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on an Ethernet connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11717,6 +11894,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Rough estimate of peak throughput seen while the NetworkChangeNotifier
     thought there was no network connection, before the NetworkChangeNotifier
     detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11725,6 +11907,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on an unknown connection type, before
     the NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11733,6 +11920,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Rough estimate of peak throughput seen on a Wifi connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11741,6 +11933,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via a 2G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11749,6 +11946,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via a 3G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11757,6 +11959,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via a 4G connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
+  </summary>
+</histogram>
+
+<histogram name="NCN.CM.TimeOnBluetooth" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    How long was spent connected via a Bluetooth connection, before the
+    NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11765,6 +11985,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via an Ethernet connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11773,6 +11998,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent disconnected, before the NetworkChangeNotifier detected a
     connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11781,6 +12011,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via an unknown connection type, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -11789,6 +12024,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     How long was spent connected via a Wifi connection, before the
     NetworkChangeNotifier detected a connectivity change.
+
+    This metric is recorded when the NetworkChangeNotifier detects a
+    connectivity change.  This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
