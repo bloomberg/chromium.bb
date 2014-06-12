@@ -2031,12 +2031,14 @@ void LayerTreeHostImpl::DeferredInitialize() {
 
   ReleaseTreeResources();
   renderer_.reset();
+  DestroyTileManager();
 
   resource_provider_->InitializeGL();
 
   CreateAndSetRenderer();
-
   EnforceZeroBudget(false);
+  CreateAndSetTileManager();
+
   client_->SetNeedsCommitOnImplThread();
 }
 
@@ -2048,11 +2050,11 @@ void LayerTreeHostImpl::ReleaseGL() {
   ReleaseTreeResources();
   renderer_.reset();
   DestroyTileManager();
+
   resource_provider_->InitializeSoftware();
-
   output_surface_->ReleaseContextProvider();
-  CreateAndSetRenderer();
 
+  CreateAndSetRenderer();
   EnforceZeroBudget(true);
   CreateAndSetTileManager();
 
