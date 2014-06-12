@@ -12,6 +12,7 @@
 namespace policy {
 
 class PolicyProviderAndroidDelegate;
+class Schema;
 
 // Provider for policies set by the Android platform.
 class POLICY_EXPORT PolicyProviderAndroid : public ConfigurationPolicyProvider {
@@ -24,6 +25,9 @@ class POLICY_EXPORT PolicyProviderAndroid : public ConfigurationPolicyProvider {
   // IsInitializationComplete() will only return true after SetPolicies() has
   // been called at least once, otherwise it will return true immediately.
   static void SetShouldWaitForPolicy(bool should_wait_for_policy);
+
+  // Returns the schema for Chrome policies.
+  const Schema* GetChromeSchema() const;
 
   void SetDelegate(PolicyProviderAndroidDelegate* delegate);
   void SetPolicies(scoped_ptr<PolicyBundle> policy);

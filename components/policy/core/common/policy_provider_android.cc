@@ -19,6 +19,11 @@ PolicyProviderAndroid::PolicyProviderAndroid()
 
 PolicyProviderAndroid::~PolicyProviderAndroid() {}
 
+const Schema* PolicyProviderAndroid::GetChromeSchema() const {
+  PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
+  return schema_map()->GetSchema(ns);
+}
+
 // static
 void PolicyProviderAndroid::SetShouldWaitForPolicy(
     bool should_wait_for_policy) {
