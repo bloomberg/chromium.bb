@@ -37,14 +37,11 @@ bool PrintWebViewHelper::RenderPreviewPage(
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  double actual_shrink =
-      static_cast<float>(print_params.desired_dpi / print_params.dpi);
   PrintPageInternal(page_params,
                     print_preview_context_.GetPrintCanvasSize(),
                     print_preview_context_.prepared_frame(),
                     initial_render_metafile,
                     true,
-                    &actual_shrink,
                     NULL,
                     NULL);
   print_preview_context_.RenderedPreviewPage(
@@ -105,7 +102,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                       frame,
                       &metafile,
                       false,
-                      &shrink[i],
                       &page_size_in_dpi[i],
                       &content_area_in_dpi[i]);
   }
@@ -152,7 +148,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   for (size_t i = 0; i < printed_pages.size(); ++i) {
     printed_page_params.page_number = printed_pages[i];
-    printed_page_params.actual_shrink = shrink[i];
     printed_page_params.page_size = page_size_in_dpi[i];
     printed_page_params.content_area = content_area_in_dpi[i];
     Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
@@ -167,7 +162,6 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame,
     Metafile* metafile,
     bool is_preview,
-    double* actual_shrink,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi) {
   PageSizeMargins page_layout_in_points;
@@ -231,11 +225,13 @@ void PrintWebViewHelper::PrintPageInternal(
 
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
-      print_preview_context_.total_page_count(),
-      scale_factor,
-      page_layout_in_points, *header_footer_info_,
-      params.params);
+    PrintHeaderAndFooter(canvas.get(),
+                         params.page_number + 1,
+                         print_preview_context_.total_page_count(),
+                         scale_factor,
+                         page_layout_in_points,
+                         *header_footer_info_,
+                         params.params);
   }
 
   float webkit_scale_factor = RenderPageContent(frame,
@@ -244,24 +240,7 @@ void PrintWebViewHelper::PrintPageInternal(
                                                 content_area,
                                                 scale_factor,
                                                 canvas.get());
-
-  if (*actual_shrink <= 0 || webkit_scale_factor <= 0) {
-    NOTREACHED() << "Printing page " << params.page_number << " failed.";
-  } else {
-    // While rendering certain plugins (PDF) to metafile, we might need to
-    // set custom scale factor. Update |actual_shrink| with custom scale
-    // if it is set on canvas.
-    // TODO(gene): We should revisit this solution for the next versions.
-    // Consider creating metafile of the right size (or resizable)
-    // https://code.google.com/p/chromium/issues/detail?id=126037
-    if (!MetafileSkiaWrapper::GetCustomScaleOnCanvas(
-            *canvas, actual_shrink)) {
-      // Update the dpi adjustment with the "page |actual_shrink|" calculated in
-      // webkit.
-      *actual_shrink /= (webkit_scale_factor * css_scale_factor);
-    }
-  }
-
+  DCHECK_GT(webkit_scale_factor, 0.0f);
   // Done printing. Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishPage())
     NOTREACHED() << "metafile failed";

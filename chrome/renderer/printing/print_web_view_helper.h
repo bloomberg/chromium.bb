@@ -212,7 +212,6 @@ class PrintWebViewHelper
                          blink::WebFrame* frame,
                          Metafile* metafile,
                          bool is_preview,
-                         double* actual_shrink,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
 #else

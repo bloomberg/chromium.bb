@@ -65,17 +65,18 @@ PrintedDocument::~PrintedDocument() {
 
 void PrintedDocument::SetPage(int page_number,
                               Metafile* metafile,
+#if defined(OS_WIN)
                               double shrink,
+#endif  // OS_WIN
                               const gfx::Size& paper_size,
                               const gfx::Rect& page_rect) {
   // Notice the page_number + 1, the reason is that this is the value that will
   // be shown. Users dislike 0-based counting.
   scoped_refptr<PrintedPage> page(
-      new PrintedPage(page_number + 1,
-                      metafile,
-                      paper_size,
-                      page_rect,
-                      shrink));
+      new PrintedPage(page_number + 1, metafile, paper_size, page_rect));
+#if defined(OS_WIN)
+  page->set_shrink_factor(shrink);
+#endif  // OS_WIN
   {
     base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;

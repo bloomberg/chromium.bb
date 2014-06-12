@@ -25,15 +25,19 @@ class PRINTING_EXPORT PrintedPage
   PrintedPage(int page_number,
               Metafile* metafile,
               const gfx::Size& page_size,
-              const gfx::Rect& page_content_rect,
-              double shrink_factor);
+              const gfx::Rect& page_content_rect);
 
   // Getters
   int page_number() const { return page_number_; }
   const Metafile* metafile() const;
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
+#if defined(OS_WIN)
+  void set_shrink_factor(double shrink_factor) {
+    shrink_factor_ = shrink_factor;
+  }
   double shrink_factor() const { return shrink_factor_; }
+#endif  // OS_WIN
 
   // Get page content rect adjusted based on
   // http://dev.w3.org/csswg/css3-page/#positioning-page-box
@@ -51,15 +55,17 @@ class PRINTING_EXPORT PrintedPage
   // Actual paint data.
   const scoped_ptr<Metafile> metafile_;
 
+#if defined(OS_WIN)
+  // Shrink done in comparison to desired_dpi.
+  double shrink_factor_;
+#endif  // OS_WIN
+
   // The physical page size. To support multiple page formats inside on print
   // job.
   const gfx::Size page_size_;
 
   // The printable area of the page.
   const gfx::Rect page_content_rect_;
-
-  // Shrink done in comparison to desired_dpi.
-  double shrink_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintedPage);
 };

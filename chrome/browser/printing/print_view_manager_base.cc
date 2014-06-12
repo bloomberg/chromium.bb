@@ -220,10 +220,12 @@ void PrintViewManagerBase::OnDidPrintPage(
 #if !defined(WIN_PDF_METAFILE_FOR_PRINTING)
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
-    metafile.release(),
-    params.actual_shrink,
-    params.page_size,
-    params.content_area);
+                    metafile.release(),
+#if defined(OS_WIN)
+                    params.actual_shrink,
+#endif  // OS_WIN
+                    params.page_size,
+                    params.content_area);
 
   ShouldQuitFromInnerMessageLoop();
 #else
