@@ -214,13 +214,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
 
 void SVGViewSpec::trace(Visitor* visitor)
 {
-    visitor->registerWeakMembers<SVGViewSpec, &SVGViewSpec::clearWeakMembers>(this);
-}
-
-void SVGViewSpec::clearWeakMembers(Visitor* visitor)
-{
-    if (!visitor->isAlive(m_contextElement))
-        detachContextElement();
+    visitor->trace(m_contextElement);
 }
 
 }

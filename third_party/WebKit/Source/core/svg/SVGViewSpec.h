@@ -58,7 +58,6 @@ public:
     void setZoomAndPan(unsigned short value, ExceptionState&);
 
     void trace(Visitor*);
-    void clearWeakMembers(Visitor*);
 
     SVGSVGElement* contextElement() { return m_contextElement.get(); }
 
@@ -68,7 +67,7 @@ private:
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-    RawPtrWillBeWeakMember<SVGSVGElement> m_contextElement;
+    RawPtrWillBeMember<SVGSVGElement> m_contextElement;
     RefPtr<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };
