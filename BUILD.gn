@@ -69,6 +69,7 @@ group("root") {
     "//third_party/libusb",
     "//third_party/libwebm",
     "//third_party/libwebp",
+    "//third_party/libxslt",
     "//third_party/libyuv",
     "//third_party/mesa",
     "//third_party/ots",
@@ -137,6 +138,10 @@ group("root") {
       "//ppapi:ppapi_c",
       "//sandbox",
       "//third_party/libusb",
+
+      # Seems to not be compiled on Android. Otherwise it will need a config.h.
+      "//third_party/libxslt",
+
       "//tools/gn",
       "//ui/aura",
 
