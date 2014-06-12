@@ -5,7 +5,9 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sched.h>
+#include <signal.h>
 #include <sys/prctl.h>
+#include <sys/ptrace.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -24,6 +26,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
@@ -1906,6 +1909,122 @@ BPF_TEST_C(SandboxBPF, PthreadEquality, PthreadPolicyEquality) {
 
 BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
   PthreadTest();
+}
+
+// libc might not define these even though the kernel supports it.
+#ifndef PTRACE_O_TRACESECCOMP
+#define PTRACE_O_TRACESECCOMP 0x00000080
+#endif
+
+#ifdef PTRACE_EVENT_SECCOMP
+#define IS_SECCOMP_EVENT(status) ((status >> 16) == PTRACE_EVENT_SECCOMP)
+#else
+// When Debian/Ubuntu backported seccomp-bpf support into earlier kernels, they
+// changed the value of PTRACE_EVENT_SECCOMP from 7 to 8, since 7 was taken by
+// PTRACE_EVENT_STOP (upstream chose to renumber PTRACE_EVENT_STOP to 128).  If
+// PTRACE_EVENT_SECCOMP isn't defined, we have no choice but to consider both
+// values here.
+#define IS_SECCOMP_EVENT(status) ((status >> 16) == 7 || (status >> 16) == 8)
+#endif
+
+const uint16_t kTraceData = 0xcc;
+
+class TraceAllPolicy : public SandboxBPFPolicy {
+ public:
+  TraceAllPolicy() {}
+  virtual ~TraceAllPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE {
+    return ErrorCode(ErrorCode::ERR_TRACE + kTraceData);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TraceAllPolicy);
+};
+
+SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
+  if (SandboxBPF::SupportsSeccompSandbox(-1) !=
+      sandbox::SandboxBPF::STATUS_AVAILABLE) {
+    return;
+  }
+
+  pid_t pid = fork();
+  BPF_ASSERT_NE(-1, pid);
+  if (pid == 0) {
+    pid_t my_pid = getpid();
+    BPF_ASSERT_NE(-1, ptrace(PTRACE_TRACEME, -1, NULL, NULL));
+    BPF_ASSERT_EQ(0, raise(SIGSTOP));
+    SandboxBPF sandbox;
+    sandbox.SetSandboxPolicy(new TraceAllPolicy);
+    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+
+    // getpid is allowed.
+    BPF_ASSERT_EQ(my_pid, syscall(__NR_getpid));
+
+    // write to stdout is skipped and returns a fake value.
+    BPF_ASSERT_EQ(kExpectedReturnValue,
+                  syscall(__NR_write, STDOUT_FILENO, "A", 1));
+
+    // kill is rewritten to exit(kExpectedReturnValue).
+    syscall(__NR_kill, my_pid, SIGKILL);
+
+    // Should not be reached.
+    BPF_ASSERT(false);
+  }
+
+  int status;
+  BPF_ASSERT(HANDLE_EINTR(waitpid(pid, &status, WUNTRACED)) != -1);
+  BPF_ASSERT(WIFSTOPPED(status));
+
+  BPF_ASSERT_NE(-1, ptrace(PTRACE_SETOPTIONS, pid, NULL,
+                           reinterpret_cast<void*>(PTRACE_O_TRACESECCOMP)));
+  BPF_ASSERT_NE(-1, ptrace(PTRACE_CONT, pid, NULL, NULL));
+  while (true) {
+    BPF_ASSERT(HANDLE_EINTR(waitpid(pid, &status, 0)) != -1);
+    if (WIFEXITED(status) || WIFSIGNALED(status)) {
+      BPF_ASSERT(WIFEXITED(status));
+      BPF_ASSERT_EQ(kExpectedReturnValue, WEXITSTATUS(status));
+      break;
+    }
+
+    if (!WIFSTOPPED(status) || WSTOPSIG(status) != SIGTRAP ||
+        !IS_SECCOMP_EVENT(status)) {
+      BPF_ASSERT_NE(-1, ptrace(PTRACE_CONT, pid, NULL, NULL));
+      continue;
+    }
+
+    unsigned long data;
+    BPF_ASSERT_NE(-1, ptrace(PTRACE_GETEVENTMSG, pid, NULL, &data));
+    BPF_ASSERT_EQ(kTraceData, data);
+
+    regs_struct regs;
+    BPF_ASSERT_NE(-1, ptrace(PTRACE_GETREGS, pid, NULL, &regs));
+    switch (SECCOMP_PT_SYSCALL(regs)) {
+      case __NR_write:
+        // Skip writes to stdout, make it return kExpectedReturnValue.  Allow
+        // writes to stderr so that BPF_ASSERT messages show up.
+        if (SECCOMP_PT_PARM1(regs) == STDOUT_FILENO) {
+          SECCOMP_PT_SYSCALL(regs) = -1;
+          SECCOMP_PT_RESULT(regs) = kExpectedReturnValue;
+          BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
+        }
+        break;
+
+      case __NR_kill:
+        // Rewrite to exit(kExpectedReturnValue).
+        SECCOMP_PT_SYSCALL(regs) = __NR_exit;
+        SECCOMP_PT_PARM1(regs) = kExpectedReturnValue;
+        BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
+        break;
+
+      default:
+        // Allow all other syscalls.
+        break;
+    }
+
+    BPF_ASSERT_NE(-1, ptrace(PTRACE_CONT, pid, NULL, NULL));
+  }
 }
 
 }  // namespace

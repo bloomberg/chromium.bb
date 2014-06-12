@@ -23,11 +23,21 @@ void RunPostTestsChecks() {
 }  // namespace
 }  // namespace sandbox
 
+#if defined(OS_ANDROID)
+void UnitTestAssertHandler(const std::string& str) {
+  _exit(1);
+}
+#endif
+
 int main(int argc, char* argv[]) {
 #if defined(OS_ANDROID)
   // The use of Callbacks requires an AtExitManager.
   base::AtExitManager exit_manager;
   testing::InitGoogleTest(&argc, argv);
+  // Death tests rely on LOG(FATAL) triggering an exit (the default behavior is
+  // SIGABRT).  The normal test launcher does this at initialization, but since
+  // we still do not use this on Android, we must install the handler ourselves.
+  logging::SetLogAssertHandler(UnitTestAssertHandler);
 #endif
   // Always go through re-execution for death tests.
   // This makes gtest only marginally slower for us and has the

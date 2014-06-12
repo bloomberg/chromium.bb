@@ -106,6 +106,8 @@ void CodeGen::PrintProgram(const SandboxBPF::Program& program) {
           fprintf(stderr, "Trap #%d\n", iter->k & SECCOMP_RET_DATA);
         } else if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
           fprintf(stderr, "errno = %d\n", iter->k & SECCOMP_RET_DATA);
+        } else if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_TRACE) {
+          fprintf(stderr, "Trace #%d\n", iter->k & SECCOMP_RET_DATA);
         } else if (iter->k == SECCOMP_RET_ALLOW) {
           fprintf(stderr, "Allowed\n");
         } else {

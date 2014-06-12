@@ -30,6 +30,12 @@ class SANDBOX_EXPORT ErrorCode {
     // "errno" (see below) value instead.
     ERR_ALLOWED = 0x04000000,
 
+    // If the progress is being ptraced with PTRACE_O_TRACESECCOMP, then the
+    // tracer will be notified of a PTRACE_EVENT_SECCOMP and allowed to change
+    // or skip the system call.  The lower 16 bits of err will be available to
+    // the tracer via PTRACE_GETEVENTMSG.
+    ERR_TRACE   = 0x08000000,
+
     // Deny the system call with a particular "errno" value.
     // N.B.: It is also possible to return "0" here. That would normally
     //       indicate success, but it won't actually run the system call.
