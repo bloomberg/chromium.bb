@@ -35,7 +35,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect_conversions.h"
@@ -43,6 +42,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -375,10 +375,6 @@ Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
 // static
-gfx::Font* Tab::font_ = NULL;
-// static
-int Tab::font_height_ = 0;
-// static
 Tab::ImageCache* Tab::image_cache_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,6 +389,8 @@ Tab::Tab(TabController* controller)
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
       animating_media_state_(TAB_MEDIA_STATE_NONE),
+      close_button_(NULL),
+      title_(new views::Label()),
       tab_activated_with_last_gesture_begin_(false),
       hover_controller_(this),
       showing_icon_(false),
@@ -407,6 +405,11 @@ Tab::Tab(TabController* controller)
   set_notify_enter_exit_on_child(true);
 
   set_id(VIEW_ID_TAB);
+
+  title_->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
+  title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  title_->SetElideBehavior(gfx::FADE_TAIL);
+  AddChildView(title_);
 
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);
@@ -449,6 +452,16 @@ void Tab::SetData(const TabRendererData& data) {
 
   TabRendererData old(data_);
   data_ = data;
+
+  base::string16 title = data_.title;
+  if (title.empty()) {
+    title = data_.loading ?
+        l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
+        CoreTabHelper::GetDefaultTitle();
+  } else {
+    Browser::FormatTitleForDisplay(&title);
+  }
+  title_->SetText(title);
 
   if (data_.IsCrashed()) {
     if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
@@ -686,7 +699,8 @@ void Tab::Layout() {
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
   const int kTabIconSize = gfx::kFaviconSize;
-  int content_height = std::max(kTabIconSize, font_height_);
+  const int font_height = title_->font_list().GetHeight();
+  int content_height = std::max(kTabIconSize, font_height);
   close_button_->SetBorder(views::Border::NullBorder());
   gfx::Size close_button_size(close_button_->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
@@ -758,14 +772,15 @@ void Tab::Layout() {
       kTitleTextOffsetYAsh : kTitleTextOffsetY;
   int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
   int title_top = kTopPadding + title_text_offset +
-      (content_height - font_height_) / 2;
+      (content_height - font_height) / 2;
+  gfx::Rect title_bounds(title_left, title_top, 0, 0);
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
     gfx::Size minimum_size = GetMinimumUnselectedSize();
-    int text_height = title_top + font_height_ + kBottomPadding;
+    int text_height = title_top + font_height + kBottomPadding;
     if (text_height > minimum_size.height())
       title_top -= (text_height - minimum_size.height()) / 2;
 
@@ -783,19 +798,11 @@ void Tab::Layout() {
       title_width = lb.width() - title_left;
     }
     title_width = std::max(title_width, 0);
-    title_bounds_.SetRect(title_left, title_top, title_width, font_height_);
-  } else {
-    title_bounds_.SetRect(title_left, title_top, 0, 0);
+    title_bounds.SetRect(title_left, title_top, title_width, font_height);
   }
 
-  // Certain UI elements within the Tab (the favicon, etc.) are not represented
-  // as child Views (which is the preferred method).  Instead, these UI elements
-  // are drawn directly on the canvas from within Tab::OnPaint(). The Tab's
-  // child Views (for example, the Tab's close button which is a views::Button
-  // instance) are automatically mirrored by the mirroring infrastructure in
-  // views. The elements Tab draws directly on the canvas need to be manually
-  // mirrored if the View's layout is right-to-left.
-  title_bounds_.set_x(GetMirroredXForRect(title_bounds_));
+  title_bounds.set_x(GetMirroredXForRect(title_bounds));
+  title_->SetBoundsRect(title_bounds);
 }
 
 void Tab::OnThemeChanged() {
@@ -840,7 +847,7 @@ bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
 }
 
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
-  origin->set_x(title_bounds_.x() + 10);
+  origin->set_x(title_->x() + 10);
   origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
   return true;
 }
@@ -983,14 +990,6 @@ void Tab::GetAccessibleState(ui::AXViewState* state) {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
 
-const gfx::Rect& Tab::GetTitleBounds() const {
-  return title_bounds_;
-}
-
-const gfx::Rect& Tab::GetIconBounds() const {
-  return favicon_bounds_;
-}
-
 void Tab::MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const {
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth)
     return;
@@ -1028,13 +1027,13 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 
   PaintTabBackground(canvas);
 
-  SkColor title_color = GetThemeProvider()->
-      GetColor(IsSelected() ?
-          ThemeProperties::COLOR_TAB_TEXT :
-          ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-
-  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
-    PaintTitle(canvas, title_color);
+  const SkColor title_color = GetThemeProvider()->GetColor(IsSelected() ?
+      ThemeProperties::COLOR_TAB_TEXT :
+      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth) {
+    title_->SetEnabledColor(title_color);
+    title_->Paint(canvas, views::CullSet());
+  }
 
   if (show_icon)
     PaintIcon(canvas);
@@ -1331,7 +1330,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {
-  gfx::Rect bounds = GetIconBounds();
+  gfx::Rect bounds = favicon_bounds_;
   if (bounds.IsEmpty())
     return;
 
@@ -1355,9 +1354,9 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
     bounds.set_y(bounds.y() + favicon_hiding_offset_);
     DrawIconCenter(canvas, crashed_favicon, 0,
-                    crashed_favicon.width(),
-                    crashed_favicon.height(),
-                    bounds, true, SkPaint());
+                   crashed_favicon.width(),
+                   crashed_favicon.height(),
+                   bounds, true, SkPaint());
   } else if (!data().favicon.isNull()) {
     // Paint the normal favicon.
     DrawIconCenter(canvas, data().favicon, 0,
@@ -1387,21 +1386,6 @@ void Tab::PaintMediaIndicator(gfx::Canvas* canvas) {
   DrawIconAtLocation(canvas, media_indicator_image, 0,
                      bounds.x(), bounds.y(), media_indicator_image.width(),
                      media_indicator_image.height(), true, paint);
-}
-
-void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
-  // Paint the Title.
-  base::string16 title = data().title;
-  if (title.empty()) {
-    title = data().loading ?
-        l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
-        CoreTabHelper::GetDefaultTitle();
-  } else {
-    Browser::FormatTitleForDisplay(&title);
-  }
-
-  canvas->DrawFadedString(title, gfx::FontList(*font_), title_color,
-                          GetTitleBounds(), 0);
 }
 
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
@@ -1546,12 +1530,11 @@ void Tab::StartMediaIndicatorAnimation() {
 }
 
 void Tab::ScheduleIconPaint() {
-  gfx::Rect bounds = GetIconBounds();
+  gfx::Rect bounds = favicon_bounds_;
   if (bounds.IsEmpty())
     return;
 
-  // Extends the area to the bottom when sad_favicon is
-  // animating.
+  // Extends the area to the bottom when sad_favicon is animating.
   if (IsPerformingCrashAnimation())
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
@@ -1595,11 +1578,6 @@ void Tab::InitTabResources() {
     return;
 
   initialized = true;
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  font_ = new gfx::Font(rb.GetFont(ui::ResourceBundle::BaseFont));
-  font_height_ = font_->GetHeight();
-
   image_cache_ = new ImageCache();
 
   // Load the tab images once now, and maybe again later if the theme changes.

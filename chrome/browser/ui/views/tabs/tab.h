@@ -24,12 +24,12 @@ class TabController;
 namespace gfx {
 class Animation;
 class AnimationContainer;
-class Font;
 class LinearAnimation;
 class MultiAnimation;
 }
 namespace views {
 class ImageButton;
+class Label;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,10 +185,6 @@ class Tab : public gfx::AnimationDelegate,
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // Returns the bounds of the title and icon.
-  const gfx::Rect& GetTitleBounds() const;
-  const gfx::Rect& GetIconBounds() const;
-
   // Invoked from Layout to adjust the position of the favicon or media
   // indicator for mini tabs.
   void MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const;
@@ -212,10 +208,9 @@ class Tab : public gfx::AnimationDelegate,
                                                  int tab_id);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
 
-  // Paints the favicon, media indicator icon, etc., mirrored for RTL if needed.
+  // Paints the favicon and media indicator icon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
   void PaintMediaIndicator(gfx::Canvas* canvas);
-  void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Invoked if data_.network_state changes, or the network_state is not none.
   void AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
@@ -326,6 +321,7 @@ class Tab : public gfx::AnimationDelegate,
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;
+  views::Label* title_;
 
   bool tab_activated_with_last_gesture_begin_;
 
@@ -333,7 +329,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
-  gfx::Rect title_bounds_;
   gfx::Rect media_indicator_bounds_;
 
   // The offset used to paint the inactive background image.
@@ -364,9 +359,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // The current color of the close button.
   SkColor close_button_color_;
-
-  static gfx::Font* font_;
-  static int font_height_;
 
   // As the majority of the tabs are inactive, and painting tabs is slowish,
   // we cache a handful of the inactive tab backgrounds here.

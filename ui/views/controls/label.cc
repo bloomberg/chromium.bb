@@ -120,11 +120,9 @@ void Label::ClearEmbellishing() {
 }
 
 void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
-  // If the View's UI layout is right-to-left and directionality_mode_ is
-  // USE_UI_DIRECTIONALITY, we need to flip the alignment so that the alignment
-  // settings take into account the text directionality.
-  if (base::i18n::IsRTL() && (directionality_mode_ == USE_UI_DIRECTIONALITY) &&
-      (alignment != gfx::ALIGN_CENTER)) {
+  // If the UI layout is right-to-left, flip the alignment direction.
+  if (base::i18n::IsRTL() &&
+      (alignment == gfx::ALIGN_LEFT || alignment == gfx::ALIGN_RIGHT)) {
     alignment = (alignment == gfx::ALIGN_LEFT) ?
         gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
   }
@@ -132,6 +130,15 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
     horizontal_alignment_ = alignment;
     SchedulePaint();
   }
+}
+
+gfx::HorizontalAlignment Label::GetHorizontalAlignment() const {
+  if (horizontal_alignment_ != gfx::ALIGN_TO_HEAD)
+    return horizontal_alignment_;
+
+  const base::i18n::TextDirection dir =
+      base::i18n::GetFirstStrongCharacterDirection(layout_text());
+  return dir == base::i18n::RIGHT_TO_LEFT ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
 }
 
 void Label::SetLineHeight(int height) {
@@ -405,7 +412,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   allow_character_break_ = false;
   elide_behavior_ = gfx::ELIDE_TAIL;
   collapse_when_hidden_ = false;
-  directionality_mode_ = USE_UI_DIRECTIONALITY;
+  directionality_mode_ = gfx::DIRECTIONALITY_FROM_UI;
   enabled_shadow_color_ = 0;
   disabled_shadow_color_ = 0;
   shadow_offset_.SetPoint(1, 1);
@@ -430,33 +437,27 @@ void Label::RecalculateColors() {
 }
 
 gfx::Rect Label::GetTextBounds() const {
-  gfx::Rect available_rect(GetAvailableRect());
+  gfx::Rect available(GetAvailableRect());
   gfx::Size text_size(GetTextSize());
-  text_size.set_width(std::min(available_rect.width(), text_size.width()));
-
-  gfx::Insets insets = GetInsets();
-  gfx::Point text_origin(insets.left(), insets.top());
-  switch (horizontal_alignment_) {
+  text_size.set_width(std::min(available.width(), text_size.width()));
+  gfx::Point origin(GetInsets().left(), GetInsets().top());
+  switch (GetHorizontalAlignment()) {
     case gfx::ALIGN_LEFT:
       break;
     case gfx::ALIGN_CENTER:
-      // We put any extra margin pixel on the left rather than the right.  We
-      // used to do this because measurement on Windows used
-      // GetTextExtentPoint32(), which could report a value one too large on the
-      // right; we now use DrawText(), and who knows if it can also do this.
-      text_origin.Offset((available_rect.width() + 1 - text_size.width()) / 2,
-                         0);
+      // Put any extra margin pixel on the left to match the legacy behavior
+      // from the use of GetTextExtentPoint32() on Windows.
+      origin.Offset((available.width() + 1 - text_size.width()) / 2, 0);
       break;
     case gfx::ALIGN_RIGHT:
-      text_origin.set_x(available_rect.right() - text_size.width());
+      origin.set_x(available.right() - text_size.width());
       break;
     default:
       NOTREACHED();
       break;
   }
-  text_origin.Offset(0,
-      std::max(0, (available_rect.height() - text_size.height())) / 2);
-  return gfx::Rect(text_origin, text_size);
+  origin.Offset(0, std::max(0, (available.height() - text_size.height())) / 2);
+  return gfx::Rect(origin, text_size);
 }
 
 int Label::ComputeDrawStringFlags() const {
@@ -466,7 +467,11 @@ int Label::ComputeDrawStringFlags() const {
   if (SkColorGetA(background_color_) != 0xFF)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
+  if (directionality_mode_ == gfx::DIRECTIONALITY_FORCE_LTR) {
+    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+  } else if (directionality_mode_ == gfx::DIRECTIONALITY_FORCE_RTL) {
+    flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
+  } else if (directionality_mode_ == gfx::DIRECTIONALITY_FROM_TEXT) {
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(layout_text());
     if (direction == base::i18n::RIGHT_TO_LEFT)
@@ -475,7 +480,7 @@ int Label::ComputeDrawStringFlags() const {
       flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
   }
 
-  switch (horizontal_alignment_) {
+  switch (GetHorizontalAlignment()) {
     case gfx::ALIGN_LEFT:
       flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
       break;
@@ -484,6 +489,9 @@ int Label::ComputeDrawStringFlags() const {
       break;
     case gfx::ALIGN_RIGHT:
       flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
+      break;
+    default:
+      NOTREACHED();
       break;
   }
 
