@@ -1770,7 +1770,7 @@ static void CalculateDrawPropertiesInternal(
       layer_draw_properties.target_space_transform.
           IsIdentityOrIntegerTranslation();
 
-  gfx::RectF content_rect(layer->content_bounds());
+  gfx::Rect content_rect(layer->content_bounds());
 
   // full_hierarchy_matrix is the matrix that transforms objects between screen
   // space (except projection matrix) and the most recent RenderSurfaceImpl's
@@ -2003,8 +2003,8 @@ static void CalculateDrawPropertiesInternal(
   if (adjust_text_aa)
     layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
 
-  gfx::Rect rect_in_target_space = ToEnclosingRect(
-      MathUtil::MapClippedRect(layer->draw_transform(), content_rect));
+  gfx::Rect rect_in_target_space =
+      MathUtil::MapEnclosingClippedRect(layer->draw_transform(), content_rect);
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;
