@@ -45,7 +45,7 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
                              PickleIterator iter,
                              const std::vector<base::ScopedFD*>& fds);
 
-  void HandleGetFontFamilyForChar(int fd,
+  void HandleGetFallbackFontForChar(int fd,
                                   const Pickle& pickle,
                                   PickleIterator iter,
                                   const std::vector<base::ScopedFD*>& fds);

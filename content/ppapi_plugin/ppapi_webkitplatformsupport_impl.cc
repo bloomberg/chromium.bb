@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/platform/android/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
@@ -52,10 +52,16 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
   // Empty class.
 #elif defined(OS_POSIX)
   SandboxSupport();
+  // TODO(dro): crbug.com/382411 Remove this function, once the blink side
+  // does not need it anymore.
   virtual void getFontFamilyForCharacter(
       WebUChar32 character,
       const char* preferred_locale,
       blink::WebFontFamily* family);
+  virtual void getFallbackFontForCharacter(
+      WebUChar32 character,
+      const char* preferred_locale,
+      blink::WebFallbackFont* fallbackFont);
   virtual void getRenderStyleForStrike(
       const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
 
@@ -63,7 +69,7 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
   // WebKit likes to ask us for the correct font family to use for a set of
   // unicode code points. It needs this information frequently so we cache it
   // here.
-  std::map<int32_t, blink::WebFontFamily> unicode_font_families_;
+  std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
   // For debugging crbug.com/312965
   base::PlatformThreadId creation_thread_;
 #endif
@@ -113,7 +119,7 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
   ppapi::ProxyLock::AssertAcquired();
   // For debugging crbug.com/312965
   CHECK_EQ(creation_thread_, base::PlatformThread::CurrentId());
-  const std::map<int32_t, blink::WebFontFamily>::const_iterator iter =
+  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     family->name = iter->second.name;
@@ -122,8 +128,35 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
     return;
   }
 
-  GetFontFamilyForCharacter(character, preferred_locale, family);
-  unicode_font_families_.insert(std::make_pair(character, *family));
+  blink::WebFallbackFont fallbackFont;
+  GetFallbackFontForCharacter(character, preferred_locale, &fallbackFont);
+  unicode_font_families_.insert(std::make_pair(character, fallbackFont));
+  family->name = fallbackFont.name;
+  family->isBold = fallbackFont.isBold;
+  family->isItalic = fallbackFont.isItalic;
+}
+
+void
+PpapiWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
+    WebUChar32 character,
+    const char* preferred_locale,
+    blink::WebFallbackFont* fallbackFont) {
+  ppapi::ProxyLock::AssertAcquired();
+  // For debugging crbug.com/312965
+  CHECK_EQ(creation_thread_, base::PlatformThread::CurrentId());
+  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
+      unicode_font_families_.find(character);
+  if (iter != unicode_font_families_.end()) {
+    fallbackFont->name = iter->second.name;
+    fallbackFont->filename = iter->second.filename;
+    fallbackFont->ttcIndex = iter->second.ttcIndex;
+    fallbackFont->isBold = iter->second.isBold;
+    fallbackFont->isItalic = iter->second.isItalic;
+    return;
+  }
+
+  GetFallbackFontForCharacter(character, preferred_locale, fallbackFont);
+  unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(

@@ -10,7 +10,7 @@
 #include "content/public/common/content_descriptors.h"
 
 namespace blink {
-struct WebFontFamily;
+struct WebFallbackFont;
 struct WebFontRenderStyle;
 }
 
@@ -23,9 +23,9 @@ namespace content {
 //
 // Returns: a font family instance.
 // The instance has an empty font name if the request could not be satisfied.
-void GetFontFamilyForCharacter(const int32_t character,
+void GetFallbackFontForCharacter(const int32_t character,
                                const char* preferred_locale,
-                               blink::WebFontFamily* family);
+                               blink::WebFallbackFont* family);
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
                              blink::WebFontRenderStyle* out);

@@ -219,8 +219,8 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
     HandleFontMatchRequest(fd, pickle, iter, fds.get());
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
     HandleFontOpenRequest(fd, pickle, iter, fds.get());
-  } else if (kind == LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHAR) {
-    HandleGetFontFamilyForChar(fd, pickle, iter, fds.get());
+  } else if (kind == LinuxSandbox::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
+    HandleGetFallbackFontForChar(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
     HandleLocaltime(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
@@ -311,7 +311,7 @@ void SandboxIPCHandler::HandleFontOpenRequest(
   }
 }
 
-void SandboxIPCHandler::HandleGetFontFamilyForChar(
+void SandboxIPCHandler::HandleGetFallbackFontForChar(
     int fd,
     const Pickle& pickle,
     PickleIterator iter,
@@ -328,17 +328,23 @@ void SandboxIPCHandler::HandleGetFontFamilyForChar(
   if (!pickle.ReadString(&iter, &preferred_locale))
     return;
 
-  blink::WebFontFamily family;
-  WebFontInfo::familyForChar(c, preferred_locale.c_str(), &family);
+  blink::WebFallbackFont fallbackFont;
+  WebFontInfo::fallbackFontForChar(c, preferred_locale.c_str(), &fallbackFont);
 
   Pickle reply;
-  if (family.name.data()) {
-    reply.WriteString(family.name.data());
+  if (fallbackFont.name.data()) {
+    reply.WriteString(fallbackFont.name.data());
   } else {
     reply.WriteString(std::string());
   }
-  reply.WriteBool(family.isBold);
-  reply.WriteBool(family.isItalic);
+  if (fallbackFont.filename.data()) {
+    reply.WriteString(fallbackFont.filename.data());
+  } else {
+    reply.WriteString(std::string());
+  }
+  reply.WriteInt(fallbackFont.ttcIndex);
+  reply.WriteBool(fallbackFont.isBold);
+  reply.WriteBool(fallbackFont.isItalic);
   SendRendererReply(fds, reply, -1);
 }
 

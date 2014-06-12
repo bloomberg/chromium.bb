@@ -101,7 +101,7 @@
 
 #include "base/synchronization/lock.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
@@ -208,10 +208,16 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       CGFontRef* container,
       uint32* font_id);
 #elif defined(OS_POSIX)
+  // TODO(dro): crbug.com/382411 Remove this function, once the blink side
+  // does not need it anymore.
   virtual void getFontFamilyForCharacter(
+        blink::WebUChar32 character,
+        const char* preferred_locale,
+        blink::WebFontFamily* family);
+  virtual void getFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
-      blink::WebFontFamily* family);
+      blink::WebFallbackFont* fallbackFont);
   virtual void getRenderStyleForStrike(
       const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
 
@@ -220,7 +226,7 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
   // unicode code points. It needs this information frequently so we cache it
   // here.
   base::Lock unicode_font_families_mutex_;
-  std::map<int32_t, blink::WebFontFamily> unicode_font_families_;
+  std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
 #endif
 };
 #endif  // defined(OS_ANDROID)
@@ -614,7 +620,7 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
     const char* preferred_locale,
     blink::WebFontFamily* family) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, blink::WebFontFamily>::const_iterator iter =
+  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     family->name = iter->second.name;
@@ -623,8 +629,34 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
     return;
   }
 
-  GetFontFamilyForCharacter(character, preferred_locale, family);
-  unicode_font_families_.insert(std::make_pair(character, *family));
+  blink::WebFallbackFont fallbackFont;
+  GetFallbackFontForCharacter(character, preferred_locale, &fallbackFont);
+  unicode_font_families_.insert(std::make_pair(character, fallbackFont));
+  family->name = fallbackFont.name;
+  family->isBold = fallbackFont.isBold;
+  family->isItalic = fallbackFont.isItalic;
+}
+
+
+void
+RendererWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
+    blink::WebUChar32 character,
+    const char* preferred_locale,
+    blink::WebFallbackFont* fallbackFont) {
+  base::AutoLock lock(unicode_font_families_mutex_);
+  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
+      unicode_font_families_.find(character);
+  if (iter != unicode_font_families_.end()) {
+    fallbackFont->name = iter->second.name;
+    fallbackFont->filename = iter->second.filename;
+    fallbackFont->ttcIndex = iter->second.ttcIndex;
+    fallbackFont->isBold = iter->second.isBold;
+    fallbackFont->isItalic = iter->second.isItalic;
+    return;
+  }
+
+  GetFallbackFontForCharacter(character, preferred_locale, fallbackFont);
+  unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
 }
 
 void
