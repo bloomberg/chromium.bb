@@ -9,17 +9,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/history_service.h"
 #include "ui/base/models/table_model.h"
 
 class GURL;
 class Profile;
-class HistoryService;
-
-namespace history {
-class URLRow;
-}
 
 namespace ui {
 class TableModelObserver;
@@ -69,11 +63,17 @@ class CustomHomePagesTableModel : public ui::TableModel {
   void LoadTitle(Entry* entry);
 
   // Callback from history service. Updates the title of the Entry whose
-  // |url| matches |entry_url| and notifies the observer of the change.
-  void OnGotTitle(const GURL& entry_url,
+  // |title_handle| matches |handle| and notifies the observer of the change.
+  void OnGotTitle(HistoryService::Handle handle,
                   bool found_url,
-                  const history::URLRow& row,
-                  const history::VisitVector& visits);
+                  const history::URLRow* row,
+                  history::VisitVector* visits);
+
+  // Returns the entry whose |member| matches |handle| and sets |entry_index| to
+  // the index of the entry.
+  Entry* GetEntryByLoadHandle(CancelableRequestProvider::Handle Entry::* member,
+                              CancelableRequestProvider::Handle handle,
+                              int* entry_index);
 
   // Returns the URL for a particular row, formatted for display to the user.
   base::string16 FormattedURL(int row) const;
@@ -87,7 +87,7 @@ class CustomHomePagesTableModel : public ui::TableModel {
   ui::TableModelObserver* observer_;
 
   // Used in loading titles.
-  base::CancelableTaskTracker task_tracker_;
+  CancelableRequestConsumer history_query_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomHomePagesTableModel);
 };

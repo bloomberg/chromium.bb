@@ -1373,11 +1373,11 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     history_service->QueryURL(
         url,
         false,
+        &query_url_consumer_,
         base::Bind(&PrerenderManager::OnHistoryServiceDidQueryURL,
                    base::Unretained(this),
                    origin,
-                   experiment),
-        &query_url_tracker_);
+                   experiment));
   }
 
   StartSchedulingPeriodicCleanups();
@@ -1852,9 +1852,10 @@ void PrerenderManager::RecordCookieSendType(Origin origin,
 void PrerenderManager::OnHistoryServiceDidQueryURL(
     Origin origin,
     uint8 experiment_id,
+    CancelableRequestProvider::Handle handle,
     bool success,
-    const history::URLRow& url_row,
-    const history::VisitVector& /*visits*/) {
+    const history::URLRow* url_row,
+    history::VisitVector* visists) {
   histograms_->RecordPrerenderPageVisitedStatus(origin, experiment_id, success);
 }
 

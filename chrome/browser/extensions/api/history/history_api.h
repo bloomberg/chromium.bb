@@ -135,9 +135,10 @@ class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
   virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history function to provide results.
-  void QueryComplete(bool success,
-                     const history::URLRow& url_row,
-                     const history::VisitVector& visits);
+  void QueryComplete(HistoryService::Handle request_service,
+                     bool success,
+                     const history::URLRow* url_row,
+                     history::VisitVector* visits);
 };
 
 class HistorySearchFunction : public HistoryFunctionWithCallback {

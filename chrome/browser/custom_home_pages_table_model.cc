@@ -9,7 +9,6 @@
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -56,7 +55,7 @@ bool ShouldAddPage(const GURL& url) {
 }  // namespace
 
 struct CustomHomePagesTableModel::Entry {
-  Entry() : task_id(base::CancelableTaskTracker::kBadTaskId) {}
+  Entry() : title_handle(0) {}
 
   // URL of the page.
   GURL url;
@@ -64,9 +63,8 @@ struct CustomHomePagesTableModel::Entry {
   // Page title.  If this is empty, we'll display the URL as the entry.
   base::string16 title;
 
-  // If not |base::CancelableTaskTracker::kBadTaskId|, indicates we're loading
-  // the title for the page.
-  base::CancelableTaskTracker::TaskId task_id;
+  // If non-zero, indicates we're loading the title for the page.
+  HistoryService::Handle title_handle;
 };
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
@@ -161,9 +159,11 @@ void CustomHomePagesTableModel::Remove(int index) {
   Entry* entry = &(entries_[index]);
   // Cancel any pending load requests now so we don't deref a bogus pointer when
   // we get the loaded notification.
-  if (entry->task_id != base::CancelableTaskTracker::kBadTaskId) {
-    task_tracker_.TryCancel(entry->task_id);
-    entry->task_id = base::CancelableTaskTracker::kBadTaskId;
+  if (entry->title_handle) {
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
+    if (history_service)
+      history_service->CancelRequest(entry->title_handle);
   }
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
   if (observer_)
@@ -224,39 +224,44 @@ void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
     HistoryService* history_service = HistoryServiceFactory::GetForProfile(
         profile_, Profile::EXPLICIT_ACCESS);
   if (history_service) {
-    entry->task_id = history_service->QueryURL(
-        entry->url,
-        false,
+    entry->title_handle = history_service->QueryURL(entry->url, false,
+        &history_query_consumer_,
         base::Bind(&CustomHomePagesTableModel::OnGotTitle,
-                   base::Unretained(this),
-                   entry->url),
-        &task_tracker_);
+                   base::Unretained(this)));
   }
 }
 
-void CustomHomePagesTableModel::OnGotTitle(const GURL& entry_url,
+void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
                                            bool found_url,
-                                           const history::URLRow& row,
-                                           const history::VisitVector& visits) {
-  int entry_index = 0;
-  Entry* entry = NULL;
-  for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].url == entry_url) {
-      entry = &entries_[i];
-      entry_index = i;
-      break;
-    }
-  }
+                                           const history::URLRow* row,
+                                           history::VisitVector* visits) {
+  int entry_index;
+  Entry* entry =
+      GetEntryByLoadHandle(&Entry::title_handle, handle, &entry_index);
   if (!entry) {
     // The URLs changed before we were called back.
     return;
   }
-  entry->task_id = base::CancelableTaskTracker::kBadTaskId;
-  if (found_url && !row.title().empty()) {
-    entry->title = row.title();
+  entry->title_handle = 0;
+  if (found_url && !row->title().empty()) {
+    entry->title = row->title();
     if (observer_)
       observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
   }
+}
+
+CustomHomePagesTableModel::Entry*
+    CustomHomePagesTableModel::GetEntryByLoadHandle(
+    CancelableRequestProvider::Handle Entry::* member,
+    CancelableRequestProvider::Handle handle,
+    int* index) {
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    if (entries_[i].*member == handle) {
+      *index = static_cast<int>(i);
+      return &entries_[i];
+    }
+  }
+  return NULL;
 }
 
 base::string16 CustomHomePagesTableModel::FormattedURL(int row) const {

@@ -11,7 +11,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/test/mock_time_provider.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -69,14 +68,15 @@ std::string TestSearchTermsData::GoogleBaseURLValue() const {
 struct QueryHistoryCallbackImpl {
   QueryHistoryCallbackImpl() : success(false) {}
 
-  void Callback(bool success,
-                const history::URLRow& row,
-                const history::VisitVector& visits) {
+  void Callback(HistoryService::Handle handle,
+                bool success,
+                const history::URLRow* row,
+                history::VisitVector* visits) {
     this->success = success;
-    if (success) {
-      this->row = row;
-      this->visits = visits;
-    }
+    if (row)
+      this->row = *row;
+    if (visits)
+      this->visits = *visits;
   }
 
   bool success;
@@ -1071,13 +1071,11 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   test_util_.profile()->BlockUntilHistoryProcessesPendingRequests();
 
   // Query history for the generated url.
-  base::CancelableTaskTracker tracker;
+  CancelableRequestConsumer consumer;
   QueryHistoryCallbackImpl callback;
-  history->QueryURL(GURL("http://keyword"),
-                    true,
-                    base::Bind(&QueryHistoryCallbackImpl::Callback,
-                               base::Unretained(&callback)),
-                    &tracker);
+  history->QueryURL(GURL("http://keyword"), true, &consumer,
+      base::Bind(&QueryHistoryCallbackImpl::Callback,
+                 base::Unretained(&callback)));
 
   // Wait for the request to be processed.
   test_util_.profile()->BlockUntilHistoryProcessesPendingRequests();
