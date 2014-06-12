@@ -41,6 +41,7 @@ var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
+var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -201,6 +202,8 @@ function load() {
                                 [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
+    OptionsPage.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
+                                LanguageOptions.getInstance());
   }
 
   if (!cr.isWindows && !cr.isMac) {

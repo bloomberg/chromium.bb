@@ -119,9 +119,11 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
 
   input_method::InputMethodDescriptors ext_ime_descriptors;
   manager->GetInputMethodExtensions(&ext_ime_descriptors);
-  localized_strings->Set("extensionImeList",
-                         ConvertInputMethodDescriptosToIMEList(
-                             ext_ime_descriptors));
+
+  base::ListValue* ext_ime_list = ConvertInputMethodDescriptorsToIMEList(
+      ext_ime_descriptors);
+  AddImeProvider(ext_ime_list);
+  localized_strings->Set("extensionImeList", ext_ime_list);
 
   ComponentExtensionIMEManager* component_extension_manager =
       input_method::InputMethodManager::Get()
@@ -129,7 +131,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   if (component_extension_manager->IsInitialized()) {
     localized_strings->Set(
         "componentExtensionImeList",
-        ConvertInputMethodDescriptosToIMEList(
+        ConvertInputMethodDescriptorsToIMEList(
             component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
     composition_extension_appended_ = true;
   } else {
@@ -157,6 +159,7 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+// static
 base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodManager* manager =
@@ -418,7 +421,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
 }
 
 base::ListValue*
-    CrosLanguageOptionsHandler::ConvertInputMethodDescriptosToIMEList(
+    CrosLanguageOptionsHandler::ConvertInputMethodDescriptorsToIMEList(
         const input_method::InputMethodDescriptors& descriptors) {
   scoped_ptr<base::ListValue> ime_ids_list(new base::ListValue());
   for (size_t i = 0; i < descriptors.size(); ++i) {
@@ -519,7 +522,7 @@ void CrosLanguageOptionsHandler::OnImeComponentExtensionInitialized() {
 
   DCHECK(manager->IsInitialized());
   scoped_ptr<base::ListValue> ime_list(
-      ConvertInputMethodDescriptosToIMEList(
+      ConvertInputMethodDescriptorsToIMEList(
           manager->GetAllIMEAsInputMethodDescriptor()));
   web_ui()->CallJavascriptFunction(
       "options.LanguageOptions.onComponentManagerInitialized",
@@ -542,12 +545,31 @@ void CrosLanguageOptionsHandler::InitializePage() {
   }
 
   scoped_ptr<base::ListValue> ime_list(
-      ConvertInputMethodDescriptosToIMEList(
+      ConvertInputMethodDescriptorsToIMEList(
           component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
   web_ui()->CallJavascriptFunction(
       "options.LanguageOptions.onComponentManagerInitialized",
       *ime_list);
   composition_extension_appended_ = true;
+}
+
+void CrosLanguageOptionsHandler::AddImeProvider(base::ListValue* list) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ExtensionService* extension_service = profile->GetExtensionService();
+  for (size_t i = 0; i < list->GetSize(); i++) {
+    base::DictionaryValue* entry;
+    list->GetDictionary(i, &entry);
+
+    std::string input_method_id;
+    entry->GetString("id", &input_method_id);
+
+    std::string extension_id =
+        extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
+    const extensions::Extension* extension =
+        extension_service->GetExtensionById(extension_id, false);
+    if (extension)
+      entry->SetString("extensionName", extension->name());
+  }
 }
 
 }  // namespace options

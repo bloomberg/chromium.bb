@@ -38,6 +38,7 @@
 <include src="chromeos/display_overscan.js"></include>
 <include src="chromeos/keyboard_overlay.js"></include>
 <include src="chromeos/pointer_overlay.js"></include>
+<include src="chromeos/third_party_ime_confirm_overlay.js"></include>
 var AccountsOptions = options.AccountsOptions;
 var ChangePictureOptions = options.ChangePictureOptions;
 var DetailsInternetPage = options.internet.DetailsInternetPage;

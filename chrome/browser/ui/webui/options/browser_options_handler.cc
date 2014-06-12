@@ -414,6 +414,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "securityTitle", IDS_OPTIONS_SECURITY_SECTION_TITLE },
     { "syncOverview", IDS_SYNC_OVERVIEW },
     { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
+    { "thirdPartyImeConfirmEnable", IDS_OK },
+    { "thirdPartyImeConfirmDisable", IDS_CANCEL },
+    { "thirdPartyImeConfirmMessage",
+      IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_MESSAGE },
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
     { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
 #else
@@ -603,6 +607,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "consumerManagementEnabled",
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableConsumerManagement));
+
+  RegisterTitle(values, "thirdPartyImeConfirmOverlay",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
 #endif
 }
 

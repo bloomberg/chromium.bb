@@ -8,6 +8,8 @@
 cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
   /** @const */ var LanguageList = options.LanguageList;
+  /** @const */ var ThirdPartyImeConfirmOverlay =
+      options.ThirdPartyImeConfirmOverlay;
 
   /**
    * Spell check dictionary download status.
@@ -318,6 +320,7 @@ cr.define('options', function() {
 
         var input = element.querySelector('input');
         input.inputMethodId = inputMethod.id;
+        input.imeProvider = inputMethod.extensionName;
         var span = element.querySelector('span');
         span.textContent = inputMethod.displayName;
 
@@ -823,6 +826,31 @@ cr.define('options', function() {
     handleCheckboxClick_: function(e) {
       var checkbox = e.target;
 
+      // Third party IMEs require additional confirmation prior to enabling due
+      // to privacy risk.
+      if (/^_ext_ime_/.test(checkbox.inputMethodId) && checkbox.checked) {
+        var confirmationCallback = this.handleCheckboxUpdate_.bind(this,
+                                                                   checkbox);
+        var cancellationCallback = function() {
+          checkbox.checked = false;
+        };
+        ThirdPartyImeConfirmOverlay.showConfirmationDialog({
+          extension: checkbox.imeProvider,
+          confirm: confirmationCallback,
+          cancel: cancellationCallback
+        });
+      } else {
+        this.handleCheckboxUpdate_(checkbox);
+      }
+    },
+
+    /**
+     * Updates active IMEs based on change in state of a checkbox for an input
+     * method.
+     * @param {!Element} checkbox Updated checkbox element.
+     * @private
+     */
+    handleCheckboxUpdate_: function(checkbox) {
       if (checkbox.inputMethodId.match(/^_ext_ime_/)) {
         this.updateEnabledExtensionsFromCheckboxes_();
         this.saveEnabledExtensionPref_();
