@@ -39,6 +39,9 @@ class ViewTreeNodePrivate {
   void LocalRemoveChild(ViewTreeNode* child) {
     node_->LocalRemoveChild(child);
   }
+  void LocalReorder(ViewTreeNode* relative, OrderDirection direction) {
+    node_->LocalReorder(relative, direction);
+  }
   void LocalSetActiveView(View* view) {
     node_->LocalSetActiveView(view);
   }

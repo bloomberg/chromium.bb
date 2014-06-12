@@ -12,6 +12,7 @@
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 class SkBitmap;
@@ -45,6 +46,8 @@ class ViewManagerSynchronizer : public ViewManager,
   // refers to the root node.
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
+
+  void Reorder(Id node_id, Id relative_node_id, OrderDirection direction);
 
   // Returns true if the specified node/view was created by this connection.
   bool OwnsNode(Id id) const;
@@ -106,6 +109,10 @@ class ViewManagerSynchronizer : public ViewManager,
                                       Id old_parent_id,
                                       Id server_change_id,
                                       Array<INodePtr> nodes) OVERRIDE;
+  virtual void OnNodeReordered(Id node_id,
+                               Id relative_node_id,
+                               OrderDirection direction,
+                               Id server_change_id) OVERRIDE;
   virtual void OnNodeDeleted(Id node_id, Id server_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(Id node,
                                   Id new_view_id,

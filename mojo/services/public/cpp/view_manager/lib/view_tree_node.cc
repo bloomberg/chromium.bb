@@ -80,6 +80,72 @@ void RemoveChildImpl(ViewTreeNode* child, ViewTreeNode::Children* children) {
   }
 }
 
+class ScopedOrderChangedNotifier {
+ public:
+  ScopedOrderChangedNotifier(ViewTreeNode* node,
+                             ViewTreeNode* relative_node,
+                             OrderDirection direction)
+      : node_(node),
+        relative_node_(relative_node),
+        direction_(direction) {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeReordered(node_,
+                        relative_node_,
+                        direction_,
+                        ViewTreeNodeObserver::DISPOSITION_CHANGING));
+
+  }
+  ~ScopedOrderChangedNotifier() {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeReordered(node_,
+                        relative_node_,
+                        direction_,
+                        ViewTreeNodeObserver::DISPOSITION_CHANGED));
+  }
+
+ private:
+  ViewTreeNode* node_;
+  ViewTreeNode* relative_node_;
+  OrderDirection direction_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
+};
+
+// Returns true if the order actually changed.
+bool ReorderImpl(ViewTreeNode::Children* children,
+                 ViewTreeNode* node,
+                 ViewTreeNode* relative,
+                 OrderDirection direction) {
+  DCHECK(relative);
+  DCHECK_NE(node, relative);
+  DCHECK_EQ(node->parent(), relative->parent());
+
+  const size_t child_i =
+      std::find(children->begin(), children->end(), node) - children->begin();
+  const size_t target_i =
+      std::find(children->begin(), children->end(), relative) -
+      children->begin();
+  if ((direction == ORDER_ABOVE && child_i == target_i + 1) ||
+      (direction == ORDER_BELOW && child_i + 1 == target_i)) {
+    return false;
+  }
+
+  ScopedOrderChangedNotifier notifier(node, relative, direction);
+
+  const size_t dest_i =
+      direction == ORDER_ABOVE ?
+      (child_i < target_i ? target_i : target_i + 1) :
+      (child_i < target_i ? target_i - 1 : target_i);
+  children->erase(children->begin() + child_i);
+  children->insert(children->begin() + dest_i, node);
+
+  return true;
+}
+
 class ScopedSetActiveViewNotifier {
  public:
   ScopedSetActiveViewNotifier(ViewTreeNode* node,
@@ -238,6 +304,24 @@ void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
   }
 }
 
+void ViewTreeNode::MoveToFront() {
+  Reorder(parent_->children_.back(), ORDER_ABOVE);
+}
+
+void ViewTreeNode::MoveToBack() {
+  Reorder(parent_->children_.front(), ORDER_BELOW);
+}
+
+void ViewTreeNode::Reorder(ViewTreeNode* relative, OrderDirection direction) {
+  if (!LocalReorder(relative, direction))
+    return;
+  if (manager_) {
+    static_cast<ViewManagerSynchronizer*>(manager_)->Reorder(id_,
+                                                             relative->id(),
+                                                             direction);
+  }
+}
+
 bool ViewTreeNode::Contains(ViewTreeNode* child) const {
   if (manager_)
     CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
@@ -322,6 +406,11 @@ void ViewTreeNode::LocalRemoveChild(ViewTreeNode* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier notifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
+}
+
+bool ViewTreeNode::LocalReorder(ViewTreeNode* relative,
+                                OrderDirection direction) {
+  return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
 void ViewTreeNode::LocalSetActiveView(View* view) {

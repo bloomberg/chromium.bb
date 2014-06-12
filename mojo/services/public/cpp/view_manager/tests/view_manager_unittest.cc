@@ -250,6 +250,39 @@ void WaitForDestruction(ViewManager* view_manager,
   DoRunLoop();
 }
 
+class OrderChangeObserver : public ViewTreeNodeObserver {
+ public:
+  OrderChangeObserver(ViewTreeNode* node) : node_(node) {
+    node_->AddObserver(this);
+  }
+  virtual ~OrderChangeObserver() {
+    node_->RemoveObserver(this);
+  }
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeReordered(ViewTreeNode* node,
+                               ViewTreeNode* relative_node,
+                               OrderDirection direction,
+                               DispositionChangePhase phase) OVERRIDE {
+    if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return;
+
+    DCHECK_EQ(node, node_);
+    QuitRunLoop();
+  }
+
+  ViewTreeNode* node_;
+
+  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+};
+
+void WaitForOrderChange(ViewManager* view_manager,
+                        ViewTreeNode* node) {
+  OrderChangeObserver observer(node);
+  DoRunLoop();
+}
+
 // Tracks a node's destruction. Query is_valid() for current state.
 class NodeTracker : public ViewTreeNodeObserver {
  public:
@@ -707,6 +740,40 @@ TEST_F(ViewManagerTest, EmbeddingIdentity) {
   window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
   EXPECT_EQ(kWindowManagerURL, embedded->GetEmbedderURL());
+}
+
+TEST_F(ViewManagerTest, Reorder) {
+  ViewTreeNode* node1 = ViewTreeNode::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(node1);
+
+  ViewTreeNode* node11 = ViewTreeNode::Create(window_manager());
+  node1->AddChild(node11);
+  ViewTreeNode* node12 = ViewTreeNode::Create(window_manager());
+  node1->AddChild(node12);
+
+  ViewManager* embedded = Embed(window_manager(), node1);
+
+  ViewTreeNode* node1_in_embedded = embedded->GetNodeById(node1->id());
+
+  {
+    node11->MoveToFront();
+    WaitForOrderChange(embedded, embedded->GetNodeById(node11->id()));
+
+    EXPECT_EQ(node1_in_embedded->children().front(),
+              embedded->GetNodeById(node12->id()));
+    EXPECT_EQ(node1_in_embedded->children().back(),
+              embedded->GetNodeById(node11->id()));
+  }
+
+  {
+    node11->MoveToBack();
+    WaitForOrderChange(embedded, embedded->GetNodeById(node11->id()));
+
+    EXPECT_EQ(node1_in_embedded->children().front(),
+              embedded->GetNodeById(node11->id()));
+    EXPECT_EQ(node1_in_embedded->children().back(),
+              embedded->GetNodeById(node12->id()));
+  }
 }
 
 }  // namespace view_manager

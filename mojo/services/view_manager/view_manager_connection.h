@@ -86,6 +86,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                    const Node* old_parent,
                                    Id server_change_id,
                                    bool originated_change);
+  void ProcessNodeReorder(const Node* node,
+                          const Node* relative_node,
+                          OrderDirection direction,
+                          Id server_change_id,
+                          bool originated_change);
   void ProcessNodeViewReplaced(const Node* node,
                                const View* new_view,
                                const View* old_view,
@@ -110,6 +115,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // for this connection.
   bool CanRemoveNodeFromParent(const Node* node) const;
   bool CanAddNode(const Node* parent, const Node* child) const;
+  bool CanReorderNode(const Node* node,
+                      const Node* relative_node,
+                      OrderDirection direction) const;
   bool CanDeleteNode(const NodeId& node_id) const;
   bool CanDeleteView(const ViewId& view_id) const;
   bool CanSetView(const Node* node, const ViewId& view_id) const;
@@ -170,6 +178,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
       Id node_id,
       Id server_change_id,
       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void ReorderNode(Id node_id,
+                           Id relative_node_id,
+                           OrderDirection direction,
+                           Id server_change_id,
+                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
       Id node_id,
       const Callback<void(Array<INodePtr>)>& callback) OVERRIDE;

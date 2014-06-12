@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 
+#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+
 namespace gfx {
 class Rect;
 }
@@ -36,6 +38,11 @@ class ViewTreeNodeObserver {
   };
 
   virtual void OnTreeChange(const TreeChangeParams& params) {}
+
+  virtual void OnNodeReordered(ViewTreeNode* node,
+                               ViewTreeNode* relative_node,
+                               OrderDirection direction,
+                               DispositionChangePhase phase) {}
 
   virtual void OnNodeDestroy(ViewTreeNode* node,
                              DispositionChangePhase phase) {}

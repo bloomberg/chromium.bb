@@ -137,6 +137,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   void ProcessNodeHierarchyChanged(const Node* node,
                                    const Node* new_parent,
                                    const Node* old_parent);
+  void ProcessNodeReorder(const Node* node,
+                          const Node* relative_node,
+                          const OrderDirection direction);
   void ProcessNodeViewReplaced(const Node* node,
                                const View* new_view_id,
                                const View* old_view_id);

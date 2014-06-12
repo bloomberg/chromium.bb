@@ -168,6 +168,12 @@ class IViewManagerClientImpl
       uint32_t server_change_id,
       mojo::Array<view_manager::INodePtr> nodes) OVERRIDE {
   }
+  virtual void OnNodeReordered(
+      uint32_t node_id,
+      uint32_t relative_node_id,
+      view_manager::OrderDirection direction,
+      uint32_t server_change_id) OVERRIDE {
+  }
   virtual void OnNodeDeleted(uint32_t node, uint32_t server_change_id)
       OVERRIDE {
   }

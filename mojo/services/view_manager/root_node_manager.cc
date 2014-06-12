@@ -151,6 +151,17 @@ void RootNodeManager::ProcessNodeHierarchyChanged(const Node* node,
   }
 }
 
+void RootNodeManager::ProcessNodeReorder(const Node* node,
+                                         const Node* relative_node,
+                                         const OrderDirection direction) {
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    i->second->ProcessNodeReorder(
+        node, relative_node, direction, next_server_change_id_,
+        IsChangeSource(i->first));
+  }
+}
+
 void RootNodeManager::ProcessNodeViewReplaced(const Node* node,
                                               const View* new_view,
                                               const View* old_view) {

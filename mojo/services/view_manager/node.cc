@@ -58,6 +58,13 @@ void Node::Remove(Node* child) {
   window_.RemoveChild(&child->window_);
 }
 
+void Node::Reorder(Node* child, Node* relative, OrderDirection direction) {
+  if (direction == ORDER_ABOVE)
+    window_.StackChildAbove(child->window(), relative->window());
+  else if (direction == ORDER_BELOW)
+    window_.StackChildBelow(child->window(), relative->window());
+}
+
 const Node* Node::GetRoot() const {
   const aura::Window* window = &window_;
   while (window && window->parent())

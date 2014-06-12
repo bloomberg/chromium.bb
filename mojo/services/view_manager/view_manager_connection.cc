@@ -170,6 +170,23 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
                                    NodesToINodes(to_send));
 }
 
+void ViewManagerConnection::ProcessNodeReorder(const Node* node,
+                                               const Node* relative_node,
+                                               OrderDirection direction,
+                                               Id server_change_id,
+                                               bool originated_change) {
+  if (originated_change ||
+      !known_nodes_.count(NodeIdToTransportId(node->id())) ||
+      !known_nodes_.count(NodeIdToTransportId(relative_node->id()))) {
+    return;
+  }
+
+  client()->OnNodeReordered(NodeIdToTransportId(node->id()),
+                            NodeIdToTransportId(relative_node->id()),
+                            direction,
+                            server_change_id);
+}
+
 void ViewManagerConnection::ProcessNodeViewReplaced(
     const Node* node,
     const View* new_view,
@@ -265,6 +282,36 @@ bool ViewManagerConnection::CanAddNode(const Node* parent,
   // Allow the add if the child is already a descendant of the roots or was
   // created by this connection.
   return (IsNodeDescendantOfRoots(child) || child->id().connection_id == id_);
+}
+
+bool ViewManagerConnection::CanReorderNode(const Node* node,
+                                           const Node* relative_node,
+                                           OrderDirection direction) const {
+  if (!node || !relative_node)
+    return false;
+
+  if (node->id().connection_id != id_)
+    return false;
+
+  const Node* parent = node->GetParent();
+  if (!parent || parent != relative_node->GetParent())
+    return false;
+
+  if (known_nodes_.count(NodeIdToTransportId(parent->id())) == 0)
+    return false;
+
+  std::vector<const Node*> children = parent->GetChildren();
+  const size_t child_i =
+      std::find(children.begin(), children.end(), node) - children.begin();
+  const size_t target_i =
+      std::find(children.begin(), children.end(), relative_node) -
+      children.begin();
+  if ((direction == ORDER_ABOVE && child_i == target_i + 1) ||
+      (direction == ORDER_BELOW && child_i + 1 == target_i)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool ViewManagerConnection::CanDeleteNode(const NodeId& node_id) const {
@@ -548,6 +595,27 @@ void ViewManagerConnection::RemoveNodeFromParent(
           this, root_node_manager_,
           RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, false);
       node->GetParent()->Remove(node);
+    }
+  }
+  callback.Run(success);
+}
+
+void ViewManagerConnection::ReorderNode(Id node_id,
+                                        Id relative_node_id,
+                                        OrderDirection direction,
+                                        Id server_change_id,
+                                        const Callback<void(bool)>& callback) {
+  bool success = false;
+  if (server_change_id == root_node_manager_->next_server_change_id()) {
+    Node* node = GetNode(NodeIdFromTransportId(node_id));
+    Node* relative_node = GetNode(NodeIdFromTransportId(relative_node_id));
+    if (CanReorderNode(node, relative_node, direction)) {
+      success = true;
+      RootNodeManager::ScopedChange change(
+          this, root_node_manager_,
+          RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, false);
+      node->GetParent()->Reorder(node, relative_node, direction);
+      root_node_manager_->ProcessNodeReorder(node, relative_node, direction);
     }
   }
   callback.Run(success);

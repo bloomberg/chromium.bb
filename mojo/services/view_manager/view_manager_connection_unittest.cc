@@ -22,6 +22,7 @@
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/test_change_tracker.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,6 +110,19 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     view_manager_->RemoveNodeFromParent(node_id, server_change_id,
         base::Bind(&ViewManagerProxy::GotResult,
                    base::Unretained(this), &result));
+    RunMainLoop();
+    return result;
+  }
+  bool ReorderNode(Id node_id,
+                   Id relative_node_id,
+                   OrderDirection direction,
+                   Id server_change_id) {
+    changes_.clear();
+    bool result = false;
+    view_manager_->ReorderNode(node_id, relative_node_id, direction,
+                               server_change_id,
+                               base::Bind(&ViewManagerProxy::GotResult,
+                                          base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -304,6 +318,13 @@ class TestViewManagerClientConnection
                                       Array<INodePtr> nodes) OVERRIDE {
     tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
                                     server_change_id, nodes.Pass());
+  }
+  virtual void OnNodeReordered(Id node_id,
+                               Id relative_node_id,
+                               OrderDirection direction,
+                               Id server_change_id) OVERRIDE {
+    tracker_.OnNodeReordered(node_id, relative_node_id, direction,
+                             server_change_id);
   }
   virtual void OnNodeDeleted(Id node, Id server_change_id) OVERRIDE {
     tracker_.OnNodeDeleted(node, server_change_id);
@@ -755,6 +776,84 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
     EXPECT_EQ("[node=1,2 parent=1,1 view=null],"
               "[node=1,21 parent=1,2 view=null]",
               ChangeNodeDescription(connection2_->changes()));
+  }
+}
+
+TEST_F(ViewManagerConnectionTest, ReorderNode) {
+  Id node1_id = BuildNodeId(1, 1);
+  Id node2_id = BuildNodeId(1, 2);
+  Id node3_id = BuildNodeId(1, 3);
+  Id node4_id = BuildNodeId(1, 4);  // Peer to 1,1
+  Id node5_id = BuildNodeId(1, 5);  // Peer to 1,1
+  Id node6_id = BuildNodeId(1, 6);  // Child of 1,2.
+  Id node7_id = BuildNodeId(1, 7);  // Unparented.
+  Id node8_id = BuildNodeId(1, 8);  // Unparented.
+  ASSERT_TRUE(connection_->CreateNode(node1_id));
+  ASSERT_TRUE(connection_->CreateNode(node2_id));
+  ASSERT_TRUE(connection_->CreateNode(node3_id));
+  ASSERT_TRUE(connection_->CreateNode(node4_id));
+  ASSERT_TRUE(connection_->CreateNode(node5_id));
+  ASSERT_TRUE(connection_->CreateNode(node6_id));
+  ASSERT_TRUE(connection_->CreateNode(node7_id));
+  ASSERT_TRUE(connection_->CreateNode(node8_id));
+  ASSERT_TRUE(connection_->AddNode(node1_id, node2_id, 1));
+  ASSERT_TRUE(connection_->AddNode(node2_id, node6_id, 2));
+  ASSERT_TRUE(connection_->AddNode(node1_id, node3_id, 3));
+  ASSERT_TRUE(connection_->AddNode(
+      NodeIdToTransportId(RootNodeId()), node4_id, 4));
+  ASSERT_TRUE(connection_->AddNode(
+      NodeIdToTransportId(RootNodeId()), node5_id, 5));
+
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
+
+  {
+    connection_->ReorderNode(node2_id, node3_id, ORDER_ABOVE, 6);
+
+    connection2_->DoRunLoopUntilChangesCount(1);
+    const Changes changes(ChangesToDescription1(connection2_->changes()));
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "Reordered change_id=6 node=1,2 relative=1,3 direction=above",
+        changes[0]);
+  }
+
+  {
+    connection_->ReorderNode(node2_id, node3_id, ORDER_BELOW, 7);
+
+    connection2_->DoRunLoopUntilChangesCount(1);
+    const Changes changes(ChangesToDescription1(connection2_->changes()));
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "Reordered change_id=7 node=1,2 relative=1,3 direction=below",
+        changes[0]);
+  }
+
+  {
+    // node2 is already below node3.
+    EXPECT_FALSE(connection_->ReorderNode(node2_id, node3_id, ORDER_BELOW, 8));
+  }
+
+  {
+    // node4 & 5 are unknown to connection2_.
+    EXPECT_FALSE(connection2_->ReorderNode(node4_id, node5_id, ORDER_ABOVE, 8));
+  }
+
+  {
+    // node6 & node3 have different parents.
+    EXPECT_FALSE(connection_->ReorderNode(node3_id, node6_id, ORDER_ABOVE, 8));
+  }
+
+  {
+    // Non-existent node-ids
+    EXPECT_FALSE(connection_->ReorderNode(BuildNodeId(1, 27),
+                                          BuildNodeId(1, 28),
+                                          ORDER_ABOVE,
+                                          8));
+  }
+
+  {
+    // node7 & node8 are un-parented.
+    EXPECT_FALSE(connection_->ReorderNode(node7_id, node8_id, ORDER_ABOVE, 8));
   }
 }
 

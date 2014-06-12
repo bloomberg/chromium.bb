@@ -26,6 +26,10 @@ std::string RectToString(const gfx::Rect& rect) {
                             rect.height());
 }
 
+std::string DirectionToString(OrderDirection direction) {
+  return direction == ORDER_ABOVE ? "above" : "below";
+}
+
 std::string ChangeToDescription1(const Change& change) {
   switch (change.type) {
     case CHANGE_TYPE_CONNECTION_ESTABLISHED:
@@ -54,6 +58,14 @@ std::string ChangeToDescription1(const Change& change) {
             NodeIdToString(change.node_id).c_str(),
             NodeIdToString(change.node_id2).c_str(),
             NodeIdToString(change.node_id3).c_str());
+
+    case CHANGE_TYPE_NODE_REORDERED:
+      return base::StringPrintf(
+          "Reordered change_id=%d node=%s relative=%s direction=%s",
+          static_cast<int>(change.change_id),
+          NodeIdToString(change.node_id).c_str(),
+          NodeIdToString(change.node_id2).c_str(),
+          DirectionToString(change.direction).c_str());
 
     case CHANGE_TYPE_NODE_DELETED:
       return base::StringPrintf("NodeDeleted change_id=%d node=%s",
@@ -119,7 +131,8 @@ Change::Change()
       node_id3(0),
       view_id(0),
       view_id2(0),
-      event_action(0) {}
+      event_action(0),
+      direction(ORDER_ABOVE) {}
 
 Change::~Change() {
 }
@@ -182,6 +195,19 @@ void TestChangeTracker::OnNodeHierarchyChanged(Id node_id,
   change.node_id3 = old_parent_id;
   change.change_id = server_change_id;
   INodesToTestNodes(nodes, &change.nodes);
+  AddChange(change);
+}
+
+void TestChangeTracker::OnNodeReordered(Id node_id,
+                                        Id relative_node_id,
+                                        OrderDirection direction,
+                                        Id server_change_id) {
+  Change change;
+  change.type = CHANGE_TYPE_NODE_REORDERED;
+  change.node_id = node_id;
+  change.node_id2 = relative_node_id;
+  change.direction = direction;
+  change.change_id = server_change_id;
   AddChange(change);
 }
 

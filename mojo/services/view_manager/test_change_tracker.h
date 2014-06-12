@@ -23,6 +23,7 @@ enum ChangeType {
   CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED,
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
+  CHANGE_TYPE_NODE_REORDERED,
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_VIEW_DELETED,
   CHANGE_TYPE_VIEW_REPLACED,
@@ -57,6 +58,7 @@ struct Change {
   gfx::Rect bounds2;
   int32 event_action;
   String creator_url;
+  OrderDirection direction;
 };
 
 // Converts Changes to string descriptions.
@@ -106,6 +108,10 @@ class TestChangeTracker {
                               Id old_parent_id,
                               Id server_change_id,
                               Array<INodePtr> nodes);
+  void OnNodeReordered(Id node_id,
+                       Id relative_node_id,
+                       OrderDirection direction,
+                       Id server_change_id);
   void OnNodeDeleted(Id node_id, Id server_change_id);
   void OnViewDeleted(Id view_id);
   void OnNodeViewReplaced(Id node_id, Id new_view_id, Id old_view_id);

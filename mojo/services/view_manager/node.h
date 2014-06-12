@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 #include "ui/aura/window.h"
@@ -36,6 +37,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 
   void Add(Node* child);
   void Remove(Node* child);
+
+  void Reorder(Node* child, Node* relative, OrderDirection direction);
 
   aura::Window* window() { return &window_; }
 

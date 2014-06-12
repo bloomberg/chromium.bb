@@ -4,6 +4,7 @@
 
 import "../geometry/geometry.mojom"
 import "../input_events/input_events.mojom"
+import "view_manager_constants.mojom"
 
 module mojo.view_manager {
 
@@ -71,6 +72,15 @@ interface IViewManager {
   // connection B.
   RemoveNodeFromParent(uint32 node_id,
                        uint32 server_change_id) => (bool success);
+
+  // Reorders a node in its parent, relative to |relative_node_id| according to
+  // |direction|.
+  // Only the connection that created the node's parent can reorder its
+  // children.
+  ReorderNode(uint32 node_id,
+              uint32 relative_node_id,
+              OrderDirection direction,
+              uint32 server_change_id) => (bool success);
 
   // Returns the nodes comprising the tree starting at |node_id|. |node_id| is
   // the first result in the return value, unless |node_id| is invalid, in which
@@ -147,6 +157,12 @@ interface IViewManagerClient {
                          uint32 old_parent,
                          uint32 server_change_id,
                          INode[] nodes);
+
+  // Invoked when the order of nodes within a parent changes.
+  OnNodeReordered(uint32 node_id,
+                  uint32 relative_node_id,
+                  OrderDirection direction,
+                  uint32 server_change_id);                     
 
   // Invoked when a node is deleted.
   OnNodeDeleted(uint32 node, uint32 server_change_id);

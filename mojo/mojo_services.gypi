@@ -250,6 +250,7 @@
       'type': 'static_library',
       'sources': [
         'services/public/interfaces/view_manager/view_manager.mojom',
+        'services/public/interfaces/view_manager/view_manager_constants.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

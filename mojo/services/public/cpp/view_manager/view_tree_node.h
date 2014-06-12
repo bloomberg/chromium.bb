@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
@@ -52,6 +53,10 @@ class ViewTreeNode {
   void AddChild(ViewTreeNode* child);
   void RemoveChild(ViewTreeNode* child);
 
+  void Reorder(ViewTreeNode* relative, OrderDirection direction);
+  void MoveToFront();
+  void MoveToBack();
+
   bool Contains(ViewTreeNode* child) const;
 
   ViewTreeNode* GetChildById(Id id);
@@ -76,6 +81,8 @@ class ViewTreeNode {
   void LocalDestroy();
   void LocalAddChild(ViewTreeNode* child);
   void LocalRemoveChild(ViewTreeNode* child);
+  // Returns true if the order actually changed.
+  bool LocalReorder(ViewTreeNode* relative, OrderDirection direction);
   void LocalSetActiveView(View* view);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
 

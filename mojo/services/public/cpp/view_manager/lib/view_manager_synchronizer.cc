@@ -246,52 +246,92 @@ class DestroyViewTreeNodeTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(DestroyViewTreeNodeTransaction);
 };
 
-class HierarchyTransaction : public ViewManagerTransaction {
+class AddChildTransaction : public ViewManagerTransaction {
  public:
-  enum HierarchyChangeType {
-    TYPE_ADD,
-    TYPE_REMOVE
-  };
-  HierarchyTransaction(HierarchyChangeType hierarchy_change_type,
-                       Id child_id,
-                       Id parent_id,
-                       ViewManagerSynchronizer* synchronizer)
+  AddChildTransaction(Id child_id,
+                      Id parent_id,
+                      ViewManagerSynchronizer* synchronizer)
       : ViewManagerTransaction(synchronizer),
-        hierarchy_change_type_(hierarchy_change_type),
         child_id_(child_id),
         parent_id_(parent_id) {}
-  virtual ~HierarchyTransaction() {}
+  virtual ~AddChildTransaction() {}
 
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    switch (hierarchy_change_type_) {
-      case TYPE_ADD:
-        service()->AddNode(
-            parent_id_,
-            child_id_,
-            GetAndAdvanceNextServerChangeId(),
-            ActionCompletedCallback());
-        break;
-      case TYPE_REMOVE:
-        service()->RemoveNodeFromParent(
-            child_id_,
-            GetAndAdvanceNextServerChangeId(),
-            ActionCompletedCallback());
-        break;
-    }
+    service()->AddNode(parent_id_,
+                       child_id_,
+                       GetAndAdvanceNextServerChangeId(),
+                       ActionCompletedCallback());
   }
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
-    // TODO(beng): Failure means either one of the nodes specified didn't exist,
-    //             or we passed the same node id for both params. Roll back?
+    // TODO(beng): recovery?
   }
 
-  const HierarchyChangeType hierarchy_change_type_;
   const Id child_id_;
   const Id parent_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(HierarchyTransaction);
+  DISALLOW_COPY_AND_ASSIGN(AddChildTransaction);
+};
+
+class RemoveChildTransaction : public ViewManagerTransaction {
+ public:
+  RemoveChildTransaction(Id child_id,
+                         ViewManagerSynchronizer* synchronizer)
+      : ViewManagerTransaction(synchronizer),
+        child_id_(child_id) {}
+  virtual ~RemoveChildTransaction() {}
+
+ private:
+  // Overridden from ViewManagerTransaction:
+  virtual void DoCommit() OVERRIDE {
+    service()->RemoveNodeFromParent(
+        child_id_,
+        GetAndAdvanceNextServerChangeId(),
+        ActionCompletedCallback());
+  }
+
+  virtual void DoActionCompleted(bool success) OVERRIDE {
+    // TODO(beng): recovery?
+  }
+
+  const Id child_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveChildTransaction);
+};
+
+class ReorderNodeTransaction : public ViewManagerTransaction {
+ public:
+  ReorderNodeTransaction(Id node_id,
+                         Id relative_id,
+                         OrderDirection direction,
+                         ViewManagerSynchronizer* synchronizer)
+      : ViewManagerTransaction(synchronizer),
+        node_id_(node_id),
+        relative_id_(relative_id),
+        direction_(direction) {}
+  virtual ~ReorderNodeTransaction() {}
+
+ private:
+  // Overridden from ViewManagerTransaction:
+  virtual void DoCommit() OVERRIDE {
+    service()->ReorderNode(node_id_,
+                           relative_id_,
+                           direction_,
+                           GetAndAdvanceNextServerChangeId(),
+                           ActionCompletedCallback());
+  }
+
+  virtual void DoActionCompleted(bool success) OVERRIDE {
+    // TODO(beng): recovery?
+  }
+
+  const Id node_id_;
+  const Id relative_id_;
+  const OrderDirection direction_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReorderNodeTransaction);
 };
 
 class SetActiveViewTransaction : public ViewManagerTransaction {
@@ -495,20 +535,23 @@ void ViewManagerSynchronizer::AddChild(Id child_id,
                                        Id parent_id) {
   DCHECK(connected_);
   pending_transactions_.push_back(
-      new HierarchyTransaction(HierarchyTransaction::TYPE_ADD,
-                               child_id,
-                               parent_id,
-                               this));
+      new AddChildTransaction(child_id, parent_id, this));
   Sync();
 }
 
 void ViewManagerSynchronizer::RemoveChild(Id child_id, Id parent_id) {
   DCHECK(connected_);
+  pending_transactions_.push_back(new RemoveChildTransaction(child_id, this));
+  Sync();
+}
+
+void ViewManagerSynchronizer::Reorder(
+    Id node_id,
+    Id relative_node_id,
+    OrderDirection direction) {
+  DCHECK(connected_);
   pending_transactions_.push_back(
-      new HierarchyTransaction(HierarchyTransaction::TYPE_REMOVE,
-                               child_id,
-                               parent_id,
-                               this));
+      new ReorderNodeTransaction(node_id, relative_node_id, direction, this));
   Sync();
 }
 
@@ -638,7 +681,6 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(
     Id old_parent_id,
     Id server_change_id,
     mojo::Array<INodePtr> nodes) {
-  // TODO: deal with |nodes|.
   next_server_change_id_ = server_change_id + 1;
 
   BuildNodeTree(this, nodes);
@@ -650,6 +692,19 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(
     ViewTreeNodePrivate(new_parent).LocalAddChild(node);
   else
     ViewTreeNodePrivate(old_parent).LocalRemoveChild(node);
+}
+
+void ViewManagerSynchronizer::OnNodeReordered(Id node_id,
+                                              Id relative_node_id,
+                                              OrderDirection direction,
+                                              Id server_change_id) {
+  next_server_change_id_ = server_change_id + 1;
+
+  ViewTreeNode* node = GetNodeById(node_id);
+  ViewTreeNode* relative_node = GetNodeById(relative_node_id);
+  if (node && relative_node) {
+    ViewTreeNodePrivate(node).LocalReorder(relative_node, direction);
+  }
 }
 
 void ViewManagerSynchronizer::OnNodeDeleted(Id node_id, Id server_change_id) {

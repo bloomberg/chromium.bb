@@ -348,6 +348,153 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
 
 namespace {
 
+class OrderChangeObserver : public ViewTreeNodeObserver {
+ public:
+  struct Change {
+    ViewTreeNode* node;
+    ViewTreeNode* relative_node;
+    OrderDirection direction;
+    DispositionChangePhase phase;
+  };
+  typedef std::vector<Change> Changes;
+
+  explicit OrderChangeObserver(ViewTreeNode* observee) : observee_(observee) {
+    observee_->AddObserver(this);
+  }
+  virtual ~OrderChangeObserver() {
+    observee_->RemoveObserver(this);
+  }
+
+  Changes GetAndClearChanges() {
+    Changes changes;
+    changes_.swap(changes);
+    return changes;
+  }
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeReordered(ViewTreeNode* node,
+                               ViewTreeNode* relative_node,
+                               OrderDirection direction,
+                               DispositionChangePhase phase) OVERRIDE {
+    Change change;
+    change.node = node;
+    change.relative_node = relative_node;
+    change.direction = direction;
+    change.phase = phase;
+    changes_.push_back(change);
+  }
+
+  ViewTreeNode* observee_;
+  Changes changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+};
+
+}  // namespace
+
+TEST_F(ViewTreeNodeObserverTest, Order) {
+  TestViewTreeNode v1, v11, v12, v13;
+  v1.AddChild(&v11);
+  v1.AddChild(&v12);
+  v1.AddChild(&v13);
+
+  // Order: v11, v12, v13
+  EXPECT_EQ(3U, v1.children().size());
+  EXPECT_EQ(&v11, v1.children().front());
+  EXPECT_EQ(&v13, v1.children().back());
+
+  {
+    OrderChangeObserver observer(&v11);
+
+    // Move v11 to front.
+    // Resulting order: v12, v13, v11
+    v11.MoveToFront();
+    EXPECT_EQ(&v12, v1.children().front());
+    EXPECT_EQ(&v11, v1.children().back());
+
+    OrderChangeObserver::Changes changes = observer.GetAndClearChanges();
+    EXPECT_EQ(2U, changes.size());
+    EXPECT_EQ(&v11, changes[0].node);
+    EXPECT_EQ(&v13, changes[0].relative_node);
+    EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+
+    EXPECT_EQ(&v11, changes[1].node);
+    EXPECT_EQ(&v13, changes[1].relative_node);
+    EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+  }
+
+  {
+    OrderChangeObserver observer(&v11);
+
+    // Move v11 to back.
+    // Resulting order: v11, v12, v13
+    v11.MoveToBack();
+    EXPECT_EQ(&v11, v1.children().front());
+    EXPECT_EQ(&v13, v1.children().back());
+
+    OrderChangeObserver::Changes changes = observer.GetAndClearChanges();
+    EXPECT_EQ(2U, changes.size());
+    EXPECT_EQ(&v11, changes[0].node);
+    EXPECT_EQ(&v12, changes[0].relative_node);
+    EXPECT_EQ(ORDER_BELOW, changes[0].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+
+    EXPECT_EQ(&v11, changes[1].node);
+    EXPECT_EQ(&v12, changes[1].relative_node);
+    EXPECT_EQ(ORDER_BELOW, changes[1].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+  }
+
+  {
+    OrderChangeObserver observer(&v11);
+
+    // Move v11 above v12.
+    // Resulting order: v12. v11, v13
+    v11.Reorder(&v12, ORDER_ABOVE);
+    EXPECT_EQ(&v12, v1.children().front());
+    EXPECT_EQ(&v13, v1.children().back());
+
+    OrderChangeObserver::Changes changes = observer.GetAndClearChanges();
+    EXPECT_EQ(2U, changes.size());
+    EXPECT_EQ(&v11, changes[0].node);
+    EXPECT_EQ(&v12, changes[0].relative_node);
+    EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+
+    EXPECT_EQ(&v11, changes[1].node);
+    EXPECT_EQ(&v12, changes[1].relative_node);
+    EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+  }
+
+  {
+    OrderChangeObserver observer(&v11);
+
+    // Move v11 below v12.
+    // Resulting order: v11, v12, v13
+    v11.Reorder(&v12, ORDER_BELOW);
+    EXPECT_EQ(&v11, v1.children().front());
+    EXPECT_EQ(&v13, v1.children().back());
+
+    OrderChangeObserver::Changes changes = observer.GetAndClearChanges();
+    EXPECT_EQ(2U, changes.size());
+    EXPECT_EQ(&v11, changes[0].node);
+    EXPECT_EQ(&v12, changes[0].relative_node);
+    EXPECT_EQ(ORDER_BELOW, changes[0].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+
+    EXPECT_EQ(&v11, changes[1].node);
+    EXPECT_EQ(&v12, changes[1].relative_node);
+    EXPECT_EQ(ORDER_BELOW, changes[1].direction);
+    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+  }
+}
+
+namespace {
+
 typedef std::vector<std::string> Changes;
 
 std::string NodeIdToString(Id id) {
