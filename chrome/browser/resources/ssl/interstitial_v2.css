@@ -31,12 +31,12 @@ button {
   padding: 8px 24px;
 }
 
-button:hover {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .50);
-}
-
 button:active {
   background: rgb(50, 102, 213);
+}
+
+button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .50);
 }
 
 #details {
@@ -44,9 +44,8 @@ button:active {
   margin: 45px 0 150px 0;
 }
 
-#details-button {
-  color: #696969;
-  font-size: .875em;
+#details p:not(:first-of-type) {
+  margin-top: 39px;
 }
 
 #error-code {
@@ -95,8 +94,9 @@ h1 {
   width: 100%;
 }
 
-#details p:not(:first-of-type) {
-  margin-top: 39px;
+.small-link {
+  color: #696969;
+  font-size: .875em;
 }
 
 .safe-browsing a {

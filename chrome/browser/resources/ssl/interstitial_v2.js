@@ -31,7 +31,10 @@ function setupEvents() {
     });
   }
 
-  if (!(ssl && overridable)) {  // Overridable SSL page doesn't have this link.
+  if (ssl && overridable) {
+    $('proceed-link').classList.add('small-link');
+  } else {
+    // Overridable SSL page doesn't have this link.
     $('help-link').addEventListener('click', function(event) {
       if (ssl)
         sendCommand(CMD_HELP);
