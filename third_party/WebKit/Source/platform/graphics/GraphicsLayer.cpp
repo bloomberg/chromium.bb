@@ -82,7 +82,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : m_client(client)
     , m_backgroundColor(Color::transparent)
     , m_opacity(1)
-    , m_zPosition(0)
     , m_blendMode(blink::WebBlendModeNormal)
     , m_hasTransformOrigin(false)
     , m_contentsOpaque(false)
@@ -95,7 +94,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
-    , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
     , m_maskLayer(0)
     , m_contentsClippingMaskLayer(0)
@@ -149,6 +147,8 @@ void GraphicsLayer::setParent(GraphicsLayer* layer)
     m_parent = layer;
 }
 
+#if ASSERT_ENABLED
+
 bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
 {
     for (GraphicsLayer* curr = parent(); curr; curr = curr->parent()) {
@@ -158,6 +158,8 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
 
     return false;
 }
+
+#endif
 
 bool GraphicsLayer::setChildren(const GraphicsLayerVector& newChildren)
 {
@@ -333,11 +335,6 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
         return;
     incrementPaintCount();
     m_client->paintContents(this, context, m_paintingPhase, clip);
-}
-
-void GraphicsLayer::setZPosition(float position)
-{
-    m_zPosition = position;
 }
 
 void GraphicsLayer::updateChildList()
@@ -687,30 +684,30 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << ")\n";
     }
 
-    if ((flags & LayerTreeIncludesPaintingPhases) && paintingPhase()) {
+    if ((flags & LayerTreeIncludesPaintingPhases) && m_paintingPhase) {
         writeIndent(ts, indent + 1);
         ts << "(paintingPhases\n";
-        if (paintingPhase() & GraphicsLayerPaintBackground) {
+        if (m_paintingPhase & GraphicsLayerPaintBackground) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintBackground\n";
         }
-        if (paintingPhase() & GraphicsLayerPaintForeground) {
+        if (m_paintingPhase & GraphicsLayerPaintForeground) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintForeground\n";
         }
-        if (paintingPhase() & GraphicsLayerPaintMask) {
+        if (m_paintingPhase & GraphicsLayerPaintMask) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintMask\n";
         }
-        if (paintingPhase() & GraphicsLayerPaintChildClippingMask) {
+        if (m_paintingPhase & GraphicsLayerPaintChildClippingMask) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintChildClippingMask\n";
         }
-        if (paintingPhase() & GraphicsLayerPaintOverflowContents) {
+        if (m_paintingPhase & GraphicsLayerPaintOverflowContents) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintOverflowContents\n";
         }
-        if (paintingPhase() & GraphicsLayerPaintCompositedScroll) {
+        if (m_paintingPhase & GraphicsLayerPaintCompositedScroll) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintCompositedScroll\n";
         }
@@ -971,7 +968,7 @@ void GraphicsLayer::setContentsNeedsDisplay()
 {
     if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
         contentsLayer->invalidate();
-        addRepaintRect(contentsRect());
+        addRepaintRect(m_contentsRect);
     }
 }
 

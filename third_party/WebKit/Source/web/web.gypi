@@ -265,7 +265,6 @@
     'web_unittest_files': [
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
-      'tests/CompositedLayerMappingTest.cpp',
       'tests/CustomEventTest.cpp',
       'tests/FakeWebPlugin.cpp',
       'tests/FakeWebPlugin.h',

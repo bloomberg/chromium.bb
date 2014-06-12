@@ -102,9 +102,6 @@ public:
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.
 
-    // Returns true if the layer has the given layer as an ancestor (excluding self).
-    bool hasAncestor(GraphicsLayer*) const;
-
     const Vector<GraphicsLayer*>& children() const { return m_children; }
     // Returns true if the child list changed.
     bool setChildren(const GraphicsLayerVector&);
@@ -127,8 +124,6 @@ public:
 
     // The given layer will replicate this layer and its children; the replica renders behind this layer.
     void setReplicatedByLayer(GraphicsLayer*);
-    // Whether this layer is being replicated by another layer.
-    bool isReplicated() const { return m_replicaLayer; }
     // The layer that replicates this layer (if any).
     GraphicsLayer* replicaLayer() const { return m_replicaLayer; }
     // The layer being replicated.
@@ -160,14 +155,8 @@ public:
 
     const TransformationMatrix& transform() const { return m_transform; }
     void setTransform(const TransformationMatrix&);
-
-    bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
     void setShouldFlattenTransform(bool);
-
-    int renderingContext() const { return m_3dRenderingContext; }
     void setRenderingContext(int id);
-
-    bool masksToBounds() const { return m_masksToBounds; }
     void setMasksToBounds(bool);
 
     bool drawsContent() const { return m_drawsContent; }
@@ -182,7 +171,6 @@ public:
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
     // will paint background by itself.
-    const Color& backgroundColor() const { return m_backgroundColor; }
     void setBackgroundColor(const Color&);
 
     // opaque means that we know the layer contents have no alpha
@@ -195,20 +183,14 @@ public:
     float opacity() const { return m_opacity; }
     void setOpacity(float);
 
-    blink::WebBlendMode blendMode() const { return m_blendMode; }
     void setBlendMode(blink::WebBlendMode);
-
-    bool isRootForIsolatedGroup() const { return m_isRootForIsolatedGroup; }
     void setIsRootForIsolatedGroup(bool);
-
-    const FilterOperations& filters() const { return m_filters; }
 
     // Returns true if filter can be rendered by the compositor
     bool setFilters(const FilterOperations&);
     void setBackgroundFilters(const FilterOperations&);
 
     // Some GraphicsLayers paint only the foreground or the background content
-    GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
     void setPaintingPhase(GraphicsLayerPaintingPhase);
 
     void setNeedsDisplay();
@@ -218,7 +200,6 @@ public:
     void setContentsNeedsDisplay();
 
     // Set that the position/size of the contents (image or video).
-    IntRect contentsRect() const { return m_contentsRect; }
     void setContentsRect(const IntRect&);
 
     // Return true if the animation is handled by the compositing system. If this returns
@@ -240,24 +221,10 @@ public:
     // For hosting this GraphicsLayer in a native layer hierarchy.
     blink::WebLayer* platformLayer() const;
 
-    enum CompositingCoordinatesOrientation { CompositingCoordinatesTopDown, CompositingCoordinatesBottomUp };
-
-    // Flippedness of the contents of this layer. Does not affect sublayer geometry.
-    void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
-    CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
-
     typedef HashMap<int, int> RenderingContextMap;
     void dumpLayer(TextStream&, int indent, LayerTreeFlags, RenderingContextMap&) const;
 
     int paintCount() const { return m_paintCount; }
-
-    // z-position is the z-equivalent of position(). It's only used for debugging purposes.
-    float zPosition() const { return m_zPosition; }
-    void setZPosition(float);
-
-    // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
-    // for example to allocate new tiles.
-    bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
 
     // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
@@ -306,6 +273,10 @@ private:
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
 
+#if ASSERT_ENABLED
+    bool hasAncestor(GraphicsLayer*) const;
+#endif
+
     // This method is used by platform GraphicsLayer classes to clear the filters
     // when compositing is not done in hardware. It is not virtual, so the caller
     // needs to notifiy the change to the platform layer as needed.
@@ -342,7 +313,6 @@ private:
 
     Color m_backgroundColor;
     float m_opacity;
-    float m_zPosition;
 
     blink::WebBlendMode m_blendMode;
 
@@ -361,7 +331,6 @@ private:
     bool m_hasClipParent : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
-    CompositingCoordinatesOrientation m_contentsOrientation; // affects orientation of layer contents
 
     Vector<GraphicsLayer*> m_children;
     GraphicsLayer* m_parent;
