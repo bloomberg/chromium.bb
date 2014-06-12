@@ -259,6 +259,7 @@ ExecutionContext* MediaSource::executionContext() const
 
 void MediaSource::trace(Visitor* visitor)
 {
+    visitor->trace(m_asyncEventQueue);
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
     EventTargetWithInlineData::trace(visitor);

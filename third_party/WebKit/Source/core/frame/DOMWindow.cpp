@@ -1923,6 +1923,7 @@ void DOMWindow::trace(Visitor* visitor)
     visitor->trace(m_applicationCache);
     visitor->trace(m_performance);
     visitor->trace(m_css);
+    visitor->trace(m_eventQueue);
     WillBeHeapSupplementable<DOMWindow>::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
 }

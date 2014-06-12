@@ -40,12 +40,19 @@ class DOMWindowEventQueueTimer;
 class Node;
 class ExecutionContext;
 
-class DOMWindowEventQueue FINAL : public RefCounted<DOMWindowEventQueue>, public EventQueue {
+#if ENABLE(OILPAN)
+#define DOMWINDOWEVENTQUEUE_BASE_CLASSES public EventQueue
+#else
+#define DOMWINDOWEVENTQUEUE_BASE_CLASSES public RefCounted<DOMWindowEventQueue>, public EventQueue
+#endif
+
+class DOMWindowEventQueue FINAL : DOMWINDOWEVENTQUEUE_BASE_CLASSES {
 public:
-    static PassRefPtr<DOMWindowEventQueue> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<DOMWindowEventQueue> create(ExecutionContext*);
     virtual ~DOMWindowEventQueue();
 
     // EventQueue
+    virtual void trace(Visitor*) OVERRIDE;
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
@@ -56,9 +63,8 @@ private:
     void pendingEventTimerFired();
     void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
 
-    OwnPtr<DOMWindowEventQueueTimer> m_pendingEventTimer;
-    // FIXME: oilpan: This should be HeapListHashSet once it's implemented.
-    ListHashSet<RefPtrWillBePersistent<Event>, 16> m_queuedEvents;
+    OwnPtrWillBeMember<DOMWindowEventQueueTimer> m_pendingEventTimer;
+    WillBeHeapListHashSet<RefPtrWillBeMember<Event>, 16> m_queuedEvents;
     bool m_isClosed;
 
     friend class DOMWindowEventQueueTimer;

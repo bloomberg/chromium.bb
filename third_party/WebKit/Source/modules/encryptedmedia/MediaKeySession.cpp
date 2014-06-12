@@ -84,7 +84,12 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, blink::WebContentDec
 MediaKeySession::~MediaKeySession()
 {
     m_session.clear();
+#if !ENABLE(OILPAN)
+    // MediaKeySession and m_asyncEventQueue always become unreachable
+    // together. So MediaKeySession and m_asyncEventQueue are destructed in the
+    // same GC. We don't need to call cancelAllEvents explicitly in Oilpan.
     m_asyncEventQueue->cancelAllEvents();
+#endif
 }
 
 void MediaKeySession::setError(MediaKeyError* error)
@@ -272,6 +277,7 @@ void MediaKeySession::stop()
 
 void MediaKeySession::trace(Visitor* visitor)
 {
+    visitor->trace(m_asyncEventQueue);
     visitor->trace(m_keys);
     EventTargetWithInlineData::trace(visitor);
 }

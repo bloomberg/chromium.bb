@@ -121,7 +121,7 @@ private:
     bool m_muted;
     ReadyState m_readyState;
     PlaybackState m_playbackState;
-    OwnPtr<GenericEventQueue> m_pendingEventsQueue;
+    OwnPtrWillBeMember<GenericEventQueue> m_pendingEventsQueue;
     mutable Timer<MediaController> m_clearPositionTimer;
     OwnPtr<Clock> m_clock;
     ExecutionContext* m_executionContext;

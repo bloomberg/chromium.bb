@@ -39,7 +39,7 @@ class Event;
 class Node;
 class ExecutionContext;
 
-class WorkerEventQueue FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerEventQueue>, public EventQueue {
+class WorkerEventQueue FINAL : public EventQueue {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
@@ -56,7 +56,7 @@ private:
     explicit WorkerEventQueue(ExecutionContext*);
     void removeEvent(Event*);
 
-    ExecutionContext* m_executionContext;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
     bool m_isClosed;
 
     class EventDispatcherTask;

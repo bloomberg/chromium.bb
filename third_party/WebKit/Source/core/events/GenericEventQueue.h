@@ -36,13 +36,13 @@
 namespace WebCore {
 
 class GenericEventQueue FINAL : public EventQueue {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    explicit GenericEventQueue(EventTarget*);
-    static PassOwnPtr<GenericEventQueue> create(EventTarget*);
+    static PassOwnPtrWillBeRawPtr<GenericEventQueue> create(EventTarget*);
     virtual ~GenericEventQueue();
 
     // EventQueue
+    virtual void trace(Visitor*) OVERRIDE;
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
@@ -51,10 +51,11 @@ public:
     bool hasPendingEvents() const;
 
 private:
+    explicit GenericEventQueue(EventTarget*);
     void timerFired(Timer<GenericEventQueue>*);
 
-    EventTarget* m_owner;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_pendingEvents;
+    RawPtrWillBeMember<EventTarget> m_owner;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_pendingEvents;
     Timer<GenericEventQueue> m_timer;
 
     bool m_isClosed;

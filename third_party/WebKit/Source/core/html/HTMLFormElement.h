@@ -181,7 +181,7 @@ private:
 
     bool m_wasDemoted;
 
-    OwnPtr<GenericEventQueue> m_pendingAutocompleteEventsQueue;
+    OwnPtrWillBeMember<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
 
 } // namespace WebCore

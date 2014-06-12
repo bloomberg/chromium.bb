@@ -101,6 +101,7 @@ void HTMLFormElement::trace(Visitor* visitor)
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
     visitor->trace(m_imageElements);
+    visitor->trace(m_pendingAutocompleteEventsQueue);
 #endif
     HTMLElement::trace(visitor);
 }

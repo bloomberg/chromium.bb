@@ -91,7 +91,7 @@ private:
 
     RawPtrWillBeMember<HTMLMediaElement> m_owner;
 
-    OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_addTrackTracks;
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_elementTracks;

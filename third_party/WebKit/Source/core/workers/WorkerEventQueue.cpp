@@ -51,7 +51,9 @@ WorkerEventQueue::~WorkerEventQueue()
 
 void WorkerEventQueue::trace(Visitor* visitor)
 {
+    visitor->trace(m_executionContext);
     visitor->trace(m_eventTaskMap);
+    EventQueue::trace(visitor);
 }
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {

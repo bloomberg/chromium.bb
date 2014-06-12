@@ -36,9 +36,10 @@ namespace WebCore {
 
 class Event;
 
-class EventQueue {
+class EventQueue : public NoBaseWillBeGarbageCollectedFinalized<EventQueue> {
 public:
     virtual ~EventQueue() { }
+    virtual void trace(Visitor*) { }
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) = 0;
     virtual bool cancelEvent(Event*) = 0;
     // The accumulated and all the future events will be discarded, no events will be dispatched anymore.

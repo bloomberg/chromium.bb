@@ -303,8 +303,6 @@ HTMLMediaElement::~HTMLMediaElement()
 {
     WTF_LOG(Media, "HTMLMediaElement::~HTMLMediaElement");
 
-    m_asyncEventQueue->close();
-
 #if ENABLE(OILPAN)
     // If the HTMLMediaElement dies with the document we are not
     // allowed to touch the document to adjust delay load event counts
@@ -319,10 +317,13 @@ HTMLMediaElement::~HTMLMediaElement()
     if (ActiveDOMObject::executionContext())
         setShouldDelayLoadEvent(false);
 #else
-    setShouldDelayLoadEvent(false);
-#endif
+    // HTMLMediaElement and m_asyncEventQueue always become unreachable
+    // together. So HTMLMediaElemenet and m_asyncEventQueue are destructed in
+    // the same GC. We don't need to close it explicitly in Oilpan.
+    m_asyncEventQueue->close();
 
-#if !ENABLE(OILPAN)
+    setShouldDelayLoadEvent(false);
+
     if (m_textTracks)
         m_textTracks->clearOwner();
 
@@ -3658,6 +3659,7 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_asyncEventQueue);
     visitor->trace(m_error);
     visitor->trace(m_currentSourceNode);
     visitor->trace(m_nextChildNodeToConsider);

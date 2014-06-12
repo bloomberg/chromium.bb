@@ -123,7 +123,7 @@ private:
 
     String m_keySystem;
     RefPtr<MediaKeyError> m_error;
-    OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.

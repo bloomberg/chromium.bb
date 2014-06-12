@@ -614,6 +614,7 @@ void MediaController::scheduleTimeupdateEvent()
 void MediaController::trace(Visitor* visitor)
 {
     visitor->trace(m_mediaElements);
+    visitor->trace(m_pendingEventsQueue);
     EventTargetWithInlineData::trace(visitor);
 }
 

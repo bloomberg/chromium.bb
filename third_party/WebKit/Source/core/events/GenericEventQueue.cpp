@@ -32,9 +32,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
+PassOwnPtrWillBeRawPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
 {
-    return adoptPtr(new GenericEventQueue(owner));
+    return adoptPtrWillBeNoop(new GenericEventQueue(owner));
 }
 
 GenericEventQueue::GenericEventQueue(EventTarget* owner)
@@ -46,6 +46,13 @@ GenericEventQueue::GenericEventQueue(EventTarget* owner)
 
 GenericEventQueue::~GenericEventQueue()
 {
+}
+
+void GenericEventQueue::trace(Visitor* visitor)
+{
+    visitor->trace(m_owner);
+    visitor->trace(m_pendingEvents);
+    EventQueue::trace(visitor);
 }
 
 bool GenericEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
@@ -88,10 +95,10 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
-    RefPtrWillBeRawPtr<EventTarget> protect(m_owner);
+    RefPtrWillBeRawPtr<EventTarget> protect(m_owner.get());
     for (size_t i = 0; i < pendingEvents.size(); ++i) {
         Event* event = pendingEvents[i].get();
-        EventTarget* target = event->target() ? event->target() : m_owner;
+        EventTarget* target = event->target() ? event->target() : m_owner.get();
         CString type(event->type().ascii());
         TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent", event, "dispatch", "type", type);
         target->dispatchEvent(pendingEvents[i].release());
