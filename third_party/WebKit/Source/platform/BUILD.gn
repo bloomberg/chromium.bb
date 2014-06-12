@@ -173,7 +173,6 @@ component("platform") {
     get_target_outputs(":color_data")
 
   configs += [
-    ":v8_stub_config",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
   ]
@@ -204,9 +203,7 @@ component("platform") {
     "//third_party/WebKit/Source/platform/heap",
     "//url",
     #'blink_heap_asm_stubs',
-    # TODO(GYP) also remove v8_stub_config when this is added, and uncomment
-    # V8 in the forward statement below.
-    #"//v8",
+    "//v8",
   ]
 
   forward_dependent_configs_from = [
@@ -219,8 +216,7 @@ component("platform") {
     "//third_party/ots",
     "//third_party/qcms",
     "//url",
-    # TODO(GYP)
-    #"//v8",
+    "//v8",
   ]
 
   if (is_mac) {
@@ -456,10 +452,4 @@ if (cpu_arch == "arm") {
 
     deps = [ ":blink_common" ]
   }
-}
-
-# This config is a placeholder to set up the V8 include path while the V8 GN
-# build is being worked on.
-config("v8_stub_config") {
-  include_dirs = [ "//v8/include" ]
 }

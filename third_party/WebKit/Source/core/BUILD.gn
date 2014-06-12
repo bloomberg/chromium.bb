@@ -131,7 +131,6 @@ source_set("prerequisites") {
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:npapi_stub",
-    "//third_party/WebKit/Source/platform:v8_stub_config",
   ]
 }
 
@@ -168,7 +167,6 @@ source_set("core") {
   direct_dependent_configs = [
     ":core_include_dirs",
     "//third_party/WebKit/Source:npapi_stub",
-    "//third_party/WebKit/Source/platform:v8_stub_config",
   ]
 
   # TODO(GYP) IPP libraries pkg-config. These seem to be experimental and used
@@ -395,8 +393,6 @@ source_set("core_generated") {
 
   configs += [
     "..:inside_blink",
-    # TODO(GYP) erase when v8 is ported.
-    "../platform:v8_stub_config",
     "..:npapi_stub",
   ]
 
