@@ -40,9 +40,9 @@ struct MIDIConnectionEventInit : public EventInit {
     MIDIConnectionEventInit()
         : port(nullptr)
     {
-    };
+    }
 
-    RefPtr<MIDIPort> port;
+    RefPtrWillBeMember<MIDIPort> port;
 };
 
 class MIDIConnectionEvent FINAL : public Event {

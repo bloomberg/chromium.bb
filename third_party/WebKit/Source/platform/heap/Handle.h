@@ -360,9 +360,6 @@ public:
 
     operator T*() const { return m_raw; }
     operator RawPtr<T>() const { return m_raw; }
-    // FIXME: Oilpan: Remove this ASAP. Only here to make Node transition easier.
-    template<typename U>
-    operator PassRefPtr<U>() { return PassRefPtr<U>(m_raw); }
 
     T* operator->() const { return *this; }
 
@@ -529,14 +526,6 @@ public:
     template<typename U>
     Member(const Member<U>& other) : m_raw(other) { }
 
-    // FIXME: Oilpan: Get rid of these ASAP; this is only here to make
-    // Node hierarchy transition easier.
-    template<typename U>
-    Member(const PassRefPtr<U>& other) : m_raw(other.get()) { }
-
-    template<typename U>
-    Member(const RefPtr<U>& other) : m_raw(other.get()) { }
-
     T* release()
     {
         T* result = m_raw;
@@ -599,10 +588,6 @@ public:
 
     void clear() { m_raw = 0; }
 
-
-    // FIXME: Oilpan: Remove this ASAP. Only here to make Node transition easier.
-    template<typename U>
-    operator PassRefPtr<U>() { return PassRefPtr<U>(m_raw); }
 
 protected:
     void verifyTypeIsGarbageCollected() const
@@ -750,16 +735,6 @@ template<typename T, typename U> inline bool operator==(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Member<U>& b) { return a.get() != b.get(); }
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
-
-// FIXME: Oilpan: Get rid of these ASAP; only here to make Node transition easier.
-template<typename T, typename U> inline bool operator==(const Member<T>& a, const RefPtr<U>& b) { return a.get() == b.get(); }
-template<typename T, typename U> inline bool operator!=(const Member<T>& a, const RefPtr<U>& b) { return a.get() != b.get(); }
-template<typename T, typename U> inline bool operator==(const RefPtr<T>& a, const Member<U>& b) { return a.get() == b.get(); }
-template<typename T, typename U> inline bool operator!=(const RefPtr<T>& a, const Member<U>& b) { return a.get() != b.get(); }
-template<typename T, typename U> inline bool operator==(const Member<T>& a, const PassRefPtr<U>& b) { return a.get() == b.get(); }
-template<typename T, typename U> inline bool operator!=(const Member<T>& a, const PassRefPtr<U>& b) { return a.get() != b.get(); }
-template<typename T, typename U> inline bool operator==(const PassRefPtr<T>& a, const Member<U>& b) { return a.get() == b.get(); }
-template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const Member<U>& b) { return a.get() != b.get(); }
 
 // CPP-defined type names for the transition period where we want to
 // support both reference counting and garbage collection based on a

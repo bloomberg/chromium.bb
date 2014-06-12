@@ -88,7 +88,7 @@ public:
     bool get(const String&, MessagePortArray&) const;
     bool get(const String&, RefPtr<Uint8Array>&) const;
     bool get(const String&, RefPtr<ArrayBufferView>&) const;
-    bool get(const String&, RefPtr<MIDIPort>&) const;
+    bool get(const String&, RefPtrWillBeMember<MIDIPort>&) const;
     bool get(const String&, RefPtr<MediaKeyError>&) const;
     bool get(const String&, RefPtrWillBeMember<TrackBase>&) const;
     bool get(const String&, Member<SpeechRecognitionResult>&) const;
