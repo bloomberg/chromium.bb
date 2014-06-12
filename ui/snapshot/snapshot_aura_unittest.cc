@@ -126,12 +126,14 @@ class SnapshotAuraTest : public testing::Test {
 
   gfx::Image GrabSnapshotForTestWindow() {
     gfx::Rect source_rect(test_window_->bounds().size());
+    aura::Window::ConvertRectToTarget(
+        test_window(), root_window(), &source_rect);
 
     scoped_refptr<base::TestSimpleTaskRunner> task_runner(
         new base::TestSimpleTaskRunner());
     scoped_refptr<SnapshotHolder> holder(new SnapshotHolder);
     ui::GrabWindowSnapshotAsync(
-        test_window(),
+        root_window(),
         source_rect,
         task_runner,
         base::Bind(&SnapshotHolder::SnapshotCallback, holder));

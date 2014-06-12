@@ -36,7 +36,7 @@ static void MakeAsyncCopyRequest(
     const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
-  request->set_area(ui::ConvertRectToPixel(window->layer(), source_rect));
+  request->set_area(source_rect);
   window->layer()->RequestCopyOfOutput(request.Pass());
 }
 
