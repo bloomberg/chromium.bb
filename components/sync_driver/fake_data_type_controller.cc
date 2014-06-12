@@ -136,12 +136,6 @@ void FakeDataTypeController::OnSingleDatatypeUnrecoverableError(
   ADD_FAILURE() << message;
 }
 
-void FakeDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  ADD_FAILURE() << message;
-}
-
 void FakeDataTypeController::SetDelayModelLoad() {
   model_load_delayed_ = true;
 }

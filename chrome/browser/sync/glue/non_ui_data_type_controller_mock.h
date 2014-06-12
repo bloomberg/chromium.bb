@@ -29,8 +29,6 @@ class NonUIDataTypeControllerMock
   MOCK_METHOD2(OnSingleDataTypeUnrecoverableError,
                void(const tracked_objects::Location&,
                     const std::string&));
-  MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,
-                                              const std::string&));
 
   // NonUIDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());

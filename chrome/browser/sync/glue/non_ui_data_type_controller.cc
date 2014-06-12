@@ -176,7 +176,12 @@ DataTypeController::State NonUIDataTypeController::state() const {
 void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RecordUnrecoverableError(from_here, message);
+  // TODO(tim): We double-upload some errors.  See bug 383480.
+  if (!error_callback_.is_null())
+    error_callback_.Run();
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            syncer::MODEL_TYPE_COUNT);
   BrowserThread::PostTask(BrowserThread::UI, from_here,
       base::Bind(&NonUIDataTypeController::DisableImpl,
                  this,
@@ -218,9 +223,6 @@ void NonUIDataTypeController::StartDoneImpl(
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (IsUnrecoverableResult(start_result))
-    RecordUnrecoverableError(FROM_HERE, "StartFailed");
 
   // If we failed to start up, and we haven't been stopped yet, we need to
   // ensure we clean up the local service and shared change processor properly.

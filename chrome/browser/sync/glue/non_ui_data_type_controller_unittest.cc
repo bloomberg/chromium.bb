@@ -156,11 +156,6 @@ class NonUIDataTypeControllerFake
   virtual void StopModels() OVERRIDE {
     mock_->StopModels();
   }
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE {
-    mock_->RecordUnrecoverableError(from_here, message);
-  }
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
     mock_->RecordAssociationTime(time);
   }
@@ -258,8 +253,6 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(*dtc_mock_.get(), StopModels()).Times(AtLeast(1));
-    if (DataTypeController::IsUnrecoverableResult(result))
-      EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_.get(), RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result, _, _));
   }
@@ -506,7 +499,6 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
-  EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, "Test"));
   EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _)).WillOnce(
       InvokeWithoutArgs(non_ui_dtc_.get(), &NonUIDataTypeController::Stop));
   SetStopExpectations();

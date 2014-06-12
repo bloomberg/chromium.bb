@@ -165,6 +165,21 @@ bool FrontendDataTypeController::StartModels() {
   return true;
 }
 
+void FrontendDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DVLOG(1) << "Datatype Controller failed for type "
+           << ModelTypeToString(type()) << "  "
+           << message << " at location "
+           << from_here.ToString();
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            syncer::MODEL_TYPE_COUNT);
+
+  if (!error_callback_.is_null())
+    error_callback_.Run();
+}
+
 bool FrontendDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
   syncer::SyncMergeResult local_merge_result(type());

@@ -14,7 +14,7 @@ DataTypeController::DataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback)
     : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
-      user_share_(NULL), error_callback_(error_callback) {
+      error_callback_(error_callback), user_share_(NULL) {
 }
 
 DataTypeController::~DataTypeController() {
@@ -46,23 +46,6 @@ void DataTypeController::OnUserShareReady(syncer::UserShare* share) {
 
 syncer::UserShare* DataTypeController::user_share() const {
   return user_share_;
-}
-
-void DataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DVLOG(1) << "Datatype Controller failed for type "
-           << ModelTypeToString(type()) << "  "
-           << message << " at location "
-           << from_here.ToString();
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(type()),
-                            syncer::MODEL_TYPE_COUNT);
-
-  // TODO(sync): remove this once search engines triggers less errors, such as
-  // due to crbug.com/130448.
-  if ((type() != syncer::SEARCH_ENGINES) && (!error_callback_.is_null()))
-    error_callback_.Run();
 }
 
 }  // namespace browser_sync

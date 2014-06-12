@@ -47,10 +47,6 @@ class FakeDataTypeController : public DataTypeController {
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
-
   virtual void SetDelayModelLoad();
 
   void SetModelLoadError(syncer::SyncError error);

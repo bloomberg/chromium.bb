@@ -247,9 +247,6 @@ void UIDataTypeController::StartDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsSuccessfulResult(start_result)) {
-    if (IsUnrecoverableResult(start_result))
-      RecordUnrecoverableError(FROM_HERE, "StartFailed");
-
     StopModels();
     if (start_result == ASSOCIATION_FAILED) {
       state_ = DISABLED;
@@ -328,7 +325,12 @@ DataTypeController::State UIDataTypeController::state() const {
 
 void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
-  RecordUnrecoverableError(from_here, message);
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            syncer::MODEL_TYPE_COUNT);
+  // TODO(tim): We double-upload some errors.  See bug 383480.
+  if (!error_callback_.is_null())
+    error_callback_.Run();
   sync_service_->DisableBrokenDatatype(type(), from_here, message);
 }
 

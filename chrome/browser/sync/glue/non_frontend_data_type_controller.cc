@@ -402,6 +402,22 @@ void NonFrontendDataTypeController::RecordStartFailure(StartResult result) {
 #undef PER_DATA_TYPE_MACRO
 }
 
+void NonFrontendDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DVLOG(1) << "Datatype Controller failed for type "
+           << ModelTypeToString(type()) << "  "
+           << message << " at location "
+           << from_here.ToString();
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            syncer::MODEL_TYPE_COUNT);
+
+  if (!error_callback_.is_null())
+    error_callback_.Run();
+}
+
+
 ProfileSyncComponentsFactory*
     NonFrontendDataTypeController::profile_sync_factory() const {
   return profile_sync_factory_;

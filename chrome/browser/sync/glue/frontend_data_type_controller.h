@@ -105,6 +105,13 @@ class FrontendDataTypeController : public DataTypeController {
   virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
   virtual void set_change_processor(ChangeProcessor* processor);
 
+  // Handles the reporting of unrecoverable error. It records stuff in
+  // UMA and reports to breakpad.
+  // Virtual for testing purpose.
+  virtual void RecordUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message);
+
   ProfileSyncComponentsFactory* const profile_sync_factory_;
   Profile* const profile_;
   ProfileSyncService* const sync_service_;

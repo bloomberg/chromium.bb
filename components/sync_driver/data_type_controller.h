@@ -147,20 +147,14 @@ class DataTypeController
 
   virtual ~DataTypeController();
 
-  // Handles the reporting of unrecoverable error. It records stuff in
-  // UMA and reports to breakpad.
-  // Virtual for testing purpose.
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
-
   syncer::UserShare* user_share() const;
+
+  // The callback that will be invoked when an unrecoverable error occurs.
+  // TODO(sync): protected for use by legacy controllers.
+  base::Closure error_callback_;
 
  private:
   syncer::UserShare* user_share_;
-
-  // The callback that will be invoked when an unrecoverable error occurs.
-  base::Closure error_callback_;
 };
 
 }  // namespace browser_sync
