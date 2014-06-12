@@ -533,7 +533,7 @@ VEAClient::VEAClient(const TestStream& test_stream,
 
   // Calculate the number of frames in the input stream by dividing its length
   // in bytes by frame size in bytes.
-  CHECK_EQ(test_stream_.input_file.length() % input_buffer_size_, 0)
+  CHECK_EQ(test_stream_.input_file.length() % input_buffer_size_, 0U)
       << "Stream byte size is not a product of calculated frame byte size";
   num_frames_in_stream_ = test_stream_.input_file.length() / input_buffer_size_;
   CHECK_GT(num_frames_in_stream_, 0UL);
