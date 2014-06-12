@@ -54,6 +54,7 @@ extern const char kOldURL[];
 extern const char kPermission[];
 extern const char kPermissionTypeDialog[];
 extern const char kPermissionTypeDownload[];
+extern const char kPermissionTypeFileSystem[];
 extern const char kPermissionTypeGeolocation[];
 extern const char kPermissionTypeLoadPlugin[];
 extern const char kPermissionTypeMedia[];

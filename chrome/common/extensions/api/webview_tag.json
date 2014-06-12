@@ -236,6 +236,25 @@
         ]
       },
       {
+        "id": "FileSystemPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>filesystem</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
+        "properties": {
+          "url": {
+            "description": "The URL of the frame requesting access to local file system.",
+            "type": "string"
+          },
+          "allowed_by_default": {
+            "description": "The default permission according to cookie setting. This is the default behaviour if <code>allow</code> is not called",
+            "type": "bool"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request." }
+        ]
+      },
+      {
         "id": "LoadPluginPermissionRequest",
         "type": "object",
         "description": "The type of <code>request</code> object which accompanies a <code>loadplugin</code> <a href=\"#event-permissionrequest\">permissionrequest</a> DOM event.<p>",
@@ -774,7 +793,7 @@
             "name": "permission",
             "description": "The type of permission being requested.",
             "type": "string",
-            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin"]
+            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin", "filesystem"]
           },
           {
             "name": "requestId",

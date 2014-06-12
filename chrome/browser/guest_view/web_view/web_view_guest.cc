@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -124,6 +125,8 @@ static std::string PermissionTypeToString(WebViewPermissionType type) {
   switch (type) {
     case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
       return webview::kPermissionTypeDownload;
+    case WEB_VIEW_PERMISSION_TYPE_FILESYSTEM:
+      return webview::kPermissionTypeFileSystem;
     case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
       return webview::kPermissionTypeGeolocation;
     case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
@@ -295,6 +298,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         content::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.Download"));
         break;
+      case WEB_VIEW_PERMISSION_TYPE_FILESYSTEM:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.FileSystem"));
+        break;
       case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
         content::RecordAction(
             UserMetricsAction("WebView.PermissionAllow.Geolocation"));
@@ -326,6 +333,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
       case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
         content::RecordAction(
             UserMetricsAction("WebView.PermissionDeny.Download"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_FILESYSTEM:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.FileSystem"));
         break;
       case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
         content::RecordAction(
@@ -681,6 +692,28 @@ void WebViewGuest::Reload() {
   guest_web_contents()->GetController().Reload(false);
 }
 
+void WebViewGuest::RequestFileSystemPermission(
+    const GURL& url,
+    bool allowed_by_default,
+    const base::Callback<void(bool)>& callback) {
+  base::DictionaryValue request_info;
+  request_info.Set(guestview::kUrl, base::Value::CreateStringValue(url.spec()));
+  RequestPermission(
+      WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
+      request_info,
+      base::Bind(&WebViewGuest::OnWebViewFileSystemPermissionResponse,
+                 base::Unretained(this),
+                 callback),
+      allowed_by_default);
+}
+
+void WebViewGuest::OnWebViewFileSystemPermissionResponse(
+    const base::Callback<void(bool)>& callback,
+    bool allow,
+    const std::string& user_input) {
+  callback.Run(allow && attached());
+}
+
 void WebViewGuest::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
@@ -850,6 +883,78 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
       base::Time::Now(),
       callback);
   return true;
+}
+
+// static
+void WebViewGuest::FileSystemAccessedAsync(int render_process_id,
+                                           int render_frame_id,
+                                           int request_id,
+                                           const GURL& url,
+                                           bool blocked_by_policy) {
+  WebViewGuest* guest =
+      WebViewGuest::FromFrameID(render_process_id, render_frame_id);
+  DCHECK(guest);
+  guest->RequestFileSystemPermission(
+      url,
+      !blocked_by_policy,
+      base::Bind(&WebViewGuest::FileSystemAccessedAsyncResponse,
+                 render_process_id,
+                 render_frame_id,
+                 request_id,
+                 url));
+}
+
+// static
+void WebViewGuest::FileSystemAccessedAsyncResponse(int render_process_id,
+                                                   int render_frame_id,
+                                                   int request_id,
+                                                   const GURL& url,
+                                                   bool allowed) {
+  TabSpecificContentSettings::FileSystemAccessed(
+      render_process_id, render_frame_id, url, !allowed);
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+  render_frame_host->Send(
+      new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
+          render_frame_id, request_id, allowed));
+}
+
+// static
+void WebViewGuest::FileSystemAccessedSync(int render_process_id,
+                                          int render_frame_id,
+                                          const GURL& url,
+                                          bool blocked_by_policy,
+                                          IPC::Message* reply_msg) {
+  WebViewGuest* guest =
+      WebViewGuest::FromFrameID(render_process_id, render_frame_id);
+  DCHECK(guest);
+  guest->RequestFileSystemPermission(
+      url,
+      !blocked_by_policy,
+      base::Bind(&WebViewGuest::FileSystemAccessedSyncResponse,
+                 render_process_id,
+                 render_frame_id,
+                 url,
+                 reply_msg));
+}
+
+// static
+void WebViewGuest::FileSystemAccessedSyncResponse(int render_process_id,
+                                                  int render_frame_id,
+                                                  const GURL& url,
+                                                  IPC::Message* reply_msg,
+                                                  bool allowed) {
+  TabSpecificContentSettings::FileSystemAccessed(
+      render_process_id, render_frame_id, url, !allowed);
+  ChromeViewHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg,
+                                                                  allowed);
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_id)
+    return;
+  render_frame_host->Send(reply_msg);
 }
 
 WebViewGuest::~WebViewGuest() {
