@@ -136,10 +136,10 @@ private:
 
     virtual void copyNonAttributePropertiesFromElement(const Element&) OVERRIDE;
 
-    void submitDialog(PassRefPtr<FormSubmission>);
+    void submitDialog(PassRefPtrWillBeRawPtr<FormSubmission>);
     void submit(Event*, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger);
 
-    void scheduleFormSubmission(PassRefPtr<FormSubmission>);
+    void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
 
     void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
     void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >&);

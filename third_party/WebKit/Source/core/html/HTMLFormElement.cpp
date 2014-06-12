@@ -330,7 +330,7 @@ void HTMLFormElement::submitFromJavaScript()
     submit(0, false, UserGestureIndicator::processingUserGesture(), SubmittedByJavaScript);
 }
 
-void HTMLFormElement::submitDialog(PassRefPtr<FormSubmission> formSubmission)
+void HTMLFormElement::submitDialog(PassRefPtrWillBeRawPtr<FormSubmission> formSubmission)
 {
     for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
         if (isHTMLDialogElement(*node)) {
@@ -369,7 +369,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
 
-    RefPtr<FormSubmission> formSubmission = FormSubmission::create(this, m_attributes, event, formSubmissionTrigger);
+    RefPtrWillBeRawPtr<FormSubmission> formSubmission = FormSubmission::create(this, m_attributes, event, formSubmissionTrigger);
     EventQueueScope scopeForDialogClose; // Delay dispatching 'close' to dialog until done submitting.
     if (formSubmission->method() == FormSubmission::DialogMethod)
         submitDialog(formSubmission.release());
@@ -380,7 +380,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
 }
 
-void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
+void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission)
 {
     ASSERT(submission->method() == FormSubmission::PostMethod || submission->method() == FormSubmission::GetMethod);
     ASSERT(submission->data());

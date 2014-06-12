@@ -160,7 +160,7 @@ inline FormSubmission::FormSubmission(const String& result)
 {
 }
 
-PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtrWillBeRawPtr<Event> event, FormSubmissionTrigger trigger)
+PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtrWillBeRawPtr<Event> event, FormSubmissionTrigger trigger)
 {
     ASSERT(form);
 
@@ -190,8 +190,8 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
 
     if (copiedAttributes.method() == DialogMethod) {
         if (submitButton)
-            return adoptRef(new FormSubmission(submitButton->resultForDialogSubmit()));
-        return adoptRef(new FormSubmission(""));
+            return adoptRefWillBeNoop(new FormSubmission(submitButton->resultForDialogSubmit()));
+        return adoptRefWillBeNoop(new FormSubmission(""));
     }
 
     Document& document = form->document();
@@ -242,7 +242,13 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     formData->setIdentifier(generateFormDataIdentifier());
     formData->setContainsPasswordData(containsPasswordData);
     AtomicString targetOrBaseTarget = copiedAttributes.target().isEmpty() ? document.baseTarget() : copiedAttributes.target();
-    return adoptRef(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, FormState::create(*form, trigger), formData.release(), boundary, event));
+    return adoptRefWillBeNoop(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, FormState::create(*form, trigger), formData.release(), boundary, event));
+}
+
+void FormSubmission::trace(Visitor* visitor)
+{
+    visitor->trace(m_formState);
+    visitor->trace(m_event);
 }
 
 KURL FormSubmission::requestURL() const
