@@ -956,26 +956,10 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
     return shouldCompositeOverflowControls(view) && view->isScrollCornerVisible();
 }
 
-#if USE(RUBBER_BANDING)
-bool RenderLayerCompositor::requiresOverhangLayers() const
-{
-    // We don't want a layer if this is a subframe.
-    if (!m_renderView.frame()->isMainFrame())
-        return false;
-
-    // We do want a layer if we have a scrolling coordinator and can scroll.
-    if (scrollingCoordinator() && m_renderView.frameView()->hasOpaqueBackground())
-        return true;
-
-    // Chromium always wants a layer.
-    return true;
-}
-#endif
-
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if USE(RUBBER_BANDING)
-    if (requiresOverhangLayers()) {
+    if (m_renderView.frame()->isMainFrame()) {
         if (!m_layerForOverhangShadow) {
             m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
             OverscrollTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
@@ -983,10 +967,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             m_scrollLayer->addChild(m_layerForOverhangShadow.get());
         }
     } else {
-        if (m_layerForOverhangShadow) {
-            m_layerForOverhangShadow->removeFromParent();
-            m_layerForOverhangShadow = nullptr;
-        }
+        ASSERT(!m_layerForOverhangShadow);
     }
 #endif
     GraphicsLayer* controlsParent = m_rootTransformLayer.get() ? m_rootTransformLayer.get() : m_overflowControlsHostLayer.get();
