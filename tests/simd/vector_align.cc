@@ -1,7 +1,7 @@
 /*
- * Copyright 2014 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2014 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -27,34 +27,7 @@
  *    paranoia to prevent the compiler from being too smart.
  */
 
-#include <cmath>
-#include <cstdlib>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <pthread.h>
-#include <random>
-#include <type_traits>
-
-#define CHECK(EXPR)                                                      \
-  do {                                                                   \
-    if (!(EXPR)) {                                                       \
-      std::cerr << #EXPR " returned false at line " << __LINE__ << '\n'; \
-      exit(1);                                                           \
-    }                                                                    \
-  } while (0)
-
-#define NOINLINE __attribute__((noinline))
-
-// X-Macro invoking ACTION(NUM_ELEMENTS, ELEMENT_TYPE, FORMAT_AS) for each
-// supported vector type.
-//
-// TODO(jfb) Add uint64_t, double and wider vectors once supported.
-#define FOR_EACH_VECTOR_TYPE(ACTION) \
-  ACTION(16, uint8_t, uint32_t)      \
-  ACTION(8, uint16_t, uint16_t)      \
-  ACTION(4, uint32_t, uint32_t)      \
-  ACTION(4, float, float)
+#include "native_client/tests/simd/vector.h"
 
 // Arithmetic will be performed on that many vectors. More testing can be
 // performed by increasing this.
@@ -62,33 +35,6 @@ volatile size_t NumVectorsToTest = 2;
 // Number of vectors to allocate for tests. This leaves room for re-alignment
 // within each vector-aligned section that's allocated.
 volatile size_t NumVectorsToAllocate = NumVectorsToTest + 1;
-
-// X-Macro for each state of the test.
-#define FOR_EACH_STATE(ACTION) \
-  ACTION(SETUP) ACTION(TEST) ACTION(CHECK) ACTION(CLEANUP)
-
-struct Test {
-  typedef void *(*Func)(void *);  // POSIX thread function signature.
-#define CREATE_ENUM(S) S,
-  enum State { FOR_EACH_STATE(CREATE_ENUM) DONE };
-  Func functions[DONE];  // One function per state.
-  enum { InBuf0, InBuf1, OutBuf, NumBufs };
-  void *bufs[NumBufs];
-  const char *name;
-};
-#define CREATE_STRING(S) #S,
-static const char *states[] = {FOR_EACH_STATE(CREATE_STRING)};
-
-#define DEFINE_FORMAT(N, T, FMT) \
-  FMT format(T v) { return v; }
-FOR_EACH_VECTOR_TYPE(DEFINE_FORMAT)
-
-template <size_t NumElements, typename T>
-NOINLINE void print_vector(const T *vec) {
-  std::cout << '{';
-  for (size_t i = 0; i != NumElements; ++i)
-    std::cout << format(vec[i]) << (i == NumElements - 1 ? '}' : ',');
-}
 
 // Check that the addition performed on vectors is the same as that performed on
 // scalars.
@@ -109,29 +55,8 @@ check_vector(const T *in0, const T *in1, const T *out) {
     CHECK(((in0[i] + in1[i]) & std::numeric_limits<T>::max()) == out[i]);
 }
 
-// Declare vector types of a particular number of elements and underlying type,
-// aligned to the element width (*not* the vector's width).
-//
-// Attributes must be integer constants, work around that limitation and allow
-// using the following type for vectors within generic code:
-//
-//   typedef typename VectorHelper<NumElements, T>::Vector Vector;
-template <size_t NumElements, typename T>
-struct VectorHelper;
-#define SPECIALIZE_VECTOR_HELPER(N, T, FMT)                              \
-  template <>                                                            \
-  struct VectorHelper<N, T> {                                            \
-    typedef T Vector                                                     \
-        __attribute__((vector_size(N * sizeof(T)), aligned(sizeof(T)))); \
-  };
-FOR_EACH_VECTOR_TYPE(SPECIALIZE_VECTOR_HELPER)
-
-// Setup the memory which will hold the vector data.
-//
-// Always generate the same pseudo-random sequence from one run to another (to
-// preserve golden output file), but different sequence for each type being
-// tested. Align memory to the vector size. The test can then offset from this
-// to get unaligned vectors.
+// Setup the memory which will hold the vector data. Align memory to the vector
+// size. The test can then offset from this to get unaligned vectors.
 template <size_t NumElements, typename T>
 NOINLINE void *setup(void *arg) {
   volatile Test *t = (volatile Test *)arg;
@@ -148,13 +73,14 @@ NOINLINE void *setup(void *arg) {
   }
 
   // Initialize the in buffers to a pseudo-random sequence, the output to zero.
-  std::minstd_rand r;
+  size_t initSize = NumElements * NumVectorsToAllocate;
+  Rng r;
   for (size_t i = 0; i != Test::NumBufs; ++i) {
-    T **buf_ptr = (T **)&t->bufs[i];
-    for (size_t j = 0; j != NumElements * NumVectorsToAllocate; ++j)
-      (*buf_ptr)[j] = i == Test::OutBuf ? 0 : std::is_floating_point<T>::value
-                                                  ? r() / (T)r.max()
-                                                  : r();
+    T *buf = *(T **)&t->bufs[i];
+    if (i == Test::OutBuf)
+      memset(buf, 0, initSize * sizeof(T));
+    else
+      pseudoRandomInit(&r, buf, initSize);
   }
 
   return NULL;
@@ -169,7 +95,7 @@ NOINLINE void *test(void *arg) {
   CHECK(NumVectorsToAllocate > NumVectorsToTest);
 
   // Re-align.
-  typedef typename VectorHelper<NumElements, T>::Vector Vector;
+  typedef typename VectorHelper<NumElements, T>::ElementAligned Vector;
   Vector *vec[Test::NumBufs];
   for (size_t i = 0; i != Test::NumBufs; ++i)
     vec[i] = (Vector *)((T *)t->bufs[i] + NumElementsMisaligned);
@@ -198,7 +124,7 @@ NOINLINE void *check(void *arg) {
     T *in0 = vec[Test::InBuf0] + i * NumElements;
     T *in1 = vec[Test::InBuf1] + i * NumElements;
     T *out = vec[Test::OutBuf] + i * NumElements;
-    std::cout << '\t';
+    std::cout << "  ";
     print_vector<NumElements, T>(in0);
     std::cout << " + ";
     print_vector<NumElements, T>(in1);
@@ -226,23 +152,4 @@ NOINLINE void *cleanup(void *arg) {
     {NULL, NULL, NULL}, "<" #N " x " #T "> misaligned by 1"},
 volatile Test tests[] = {FOR_EACH_VECTOR_TYPE(SETUP_TEST)};
 
-int main(void) {
-  std::cout << std::dec << std::fixed
-            << std::setprecision(std::numeric_limits<double>::digits10);
-
-  for (int state = Test::SETUP; state != Test::DONE; ++state)
-    for (size_t i = 0; i != sizeof(tests) / sizeof(tests[0]); ++i) {
-      int err;
-      pthread_t tid;
-      volatile Test *test = &tests[i];
-      Test::Func f = test->functions[state];
-      std::cout << states[state] << ' ' << test->name << '\n';
-
-      err = pthread_create(&tid, NULL, f, (void *)test);
-      CHECK(err == 0);
-      err = pthread_join(tid, NULL);
-      CHECK(err == 0);
-    }
-
-  return 0;
-}
+DEFINE_MAIN(tests)

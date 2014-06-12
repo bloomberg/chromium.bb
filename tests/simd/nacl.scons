@@ -63,6 +63,9 @@ if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
   AddTest(native_env, 'vector_align.cc',
           golden_file=native_env.File('vector_align.stdout'),
           EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddTest(native_env, 'vector_alloca.cc',
+          golden_file=native_env.File('vector_alloca.stdout'),
+          EXTRA_LIBS=['${PTHREAD_LIBS}'])
   AddTest(native_env, 'vector_extension.c',
           golden_file=native_env.File('vector_extension.stdout'))
   AddTest(native_env, 'vector_shuffle.cc',
