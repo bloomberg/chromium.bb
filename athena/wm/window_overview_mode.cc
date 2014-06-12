@@ -17,6 +17,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/transform.h"
+#include "ui/wm/core/shadow.h"
 
 namespace {
 
@@ -30,6 +31,8 @@ struct WindowOverviewState {
   // The current overview state of the window. 0.f means the window is at the
   // topmost position. 1.f means the window is at the bottom-most position.
   float progress;
+
+  scoped_ptr<wm::Shadow> shadow;
 };
 
 }  // namespace
@@ -149,6 +152,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       state->top = top_transform;
       state->bottom = bottom_transform;
       state->progress = 0.f;
+      state->shadow = CreateShadowForWindow(window);
       window->SetProperty(kWindowOverviewState, state);
     }
   }
@@ -185,6 +189,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         SetWindowProgress(window, progress);
       }
     }
+  }
+
+  scoped_ptr<wm::Shadow> CreateShadowForWindow(aura::Window* window) {
+    scoped_ptr<wm::Shadow> shadow(new wm::Shadow());
+    shadow->Init(wm::Shadow::STYLE_ACTIVE);
+    shadow->SetContentBounds(gfx::Rect(window->bounds().size()));
+    shadow->layer()->SetVisible(true);
+    window->layer()->Add(shadow->layer());
+    return shadow.Pass();
   }
 
   aura::Window* SelectWindowAt(ui::LocatedEvent* event) {
