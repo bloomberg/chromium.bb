@@ -248,7 +248,16 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
 
   DisableAecDump();
 
-  capturers_.clear();
+  // Stop all the capturers to ensure no further OnData() and
+  // RemoveAudioCapturer() callback.
+  // Cache the capturers in a local list since WebRtcAudioCapturer::Stop()
+  // will trigger RemoveAudioCapturer() callback.
+  CapturerList capturers;
+  capturers.swap(capturers_);
+  for (CapturerList::const_iterator iter = capturers.begin();
+       iter != capturers.end(); ++iter) {
+    (*iter)->Stop();
+  }
 
   initialized_ = false;
   return 0;

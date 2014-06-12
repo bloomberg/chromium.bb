@@ -143,7 +143,16 @@ webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
 }
 
 cricket::AudioRenderer* WebRtcLocalAudioTrackAdapter::GetRenderer() {
-  return this;
+  // When the audio track processing is enabled, return a NULL so that capture
+  // data goes through Libjingle LocalAudioTrackHandler::LocalAudioSinkAdapter
+  // ==> WebRtcVoiceMediaChannel::WebRtcVoiceChannelRenderer ==> WebRTC.
+  // When the audio track processing is disabled, WebRtcLocalAudioTrackAdapter
+  // is used to pass the channel ids to WebRtcAudioDeviceImpl, the data flow
+  // becomes WebRtcAudioDeviceImpl ==> WebRTC.
+  // TODO(xians): Only return NULL after the APM in WebRTC is deprecated.
+  // See See http://crbug/365672 for details.
+  return MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()?
+      NULL : this;
 }
 
 }  // namespace content

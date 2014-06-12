@@ -447,9 +447,11 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
 void PeerConnectionDependencyFactory::StartLocalAudioTrack(
     WebRtcLocalAudioTrack* audio_track) {
   // Add the WebRtcAudioDevice as the sink to the local audio track.
-  // TODO(xians): Implement a PeerConnection sink adapter and remove this
-  // AddSink() call.
-  audio_track->AddSink(GetWebRtcAudioDevice());
+  // TODO(xians): Remove the following line of code after the APM in WebRTC is
+  // completely deprecated. See http://crbug/365672.
+  if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled())
+    audio_track->AddSink(GetWebRtcAudioDevice());
+
   // Start the audio track. This will hook the |audio_track| to the capturer
   // as the sink of the audio, and only start the source of the capturer if
   // it is the first audio track connecting to the capturer.
