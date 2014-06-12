@@ -391,7 +391,6 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
   // Needed for Windows compilation, since kEventBindings is declared extern.
   const char* local_event_bindings = kEventBindings;
   script_context_set_.ForEach(extension_id,
-                              NULL,  // all render views
                               base::Bind(&CallModuleMethod,
                                          local_event_bindings,
                                          kEventDispatchFunction,
@@ -576,7 +575,7 @@ void Dispatcher::OnDeliverMessage(int target_port_id, const Message& message) {
         new RequestSender::ScopedTabID(request_sender(), it->second));
   }
 
-  MessagingBindings::DeliverMessage(script_context_set_.GetAll(),
+  MessagingBindings::DeliverMessage(script_context_set_,
                                     target_port_id,
                                     message,
                                     NULL);  // All render views.
@@ -594,20 +593,18 @@ void Dispatcher::OnDispatchOnConnect(
   source_tab.GetInteger("id", &sender_tab_id);
   port_to_tab_id_map_[target_port_id] = sender_tab_id;
 
-  MessagingBindings::DispatchOnConnect(script_context_set_.GetAll(),
+  MessagingBindings::DispatchOnConnect(script_context_set_,
                                        target_port_id,
                                        channel_name,
                                        source_tab,
-                                       info.source_id,
-                                       info.target_id,
-                                       info.source_url,
+                                       info,
                                        tls_channel_id,
                                        NULL);  // All render views.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(int port_id,
                                         const std::string& error_message) {
-  MessagingBindings::DispatchOnDisconnect(script_context_set_.GetAll(),
+  MessagingBindings::DispatchOnDisconnect(script_context_set_,
                                           port_id,
                                           error_message,
                                           NULL);  // All render views.
@@ -842,7 +839,6 @@ void Dispatcher::EnableCustomElementWhiteList() {
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {
   script_context_set().ForEach(extension_id,
-                               NULL,  // all render views
                                base::Bind(&Dispatcher::UpdateBindingsForContext,
                                           base::Unretained(this)));
 }

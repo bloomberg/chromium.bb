@@ -237,6 +237,129 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   Dispatcher* dispatcher_;
 };
 
+void DispatchOnConnectToScriptContext(
+    int target_port_id,
+    const std::string& channel_name,
+    const base::DictionaryValue* source_tab,
+    const ExtensionMsg_ExternalConnectionInfo& info,
+    const std::string& tls_channel_id,
+    bool* port_created,
+    ScriptContext* script_context) {
+  v8::Isolate* isolate = script_context->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+
+  const std::string& source_url_spec = info.source_url.spec();
+  std::string target_extension_id = script_context->GetExtensionID();
+  const Extension* extension = script_context->extension();
+
+  v8::Handle<v8::Value> tab = v8::Null(isolate);
+  v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
+
+  if (extension) {
+    if (!source_tab->empty() && !extension->is_platform_app())
+      tab = converter->ToV8Value(source_tab, script_context->v8_context());
+
+    ExternallyConnectableInfo* externally_connectable =
+        ExternallyConnectableInfo::Get(extension);
+    if (externally_connectable &&
+        externally_connectable->accepts_tls_channel_id) {
+      tls_channel_id_value = v8::String::NewFromUtf8(isolate,
+                                                     tls_channel_id.c_str(),
+                                                     v8::String::kNormalString,
+                                                     tls_channel_id.size());
+    }
+  }
+
+  v8::Handle<v8::Value> arguments[] = {
+      // portId
+      v8::Integer::New(isolate, target_port_id),
+      // channelName
+      v8::String::NewFromUtf8(isolate,
+                              channel_name.c_str(),
+                              v8::String::kNormalString,
+                              channel_name.size()),
+      // sourceTab
+      tab,
+      // sourceExtensionId
+      v8::String::NewFromUtf8(isolate,
+                              info.source_id.c_str(),
+                              v8::String::kNormalString,
+                              info.source_id.size()),
+      // targetExtensionId
+      v8::String::NewFromUtf8(isolate,
+                              target_extension_id.c_str(),
+                              v8::String::kNormalString,
+                              target_extension_id.size()),
+      // sourceUrl
+      v8::String::NewFromUtf8(isolate,
+                              source_url_spec.c_str(),
+                              v8::String::kNormalString,
+                              source_url_spec.size()),
+      // tlsChannelId
+      tls_channel_id_value,
+  };
+
+  v8::Handle<v8::Value> retval =
+      script_context->module_system()->CallModuleMethod(
+          "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
+
+  if (!retval.IsEmpty()) {
+    CHECK(retval->IsBoolean());
+    *port_created |= retval->BooleanValue();
+  } else {
+    LOG(ERROR) << "Empty return value from dispatchOnConnect.";
+  }
+}
+
+void DeliverMessageToScriptContext(const std::string& message_data,
+                                   int target_port_id,
+                                   ScriptContext* script_context) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+
+  // Check to see whether the context has this port before bothering to create
+  // the message.
+  v8::Handle<v8::Value> port_id_handle =
+      v8::Integer::New(isolate, target_port_id);
+  v8::Handle<v8::Value> has_port =
+      script_context->module_system()->CallModuleMethod(
+          "messaging", "hasPort", 1, &port_id_handle);
+
+  CHECK(!has_port.IsEmpty());
+  if (!has_port->BooleanValue())
+    return;
+
+  std::vector<v8::Handle<v8::Value> > arguments;
+  arguments.push_back(v8::String::NewFromUtf8(isolate,
+                                              message_data.c_str(),
+                                              v8::String::kNormalString,
+                                              message_data.size()));
+  arguments.push_back(port_id_handle);
+  script_context->module_system()->CallModuleMethod(
+      "messaging", "dispatchOnMessage", &arguments);
+}
+
+void DispatchOnDisconnectToScriptContext(int port_id,
+                                         const std::string& error_message,
+                                         ScriptContext* script_context) {
+  v8::Isolate* isolate = script_context->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  std::vector<v8::Handle<v8::Value> > arguments;
+  arguments.push_back(v8::Integer::New(isolate, port_id));
+  if (!error_message.empty()) {
+    arguments.push_back(
+        v8::String::NewFromUtf8(isolate, error_message.c_str()));
+  } else {
+    arguments.push_back(v8::Null(isolate));
+  }
+
+  script_context->module_system()->CallModuleMethod(
+      "messaging", "dispatchOnDisconnect", &arguments);
+}
+
 }  // namespace
 
 ObjectBackedNativeHandler* MessagingBindings::Get(Dispatcher* dispatcher,
@@ -246,95 +369,23 @@ ObjectBackedNativeHandler* MessagingBindings::Get(Dispatcher* dispatcher,
 
 // static
 void MessagingBindings::DispatchOnConnect(
-    const ScriptContextSet::ContextSet& contexts,
+    const ScriptContextSet& context_set,
     int target_port_id,
     const std::string& channel_name,
     const base::DictionaryValue& source_tab,
-    const std::string& source_extension_id,
-    const std::string& target_extension_id,
-    const GURL& source_url,
+    const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
     content::RenderView* restrict_to_render_view) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-
   bool port_created = false;
-  std::string source_url_spec = source_url.spec();
-
-  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
-  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end();
-       ++it) {
-    if (restrict_to_render_view &&
-        restrict_to_render_view != (*it)->GetRenderView()) {
-      continue;
-    }
-
-    // TODO(kalman): remove when ContextSet::ForEach is available.
-    if ((*it)->v8_context().IsEmpty())
-      continue;
-
-    v8::Handle<v8::Value> tab = v8::Null(isolate);
-    v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
-    const Extension* extension = (*it)->extension();
-    if (extension) {
-      if (!source_tab.empty() && !extension->is_platform_app())
-        tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
-
-      ExternallyConnectableInfo* externally_connectable =
-          ExternallyConnectableInfo::Get(extension);
-      if (externally_connectable &&
-          externally_connectable->accepts_tls_channel_id) {
-        tls_channel_id_value =
-            v8::String::NewFromUtf8(isolate,
-                                    tls_channel_id.c_str(),
-                                    v8::String::kNormalString,
-                                    tls_channel_id.size());
-      }
-    }
-
-    v8::Handle<v8::Value> arguments[] = {
-        // portId
-        v8::Integer::New(isolate, target_port_id),
-        // channelName
-        v8::String::NewFromUtf8(isolate,
-                                channel_name.c_str(),
-                                v8::String::kNormalString,
-                                channel_name.size()),
-        // sourceTab
-        tab,
-        // sourceExtensionId
-        v8::String::NewFromUtf8(isolate,
-                                source_extension_id.c_str(),
-                                v8::String::kNormalString,
-                                source_extension_id.size()),
-        // targetExtensionId
-        v8::String::NewFromUtf8(isolate,
-                                target_extension_id.c_str(),
-                                v8::String::kNormalString,
-                                target_extension_id.size()),
-        // sourceUrl
-        v8::String::NewFromUtf8(isolate,
-                                source_url_spec.c_str(),
-                                v8::String::kNormalString,
-                                source_url_spec.size()),
-        // tlsChannelId
-        tls_channel_id_value,
-    };
-
-    v8::Handle<v8::Value> retval = (*it)->module_system()->CallModuleMethod(
-        "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
-
-    if (retval.IsEmpty()) {
-      LOG(ERROR) << "Empty return value from dispatchOnConnect.";
-      continue;
-    }
-
-    CHECK(retval->IsBoolean());
-    port_created |= retval->BooleanValue();
-  }
+  context_set.ForEach(info.target_id,
+                      restrict_to_render_view,
+                      base::Bind(&DispatchOnConnectToScriptContext,
+                                 target_port_id,
+                                 channel_name,
+                                 &source_tab,
+                                 info,
+                                 tls_channel_id,
+                                 &port_created));
 
   // If we didn't create a port, notify the other end of the channel (treat it
   // as a disconnect).
@@ -346,7 +397,7 @@ void MessagingBindings::DispatchOnConnect(
 
 // static
 void MessagingBindings::DeliverMessage(
-    const ScriptContextSet::ContextSet& contexts,
+    const ScriptContextSet& context_set,
     int target_port_id,
     const Message& message,
     content::RenderView* restrict_to_render_view) {
@@ -357,77 +408,20 @@ void MessagingBindings::DeliverMessage(
     allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
   }
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-
-  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
-  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end();
-       ++it) {
-    if (restrict_to_render_view &&
-        restrict_to_render_view != (*it)->GetRenderView()) {
-      continue;
-    }
-
-    // TODO(kalman): remove when ContextSet::ForEach is available.
-    if ((*it)->v8_context().IsEmpty())
-      continue;
-
-    // Check to see whether the context has this port before bothering to create
-    // the message.
-    v8::Handle<v8::Value> port_id_handle =
-        v8::Integer::New(isolate, target_port_id);
-    v8::Handle<v8::Value> has_port = (*it)->module_system()->CallModuleMethod(
-        "messaging", "hasPort", 1, &port_id_handle);
-
-    CHECK(!has_port.IsEmpty());
-    if (!has_port->BooleanValue())
-      continue;
-
-    std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::String::NewFromUtf8(isolate,
-                                                message.data.c_str(),
-                                                v8::String::kNormalString,
-                                                message.data.size()));
-    arguments.push_back(port_id_handle);
-    (*it)->module_system()->CallModuleMethod(
-        "messaging", "dispatchOnMessage", &arguments);
-  }
+  context_set.ForEach(
+      restrict_to_render_view,
+      base::Bind(&DeliverMessageToScriptContext, message.data, target_port_id));
 }
 
 // static
 void MessagingBindings::DispatchOnDisconnect(
-    const ScriptContextSet::ContextSet& contexts,
+    const ScriptContextSet& context_set,
     int port_id,
     const std::string& error_message,
     content::RenderView* restrict_to_render_view) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-
-  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
-  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end();
-       ++it) {
-    if (restrict_to_render_view &&
-        restrict_to_render_view != (*it)->GetRenderView()) {
-      continue;
-    }
-
-    // TODO(kalman): remove when ContextSet::ForEach is available.
-    if ((*it)->v8_context().IsEmpty())
-      continue;
-
-    std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::Integer::New(isolate, port_id));
-    if (!error_message.empty()) {
-      arguments.push_back(
-          v8::String::NewFromUtf8(isolate, error_message.c_str()));
-    } else {
-      arguments.push_back(v8::Null(isolate));
-    }
-    (*it)->module_system()->CallModuleMethod(
-        "messaging", "dispatchOnDisconnect", &arguments);
-  }
+  context_set.ForEach(
+      restrict_to_render_view,
+      base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));
 }
 
 }  // namespace extensions

@@ -12,6 +12,7 @@
   var Event = require('event_bindings').Event;
   var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
+  var logging = requireNative('logging');
   var messagingNatives = requireNative('messaging_natives');
   var processNatives = requireNative('process');
   var unloadEvent = require('unload_event');
@@ -227,8 +228,10 @@
     // channels were opened to and from the same process, closing one would
     // close both.
     var extensionId = processNatives.GetExtensionId();
-    if (targetExtensionId != extensionId)
-      return false;  // not for us
+
+    // messaging_bindings.cc should ensure that this method only gets called for
+    // the right extension.
+    logging.CHECK(targetExtensionId == extensionId);
 
     if (ports[getOppositePortId(portId)])
       return false;  // this channel was opened by us, so ignore it

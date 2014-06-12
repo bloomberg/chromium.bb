@@ -66,11 +66,22 @@ class ScriptContextSet {
   // Synchronously runs |callback| with each ScriptContext that belongs to
   // |extension_id| in |render_view|.
   //
-  // |extension_id| may be "" to match all extensions.
-  // |render_view| may be NULL to match all render views.
+  // An empty |extension_id| will match all extensions, and a NULL |render_view|
+  // will match all render views, but try to use the inline variants of these
+  // methods instead.
   void ForEach(const std::string& extension_id,
                content::RenderView* render_view,
                const base::Callback<void(ScriptContext*)>& callback) const;
+  // ForEach which matches all extensions.
+  void ForEach(content::RenderView* render_view,
+               const base::Callback<void(ScriptContext*)>& callback) const {
+    ForEach("", render_view, callback);
+  }
+  // ForEach which matches all render views.
+  void ForEach(const std::string& extension_id,
+               const base::Callback<void(ScriptContext*)>& callback) const {
+    ForEach(extension_id, NULL, callback);
+  }
 
   // Cleans up contexts belonging to an unloaded extension.
   //

@@ -267,34 +267,26 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
     const base::DictionaryValue& source_tab,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
-  MessagingBindings::DispatchOnConnect(
-      dispatcher_->script_context_set().GetAll(),
-      target_port_id,
-      channel_name,
-      source_tab,
-      info.source_id,
-      info.target_id,
-      info.source_url,
-      tls_channel_id,
-      render_view());
+  MessagingBindings::DispatchOnConnect(dispatcher_->script_context_set(),
+                                       target_port_id,
+                                       channel_name,
+                                       source_tab,
+                                       info,
+                                       tls_channel_id,
+                                       render_view());
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const Message& message) {
-  MessagingBindings::DeliverMessage(dispatcher_->script_context_set().GetAll(),
-                                    target_id,
-                                    message,
-                                    render_view());
+  MessagingBindings::DeliverMessage(
+      dispatcher_->script_context_set(), target_id, message, render_view());
 }
 
 void ExtensionHelper::OnExtensionDispatchOnDisconnect(
     int port_id,
     const std::string& error_message) {
   MessagingBindings::DispatchOnDisconnect(
-      dispatcher_->script_context_set().GetAll(),
-      port_id,
-      error_message,
-      render_view());
+      dispatcher_->script_context_set(), port_id, error_message, render_view());
 }
 
 void ExtensionHelper::OnExecuteCode(

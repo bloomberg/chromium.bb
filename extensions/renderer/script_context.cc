@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
@@ -58,8 +59,8 @@ void ScriptContext::Invalidate() {
   v8_context_.reset();
 }
 
-std::string ScriptContext::GetExtensionID() const {
-  return extension_.get() ? extension_->id() : std::string();
+const std::string& ScriptContext::GetExtensionID() const {
+  return extension_.get() ? extension_->id() : base::EmptyString();
 }
 
 content::RenderView* ScriptContext::GetRenderView() const {

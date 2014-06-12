@@ -45,7 +45,7 @@ class ScriptContext : public RequestSender::Source {
   bool is_valid() const { return !v8_context_.IsEmpty(); }
 
   v8::Handle<v8::Context> v8_context() const {
-    return v8_context_.NewHandle(v8::Isolate::GetCurrent());
+    return v8_context_.NewHandle(isolate());
   }
 
   const Extension* extension() const { return extension_.get(); }
@@ -66,7 +66,7 @@ class ScriptContext : public RequestSender::Source {
 
   // Returns the ID of the extension associated with this context, or empty
   // string if there is no such extension.
-  std::string GetExtensionID() const;
+  const std::string& GetExtensionID() const;
 
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.
