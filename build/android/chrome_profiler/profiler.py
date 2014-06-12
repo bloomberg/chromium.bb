@@ -4,8 +4,8 @@
 
 import os
 
-from adb_profile_chrome import trace_packager
-from adb_profile_chrome import ui
+from chrome_profiler import trace_packager
+from chrome_profiler import ui
 
 from pylib import constants
 

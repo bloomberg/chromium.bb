@@ -7,7 +7,7 @@ import os
 import re
 import time
 
-from adb_profile_chrome import controllers
+from chrome_profiler import controllers
 
 from pylib import pexpect
 

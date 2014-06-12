@@ -7,8 +7,8 @@ import tempfile
 import unittest
 import zipfile
 
-from adb_profile_chrome import profiler
-from adb_profile_chrome import ui
+from chrome_profiler import profiler
+from chrome_profiler import ui
 
 
 class FakeController(object):

@@ -1,3 +1,0 @@
-#!/bin/sh
-cd $(dirname $0)/../
-exec python -m unittest discover adb_profile_chrome '*_unittest.py' $@
