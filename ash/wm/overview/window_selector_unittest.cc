@@ -20,6 +20,7 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -885,6 +886,34 @@ TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
   SendKey(ui::VKEY_RETURN);
   EXPECT_FALSE(IsSelecting());
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
+// Tests that overview mode hides the callout widget.
+TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> panel2(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
+  PanelLayoutManager* panel_manager =
+        static_cast<PanelLayoutManager*>(panel1->parent()->layout_manager());
+
+  // By default, panel callout widgets are visible.
+  EXPECT_TRUE(
+      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
+  EXPECT_TRUE(
+      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
+
+  // Toggling the overview should hide the callout widgets.
+  ToggleOverview();
+  EXPECT_FALSE(
+      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
+  EXPECT_FALSE(
+      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
+
+  // Ending the overview should show them again.
+  ToggleOverview();
+  EXPECT_TRUE(
+      panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
+  EXPECT_TRUE(
+      panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
 }
 
 }  // namespace ash

@@ -143,7 +143,7 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       // Attached panel windows are grouped into a single overview item per
       // grid.
       if (!panels_item) {
-        panels_item = new WindowSelectorPanels();
+        panels_item = new WindowSelectorPanels(root_window_);
         window_list_.push_back(panels_item);
       }
       panels_item->AddWindow(*iter);

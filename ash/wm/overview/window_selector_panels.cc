@@ -21,14 +21,12 @@ namespace ash {
 
 namespace {
 
-const int kPanelCalloutFadeInDurationMilliseconds = 50;
-
 // This class extends ScopedTransformOverviewMode to hide and show the callout
 // widget for a panel window when entering / leaving overview mode, as well as
 // to add a transparent button for each panel window.
 class ScopedTransformPanelWindow : public ScopedTransformOverviewWindow {
  public:
-  ScopedTransformPanelWindow(aura::Window* window);
+  explicit ScopedTransformPanelWindow(aura::Window* window);
   virtual ~ScopedTransformPanelWindow();
 
   // ScopedTransformOverviewWindow overrides:
@@ -40,19 +38,8 @@ class ScopedTransformPanelWindow : public ScopedTransformOverviewWindow {
       bool animate) OVERRIDE;
 
  private:
-  // Returns the callout widget for the transformed panel.
-  views::Widget* GetCalloutWidget();
-
-  // Restores the callout visibility.
-  void RestoreCallout();
-
-  // Trigger relayout
-  void Relayout();
-
   // Returns the panel window bounds after the transformation.
   gfx::Rect GetTransformedBounds();
-
-  bool callout_visible_;
 
   scoped_ptr<TransparentActivateWindowButton> window_button_;
 
@@ -64,14 +51,10 @@ ScopedTransformPanelWindow::ScopedTransformPanelWindow(aura::Window* window)
 }
 
 ScopedTransformPanelWindow::~ScopedTransformPanelWindow() {
-  // window() will be NULL if the window was destroyed.
-  if (window())
-    RestoreCallout();
 }
 
 void ScopedTransformPanelWindow::PrepareForOverview() {
   ScopedTransformOverviewWindow::PrepareForOverview();
-  GetCalloutWidget()->GetLayer()->SetOpacity(0.0f);
   window_button_.reset(new TransparentActivateWindowButton(window()));
 }
 
@@ -81,26 +64,6 @@ void ScopedTransformPanelWindow::SetTransform(
     bool animate) {
   ScopedTransformOverviewWindow::SetTransform(root_window, transform, animate);
   window_button_->SetBounds(GetTransformedBounds());
-}
-
-views::Widget* ScopedTransformPanelWindow::GetCalloutWidget() {
-  DCHECK(window()->parent()->id() == kShellWindowId_PanelContainer);
-  PanelLayoutManager* panel_layout_manager =
-      static_cast<PanelLayoutManager*>(window()->parent()->layout_manager());
-  return panel_layout_manager->GetCalloutWidgetForPanel(window());
-}
-
-void ScopedTransformPanelWindow::RestoreCallout() {
-  scoped_ptr<ui::LayerAnimationSequence> sequence(
-      new ui::LayerAnimationSequence);
-  sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      ui::LayerAnimationElement::OPACITY, base::TimeDelta::FromMilliseconds(
-          ScopedTransformOverviewWindow::kTransitionMilliseconds)));
-  sequence->AddElement(ui::LayerAnimationElement::CreateOpacityElement(1,
-      base::TimeDelta::FromMilliseconds(
-          kPanelCalloutFadeInDurationMilliseconds)));
-  GetCalloutWidget()->GetLayer()->GetAnimator()->StartAnimation(
-      sequence.release());
 }
 
 gfx::Rect ScopedTransformPanelWindow::GetTransformedBounds() {
@@ -118,13 +81,21 @@ gfx::Rect ScopedTransformPanelWindow::GetTransformedBounds() {
 
 }  // namespace
 
-WindowSelectorPanels::WindowSelectorPanels() {
+WindowSelectorPanels::WindowSelectorPanels(aura::Window* panels_root_window)
+    : panels_root_window_(panels_root_window) {
+  static_cast<PanelLayoutManager*>(
+      Shell::GetContainer(panels_root_window_, kShellWindowId_PanelContainer)->
+          layout_manager())->SetShowCalloutWidgets(false);
 }
 
 WindowSelectorPanels::~WindowSelectorPanels() {
+  static_cast<PanelLayoutManager*>(
+      Shell::GetContainer(panels_root_window_, kShellWindowId_PanelContainer)->
+          layout_manager())->SetShowCalloutWidgets(true);
 }
 
 void WindowSelectorPanels::AddWindow(aura::Window* window) {
+  DCHECK(window->GetRootWindow() == panels_root_window_);
   transform_windows_.push_back(new ScopedTransformPanelWindow(window));
 }
 

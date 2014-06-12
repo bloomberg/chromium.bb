@@ -72,6 +72,9 @@ class ASH_EXPORT PanelLayoutManager
 
   void ToggleMinimize(aura::Window* panel);
 
+  // Hide / Show the panel callout widgets.
+  void SetShowCalloutWidgets(bool show);
+
   // Returns the callout widget (arrow) for |panel|.
   views::Widget* GetCalloutWidgetForPanel(aura::Window* panel);
 
@@ -169,6 +172,8 @@ class ASH_EXPORT PanelLayoutManager
   bool in_add_window_;
   // Protect against recursive calls to Relayout().
   bool in_layout_;
+  // Indicates if the panel callout widget should be created.
+  bool show_callout_widgets_;
   // Ordered list of unowned pointers to panel windows.
   PanelList panel_windows_;
   // The panel being dragged.

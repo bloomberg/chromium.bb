@@ -20,7 +20,7 @@ class ScopedTransformOverviewWindow;
 // overview mode and the callout arrows are hidden at this point.
 class WindowSelectorPanels : public WindowSelectorItem {
  public:
-  WindowSelectorPanels();
+  explicit WindowSelectorPanels(aura::Window* panels_root_window);
   virtual ~WindowSelectorPanels();
 
   // Adds |window| to the selector item. This window should be an attached
@@ -43,6 +43,9 @@ class WindowSelectorPanels : public WindowSelectorItem {
  private:
   typedef ScopedVector<ScopedTransformOverviewWindow> WindowList;
   WindowList transform_windows_;
+
+  // The root window of the panels this item contains.
+  aura::Window* panels_root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorPanels);
 };

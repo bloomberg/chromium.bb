@@ -258,6 +258,7 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
     : panel_container_(panel_container),
       in_add_window_(false),
       in_layout_(false),
+      show_callout_widgets_(true),
       dragged_panel_(NULL),
       shelf_(NULL),
       shelf_layout_manager_(NULL),
@@ -323,6 +324,13 @@ void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
     window_state->Restore();
   else
     window_state->Minimize();
+}
+
+void PanelLayoutManager::SetShowCalloutWidgets(bool show) {
+  if (show_callout_widgets_ == show)
+    return;
+  show_callout_widgets_ = show;
+  UpdateCallouts();
 }
 
 views::Widget* PanelLayoutManager::GetCalloutWidgetForPanel(
@@ -814,7 +822,7 @@ void PanelLayoutManager::UpdateCallouts() {
         panel->GetTargetBounds());
     gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
-        panel == dragged_panel_) {
+        panel == dragged_panel_ || !show_callout_widgets_) {
       callout_widget->Hide();
       callout_widget->GetNativeWindow()->layer()->SetOpacity(0);
       continue;
