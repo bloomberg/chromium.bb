@@ -23,7 +23,6 @@
 #if ENABLE(SVG_FONTS)
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
-#include "SVGNames.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"

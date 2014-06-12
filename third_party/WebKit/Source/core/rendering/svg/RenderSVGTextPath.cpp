@@ -21,7 +21,6 @@
 
 #include "core/rendering/svg/RenderSVGTextPath.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/SVGPathData.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGPathElement.h"

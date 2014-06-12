@@ -22,13 +22,7 @@
 #include "config.h"
 #include "core/rendering/HitTestLocation.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
-
 namespace WebCore {
-
-using namespace HTMLNames;
 
 HitTestLocation::HitTestLocation()
     : m_isRectBased(false)

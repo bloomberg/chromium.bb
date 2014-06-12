@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
-#include "SVGNames.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"

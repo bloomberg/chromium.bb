@@ -24,7 +24,6 @@
 
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGAltGlyphElement.h"
 

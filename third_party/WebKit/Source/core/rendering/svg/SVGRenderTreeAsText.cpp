@@ -30,7 +30,6 @@
 
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 
-#include "SVGNames.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"

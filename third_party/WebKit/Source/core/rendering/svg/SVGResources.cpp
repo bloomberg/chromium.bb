@@ -38,6 +38,8 @@
 
 namespace WebCore {
 
+using namespace SVGNames;
+
 SVGResources::SVGResources()
     : m_linkedResource(0)
 {
@@ -49,45 +51,45 @@ static HashSet<AtomicString>& clipperFilterMaskerTags()
     if (s_tagList.isEmpty()) {
         // "container elements": http://www.w3.org/TR/SVG11/intro.html#TermContainerElement
         // "graphics elements" : http://www.w3.org/TR/SVG11/intro.html#TermGraphicsElement
-        s_tagList.add(SVGNames::aTag.localName());
-        s_tagList.add(SVGNames::circleTag.localName());
-        s_tagList.add(SVGNames::ellipseTag.localName());
+        s_tagList.add(aTag.localName());
+        s_tagList.add(circleTag.localName());
+        s_tagList.add(ellipseTag.localName());
 #if ENABLE(SVG_FONTS)
-        s_tagList.add(SVGNames::glyphTag.localName());
+        s_tagList.add(glyphTag.localName());
 #endif
-        s_tagList.add(SVGNames::gTag.localName());
-        s_tagList.add(SVGNames::imageTag.localName());
-        s_tagList.add(SVGNames::lineTag.localName());
-        s_tagList.add(SVGNames::markerTag.localName());
-        s_tagList.add(SVGNames::maskTag.localName());
+        s_tagList.add(gTag.localName());
+        s_tagList.add(imageTag.localName());
+        s_tagList.add(lineTag.localName());
+        s_tagList.add(markerTag.localName());
+        s_tagList.add(maskTag.localName());
 #if ENABLE(SVG_FONTS)
-        s_tagList.add(SVGNames::missing_glyphTag.localName());
+        s_tagList.add(missing_glyphTag.localName());
 #endif
-        s_tagList.add(SVGNames::pathTag.localName());
-        s_tagList.add(SVGNames::polygonTag.localName());
-        s_tagList.add(SVGNames::polylineTag.localName());
-        s_tagList.add(SVGNames::rectTag.localName());
-        s_tagList.add(SVGNames::svgTag.localName());
-        s_tagList.add(SVGNames::textTag.localName());
-        s_tagList.add(SVGNames::useTag.localName());
+        s_tagList.add(pathTag.localName());
+        s_tagList.add(polygonTag.localName());
+        s_tagList.add(polylineTag.localName());
+        s_tagList.add(rectTag.localName());
+        s_tagList.add(svgTag.localName());
+        s_tagList.add(textTag.localName());
+        s_tagList.add(useTag.localName());
 
         // Not listed in the definitions is the clipPath element, the SVG spec says though:
         // The "clipPath" element or any of its children can specify property "clip-path".
         // So we have to add clipPathTag here, otherwhise clip-path on clipPath will fail.
         // (Already mailed SVG WG, waiting for a solution)
-        s_tagList.add(SVGNames::clipPathTag.localName());
+        s_tagList.add(clipPathTag.localName());
 
         // Not listed in the definitions are the text content elements, though filter/clipper/masker on tspan/text/.. is allowed.
         // (Already mailed SVG WG, waiting for a solution)
 #if ENABLE(SVG_FONTS)
-        s_tagList.add(SVGNames::altGlyphTag.localName());
+        s_tagList.add(altGlyphTag.localName());
 #endif
-        s_tagList.add(SVGNames::textPathTag.localName());
-        s_tagList.add(SVGNames::tspanTag.localName());
+        s_tagList.add(textPathTag.localName());
+        s_tagList.add(tspanTag.localName());
 
         // Not listed in the definitions is the foreignObject element, but clip-path
         // is a supported attribute.
-        s_tagList.add(SVGNames::foreignObjectTag.localName());
+        s_tagList.add(foreignObjectTag.localName());
 
         // Elements that we ignore, as it doesn't make any sense.
         // defs, pattern, switch (FIXME: Mail SVG WG about these)
@@ -101,10 +103,10 @@ bool SVGResources::supportsMarkers(const SVGElement& element)
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
     if (s_tagList.isEmpty()) {
-        s_tagList.add(SVGNames::lineTag.localName());
-        s_tagList.add(SVGNames::pathTag.localName());
-        s_tagList.add(SVGNames::polygonTag.localName());
-        s_tagList.add(SVGNames::polylineTag.localName());
+        s_tagList.add(lineTag.localName());
+        s_tagList.add(pathTag.localName());
+        s_tagList.add(polygonTag.localName());
+        s_tagList.add(polylineTag.localName());
     }
 
     return s_tagList.contains(element.localName());
@@ -115,18 +117,18 @@ static HashSet<AtomicString>& fillAndStrokeTags()
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
     if (s_tagList.isEmpty()) {
 #if ENABLE(SVG_FONTS)
-        s_tagList.add(SVGNames::altGlyphTag.localName());
+        s_tagList.add(altGlyphTag.localName());
 #endif
-        s_tagList.add(SVGNames::circleTag.localName());
-        s_tagList.add(SVGNames::ellipseTag.localName());
-        s_tagList.add(SVGNames::lineTag.localName());
-        s_tagList.add(SVGNames::pathTag.localName());
-        s_tagList.add(SVGNames::polygonTag.localName());
-        s_tagList.add(SVGNames::polylineTag.localName());
-        s_tagList.add(SVGNames::rectTag.localName());
-        s_tagList.add(SVGNames::textTag.localName());
-        s_tagList.add(SVGNames::textPathTag.localName());
-        s_tagList.add(SVGNames::tspanTag.localName());
+        s_tagList.add(circleTag.localName());
+        s_tagList.add(ellipseTag.localName());
+        s_tagList.add(lineTag.localName());
+        s_tagList.add(pathTag.localName());
+        s_tagList.add(polygonTag.localName());
+        s_tagList.add(polylineTag.localName());
+        s_tagList.add(rectTag.localName());
+        s_tagList.add(textTag.localName());
+        s_tagList.add(textPathTag.localName());
+        s_tagList.add(tspanTag.localName());
     }
 
     return s_tagList;
@@ -136,10 +138,10 @@ static HashSet<AtomicString>& chainableResourceTags()
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
     if (s_tagList.isEmpty()) {
-        s_tagList.add(SVGNames::linearGradientTag.localName());
-        s_tagList.add(SVGNames::filterTag.localName());
-        s_tagList.add(SVGNames::patternTag.localName());
-        s_tagList.add(SVGNames::radialGradientTag.localName());
+        s_tagList.add(linearGradientTag.localName());
+        s_tagList.add(filterTag.localName());
+        s_tagList.add(patternTag.localName());
+        s_tagList.add(radialGradientTag.localName());
     }
 
     return s_tagList;

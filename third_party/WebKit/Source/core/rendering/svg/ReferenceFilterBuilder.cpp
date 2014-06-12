@@ -29,7 +29,6 @@
 
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 
-#include "SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/StylePropertySet.h"

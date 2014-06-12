@@ -23,7 +23,6 @@
 #include "core/rendering/HitTestResult.h"
 
 #include "HTMLNames.h"
-#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeRenderingTraversal.h"

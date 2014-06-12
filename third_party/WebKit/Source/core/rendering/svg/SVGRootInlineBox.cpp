@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"

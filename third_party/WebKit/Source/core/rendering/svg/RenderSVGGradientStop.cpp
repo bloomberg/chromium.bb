@@ -21,14 +21,11 @@
 
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGStopElement.h"
 
 namespace WebCore {
-
-using namespace SVGNames;
 
 RenderSVGGradientStop::RenderSVGGradientStop(SVGStopElement* element)
     : RenderObject(element)

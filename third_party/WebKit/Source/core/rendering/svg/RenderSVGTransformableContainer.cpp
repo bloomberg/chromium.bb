@@ -23,7 +23,6 @@
 
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGGraphicsElement.h"

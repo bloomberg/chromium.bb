@@ -34,6 +34,8 @@
 
 namespace WebCore {
 
+using namespace SVGNames;
+
 static void updatePathFromCircleElement(SVGElement* element, Path& path)
 {
     SVGCircleElement* circle = toSVGCircleElement(element);
@@ -138,13 +140,13 @@ void updatePathFromGraphicsElement(SVGElement* element, Path& path)
     static HashMap<StringImpl*, PathUpdateFunction>* map = 0;
     if (!map) {
         map = new HashMap<StringImpl*, PathUpdateFunction>;
-        map->set(SVGNames::circleTag.localName().impl(), updatePathFromCircleElement);
-        map->set(SVGNames::ellipseTag.localName().impl(), updatePathFromEllipseElement);
-        map->set(SVGNames::lineTag.localName().impl(), updatePathFromLineElement);
-        map->set(SVGNames::pathTag.localName().impl(), updatePathFromPathElement);
-        map->set(SVGNames::polygonTag.localName().impl(), updatePathFromPolygonElement);
-        map->set(SVGNames::polylineTag.localName().impl(), updatePathFromPolylineElement);
-        map->set(SVGNames::rectTag.localName().impl(), updatePathFromRectElement);
+        map->set(circleTag.localName().impl(), updatePathFromCircleElement);
+        map->set(ellipseTag.localName().impl(), updatePathFromEllipseElement);
+        map->set(lineTag.localName().impl(), updatePathFromLineElement);
+        map->set(pathTag.localName().impl(), updatePathFromPathElement);
+        map->set(polygonTag.localName().impl(), updatePathFromPolygonElement);
+        map->set(polylineTag.localName().impl(), updatePathFromPolylineElement);
+        map->set(rectTag.localName().impl(), updatePathFromRectElement);
     }
 
     if (PathUpdateFunction pathUpdateFunction = map->get(element->localName().impl()))
