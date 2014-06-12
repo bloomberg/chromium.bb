@@ -585,11 +585,10 @@ void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
         new chromeos::HelpAppLauncher(GetNativeWindow()));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
   } else {
-    GURL url(google_util::StringAppendGoogleLocaleParam(
-        chrome::kLearnMoreEnterpriseURL));
     chrome::ScopedTabbedBrowserDisplayer displayer(
         ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowSingletonTab(displayer.browser(), url);
+    chrome::ShowSingletonTab(displayer.browser(),
+                             GURL(chrome::kLearnMoreEnterpriseURL));
   }
 }
 

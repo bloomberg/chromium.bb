@@ -35,10 +35,9 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       // We don't (yet?) implement user-settable exceptions for mixed script
       // blocking, so bounce to an explanatory page for now.
-      chrome::AddSelectedTabWithURL(
-          browser_,
-          google_util::AppendGoogleLocaleParam(GURL(kInsecureScriptHelpUrl)),
-          content::PAGE_TRANSITION_LINK);
+      chrome::AddSelectedTabWithURL(browser_,
+                                    GURL(kInsecureScriptHelpUrl),
+                                    content::PAGE_TRANSITION_LINK);
       return;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);

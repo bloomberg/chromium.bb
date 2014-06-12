@@ -105,9 +105,8 @@ base::string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   navigation_helper_->OpenURL(
-      google_url_tracker_->client()->AppendGoogleLocaleParam(GURL(
-          "https://www.google.com/support/chrome/bin/answer.py?"
-          "answer=1618699")),
+      GURL("https://www.google.com/support/chrome/bin/answer.py?"
+           "answer=1618699"),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       true);
   return false;

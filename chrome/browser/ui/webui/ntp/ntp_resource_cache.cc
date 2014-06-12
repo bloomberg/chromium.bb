@@ -81,10 +81,6 @@ const char kLearnMoreIncognitoUrl[] =
 const char kLearnMoreGuestSessionUrl[] =
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
-base::string16 GetUrlWithLang(const GURL& url) {
-  return base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
-}
-
 std::string SkColorToRGBAString(SkColor color) {
   // We convert the alpha using DoubleToString because StringPrintf will use
   // locale specific formatters (e.g., use , instead of . in German).
@@ -314,8 +310,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   localized_strings.SetString("learnMore",
       l10n_util::GetStringUTF16(new_tab_link_ids));
-  localized_strings.SetString("learnMoreLink",
-      GetUrlWithLang(GURL(new_tab_link)));
+  localized_strings.SetString("learnMoreLink", GURL(new_tab_link).spec());
 
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
@@ -361,7 +356,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
     localized_strings.SetString("enterpriseLearnMore",
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     localized_strings.SetString("enterpriseInfoHintLink",
-        GetUrlWithLang(GURL(chrome::kLearnMoreEnterpriseURL)));
+        GURL(chrome::kLearnMoreEnterpriseURL).spec());
   } else {
     localized_strings.SetString("enterpriseInfoVisible", "false");
   }
@@ -374,7 +369,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   localized_strings.SetString("learnMore",
       l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.SetString("learnMoreLink",
-      GetUrlWithLang(GURL(guest_tab_link)));
+      GURL(guest_tab_link).spec());
 
   webui::SetFontAndTextDirection(&localized_strings);
 
@@ -463,7 +458,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   load_time_data.SetString("webStoreLink",
-      GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
+      google_util::AppendGoogleLocaleParam(
+          GURL(extension_urls::GetWebstoreLaunchURL())).spec());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   load_time_data.SetBoolean("isDiscoveryInNTPEnabled",

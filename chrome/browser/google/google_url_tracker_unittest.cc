@@ -81,7 +81,6 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual bool IsGoogleDomainURL(const GURL& url) OVERRIDE;
-  virtual GURL AppendGoogleLocaleParam(const GURL& url) OVERRIDE;
 
  private:
   Profile* profile_;
@@ -123,10 +122,6 @@ bool TestGoogleURLTrackerClient::IsGoogleDomainURL(const GURL& url) {
       url,
       google_util::DISALLOW_SUBDOMAIN,
       google_util::DISALLOW_NON_STANDARD_PORTS);
-}
-
-GURL TestGoogleURLTrackerClient::AppendGoogleLocaleParam(const GURL& url) {
-  return google_util::AppendGoogleLocaleParam(url);
 }
 
 

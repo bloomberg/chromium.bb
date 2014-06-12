@@ -66,10 +66,6 @@ bool ChromeGoogleURLTrackerClient::IsGoogleDomainURL(const GURL& url) {
       google_util::DISALLOW_NON_STANDARD_PORTS);
 }
 
-GURL ChromeGoogleURLTrackerClient::AppendGoogleLocaleParam(const GURL& url) {
-  return google_util::AppendGoogleLocaleParam(url);
-}
-
 void ChromeGoogleURLTrackerClient::Observe(
     int type,
     const content::NotificationSource& source,

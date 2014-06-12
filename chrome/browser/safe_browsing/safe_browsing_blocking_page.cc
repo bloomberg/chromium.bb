@@ -329,10 +329,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
-      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrl));
+      url = GURL(kLearnMoreMalwareUrl);
     } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING ||
                threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) {
-      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMorePhishingUrl));
+      url = GURL(kLearnMorePhishingUrl);
     } else {
       NOTREACHED();
     }
@@ -349,10 +349,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
-      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrlV2));
+      url = GURL(kLearnMoreMalwareUrlV2);
     } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING ||
                threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) {
-      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMorePhishingUrlV2));
+      url = GURL(kLearnMorePhishingUrlV2);
     } else {
       NOTREACHED();
     }

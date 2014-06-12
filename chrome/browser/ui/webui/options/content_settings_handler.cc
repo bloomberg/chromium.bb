@@ -460,10 +460,8 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "zoomlevels",
                 IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL);
 
-  localized_strings->SetString(
-      "exceptionsLearnMoreUrl",
-      google_util::StringAppendGoogleLocaleParam(
-          kExceptionsLearnMoreUrl));
+  localized_strings->SetString("exceptionsLearnMoreUrl",
+                               kExceptionsLearnMoreUrl);
 }
 
 void ContentSettingsHandler::InitializeHandler() {

@@ -50,12 +50,6 @@ class GoogleURLTrackerClient {
   // componentized. crbug.com/381088
   virtual bool IsGoogleDomainURL(const GURL& url) = 0;
 
-  // Appends the Google locale as a param to |url|.
-  // TODO(blundell): Eliminate this method in favor of having callers call
-  // google_util::AppendGoogleLocaleParam() directly once google_util is
-  // componentized. crbug.com/381088
-  virtual GURL AppendGoogleLocaleParam(const GURL& url) = 0;
-
  protected:
   GoogleURLTracker* google_url_tracker() { return google_url_tracker_; }
 

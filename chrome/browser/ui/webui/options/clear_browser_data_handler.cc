@@ -103,10 +103,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "clearBrowserDataOverlay",
                 IDS_CLEAR_BROWSING_DATA_TITLE);
-  localized_strings->SetString(
-      "clearBrowsingDataLearnMoreUrl",
-      google_util::StringAppendGoogleLocaleParam(
-          kClearBrowsingDataLearnMoreUrl));
+  localized_strings->SetString("clearBrowsingDataLearnMoreUrl",
+                               kClearBrowsingDataLearnMoreUrl);
 
   ui::Accelerator acc(ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   localized_strings->SetString(

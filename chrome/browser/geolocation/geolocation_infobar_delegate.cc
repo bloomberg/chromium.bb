@@ -179,7 +179,7 @@ bool GeolocationInfoBarDelegate::LinkClicked(
 
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(
-          google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
+          GURL(kGeolocationLearnMoreUrl),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           content::PAGE_TRANSITION_LINK, false));

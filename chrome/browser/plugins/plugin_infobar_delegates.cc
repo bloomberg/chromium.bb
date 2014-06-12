@@ -393,8 +393,8 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   GURL url(plugin_metadata_->help_url());
   if (url.is_empty()) {
-    url = google_util::AppendGoogleLocaleParam(GURL(
-        "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
+    url = GURL(
+        "https://www.google.com/support/chrome/bin/answer.py?answer=142064");
   }
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(

@@ -140,8 +140,7 @@ bool MediaStreamInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(
-          google_util::AppendGoogleLocaleParam(
-              GURL(chrome::kMediaAccessLearnMoreUrl)),
+          GURL(chrome::kMediaAccessLearnMoreUrl),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           content::PAGE_TRANSITION_LINK, false));

@@ -53,9 +53,8 @@ void HandlerOptionsHandler::GetLocalizedValues(
                 IDS_HANDLER_OPTIONS_WINDOW_TITLE);
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
-  localized_strings->SetString(
-      "handlers_learn_more_url",
-      google_util::StringAppendGoogleLocaleParam(kHandlersLearnMoreUrl));
+  localized_strings->SetString("handlers_learn_more_url",
+                               kHandlersLearnMoreUrl);
 }
 
 void HandlerOptionsHandler::InitializeHandler() {
