@@ -119,7 +119,7 @@ private:
 
 class KeyboardEventDispatchMediator : public EventDispatchMediator {
 public:
-    static PassRefPtr<KeyboardEventDispatchMediator> create(PassRefPtrWillBeRawPtr<KeyboardEvent>);
+    static PassRefPtrWillBeRawPtr<KeyboardEventDispatchMediator> create(PassRefPtrWillBeRawPtr<KeyboardEvent>);
 private:
     explicit KeyboardEventDispatchMediator(PassRefPtrWillBeRawPtr<KeyboardEvent>);
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;

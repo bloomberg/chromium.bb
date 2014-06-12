@@ -231,9 +231,9 @@ void SimulatedMouseEvent::trace(Visitor* visitor)
     MouseEvent::trace(visitor);
 }
 
-PassRefPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
+PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
 {
-    return adoptRef(new MouseEventDispatchMediator(mouseEvent, mouseEventType));
+    return adoptRefWillBeNoop(new MouseEventDispatchMediator(mouseEvent, mouseEventType));
 }
 
 MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)

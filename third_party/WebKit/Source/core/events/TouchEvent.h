@@ -86,7 +86,7 @@ private:
 
 class TouchEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<TouchEventDispatchMediator> create(PassRefPtrWillBeRawPtr<TouchEvent>);
+    static PassRefPtrWillBeRawPtr<TouchEventDispatchMediator> create(PassRefPtrWillBeRawPtr<TouchEvent>);
 
 private:
     explicit TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent>);

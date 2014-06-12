@@ -36,14 +36,19 @@
 
 namespace WebCore {
 
-PassRefPtr<EventDispatchMediator> EventDispatchMediator::create(PassRefPtrWillBeRawPtr<Event> event)
+PassRefPtrWillBeRawPtr<EventDispatchMediator> EventDispatchMediator::create(PassRefPtrWillBeRawPtr<Event> event)
 {
-    return adoptRef(new EventDispatchMediator(event));
+    return adoptRefWillBeNoop(new EventDispatchMediator(event));
 }
 
 EventDispatchMediator::EventDispatchMediator(PassRefPtrWillBeRawPtr<Event> event)
     : m_event(event)
 {
+}
+
+void EventDispatchMediator::trace(Visitor* visitor)
+{
+    visitor->trace(m_event);
 }
 
 bool EventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const

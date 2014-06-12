@@ -118,7 +118,7 @@ DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
 class WheelEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
+    static PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
 private:
     WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
     WheelEvent* event() const;

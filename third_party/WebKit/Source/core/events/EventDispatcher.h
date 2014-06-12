@@ -48,8 +48,8 @@ enum EventDispatchContinuation {
 class EventDispatcher {
     STACK_ALLOCATED();
 public:
-    static bool dispatchEvent(Node*, PassRefPtr<EventDispatchMediator>);
-    static void dispatchScopedEvent(Node*, PassRefPtr<EventDispatchMediator>);
+    static bool dispatchEvent(Node*, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
+    static void dispatchScopedEvent(Node*, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
     static void dispatchSimulatedClick(Node*, Event* underlyingEvent, SimulatedClickMouseEventOptions);
 

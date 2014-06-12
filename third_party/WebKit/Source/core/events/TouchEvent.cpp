@@ -110,9 +110,9 @@ void TouchEvent::trace(Visitor* visitor)
     UIEventWithKeyState::trace(visitor);
 }
 
-PassRefPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
+PassRefPtrWillBeRawPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
 {
-    return adoptRef(new TouchEventDispatchMediator(touchEvent));
+    return adoptRefWillBeNoop(new TouchEventDispatchMediator(touchEvent));
 }
 
 TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)

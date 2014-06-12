@@ -59,7 +59,7 @@ void ScopedEventQueue::initialize()
     s_instance = instance.leakPtr();
 }
 
-void ScopedEventQueue::enqueueEventDispatchMediator(PassRefPtr<EventDispatchMediator> mediator)
+void ScopedEventQueue::enqueueEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     if (m_scopingLevel)
         m_queuedEventDispatchMediators.append(mediator);
@@ -69,14 +69,14 @@ void ScopedEventQueue::enqueueEventDispatchMediator(PassRefPtr<EventDispatchMedi
 
 void ScopedEventQueue::dispatchAllEvents()
 {
-    Vector<RefPtr<EventDispatchMediator> > queuedEventDispatchMediators;
+    WillBeHeapVector<RefPtrWillBeMember<EventDispatchMediator> > queuedEventDispatchMediators;
     queuedEventDispatchMediators.swap(m_queuedEventDispatchMediators);
 
     for (size_t i = 0; i < queuedEventDispatchMediators.size(); i++)
         dispatchEvent(queuedEventDispatchMediators[i].release());
 }
 
-void ScopedEventQueue::dispatchEvent(PassRefPtr<EventDispatchMediator> mediator) const
+void ScopedEventQueue::dispatchEvent(PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator) const
 {
     ASSERT(mediator->event()->target());
     Node* node = mediator->event()->target()->toNode();

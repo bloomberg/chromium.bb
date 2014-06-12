@@ -2203,7 +2203,7 @@ void Node::dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event> event)
     dispatchScopedEventDispatchMediator(EventDispatchMediator::create(event));
 }
 
-void Node::dispatchScopedEventDispatchMediator(PassRefPtr<EventDispatchMediator> eventDispatchMediator)
+void Node::dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator> eventDispatchMediator)
 {
     EventDispatcher::dispatchScopedEvent(this, eventDispatchMediator);
 }

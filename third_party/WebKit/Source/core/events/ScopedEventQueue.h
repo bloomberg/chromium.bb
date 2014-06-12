@@ -31,6 +31,7 @@
 #ifndef ScopedEventQueue_h
 #define ScopedEventQueue_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -45,7 +46,7 @@ class ScopedEventQueue {
 public:
     ~ScopedEventQueue();
 
-    void enqueueEventDispatchMediator(PassRefPtr<EventDispatchMediator>);
+    void enqueueEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator>);
     void dispatchAllEvents();
     static ScopedEventQueue* instance();
 
@@ -55,9 +56,9 @@ public:
 private:
     ScopedEventQueue();
     static void initialize();
-    void dispatchEvent(PassRefPtr<EventDispatchMediator>) const;
+    void dispatchEvent(PassRefPtrWillBeRawPtr<EventDispatchMediator>) const;
 
-    Vector<RefPtr<EventDispatchMediator> > m_queuedEventDispatchMediators;
+    WillBePersistentHeapVector<RefPtrWillBeMember<EventDispatchMediator> > m_queuedEventDispatchMediators;
     unsigned m_scopingLevel;
 
     static ScopedEventQueue* s_instance;

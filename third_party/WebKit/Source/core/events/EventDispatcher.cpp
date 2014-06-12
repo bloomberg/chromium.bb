@@ -42,7 +42,7 @@ namespace WebCore {
 
 static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
 
-bool EventDispatcher::dispatchEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
+bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     TRACE_EVENT0("webkit", "EventDispatcher::dispatchEvent");
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
@@ -66,7 +66,7 @@ EventDispatcher::EventDispatcher(Node* node, PassRefPtrWillBeRawPtr<Event> event
     m_event->ensureEventPath().resetWith(m_node.get());
 }
 
-void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
+void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     // We need to set the target here because it can go away by the time we actually fire the event.
     mediator->event()->setTarget(EventPath::eventTargetRespectingTargetRules(node));

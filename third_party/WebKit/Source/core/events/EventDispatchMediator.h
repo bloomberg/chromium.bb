@@ -42,10 +42,11 @@ class Event;
 class EventDispatcher;
 class Node;
 
-class EventDispatchMediator : public RefCounted<EventDispatchMediator> {
+class EventDispatchMediator : public RefCountedWillBeGarbageCollectedFinalized<EventDispatchMediator> {
 public:
-    static PassRefPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
+    static PassRefPtrWillBeRawPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
     virtual ~EventDispatchMediator() { };
+    virtual void trace(Visitor*);
     virtual bool dispatchEvent(EventDispatcher*) const;
     Event* event() const { return m_event.get(); };
 
@@ -55,7 +56,7 @@ protected:
     void setEvent(PassRefPtrWillBeRawPtr<Event> event) { m_event = event; };
 
 private:
-    RefPtrWillBePersistent<Event> m_event;
+    RefPtrWillBeMember<Event> m_event;
 };
 
 } // namespace WebCore
