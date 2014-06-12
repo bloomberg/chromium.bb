@@ -35,7 +35,7 @@ bool ScaleFactorComparator(const ScaleFactor& lhs, const ScaleFactor& rhs){
 std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
 
 const float kScaleFactorScales[] = {1.0f, 1.0f, 1.25f, 1.33f, 1.4f, 1.5f, 1.8f,
-                                    2.0f, 3.0f};
+                                    2.0f, 2.5f, 3.0f};
 COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 

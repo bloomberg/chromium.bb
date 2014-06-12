@@ -21,6 +21,7 @@ TEST(LayoutTest, GetScaleFactorScale) {
   EXPECT_FLOAT_EQ(1.5f, GetScaleForScaleFactor(SCALE_FACTOR_150P));
   EXPECT_FLOAT_EQ(1.8f, GetScaleForScaleFactor(SCALE_FACTOR_180P));
   EXPECT_FLOAT_EQ(2.0f, GetScaleForScaleFactor(SCALE_FACTOR_200P));
+  EXPECT_FLOAT_EQ(2.5f, GetScaleForScaleFactor(SCALE_FACTOR_250P));
   EXPECT_FLOAT_EQ(3.0f, GetScaleForScaleFactor(SCALE_FACTOR_300P));
 }
 
@@ -61,6 +62,10 @@ TEST(LayoutTest, GetScaleFactorFromScaleAllSupported) {
   EXPECT_EQ(SCALE_FACTOR_200P, GetSupportedScaleFactor(1.91f));
   EXPECT_EQ(SCALE_FACTOR_200P, GetSupportedScaleFactor(2.0f));
   EXPECT_EQ(SCALE_FACTOR_200P, GetSupportedScaleFactor(2.1f));
+  EXPECT_EQ(SCALE_FACTOR_250P, GetSupportedScaleFactor(2.3f));
+  EXPECT_EQ(SCALE_FACTOR_250P, GetSupportedScaleFactor(2.5f));
+  EXPECT_EQ(SCALE_FACTOR_250P, GetSupportedScaleFactor(2.6f));
+  EXPECT_EQ(SCALE_FACTOR_300P, GetSupportedScaleFactor(2.9f));
   EXPECT_EQ(SCALE_FACTOR_300P, GetSupportedScaleFactor(3.0f));
   EXPECT_EQ(SCALE_FACTOR_300P, GetSupportedScaleFactor(3.1f));
   EXPECT_EQ(SCALE_FACTOR_300P, GetSupportedScaleFactor(999.0f));

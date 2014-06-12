@@ -27,6 +27,7 @@ enum ScaleFactor {
   SCALE_FACTOR_150P,
   SCALE_FACTOR_180P,
   SCALE_FACTOR_200P,
+  SCALE_FACTOR_250P,
   SCALE_FACTOR_300P,
 
   NUM_SCALE_FACTORS  // This always appears last.
