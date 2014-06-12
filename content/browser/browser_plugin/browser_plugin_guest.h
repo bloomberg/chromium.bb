@@ -46,6 +46,7 @@ struct FrameHostMsg_ReclaimCompositorResources_Params;
 #if defined(OS_MACOSX)
 struct ViewHostMsg_ShowPopup_Params;
 #endif
+struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
 
 namespace blink {
@@ -288,9 +289,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
 
-  void OnTextInputTypeChanged(ui::TextInputType type,
-                              ui::TextInputMode input_mode,
-                              bool can_compose_inline);
+  void OnTextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params);
+
   void OnImeSetComposition(
       int instance_id,
       const std::string& text,

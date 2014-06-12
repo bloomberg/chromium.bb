@@ -1191,10 +1191,7 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputType();
-#if defined(OS_ANDROID)
   UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
-#endif
   UpdateSelectionBounds();
 }
 
@@ -1644,43 +1641,6 @@ void RenderWidget::FinishHandlingImeEvent() {
 #endif
 }
 
-void RenderWidget::UpdateTextInputType() {
-  // On Windows, not only an IME but also an on-screen keyboard relies on the
-  // latest TextInputType to optimize its layout and functionality. Thus
-  // |input_method_is_active_| is no longer an appropriate condition to suppress
-  // TextInputTypeChanged IPC on Windows.
-  // TODO(yukawa, yoichio): Consider to stop checking |input_method_is_active_|
-  // on other platforms as well as Windows if the overhead is acceptable.
-#if !defined(OS_WIN)
-  if (!input_method_is_active_)
-    return;
-#endif
-
-  ui::TextInputType new_type = GetTextInputType();
-  if (IsDateTimeInput(new_type))
-    return;  // Not considered as a text input field in WebKit/Chromium.
-
-  bool new_can_compose_inline = CanComposeInline();
-
-  blink::WebTextInputInfo new_info;
-  if (webwidget_)
-    new_info = webwidget_->textInputInfo();
-  const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
-
-  if (text_input_type_ != new_type
-      || can_compose_inline_ != new_can_compose_inline
-      || text_input_mode_ != new_mode) {
-    Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
-                                              new_type,
-                                              new_mode,
-                                              new_can_compose_inline));
-    text_input_type_ = new_type;
-    can_compose_inline_ = new_can_compose_inline;
-    text_input_mode_ = new_mode;
-  }
-}
-
-#if defined(OS_ANDROID) || defined(USE_AURA)
 void RenderWidget::UpdateTextInputState(ShowIme show_ime,
                                         ChangeSource change_source) {
   if (handling_ime_event_)
@@ -1694,6 +1654,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
   blink::WebTextInputInfo new_info;
   if (webwidget_)
     new_info = webwidget_->textInputInfo();
+  const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
 
   bool new_can_compose_inline = CanComposeInline();
 
@@ -1701,6 +1662,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
   // shown.
   if (show_ime == SHOW_IME_IF_NEEDED ||
       (text_input_type_ != new_type ||
+       text_input_mode_ != new_mode ||
        text_input_info_ != new_info ||
        can_compose_inline_ != new_can_compose_inline)
 #if defined(OS_ANDROID)
@@ -1709,6 +1671,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
       ) {
     ViewHostMsg_TextInputState_Params p;
     p.type = new_type;
+    p.mode = new_mode;
     p.value = new_info.value.utf8();
     p.selection_start = new_info.selectionStart;
     p.selection_end = new_info.selectionEnd;
@@ -1726,20 +1689,14 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
       IncrementOutstandingImeEventAcks();
     text_field_is_dirty_ = false;
 #endif
-#if defined(USE_AURA)
-    Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
-                                              new_type,
-                                              text_input_mode_,
-                                              new_can_compose_inline));
-#endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;
     text_input_type_ = new_type;
+    text_input_mode_ = new_mode;
     can_compose_inline_ = new_can_compose_inline;
   }
 }
-#endif
 
 void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
   WebRect focus_webrect;

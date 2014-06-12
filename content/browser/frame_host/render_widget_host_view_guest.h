@@ -18,6 +18,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace content {
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -68,9 +70,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const std::vector<WebPluginGeometry>& moves) OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode input_mode,
-                                    bool can_compose_inline) OVERRIDE;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
 #if defined(OS_MACOSX) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(

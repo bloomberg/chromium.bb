@@ -218,8 +218,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
                         OnDidChangeBodyBackgroundColor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrame,
                         OnSetNeedsBeginFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
-                        OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
                         OnSmartClipDataExtracted)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -476,18 +474,11 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
   // is TabContentsDelegate.
 }
 
-void RenderWidgetHostViewAndroid::TextInputTypeChanged(
-    ui::TextInputType type,
-    ui::TextInputMode input_mode,
-    bool can_compose_inline) {
-  // Unused on Android, which uses OnTextInputChanged instead.
-}
-
 long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
   return reinterpret_cast<intptr_t>(&ime_adapter_android_);
 }
 
-void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
+void RenderWidgetHostViewAndroid::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
   // If the change is not originated from IME (e.g. Javascript, autofill),
   // send back the renderer an acknowledgement, regardless of how we exit from

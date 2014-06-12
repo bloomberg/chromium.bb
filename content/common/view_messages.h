@@ -363,6 +363,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   // The type of input field
   IPC_STRUCT_MEMBER(ui::TextInputType, type)
 
+  // The mode of input field
+  IPC_STRUCT_MEMBER(ui::TextInputMode, mode)
+
   // The value of the input field
   IPC_STRUCT_MEMBER(std::string, value)
 
@@ -1413,11 +1416,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
 // Required for opening a date/time dialog
 IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
                     ViewHostMsg_DateTimeDialogValue_Params /* value */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_TextInputTypeChanged,
-                    ui::TextInputType /* TextInputType of the focused node */,
-                    ui::TextInputMode /* TextInputMode of the focused node */,
-                    bool /* can_compose_inline in the focused node */)
 
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,

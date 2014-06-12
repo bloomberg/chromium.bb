@@ -100,9 +100,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual float GetOverdrawBottomHeight() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode input_mode,
-                                    bool can_compose_inline) OVERRIDE;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void FocusedNodeChanged(bool is_editable_node) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
@@ -193,7 +192,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
-  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);

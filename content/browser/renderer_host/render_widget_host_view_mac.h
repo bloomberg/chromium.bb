@@ -30,6 +30,8 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace content {
 class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
@@ -271,9 +273,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode input_mode,
-                                    bool can_compose_inline) OVERRIDE;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,

@@ -458,8 +458,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTouchEventEmulationEnabled,
                         OnSetTouchEventEmulationEnabled)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
-                        OnTextInputTypeChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+                        OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
@@ -1624,12 +1624,10 @@ void RenderWidgetHostImpl::OnSetTouchEventEmulationEnabled(
   }
 }
 
-void RenderWidgetHostImpl::OnTextInputTypeChanged(
-    ui::TextInputType type,
-    ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+void RenderWidgetHostImpl::OnTextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
   if (view_)
-    view_->TextInputTypeChanged(type, input_mode, can_compose_inline);
+    view_->TextInputStateChanged(params);
 }
 
 #if defined(OS_MACOSX) || defined(USE_AURA)

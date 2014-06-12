@@ -897,17 +897,16 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ViewHostMsg_TextInputTypeChanged::Param params;
-    ViewHostMsg_TextInputTypeChanged::Read(msg, &params);
-    ui::TextInputType type = params.a;
-    ui::TextInputMode input_mode = params.b;
-    bool can_compose_inline = params.c;
-    EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
-    EXPECT_EQ(true, can_compose_inline);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Param params;
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    ViewHostMsg_TextInputState_Params p = params.a;
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, p.type);
+    EXPECT_EQ(true, p.can_compose_inline);
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
@@ -917,36 +916,34 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-    type = params.a;
-    input_mode = params.b;
-    EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, params.a.type);
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInputModeTestCases); i++) {
-      const InputModeTestCase* test_case = &kInputModeTestCases[i];
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(kInputModeTestCases); j++) {
+      const InputModeTestCase* test_case = &kInputModeTestCases[j];
       std::string javascript =
           base::StringPrintf("document.getElementById('%s').focus();",
                              test_case->input_id);
       // Move the input focus to the target <input> element, where we should
       // activate IMEs.
-      ExecuteJavaScriptAndReturnIntValue(base::ASCIIToUTF16(javascript), NULL);
+      ExecuteJavaScript(javascript.c_str());
       ProcessPendingMessages();
       render_thread_->sink().ClearMessages();
 
       // Update the IME status and verify if our IME backend sends an IPC
       // message to activate IMEs.
-      view()->UpdateTextInputType();
-      const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
+      view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
+      msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != NULL);
-      EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-      ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-      type = params.a;
-      input_mode = params.b;
-      EXPECT_EQ(test_case->expected_mode, input_mode);
+      EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+      ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+      EXPECT_EQ(test_case->expected_mode, params.a.mode);
     }
   }
 }
@@ -1075,7 +1072,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->UpdateTextInputType();
+    view()->UpdateTextInputState(
+        RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 
@@ -2068,7 +2066,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
     const uint32 type = render_thread_->sink().GetMessageAt(i)->type();
-    if (type == ViewHostMsg_TextInputTypeChanged::ID) {
+    if (type == ViewHostMsg_TextInputStateChanged::ID) {
       is_input_type_called = true;
       last_input_type = i;
     } else if (type == ViewHostMsg_SelectionChanged::ID) {

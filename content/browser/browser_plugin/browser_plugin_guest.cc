@@ -463,8 +463,8 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
  #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
-                        OnTextInputTypeChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+                        OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
 #if defined(OS_MACOSX) || defined(USE_AURA)
@@ -717,8 +717,11 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
       web_contents()->GetRenderWidgetHostView());
   if (rwhv) {
-    rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
-                               last_can_compose_inline_);
+    ViewHostMsg_TextInputState_Params params;
+    params.type = last_text_input_type_;
+    params.mode = last_input_mode_;
+    params.can_compose_inline = last_can_compose_inline_;
+    rwhv->TextInputStateChanged(params);
   }
 }
 
@@ -869,17 +872,15 @@ void BrowserPluginGuest::OnUpdateRect(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }
 
-void BrowserPluginGuest::OnTextInputTypeChanged(ui::TextInputType type,
-                                                ui::TextInputMode input_mode,
-                                                bool can_compose_inline) {
+void BrowserPluginGuest::OnTextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
   // Save the state of text input so we can restore it on focus.
-  last_text_input_type_ = type;
-  last_input_mode_ = input_mode;
-  last_can_compose_inline_ = can_compose_inline;
+  last_text_input_type_ = params.type;
+  last_input_mode_ = params.mode;
+  last_can_compose_inline_ = params.can_compose_inline;
 
   static_cast<RenderWidgetHostViewBase*>(
-      web_contents()->GetRenderWidgetHostView())->TextInputTypeChanged(
-          type, input_mode, can_compose_inline);
+      web_contents()->GetRenderWidgetHostView())->TextInputStateChanged(params);
 }
 
 void BrowserPluginGuest::OnImeCancelComposition() {
