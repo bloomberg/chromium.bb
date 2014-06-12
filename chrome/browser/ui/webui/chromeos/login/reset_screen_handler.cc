@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -222,12 +221,6 @@ void ResetScreenHandler::OnRollbackCheck(bool can_rollback) {
   VLOG(1) << "Callback from CanRollbackCheck, result " << can_rollback;
   rollback_available_ = can_rollback;
   ShowWithParams();
-}
-
-// static
-void ResetScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
-  registry->RegisterBooleanPref(prefs::kRollbackRequested, false);
 }
 
 void ResetScreenHandler::Initialize() {

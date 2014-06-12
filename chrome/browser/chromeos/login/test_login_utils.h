@@ -27,13 +27,17 @@ class TestLoginUtils : public LoginUtils {
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE {}
   virtual void PrepareProfile(const UserContext& user_context,
+                              const std::string& display_email,
                               bool has_cookies,
                               bool has_active_session,
                               Delegate* delegate) OVERRIDE;
   virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE {}
+  virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE {}
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
+  virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE {}
+  virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
  private:
   UserContext expected_user_context_;

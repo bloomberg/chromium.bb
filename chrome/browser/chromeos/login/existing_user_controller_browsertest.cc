@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
-  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _))
+  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       base::Bind(&MockUserManager::AddUser,
                  base::Unretained(mock_user_manager_),
                  kNewUsername);
-  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _))
+  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(DoAll(
           InvokeWithoutArgs(&add_user_cb,
@@ -432,7 +432,7 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
         .Times(1)
         .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
-    EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _))
+    EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                     &base::Callback<void(void)>::Run));

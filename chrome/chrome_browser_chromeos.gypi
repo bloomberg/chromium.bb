@@ -634,8 +634,6 @@
         'browser/chromeos/login/screens/wrong_hwid_screen.cc',
         'browser/chromeos/login/screens/wrong_hwid_screen.h',
         'browser/chromeos/login/screens/wrong_hwid_screen_actor.h',
-        'browser/chromeos/login/session/session_manager.cc',
-        'browser/chromeos/login/session/session_manager.h',
         'browser/chromeos/login/signin/auth_sync_observer.cc',
         'browser/chromeos/login/signin/auth_sync_observer.h',
         'browser/chromeos/login/signin/auth_sync_observer_factory.cc',

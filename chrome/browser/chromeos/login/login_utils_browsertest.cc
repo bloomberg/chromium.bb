@@ -358,7 +358,7 @@ class LoginUtilsTest : public testing::Test,
   }
 
 #if defined(ENABLE_RLZ)
-  virtual void OnRlzInitialized() OVERRIDE {
+  virtual void OnRlzInitialized(Profile* profile) OVERRIDE {
     rlz_initialized_cb_.Run();
   }
 #endif
@@ -411,6 +411,7 @@ class LoginUtilsTest : public testing::Test,
     const bool kHasActiveSession = false;
     user_context.SetAuthFlow(UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
     LoginUtils::Get()->PrepareProfile(user_context,
+                                      std::string(),
                                       kHasCookies,
                                       kHasActiveSession,
                                       this);

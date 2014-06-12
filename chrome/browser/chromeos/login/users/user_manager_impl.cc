@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/session/session_manager.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer_factory.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -1201,7 +1200,7 @@ void UserManagerImpl::OnProfilePrepared(Profile* profile) {
     // users once it is fully multi-profile aware. http://crbug.com/238987
     // For now if we have other user pending sessions they'll override OAuth
     // session restore for previous users.
-    SessionManager::GetInstance()->RestoreAuthenticationSession(profile);
+    LoginUtils::Get()->RestoreAuthenticationSession(profile);
   }
 
   // Restore other user sessions if any.
@@ -2034,6 +2033,7 @@ void UserManagerImpl::RestorePendingUserSessions() {
     user_context.SetIsUsingOAuth(false);
     // Will call OnProfilePrepared() once profile has been loaded.
     LoginUtils::Get()->PrepareProfile(user_context,
+                                      std::string(),  // display_email
                                       false,          // has_cookies
                                       true,           // has_active_session
                                       this);

@@ -55,6 +55,7 @@ void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
 }
 
 void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
+                                    const std::string& display_email,
                                     bool has_cookies,
                                     bool has_active_session,
                                     LoginUtils::Delegate* delegate) {
@@ -94,10 +95,22 @@ void FakeLoginUtils::CompleteOffTheRecordLogin(const GURL& start_url) {
   NOTREACHED() << "Method not implemented.";
 }
 
+void FakeLoginUtils::SetFirstLoginPrefs(PrefService* prefs) {
+  NOTREACHED() << "Method not implemented.";
+}
+
 scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   authenticator_ = new MockAuthenticator(consumer, expected_user_context_);
   return authenticator_;
+}
+
+void FakeLoginUtils::RestoreAuthenticationSession(Profile* profile) {
+  NOTREACHED() << "Method not implemented.";
+}
+
+void FakeLoginUtils::InitRlzDelayed(Profile* user_profile) {
+  NOTREACHED() << "Method not implemented.";
 }
 
 void FakeLoginUtils::SetExpectedCredentials(const UserContext& user_context) {
