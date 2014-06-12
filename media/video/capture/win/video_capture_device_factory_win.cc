@@ -123,7 +123,8 @@ static void GetDeviceNamesDirectShow(VideoCaptureDevice::Names* device_names) {
       continue;
     }
 
-    // Find the description or friendly name.
+    // Find the description or friendly name. TODO(mcasas): Investigate using
+    // FriendlyName before Description, http://crbug.com/383395.
     ScopedVariant name;
     hr = prop_bag->Read(L"Description", name.Receive(), 0);
     if (FAILED(hr))
@@ -223,7 +224,9 @@ static void GetDeviceSupportedFormatsDirectShow(
     device_id.Reset();
     hr = prop_bag->Read(L"DevicePath", device_id.Receive(), 0);
     if (FAILED(hr) || device_id.type() != VT_BSTR) {
-      // If there is no clear DevicePath, try with Description and FriendlyName.
+      // If there is no clear DevicePath, try with Description and FriendlyName,
+      // this might happen with non-USB cameras such as DeckLinks. TODO(mcasas):
+      // use FriendlyName before Description, http://crbug.com/383395.
       ScopedVariant name;
       if (SUCCEEDED(prop_bag->Read(L"Description", name.Receive(), 0)) ||
           SUCCEEDED(prop_bag->Read(L"FriendlyName", name.Receive(), 0))) {
@@ -297,8 +300,9 @@ static void GetDeviceSupportedFormatsDirectShow(
                                   h->bmiHeader.biHeight);
         // Trust the frame rate from the VIDEOINFOHEADER.
         format.frame_rate = (h->AvgTimePerFrame > 0) ?
-            static_cast<int>(kSecondsToReferenceTime / h->AvgTimePerFrame) :
-            0;
+            kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame) :
+            0.0;
+
         formats->push_back(format);
         DVLOG(1) << device.name() << " resolution: "
              << format.frame_size.ToString() << ", fps: " << format.frame_rate
@@ -345,7 +349,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
       DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
       return;
     }
-    capture_format.frame_rate = denominator ? numerator / denominator : 0;
+    capture_format.frame_rate = denominator ?
+        numerator / static_cast<float>(denominator) : 0.0f;
 
     GUID type_guid;
     hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
