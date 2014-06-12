@@ -402,7 +402,7 @@ void LocalToRemoteSyncer::UploadExistingFile(
       base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
                  weak_ptr_factory_.GetWeakPtr(), callback);
 
-  sync_context_->GetWorkerTaskRunner()->PostTask(
+  sync_context_->GetFileTaskRunner()->PostTask(
       FROM_HERE,
       CreateComposedFunction(
           base::Bind(&drive::util::GetMd5Digest, local_path_),
