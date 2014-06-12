@@ -320,7 +320,7 @@ status_map = {
     # exit via exit() or _exit().  We want __builtin_trap() to trigger the
     # debugger or a crash reporter.
     'untrusted_builtin_trap': {
-        'linux2': [-4, -11],
+        'linux2': [-4, -5, -11],
         'mac32': [-4, -10, -11],
         'mac64': [-4, -10, -11],
         'win32': win32_untrusted_crash_exit +
