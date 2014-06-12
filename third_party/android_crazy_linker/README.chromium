@@ -1,6 +1,6 @@
 Name: Android Crazy Linker
 URL: https://android.googlesource.com/platform/ndk/+/master/sources/android/crazy_linker/
-Version: f96c7168b688f2d8cc99c220e7a40e3739476848
+Version: 681f1b744aec1b0888f4c7a68165720db9670300
 Security Critical: no
 License: Apache Version 2.0
 
@@ -25,3 +25,6 @@ index 5fa16df..bc03739 100644
  
  #include <errno.h>
 
+- Rolled to:
+  android/platform/ndk/681f1b744aec1b0888f4c7a68165720db9670300
+  (Re-add license header to crazy_linker_elf_view.cpp)
