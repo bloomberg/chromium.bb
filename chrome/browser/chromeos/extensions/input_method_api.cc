@@ -9,9 +9,11 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/value_builder.h"
 
 namespace {
 
@@ -22,42 +24,57 @@ const char kXkbPrefix[] = "xkb:";
 
 namespace extensions {
 
-GetInputMethodFunction::GetInputMethodFunction() {
-}
-
-GetInputMethodFunction::~GetInputMethodFunction() {
-}
-
-bool GetInputMethodFunction::RunSync() {
+ExtensionFunction::ResponseAction GetCurrentInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
-  NOTREACHED();
-  return false;
+  EXTENSION_FUNCTION_VALIDATE(false);
 #else
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  const std::string input_method = InputMethodAPI::GetInputMethodForXkb(
-      manager->GetCurrentInputMethod().id());
-  SetResult(base::Value::CreateStringValue(input_method));
-  return true;
+  return RespondNow(OneArgument(
+      new base::StringValue(manager->GetCurrentInputMethod().id())));
 #endif
 }
 
-StartImeFunction::StartImeFunction() {
-}
-
-StartImeFunction::~StartImeFunction() {
-}
-
-bool StartImeFunction::RunSync() {
+ExtensionFunction::ResponseAction SetCurrentInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
-  NOTREACHED();
-  return false;
+  EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  chromeos::InputMethodEngineInterface* engine =
-      InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
-  if (engine)
-    engine->NotifyImeReady();
-  return true;
+  std::string new_input_method;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &new_input_method));
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  const std::vector<std::string>& input_methods =
+      manager->GetActiveInputMethodIds();
+  for (size_t i = 0; i < input_methods.size(); ++i) {
+    const std::string& input_method = input_methods[i];
+    if (input_method == new_input_method) {
+      manager->ChangeInputMethod(new_input_method);
+      return RespondNow(NoArguments());
+    }
+  }
+  return RespondNow(Error("Invalid input method id."));
+#endif
+}
+
+ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  base::ListValue* output = new base::ListValue();
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  scoped_ptr<chromeos::input_method::InputMethodDescriptors> input_methods =
+      manager->GetActiveInputMethods();
+  for (size_t i = 0; i < input_methods->size(); ++i) {
+    const chromeos::input_method::InputMethodDescriptor& input_method =
+        (*input_methods)[i];
+    base::DictionaryValue* val = new base::DictionaryValue();
+    val->SetString("id", input_method.id());
+    val->SetString("name", input_method.name());
+    val->SetString("indicator", input_method.indicator());
+    output->Append(val);
+  }
+  return RespondNow(OneArgument(output));
 #endif
 }
 
@@ -70,8 +87,9 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   EventRouter::Get(context_)->RegisterObserver(this, kOnInputMethodChanged);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<GetInputMethodFunction>();
-  registry->RegisterFunction<StartImeFunction>();
+  registry->RegisterFunction<GetCurrentInputMethodFunction>();
+  registry->RegisterFunction<SetCurrentInputMethodFunction>();
+  registry->RegisterFunction<GetInputMethodsFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {

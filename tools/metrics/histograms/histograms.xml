@@ -35973,6 +35973,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="785" label="MANAGEMENT_GENERATEAPPFORLINK"/>
   <int value="786" label="GUESTVIEWINTERNAL_ALLOCATEINSTANCEID"/>
   <int value="787" label="WEBVIEW_NAVIGATE"/>
+  <int value="788" label="INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD"/>
+  <int value="789" label="INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD"/>
+  <int value="790" label="INPUTMETHODPRIVATE_GETINPUTMETHODS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

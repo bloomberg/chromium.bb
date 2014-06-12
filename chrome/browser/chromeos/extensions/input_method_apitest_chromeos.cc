@@ -25,24 +25,17 @@ namespace {
 
 const char kLoginScreenUILanguage[] = "fr";
 const char kInitialInputMethodOnLoginScreen[] = "xkb:us::eng";
-const char kNewInputMethod[] = "fr::fra";
-const char kSetInputMethodMessage[] = "setInputMethod";
-const char kSetInputMethodDone[] = "done";
 const char kBackgroundReady[] = "ready";
 
-// Class that listens for the JS message then changes input method and replies
-// back.
-class SetInputMethodListener : public content::NotificationObserver {
+// Class that listens for the JS message.
+class TestListener : public content::NotificationObserver {
  public:
-  // Creates listener, which should reply exactly |count_| times.
-  explicit SetInputMethodListener(int count) : count_(count) {
+  explicit TestListener() {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
   }
 
-  virtual ~SetInputMethodListener() {
-    EXPECT_EQ(0, count_);
-  }
+  virtual ~TestListener() {}
 
   // Implements the content::NotificationObserver interface.
   virtual void Observe(int type,
@@ -61,28 +54,11 @@ class SetInputMethodListener : public content::NotificationObserver {
           chromeos::extension_ime_util::GetInputMethodIDByEngineID(
               kInitialInputMethodOnLoginScreen));
       manager->EnableLoginLayouts(kLoginScreenUILanguage, keyboard_layouts);
-      return;
-    }
-
-    const std::string expected_message =
-        base::StringPrintf("%s:%s", kSetInputMethodMessage, kNewInputMethod);
-    if (content == expected_message) {
-      chromeos::input_method::InputMethodManager::Get()->ChangeInputMethod(
-          chromeos::extension_ime_util::GetInputMethodIDByEngineID(
-              base::StringPrintf("xkb:%s", kNewInputMethod)));
-
-      scoped_refptr<extensions::TestSendMessageFunction> function =
-          content::Source<extensions::TestSendMessageFunction>(
-              source).ptr();
-      EXPECT_GT(count_--, 0);
-      function->Reply(kSetInputMethodDone);
     }
   }
 
  private:
   content::NotificationRegistrar registrar_;
-
-  int count_;
 };
 
 class ExtensionInputMethodApiTest : public ExtensionApiTest {
@@ -97,8 +73,8 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
-  // Two test, two calls. See JS code for more info.
-  SetInputMethodListener listener(2);
+  // Listener for extension's background ready.
+  TestListener listener;
 
   ASSERT_TRUE(RunExtensionTest("input_method")) << message_;
 }

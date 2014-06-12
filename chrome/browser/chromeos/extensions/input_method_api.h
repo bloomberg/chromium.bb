@@ -17,34 +17,49 @@ class ExtensionInputMethodEventRouter;
 
 namespace extensions {
 
-// Implements the experimental.inputMethod.get method.
-class GetInputMethodFunction : public SyncExtensionFunction {
+// Implements the inputMethodPrivate.getCurrentInputMethod method.
+class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  public:
-  GetInputMethodFunction();
+  GetCurrentInputMethodFunction() {}
 
  protected:
-  virtual ~GetInputMethodFunction();
+  virtual ~GetCurrentInputMethodFunction() {}
 
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.get", INPUTMETHODPRIVATE_GET)
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCurrentInputMethod",
+                             INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD)
 };
 
-// Notify the initialization is done to input method engine.
-// TODO(nona): remove this function.
-class StartImeFunction : public SyncExtensionFunction {
+// Implements the inputMethodPrivate.setCurrentInputMethod method.
+class SetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  public:
-  StartImeFunction();
+  SetCurrentInputMethodFunction() {}
 
  protected:
-  virtual ~StartImeFunction();
+  virtual ~SetCurrentInputMethodFunction() {}
 
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.startIme",
-                             INPUTMETHODPRIVATE_STARTIME)
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setCurrentInputMethod",
+                             INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD)
+};
+
+// Implements the inputMethodPrivate.getInputMethods method.
+class GetInputMethodsFunction : public UIThreadExtensionFunction {
+ public:
+  GetInputMethodsFunction() {}
+
+ protected:
+  virtual ~GetInputMethodsFunction() {}
+
+  virtual ResponseAction Run() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethods",
+                             INPUTMETHODPRIVATE_GETINPUTMETHODS)
 };
 
 class InputMethodAPI : public BrowserContextKeyedAPI,
