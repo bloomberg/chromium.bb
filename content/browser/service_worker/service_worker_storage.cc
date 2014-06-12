@@ -593,13 +593,18 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
         info.active_version = version->GetInfo();
       else
         info.waiting_version = version->GetInfo();
-    } else {
+      infos.push_back(info);
+      continue;
+    }
+
+    if (it->is_active) {
       info.active_version.is_null = false;
-      if (it->is_active)
-        info.active_version.status = ServiceWorkerVersion::ACTIVE;
-      else
-        info.active_version.status = ServiceWorkerVersion::INSTALLED;
+      info.active_version.status = ServiceWorkerVersion::ACTIVE;
       info.active_version.version_id = it->version_id;
+    } else {
+      info.waiting_version.is_null = false;
+      info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
+      info.waiting_version.version_id = it->version_id;
     }
     infos.push_back(info);
   }
