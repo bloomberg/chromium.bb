@@ -165,8 +165,10 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   }
 
  private:
-  void AwakeProducerWaitersForStateChangeNoLock();
-  void AwakeConsumerWaitersForStateChangeNoLock();
+  void AwakeProducerWaitersForStateChangeNoLock(
+      const WaitFlagsState& new_producer_state);
+  void AwakeConsumerWaitersForStateChangeNoLock(
+      const WaitFlagsState& new_consumer_state);
 
   bool has_local_producer_no_lock() const {
     lock_.AssertAcquired();

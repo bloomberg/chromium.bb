@@ -90,7 +90,7 @@ void DataPipe::ProducerClose() {
       << "Producer closed with active two-phase write";
   producer_two_phase_max_num_bytes_written_ = 0;
   ProducerCloseImplNoLock();
-  AwakeConsumerWaitersForStateChangeNoLock();
+  AwakeConsumerWaitersForStateChangeNoLock(ConsumerGetWaitFlagsStateNoLock());
 }
 
 MojoResult DataPipe::ProducerWriteData(const void* elements,
@@ -115,7 +115,7 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
   MojoResult rv = ProducerWriteDataImplNoLock(elements, num_bytes, all_or_none);
   WaitFlagsState new_consumer_state = ConsumerGetWaitFlagsStateNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
-    AwakeConsumerWaitersForStateChangeNoLock();
+    AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   return rv;
 }
 
@@ -167,11 +167,12 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   DCHECK(!producer_in_two_phase_write_no_lock());
   // If we're now writable, we *became* writable (since we weren't writable
   // during the two-phase write), so awake producer waiters.
-  if (ProducerGetWaitFlagsStateNoLock().satisfies(MOJO_WAIT_FLAG_WRITABLE))
-    AwakeProducerWaitersForStateChangeNoLock();
+  WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
+  if (new_producer_state.satisfies(MOJO_WAIT_FLAG_WRITABLE))
+    AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   WaitFlagsState new_consumer_state = ConsumerGetWaitFlagsStateNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
-    AwakeConsumerWaitersForStateChangeNoLock();
+    AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   return rv;
 }
 
@@ -219,7 +220,7 @@ void DataPipe::ConsumerClose() {
       << "Consumer closed with active two-phase read";
   consumer_two_phase_max_num_bytes_read_ = 0;
   ConsumerCloseImplNoLock();
-  AwakeProducerWaitersForStateChangeNoLock();
+  AwakeProducerWaitersForStateChangeNoLock(ProducerGetWaitFlagsStateNoLock());
 }
 
 MojoResult DataPipe::ConsumerReadData(void* elements,
@@ -241,7 +242,7 @@ MojoResult DataPipe::ConsumerReadData(void* elements,
   MojoResult rv = ConsumerReadDataImplNoLock(elements, num_bytes, all_or_none);
   WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))
-    AwakeProducerWaitersForStateChangeNoLock();
+    AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
 }
 
@@ -263,7 +264,7 @@ MojoResult DataPipe::ConsumerDiscardData(uint32_t* num_bytes,
   MojoResult rv = ConsumerDiscardDataImplNoLock(num_bytes, all_or_none);
   WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))
-    AwakeProducerWaitersForStateChangeNoLock();
+    AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
 }
 
@@ -320,10 +321,10 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
   // during the two-phase read), so awake consumer waiters.
   WaitFlagsState new_consumer_state = ConsumerGetWaitFlagsStateNoLock();
   if (new_consumer_state.satisfies(MOJO_WAIT_FLAG_READABLE))
-    AwakeConsumerWaitersForStateChangeNoLock();
+    AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))
-    AwakeProducerWaitersForStateChangeNoLock();
+    AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
 }
 
@@ -380,20 +381,20 @@ DataPipe::~DataPipe() {
   DCHECK(!consumer_waiter_list_);
 }
 
-void DataPipe::AwakeProducerWaitersForStateChangeNoLock() {
+void DataPipe::AwakeProducerWaitersForStateChangeNoLock(
+    const WaitFlagsState& new_producer_state) {
   lock_.AssertAcquired();
   if (!has_local_producer_no_lock())
     return;
-  producer_waiter_list_->AwakeWaitersForStateChange(
-      ProducerGetWaitFlagsStateNoLock());
+  producer_waiter_list_->AwakeWaitersForStateChange(new_producer_state);
 }
 
-void DataPipe::AwakeConsumerWaitersForStateChangeNoLock() {
+void DataPipe::AwakeConsumerWaitersForStateChangeNoLock(
+    const WaitFlagsState& new_consumer_state) {
   lock_.AssertAcquired();
   if (!has_local_consumer_no_lock())
     return;
-  consumer_waiter_list_->AwakeWaitersForStateChange(
-      ConsumerGetWaitFlagsStateNoLock());
+  consumer_waiter_list_->AwakeWaitersForStateChange(new_consumer_state);
 }
 
 }  // namespace system
