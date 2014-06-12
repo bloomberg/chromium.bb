@@ -8,6 +8,7 @@ namespace extensions {
 
 namespace manifest_keys {
 
+const char kAboutPage[] = "about_page";
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
@@ -269,6 +270,9 @@ const char kExperimentalFlagRequired[] =
     "Loading extensions with 'experimental' permission is turned off by "
     "default. You can enable 'Experimental Extension APIs' "
     "by visiting chrome://flags.";
+const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
+const char kInvalidAboutPageExpectRelativePath[] =
+    "Invalid value for 'about_page'. Value must be a relative path.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =

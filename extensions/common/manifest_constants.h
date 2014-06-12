@@ -10,6 +10,7 @@ namespace extensions {
 // Keys used in JSON representation of extensions.
 namespace manifest_keys {
 
+extern const char kAboutPage[];
 extern const char kAllFrames[];
 extern const char kAltKey[];
 extern const char kApp[];
@@ -254,8 +255,10 @@ extern const char kCannotUninstallManagedExtension[];
 extern const char kChromeVersionTooLow[];
 extern const char kDevToolsExperimental[];
 extern const char kDisabledByPolicy[];
-extern const char kExperimentalFlagRequired[];
 extern const char kExpectString[];
+extern const char kExperimentalFlagRequired[];
+extern const char kInvalidAboutPage[];
+extern const char kInvalidAboutPageExpectRelativePath[];
 extern const char kInvalidAllFrames[];
 extern const char kInvalidBackground[];
 extern const char kInvalidBackgroundAllowJsAccess[];

@@ -44,6 +44,7 @@ namespace extensions {
 void RegisterChromeManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
 #if defined(ENABLE_EXTENSIONS)
+  (new AboutPageHandler)->Register();
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
   (new AutomationHandler)->Register();

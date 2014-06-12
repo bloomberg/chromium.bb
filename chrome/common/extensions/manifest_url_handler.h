@@ -40,6 +40,9 @@ struct ManifestURL : public Extension::ManifestData {
   // Returns the Options Page for this extension.
   static const GURL& GetOptionsPage(const Extension* extension);
 
+  // Returns the About Page for this extension.
+  static const GURL& GetAboutPage(const Extension* extension);
+
   // Returns the webstore page URL for this extension.
   static const GURL GetDetailsURL(const Extension* extension);
 };
@@ -118,6 +121,27 @@ class OptionsPageHandler : public ManifestHandler {
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsPageHandler);
+};
+
+// Parses the "about_page" manifest key.
+// TODO(sashab): Make this and any other similar handlers extend from the same
+// abstract class, URLManifestHandler, which has pure virtual methods for
+// detecting the required URL type (relative or absolute) and abstracts the
+// URL parsing logic away.
+class AboutPageHandler : public ManifestHandler {
+ public:
+  AboutPageHandler();
+  virtual ~AboutPageHandler();
+
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Validate(const Extension* extension,
+                        std::string* error,
+                        std::vector<InstallWarning>* warnings) const OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
 };
 
 // Parses the "chrome_url_overrides" manifest key.

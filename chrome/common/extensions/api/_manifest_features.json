@@ -16,6 +16,10 @@
 // hashes back to ids.
 
 {
+  "about_page": {
+    "channel": "dev",
+    "extension_types": ["shared_module"]
+  },
   "app": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
@@ -299,7 +303,7 @@
   "options_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "shared_module"
+      "extension", "legacy_packaged_app", "hosted_app"
     ]
   },
   "page_action": {

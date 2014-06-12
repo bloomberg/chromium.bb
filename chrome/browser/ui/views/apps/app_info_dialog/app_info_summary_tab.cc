@@ -262,7 +262,7 @@ bool AppInfoSummaryPanel::CanShowAppInWebStore() const {
 }
 
 // A small summary panel with a list of the app's imported modules, and a link
-// to each of their options pages.
+// to each of their about pages.
 class AppInfoImportedModulesPanel : public views::View,
                                     public views::LinkListener {
  public:
@@ -344,14 +344,13 @@ AppInfoImportedModulesPanel::AppInfoImportedModulesPanel(
     layout->StartRow(0, kModulesListColumnSetId);
     layout->AddView(name_label);
 
-    // If this app has an options page, display it as an 'about' link.
-    GURL options_page =
-        extensions::ManifestURL::GetOptionsPage(imported_module);
-    if (options_page != GURL::EmptyGURL()) {
+    // If this app has an about page, display it as an 'about' link.
+    GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
+    if (about_page != GURL::EmptyGURL()) {
       views::Link* about_link = new views::Link(l10n_util::GetStringUTF16(
           IDS_APPLICATION_INFO_IMPORTED_MODULES_ABOUT_LINK_TEXT));
       about_link->set_listener(this);
-      about_links_[about_link] = options_page;
+      about_links_[about_link] = about_page;
       layout->AddView(about_link);
     }
   }

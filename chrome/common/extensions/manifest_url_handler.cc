@@ -85,6 +85,11 @@ const GURL& ManifestURL::GetOptionsPage(const Extension* extension) {
 }
 
 // static
+const GURL& ManifestURL::GetAboutPage(const Extension* extension) {
+  return GetManifestURL(extension, keys::kAboutPage);
+}
+
+// static
 const GURL ManifestURL::GetDetailsURL(const Extension* extension) {
   return extension->from_webstore() ?
       GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + extension->id()) :
@@ -261,6 +266,57 @@ bool OptionsPageHandler::Validate(const Extension* extension,
 
 const std::vector<std::string> OptionsPageHandler::Keys() const {
   return SingleKey(keys::kOptionsPage);
+}
+
+AboutPageHandler::AboutPageHandler() {
+}
+
+AboutPageHandler::~AboutPageHandler() {
+}
+
+bool AboutPageHandler::Parse(Extension* extension, base::string16* error) {
+  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::string about_str;
+  if (!extension->manifest()->GetString(keys::kAboutPage, &about_str)) {
+    *error = base::ASCIIToUTF16(errors::kInvalidAboutPage);
+    return false;
+  }
+
+  GURL absolute(about_str);
+  if (absolute.is_valid()) {
+    *error = base::ASCIIToUTF16(errors::kInvalidAboutPageExpectRelativePath);
+    return false;
+  }
+  manifest_url->url_ = extension->GetResourceURL(about_str);
+  if (!manifest_url->url_.is_valid()) {
+    *error = base::ASCIIToUTF16(errors::kInvalidAboutPage);
+    return false;
+  }
+  extension->SetManifestData(keys::kAboutPage, manifest_url.release());
+  return true;
+}
+
+bool AboutPageHandler::Validate(const Extension* extension,
+                                std::string* error,
+                                std::vector<InstallWarning>* warnings) const {
+  // Validate path to the options page.
+  if (!extensions::ManifestURL::GetAboutPage(extension).is_empty()) {
+    const base::FilePath about_path =
+        extensions::file_util::ExtensionURLToRelativeFilePath(
+            extensions::ManifestURL::GetAboutPage(extension));
+    const base::FilePath path =
+        extension->GetResource(about_path).GetFilePath();
+    if (path.empty() || !base::PathExists(path)) {
+      *error = l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_ABOUT_PAGE_FAILED,
+                                         about_path.LossyDisplayName());
+      return false;
+    }
+  }
+  return true;
+}
+
+const std::vector<std::string> AboutPageHandler::Keys() const {
+  return SingleKey(keys::kAboutPage);
 }
 
 URLOverridesHandler::URLOverridesHandler() {
