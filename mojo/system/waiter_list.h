@@ -30,9 +30,6 @@ class MOJO_SYSTEM_IMPL_EXPORT WaiterList {
   ~WaiterList();
 
   void AwakeWaitersForStateChange(const WaitFlagsState& state);
-//FIXME Remove:
-  void AwakeWaitersForStateChange(MojoWaitFlags satisfied_flags,
-                                  MojoWaitFlags satisfiable_flags);
   void CancelAllWaiters();
   void AddWaiter(Waiter* waiter, MojoWaitFlags flags, MojoResult wake_result);
   void RemoveWaiter(Waiter* waiter);

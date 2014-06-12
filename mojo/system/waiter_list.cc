@@ -28,18 +28,6 @@ void WaiterList::AwakeWaitersForStateChange(const WaitFlagsState& state) {
   }
 }
 
-//FIXME Remove:
-void WaiterList::AwakeWaitersForStateChange(MojoWaitFlags satisfied_flags,
-                                            MojoWaitFlags satisfiable_flags) {
-  for (WaiterInfoList::iterator it = waiters_.begin(); it != waiters_.end();
-       ++it) {
-    if (it->flags & satisfied_flags)
-      it->waiter->Awake(it->wake_result);
-    else if (!(it->flags & satisfiable_flags))
-      it->waiter->Awake(MOJO_RESULT_FAILED_PRECONDITION);
-  }
-}
-
 void WaiterList::CancelAllWaiters() {
   for (WaiterInfoList::iterator it = waiters_.begin(); it != waiters_.end();
        ++it) {
