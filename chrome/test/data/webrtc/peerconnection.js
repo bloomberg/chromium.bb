@@ -59,7 +59,7 @@ function createLocalOffer(constraints) {
 
         returnToTest('ok-' + JSON.stringify(localOffer));
       },
-      function() { failure_('createOffer'); },
+      function(error) { failure_('createOffer', error); },
       constraints);
 }
 
@@ -83,7 +83,7 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
   peerConnection_().setRemoteDescription(
       sessionDescription,
       function() { success_('setRemoteDescription'); },
-      function() { failure_('setRemoteDescription'); });
+      function(error) { failure_('setRemoteDescription', error); });
 
   peerConnection_().createAnswer(
       function(answer) {
@@ -91,7 +91,7 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
         setLocalDescription(peerConnection, answer);
         returnToTest('ok-' + JSON.stringify(answer));
       },
-      function() { failure_('createAnswer'); },
+      function(error) { failure_('createAnswer', error); },
       constraints);
 }
 
@@ -118,7 +118,7 @@ function receiveAnswerFromPeer(sessionDescJson) {
         success_('setRemoteDescription');
         returnToTest('ok-accepted-answer');
       },
-      function() { failure_('setRemoteDescription'); });
+      function(error) { failure_('setRemoteDescription', error); });
 }
 
 /**
@@ -210,14 +210,17 @@ function receiveIceCandidates(iceCandidatesJson) {
   var iceCandidates = parseJson_(iceCandidatesJson);
   if (!iceCandidates.length)
     throw failTest('Received invalid ICE candidate list from peer: ' +
-      iceCandidatesJson);
+        iceCandidatesJson);
 
   iceCandidates.forEach(function(iceCandidate) {
     if (!iceCandidate.candidate)
       failTest('Received invalid ICE candidate from peer: ' +
-        iceCandidatesJson);
+          iceCandidatesJson);
 
-    peerConnection_().addIceCandidate(new RTCIceCandidate(iceCandidate));
+    peerConnection_().addIceCandidate(new RTCIceCandidate(iceCandidate,
+        function() { success_('addIceCandidate'); },
+        function(error) { failure_('addIceCandidate', error); }
+    ));
   });
 
   returnToTest('ok-received-candidates');
@@ -260,7 +263,7 @@ function success_(method) {
 
 /** @private */
 function failure_(method, error) {
-  throw failTest(method + '() failed: ' + error);
+  throw failTest(method + '() failed: ' + JSON.stringify(error));
 }
 
 /** @private */
@@ -278,7 +281,7 @@ function setLocalDescription(peerConnection, sessionDescription) {
   peerConnection.setLocalDescription(
     sessionDescription,
     function() { success_('setLocalDescription'); },
-    function() { failure_('setLocalDescription'); });
+    function(error) { failure_('setLocalDescription', error); });
 }
 
 /** @private */

@@ -432,19 +432,22 @@ function handleMessage(peerConnection, message) {
     peerConnection.setRemoteDescription(
         session_description,
         function() { success_('setRemoteDescription'); },
-        function() { failure_('setRemoteDescription'); });
+        function(error) { failure_('setRemoteDescription', error); });
     if (session_description.type == 'offer') {
       print_('createAnswer with constraints: ' +
             JSON.stringify(global.createAnswerConstraints, null, ' '));
       peerConnection.createAnswer(
-        setLocalAndSendMessage_,
-        function() { failure_('createAnswer'); },
-        global.createAnswerConstraints);
+          setLocalAndSendMessage_,
+          function(error) { failure_('createAnswer', error); },
+          global.createAnswerConstraints);
     }
     return;
   } else if (parsed_msg.candidate) {
     var candidate = new RTCIceCandidate(parsed_msg);
-    peerConnection.addIceCandidate(candidate);
+    peerConnection.addIceCandidate(candidate,
+        function() { success_('addIceCandidate'); },
+        function(error) { failure_('addIceCandidate', error); }
+    );
     return;
   }
   error_('unknown message received');
@@ -489,7 +492,7 @@ function setupCall(peerConnection) {
         JSON.stringify(global.createOfferConstraints, null, ' '));
   peerConnection.createOffer(
       setLocalAndSendMessage_,
-      function() { failure_('createOffer'); },
+      function(error) { failure_('createOffer', error); },
       global.createOfferConstraints);
 }
 
@@ -910,7 +913,7 @@ function success_(method) {
 
 /** @private */
 function failure_(method, error) {
-  error_(method + '() failed: ' + error);
+  error_(method + '() failed: ' + JSON.stringify(error));
 }
 
 /** @private */
@@ -926,7 +929,7 @@ function setLocalAndSendMessage_(session_description) {
   global.peerConnection.setLocalDescription(
     session_description,
     function() { success_('setLocalDescription'); },
-    function() { failure_('setLocalDescription'); });
+    function(error) { failure_('setLocalDescription', error); });
   print_('Sending SDP message:\n' + session_description.sdp);
   sendToPeer(global.remotePeerId, JSON.stringify(session_description));
 }
