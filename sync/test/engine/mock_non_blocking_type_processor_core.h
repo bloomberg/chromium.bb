@@ -1,0 +1,82 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+#define SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
+
+#include <vector>
+
+#include "base/macros.h"
+#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/engine/non_blocking_type_processor_core_interface.h"
+
+namespace syncer {
+
+// Receives and records commit requests sent through the
+// NonBlockingTypeProcessorCoreInterface.
+//
+// This class also includes features intended to help mock out server behavior.
+// It has some basic functionality to keep track of server state and generate
+// plausible UpdateResponseData and CommitResponseData messages.
+class MockNonBlockingTypeProcessorCore
+    : public NonBlockingTypeProcessorCoreInterface {
+ public:
+  MockNonBlockingTypeProcessorCore();
+  virtual ~MockNonBlockingTypeProcessorCore();
+
+  // Implementation of NonBlockingTypeProcessorCoreInterface.
+  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+
+  // Getters to inspect the requests sent to this object.
+  size_t GetNumCommitRequestLists() const;
+  CommitRequestDataList GetNthCommitRequestList(size_t n) const;
+  bool HasCommitRequestForTagHash(const std::string& tag_hash) const;
+  CommitRequestData GetLatestCommitRequestForTagHash(
+      const std::string& tag_hash) const;
+
+  // Functions to produce state as though it came from a real server and had
+  // been filtered through a real NonBlockinTypeProcessorCore.
+
+  // Returns an UpdateResponseData representing an update received from
+  // the server.  Updates server state accordingly.
+  //
+  // The |version_offset| field can be used to emulate stale data (ie. versions
+  // going backwards), reflections and redeliveries (ie. several instances of
+  // the same version) or new updates.
+  UpdateResponseData UpdateFromServer(
+      int64 version_offset,
+      const std::string& tag_hash,
+      const sync_pb::EntitySpecifics& specifics);
+
+  // Returns an UpdateResponseData representing a tombstone update from the
+  // server.  Updates server state accordingly.
+  UpdateResponseData TombstoneFromServer(int64 version_offset,
+                                         const std::string& tag_hash);
+
+  // Returns a commit response that indicates a successful commit of the
+  // given |request_data|.  Updates server state accordingly.
+  CommitResponseData SuccessfulCommitResponse(
+      const CommitRequestData& request_data);
+
+ private:
+  // Generate an ID string.
+  static std::string GenerateId(const std::string& tag_hash);
+
+  // Retrieve or set the server version.
+  int64 GetServerVersion(const std::string& tag_hash);
+  void SetServerVersion(const std::string& tag_hash, int64 version);
+
+  // A record of past commits requests.
+  std::vector<CommitRequestDataList> commit_request_lists_;
+
+  // Map of versions by client tag.
+  // This is an essential part of the mocked server state.
+  std::map<const std::string, int64> server_versions_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockNonBlockingTypeProcessorCore);
+};
+
+}  // namespace syncer
+
+#endif  // SYNC_TEST_ENGINE_MOCK_NON_BLOCKING_TYPE_PROCESSOR_CORE_H_
