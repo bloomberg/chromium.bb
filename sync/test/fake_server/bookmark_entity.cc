@@ -14,9 +14,16 @@
 
 using std::string;
 
-using syncer::ModelType;
-
 namespace fake_server {
+
+namespace {
+
+// Returns true if and only if |client_entity| is a bookmark.
+bool IsBookmark(const sync_pb::SyncEntity& client_entity) {
+  return syncer::GetModelType(client_entity) == syncer::BOOKMARKS;
+}
+
+}  // namespace
 
 BookmarkEntity::~BookmarkEntity() { }
 
@@ -25,18 +32,15 @@ FakeServerEntity* BookmarkEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity,
     const string& parent_id,
     const string& client_guid) {
-  if (client_entity.version() != 0) {
-    return NULL;
-  }
+  CHECK(client_entity.version() == 0) << "New entities must have version = 0.";
+  CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
-  ModelType model_type =
-      syncer::GetModelTypeFromSpecifics(client_entity.specifics());
-  string id = FakeServerEntity::CreateId(model_type, base::GenerateGUID());
+  string id = FakeServerEntity::CreateId(syncer::BOOKMARKS,
+                                         base::GenerateGUID());
   string originator_cache_guid = client_guid;
   string originator_client_item_id = client_entity.id_string();
 
   return new BookmarkEntity(id,
-                            model_type,
                             client_entity.version(),
                             client_entity.name(),
                             originator_cache_guid,
@@ -54,9 +58,9 @@ FakeServerEntity* BookmarkEntity::CreateUpdatedVersion(
     const sync_pb::SyncEntity& client_entity,
     FakeServerEntity* current_server_entity,
     const string& parent_id) {
-  if (client_entity.version() == 0 || current_server_entity == NULL) {
-    return NULL;
-  }
+  CHECK(client_entity.version() != 0) << "Existing entities must not have a "
+                                      << "version = 0.";
+  CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   BookmarkEntity* current_bookmark_entity =
       static_cast<BookmarkEntity*>(current_server_entity);
@@ -64,11 +68,8 @@ FakeServerEntity* BookmarkEntity::CreateUpdatedVersion(
       current_bookmark_entity->originator_cache_guid_;
   string originator_client_item_id =
       current_bookmark_entity->originator_client_item_id_;
-  ModelType model_type =
-      syncer::GetModelTypeFromSpecifics(client_entity.specifics());
 
   return new BookmarkEntity(client_entity.id_string(),
-                            model_type,
                             client_entity.version(),
                             client_entity.name(),
                             originator_cache_guid,
@@ -83,7 +84,6 @@ FakeServerEntity* BookmarkEntity::CreateUpdatedVersion(
 
 BookmarkEntity::BookmarkEntity(
     const string& id,
-    const ModelType& model_type,
     int64 version,
     const string& name,
     const string& originator_cache_guid,
@@ -94,7 +94,7 @@ BookmarkEntity::BookmarkEntity(
     const string& parent_id,
     int64 creation_time,
     int64 last_modified_time)
-    : FakeServerEntity(id, model_type, version, name),
+    : FakeServerEntity(id, syncer::BOOKMARKS, version, name),
       originator_cache_guid_(originator_cache_guid),
       originator_client_item_id_(originator_client_item_id),
       unique_position_(unique_position),

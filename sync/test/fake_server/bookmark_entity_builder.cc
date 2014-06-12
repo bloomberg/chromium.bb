@@ -20,7 +20,6 @@
 
 using std::string;
 
-using syncer::ModelType;
 using syncer::syncable::GenerateSyncableBookmarkHash;
 
 // A version must be passed when creating a FakeServerEntity, but this value
@@ -65,7 +64,6 @@ scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build() {
 
   return make_scoped_ptr<FakeServerEntity>(
       new BookmarkEntity(id_,
-                         model_type_,
                          kUnusedVersion,
                          name_,
                          originator_cache_guid_,

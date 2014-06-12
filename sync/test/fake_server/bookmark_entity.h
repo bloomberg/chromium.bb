@@ -37,7 +37,6 @@ class BookmarkEntity : public FakeServerEntity {
       const std::string& parent_id);
 
   BookmarkEntity(const std::string& id,
-                 const syncer::ModelType& model_type,
                  int64 version,
                  const std::string& name,
                  const std::string& originator_cache_guid,
