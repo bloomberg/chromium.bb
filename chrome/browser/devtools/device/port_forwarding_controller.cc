@@ -242,8 +242,7 @@ FindBestBrowserForTethering(
       browsers.begin(); it != browsers.end(); ++it) {
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser = *it;
     ParsedVersion current_version = browser->GetParsedVersion();
-    if (browser->IsChrome() &&
-        IsPortForwardingSupported(current_version) &&
+    if (IsPortForwardingSupported(current_version) &&
         IsVersionLower(newest_version, current_version)) {
       best_browser = browser;
       newest_version = current_version;
