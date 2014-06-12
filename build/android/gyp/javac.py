@@ -18,11 +18,11 @@ import colorama
 
 
 def ColorJavacOutput(output):
-  fileline_prefix = '(?P<fileline>(?P<file>[-.\w/\\]+.java):(?P<line>[0-9]+):)'
+  fileline_prefix = r'(?P<fileline>(?P<file>[-.\w/\\]+.java):(?P<line>[0-9]+):)'
   warning_re = re.compile(
-      fileline_prefix + '(?P<full_message> warning: (?P<message>.*))$')
+      fileline_prefix + r'(?P<full_message> warning: (?P<message>.*))$')
   error_re = re.compile(
-      fileline_prefix + '(?P<full_message> (?P<message>.*))$')
+      fileline_prefix + r'(?P<full_message> (?P<message>.*))$')
   marker_re = re.compile(r'\s*(?P<marker>\^)\s*$')
 
   warning_color = ['full_message', colorama.Fore.YELLOW + colorama.Style.DIM]
