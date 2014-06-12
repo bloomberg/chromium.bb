@@ -31,21 +31,18 @@ class MockLoginUtils : public LoginUtils {
   virtual ~MockLoginUtils();
 
   MOCK_METHOD2(DoBrowserLaunch, void(Profile*, LoginDisplayHost*));
-  MOCK_METHOD5(PrepareProfile,
-               void(const UserContext&, const std::string&,
+  MOCK_METHOD4(PrepareProfile,
+               void(const UserContext&,
                     bool, bool, LoginUtils::Delegate*));
   MOCK_METHOD1(DelegateDeleted, void(LoginUtils::Delegate*));
   MOCK_METHOD1(CompleteOffTheRecordLogin, void(const GURL&));
-  MOCK_METHOD1(SetFirstLoginPrefs, void(PrefService*));
   MOCK_METHOD1(CreateAuthenticator,
                scoped_refptr<Authenticator>(LoginStatusConsumer*));
-  MOCK_METHOD1(RestoreAuthenticationSession, void(Profile*));
   MOCK_METHOD1(StartTokenServices, void(Profile*));
   MOCK_METHOD2(TransferDefaultCookiesAndServerBoundCerts,
                void(Profile*, Profile*));
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
-  MOCK_METHOD1(InitRlzDelayed, void(Profile*));
 
   void DelegateToFake();
   FakeLoginUtils* GetFakeLoginUtils();

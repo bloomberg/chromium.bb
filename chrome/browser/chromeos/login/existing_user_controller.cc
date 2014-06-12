@@ -775,14 +775,18 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 
+  // Update user's displayed email.
+  if (!display_email_.empty()) {
+    UserManager::Get()->SaveUserDisplayEmail(user_context.GetUserID(),
+                                             display_email_);
+    display_email_.clear();
+  }
+
   // Will call OnProfilePrepared() in the end.
   LoginUtils::Get()->PrepareProfile(user_context,
-                                    display_email_,
                                     has_cookies,
                                     false,          // Start session for user.
                                     this);
-
-  display_email_.clear();
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {

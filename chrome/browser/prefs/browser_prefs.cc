@@ -144,8 +144,8 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
+#include "chrome/browser/chromeos/login/session/session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
@@ -170,6 +170,7 @@
 #include "chrome/browser/ui/webui/chromeos/charger_replacement_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -296,14 +297,15 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::default_pinned_apps_field_trial::RegisterPrefs(registry);
   chromeos::language_prefs::RegisterPrefs(registry);
   chromeos::KioskAppManager::RegisterPrefs(registry);
-  chromeos::LoginUtils::RegisterPrefs(registry);
   chromeos::MultiProfileUserController::RegisterPrefs(registry);
   chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
   chromeos::NetworkScreenHandler::RegisterPrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
   chromeos::proxy_config::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
+  chromeos::ResetScreenHandler::RegisterPrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
+  chromeos::SessionManager::RegisterPrefs(registry);
   chromeos::SigninScreenHandler::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
