@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -78,6 +79,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
       const base::Time& start_time,
       const base::Time& end_time,
       const std::string& etag,

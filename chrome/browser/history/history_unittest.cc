@@ -185,6 +185,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          base::FilePath(FILE_PATH_LITERAL("target-path")),
                          url_chain,
                          GURL("http://referrer.com/"),
+                         "application/vnd.oasis.opendocument.text",
+                         "application/octet-stream",
                          time,
                          time,
                          std::string(),
@@ -267,6 +269,8 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   EXPECT_FALSE(downloads[0].opened);
   EXPECT_EQ("by_ext_id", downloads[0].by_ext_id);
   EXPECT_EQ("by_ext_name", downloads[0].by_ext_name);
+  EXPECT_EQ("application/vnd.oasis.opendocument.text", downloads[0].mime_type);
+  EXPECT_EQ("application/octet-stream", downloads[0].original_mime_type);
 
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
@@ -646,6 +650,74 @@ TEST_F(HistoryBackendDBTest, PurgeArchivedDatabase) {
       history_dir_.Append(chrome::kArchivedHistoryFilename)));
 }
 
+TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
+  Time now(base::Time::Now());
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(28));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads (id, current_path, target_path, start_time, "
+          "received_bytes, total_bytes, state, danger_type, interrupt_reason, "
+          "end_time, opened, referrer, by_ext_id, by_ext_name, etag, "
+          "last_modified) VALUES "
+          "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      s.BindInt64(0, 1);
+      s.BindString(1, "current_path");
+      s.BindString(2, "target_path");
+      s.BindInt64(3, now.ToTimeT());
+      s.BindInt64(4, 100);
+      s.BindInt64(5, 100);
+      s.BindInt(6, 1);
+      s.BindInt(7, 0);
+      s.BindInt(8, 0);
+      s.BindInt64(9, now.ToTimeT());
+      s.BindInt(10, 1);
+      s.BindString(11, "referrer");
+      s.BindString(12, "by extension ID");
+      s.BindString(13, "by extension name");
+      s.BindString(14, "etag");
+      s.BindInt64(15, now.ToTimeT());
+      ASSERT_TRUE(s.Run());
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads_url_chains (id, chain_index, url) VALUES "
+          "(?, ?, ?)"));
+      s.BindInt64(0, 4);
+      s.BindInt64(1, 0);
+      s.BindString(2, "url");
+      ASSERT_TRUE(s.Run());
+    }
+  }
+  // Re-open the db using the HistoryDatabase, which should migrate to the
+  // current version, creating themime_type abd original_mime_type columns.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(29, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT mime_type, original_mime_type from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(std::string(), s.ColumnString(0));
+      EXPECT_EQ(std::string(), s.ColumnString(1));
+    }
+  }
+}
+
 TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   // Create the DB.
   CreateBackendAndDatabase();
@@ -702,6 +774,8 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        base::FilePath(FILE_PATH_LITERAL("foo-path")),
                        url_chain,
                        GURL(std::string()),
+                       "application/octet-stream",
+                       "application/octet-stream",
                        now,
                        now,
                        std::string(),

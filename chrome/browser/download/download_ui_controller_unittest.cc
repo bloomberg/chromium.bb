@@ -308,6 +308,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   GURL url;
   scoped_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
 
+  EXPECT_CALL(*item, GetOriginalMimeType());
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
 
   {

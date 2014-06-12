@@ -128,6 +128,8 @@ history::DownloadRow GetDownloadRow(
       item->GetTargetFilePath(),
       item->GetUrlChain(),
       item->GetReferrerUrl(),
+      item->GetMimeType(),
+      item->GetOriginalMimeType(),
       item->GetStartTime(),
       item->GetEndTime(),
       item->GetETag(),
@@ -145,7 +147,8 @@ history::DownloadRow GetDownloadRow(
 
 bool ShouldUpdateHistory(const history::DownloadRow* previous,
                          const history::DownloadRow& current) {
-  // Ignore url, referrer, start_time, id, which don't change.
+  // Ignore url, referrer, mime_type, original_mime_type, start_time,
+  // id, db_handle, which don't change.
   return ((previous == NULL) ||
           (previous->current_path != current.current_path) ||
           (previous->target_path != current.target_path) ||
@@ -262,6 +265,8 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->target_path,
         it->url_chain,
         it->referrer_url,
+        it->mime_type,
+        it->original_mime_type,
         it->start_time,
         it->end_time,
         it->etag,

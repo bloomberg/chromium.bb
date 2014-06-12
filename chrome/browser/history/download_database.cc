@@ -38,35 +38,6 @@ enum DroppedReason {
   DROPPED_REASON_MAX
 };
 
-static const char kSchema[] =
-    "CREATE TABLE downloads ("
-    "id INTEGER PRIMARY KEY,"             // Primary key.
-    "current_path LONGVARCHAR NOT NULL,"  // Current disk location
-    "target_path LONGVARCHAR NOT NULL,"   // Final disk location
-    "start_time INTEGER NOT NULL,"        // When the download was started.
-    "received_bytes INTEGER NOT NULL,"    // Total size downloaded.
-    "total_bytes INTEGER NOT NULL,"       // Total size of the download.
-    "state INTEGER NOT NULL,"             // 1=complete, 4=interrupted
-    "danger_type INTEGER NOT NULL, "      // Danger type, validated.
-    "interrupt_reason INTEGER NOT NULL,"  // content::DownloadInterruptReason
-    "end_time INTEGER NOT NULL,"          // When the download completed.
-    "opened INTEGER NOT NULL,"            // 1 if it has ever been opened else 0
-    "referrer VARCHAR NOT NULL,"          // HTTP Referrer
-    "by_ext_id VARCHAR NOT NULL,"         // ID of extension that started the
-                                          // download
-    "by_ext_name VARCHAR NOT NULL,"       // name of extension
-    "etag VARCHAR NOT NULL,"              // ETag
-    "last_modified VARCHAR NOT NULL)";    // Last-Modified header
-
-static const char kUrlChainSchema[] =
-    "CREATE TABLE downloads_url_chains ("
-    "id INTEGER NOT NULL,"                // downloads.id.
-    "chain_index INTEGER NOT NULL,"       // Index of url in chain
-                                          // 0 is initial target,
-                                          // MAX is target after redirects.
-    "url LONGVARCHAR NOT NULL, "          // URL.
-    "PRIMARY KEY (id, chain_index) )";
-
 #if defined(OS_POSIX)
 
 // Binds/reads the given file path to the given column of the given statement.
@@ -213,6 +184,13 @@ bool DownloadDatabase::EnsureColumnExists(
          GetDB().Execute(add_col.c_str());
 }
 
+bool DownloadDatabase::MigrateMimeType() {
+  return EnsureColumnExists("mime_type", "VARCHAR(255) NOT NULL"
+                            " DEFAULT \"\"") &&
+         EnsureColumnExists("original_mime_type", "VARCHAR(255) NOT NULL"
+                            " DEFAULT \"\"");
+}
+
 bool DownloadDatabase::MigrateDownloadsState() {
   sql::Statement statement(GetDB().GetUniqueStatement(
       "UPDATE downloads SET state=? WHERE state=?"));
@@ -227,8 +205,32 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
   if (!GetDB().Execute("ALTER TABLE downloads RENAME TO downloads_tmp"))
     return false;
 
+  const char kReasonPathDangerSchema[] =
+      "CREATE TABLE downloads ("
+      "id INTEGER PRIMARY KEY,"
+      "current_path LONGVARCHAR NOT NULL,"
+      "target_path LONGVARCHAR NOT NULL,"
+      "start_time INTEGER NOT NULL,"
+      "received_bytes INTEGER NOT NULL,"
+      "total_bytes INTEGER NOT NULL,"
+      "state INTEGER NOT NULL,"
+      "danger_type INTEGER NOT NULL,"
+      "interrupt_reason INTEGER NOT NULL,"
+      "end_time INTEGER NOT NULL,"
+      "opened INTEGER NOT NULL)";
+
+  static const char kReasonPathDangerUrlChainSchema[] =
+      "CREATE TABLE downloads_url_chains ("
+      "id INTEGER NOT NULL,"                // downloads.id.
+      "chain_index INTEGER NOT NULL,"       // Index of url in chain
+                                            // 0 is initial target,
+                                            // MAX is target after redirects.
+      "url LONGVARCHAR NOT NULL, "          // URL.
+      "PRIMARY KEY (id, chain_index) )";
+
+
   // Recreate main table.
-  if (!GetDB().Execute(kSchema))
+  if (!GetDB().Execute(kReasonPathDangerSchema))
     return false;
 
   // Populate it.  As we do so, we transform the time values from time_t
@@ -238,8 +240,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
   sql::Statement statement_populate(GetDB().GetUniqueStatement(
       "INSERT INTO downloads "
       "( id, current_path, target_path, start_time, received_bytes, "
-      "  total_bytes, state, danger_type, interrupt_reason, end_time, opened, "
-      "  referrer, by_ext_id, by_ext_name, etag, last_modified ) "
+      "  total_bytes, state, danger_type, interrupt_reason, end_time, opened ) "
       "SELECT id, full_path, full_path, "
       "       CASE start_time WHEN 0 THEN 0 ELSE "
       "            (start_time + 11644473600) * 1000000 END, "
@@ -247,7 +248,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
       "       state, ?, ?, "
       "       CASE end_time WHEN 0 THEN 0 ELSE "
       "            (end_time + 11644473600) * 1000000 END, "
-      "       opened, \"\", \"\", \"\", \"\", \"\" "
+      "       opened "
       "FROM downloads_tmp"));
   statement_populate.BindInt(0, content::DOWNLOAD_INTERRUPT_REASON_NONE);
   statement_populate.BindInt(1, kDangerTypeNotDangerous);
@@ -255,7 +256,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
     return false;
 
   // Create new chain table and populate it.
-  if (!GetDB().Execute(kUrlChainSchema))
+  if (!GetDB().Execute(kReasonPathDangerUrlChainSchema))
     return false;
 
   if (!GetDB().Execute("INSERT INTO downloads_url_chains "
@@ -285,6 +286,38 @@ bool DownloadDatabase::MigrateDownloadValidators() {
 }
 
 bool DownloadDatabase::InitDownloadTable() {
+  const char kSchema[] =
+      "CREATE TABLE downloads ("
+      "id INTEGER PRIMARY KEY,"             // Primary key.
+      "current_path LONGVARCHAR NOT NULL,"  // Current disk location
+      "target_path LONGVARCHAR NOT NULL,"   // Final disk location
+      "start_time INTEGER NOT NULL,"        // When the download was started.
+      "received_bytes INTEGER NOT NULL,"    // Total size downloaded.
+      "total_bytes INTEGER NOT NULL,"       // Total size of the download.
+      "state INTEGER NOT NULL,"             // 1=complete, 4=interrupted
+      "danger_type INTEGER NOT NULL,"       // Danger type, validated.
+      "interrupt_reason INTEGER NOT NULL,"  // content::DownloadInterruptReason
+      "end_time INTEGER NOT NULL,"          // When the download completed.
+      "opened INTEGER NOT NULL,"            // 1 if it has ever been opened
+                                            // else 0
+      "referrer VARCHAR NOT NULL,"          // HTTP Referrer
+      "by_ext_id VARCHAR NOT NULL,"         // ID of extension that started the
+                                            // download
+      "by_ext_name VARCHAR NOT NULL,"       // name of extension
+      "etag VARCHAR NOT NULL,"              // ETag
+      "last_modified VARCHAR NOT NULL,"     // Last-Modified header
+      "mime_type VARCHAR(255) NOT NULL,"    // MIME type.
+      "original_mime_type VARCHAR(255) NOT NULL)";  // Original MIME type.
+
+  const char kUrlChainSchema[] =
+      "CREATE TABLE downloads_url_chains ("
+      "id INTEGER NOT NULL,"                // downloads.id.
+      "chain_index INTEGER NOT NULL,"       // Index of url in chain
+                                            // 0 is initial target,
+                                            // MAX is target after redirects.
+      "url LONGVARCHAR NOT NULL, "          // URL.
+      "PRIMARY KEY (id, chain_index) )";
+
   if (GetDB().DoesTableExist("downloads")) {
     return EnsureColumnExists("end_time", "INTEGER NOT NULL DEFAULT 0") &&
            EnsureColumnExists("opened", "INTEGER NOT NULL DEFAULT 0");
@@ -327,7 +360,9 @@ void DownloadDatabase::QueryDownloads(
   std::map<uint32, DownloadRow*> info_map;
 
   sql::Statement statement_main(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id, current_path, target_path, start_time, received_bytes, "
+      "SELECT id, current_path, target_path, "
+      "mime_type, original_mime_type, "
+      "start_time, received_bytes, "
       "total_bytes, state, danger_type, interrupt_reason, end_time, opened, "
       "referrer, by_ext_id, by_ext_name, etag, last_modified "
       "FROM downloads ORDER BY start_time"));
@@ -343,6 +378,8 @@ void DownloadDatabase::QueryDownloads(
     info->id = static_cast<uint32>(signed_id);
     info->current_path = ColumnFilePath(statement_main, column++);
     info->target_path = ColumnFilePath(statement_main, column++);
+    info->mime_type = statement_main.ColumnString(column++);
+    info->original_mime_type = statement_main.ColumnString(column++);
     info->start_time = base::Time::FromInternalValue(
         statement_main.ColumnInt64(column++));
     info->received_bytes = statement_main.ColumnInt64(column++);
@@ -463,13 +500,17 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
-      "SET current_path=?, target_path=?, received_bytes=?, state=?, "
+      "SET current_path=?, target_path=?, "
+      "mime_type=?, original_mime_type=?, "
+      "received_bytes=?, state=?, "
       "danger_type=?, interrupt_reason=?, end_time=?, total_bytes=?, "
       "opened=?, by_ext_id=?, by_ext_name=?, etag=?, last_modified=? "
       "WHERE id=?"));
   int column = 0;
   BindFilePath(statement, data.current_path, column++);
   BindFilePath(statement, data.target_path, column++);
+  statement.BindString(column++, data.mime_type);
+  statement.BindString(column++, data.original_mime_type);
   statement.BindInt64(column++, data.received_bytes);
   statement.BindInt(column++, state);
   statement.BindInt(column++, danger_type);
@@ -519,16 +560,20 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
     sql::Statement statement_insert(GetDB().GetCachedStatement(
         SQL_FROM_HERE,
         "INSERT INTO downloads "
-        "(id, current_path, target_path, start_time, "
+        "(id, current_path, target_path, "
+        " mime_type, original_mime_type, "
+        " start_time, "
         " received_bytes, total_bytes, state, danger_type, interrupt_reason, "
         " end_time, opened, referrer, by_ext_id, by_ext_name, etag, "
         " last_modified) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
     int column = 0;
     statement_insert.BindInt(column++, info.id);
     BindFilePath(statement_insert, info.current_path, column++);
     BindFilePath(statement_insert, info.target_path, column++);
+    statement_insert.BindString(column++, info.mime_type);
+    statement_insert.BindString(column++, info.original_mime_type);
     statement_insert.BindInt64(column++, info.start_time.ToInternalValue());
     statement_insert.BindInt64(column++, info.received_bytes);
     statement_insert.BindInt64(column++, info.total_bytes);

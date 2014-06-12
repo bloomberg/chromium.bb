@@ -144,6 +144,8 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
         url_chain,
         GURL(std::string()),
+        "application/octet-stream",
+        "application/octet-stream",
         current,
         current,
         std::string(),

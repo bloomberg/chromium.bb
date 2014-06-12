@@ -52,6 +52,9 @@ class DownloadDatabase {
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;
 
+  // Returns true if able to successfully add mime types to the downloads table.
+  bool MigrateMimeType();
+
   // Returns true if able to successfully rewrite the invalid values for the
   // |state| field from 3 to 4. Returns false if there was an error fixing the
   // database. See http://crbug.com/140687

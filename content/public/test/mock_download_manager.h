@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "content/public/browser/download_manager.h"
@@ -31,6 +32,8 @@ class MockDownloadManager : public DownloadManager {
     base::FilePath target_path;
     std::vector<GURL> url_chain;
     GURL referrer_url;
+    std::string mime_type;
+    std::string original_mime_type;
     base::Time start_time;
     base::Time end_time;
     std::string etag;
@@ -48,6 +51,8 @@ class MockDownloadManager : public DownloadManager {
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
       const base::Time& start_time,
       const base::Time& end_time,
       const std::string& etag,
@@ -101,6 +106,8 @@ class MockDownloadManager : public DownloadManager {
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
       const base::Time& start_time,
       const base::Time& end_time,
       const std::string& etag,

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_DOWNLOAD_ROW_H_
 #define CHROME_BROWSER_HISTORY_DOWNLOAD_ROW_H_
 
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -26,6 +27,8 @@ struct DownloadRow {
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
       const base::Time& start,
       const base::Time& end,
       const std::string& etag,
@@ -56,6 +59,12 @@ struct DownloadRow {
 
   // The URL that referred us. Is not changed by UpdateDownload().
   GURL referrer_url;
+
+  // The MIME type of the download, might be based on heuristics.
+  std::string mime_type;
+
+  // The original MIME type of the download.
+  std::string original_mime_type;
 
   // The time when the download started. Is not changed by UpdateDownload().
   base::Time start_time;
