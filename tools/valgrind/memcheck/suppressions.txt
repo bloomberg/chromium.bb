@@ -6411,3 +6411,16 @@
    fun:_ZN8chromeos21DeviceSettingsService11EnqueueLoadEb
    fun:_ZN8chromeos21DeviceSettingsService4LoadEv
 }
+{
+   bug_383956
+   Memcheck:Leak
+   fun:calloc
+   fun:_ZN18hb_object_header_t6createEj
+   fun:_Z16hb_object_createI9hb_face_tEPT_v
+   fun:hb_face_create_for_tables
+   fun:_ZN3gfx12_GLOBAL__N_118CreateHarfBuzzFaceEP10SkTypeface
+   fun:_ZN3gfx12_GLOBAL__N_118CreateHarfBuzzFontEP10SkTypefacei
+   fun:_ZN3gfx18RenderTextHarfBuzz8ShapeRunEPNS_8internal15TextRunHarfBuzzE
+   fun:_ZN3gfx18RenderTextHarfBuzz12EnsureLayoutEv
+   fun:_ZN3gfx41RenderTextTest_HarfBuzz_RunDirection_Test8TestBodyEv
+}
