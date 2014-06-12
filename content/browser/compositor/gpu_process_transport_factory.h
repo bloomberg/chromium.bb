@@ -64,6 +64,9 @@ class GpuProcessTransportFactory
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       ImageTransportFactoryObserver* observer) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void OnSurfaceDisplayed(int surface_id) OVERRIDE;
+#endif
 
  private:
   struct PerCompositorData;

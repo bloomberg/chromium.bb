@@ -70,6 +70,14 @@ bool BrowserCompositorOutputSurface::BindToClient(
   return true;
 }
 
+void BrowserCompositorOutputSurface::OnSwapBuffersComplete() {
+  // On Mac, delay acknowledging the swap to the output surface client until
+  // it has been drawn.
+#if !defined(OS_MACOSX)
+  cc::OutputSurface::OnSwapBuffersComplete();
+#endif
+}
+
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
@@ -89,5 +97,11 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
 void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
   reflector_ = reflector;
 }
+
+#if defined(OS_MACOSX)
+void BrowserCompositorOutputSurface::OnSurfaceDisplayed() {
+  cc::OutputSurface::OnSwapBuffersComplete();
+}
+#endif
 
 }  // namespace content

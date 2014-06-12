@@ -325,6 +325,15 @@ void GpuProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+#if defined(OS_MACOSX)
+void GpuProcessTransportFactory::OnSurfaceDisplayed(int surface_id) {
+  BrowserCompositorOutputSurface* surface = output_surface_map_.Lookup(
+      surface_id);
+  if (surface)
+    surface->OnSurfaceDisplayed();
+}
+#endif
+
 scoped_refptr<cc::ContextProvider>
 GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_.get())

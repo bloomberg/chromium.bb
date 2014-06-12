@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "content/browser/renderer_host/software_layer_mac.h"
@@ -48,6 +49,7 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 @implementation NSView (BrowserCompositorView)
 
 - (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+                 withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
   DLOG(ERROR) << "-[NSView gotAcceleratedIOSurfaceFrame] called on "
@@ -66,6 +68,7 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 
 - (id)initWithSuperview:(NSView*)view {
   if (self = [super init]) {
+    accelerated_layer_output_surface_id_ = 0;
     helper_.reset(new content::BrowserCompositorViewMacHelper(self));
 
     // Disable the fade-in animation as the layer and view are added.
@@ -146,8 +149,12 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 }
 
 - (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+                 withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
+  DCHECK(!accelerated_layer_output_surface_id_);
+  accelerated_layer_output_surface_id_ = surface_id;
+
   ScopedCAActionDisabler disabler;
 
   // If there is already an accelerated layer, but it has the wrong scale
@@ -238,6 +245,12 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 }
 
 - (void)layerDidDrawFrame {
+  if (!accelerated_layer_output_surface_id_)
+    return;
+
+  content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
+      accelerated_layer_output_surface_id_);
+  accelerated_layer_output_surface_id_ = 0;
 }
 
 @end  // BrowserCompositorViewMac

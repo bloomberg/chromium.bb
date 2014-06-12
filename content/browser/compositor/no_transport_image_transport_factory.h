@@ -27,6 +27,9 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   virtual GLHelper* GetGLHelper() OVERRIDE;
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void OnSurfaceDisplayed(int surface_id) OVERRIDE {}
+#endif
 
  private:
   scoped_ptr<ui::ContextFactory> context_factory_;

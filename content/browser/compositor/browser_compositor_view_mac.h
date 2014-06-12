@@ -22,6 +22,7 @@ class BrowserCompositorViewMacHelper;
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
 - (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+                 withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor;
 
@@ -39,6 +40,7 @@ class BrowserCompositorViewMacHelper;
 
   base::scoped_nsobject<CALayer> background_layer_;
   base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
+  int accelerated_layer_output_surface_id_;
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
   scoped_ptr<content::BrowserCompositorViewMacHelper> helper_;

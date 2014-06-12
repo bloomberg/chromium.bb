@@ -76,6 +76,10 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   virtual void AddObserver(ImageTransportFactoryObserver* observer) = 0;
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) = 0;
+
+#if defined(OS_MACOSX)
+  virtual void OnSurfaceDisplayed(int surface_id) = 0;
+#endif
 };
 
 }  // namespace content

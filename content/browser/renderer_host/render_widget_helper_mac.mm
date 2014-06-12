@@ -22,6 +22,7 @@ void OnNativeSurfaceBuffersSwappedOnUIThread(
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
   [native_widget gotAcceleratedIOSurfaceFrame:params.surface_handle
+                          withOutputSurfaceID:params.surface_id
                                 withPixelSize:params.size
                               withScaleFactor:params.scale_factor];
 }
