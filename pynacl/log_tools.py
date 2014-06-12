@@ -171,8 +171,12 @@ def CheckCall(command, stdout=None, logger=None, **kwargs):
     stdout (optional): File name to redirect stdout to.
     **kwargs: Keyword args.
   """
+  # If no logger was passed in, default to the console logger.
   if logger is None:
     logger = CONSOLE_LOGGER
+  # If the console logger is not initialized, use the root logger.
+  if logger is None:
+    logger = ROOT_LOGGER
 
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
   logging.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
@@ -214,8 +218,12 @@ def CheckOutput(command, logger=None, **kwargs):
     command: Command to run.
     **kwargs: Keyword args.
   """
+  # If no logger was passed in, default to the console logger.
   if logger is None:
     logger = CONSOLE_LOGGER
+  # If the console logger is not initialized, use the root logger.
+  if logger is None:
+    logger = ROOT_LOGGER
 
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
   logging.info('Running: subprocess.check_output(%r, cwd=%r)' % (command, cwd))
