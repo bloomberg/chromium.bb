@@ -1903,7 +1903,6 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   }
 }
 
-
 TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {
   scoped_ptr<RenderTextWin> render_text(
       static_cast<RenderTextWin*>(RenderText::CreateInstance()));
@@ -1974,7 +1973,6 @@ TEST_F(RenderTextTest, HarfBuzz_CharToGlyph) {
                 run.CharRangeToGlyphRange(Range(j, j + 1)));
     }
   }
-
 }
 
 TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
@@ -1987,6 +1985,25 @@ TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
   EXPECT_TRUE(render_text.runs_[0]->is_rtl);
   EXPECT_FALSE(render_text.runs_[1]->is_rtl);
   EXPECT_TRUE(render_text.runs_[2]->is_rtl);
+}
+
+TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
+  RenderTextHarfBuzz render_text;
+
+  // The '\x25B6' "play character" should break runs. http://crbug.com/278913
+  render_text.SetText(WideToUTF16(L"x\x25B6y"));
+  render_text.EnsureLayout();
+  ASSERT_EQ(3U, render_text.runs_.size());
+  EXPECT_EQ(Range(0, 1), render_text.runs_[0]->range);
+  EXPECT_EQ(Range(1, 2), render_text.runs_[1]->range);
+  EXPECT_EQ(Range(2, 3), render_text.runs_[2]->range);
+
+  render_text.SetText(WideToUTF16(L"x \x25B6 y"));
+  render_text.EnsureLayout();
+  ASSERT_EQ(3U, render_text.runs_.size());
+  EXPECT_EQ(Range(0, 2), render_text.runs_[0]->range);
+  EXPECT_EQ(Range(2, 3), render_text.runs_[1]->range);
+  EXPECT_EQ(Range(3, 5), render_text.runs_[2]->range);
 }
 
 }  // namespace gfx

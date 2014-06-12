@@ -264,6 +264,26 @@ bool IsUnusualBlockCode(const UBlockCode block_code) {
          block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
 }
 
+// Returns the index of the first unusual character after a usual character or
+// vice versa. Unusual characters are defined by |IsUnusualBlockCode|.
+size_t FindUnusualCharacter(const base::string16& text,
+                            size_t run_start,
+                            size_t run_break) {
+  const int32 run_length = static_cast<int32>(run_break - run_start);
+  base::i18n::UTF16CharIterator iter(text.c_str() + run_start,
+                                     run_length);
+  const UBlockCode first_block_code = ublock_getCode(iter.get());
+  const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
+  while (iter.Advance() && iter.array_pos() < run_length) {
+    const UBlockCode current_block_code = ublock_getCode(iter.get());
+    if (current_block_code != first_block_code &&
+        (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
+      return run_start + iter.array_pos();
+    }
+  }
+  return run_break;
+}
+
 }  // namespace
 
 namespace internal {
@@ -955,20 +975,8 @@ void RenderTextWin::ItemizeLogicalText() {
     // This avoids using their fallback fonts for more characters than needed,
     // in cases like "\x25B6 Media Title", etc. http://crbug.com/278913
     if (run_break > run->range.start()) {
-      const size_t run_start = run->range.start();
-      const int32 run_length = static_cast<int32>(run_break - run_start);
-      base::i18n::UTF16CharIterator iter(layout_text.c_str() + run_start,
-                                         run_length);
-      const UBlockCode first_block_code = ublock_getCode(iter.get());
-      const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
-      while (iter.Advance() && iter.array_pos() < run_length) {
-        const UBlockCode current_block_code = ublock_getCode(iter.get());
-        if (current_block_code != first_block_code &&
-            (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
-          run_break = run_start + iter.array_pos();
-          break;
-        }
-      }
+      run_break =
+          FindUnusualCharacter(layout_text, run->range.start(), run_break);
     }
 
     DCHECK(IsValidCodePointIndex(layout_text, run_break));

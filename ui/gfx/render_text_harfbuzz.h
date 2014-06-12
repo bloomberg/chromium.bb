@@ -92,6 +92,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
  private:
   friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
