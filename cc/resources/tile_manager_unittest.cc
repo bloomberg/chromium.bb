@@ -83,6 +83,9 @@ class TileManagerTest : public testing::TestWithParam<bool>,
   }
 
   // TileManagerClient implementation.
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() OVERRIDE {
+    return picture_layers_;
+  }
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
 
@@ -158,6 +161,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   bool ready_to_activate_;
+  std::vector<PictureLayerImpl*> picture_layers_;
 };
 
 TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
@@ -619,8 +623,7 @@ INSTANTIATE_TEST_CASE_P(TileManagerTests,
                         TileManagerTest,
                         ::testing::Values(true, false));
 
-class TileManagerTileIteratorTest : public testing::Test,
-                                    public TileManagerClient {
+class TileManagerTileIteratorTest : public testing::Test {
  public:
   TileManagerTileIteratorTest()
       : memory_limit_policy_(ALLOW_ANYTHING),
@@ -717,10 +720,6 @@ class TileManagerTileIteratorTest : public testing::Test,
     pending_layer_->SetAllTilesVisible();
   }
 
-  // TileManagerClient implementation.
-  virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
-
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
 
  protected:
@@ -738,15 +737,12 @@ class TileManagerTileIteratorTest : public testing::Test,
 };
 
 TEST_F(TileManagerTileIteratorTest, PairedPictureLayers) {
-  FakeImplProxy proxy;
-  TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
-  host_impl.CreatePendingTree();
-  host_impl.ActivatePendingTree();
-  host_impl.CreatePendingTree();
+  host_impl_.CreatePendingTree();
+  host_impl_.ActivatePendingTree();
+  host_impl_.CreatePendingTree();
 
-  LayerTreeImpl* active_tree = host_impl.active_tree();
-  LayerTreeImpl* pending_tree = host_impl.pending_tree();
+  LayerTreeImpl* active_tree = host_impl_.active_tree();
+  LayerTreeImpl* pending_tree = host_impl_.pending_tree();
   EXPECT_NE(active_tree, pending_tree);
 
   scoped_ptr<FakePictureLayerImpl> active_layer =
@@ -756,9 +752,6 @@ TEST_F(TileManagerTileIteratorTest, PairedPictureLayers) {
 
   TileManager* tile_manager = TileManagerTileIteratorTest::tile_manager();
   EXPECT_TRUE(tile_manager);
-
-  tile_manager->RegisterPictureLayerImpl(active_layer.get());
-  tile_manager->RegisterPictureLayerImpl(pending_layer.get());
 
   std::vector<TileManager::PairedPictureLayer> paired_layers;
   tile_manager->GetPairedPictureLayers(&paired_layers);
@@ -788,9 +781,6 @@ TEST_F(TileManagerTileIteratorTest, PairedPictureLayers) {
 
   EXPECT_EQ(active_layer.get(), paired_layers[0].active_layer);
   EXPECT_EQ(pending_layer.get(), paired_layers[0].pending_layer);
-
-  tile_manager->UnregisterPictureLayerImpl(active_layer.get());
-  tile_manager->UnregisterPictureLayerImpl(pending_layer.get());
 }
 
 TEST_F(TileManagerTileIteratorTest, RasterTileIterator) {

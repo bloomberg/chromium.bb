@@ -5,17 +5,24 @@
 #ifndef CC_TEST_FAKE_TILE_MANAGER_CLIENT_H_
 #define CC_TEST_FAKE_TILE_MANAGER_CLIENT_H_
 
+#include <vector>
+
 #include "cc/resources/tile_manager.h"
 
 namespace cc {
 
 class FakeTileManagerClient : public TileManagerClient {
  public:
-  virtual ~FakeTileManagerClient() {}
+  FakeTileManagerClient();
+  virtual ~FakeTileManagerClient();
 
   // TileManagerClient implementation.
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE {}
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+
+ private:
+  std::vector<PictureLayerImpl*> picture_layers_;
 };
 
 }  // namespace cc

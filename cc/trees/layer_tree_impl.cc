@@ -1275,4 +1275,12 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   return data_for_recursion.closest_match;
 }
 
+void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
+  layer_tree_host_impl_->RegisterPictureLayerImpl(layer);
+}
+
+void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
+  layer_tree_host_impl_->UnregisterPictureLayerImpl(layer);
+}
+
 }  // namespace cc

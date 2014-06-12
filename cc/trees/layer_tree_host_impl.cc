@@ -1236,6 +1236,10 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
+const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers() {
+  return picture_layers_;
+}
+
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
 }
@@ -3135,6 +3139,19 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfSetNeedsRedraw() {
   std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnSetNeedsRedrawOnImpl();
+}
+
+void LayerTreeHostImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
+  DCHECK(std::find(picture_layers_.begin(), picture_layers_.end(), layer) ==
+         picture_layers_.end());
+  picture_layers_.push_back(layer);
+}
+
+void LayerTreeHostImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
+  std::vector<PictureLayerImpl*>::iterator it =
+      std::find(picture_layers_.begin(), picture_layers_.end(), layer);
+  DCHECK(it != picture_layers_.end());
+  picture_layers_.erase(it);
 }
 
 }  // namespace cc

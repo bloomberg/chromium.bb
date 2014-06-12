@@ -64,13 +64,12 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       was_animating_transform_to_screen_(false),
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
-      should_update_tile_priorities_(false),
-      layer_needs_to_register_itself_(true) {
+      should_update_tile_priorities_(false) {
+  layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
-  if (!layer_needs_to_register_itself_)
-    layer_tree_impl()->tile_manager()->UnregisterPictureLayerImpl(this);
+  layer_tree_impl()->UnregisterPictureLayerImpl(this);
 }
 
 const char* PictureLayerImpl::LayerTypeAsString() const {
@@ -373,22 +372,11 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
-void PictureLayerImpl::DidUnregisterLayer() {
-  TRACE_EVENT0("cc", "PictureLayerImpl::DidUnregisterLayer");
-
-  layer_needs_to_register_itself_ = true;
-}
-
 void PictureLayerImpl::UpdateTilePriorities() {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   DCHECK(!needs_post_commit_initialization_);
   CHECK(should_update_tile_priorities_);
-
-  if (layer_needs_to_register_itself_) {
-    layer_tree_impl()->tile_manager()->RegisterPictureLayerImpl(this);
-    layer_needs_to_register_itself_ = false;
-  }
 
   if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
@@ -1405,8 +1393,15 @@ bool PictureLayerImpl::IsOnActiveOrPendingTree() const {
   return !layer_tree_impl()->IsRecycleTree();
 }
 
+bool PictureLayerImpl::HasValidTilePriorities() const {
+  return IsOnActiveOrPendingTree() && IsDrawnRenderSurfaceLayerListMember();
+}
+
 bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
   if (!layer_tree_impl()->IsPendingTree())
+    return true;
+
+  if (!HasValidTilePriorities())
     return true;
 
   if (!tilings_)

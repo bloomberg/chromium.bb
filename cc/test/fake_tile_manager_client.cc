@@ -4,6 +4,19 @@
 
 #include "cc/test/fake_tile_manager_client.h"
 
+#include <vector>
+
 namespace cc {
+
+FakeTileManagerClient::FakeTileManagerClient() {
+}
+
+FakeTileManagerClient::~FakeTileManagerClient() {
+}
+
+const std::vector<PictureLayerImpl*>&
+FakeTileManagerClient::GetPictureLayers() {
+  return picture_layers_;
+}
 
 }  // namespace cc

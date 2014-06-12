@@ -132,10 +132,10 @@ class CC_EXPORT PictureLayerImpl
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) OVERRIDE;
 
   // Functions used by tile manager.
-  void DidUnregisterLayer();
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
   WhichTree GetTree() const;
   bool IsOnActiveOrPendingTree() const;
+  bool HasValidTilePriorities() const;
   bool AllTilesRequiredForActivationAreReadyToDraw() const;
 
  protected:
@@ -206,8 +206,6 @@ class CC_EXPORT PictureLayerImpl
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.
   bool should_update_tile_priorities_;
-
-  bool layer_needs_to_register_itself_;
 
   // Save a copy of the visible rect and viewport size of the last frame that
   // has a valid viewport for prioritizing tiles.

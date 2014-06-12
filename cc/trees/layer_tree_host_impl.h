@@ -48,6 +48,7 @@ class LayerTreeImpl;
 class MemoryHistory;
 class PageScaleAnimation;
 class PaintTimeCounter;
+class PictureLayerImpl;
 class RasterWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
@@ -231,6 +232,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void SetFullRootLayerDamage() OVERRIDE;
 
   // TileManagerClient implementation.
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
 
@@ -457,6 +459,9 @@ class CC_EXPORT LayerTreeHostImpl
   void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor);
   void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor);
 
+  void RegisterPictureLayerImpl(PictureLayerImpl* layer);
+  void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -681,6 +686,8 @@ class CC_EXPORT LayerTreeHostImpl
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
   size_t transfer_buffer_memory_limit_;
+
+  std::vector<PictureLayerImpl*> picture_layers_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

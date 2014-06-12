@@ -42,6 +42,7 @@ class LayerTreeSettings;
 class MemoryHistory;
 class OutputSurface;
 class PaintTimeCounter;
+class PictureLayerImpl;
 class Proxy;
 class ResourceProvider;
 class TileManager;
@@ -258,6 +259,9 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       const gfx::PointF& screen_space_point);
+
+  void RegisterPictureLayerImpl(PictureLayerImpl* layer);
+  void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
