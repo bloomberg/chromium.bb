@@ -118,6 +118,7 @@
             'metrics/metrics_log_manager_unittest.cc',
             'metrics/metrics_log_unittest.cc',
             'metrics/metrics_reporting_scheduler_unittest.cc',
+            'metrics/metrics_service_unittest.cc',
             'metrics/metrics_state_manager_unittest.cc',
             'metrics/persisted_logs_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',

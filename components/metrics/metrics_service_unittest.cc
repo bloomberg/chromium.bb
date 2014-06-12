@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,24 +7,17 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/google/google_util.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "components/metrics/compression_utils.h"
 #include "components/metrics/metrics_log.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -70,23 +63,11 @@ class MetricsServiceTest : public testing::Test {
         GetLocalState(),
         base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
                    base::Unretained(this)));
-#if defined(OS_CHROMEOS)
-    // TODO(blundell): Remove this code once MetricsService no longer creates
-    // ChromeOSMetricsProvider. Also remove the #include of login_state.h.
-    // (http://crbug.com/375776)
-    if (!chromeos::LoginState::IsInitialized())
-      chromeos::LoginState::Initialize();
-#endif  // defined(OS_CHROMEOS)
   }
 
   virtual ~MetricsServiceTest() {
     MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE,
                                       GetLocalState());
-#if defined(OS_CHROMEOS)
-    // TODO(blundell): Remove this code once MetricsService no longer creates
-    // ChromeOSMetricsProvider.
-    chromeos::LoginState::Shutdown();
-#endif  // defined(OS_CHROMEOS)
   }
 
   metrics::MetricsStateManager* GetMetricsStateManager() {
@@ -130,10 +111,10 @@ class MetricsServiceTest : public testing::Test {
     return is_metrics_reporting_enabled_;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   bool is_metrics_reporting_enabled_;
   TestingPrefServiceSimple testing_local_state_;
   scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+  base::MessageLoop message_loop;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
 };
@@ -170,35 +151,29 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
 }
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
-  // TODO(asvitkine): Eliminate using |testing_local_state| in favor of using
-  // |GetLocalState()| once MetricsService no longer internally creates metrics
-  // providers that rely on g_browser_process->local_state() being correctly
-  // set up. crbug.com/375776.
-  ScopedTestingLocalState testing_local_state(
-      TestingBrowserProcess::GetGlobal());
-  TestingPrefServiceSimple* local_state = testing_local_state.Get();
   EnableMetricsReporting();
-  local_state->ClearPref(metrics::prefs::kStabilityExitedCleanly);
+  GetLocalState()->ClearPref(metrics::prefs::kStabilityExitedCleanly);
 
   // Set up prefs to simulate restarting after a crash.
 
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
   metrics::TestMetricsServiceClient client;
-  TestMetricsLog log("client", 1, &client, local_state);
+  TestMetricsLog log("client", 1, &client, GetLocalState());
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
                         std::vector<variations::ActiveGroupId>());
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
-  local_state->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
+  GetLocalState()->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
                         MetricsLog::GetBuildTime());
-  local_state->SetString(metrics::prefs::kStabilityStatsVersion,
+  GetLocalState()->SetString(metrics::prefs::kStabilityStatsVersion,
                          client.GetVersionString());
 
-  local_state->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  GetLocalState()->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
 
-  TestMetricsService service(GetMetricsStateManager(), &client, local_state);
+  TestMetricsService service(
+      GetMetricsStateManager(), &client, GetLocalState());
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
