@@ -239,10 +239,11 @@ class DevToolsToolboxDelegate
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 DevToolsWindow::~DevToolsWindow() {
-  if (toolbox_web_contents_)
-    delete toolbox_web_contents_;
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
+
+  if (toolbox_web_contents_)
+    delete toolbox_web_contents_;
 
   DevToolsWindows* instances = g_instances.Pointer();
   DevToolsWindows::iterator it(
