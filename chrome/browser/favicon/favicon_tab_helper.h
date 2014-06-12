@@ -107,7 +107,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   Profile* profile_;
 
-  scoped_ptr<FaviconClient> client_;
+  FaviconClient* client_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 
