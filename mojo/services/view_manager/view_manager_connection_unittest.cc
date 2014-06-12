@@ -1299,6 +1299,9 @@ TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
 TEST_F(ViewManagerConnectionTest, ConnectTwice) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
+
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 1));
+
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   // Try to connect again to 1,1, this should fail as already connected to that
@@ -1318,7 +1321,7 @@ TEST_F(ViewManagerConnectionTest, ConnectTwice) {
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("OnRootsAdded", changes[0]);
-    EXPECT_EQ("[node=1,2 parent=null view=null]",
+    EXPECT_EQ("[node=1,2 parent=1,1 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
 }

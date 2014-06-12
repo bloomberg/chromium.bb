@@ -436,10 +436,14 @@ bool ViewManagerConnection::AddRoots(
 
     did_add_root = true;
     roots_.insert(node_ids[i]);
+    Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
+    DCHECK(node);
     if (known_nodes_.count(node_ids[i]) == 0) {
-      Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
-      DCHECK(node);
       GetUnknownNodesFrom(node, &to_send);
+    } else {
+      // Even though the connection knows about the new root we need to tell it
+      // |node| is now a root.
+      to_send.push_back(node);
     }
   }
 
