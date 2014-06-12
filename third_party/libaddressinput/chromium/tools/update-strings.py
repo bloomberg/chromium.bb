@@ -24,14 +24,6 @@ to the upstream library at https://libaddressinput.googlecode.com/.
 script_dir = os.path.dirname(os.path.realpath(__file__))
 from_file = os.path.abspath(os.path.join(
     script_dir, os.pardir, os.pardir, 'src', 'cpp', 'res', 'messages.grdp'))
-
-if not os.path.isfile(from_file):
-  # Android and iOS do not use src/third_party/libaddressinput/src/. Gclient
-  # cannot filter out hooks based on OS or (when using git) based on file name
-  # patterns.
-  print('No libaddressinput for this target OS.')
-  sys.exit()
-
 to_file = os.path.abspath(os.path.join(
     script_dir, os.pardir, os.pardir, os.pardir, os.pardir, 'chrome', 'app',
    'address_input_strings.grdp'))

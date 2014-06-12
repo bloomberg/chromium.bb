@@ -201,6 +201,9 @@
   "third_party/libaddressinput/chromium/cpp/res/libaddressinput_strings.grd": {
     "messages": [29050],
   },
+  "chrome/app/address_input_strings.grd": {
+    "messages": [29100],
+  },
   "components/components_strings.grd": {
     "messages": [30000],
   },
