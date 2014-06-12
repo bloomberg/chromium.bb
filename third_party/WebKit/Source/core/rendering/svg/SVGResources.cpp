@@ -52,13 +52,17 @@ static HashSet<AtomicString>& clipperFilterMaskerTags()
         s_tagList.add(SVGNames::aTag.localName());
         s_tagList.add(SVGNames::circleTag.localName());
         s_tagList.add(SVGNames::ellipseTag.localName());
+#if ENABLE(SVG_FONTS)
         s_tagList.add(SVGNames::glyphTag.localName());
+#endif
         s_tagList.add(SVGNames::gTag.localName());
         s_tagList.add(SVGNames::imageTag.localName());
         s_tagList.add(SVGNames::lineTag.localName());
         s_tagList.add(SVGNames::markerTag.localName());
         s_tagList.add(SVGNames::maskTag.localName());
+#if ENABLE(SVG_FONTS)
         s_tagList.add(SVGNames::missing_glyphTag.localName());
+#endif
         s_tagList.add(SVGNames::pathTag.localName());
         s_tagList.add(SVGNames::polygonTag.localName());
         s_tagList.add(SVGNames::polylineTag.localName());
@@ -75,7 +79,9 @@ static HashSet<AtomicString>& clipperFilterMaskerTags()
 
         // Not listed in the definitions are the text content elements, though filter/clipper/masker on tspan/text/.. is allowed.
         // (Already mailed SVG WG, waiting for a solution)
+#if ENABLE(SVG_FONTS)
         s_tagList.add(SVGNames::altGlyphTag.localName());
+#endif
         s_tagList.add(SVGNames::textPathTag.localName());
         s_tagList.add(SVGNames::tspanTag.localName());
 
@@ -108,7 +114,9 @@ static HashSet<AtomicString>& fillAndStrokeTags()
 {
     DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
     if (s_tagList.isEmpty()) {
+#if ENABLE(SVG_FONTS)
         s_tagList.add(SVGNames::altGlyphTag.localName());
+#endif
         s_tagList.add(SVGNames::circleTag.localName());
         s_tagList.add(SVGNames::ellipseTag.localName());
         s_tagList.add(SVGNames::lineTag.localName());

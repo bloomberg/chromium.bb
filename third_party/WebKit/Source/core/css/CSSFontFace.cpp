@@ -67,9 +67,11 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
     if (loadStatus() == FontFace::Loading) {
         if (source->ensureFontData()) {
             setLoadStatus(FontFace::Loaded);
+#if ENABLE(SVG_FONTS)
             Document* document = m_segmentedFontFace ? m_segmentedFontFace->fontSelector()->document() : 0;
             if (document && source->isSVGFontFaceSource())
                 UseCounter::count(*document, UseCounter::SVGFontInCSS);
+#endif
         } else {
             m_sources.removeFirst();
             load();

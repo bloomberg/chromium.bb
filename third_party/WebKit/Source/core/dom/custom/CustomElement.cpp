@@ -68,12 +68,14 @@ bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
         DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
         if (reservedNames.isEmpty()) {
             reservedNames.append(MathMLNames::annotation_xmlTag.localName());
+#if ENABLE(SVG_FONTS)
             reservedNames.append(SVGNames::font_faceTag.localName());
             reservedNames.append(SVGNames::font_face_srcTag.localName());
             reservedNames.append(SVGNames::font_face_uriTag.localName());
             reservedNames.append(SVGNames::font_face_formatTag.localName());
             reservedNames.append(SVGNames::font_face_nameTag.localName());
             reservedNames.append(SVGNames::missing_glyphTag.localName());
+#endif
         }
 
         if (kNotFound == reservedNames.find(name))

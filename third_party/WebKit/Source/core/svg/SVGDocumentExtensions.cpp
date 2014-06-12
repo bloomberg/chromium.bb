@@ -480,8 +480,10 @@ void SVGDocumentExtensions::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
     visitor->trace(m_timeContainers);
+#if ENABLE(SVG_FONTS)
     visitor->trace(m_svgFontFaceElements);
     visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
+#endif
     visitor->trace(m_elementDependencies);
     visitor->trace(m_relativeLengthSVGRoots);
 }
