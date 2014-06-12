@@ -67,7 +67,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
 
     ScopedMessagePipeHandle pipe0;
     if (!text2.empty()) {
-      CreateMessagePipe(&pipe0, &pipe1_);
+      CreateMessagePipe(NULL, &pipe0, &pipe1_);
       EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
     }
 

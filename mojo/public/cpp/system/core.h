@@ -264,14 +264,14 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedMessagePipeHandle) ==
                         sizeof(MessagePipeHandle),
                     bad_size_for_cpp_ScopedMessagePipeHandle);
 
-inline MojoResult CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
+inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
+                                    ScopedMessagePipeHandle* message_pipe0,
                                     ScopedMessagePipeHandle* message_pipe1) {
   assert(message_pipe0);
   assert(message_pipe1);
   MessagePipeHandle handle0;
   MessagePipeHandle handle1;
-  // TODO(vtl): Add support for the options struct.
-  MojoResult rv = MojoCreateMessagePipe(NULL,
+  MojoResult rv = MojoCreateMessagePipe(options,
                                         handle0.mutable_value(),
                                         handle1.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
@@ -309,6 +309,7 @@ inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
 class MessagePipe {
  public:
   MessagePipe();
+  explicit MessagePipe(const MojoCreateMessagePipeOptions& options);
   ~MessagePipe();
 
   ScopedMessagePipeHandle handle0;
@@ -316,7 +317,14 @@ class MessagePipe {
 };
 
 inline MessagePipe::MessagePipe() {
-  MojoResult result MOJO_ALLOW_UNUSED = CreateMessagePipe(&handle0, &handle1);
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateMessagePipe(NULL, &handle0, &handle1);
+  assert(result == MOJO_RESULT_OK);
+}
+
+inline MessagePipe::MessagePipe(const MojoCreateMessagePipeOptions& options) {
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateMessagePipe(&options, &handle0, &handle1);
   assert(result == MOJO_RESULT_OK);
 }
 

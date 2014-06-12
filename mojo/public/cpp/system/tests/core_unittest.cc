@@ -153,7 +153,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_FALSE(h0.get().is_valid());
       EXPECT_FALSE(h1.get().is_valid());
 
-      CreateMessagePipe(&h0, &h1);
+      CreateMessagePipe(NULL, &h0, &h1);
       EXPECT_TRUE(h0.get().is_valid());
       EXPECT_TRUE(h1.get().is_valid());
       EXPECT_NE(h0.get().value(), h1.get().value());
@@ -193,7 +193,7 @@ TEST(CoreCppTest, Basic) {
     {
       ScopedMessagePipeHandle h0;
       ScopedMessagePipeHandle h1;
-      CreateMessagePipe(&h0, &h1);
+      CreateMessagePipe(NULL, &h0, &h1);
 
       const char kHello[] = "hello";
       const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
@@ -296,12 +296,12 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
-    CreateMessagePipe(&h0, &h1);
+    CreateMessagePipe(NULL, &h0, &h1);
 
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(&h2, &h3);
+    CreateMessagePipe(NULL, &h2, &h3);
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";
@@ -343,12 +343,12 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
-    CreateMessagePipe(&h0, &h1);
+    CreateMessagePipe(NULL, &h0, &h1);
 
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(&h2, &h3);
+    CreateMessagePipe(NULL, &h2, &h3);
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";

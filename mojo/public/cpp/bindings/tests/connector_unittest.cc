@@ -45,7 +45,7 @@ class ConnectorTest : public testing::Test {
   }
 
   virtual void SetUp() MOJO_OVERRIDE {
-    CreateMessagePipe(&handle0_, &handle1_);
+    CreateMessagePipe(NULL, &handle0_, &handle1_);
   }
 
   virtual void TearDown() MOJO_OVERRIDE {

@@ -25,7 +25,7 @@ struct MessagePumpMojo::WaitState {
 
 struct MessagePumpMojo::RunState {
   RunState() : should_quit(false) {
-    CreateMessagePipe(&read_handle, &write_handle);
+    CreateMessagePipe(NULL, &read_handle, &write_handle);
   }
 
   base::TimeTicks delayed_work_time;

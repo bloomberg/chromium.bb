@@ -138,7 +138,7 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
 
       mojo::ScopedMessagePipeHandle faux_client;
       mojo::ScopedMessagePipeHandle interceptor;
-      CreateMessagePipe(&faux_client, &interceptor);
+      CreateMessagePipe(NULL, &faux_client, &interceptor);
 
       scoped_refptr<MessageProcessor> processor = new MessageProcessor();
       base::WorkerPool::PostTask(
