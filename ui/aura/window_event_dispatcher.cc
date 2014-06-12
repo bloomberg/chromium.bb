@@ -470,8 +470,10 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
 #endif
 
   if (event.IsTouchEvent() && !details.target_destroyed) {
-    // Do not let 'held' touch events contribute to any gestures.
-    if (!held_move_event_ || !held_move_event_->IsTouchEvent()) {
+    // Do not let 'held' touch events contribute to any gestures unless it is
+    // being dispatched.
+    if (dispatching_held_event_ || !held_move_event_ ||
+        !held_move_event_->IsTouchEvent()) {
       ui::TouchEvent orig_event(static_cast<const ui::TouchEvent&>(event),
                                 static_cast<Window*>(event.target()), window());
       // Get the list of GestureEvents from GestureRecognizer.
