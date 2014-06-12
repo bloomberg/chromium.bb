@@ -128,6 +128,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7436949144778751379">O Google Chrome requer o Windows XP ou mais recente. Algumas funcionalidades poderão não funcionar.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="103396972844768118">Informações importantes acerca dos seus dados do Chrome</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Não incomodar</translation>
 <translation id="2290095356545025170">Tem a certeza de que pretende desinstalar o Google Chrome?</translation>
 <translation id="7062966102157262887">A transferência está atualmente em curso. Pretende sair do Google Chrome e cancelar a transferência?</translation>
@@ -146,6 +147,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK"/> à Google</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="4864451188650489141">Pode adicionar outras Contas Google e bloquear o Chromium abaixo.</translation>
+<translation id="2669824781555328029">O ficheiro <ph name="FILE_NAME"/> pode prejudicar a sua experiência de navegação, pelo que foi bloqueado pelo Chrome.</translation>
 <translation id="5875635642195358109">Aceda ao
         menu Chrome &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -177,6 +179,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK"/>ativar relatórios de falha<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação do Google Chrome em conflito no sistema. Desinstale-a e tente novamente.</translation>
+<translation id="1175529839152551794">Agora que tem sessão iniciada, pode aceder aos seus separadores, marcadores e a outros itens do Chrome no computador portátil, no telemóvel e no tablet. Também receberá sugestões mais relevantes e funcionalidades sobre os serviços Google.</translation>
 <translation id="8209985377776300429">Está a pré-visualizar o novo Chrome.</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>
 <translation id="7773845170078702898">Pretende que o Google Chrome guarde a sua palavra-passe para este Website?</translation>

@@ -97,7 +97,7 @@
 <translation id="2972205263822847197">工具提示</translation>
 <translation id="9191829896247264196">分頁清單</translation>
 <translation id="2811204574343810641">列</translation>
-<translation id="2844995807198708617">相關內容選單</translation>
+<translation id="2844995807198708617">內容選單</translation>
 <translation id="3897092660631435901">選單</translation>
 <translation id="7181697990050180700">在下方對應的欄位中輸入按鍵配置，即可為常用指令自訂鍵盤快速鍵。</translation>
 <translation id="3084806535845658316">無輸入語音回應</translation>
@@ -480,7 +480,7 @@
 <translation id="3810838688059735925">視訊</translation>
 <translation id="4982773647088557172"><ph name="VALUE"/>，<ph name="NAME"/>，清單方塊</translation>
 <translation id="2864481629947106776">上一個連結</translation>
-<translation id="2751010054435611913">電傳訊息</translation>
+<translation id="2751010054435611913">電話號碼</translation>
 <translation id="7609342235116740824">朗讀目前網頁的網址</translation>
 <translation id="5102981729317424850">工具列</translation>
 <translation id="1810107444790159527">清單方塊</translation>
@@ -519,7 +519,7 @@
 <translation id="4615592953348396470">忽略下一個按鍵</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
-<translation id="8179976553408161302">進入</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="2644542693584024604">拼字錯誤</translation>
 <translation id="8747966237988593539">排序清單</translation>
 <translation id="8796411681063377102">下一個第 3 階標題</translation>

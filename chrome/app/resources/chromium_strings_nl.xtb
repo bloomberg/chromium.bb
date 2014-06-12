@@ -56,6 +56,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4831257561365056138">Chromium App Launcher verwijderen</translation>
 <translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Chromium kan niet voorkomen dat extensies je browsergeschiedenis vastleggen. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
+<translation id="4516868174453854611">Nu je bent ingelogd, zie je dezelfde tabbladen, bladwijzers en andere Chromium-instellingen op je laptop, telefoon en tablet. Je ontvangt ook relevantere suggesties en functies in Google services.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
@@ -88,6 +89,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="4077262827416206768">Sluit alle Chromium-vensters en start Chromium opnieuw om de wijziging toe te passen.</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
+<translation id="1725059042853530269">Chromium heeft <ph name="FILE_NAME"/> geblokkeerd omdat het bestand een negatieve invloed kan hebben op je browserervaring.</translation>
 <translation id="750717762378961310">Dit bestand is schadelijk en is door Chromium geblokkeerd.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="6899795326977034905">Wachtwoorden worden op de Mac opgeslagen in je sleutelhanger en kunnen worden geopend of gesynchroniseerd door andere Chromium-gebruikers die dit OS X-account delen.</translation>
@@ -116,6 +118,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="8493179195440786826">Chromium is verouderd</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Sluit alle Chromium-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="6734080038664603509">&amp;Chromium bijwerken</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>

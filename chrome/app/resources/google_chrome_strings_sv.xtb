@@ -136,6 +136,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7436949144778751379">För Google Chrome krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="7062966102157262887">En hämtning pågår. Vill du avsluta Google Chrome och avbryta hämtningen?</translation>
@@ -154,6 +155,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK"/> till Google.</translation>
 <translation id="7761834446675418963">Öppna Chrome genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="4864451188650489141">Du kan lägga till fler Google-konton och låsa Chromium nedan.</translation>
+<translation id="2669824781555328029">Filen <ph name="FILE_NAME"/> kan skada din surfupplevelse och har därför blockerats av Chrome.</translation>
 <translation id="5875635642195358109">Öppna
         Chrome-menyn &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -187,6 +189,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3444832043240812445">Du måste <ph name="BEGIN_LINK"/>aktivera kraschrapportering<ph name="END_LINK"/> för att information om de senaste krascherna ska visas på den här sidan.</translation>
 <translation id="8614913330719544658">Google Chrome svarar inte. Vill du starta om nu?</translation>
 <translation id="2681064822612051220">Det finns en annan installation av Google Chrome på datorn. Avinstallera den och försök igen.</translation>
+<translation id="1175529839152551794">Nu när du har loggat in kommer du åt flikar, bokmärken och andra grejer i Chrome på din laptop, mobil och surfplatta. Du får även tillgång till mer relevanta förslag och funktioner i Googles tjänster.</translation>
 <translation id="8209985377776300429">Du förhandsgranskar nya Chrome.</translation>
 <translation id="6126631249883707068">Vill du att Google Chrome ska spara ditt lösenord?</translation>
 <translation id="7773845170078702898">Vill du att Google Chrome sparar lösenordet för den här webbplatsen?</translation>

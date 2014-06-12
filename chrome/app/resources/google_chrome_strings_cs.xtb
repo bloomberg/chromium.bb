@@ -136,6 +136,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="103396972844768118">Důležité informace o datech prohlížeče Chrome</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="2290095356545025170">Opravdu chcete odinstalovat Google Chrome?</translation>
 <translation id="7062966102157262887">Probíhá stahování. Chcete Google Chrome ukončit a stahování zrušit?</translation>
@@ -154,6 +155,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2665296953892887393">Pomozte aplikaci Google Chrome zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK"/>.</translation>
 <translation id="7761834446675418963">Chcete-li otevřít Chrome a začít procházet Internet, klikněte na svoje jméno.</translation>
 <translation id="4864451188650489141">Níže můžete přidat své další účty Google a zamknout Chromium.</translation>
+<translation id="2669824781555328029">Soubor <ph name="FILE_NAME"/> může narušit prohlížení internetu, Chrome jej proto zablokoval.</translation>
 <translation id="5875635642195358109">Přejděte do
         nabídky Chrome &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -187,6 +189,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3444832043240812445">Pokud zvolíte možnost <ph name="BEGIN_LINK"/>povolit zprávy o selhání<ph name="END_LINK"/>, tato stránka bude zobrazovat jen informace o posledních selháních.</translation>
 <translation id="8614913330719544658">Google Chrome neodpovídá. Restartovat?</translation>
 <translation id="2681064822612051220">V systému byla nalezena konfliktní instalace prohlížeče Google Chrome. Odinstalujte prosím tuto instanci a zkuste to znovu.</translation>
+<translation id="1175529839152551794">Nyní, když jste přihlášeni, si můžete zpřístupnit karty, záložky a další obsah z Chromu v notebooku, telefonu a tabletu. Navíc budete dostávat relevantnější návrhy a tipy týkající se služeb Google.</translation>
 <translation id="8209985377776300429">Používáte verzi k nahlédnutí nového Chromu.</translation>
 <translation id="6126631249883707068">Přejete si, aby aplikace Google Chrome uložila vaše heslo?</translation>
 <translation id="7773845170078702898">Přejete si, aby aplikace Google Chrome uložila vaše heslo pro tyto stránky?</translation>

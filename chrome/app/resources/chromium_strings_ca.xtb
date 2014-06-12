@@ -54,6 +54,7 @@
 <translation id="4831257561365056138">Desinstal·la el menú d'aplicacions de Chromium</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertiment:<ph name="END_BOLD"/> Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>
+<translation id="4516868174453854611">Ara que teniu la sessió iniciada, podeu utilitzar les pestanyes, les adreces d'interès i altres característiques de Chromium des del portàtil, des del telèfon o des de la tauleta. També obtindreu suggeriments i funcions més rellevants als serveis de Google.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la visualització prèvia funcioni.</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
@@ -86,6 +87,7 @@
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
 <translation id="4077262827416206768">Tanqueu totes les finestres de Chromium i torneu-lo a iniciar perquè s'apliqui aquest canvi.</translation>
 <translation id="6475912303565314141">També controla la pàgina que es mostra quan inicieu Chromium.</translation>
+<translation id="1725059042853530269"><ph name="FILE_NAME"/> podria perjudicar la vostra experiència de navegació i, per això, Chromium l'ha bloquejat.</translation>
 <translation id="750717762378961310">Aquest fitxer és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
 <translation id="6899795326977034905">Als dispositius Mac, les contrasenyes es desen al clauer, i els usuaris de Chromium que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
@@ -114,6 +116,7 @@
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> exigeix que llegiu i accepteu els Termes i condicions següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
@@ -135,7 +138,7 @@
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="1745962126679160932">Chromium emmagatzemarà de manera segura la vostra informació perquè no hàgiu de tornar-la a escriure, però continuareu havent de verificar el codi de seguretat de la targeta per a pagaments futurs.</translation>
 <translation id="275588974610408078">La creació d'informes de bloqueig no està disponible a Chromium.</translation>
-<translation id="5909170354645388250">No s'utilitza a Chromium. Marcador de posició per mantenir els mapes de recursos sincronitzats. Espera un argument: $1.</translation>
+<translation id="5909170354645388250">No s'utilitza a Chromium. Espai reservat per mantenir els mapes de recursos sincronitzats. Espera un argument: $1.</translation>
 <translation id="5805689092869152320">Chromium s'està executant en segon pla</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS"/>. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
 <translation id="2685838254101182273">Chromium ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>

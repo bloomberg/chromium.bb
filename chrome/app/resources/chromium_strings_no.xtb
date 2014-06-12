@@ -54,6 +54,7 @@
 <translation id="4831257561365056138">Avinstaller Chromium App Launcher</translation>
 <translation id="4222580632002216401">Du er nå logget på Chromium. Synkronisering er deaktivert av administratoren din.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel:<ph name="END_BOLD"/> Chromium kan ikke forhindre utvidelser fra å registrere nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>
+<translation id="4516868174453854611">Nå som du er logget på, kan du bruke fanene og bokmerkene dine, samt andre Chromium-ting, på telefonen, nettbrettet og den bærbare datamaskinen din. Du mottar også mer relevante forslag og funksjoner på Google-tjenester.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium omfatter ikke PDF-visningsprogrammet som er nødvendig for at «Forhåndsvisning av utskrift» skal fungere.</translation>
 <translation id="7138853919861947730">Chromium kan bruke nett-tjenester for å forbedre surfingen din.</translation>
@@ -86,6 +87,7 @@
 <translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
 <translation id="6475912303565314141">Den styrer også hvilken side som vises når du starter Chromium.</translation>
+<translation id="1725059042853530269"><ph name="FILE_NAME"/>-filen kan gi deg en dårligere leseopplevelse, så Chromium har blokkert den.</translation>
 <translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="6899795326977034905">På Mac blir passord lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
@@ -114,6 +116,7 @@
 <translation id="8493179195440786826">Chromium er utdatert</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> krever at du leser og godtar følgende vilkår før du bruker denne enheten. Disse vilkårene utvider, endrer eller begrenser ikke Chromium OS-vilkårene.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Lukk alle Chromium-vinduene (inkludert de i Windows 8-modus) og prøv på nytt.</translation>
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>

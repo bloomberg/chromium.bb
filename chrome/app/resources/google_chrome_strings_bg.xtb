@@ -130,6 +130,7 @@
 <translation id="7436949144778751379">Google Chrome изисква Windows XP или по-нова версия. Някои функции може да не работят.</translation>
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
 <translation id="103396972844768118">Важна информация относно данните ви в Chrome</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="7062966102157262887">Понастоящем се извършва изтегляне. Искате ли да излезете от Google Chrome и да го анулирате?</translation>
@@ -148,6 +149,7 @@
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK"/> му и сигнали за сривове</translation>
 <translation id="7761834446675418963">Кликнете върху името си, за да отворите Chrome и да започнете да сърфирате.</translation>
 <translation id="4864451188650489141">По-долу можете да добавите другите си профили в Google и да заключите Chromium.</translation>
+<translation id="2669824781555328029">Файлът „<ph name="FILE_NAME"/>“ може да навреди на сърфирането ви, поради което Chrome го блокира.</translation>
 <translation id="5875635642195358109">Отворете
 менюто на Chrome &gt;
 <ph name="SETTINGS_TITLE"/>
@@ -180,6 +182,7 @@
 <translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="2681064822612051220">В системата бе намерена несъвместима инсталация на Google Chrome. Моля, деинсталирайте я и опитайте отново.</translation>
+<translation id="1175529839152551794">Сега, когато влязохте в профила си, можете да получите своите раздели, отметки и други неща в Chrome на лаптопа, телефона и таблета си. Ще получавате и по-подходящи предложения и функции в услугите на Google.</translation>
 <translation id="8209985377776300429">Извършвате предварителен преглед на новия Chrome.</translation>
 <translation id="6126631249883707068">Искате ли Google Chrome да запази паролата ви?</translation>
 <translation id="7773845170078702898">Искате ли Google Chrome да запази паролата ви за този сайт?</translation>
