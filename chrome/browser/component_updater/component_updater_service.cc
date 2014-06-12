@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -155,8 +154,8 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   virtual Status Stop() OVERRIDE;
   virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
   virtual std::vector<std::string> GetComponentIDs() const OVERRIDE;
-  virtual CrxUpdateItem* GetComponentDetails(
-      const std::string& component_id) const OVERRIDE;
+  virtual bool GetComponentDetails(const std::string& component_id,
+                                   CrxUpdateItem* item) const OVERRIDE;
   virtual OnDemandUpdater& GetOnDemandUpdater() OVERRIDE;
 
   // Overrides for OnDemandUpdater.
@@ -523,10 +522,13 @@ std::vector<std::string> CrxUpdateService::GetComponentIDs() const {
   return component_ids;
 }
 
-CrxUpdateItem* CrxUpdateService::GetComponentDetails(
-    const std::string& component_id) const {
+bool CrxUpdateService::GetComponentDetails(const std::string& component_id,
+                                           CrxUpdateItem* item) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return FindUpdateItemById(component_id);
+  const CrxUpdateItem* crx_update_item(FindUpdateItemById(component_id));
+  if (crx_update_item)
+    *item = *crx_update_item;
+  return crx_update_item != NULL;
 }
 
 OnDemandUpdater& CrxUpdateService::GetOnDemandUpdater() {

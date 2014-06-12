@@ -207,10 +207,10 @@ class ComponentUpdateService {
   virtual ~ComponentUpdateService() {}
 
  private:
-  // Returns details about registered component. The object returned is owned
-  // by this class. TODO(sorin): replace with a WeakPtr.
-  virtual CrxUpdateItem* GetComponentDetails(
-      const std::string& component_id) const = 0;
+  // Returns details about registered component in the |item| parameter. The
+  // function returns true in case of success and false in case of errors.
+  virtual bool GetComponentDetails(const std::string& component_id,
+                                   CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
   FRIEND_TEST_ALL_PREFIXES(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate);

@@ -168,18 +168,13 @@ base::ListValue* ComponentsUI::LoadComponents() {
   // Construct DictionaryValues to return to UI.
   base::ListValue* component_list = new base::ListValue();
   for (size_t j = 0; j < component_ids.size(); ++j) {
-    const component_updater::CrxUpdateItem* item =
-        cus->GetComponentDetails(component_ids[j]);
-    if (item) {
+    component_updater::CrxUpdateItem item;
+    if (cus->GetComponentDetails(component_ids[j], &item)) {
       base::DictionaryValue* component_entry = new base::DictionaryValue();
       component_entry->SetString("id", component_ids[j]);
-      component_entry->SetString("name", item->component.name);
-      component_entry->SetString("version",
-                                 item->component.version.GetString());
-
-      component_entry->SetString("status",
-                                 ServiceStatusToString(item->status));
-
+      component_entry->SetString("name", item.component.name);
+      component_entry->SetString("version", item.component.version.GetString());
+      component_entry->SetString("status", ServiceStatusToString(item.status));
       component_list->Append(component_entry);
     }
   }
