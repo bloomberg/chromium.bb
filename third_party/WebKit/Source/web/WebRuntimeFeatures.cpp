@@ -285,4 +285,9 @@ void WebRuntimeFeatures::enableLayerSquashing(bool enable)
     RuntimeEnabledFeatures::setLayerSquashingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableShowModalDialog(bool enable)
+{
+    RuntimeEnabledFeatures::setShowModalDialogEnabled(enable);
+}
+
 } // namespace blink
