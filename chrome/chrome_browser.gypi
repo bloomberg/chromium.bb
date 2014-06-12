@@ -2035,6 +2035,8 @@
         'browser/services/gcm/gcm_profile_service_factory.h',
         'browser/services/gcm/gcm_desktop_utils.cc',
         'browser/services/gcm/gcm_desktop_utils.h',
+        'browser/services/gcm/push_messaging_service_impl.cc',
+        'browser/services/gcm/push_messaging_service_impl.h',
         'browser/service_process/service_process_control.cc',
         'browser/service_process/service_process_control_mac.mm',
         'browser/service_process/service_process_control.h',

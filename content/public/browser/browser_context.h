@@ -37,6 +37,7 @@ class DownloadManager;
 class DownloadManagerDelegate;
 class GeolocationPermissionContext;
 class IndexedDBContext;
+class PushMessagingService;
 class ResourceContext;
 class SiteInstance;
 class StoragePartition;
@@ -183,6 +184,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns a special storage policy implementation, or NULL.
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;
+
+  // Returns a push messaging service. The embedder owns the service, and is
+  // responsible for ensuring that it outlives RenderProcessHost. It's valid to
+  // return NULL.
+  virtual PushMessagingService* GetPushMessagingService() = 0;
 };
 
 }  // namespace content

@@ -6,13 +6,20 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/push_messaging_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/push_messaging_service.h"
 
 namespace content {
 
-PushMessagingMessageFilter::PushMessagingMessageFilter()
-    : BrowserMessageFilter(PushMessagingMsgStart) {}
+PushMessagingMessageFilter::PushMessagingMessageFilter(int render_process_id)
+    : BrowserMessageFilter(PushMessagingMsgStart),
+      render_process_id_(render_process_id),
+      service_(NULL),
+      weak_factory_(this) {}
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
 
@@ -29,19 +36,33 @@ bool PushMessagingMessageFilter::OnMessageReceived(
 void PushMessagingMessageFilter::OnRegister(int routing_id,
                                             int callbacks_id,
                                             const std::string& sender_id) {
-  // TODO(mvanouwerkerk): Really implement, the below simply returns an error.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GURL endpoint = GURL("https://android.googleapis.com/gcm/send");
+  // TODO(mvanouwerkerk): Validate arguments?
+  // TODO(mvanouwerkerk): A WebContentsObserver could avoid this PostTask
+  //                      by receiving the IPC on the UI thread.
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          base::Bind(&PushMessagingMessageFilter::DidRegister,
-                                     this,
+                          base::Bind(&PushMessagingMessageFilter::DoRegister,
+                                     weak_factory_.GetWeakPtr(),
                                      routing_id,
                                      callbacks_id,
-                                     endpoint,
-                                     "",
-                                     true));
+                                     sender_id));
+}
 
+void PushMessagingMessageFilter::DoRegister(int routing_id,
+                                            int callbacks_id,
+                                            const std::string& sender_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service())
+    return;
+  // TODO(mvanouwerkerk): Pass in app ID based on Service Worker ID.
+  std::string app_id = "unknown-app-id";
+  service_->Register(app_id,
+                     sender_id,
+                     base::Bind(&PushMessagingMessageFilter::DidRegister,
+                                weak_factory_.GetWeakPtr(),
+                                routing_id,
+                                callbacks_id));
 }
 
 void PushMessagingMessageFilter::DidRegister(int routing_id,
@@ -58,6 +79,17 @@ void PushMessagingMessageFilter::DidRegister(int routing_id,
   } else {
     Send(new PushMessagingMsg_RegisterError(routing_id, callbacks_id));
   }
+}
+
+PushMessagingService* PushMessagingMessageFilter::service() {
+  if (!service_) {
+    RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
+        RenderProcessHost::FromID(render_process_id_));
+    if (!host)
+      return NULL;
+    service_ = host->GetBrowserContext()->GetPushMessagingService();
+  }
+  return service_;
 }
 
 }  // namespace content

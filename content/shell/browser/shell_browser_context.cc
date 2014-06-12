@@ -243,4 +243,8 @@ quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }
 
+PushMessagingService* ShellBrowserContext::GetPushMessagingService() {
+  return NULL;
+}
+
 }  // namespace content

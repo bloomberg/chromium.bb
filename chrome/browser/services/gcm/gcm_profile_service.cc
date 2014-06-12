@@ -44,7 +44,8 @@ void GCMProfileService::RegisterProfilePrefs(
 
 #if defined(OS_ANDROID)
 GCMProfileService::GCMProfileService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      push_messaging_service_(this) {
   DCHECK(!profile->IsOffTheRecord());
 
   driver_.reset(new GCMDriverAndroid);
@@ -53,7 +54,8 @@ GCMProfileService::GCMProfileService(Profile* profile)
 GCMProfileService::GCMProfileService(
     Profile* profile,
     scoped_ptr<GCMClientFactory> gcm_client_factory)
-    : profile_(profile) {
+    : profile_(profile),
+      push_messaging_service_(this) {
   DCHECK(!profile->IsOffTheRecord());
 
   driver_ = CreateGCMDriverDesktop(
@@ -67,7 +69,9 @@ GCMProfileService::GCMProfileService(
 }
 #endif  // defined(OS_ANDROID)
 
-GCMProfileService::GCMProfileService() : profile_(NULL) {
+GCMProfileService::GCMProfileService()
+    : profile_(NULL),
+      push_messaging_service_(this) {
 }
 
 GCMProfileService::~GCMProfileService() {

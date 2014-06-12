@@ -129,6 +129,7 @@ class AwBrowserContext : public content::BrowserContext,
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
 
   // visitedlink::VisitedLinkDelegate implementation.
   virtual void RebuildTable(

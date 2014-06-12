@@ -219,6 +219,7 @@ class TestingProfile : public Profile {
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
 
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
 
