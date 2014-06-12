@@ -230,6 +230,18 @@ ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
   HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
                                                 NULL, CLSCTX_INPROC_SERVER);
+  if (hr == CO_E_NOTINITIALIZED) {
+    LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
+    // We have seen crashes which indicates that this method can in fact
+    // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
+    // modules. Calling CoInitializeEx is an attempt to resolve the reported
+    // issues. See http://crbug.com/378465 for details.
+    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    if (SUCCEEDED(hr)) {
+      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
+                                            NULL, CLSCTX_INPROC_SERVER);
+    }
+  }
   CHECK(SUCCEEDED(hr));
   return device_enumerator;
 }
