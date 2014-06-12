@@ -57,6 +57,14 @@ function uninstall_touch_handler() {
   document.removeEventListener('touchstart', touch_start_handler);
 }
 
+function use_replace_state() {
+  window.history.replaceState({}, 'foo');
+}
+
+function use_push_state() {
+  window.history.pushState({}, 'foo2');
+}
+
 onload = function() {
   window.onhashchange = function() {
     document.title = "Title: " + location.hash;

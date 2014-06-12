@@ -555,6 +555,34 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(NULL, screenshot_manager()->screenshot_taken_for());
 }
 
+// Tests that navigations resulting from reloads and history.replaceState
+// do not capture screenshots while navigations resulting from
+// histrory.pushState do.
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+
+  set_min_screenshot_interval(0);
+  screenshot_manager()->Reset();
+  ExecuteSyncJSFunction(main_frame, "use_replace_state()");
+  screenshot_manager()->WaitUntilScreenshotIsReady();
+  // history.replaceState shouldn't capture a screenshot
+  EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
+  screenshot_manager()->Reset();
+  web_contents->GetController().Reload(true);
+  WaitForLoadStop(web_contents);
+  // reloading the page shouldn't capture a screenshot
+  EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
+  screenshot_manager()->Reset();
+  ExecuteSyncJSFunction(main_frame, "use_push_state()");
+  screenshot_manager()->WaitUntilScreenshotIsReady();
+  // pushing a state should capture a screenshot
+  EXPECT_TRUE(screenshot_manager()->screenshot_taken_for());
+}
+
 // TODO(sadrul): This test is disabled because it reparents in a way the
 //               FocusController does not support. This code would crash in
 //               a production build. It only passed prior to this revision
