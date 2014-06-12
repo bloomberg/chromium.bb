@@ -122,6 +122,8 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   CHECK(delegate);
   delegate_ = delegate;
 
+  // TODO(baranovich): allow STATE_RESERVED_REMOTE when push promises will be
+  // implemented.
   CHECK(io_state_ == STATE_IDLE ||
         io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED);
 
@@ -417,9 +419,11 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       // Push streams transition to a locally half-closed state upon headers.
       // We must continue to buffer data while waiting for a call to
       // SetDelegate() (which may not ever happen).
-      // TODO(jgraettinger): When PUSH_PROMISE is added, Handle RESERVED_REMOTE
-      // cases here depending on whether the delegate is already set.
-      CHECK_EQ(io_state_, STATE_IDLE);
+      // TODO(baranovich): For HTTP 2 push streams, delegate may be set before
+      // receiving response headers when PUSH_PROMISE will be implemented.
+      // TODO(baranovich): In HTTP 2 additional HEADERS frames are not allowed.
+      // Set |response_headers_status_| to RESPONSE_HEADERS_ARE_COMPLETE.
+      CHECK_EQ(io_state_, STATE_RESERVED_REMOTE);
       DCHECK(!delegate_);
       io_state_ = STATE_HALF_CLOSED_LOCAL_UNCLAIMED;
       break;
@@ -449,6 +453,17 @@ int SpdyStream::OnAdditionalResponseHeadersReceived(
     return ERR_SPDY_PROTOCOL_ERROR;
   }
   return MergeWithResponseHeaders(additional_response_headers);
+}
+
+int SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
+  CHECK(!request_headers_.get());
+  CHECK_EQ(io_state_, STATE_IDLE);
+  CHECK_EQ(type_, SPDY_PUSH_STREAM);
+  DCHECK(!delegate_);
+
+  io_state_ = STATE_RESERVED_REMOTE;
+  request_headers_.reset(new SpdyHeaderBlock(headers));
+  return OK;
 }
 
 void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
@@ -730,13 +745,11 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 }
 
 GURL SpdyStream::GetUrlFromHeaders() const {
-  if (type_ != SPDY_PUSH_STREAM && !request_headers_)
+  if (!request_headers_)
     return GURL();
 
-  const SpdyHeaderBlock& headers =
-      (type_ == SPDY_PUSH_STREAM) ? response_headers_ : *request_headers_;
-  return GetUrlFromHeaderBlock(headers, GetProtocolVersion(),
-                               type_ == SPDY_PUSH_STREAM);
+  return GetUrlFromHeaderBlock(
+      *request_headers_, GetProtocolVersion(), type_ == SPDY_PUSH_STREAM);
 }
 
 bool SpdyStream::HasUrlFromHeaders() const {

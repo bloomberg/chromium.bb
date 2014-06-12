@@ -286,9 +286,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called at most once by the SpdySession when the initial response
   // headers have been received for this stream, i.e., a SYN_REPLY (or
-  // SYN_STREAM for push streams) frame has been received. This is the
-  // entry point for a push stream. Returns a status code; if it is
-  // an error, the stream was closed by this function.
+  // SYN_STREAM for push streams) frame has been received. Returns a status
+  // code; if it is an error, the stream was closed by this function.
   int OnInitialResponseHeadersReceived(const SpdyHeaderBlock& response_headers,
                                        base::Time response_time,
                                        base::TimeTicks recv_first_byte_time);
@@ -299,6 +298,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // code; if it is an error, the stream was closed by this function.
   int OnAdditionalResponseHeadersReceived(
       const SpdyHeaderBlock& additional_response_headers);
+
+  // Called by the SpdySession when a frame carrying request headers opening a
+  // push stream is received. Stream transits to STATE_RESERVED_REMOTE state.
+  // Returns a status code; if it is an error, the stream was closed by this
+  // function.
+  int OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers);
 
   // Called by the SpdySession when response data has been received
   // for this stream.  This callback may be called multiple times as
@@ -440,14 +445,13 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // are modeled, with the exceptions of RESERVED_LOCAL (the client
   // cannot initate push streams), and the transition to OPEN due to
   // a remote SYN_STREAM (the client can only initate streams).
-  // TODO(jgraettinger): RESERVED_REMOTE must be added to the state
-  // machine when PUSH_PROMISE is implemented.
   enum State {
     STATE_IDLE,
     STATE_OPEN,
     STATE_HALF_CLOSED_LOCAL_UNCLAIMED,
     STATE_HALF_CLOSED_LOCAL,
     STATE_HALF_CLOSED_REMOTE,
+    STATE_RESERVED_REMOTE,
     STATE_CLOSED,
   };
 

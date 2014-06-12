@@ -387,6 +387,30 @@ SpdyGoAwayStatus MapNetErrorToGoAwayStatus(Error err) {
   }
 }
 
+void SplitPushedHeadersToRequestAndResponse(const SpdyHeaderBlock& headers,
+                                            SpdyMajorVersion protocol_version,
+                                            SpdyHeaderBlock* request_headers,
+                                            SpdyHeaderBlock* response_headers) {
+  DCHECK(response_headers);
+  DCHECK(request_headers);
+  for (SpdyHeaderBlock::const_iterator it = headers.begin();
+       it != headers.end();
+       ++it) {
+    SpdyHeaderBlock* to_insert = response_headers;
+    if (protocol_version == SPDY2) {
+      if (it->first == "url")
+        to_insert = request_headers;
+    } else {
+      const char* host = protocol_version >= SPDY4 ? ":authority" : ":host";
+      static const char* scheme = ":scheme";
+      static const char* path = ":path";
+      if (it->first == host || it->first == scheme || it->first == path)
+        to_insert = request_headers;
+    }
+    to_insert->insert(*it);
+  }
+}
+
 SpdyStreamRequest::SpdyStreamRequest() : weak_ptr_factory_(this) {
   Reset();
 }
@@ -2195,9 +2219,21 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   }
 
   // Parse the headers.
-  if (OnInitialResponseHeadersReceived(
-          headers, response_time,
-          recv_first_byte_time, active_it->second.stream) != OK)
+
+  // Split headers to simulate push promise and response.
+  SpdyHeaderBlock request_headers;
+  SpdyHeaderBlock response_headers;
+  SplitPushedHeadersToRequestAndResponse(
+      headers, GetProtocolVersion(), &request_headers, &response_headers);
+
+  if (active_it->second.stream->OnPushPromiseHeadersReceived(request_headers) !=
+      OK)
+    return;
+
+  if (OnInitialResponseHeadersReceived(response_headers,
+                                       response_time,
+                                       recv_first_byte_time,
+                                       active_it->second.stream) != OK)
     return;
 
   base::StatsCounter push_requests("spdy.pushed_streams");

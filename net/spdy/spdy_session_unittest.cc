@@ -4522,6 +4522,28 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   EXPECT_TRUE(session == NULL);
 }
 
+TEST_P(SpdySessionTest, SplitHeaders) {
+  GURL kStreamUrl("http://www.google.com/foo.dat");
+  SpdyHeaderBlock headers;
+  spdy_util_.AddUrlToHeaderBlock(kStreamUrl.spec(), &headers);
+  headers["alpha"] = "beta";
+
+  SpdyHeaderBlock request_headers;
+  SpdyHeaderBlock response_headers;
+
+  SplitPushedHeadersToRequestAndResponse(
+      headers, spdy_util_.spdy_version(), &request_headers, &response_headers);
+
+  SpdyHeaderBlock::const_iterator it = response_headers.find("alpha");
+  std::string alpha_val =
+      (it == response_headers.end()) ? std::string() : it->second;
+  EXPECT_EQ("beta", alpha_val);
+
+  GURL request_url =
+      GetUrlFromHeaderBlock(request_headers, spdy_util_.spdy_version(), true);
+  EXPECT_EQ(kStreamUrl, request_url);
+}
+
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(
       SPDY_ERROR_INVALID_CONTROL_FRAME,

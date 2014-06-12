@@ -199,16 +199,22 @@ TEST_P(SpdyStreamTest, PushedStream) {
   stream.set_stream_id(2);
   EXPECT_FALSE(stream.HasUrlFromHeaders());
 
-  // Set a couple of headers.
+  // Set required request headers.
+  SpdyHeaderBlock request_headers;
+  spdy_util_.AddUrlToHeaderBlock(kStreamUrl, &request_headers);
+  stream.OnPushPromiseHeadersReceived(request_headers);
+
+  // Send some basic response headers.
   SpdyHeaderBlock response;
-  spdy_util_.AddUrlToHeaderBlock(kStreamUrl, &response);
+  response[spdy_util_.GetStatusKey()] = "200";
+  response[spdy_util_.GetVersionKey()] = "OK";
   stream.OnInitialResponseHeadersReceived(
       response, base::Time::Now(), base::TimeTicks::Now());
 
-  // Send some basic headers.
+  // And some more headers.
+  // TODO(baranovich): not valid for HTTP 2.
   SpdyHeaderBlock headers;
-  headers[spdy_util_.GetStatusKey()] = "200";
-  headers[spdy_util_.GetVersionKey()] = "OK";
+  headers["alpha"] = "beta";
   stream.OnAdditionalResponseHeadersReceived(headers);
 
   EXPECT_TRUE(stream.HasUrlFromHeaders());
@@ -220,6 +226,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
+  EXPECT_EQ("beta", delegate.GetResponseHeaderValue("alpha"));
 
   EXPECT_TRUE(spdy_session == NULL);
 }

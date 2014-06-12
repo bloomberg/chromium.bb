@@ -5385,6 +5385,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   EXPECT_TRUE(data.at_write_eof());
 }
 
+// TODO(baranovich): HTTP 2 does not allow multiple HEADERS frames
 TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   // We push a stream and attempt to claim it before the headers come down.
   scoped_ptr<SpdyFrame> stream1_syn(
@@ -5396,6 +5397,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   };
 
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
+  (*initial_headers)["alpha"] = "beta";
   spdy_util_.AddUrlToHeaderBlock(
       "http://www.google.com/foo.dat", initial_headers.get());
   scoped_ptr<SpdyFrame> stream2_syn(
@@ -5512,24 +5514,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   EXPECT_TRUE(response2.headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
 
-  // Verify we got all the headers
-  if (spdy_util_.spdy_version() < SPDY3) {
-    EXPECT_TRUE(response2.headers->HasHeaderValue(
-        "url",
-        "http://www.google.com/foo.dat"));
-  } else {
-    EXPECT_TRUE(response2.headers->HasHeaderValue(
-        "scheme", "http"));
-    EXPECT_TRUE(response2.headers->HasHeaderValue(
-        "path", "/foo.dat"));
-    if (spdy_util_.spdy_version() < SPDY4) {
-      EXPECT_TRUE(response2.headers->HasHeaderValue(
-          "host", "www.google.com"));
-    } else {
-      EXPECT_TRUE(response2.headers->HasHeaderValue(
-          "authority", "www.google.com"));
-    }
-  }
+  // Verify we got all the headers from all header blocks.
+  EXPECT_TRUE(response2.headers->HasHeaderValue("alpha", "beta"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("hello", "bye"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("status", "200"));
 
