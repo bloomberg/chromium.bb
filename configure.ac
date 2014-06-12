@@ -87,6 +87,7 @@ if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
 	PKG_CHECK_MODULES(EGL, [egl >= 7.10 glesv2])
         PKG_CHECK_MODULES([EGL_TESTS], [egl >= 7.10 glesv2 wayland-client wayland-egl])
+	PKG_CHECK_MODULES([GL_RENDERER], [libdrm])
 fi
 
 AC_ARG_ENABLE(xkbcommon,

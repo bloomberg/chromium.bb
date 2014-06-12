@@ -100,5 +100,21 @@ typedef struct wl_buffer * (EGLAPIENTRYP PFNEGLCREATEWAYLANDBUFFERFROMIMAGEWL) (
 #define GL_UNPACK_SKIP_PIXELS_EXT                               0x0CF4
 #endif
 
+/* Define needed tokens from EGL_EXT_image_dma_buf_import extension
+ * here to avoid having to add ifdefs everywhere.*/
+#ifndef EGL_EXT_image_dma_buf_import
+#define EGL_LINUX_DMA_BUF_EXT					0x3270
+#define EGL_LINUX_DRM_FOURCC_EXT				0x3271
+#define EGL_DMA_BUF_PLANE0_FD_EXT				0x3272
+#define EGL_DMA_BUF_PLANE0_OFFSET_EXT				0x3273
+#define EGL_DMA_BUF_PLANE0_PITCH_EXT				0x3274
+#define EGL_DMA_BUF_PLANE1_FD_EXT				0x3275
+#define EGL_DMA_BUF_PLANE1_OFFSET_EXT				0x3276
+#define EGL_DMA_BUF_PLANE1_PITCH_EXT				0x3277
+#define EGL_DMA_BUF_PLANE2_FD_EXT				0x3278
+#define EGL_DMA_BUF_PLANE2_OFFSET_EXT				0x3279
+#define EGL_DMA_BUF_PLANE2_PITCH_EXT				0x327A
+#endif
+
 
 #endif

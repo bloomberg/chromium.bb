@@ -205,6 +205,7 @@ gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS) $(EGL_LIBS)
 gl_renderer_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
+	$(GL_RENDERER_CFLAGS)			\
 	$(AM_CFLAGS)
 gl_renderer_la_SOURCES =			\
 	src/gl-renderer.h			\
