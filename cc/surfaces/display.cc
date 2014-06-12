@@ -69,12 +69,11 @@ void Display::InitializeOutputSurface() {
   if (!resource_provider)
     return;
 
-  LayerTreeSettings settings;
   if (output_surface->context_provider()) {
     TextureMailboxDeleter* texture_mailbox_deleter = NULL;
     scoped_ptr<GLRenderer> renderer =
         GLRenderer::Create(this,
-                           &settings,
+                           &settings_,
                            output_surface.get(),
                            resource_provider.get(),
                            texture_mailbox_deleter,
@@ -84,7 +83,7 @@ void Display::InitializeOutputSurface() {
     renderer_ = renderer.Pass();
   } else {
     scoped_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
-        this, &settings, output_surface.get(), resource_provider.get());
+        this, &settings_, output_surface.get(), resource_provider.get());
     if (!renderer)
       return;
     renderer_ = renderer.Pass();

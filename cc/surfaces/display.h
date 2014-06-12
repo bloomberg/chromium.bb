@@ -74,6 +74,7 @@ class CC_SURFACES_EXPORT Display : public SurfaceClient,
   SurfaceManager* manager_;
   SurfaceAggregator aggregator_;
   SharedBitmapManager* bitmap_manager_;
+  LayerTreeSettings settings_;
   scoped_ptr<Surface> current_surface_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
