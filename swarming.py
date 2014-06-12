@@ -63,7 +63,7 @@ class Manifest(object):
 
   def __init__(
       self, isolate_server, namespace, isolated_hash, task_name, extra_args,
-      env, dimensions, working_dir, deadline, verbose, profile,
+      env, dimensions, deadline, verbose, profile,
       priority):
     """Populates a manifest object.
       Args:
@@ -74,7 +74,6 @@ class Manifest(object):
         extra_args - additional arguments to pass to isolated command.
         env - environment variables to set.
         dimensions - dimensions to filter the task on.
-        working_dir - relative working directory to start the script.
         deadline - maximum pending time before this task expires.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
@@ -87,7 +86,6 @@ class Manifest(object):
     self.extra_args = tuple(extra_args or [])
     self.env = env.copy()
     self.dimensions = dimensions.copy()
-    self.working_dir = working_dir
     self.deadline = deadline
     self.verbose = bool(verbose)
     self.profile = bool(profile)
@@ -135,17 +133,13 @@ class Manifest(object):
           'config_name': 'isolated',
           'deadline_to_run': self.deadline,
           'dimensions': self.dimensions,
-          'min_instances': 1,
           'priority': self.priority,
         },
       ],
       'data': self._files,
-      'encoding': 'UTF-8',
       'env_vars': self.env,
-      'restart_on_failure': True,
       'test_case_name': self.task_name,
       'tests': self._tasks,
-      'working_dir': self.working_dir,
     }
     return json.dumps(request, sort_keys=True, separators=(',',':'))
 
@@ -624,7 +618,7 @@ def abort_by_manifest(_swarming, _manifest):
 
 def trigger_task_shards(
     swarming, isolate_server, namespace, isolated_hash, task_name, extra_args,
-    shards, dimensions, env, working_dir, deadline, verbose, profile, priority):
+    shards, dimensions, env, deadline, verbose, profile, priority):
   """Triggers multiple subtasks of a sharded task."""
   # Collects all files that are necessary to bootstrap a task execution
   # on the bot. Usually it includes self contained run_isolated.zip and
@@ -644,7 +638,6 @@ def trigger_task_shards(
         extra_args=extra_args,
         dimensions=dimensions,
         env=setup_googletest(env, shards, index),
-        working_dir=working_dir,
         deadline=deadline,
         verbose=verbose,
         profile=profile,
@@ -709,7 +702,6 @@ def trigger(
     shards,
     dimensions,
     env,
-    working_dir,
     deadline,
     verbose,
     profile,
@@ -743,7 +735,6 @@ def trigger(
       dimensions=dimensions,
       deadline=deadline,
       env=env,
-      working_dir=working_dir,
       verbose=verbose,
       profile=profile,
       priority=priority)
@@ -862,11 +853,6 @@ def add_trigger_options(parser):
   add_filter_options(parser)
 
   parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
-  parser.task_group.add_option(
-      '-w', '--working-dir', default='swarm_tests',
-      help='Working directory on the swarming slave side. default: %default.')
-  parser.task_group.add_option(
-      '--working_dir', help=tools.optparse.SUPPRESS_HELP)
   parser.task_group.add_option(
       '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
       help='Environment variables to set')
@@ -1037,7 +1023,6 @@ def CMDrun(parser, args):
         shards=options.shards,
         dimensions=options.dimensions,
         env=dict(options.env),
-        working_dir=options.working_dir,
         deadline=options.deadline,
         verbose=options.verbose,
         profile=options.profile,
@@ -1096,7 +1081,6 @@ def CMDtrigger(parser, args):
         shards=options.shards,
         dimensions=options.dimensions,
         env=dict(options.env),
-        working_dir=options.working_dir,
         deadline=options.deadline,
         verbose=options.verbose,
         profile=options.profile,

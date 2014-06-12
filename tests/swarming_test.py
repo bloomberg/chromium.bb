@@ -531,7 +531,6 @@ def generate_expected_json(
     shard_index,
     dimensions,
     env,
-    working_dir,
     isolate_server,
     profile,
     test_case_name=TEST_NAME,
@@ -544,17 +543,13 @@ def generate_expected_json(
         u'config_name': u'isolated',
         u'deadline_to_run': 60*60,
         u'dimensions': dimensions,
-        u'min_instances': 1,
         u'priority': 101,
       },
     ],
     u'data': [],
-    u'encoding': u'UTF-8',
     u'env_vars': env.copy(),
-    u'restart_on_failure': True,
     u'test_case_name': test_case_name,
     u'tests': chromium_tasks(isolate_server, file_hash, extra_args),
-    u'working_dir': unicode(working_dir),
   }
   if shards > 1:
     expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%d' % shard_index
@@ -591,7 +586,6 @@ class TriggerTaskShardsTest(TestCase):
         extra_args=None,
         env={},
         dimensions={'os': 'Linux'},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -612,7 +606,6 @@ class TriggerTaskShardsTest(TestCase):
         extra_args=None,
         env={},
         dimensions={'os': 'Linux'},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -626,7 +619,6 @@ class TriggerTaskShardsTest(TestCase):
         shard_index=0,
         dimensions={u'os': u'Linux'},
         env={},
-        working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
         profile=False)
     self.assertEqual(expected, manifest_json)
@@ -640,7 +632,6 @@ class TriggerTaskShardsTest(TestCase):
         extra_args=None,
         env={},
         dimensions={'os': 'Linux'},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=True,
@@ -654,7 +645,6 @@ class TriggerTaskShardsTest(TestCase):
         shard_index=0,
         dimensions={u'os': u'Linux'},
         env={},
-        working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
         profile=True)
     self.assertEqual(expected, manifest_json)
@@ -668,7 +658,6 @@ class TriggerTaskShardsTest(TestCase):
         extra_args=['--extra-cmd-arg=1234', 'some more'],
         env={},
         dimensions={'os': 'Windows'},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -682,7 +671,6 @@ class TriggerTaskShardsTest(TestCase):
         shard_index=0,
         dimensions={u'os': u'Windows'},
         env={},
-        working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
         profile=False,
         extra_args=['--extra-cmd-arg=1234', 'some more'])
@@ -697,7 +685,6 @@ class TriggerTaskShardsTest(TestCase):
         extra_args=None,
         env=swarming.setup_googletest({}, 5, 3),
         dimensions={'os': 'Linux'},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -711,7 +698,6 @@ class TriggerTaskShardsTest(TestCase):
         shard_index=3,
         dimensions={u'os': u'Linux'},
         env={},
-        working_dir='swarm_tests',
         isolate_server=u'http://localhost:8081',
         profile=False)
     self.assertEqual(expected, manifest_json)
@@ -731,7 +717,6 @@ class TriggerTaskShardsTest(TestCase):
         shards=1,
         dimensions={},
         env={},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -754,7 +739,6 @@ class TriggerTaskShardsTest(TestCase):
         shards=1,
         dimensions=dimensions,
         env={},
-        working_dir='swarm_tests',
         deadline=60*60,
         verbose=False,
         profile=False,
@@ -858,7 +842,6 @@ class MainTest(TestCase):
         shard_index=0,
         dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
-        working_dir='swarm_tests',
         isolate_server='https://host2',
         profile=False,
         test_case_name=task_name)
@@ -908,7 +891,6 @@ class MainTest(TestCase):
         shard_index=0,
         dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
-        working_dir='swarm_tests',
         isolate_server='https://host2',
         profile=False,
         test_case_name=task_name,
@@ -1155,7 +1137,6 @@ class MainTest(TestCase):
         shard_index=0,
         dimensions={'os': 'Mac'},
         env={'foo': 'bar'},
-        working_dir='swarm_tests',
         isolate_server='https://host2',
         profile=False)
     j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
@@ -1193,7 +1174,6 @@ class MainTest(TestCase):
         shard_index=0,
         dimensions={'foo': 'bar', 'os': 'Mac'},
         env={},
-        working_dir='swarm_tests',
         isolate_server='https://host2',
         profile=False)
     j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
