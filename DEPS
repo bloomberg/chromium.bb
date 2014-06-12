@@ -41,7 +41,7 @@ vars = {
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "273",
   "libphonenumber_revision": "621",
-  "libvpx_revision": "269083",
+  "libvpx_revision": "275816",
   "lss_revision": "26",
   "sfntly_revision": "239",
   "lighttpd_revision": "33737",
@@ -54,7 +54,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "6413",
+  "webrtc_revision": "6415",
   "jsoncpp_revision": "248",
   "nss_revision": "275589",
   # Three lines of non-changing comments so that
