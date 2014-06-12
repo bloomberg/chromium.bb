@@ -222,7 +222,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
     if (!network->update_received())
       continue;
     if (!network->visible())
-      break;
+      continue;
     if (network->Matches(type))
       return network;
   }

@@ -13,6 +13,7 @@ var NetworkUI = (function() {
     'Name',
     'Type',
     'ConnectionState',
+    'connectable',
     'ErrorState',
     'WiFi.Security',
     ['Cellular.NetworkTechnology',

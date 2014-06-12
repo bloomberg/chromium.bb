@@ -170,6 +170,7 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
         TranslateNetworkStateToONC(*it);
 
     if (debugging_properties) {
+      onc_dictionary->SetBoolean("connectable", (*it)->connectable());
       onc_dictionary->SetBoolean("visible", (*it)->visible());
       onc_dictionary->SetString("profile_path", (*it)->profile_path());
       std::string onc_source = (*it)->ui_data().GetONCSourceAsString();
