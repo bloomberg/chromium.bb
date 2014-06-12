@@ -18,6 +18,7 @@
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/gestures/unified_gesture_detector_enabled.h"
 
 namespace ui {
 
@@ -69,28 +70,7 @@ GestureProviderAura* CreateGestureProvider(GestureProviderAuraClient* client) {
 // GestureRecognizerImpl, public:
 
 GestureRecognizerImpl::GestureRecognizerImpl() {
-  // Default to using the unified gesture detector.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  const std::string unified_gd_enabled_switch =
-      command_line.HasSwitch(switches::kUnifiedGestureDetector) ?
-      command_line.GetSwitchValueASCII(switches::kUnifiedGestureDetector) :
-      switches::kUnifiedGestureDetectorAuto;
-
-  const bool kUseUnifiedGestureDetectorByDefault = true;
-  if (unified_gd_enabled_switch.empty() ||
-      unified_gd_enabled_switch == switches::kUnifiedGestureDetectorEnabled) {
-    use_unified_gesture_detector_ = true;
-  } else if (unified_gd_enabled_switch ==
-                 switches::kUnifiedGestureDetectorDisabled) {
-    use_unified_gesture_detector_ = false;
-  } else if (unified_gd_enabled_switch ==
-             switches::kUnifiedGestureDetectorAuto) {
-    use_unified_gesture_detector_ = kUseUnifiedGestureDetectorByDefault;
-  } else {
-    LOG(ERROR) << "Invalid --unified-gesture-detector option: "
-               << unified_gd_enabled_switch;
-    use_unified_gesture_detector_ = false;
-  }
+  use_unified_gesture_detector_ = IsUnifiedGestureDetectorEnabled();
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {

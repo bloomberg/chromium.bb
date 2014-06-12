@@ -109,6 +109,8 @@ component("events") {
     "gestures/gesture_sequence.cc",
     "gestures/gesture_sequence.h",
     "gestures/gesture_types.h",
+    "gestures/unified_gesture_detector_enabled.cc",
+    "gestures/unified_gesture_detector_enabled.h",
     "gestures/velocity_calculator.cc",
     "gestures/velocity_calculator.h",
     "platform/x11/x11_event_source.cc",
