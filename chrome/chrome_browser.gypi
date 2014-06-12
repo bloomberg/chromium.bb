@@ -11,7 +11,6 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
-        'browser/search_engines/prepopulated_engines.gyp:prepopulated_engines',
         'browser_ui',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
@@ -1999,7 +1998,6 @@
         'browser/search_engines/default_search_pref_migration.h',
         'browser/search_engines/default_search_policy_handler.cc',
         'browser/search_engines/default_search_policy_handler.h',
-        'browser/search_engines/search_engine_type.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_host_to_urls_map.h',
         'browser/search_engines/search_provider_install_data.cc',

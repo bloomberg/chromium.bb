@@ -10,11 +10,13 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
+        'search_engines/prepopulated_engines.gyp:prepopulated_engines',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'search_engines/search_engine_type.h',
         'search_engines/template_url_data.cc',
         'search_engines/template_url_data.h',
         'search_engines/template_url_id.h',

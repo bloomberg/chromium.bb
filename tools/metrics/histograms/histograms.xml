@@ -42892,7 +42892,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </obsolete>
   <summary>
     Indices of most popular prepopulated search engines as defined in
-    chrome/browser/search_engines/search_engine_type.h.
+    components/search_engines/search_engine_type.h.
   </summary>
   <int value="0" label="OTHER"/>
   <int value="1" label="GOOGLE"/>

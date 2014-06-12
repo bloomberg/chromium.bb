@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
+#define COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
 
 // Enum to record the user's default search engine choice in UMA.  Add new
 // search engines at the bottom and do not delete from this list, so as not
@@ -61,4 +61,4 @@ enum SearchEngineType {
   SEARCH_ENGINE_MAX          // Bounding value needed for UMA histogram macro.
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_

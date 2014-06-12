@@ -82,7 +82,6 @@ v8.log
 /chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/settings_internal/
 /chrome/browser/resources/software_rendering_list
-/chrome/browser/search_engines/prepopulated_engines.xml
 /chrome/browser/spellchecker/internal
 /chrome/browser_tests_run.xml
 /chrome/chrome_run.xml
@@ -136,6 +135,7 @@ v8.log
 /components/chrome_settings_proto_generated_compile.xml
 /components/cloud_policy_proto_generated_compile.xml
 /components/rappor.xml
+/components/search_engines/prepopulated_engines.xml
 /components/variations.xml
 /content/content_unittests_run.xml
 /content/test/data/gpu/generated/

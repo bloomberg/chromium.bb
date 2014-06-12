@@ -1,4 +1,4 @@
-# Copyright 2012 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,13 +11,13 @@
         'prepopulated_engines.json',
       ],
       'includes': [
-        '../../../build/json_to_struct.gypi',
+        '../../build/json_to_struct.gypi',
       ],
       'variables': {
         'chromium_code': 1,
         'schema_file': 'prepopulated_engines_schema.json',
         'namespace': 'TemplateURLPrepopulateData',
-        'cc_dir': 'chrome/browser/search_engines',
+        'cc_dir': 'components/search_engines',
       },
     },
   ],
