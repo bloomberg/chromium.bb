@@ -4,8 +4,8 @@
 
 # Compile a protocol buffer.
 #
-# The 'proto_in_dir' variable must be the relative path to the
-# directory containing the .proto files. If left out, it defaults to '.'.
+# The 'proto_in_dir' variable is the path to the directory containing the
+# .proto files. If left out, it defaults to '.'.
 #
 # The 'proto_out_dir' variable specifies the path suffix that output files are
 # generated under.  Targets that gyp-depend on my_proto_lib will be able to

@@ -10,45 +10,21 @@ source_set("browser") {
   # Only targets in the content tree can depend directly on this target.
   visibility = [ "//content/*" ]
 
-  sources = rebase_path(content_browser_gypi_values.private_browser_sources,
-                        ".", "//content")
-
-  # TODO(GYP) these generated files are listed as sources in content_browser.
-  # This is a bit suspicious. The GN grit template will make a source set
-  # containing the generated code so it should be sufficient to just depend
-  # on the grit rule. But maybe some of these will need to be added?
-  #
-  # Need this annoying rebase_path call to match what happened with the sources.
-  sources -= rebase_path([
-    "$root_gen_dir/webkit/grit/devtools_resources.h",
-    "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
-    "$root_gen_dir/webkit/grit/devtools_resources_map.h",
-    "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
-    "$root_gen_dir/ui/ui_resources/grit/webui_resources_map.cc",
-    "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.cc",
-    "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.h",
-  ], ".")
-
-  configs += [ "//content:content_implementation" ]
-
+  defines = []
+  libs = []
+  ldflags = []
+  
+  # Shared deps. See also non-iOS deps below.
   deps = [
     "//base",
-    "//cc",
     "//content:resources",
-    "//content/browser/devtools:resources",
     "//content/browser/service_worker:database_proto",
     "//content/browser/speech/proto",
-    "//content/common:mojo_bindings",
     "//crypto",
     "//google_apis",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/interfaces/service_provider:service_provider",
-    "//mojo/public/js/bindings",
     "//net",
-    "//net:http_server",
     "//skia",
     "//sql",
-    "//third_party/leveldatabase",
     "//third_party/re2",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
@@ -62,15 +38,71 @@ source_set("browser") {
     "//ui/gfx/geometry",
     "//ui/resources",
     "//ui/snapshot",
-    "//ui/surface",
-    "//webkit:resources",
-    "//webkit:strings",
-    "//webkit/browser:storage",
-    "//webkit/common",
-    "//webkit/common:storage",
-    # TODO(GYP)
-    #'../third_party/angle/src/build_angle.gyp:commit_id',
   ]
+
+  if (is_ios) {
+    # iOS doesn't get the normal file list and only takes these whitelisted
+    # files.
+    sources = [
+      "browser_context.cc",
+      "browser_main_loop.cc",
+      "browser_main_runner.cc",
+      "browser_process_sub_thread.cc",
+      "browser_thread_impl.cc",
+      "browser_url_handler_impl.cc",
+      "cert_store_impl.cc",
+      "download/download_create_info.cc",
+      "notification_service_impl.cc",
+      "signed_certificate_timestamp_store_impl.cc",
+      "user_metrics.cc",
+      "web_contents/navigation_entry_impl.cc",
+    ]
+  } else {
+    # Normal non-iOS sources get everything.
+    sources = rebase_path(content_browser_gypi_values.private_browser_sources,
+                          ".", "//content")
+
+    # TODO(GYP) these generated files are listed as sources in content_browser.
+    # This is a bit suspicious. The GN grit template will make a source set
+    # containing the generated code so it should be sufficient to just depend
+    # on the grit rule. But maybe some of these will need to be added?
+    #
+    # Need this annoying rebase_path call to match what happened with the
+    # sources.
+    sources -= rebase_path([
+      "$root_gen_dir/webkit/grit/devtools_resources.h",
+      "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
+      "$root_gen_dir/webkit/grit/devtools_resources_map.h",
+      "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
+      "$root_gen_dir/ui/ui_resources/grit/webui_resources_map.cc",
+      "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.cc",
+      "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.h",
+    ], ".")
+
+    # Non-iOS deps.
+    deps += [
+      "//content/browser/devtools:resources",
+      "//content/common:mojo_bindings",
+      "//cc",
+      "//cc:surfaces",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/interfaces/service_provider:service_provider",
+      "//mojo/public/js/bindings",
+      "//net:http_server",
+      "//third_party/leveldatabase",
+      "//third_party/libyuv",
+      "//ui/surface",
+      "//webkit:resources",
+      "//webkit:strings",
+      "//webkit/browser:storage",
+      "//webkit/common",
+      "//webkit/common:storage",
+      # TODO(GYP)
+      #"//third_party/angle:commit_id",
+    ]
+  }
+
+  configs += [ "//content:content_implementation" ]
 
   if (toolkit_views) {
     deps += [ "//ui/events" ]
@@ -87,16 +119,11 @@ source_set("browser") {
   }
 
   if (!is_win && !is_mac && (!is_linux || !use_udev)) {
-    sources += [ "browser/gamepad/gamepad_platform_data_fetcher.cc" ]
-  }
-
-  if (is_ios) {
-    # TODO(GYP) lots of inclusions and exclusions for iOS.
+    sources += [ "gamepad/gamepad_platform_data_fetcher.cc" ]
   }
 
   if (enable_printing != 0) {
-    #TODO(GYP)
-    #deps += [ "//printing" ]
+    deps += [ "//printing" ]
   }
 
 # TODO(GYP)
@@ -105,88 +132,62 @@ source_set("browser") {
 #       '../third_party/WebKit/public/blink.gyp:blink',
 #     ],
 #   }],
-#   ['OS!="mac" and OS!="ios"', {
-#     'dependencies': [
-#       '../sandbox/sandbox.gyp:sandbox',
-#     ],
-#   }],
-#   ['OS!="android" and OS!="ios"', {
-#     'dependencies': [
-#       'browser/tracing/tracing_resources.gyp:tracing_resources',
-#     ],
-#   }],
-#   ['OS!="ios"', {
-#     'dependencies': [
-#       '../third_party/libyuv/libyuv.gyp:libyuv',
-#     ],
-#   }],
-#   ['enable_webrtc==1', {
-#     'dependencies': [
-#       '../jingle/jingle.gyp:jingle_glue',
-#     ],
-#     'sources': [
-#       'browser/renderer_host/media/peer_connection_tracker_host.cc',
-#       'browser/renderer_host/media/peer_connection_tracker_host.h',
-#       'browser/renderer_host/media/webrtc_identity_service_host.cc',
-#       'browser/renderer_host/media/webrtc_identity_service_host.h',
-#       'browser/renderer_host/p2p/socket_host.cc',
-#       'browser/renderer_host/p2p/socket_host.h',
-#       'browser/renderer_host/p2p/socket_host_tcp.cc',
-#       'browser/renderer_host/p2p/socket_host_tcp.h',
-#       'browser/renderer_host/p2p/socket_host_tcp_server.cc',
-#       'browser/renderer_host/p2p/socket_host_tcp_server.h',
-#       'browser/renderer_host/p2p/socket_host_throttler.cc',
-#       'browser/renderer_host/p2p/socket_host_throttler.h',
-#       'browser/renderer_host/p2p/socket_host_udp.cc',
-#       'browser/renderer_host/p2p/socket_host_udp.h',
-#       'browser/renderer_host/p2p/socket_dispatcher_host.cc',
-#       'browser/renderer_host/p2p/socket_dispatcher_host.h',
-#     ],
-#   }],
-#   ['enable_webrtc==1 and OS=="linux"', {
-#     'dependencies': [
-#       '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
-#     ],
-#   }],
-#   ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
-#     'sources': [
-#       'browser/media/capture/desktop_capture_device.cc',
-#       'browser/media/capture/desktop_capture_device.h',
-#       'browser/media/capture/desktop_capture_device_aura.cc',
-#       'browser/media/capture/desktop_capture_device_aura.h',
-#       'browser/media/capture/desktop_capture_device_uma_types.cc',
-#       'browser/media/capture/desktop_capture_device_uma_types.h',
-#     ],
-#     'dependencies': [
-#       '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-#     ],
-#     'defines': [
-#       'ENABLE_SCREEN_CAPTURE=1',
-#     ],
-#   }],
-#   ['OS=="win"', {
-#     'dependencies': [
-#       # For accessibility
-#       '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
-#       '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-#     ],
-#     'sources/': [
-#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
-#     ],
-#     'defines': [
-#       # This prevents the inclusion of atlhost.h which paired
-#       # with the windows 8 sdk it does the wrong thing.
-#       '__ATLHOST_H__',
-#     ],
-#     'link_settings': {
-#       'libraries': [
-#         '-lcomctl32.lib',
-#         '-ldinput8.lib',
-#         '-ldwmapi.lib',
-#         '-ldxguid.lib',
-#         '-lsensorsapi.lib',
-#         '-lportabledeviceguids.lib',
-#       ],
+  if (!is_mac && !is_ios) {
+    deps += [ "//sandbox" ]
+  }
+  if (!is_android && !is_ios) {
+    # TODO(GYP)
+    #deps += [ "//content/browser/tracing:resources" ]
+  }
+
+  if (enable_webrtc) {
+    sources += rebase_path(content_browser_gypi_values.webrtc_browser_sources,
+                           ".", "//content")
+    # TODO(GYP)
+    #deps += [ "//jingle:glue" ]
+    if (is_linux) {
+      # TODO(GYP)
+      #deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+    }
+    if (is_linux || is_mac || is_win) {
+      sources += [
+        "media/capture/desktop_capture_device.cc",
+        "media/capture/desktop_capture_device.h",
+        "media/capture/desktop_capture_device_aura.cc",
+        "media/capture/desktop_capture_device_aura.h",
+        "media/capture/desktop_capture_device_uma_types.cc",
+        "media/capture/desktop_capture_device_uma_types.h",
+      ]
+      defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
+      # TODO(GYP)
+      #deps += [ "//third_party/webrtc/modules:desktop_capture" ]
+    }
+  }
+
+  if (is_win) {
+    sources -= [
+      "device_sensors/data_fetcher_shared_memory_default.cc",
+      "geolocation/empty_wifi_data_provider.cc",
+    ]
+    defines += [
+      # This prevents the inclusion of atlhost.h which paired
+      # with the windows 8 sdk it does the wrong thing.
+      "__ATLHOST_H__",
+    ]
+    deps += [
+      # TODO(GYP)
+      #"//third_party/iaccessible2",
+      #"//third_party/isimpledom",
+    ]
+    libs += [
+      "comctl32.lib",
+      "dinput8.lib",
+      "dwmapi.lib",
+      "dxguid.lib",
+      "sensorsapi.lib",
+      "portabledeviceguids.lib",
+    ]
+    # TODI(GYP)
 #       'msvs_settings': {
 #         'VCLinkerTool': {
 #           'DelayLoadDLLs': [
@@ -194,187 +195,155 @@ source_set("browser") {
 #             'user32.dll',
 #             'dwmapi.dll',
 #           ],
-#         },
-#       },
-#     },
-#   }],
-#   ['OS=="linux"', {
-#     'dependencies': [
-#       '../sandbox/sandbox.gyp:libc_urandom_override',
-#     ],
-#   }],
-#   ['use_udev == 1', {
-#     'dependencies': [
-#       '../build/linux/system.gyp:udev',
-#     ],
-#   }, {
-#     'sources!': [
-#       'browser/device_monitor_udev.cc',
-#       'browser/device_monitor_udev.h',
-#       'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
-#       'browser/udev_linux.cc',
-#       'browser/udev_linux.h',
-#     ],
-#   }],
-#   ['OS=="linux" and use_aura==1', {
-#     'dependencies': [
-#       '../build/linux/system.gyp:fontconfig',
-#     ],
-#   }],
-#   ['use_x11==1', {
-#     'dependencies': [
-#       '../build/linux/system.gyp:x11',
-#     ],
-#   }],
-#   ['use_pango==1', {
-#     'dependencies': [
-#       '../build/linux/system.gyp:pangocairo',
-#     ],
-#     'sources!': [
-#       'browser/renderer_host/pepper/pepper_truetype_font_list_ozone.cc',
-#     ],
-#   }],
-#   ['OS=="android"', {
-#     'dependencies': [
-#       '../media/media.gyp:media',
-#       'content.gyp:content_jni_headers',
-#     ],
-#     'link_settings': {
-#       'libraries': [
-#         '-ljnigraphics',
-#       ],
-#     },
-#     'sources/': [
-#       ['exclude', '^browser/battery_status/battery_status_manager_default.cc$'],
-#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
-#       ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
-#       ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
-#       ['exclude', '^browser/tracing/tracing_ui'],
-#       ['exclude', '^browser/speech/'],
-#       ['include', '^browser/speech/speech_recognition_dispatcher_host\\.(cc|h)$'],
-#       ['include', '^browser/speech/speech_recognition_manager_impl\\.(cc|h)$'],
-#       ['include', '^browser/speech/speech_recognizer\\.h$'],
-#       ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
-#     ],
-#     'sources!': [
-#       'browser/browser_ipc_logging.cc',
-#       'browser/font_list_async.cc',
-#       'browser/geolocation/device_data_provider.cc',
-#       'browser/geolocation/empty_device_data_provider.cc',
-#       'browser/geolocation/wifi_data_provider_common.cc',
-#       'browser/renderer_host/native_web_keyboard_event.cc',
-#     ]
-#   }, {  # OS!="android"
-#     'sources/': [
-#       ['exclude', '^browser/renderer_host/java/'],
-#       ['exclude', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)'],
-#     ],
-#   }],
-#   ['OS=="mac"', {
-#     'sources/': [
-#       ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
-#     ],
-#     'sources!': [
-#       'browser/geolocation/empty_wifi_data_provider.cc',
-#     ],
-#     'dependencies': [
-#       '../third_party/mozilla/mozilla.gyp:mozilla',
-#       '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
-#     ],
-#     'link_settings': {
-#       'libraries': [
-#         '$(SDKROOT)/usr/lib/libbsm.dylib',
-#       ],
-#     },
-#   }],
-#   ['chromeos==1', {
-#     'dependencies': [
-#       '../build/linux/system.gyp:dbus',
-#       '../chromeos/chromeos.gyp:power_manager_proto',
-#     ],
-#     'sources!': [
-#       'browser/geolocation/wifi_data_provider_linux.cc',
-#       'browser/power_save_blocker_ozone.cc',
-#       'browser/power_save_blocker_x11.cc',
-#     ],
-#   }],
-#   ['os_bsd==1', {
-#     'sources/': [
-#       ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
-#     ],
-#   }],
-#   ['use_aura==1', {
-#     'dependencies': [
-#       '../ui/aura/aura.gyp:aura',
-#       '../ui/strings/ui_strings.gyp:ui_strings',
-#     ],
-#   }, {
-#     'sources/': [
-#       ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
-#       ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
-#       ['exclude', '^browser/web_contents/touch_editable_impl_aura.cc'],
-#       ['exclude', '^browser/web_contents/touch_editable_impl_aura.h'],
-#       ['exclude', '^browser/renderer_host/ui_events_helper.cc'],
-#       ['exclude', '^browser/renderer_host/ui_events_helper.h'],
-#       ['exclude', '^browser/context_factory.cc'],
-#       ['exclude', '^public/browser/context_factory.h'],
-#     ],
-#   }],
-#   ['use_aura==1 or OS=="mac"', {
-#     'dependencies': [
-#       '../ui/compositor/compositor.gyp:compositor',
-#     ],
-#   }, {
-#     'sources/': [
-#       ['exclude', '^browser/compositor/'],
-#     ]
-#   }],
-#   ['enable_plugins==1', {
-#     'dependencies': [
-#       '../ppapi/ppapi_internal.gyp:ppapi_ipc',
-#       '../ppapi/ppapi_internal.gyp:ppapi_shared',
-#     ],
-#   }, {  # enable_plugins==0
-#     'sources!': [
-#       'browser/pepper_flash_settings_helper_impl.cc',
-#       'browser/pepper_flash_settings_helper_impl.h',
-#       'browser/plugin_data_remover_impl.cc',
-#       'browser/plugin_data_remover_impl.h',
-#       'browser/plugin_loader_posix.cc',
-#       'browser/plugin_loader_posix.h',
-#       'browser/plugin_process_host.cc',
-#       'browser/plugin_process_host.h',
-#       'browser/plugin_service_impl.cc',
-#       'browser/plugin_service_impl.h',
-#       'browser/ppapi_plugin_process_host.cc',
-#       'public/browser/plugin_service.h',
-#     ],
-#     'sources/': [
-#       ['exclude', '^browser/renderer_host/pepper/'],
-#     ],
-#   }],
-#   ['input_speech==1', {
-#     'dependencies': [
-#       '../third_party/flac/flac.gyp:libflac',
-#       '../third_party/speex/speex.gyp:libspeex',
-#     ],
-#   }],
-#   ['OS == "win"', {
-#     'sources!': [
-#       'browser/geolocation/empty_wifi_data_provider.cc',
-#     ],
-#   }],
-#   ['OS == "linux" and use_dbus==1', {
-#     'sources!': [
-#       'browser/geolocation/empty_wifi_data_provider.cc',
-#     ],
-#     'dependencies': [
-#       '../build/linux/system.gyp:dbus',
-#       '../dbus/dbus.gyp:dbus',
-#     ],
-#   }, {  # OS != "linux" or use_dbus==0
-#     'sources!': [
-#       'browser/geolocation/wifi_data_provider_linux.cc',
-#     ],
-#   }],
+  }
+
+  if (is_linux) {
+    deps += [ "//sandbox/linux:libc_urandom_override" ]
+  }
+
+  if (use_udev) {
+    configs += [ "//build/config/linux:udev" ]
+  } else {
+    # Remove udev-specific sources.
+    sources -= [
+      "device_monitor_udev.cc",
+      "device_monitor_udev.h",
+      "gamepad/gamepad_platform_data_fetcher_linux.cc",
+      "udev_linux.cc",
+      "udev_linux.h",
+    ]
+  }
+
+  if (enable_plugins) {
+    sources += rebase_path(content_browser_gypi_values.plugin_browser_sources,
+                           ".", "//content")
+    deps += [
+      "//ppapi:ppapi_ipc",
+      "//ppapi:ppapi_shared",
+    ]
+    if (!use_ozone || use_pango) {
+      sources -= [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
+    }
+  }
+
+  if (is_linux && use_aura) {
+    configs += [ "//build/config/linux:fontconfig" ]
+  }
+
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+  }
+
+  if (use_pango) {
+    configs += [ "//build/config/linux:pangocairo" ]
+  }
+
+  if (is_android) {
+    sources += rebase_path(content_browser_gypi_values.android_browser_sources,
+                           ".", "//content")
+    sources -= [
+      "battery_status/battery_status_manager_default.cc",
+      "browser_ipc_logging.cc",
+      "device_sensors/data_fetcher_shared_memory_default.cc",
+      "font_list_async.cc",
+      "geolocation/device_data_provider.cc",
+      "geolocation/empty_device_data_provider.cc",
+      "geolocation/network_location_provider.cc",
+      "geolocation/network_location_provider.h",
+      "geolocation/network_location_request.cc",
+      "geolocation/network_location_request.h",
+      "geolocation/wifi_data_provider_common.cc",
+      "renderer_host/native_web_keyboard_event.cc",
+      "tracing/tracing_ui.cc",
+      "tracing/tracing_ui.h",
+
+      # Android skips most, but not all, of the speech code.
+      "speech/audio_buffer.cc",
+      "speech/audio_buffer.h",
+      "speech/audio_encoder.cc",
+      "speech/audio_encoder.h",
+      "speech/chunked_byte_buffer.cc",
+      "speech/chunked_byte_buffer.h",
+      "speech/endpointer/endpointer.cc",
+      "speech/endpointer/endpointer.h",
+      "speech/endpointer/energy_endpointer.cc",
+      "speech/endpointer/energy_endpointer.h",
+      "speech/endpointer/energy_endpointer_params.cc",
+      "speech/endpointer/energy_endpointer_params.h",
+      "speech/google_one_shot_remote_engine.cc",
+      "speech/google_one_shot_remote_engine.h",
+      "speech/google_streaming_remote_engine.cc",
+      "speech/google_streaming_remote_engine.h",
+      "speech/speech_recognition_engine.cc",
+      "speech/speech_recognition_engine.h",
+      "speech/speech_recognizer_impl.cc",
+      "speech/speech_recognizer_impl.h",
+    ]
+    deps += [
+      #"//content:jni_headers",  TODO(GYP)
+      #"//media",  TODO(GYP)
+    ]
+    libs += [ "jnigraphics" ]
+  }
+
+  if (is_mac) {
+    sources -= [
+      "device_sensors/data_fetcher_shared_memory_default.cc",
+      "geolocation/empty_wifi_data_provider.cc",
+      "geolocation/empty_wifi_data_provider.h",
+    ]
+    libs += [ "bsm" ]
+  }
+
+  if (is_chromeos) {
+    sources -= [
+      "geolocation/wifi_data_provider_linux.cc",
+      "power_save_blocker_ozone.cc",
+      "power_save_blocker_x11.cc",
+    ]
+    deps += [ "//chromeos:power_manager_proto" ]
+  }
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura",
+      "//ui/strings",
+    ]
+  } else {  # Not aura.
+    sources -= [
+      "renderer_host/render_widget_host_view_aura.cc",
+      "renderer_host/render_widget_host_view_aura.h",
+      "web_contents/touch_editable_impl_aura.cc",
+      "web_contents/touch_editable_impl_aura.h",
+      "renderer_host/ui_events_helper.cc",
+      "renderer_host/ui_events_helper.h",
+      "context_factory.cc",
+    ]
+  }
+
+  if (use_aura || is_mac) {
+    sources += rebase_path(
+      content_browser_gypi_values.compositor_browser_sources,
+      ".", "//content")
+    deps += [ "//ui/compositor" ]
+  }
+
+  if (enable_speech_input) {
+    deps += [
+      #"//third_party/flac",  TODO(GYP)
+      #"//third_party/speex",  TODO(GYP)
+    ]
+  }
+
+  if (is_linux && use_dbus) {
+    sources -= [
+      "geolocation/empty_wifi_data_provider.cc",
+    ]
+    deps += [ "//dbus" ]
+  } else {
+    if (!use_dbus) {
+      # This will already have gotten removed for all non-Linux cases.
+     sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
+    }
+  }
 }
