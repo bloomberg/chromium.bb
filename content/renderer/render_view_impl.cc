@@ -1068,7 +1068,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SaveImageAt, OnSaveImageAt)
@@ -1162,10 +1161,6 @@ void RenderViewImpl::OnSelectWordAroundCaret() {
   handling_input_event_ = true;
   webview()->focusedFrame()->selectWordAroundCaret();
   handling_input_event_ = false;
-}
-
-void RenderViewImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, Navigate(params.url));
 }
 
 bool RenderViewImpl::IsBackForwardToStaleEntry(

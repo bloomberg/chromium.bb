@@ -808,10 +808,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool IsBackForwardToStaleEntry(const FrameMsg_Navigate_Params& params,
                                  bool is_reload);
 
-  // TODO(nasko): Remove this method when code is migrated to use
-  // RenderFrameObserver.
-  void OnNavigate(const FrameMsg_Navigate_Params& params);
-
   // Make the given |frame| show an empty, unscriptable page.
   // TODO(creis): Move this to RenderFrame.
   void NavigateToSwappedOutURL(blink::WebFrame* frame);

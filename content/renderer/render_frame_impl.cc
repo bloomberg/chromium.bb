@@ -742,7 +742,8 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   if (!render_view_->webview())
     return;
 
-  render_view_->OnNavigate(params);
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, render_view_->observers_, Navigate(params.url));
 
   bool is_reload = RenderViewImpl::IsReload(params);
   WebURLRequest::CachePolicy cache_policy =
