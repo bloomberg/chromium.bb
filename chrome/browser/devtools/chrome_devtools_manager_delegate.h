@@ -37,6 +37,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       DevToolsProtocol::Command* command);
+  std::string emulate_network_conditions_client_id_;
 
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,

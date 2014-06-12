@@ -114,6 +114,8 @@ chrome::devtools::Network::emulateNetworkConditions::kParamMaximalThroughput;
   scoped_refptr<DevToolsNetworkConditions> conditions;
   if (offline || maximal_throughput)
     conditions = new DevToolsNetworkConditions(domains, maximal_throughput);
+
+  emulate_network_conditions_client_id_ = agent_host->GetId();
   UpdateNetworkState(agent_host, conditions);
   return command->SuccessResponse(NULL);
 }
@@ -124,12 +126,14 @@ void ChromeDevToolsManagerDelegate::UpdateNetworkState(
   Profile* profile = GetProfile(agent_host);
   if (!profile)
     return;
-  profile->GetDevToolsNetworkController()->SetNetworkState(
-      agent_host->GetId(), conditions);
+  profile->GetDevToolsNetworkController()->SetNetworkState(conditions);
 }
 
 void ChromeDevToolsManagerDelegate::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  UpdateNetworkState(agent_host, scoped_refptr<DevToolsNetworkConditions>());
+  if (agent_host->GetId() == emulate_network_conditions_client_id_) {
+    emulate_network_conditions_client_id_ = std::string();
+    UpdateNetworkState(agent_host, scoped_refptr<DevToolsNetworkConditions>());
+  }
 }

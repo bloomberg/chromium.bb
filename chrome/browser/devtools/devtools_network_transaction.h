@@ -47,6 +47,13 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   // Runs callback (if any) with net::ERR_INTERNET_DISCONNECTED result value.
   void Fail();
 
+  int64_t throttled_byte_count() const { return throttled_byte_count_; }
+  void DecreaseThrottledByteCount(int64_t delta) {
+    throttled_byte_count_ -= delta;
+  }
+
+  void FireThrottledCallback();
+
   // HttpTransaction methods:
   virtual int Start(
       const net::HttpRequestInfo* request,
@@ -102,6 +109,25 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   // True if Fail was already invoked.
   bool failed_;
 
+  enum CallbackType {
+      NONE,
+      READ,
+      RESTART_IGNORING_LAST_ERROR,
+      RESTART_WITH_AUTH,
+      RESTART_WITH_CERTIFICATE,
+      START
+  };
+
+  int SetupCallback(
+      net::CompletionCallback callback,
+      int result,
+      CallbackType callback_type);
+
+  void Throttle(int result);
+
+  int throttled_result_;
+  int64_t throttled_byte_count_;
+  CallbackType callback_type_;
   net::CompletionCallback proxy_callback_;
   net::CompletionCallback callback_;
 

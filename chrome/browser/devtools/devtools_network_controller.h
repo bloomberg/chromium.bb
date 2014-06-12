@@ -7,17 +7,24 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 
 class DevToolsNetworkConditions;
 class DevToolsNetworkTransaction;
 class GURL;
 class Profile;
+
+namespace base {
+class TimeDelta;
+class TimeTicks;
+}
 
 namespace content {
 class ResourceContext;
@@ -43,12 +50,12 @@ class DevToolsNetworkController {
   void RemoveTransaction(DevToolsNetworkTransaction* transaction);
 
   // Applies network emulation configuration.
-  // |client_id| should be DevToolsAgentHost GUID.
   void SetNetworkState(
-      const std::string& client_id,
       const scoped_refptr<DevToolsNetworkConditions> conditions);
 
   bool ShouldFail(const net::HttpRequestInfo* request);
+  bool ShouldThrottle(const net::HttpRequestInfo* request);
+  void ThrottleTransaction(DevToolsNetworkTransaction* transaction);
 
  protected:
   friend class test::DevToolsNetworkControllerHelper;
@@ -59,18 +66,22 @@ class DevToolsNetworkController {
 
   typedef scoped_refptr<DevToolsNetworkConditions> Conditions;
 
-  void SetNetworkStateOnIO(
-      const std::string& client_id,
-      const Conditions conditions);
+  void SetNetworkStateOnIO(const Conditions conditions);
 
   typedef std::set<DevToolsNetworkTransaction*> Transactions;
   Transactions transactions_;
 
-  // Active client id.
-  std::string active_client_id_;
-
-  // Active network conditions.
   Conditions conditions_;
+
+  void UpdateThrottles();
+  void ArmTimer();
+  void OnTimer();
+
+  std::vector<DevToolsNetworkTransaction*> throttled_transactions_;
+  base::OneShotTimer<DevToolsNetworkController> timer_;
+  base::TimeTicks offset_;
+  base::TimeDelta tick_length_;
+  uint64_t last_tick_;
 
   base::WeakPtrFactory<DevToolsNetworkController> weak_ptr_factory_;
 

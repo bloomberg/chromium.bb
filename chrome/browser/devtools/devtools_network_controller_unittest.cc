@@ -17,9 +17,6 @@
 
 namespace test {
 
-const char kClientId[] = "42";
-const char kAnotherClientId[] = "24";
-
 const char kHttpDotCom[] = "http://dot.com";
 const char kHttpDotOrg[] = "http://dot.org";
 const char kCom[] = "com";
@@ -63,13 +60,13 @@ class DevToolsNetworkControllerHelper {
     return request_.get();
   }
 
-  void SetNetworkState(const std::string& client_id, bool offline) {
+  void SetNetworkState(bool offline) {
     std::vector<std::string> domains;
     domains.push_back(kCom);
     scoped_refptr<DevToolsNetworkConditions> conditions;
     if (offline)
       conditions = new DevToolsNetworkConditions(domains, 0.0);
-    controller_.SetNetworkStateOnIO(client_id, conditions);
+    controller_.SetNetworkStateOnIO(conditions);
   }
 
   int Start() {
@@ -108,31 +105,15 @@ TEST(DevToolsNetworkControllerTest, SingleDisableEnable) {
   net::HttpRequestInfo* request = helper.GetRequest();
 
   EXPECT_FALSE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
   EXPECT_TRUE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, false);
-  EXPECT_FALSE(controller->ShouldFail(request));
-}
-
-TEST(DevToolsNetworkControllerTest, DoubleDisableEnable) {
-  DevToolsNetworkControllerHelper helper;
-  DevToolsNetworkController* controller = helper.controller();
-  net::HttpRequestInfo* request = helper.GetRequest();
-
-  EXPECT_FALSE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, true);
-  EXPECT_TRUE(controller->ShouldFail(request));
-  helper.SetNetworkState(kAnotherClientId, true);
-  EXPECT_TRUE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, false);
-  EXPECT_TRUE(controller->ShouldFail(request));
-  helper.SetNetworkState(kAnotherClientId, false);
+  helper.SetNetworkState(false);
   EXPECT_FALSE(controller->ShouldFail(request));
 }
 
 TEST(DevToolsNetworkControllerTest, FailOnStart) {
   DevToolsNetworkControllerHelper helper;
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
 
   int rv = helper.Start();
   EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
@@ -153,7 +134,7 @@ TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
   EXPECT_EQ(rv, net::ERR_IO_PENDING);
   EXPECT_EQ(callback->run_count(), 0);
 
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_EQ(callback->value(), net::ERR_INTERNET_DISCONNECTED);
 
@@ -164,8 +145,8 @@ TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
   EXPECT_EQ(callback->run_count(), 1);
 
   // Check that transaction in not failed second time.
-  helper.SetNetworkState(kClientId, false);
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(false);
+  helper.SetNetworkState(true);
   EXPECT_EQ(callback->run_count(), 1);
 }
 
@@ -176,7 +157,7 @@ TEST(DevToolsNetworkControllerTest, ReadAfterFail) {
   EXPECT_EQ(rv, net::OK);
   EXPECT_TRUE(helper.transaction()->request());
 
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
   EXPECT_TRUE(helper.transaction()->failed());
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
@@ -196,7 +177,7 @@ TEST(DevToolsNetworkControllerTest, AllowsDevToolsRequests) {
   net::HttpRequestInfo* request = helper.GetRequest();
 
   EXPECT_FALSE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
   EXPECT_FALSE(controller->ShouldFail(request));
 }
 
@@ -207,7 +188,7 @@ TEST(DevToolsNetworkControllerTest, AllowsNotMatchingRequests) {
   net::HttpRequestInfo* request = helper.GetRequest();
 
   EXPECT_FALSE(controller->ShouldFail(request));
-  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(true);
   EXPECT_FALSE(controller->ShouldFail(request));
 }
 
