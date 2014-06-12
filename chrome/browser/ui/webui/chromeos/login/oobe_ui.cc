@@ -240,7 +240,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(auto_enrollment_check_screen_handler);
 
   HIDDetectionScreenHandler* hid_detection_screen_handler =
-      new HIDDetectionScreenHandler(core_handler_);
+      new HIDDetectionScreenHandler();
   hid_detection_screen_actor_ = hid_detection_screen_handler;
   AddScreenHandler(hid_detection_screen_handler);
 

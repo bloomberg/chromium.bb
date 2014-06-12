@@ -9,6 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -90,6 +92,14 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
 
+  // Demo mode detection methods.
+  void StartIdleDetection();
+  void StartOobeTimer();
+  void OnIdle();
+  void OnOobeTimerUpdate();
+  void SetupTimeouts();
+  bool IsDerelict();
+
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
   base::ListValue* GetLanguageList();
@@ -106,6 +116,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   bool is_continue_enabled_;
 
+  // Total time this machine has spent on OOBE.
+  base::TimeDelta time_on_oobe_;
+
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
 
@@ -113,6 +126,19 @@ class NetworkScreenHandler : public NetworkScreenActor,
   gfx::Point network_control_pos_;
 
   scoped_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
+
+  scoped_ptr<IdleDetector> idle_detector_;
+
+  base::RepeatingTimer<NetworkScreenHandler> oobe_timer_;
+
+  // Timeout to detect if the machine is in a derelict state.
+  base::TimeDelta derelict_detection_timeout_;
+
+  // Timeout before showing our demo app if the machine is in a derelict state.
+  base::TimeDelta derelict_idle_timeout_;
+
+  // Time between updating our total time on oobe.
+  base::TimeDelta oobe_timer_update_interval_;
 
   // True if should reinitialize language and keyboard list once the page
   // is ready.

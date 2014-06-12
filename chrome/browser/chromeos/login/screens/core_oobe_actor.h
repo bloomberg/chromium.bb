@@ -42,9 +42,6 @@ class CoreOobeActor {
   virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void ShowDeviceResetScreen() = 0;
-  virtual void InitDemoModeDetection() = 0;
-  virtual void StopDemoModeDetection() = 0;
-
 };
 
 }  // namespace chromeos
