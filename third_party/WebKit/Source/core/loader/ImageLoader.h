@@ -138,7 +138,7 @@ private:
     ResourcePtr<ImageResource> m_image;
     // FIXME: Oilpan: We might be able to remove this Persistent hack when
     // ImageResourceClient is traceable.
-    GC_PLUGIN_IGNORE("http://crbug.com/353083")
+    GC_PLUGIN_IGNORE("http://crbug.com/383741")
     RefPtrWillBePersistent<Element> m_keepAlive;
 #if ENABLE(OILPAN)
     class ImageLoaderClientRemover {
@@ -152,8 +152,11 @@ private:
     };
     friend class ImageLoaderClientRemover;
     // Oilpan: This ImageLoader object must outlive its clients because they
-    // need to call ImageLoader::willRemoveClient before they die.
-    GC_PLUGIN_IGNORE("http://crbug.com/353083")
+    // need to call ImageLoader::willRemoveClient before they
+    // die. Non-Persistent HeapHashMap doesn't work well because weak processing
+    // for HeapHashMap is not triggered when both of ImageLoader and
+    // ImageLoaderClient are unreachable.
+    GC_PLUGIN_IGNORE("http://crbug.com/383742")
     PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> > m_clients;
 #else
     HashSet<ImageLoaderClient*> m_clients;
