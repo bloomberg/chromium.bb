@@ -42,8 +42,6 @@ namespace WebCore {
 
 class SimpleFontData;
 
-typedef Glyph GlyphBufferGlyph;
-
 // CG uses CGSize instead of FloatSize so that the result of advances()
 // can be passed directly to CGContextShowGlyphsWithAdvances in FontMac.mm
 #if OS(MACOSX)
@@ -73,9 +71,9 @@ public:
         m_advances.clear();
     }
 
-    GlyphBufferGlyph* glyphs(unsigned from) { return m_glyphs.data() + from; }
+    Glyph* glyphs(unsigned from) { return m_glyphs.data() + from; }
     GlyphBufferAdvance* advances(unsigned from) { return m_advances.data() + from; }
-    const GlyphBufferGlyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
+    const Glyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
     const GlyphBufferAdvance* advances(unsigned from) const { return m_advances.data() + from; }
 
     const SimpleFontData* fontDataAt(unsigned index) const { return m_fontData[index]; }
@@ -134,7 +132,7 @@ private:
         m_fontData[index1] = m_fontData[index2];
         m_fontData[index2] = f;
 
-        GlyphBufferGlyph g = m_glyphs[index1];
+        Glyph g = m_glyphs[index1];
         m_glyphs[index1] = m_glyphs[index2];
         m_glyphs[index2] = g;
 
@@ -144,7 +142,7 @@ private:
     }
 
     Vector<const SimpleFontData*, 2048> m_fontData;
-    Vector<GlyphBufferGlyph, 2048> m_glyphs;
+    Vector<Glyph, 2048> m_glyphs;
     Vector<GlyphBufferAdvance, 2048> m_advances;
 };
 
