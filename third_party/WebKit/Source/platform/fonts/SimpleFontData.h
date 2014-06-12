@@ -167,11 +167,6 @@ public:
 
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 
-    bool applyTransforms(GlyphBufferGlyph*, GlyphBufferAdvance*, size_t, TypesettingFeatures) const
-    {
-        return false;
-    }
-
     PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }
 
     // Implemented by the platform.

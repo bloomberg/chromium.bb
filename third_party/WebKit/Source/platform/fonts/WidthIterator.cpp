@@ -114,14 +114,6 @@ static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, bool ltr, unsi
     for (unsigned i = lastGlyphCount; i < glyphBufferSize; ++i)
         widthDifference -= advances[i].width();
 
-    if (!ltr)
-        glyphBuffer->reverse(lastGlyphCount, glyphBufferSize - lastGlyphCount);
-
-    fontData->applyTransforms(glyphBuffer->glyphs(lastGlyphCount), advances + lastGlyphCount, glyphBufferSize - lastGlyphCount, typesettingFeatures);
-
-    if (!ltr)
-        glyphBuffer->reverse(lastGlyphCount, glyphBufferSize - lastGlyphCount);
-
     for (size_t i = 0; i < charactersTreatedAsSpace.size(); ++i) {
         int spaceOffset = charactersTreatedAsSpace[i].first;
         const OriginalAdvancesForCharacterTreatedAsSpace& originalAdvances = charactersTreatedAsSpace[i].second;
