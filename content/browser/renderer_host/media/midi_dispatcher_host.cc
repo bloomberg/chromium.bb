@@ -72,10 +72,12 @@ void MidiDispatcherHost::OnCancelSysExPermissionRequest(
 }
 void MidiDispatcherHost::WasSysExPermissionGranted(int render_view_id,
                                                    int bridge_id,
-                                                   bool success) {
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantSendMidiSysExMessage(
-      render_process_id_);
-  Send(new MidiMsg_SysExPermissionApproved(render_view_id, bridge_id, success));
+                                                   bool is_allowed) {
+  if (is_allowed)
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantSendMidiSysExMessage(
+        render_process_id_);
+  Send(new MidiMsg_SysExPermissionApproved(
+      render_view_id, bridge_id, is_allowed));
 }
 
 }  // namespace content

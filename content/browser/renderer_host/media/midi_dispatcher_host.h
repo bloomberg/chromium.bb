@@ -38,7 +38,7 @@ class MidiDispatcherHost : public BrowserMessageFilter {
                                       const GURL& requesting_frame);
   void WasSysExPermissionGranted(int render_view_id,
                                  int bridge_id,
-                                 bool success);
+                                 bool is_allowed);
 
   int render_process_id_;
   BrowserContext* browser_context_;

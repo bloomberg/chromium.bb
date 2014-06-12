@@ -45,7 +45,7 @@ IPC_MESSAGE_CONTROL3(MidiHostMsg_CancelSysExPermissionRequest,
 
 IPC_MESSAGE_ROUTED2(MidiMsg_SysExPermissionApproved,
                     int /* client id */,
-                    bool /* success */)
+                    bool /* is_allowed */)
 
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
