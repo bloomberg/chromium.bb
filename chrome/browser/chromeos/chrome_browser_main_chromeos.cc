@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/session/session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -161,7 +162,6 @@ class StubLogin : public LoginStatusConsumer,
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
       LoginUtils::Get()->PrepareProfile(user_context,
-                                        std::string(),  // display_email
                                         false,          // has_cookies
                                         true,           // has_active_session
                                         this);
@@ -236,7 +236,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
       // We did not log in (we crashed or are debugging), so we need to
       // restore Sync.
-      LoginUtils::Get()->RestoreAuthenticationSession(profile);
+      SessionManager::GetInstance()->RestoreAuthenticationSession(profile);
     }
   }
 }
@@ -632,8 +632,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
                                        login_user);
     }
 
-    // This is done in LoginUtils::OnProfileCreated during normal login.
-    LoginUtils::Get()->InitRlzDelayed(profile());
+    // This is done in SessionManager::OnProfileCreated during normal login.
+    SessionManager::GetInstance()->InitRlz(profile());
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
