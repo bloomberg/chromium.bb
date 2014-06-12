@@ -49,7 +49,6 @@
 #include "wtf/text/StringConcatenate.h"
 
 using namespace WTF;
-using namespace std;
 
 namespace WebCore {
 
@@ -165,7 +164,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
             if (RuntimeCSSEnabled::isCSSPropertyEnabled(propertyId))
                 propertyNames.append(getJSPropertyName(propertyId));
         }
-        sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
+        std::sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
         propertyNamesLength = propertyNames.size();
     }
 

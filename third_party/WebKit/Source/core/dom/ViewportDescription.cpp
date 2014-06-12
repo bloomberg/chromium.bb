@@ -36,8 +36,6 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 
-using namespace std;
-
 namespace WebCore {
 
 static const float& compareIgnoringAuto(const float& value1, const float& value2, const float& (*compare) (const float&, const float&))
@@ -112,13 +110,13 @@ PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewpo
 
     // 1. Resolve min-zoom and max-zoom values.
     if (resultMinZoom != ViewportDescription::ValueAuto && resultMaxZoom != ViewportDescription::ValueAuto)
-        resultMaxZoom = max(resultMinZoom, resultMaxZoom);
+        resultMaxZoom = std::max(resultMinZoom, resultMaxZoom);
 
     // 2. Constrain zoom value to the [min-zoom, max-zoom] range.
     if (resultZoom != ViewportDescription::ValueAuto)
-        resultZoom = compareIgnoringAuto(resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, min), max);
+        resultZoom = compareIgnoringAuto(resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, std::min), std::max);
 
-    float extendZoom = compareIgnoringAuto(resultZoom, resultMaxZoom, min);
+    float extendZoom = compareIgnoringAuto(resultZoom, resultMaxZoom, std::min);
 
     // 3. Resolve non-"auto" lengths to pixel lengths.
     if (extendZoom == ViewportDescription::ValueAuto) {
@@ -144,19 +142,19 @@ PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewpo
             resultMaxHeight = extendHeight;
 
         if (resultMinWidth == ViewportDescription::ValueExtendToZoom)
-            resultMinWidth = compareIgnoringAuto(extendWidth, resultMaxWidth, max);
+            resultMinWidth = compareIgnoringAuto(extendWidth, resultMaxWidth, std::max);
 
         if (resultMinHeight == ViewportDescription::ValueExtendToZoom)
-            resultMinHeight = compareIgnoringAuto(extendHeight, resultMaxHeight, max);
+            resultMinHeight = compareIgnoringAuto(extendHeight, resultMaxHeight, std::max);
     }
 
     // 4. Resolve initial width from min/max descriptors.
     if (resultMinWidth != ViewportDescription::ValueAuto || resultMaxWidth != ViewportDescription::ValueAuto)
-        resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, initialViewportSize.width(), min), max);
+        resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, initialViewportSize.width(), std::min), std::max);
 
     // 5. Resolve initial height from min/max descriptors.
     if (resultMinHeight != ViewportDescription::ValueAuto || resultMaxHeight != ViewportDescription::ValueAuto)
-        resultHeight = compareIgnoringAuto(resultMinHeight, compareIgnoringAuto(resultMaxHeight, initialViewportSize.height(), min), max);
+        resultHeight = compareIgnoringAuto(resultMinHeight, compareIgnoringAuto(resultMaxHeight, initialViewportSize.height(), std::min), std::max);
 
     // 6-7. Resolve width value.
     if (resultWidth == ViewportDescription::ValueAuto) {
@@ -180,7 +178,7 @@ PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewpo
             resultZoom = initialViewportSize.width() / resultWidth;
         if (resultHeight != ViewportDescription::ValueAuto && resultHeight > 0) {
             // if 'auto', the initial-scale will be negative here and thus ignored.
-            resultZoom = max<float>(resultZoom, initialViewportSize.height() / resultHeight);
+            resultZoom = std::max<float>(resultZoom, initialViewportSize.height() / resultHeight);
         }
     }
 

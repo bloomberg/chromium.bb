@@ -37,7 +37,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace std;
 using namespace WebCore;
 
 using testing::AtLeast;
@@ -277,9 +276,9 @@ bool ScrollAnimatorNoneTest::updateDataFromParameters(float step, float multipli
 
     double deltaTime = m_data->m_lastAnimationTime - m_data->m_startTime;
     double timeLeft = m_data->m_animationTime - deltaTime;
-    double releaseTimeLeft = min(timeLeft, m_data->m_releaseTime);
-    double attackTimeLeft = max(0., m_data->m_attackTime - deltaTime);
-    double sustainTimeLeft = max(0., timeLeft - releaseTimeLeft - attackTimeLeft);
+    double releaseTimeLeft = std::min(timeLeft, m_data->m_releaseTime);
+    double attackTimeLeft = std::max(0., m_data->m_attackTime - deltaTime);
+    double sustainTimeLeft = std::max(0., timeLeft - releaseTimeLeft - attackTimeLeft);
 
     // If we're getting near the finish, the desired velocity can decrease since the time left gets increased.
     if (step * multiplier) {
@@ -307,9 +306,9 @@ bool ScrollAnimatorNoneTest::animateScroll(double currentTime)
 
     double deltaTime = m_data->m_lastAnimationTime - m_data->m_startTime;
     double timeLeft = m_data->m_animationTime - deltaTime;
-    double releaseTimeLeft = min(timeLeft, m_data->m_releaseTime);
-    double attackTimeLeft = max(0., m_data->m_attackTime - deltaTime);
-    double sustainTimeLeft = max(0., timeLeft - releaseTimeLeft - attackTimeLeft);
+    double releaseTimeLeft = std::min(timeLeft, m_data->m_releaseTime);
+    double attackTimeLeft = std::max(0., m_data->m_attackTime - deltaTime);
+    double sustainTimeLeft = std::max(0., timeLeft - releaseTimeLeft - attackTimeLeft);
     double distanceLeft = m_data->m_desiredPosition - *m_data->m_currentPosition;
 
     if (m_scrollingDown) {

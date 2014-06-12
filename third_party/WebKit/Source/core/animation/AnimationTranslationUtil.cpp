@@ -40,7 +40,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/WebTransformOperations.h"
 
-using namespace std;
 using namespace blink;
 
 namespace WebCore {

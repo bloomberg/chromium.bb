@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-using namespace std;
-
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
     const HashSet<Page*>& pages = Page::ordinaryPages();

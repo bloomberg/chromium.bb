@@ -161,7 +161,6 @@
 #include <cmath> // for std::pow
 
 using namespace WebCore;
-using namespace std;
 
 // The following constants control parameters for automated scaling of webpages
 // (such as due to a double tap gesture or find in page etc.). These are
@@ -1065,13 +1064,13 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source, int target
     const int absoluteSourceX = source.x + scrollOffset.width();
     if (leftMargin > absoluteSourceX) {
         leftMargin = absoluteSourceX;
-        rightMargin = max(leftMargin, minimumMargin);
+        rightMargin = std::max(leftMargin, minimumMargin);
     }
 
     const int maximumRightMargin = maxSize.width - (source.width + absoluteSourceX);
     if (rightMargin > maximumRightMargin) {
         rightMargin = maximumRightMargin;
-        leftMargin = min(leftMargin, max(rightMargin, minimumMargin));
+        leftMargin = std::min(leftMargin, std::max(rightMargin, minimumMargin));
     }
 
     const int newWidth = source.width + leftMargin + rightMargin;
@@ -1116,9 +1115,9 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
                 static_cast<int>(minimumMargin * rect.width / m_size.width));
         // Fit block to screen, respecting limits.
         scale = static_cast<float>(m_size.width) / rect.width;
-        scale = min(scale, legibleScale());
+        scale = std::min(scale, legibleScale());
         if (pageScaleFactor() < defaultScaleWhenAlreadyLegible)
-            scale = max(scale, defaultScaleWhenAlreadyLegible);
+            scale = std::max(scale, defaultScaleWhenAlreadyLegible);
         scale = clampPageScaleFactorToLimits(scale);
     }
 
@@ -1139,14 +1138,14 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
     } else {
         // Ensure position we're zooming to (+ padding) isn't off the bottom of
         // the screen.
-        rect.y = max<float>(rect.y, hitPoint.y + padding - screenHeight);
+        rect.y = std::max<float>(rect.y, hitPoint.y + padding - screenHeight);
     } // Otherwise top align the block.
 
     // Do the same thing for horizontal alignment.
     if (rect.width < screenWidth)
         rect.x -= 0.5 * (screenWidth - rect.width);
     else
-        rect.x = max<float>(rect.x, hitPoint.x + padding - screenWidth);
+        rect.x = std::max<float>(rect.x, hitPoint.x + padding - screenWidth);
     scroll.x = rect.x;
     scroll.y = rect.y;
 
@@ -2606,11 +2605,11 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         // onscreen.
         int idealLeftPadding = viewWidth * leftBoxRatio;
         int maxLeftPaddingKeepingBoxOnscreen = viewWidth - textboxRectInDocumentCoordinates.width();
-        newScroll.setX(textboxRectInDocumentCoordinates.x() - min<int>(idealLeftPadding, maxLeftPaddingKeepingBoxOnscreen));
+        newScroll.setX(textboxRectInDocumentCoordinates.x() - std::min<int>(idealLeftPadding, maxLeftPaddingKeepingBoxOnscreen));
     } else {
         // Field is wider than screen. Try to left-align field, unless caret would
         // be offscreen, in which case right-align the caret.
-        newScroll.setX(max<int>(textboxRectInDocumentCoordinates.x(), caretInDocumentCoordinates.x() + caretInDocumentCoordinates.width() + caretPadding - viewWidth));
+        newScroll.setX(std::max<int>(textboxRectInDocumentCoordinates.x(), caretInDocumentCoordinates.x() + caretInDocumentCoordinates.width() + caretPadding - viewWidth));
     }
     if (textboxRectInDocumentCoordinates.height() <= viewHeight) {
         // Field is shorter than screen. Vertically center it.
@@ -2618,7 +2617,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     } else {
         // Field is taller than screen. Try to top align field, unless caret would
         // be offscreen, in which case bottom-align the caret.
-        newScroll.setY(max<int>(textboxRectInDocumentCoordinates.y(), caretInDocumentCoordinates.y() + caretInDocumentCoordinates.height() + caretPadding - viewHeight));
+        newScroll.setY(std::max<int>(textboxRectInDocumentCoordinates.y(), caretInDocumentCoordinates.y() + caretInDocumentCoordinates.height() + caretPadding - viewHeight));
     }
 
     needAnimation = false;
@@ -2695,7 +2694,7 @@ void WebViewImpl::fullFramePluginZoomLevelChanged(double zoomLevel)
     if (zoomLevel == m_zoomLevel)
         return;
 
-    m_zoomLevel = max(min(zoomLevel, m_maximumZoomLevel), m_minimumZoomLevel);
+    m_zoomLevel = std::max(std::min(zoomLevel, m_maximumZoomLevel), m_minimumZoomLevel);
     m_client->zoomLevelChanged();
 }
 

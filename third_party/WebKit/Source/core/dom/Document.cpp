@@ -198,7 +198,6 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
-using namespace std;
 using namespace WTF;
 using namespace Unicode;
 
