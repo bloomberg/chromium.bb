@@ -467,14 +467,10 @@ void PasswordAutofillAgent::FirstUserGestureObserved() {
 void PasswordAutofillAgent::SendPasswordForms(blink::WebFrame* frame,
                                               bool only_visible) {
   scoped_ptr<RendererSavePasswordProgressLogger> logger;
-  // From the perspective of saving passwords, only calls with |only_visible|
-  // being true are important -- the decision whether to save the password is
-  // only made after visible forms are known, for failed login detection. Calls
-  // with |only_visible| false are important for password form autofill, which
-  // is currently not part of the logging.
-  if (only_visible && logging_state_active_) {
+  if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(this, routing_id()));
     logger->LogMessage(Logger::STRING_SEND_PASSWORD_FORMS_METHOD);
+    logger->LogBoolean(Logger::STRING_ONLY_VISIBLE, only_visible);
   }
 
   // Make sure that this security origin is allowed to use password manager.
