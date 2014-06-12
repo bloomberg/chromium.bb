@@ -101,6 +101,18 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     BindToRequest(new SampleObjectImpl(), &object_request);
   }
 
+  // These aren't called or implemented, but exist here to test that the
+  // methods are generated with the correct argument types for imported
+  // interfaces.
+  virtual void RequestImportedInterface(
+      InterfaceRequest<imported::ImportedInterface> imported,
+      const mojo::Callback<void(InterfaceRequest<imported::ImportedInterface>)>&
+          callback) MOJO_OVERRIDE {}
+  virtual void TakeImportedInterface(
+      imported::ImportedInterfacePtr imported,
+      const mojo::Callback<void(imported::ImportedInterfacePtr)>& callback)
+      MOJO_OVERRIDE {}
+
  private:
   ScopedMessagePipeHandle pipe1_;
 };

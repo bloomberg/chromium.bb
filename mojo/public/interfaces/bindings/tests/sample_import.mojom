@@ -19,4 +19,7 @@ struct Point {
   int32 y;
 };
 
+interface ImportedInterface {
+};
+
 }  // module imported

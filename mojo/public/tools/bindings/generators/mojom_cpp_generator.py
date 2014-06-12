@@ -103,9 +103,9 @@ def GetCppResultWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "%sPtr" % kind.name
+    return "%sPtr" % GetNameForKind(kind)
   if isinstance(kind, mojom.InterfaceRequest):
-    return "mojo::InterfaceRequest<%s>" % kind.kind.name
+    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -151,9 +151,9 @@ def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "%sPtr" % kind.name
+    return "%sPtr" % GetNameForKind(kind)
   if isinstance(kind, mojom.InterfaceRequest):
-    return "mojo::InterfaceRequest<%s>" % kind.kind.name
+    return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':
@@ -237,6 +237,7 @@ class Generator(generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
+    "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "has_callbacks": HasCallbacks,
     "should_inline": ShouldInlineStruct,

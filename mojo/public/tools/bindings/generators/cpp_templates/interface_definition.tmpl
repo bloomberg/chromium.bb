@@ -19,9 +19,9 @@ p{{loop.index}}
 {%-     elif param.kind|is_object_kind -%}
 p{{loop.index}}.Pass()
 {%-     elif param.kind|is_interface_kind -%}
-mojo::MakeProxy<{{param.kind.name}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
+mojo::MakeProxy<{{param.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
 {%-     elif param.kind|is_interface_request_kind -%}
-mojo::MakeRequest<{{param.kind.kind.name}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
+mojo::MakeRequest<{{param.kind.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
 {%-     elif param.kind|is_handle_kind -%}
 mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}}))
 {%-     elif param.kind|is_enum_kind -%}

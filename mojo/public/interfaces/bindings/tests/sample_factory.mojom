@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "sample_import.mojom"
+
 [JavaPackage="org.chromium.mojo.bindings.test.sample"]
 module sample {
 
@@ -29,6 +31,10 @@ interface Factory {
   DoStuff(Request request, handle<message_pipe> pipe);
   DoStuff2(handle<data_pipe_consumer> pipe);
   CreateObject(Object& obj);
+  RequestImportedInterface(
+      imported.ImportedInterface& obj) => (imported.ImportedInterface& obj);
+  TakeImportedInterface(
+      imported.ImportedInterface obj) => (imported.ImportedInterface obj);
 };
 
 interface FactoryClient {
