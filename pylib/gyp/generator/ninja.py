@@ -1717,6 +1717,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
   #   to cc/cxx.
   if flavor == 'win':
+    ar = 'lib.exe'
     # cc and cxx must be set to the correct architecture by overriding with one
     # of cl_x86 or cl_x64 below.
     cc = 'UNSET'
@@ -1724,6 +1725,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     ld = 'link.exe'
     ld_host = '$ld'
   else:
+    ar = 'ar'
     cc = 'cc'
     cxx = 'c++'
     ld = '$cc'
@@ -1743,6 +1745,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                                                 options.toplevel_dir)
   wrappers = {}
   for key, value in make_global_settings:
+    if key == 'AR':
+      ar = os.path.join(build_to_root, value)
     if key == 'CC':
       cc = os.path.join(build_to_root, value)
       if cc.endswith('clang-cl'):
@@ -1787,14 +1791,14 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   if flavor == 'win':
     master_ninja.variable('ld', ld)
     master_ninja.variable('idl', 'midl.exe')
-    master_ninja.variable('ar', 'lib.exe')
+    master_ninja.variable('ar', ar)
     master_ninja.variable('rc', 'rc.exe')
     master_ninja.variable('asm', 'ml.exe')
     master_ninja.variable('mt', 'mt.exe')
   else:
     master_ninja.variable('ld', CommandWithWrapper('LINK', wrappers, ld))
     master_ninja.variable('ldxx', CommandWithWrapper('LINK', wrappers, ldxx))
-    master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))
+    master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], ar))
 
   if generator_supports_multiple_toolsets:
     if not cc_host:

@@ -85,18 +85,16 @@ verify_ar_target(test)
 
 # Test 'AR' in 'make_global_settings'.
 test.run_gyp('make_global_settings_ar.gyp', '-Dcustom_ar_target=my_ar')
-# TODO(yukawa): Support 'AR' in Ninja generator
-if test.format == 'make':
-  verify_ar_target(test, ar='my_ar', rel_path=True)
+verify_ar_target(test, ar='my_ar', rel_path=True)
 
 
 # Test 'AR'/'AR.host' in 'make_global_settings'.
 test.run_gyp('make_global_settings_ar.gyp',
              '-Dcustom_ar_target=my_ar_target1',
              '-Dcustom_ar_host=my_ar_host1')
-# TODO(yukawa): Support 'AR'/'AR.host' in Ninja generator
+verify_ar_target(test, ar='my_ar_target1', rel_path=True)
+# TODO(yukawa): Support 'AR.host' in Ninja generator
 if test.format == 'make':
-  verify_ar_target(test, ar='my_ar_target1', rel_path=True)
   verify_ar_host(test, ar='my_ar_host1', rel_path=True)
 
 
@@ -118,9 +116,7 @@ verify_ar_host(test, ar='my_ar_host2', rel_path=False)
 with TestGyp.LocalEnv({'AR_host': 'my_ar_host3'}):
   test.run_gyp('make_global_settings_ar.gyp',
                '-Dcustom_ar_target=my_ar_target3')
-# TODO(yukawa): Support 'AR' in Ninja generator
-if test.format == 'make':
-  verify_ar_target(test, ar='my_ar_target3', rel_path=True)
+verify_ar_target(test, ar='my_ar_target3', rel_path=True)
 verify_ar_host(test, ar='my_ar_host3', rel_path=False)
 
 
