@@ -147,11 +147,12 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
   // chrome_pref_service_factory.cc allows unloaded profile seeding on this
   // platform.
   return true;
-#endif  // defined(OFFICIAL_BUILD)
-    return GetParam() == chrome_prefs::internals::
-                             kSettingsEnforcementGroupNoEnforcement ||
-           GetParam() == chrome_prefs::internals::
+#else
+  return GetParam() == chrome_prefs::internals::
+                           kSettingsEnforcementGroupNoEnforcement ||
+         GetParam() == chrome_prefs::internals::
                              kSettingsEnforcementGroupEnforceOnload;
+#endif  // defined(OFFICIAL_BUILD)
   }
 };
 
