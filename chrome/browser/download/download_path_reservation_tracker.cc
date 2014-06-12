@@ -147,15 +147,14 @@ bool TruncateFileName(base::FilePath* path, size_t limit) {
 //   writeable.
 // - Truncates the suggested name if it exceeds the filesystem's limit.
 // - Uniquifies |suggested_path| if |should_uniquify_path| is true.
-// - Schedules |callback| on the UI thread with the reserved path and a flag
-//   indicating whether the returned path has been successfully verified.
-void CreateReservation(
+// - Returns true if |reserved_path| has been successfully verified.
+bool CreateReservation(
     ReservationKey key,
     const base::FilePath& suggested_path,
     const base::FilePath& default_download_path,
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-    const DownloadPathReservationTracker::ReservedPathCallback& callback) {
+    base::FilePath* reserved_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(suggested_path.IsAbsolute());
 
@@ -243,8 +242,8 @@ void CreateReservation(
 
   reservations[key] = target_path;
   bool verified = (is_path_writeable && !has_conflicts && !name_too_long);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, target_path, verified));
+  *reserved_path = target_path;
+  return verified;
 }
 
 // Called on the FILE thread to update the path of the reservation associated
@@ -275,6 +274,14 @@ void RevokeReservation(ReservationKey key) {
     delete g_reservation_map;
     g_reservation_map = NULL;
   }
+}
+
+void RunGetReservedPathCallback(
+    const DownloadPathReservationTracker::ReservedPathCallback& callback,
+    const base::FilePath* reserved_path,
+    bool verified) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  callback.Run(*reserved_path, verified);
 }
 
 DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
@@ -349,14 +356,20 @@ void DownloadPathReservationTracker::GetReservedPath(
   new DownloadItemObserver(download_item);
   // DownloadItemObserver deletes itself.
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &CreateReservation,
-      download_item,
-      target_path,
-      default_path,
-      create_directory,
-      conflict_action,
-      callback));
+  base::FilePath* reserved_path = new base::FilePath;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CreateReservation,
+                 download_item,
+                 target_path,
+                 default_path,
+                 create_directory,
+                 conflict_action,
+                 reserved_path),
+      base::Bind(&RunGetReservedPathCallback,
+                 callback,
+                 base::Owned(reserved_path)));
 }
 
 // static
