@@ -188,7 +188,7 @@ public:
     GraphicsLayerUpdater::UpdateType updateTypeForChildren(GraphicsLayerUpdater::UpdateType) const;
     void clearNeedsGraphicsLayerUpdate();
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     void assertNeedsToUpdateGraphicsLayerBitsCleared();
 #endif
 

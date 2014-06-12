@@ -101,7 +101,7 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, con
         update(*child, updateType, childContext);
 }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 
 void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer& layer)
 {

@@ -71,7 +71,7 @@ void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, GraphicsLayerVector& 
     GraphicsLayerVector layerChildren;
     GraphicsLayerVector& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(layer.stackingNode());
 #endif
 

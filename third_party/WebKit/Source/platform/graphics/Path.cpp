@@ -487,7 +487,7 @@ bool Path::unionPath(const Path& other)
     return Op(m_path, other.m_path, kUnion_PathOp, &m_path);
 }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 bool ellipseIsRenderable(float startAngle, float endAngle)
 {
     return (std::abs(endAngle - startAngle) < twoPiFloat)

@@ -35,7 +35,7 @@ public:
 
     void update(RenderLayer*, UpdateType = DoNotForceUpdate, AncestorInfo = AncestorInfo());
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
 #endif
 

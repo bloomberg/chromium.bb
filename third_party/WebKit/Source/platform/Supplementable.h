@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 #include "wtf/Threading.h"
 #endif
 
@@ -180,7 +180,7 @@ public:
 
     void reattachThread()
     {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         m_threadId = currentThread();
 #endif
     }
@@ -199,7 +199,7 @@ private:
     GC_PLUGIN_IGNORE("")
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 protected:
     SupplementableBase() : m_threadId(currentThread()) { }
 

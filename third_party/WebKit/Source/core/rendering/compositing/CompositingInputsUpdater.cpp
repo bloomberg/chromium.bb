@@ -78,7 +78,7 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
     layer->clearChildNeedsCompositingInputsUpdate();
 }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 
 void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer* layer)
 {

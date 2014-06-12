@@ -2603,7 +2603,7 @@ DOMStringMap& Element::dataset()
 
 KURL Element::getURLAttribute(const QualifiedName& name) const
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     if (elementData()) {
         if (const Attribute* attribute = findAttributeByName(name))
             ASSERT(isURLAttribute(*attribute));
@@ -2614,7 +2614,7 @@ KURL Element::getURLAttribute(const QualifiedName& name) const
 
 KURL Element::getNonEmptyURLAttribute(const QualifiedName& name) const
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     if (elementData()) {
         if (const Attribute* attribute = findAttributeByName(name))
             ASSERT(isURLAttribute(*attribute));

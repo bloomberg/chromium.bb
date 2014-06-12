@@ -76,7 +76,7 @@ public:
         ASSERT(!m_adoptionIsRequired);
         NodeType* thisNode = static_cast<NodeType*>(this);
         if (!--m_refCount && !thisNode->hasTreeSharedParent()) {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
             m_inRemovedLastRefFunction = true;
 #endif
             thisNode->removedLastRef();
@@ -108,7 +108,7 @@ template<typename NodeType> inline void adopted(TreeShared<NodeType>* object)
         return;
 
     ASSERT_WITH_SECURITY_IMPLICATION(!object->m_deletionHasBegun);
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     ASSERT(!object->m_inRemovedLastRefFunction);
     object->m_adoptionIsRequired = false;
 #endif

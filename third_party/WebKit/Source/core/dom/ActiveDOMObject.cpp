@@ -34,7 +34,7 @@ namespace WebCore {
 ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
     , m_pendingActivityCount(0)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     , m_suspendIfNeededCalled(false)
 #endif
 {
@@ -58,7 +58,7 @@ ActiveDOMObject::~ActiveDOMObject()
 
 void ActiveDOMObject::suspendIfNeeded()
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     ASSERT(!m_suspendIfNeededCalled);
     m_suspendIfNeededCalled = true;
 #endif

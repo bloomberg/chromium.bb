@@ -57,7 +57,7 @@ namespace WebCore {
 RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
     : m_layer(layer)
     , m_normalFlowListDirty(true)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     , m_layerListMutationAllowed(true)
     , m_stackingParent(0)
 #endif
@@ -71,7 +71,7 @@ RenderLayerStackingNode::RenderLayerStackingNode(RenderLayer* layer)
 
 RenderLayerStackingNode::~RenderLayerStackingNode()
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     if (!renderer()->documentBeingDestroyed()) {
         ASSERT(!isInStackingParentZOrderLists());
         ASSERT(!isInStackingParentNormalFlowList());
@@ -99,7 +99,7 @@ void RenderLayerStackingNode::dirtyZOrderLists()
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isStackingContext());
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     updateStackingParentForZOrderLists(0);
 #endif
 
@@ -123,7 +123,7 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
 {
     ASSERT(m_layerListMutationAllowed);
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     updateStackingParentForNormalFlowList(0);
 #endif
 
@@ -168,7 +168,7 @@ void RenderLayerStackingNode::rebuildZOrderLists()
         }
     }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     updateStackingParentForZOrderLists(this);
 #endif
 
@@ -190,7 +190,7 @@ void RenderLayerStackingNode::updateNormalFlowList()
         }
     }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     updateStackingParentForNormalFlowList(this);
 #endif
 
@@ -219,7 +219,7 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
     }
 }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 bool RenderLayerStackingNode::isInStackingParentZOrderLists() const
 {
     if (!m_stackingParent || m_stackingParent->zOrderListsDirty())

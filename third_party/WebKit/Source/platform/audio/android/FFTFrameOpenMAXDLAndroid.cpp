@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 const unsigned kMaxFFTPow2Size = 15;
 #endif
 

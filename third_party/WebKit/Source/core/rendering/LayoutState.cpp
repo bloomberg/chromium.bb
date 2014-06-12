@@ -110,7 +110,7 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSiz
 
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         m_layoutDelta = m_next->m_layoutDelta;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         m_layoutDeltaXSaturated = m_next->m_layoutDeltaXSaturated;
         m_layoutDeltaYSaturated = m_next->m_layoutDeltaYSaturated;
 #endif
@@ -123,7 +123,7 @@ LayoutState::LayoutState(RenderObject& root)
     : m_clipped(false)
     , m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     , m_layoutDeltaXSaturated(false)
     , m_layoutDeltaYSaturated(false)
 #endif

@@ -83,7 +83,7 @@ public:
 
     ImageOrientation currentFrameOrientation();
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     virtual bool notSolidColor() OVERRIDE;
 #endif
 

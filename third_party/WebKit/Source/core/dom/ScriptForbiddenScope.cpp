@@ -10,7 +10,7 @@
 
 namespace WebCore {
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 
 static unsigned s_scriptForbiddenCount = 0;
 

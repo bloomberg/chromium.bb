@@ -237,7 +237,7 @@ private:
     typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_newAttributeToPropertyMap;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool m_inRelativeLengthClientsInvalidation;
 #endif
     unsigned m_isContextElement : 1;

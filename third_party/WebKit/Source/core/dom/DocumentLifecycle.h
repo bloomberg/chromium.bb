@@ -132,7 +132,7 @@ public:
     }
 
 private:
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool canAdvanceTo(State) const;
     bool canRewindTo(State) const;
 #endif

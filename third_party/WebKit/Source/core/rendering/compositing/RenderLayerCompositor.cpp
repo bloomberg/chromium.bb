@@ -339,7 +339,7 @@ void RenderLayerCompositor::updateIfNeeded()
         if (updater.needsRebuildTree())
             updateType = std::max(updateType, CompositingUpdateRebuildTree);
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         // FIXME: Move this check to the end of the compositing update.
         GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(*updateRoot);
 #endif
@@ -678,7 +678,7 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
     if (layer->compositingState() == PaintsIntoOwnBacking)
         layer->repainter().setBackingNeedsRepaint();
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(layer->stackingNode());
 #endif
 

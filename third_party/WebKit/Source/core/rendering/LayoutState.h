@@ -46,7 +46,7 @@ public:
         : m_clipped(false)
         , m_isPaginated(pageLogicalHeight)
         , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         , m_layoutDeltaXSaturated(false)
         , m_layoutDeltaYSaturated(false)
 #endif
@@ -80,7 +80,7 @@ public:
     void addLayoutDelta(const LayoutSize& delta)
     {
         m_layoutDelta += delta;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
             m_layoutDeltaXSaturated |= m_layoutDelta.width() == LayoutUnit::max() || m_layoutDelta.width() == LayoutUnit::min();
             m_layoutDeltaYSaturated |= m_layoutDelta.height() == LayoutUnit::max() || m_layoutDelta.height() == LayoutUnit::min();
 #endif
@@ -106,7 +106,7 @@ public:
 #ifndef NDEBUG
     RenderObject* renderer() const { return m_renderer; }
 #endif
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool layoutDeltaXSaturated() const { return m_layoutDeltaXSaturated; }
     bool layoutDeltaYSaturated() const { return m_layoutDeltaYSaturated; }
 #endif
@@ -117,7 +117,7 @@ private:
     bool m_isPaginated:1;
     // If our page height has changed, this will force all blocks to relayout.
     bool m_pageLogicalHeightChanged:1;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool m_layoutDeltaXSaturated:1;
     bool m_layoutDeltaYSaturated:1;
 #endif

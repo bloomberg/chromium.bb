@@ -116,7 +116,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     , m_paintStateIndex(0)
     , m_pendingCanvasSave(false)
     , m_annotationMode(0)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     , m_annotationCount(0)
     , m_layerCount(0)
     , m_disableDestructionChecks(false)
@@ -142,7 +142,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
 
 GraphicsContext::~GraphicsContext()
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     if (!m_disableDestructionChecks) {
         ASSERT(!m_paintStateIndex);
         ASSERT(!m_paintState->saveCount());
@@ -226,7 +226,7 @@ void GraphicsContext::beginAnnotation(const char* rendererName, const char* pain
     for (AnnotationList::const_iterator it = annotations.begin(); it != end; ++it)
         canvas()->addComment(it->first, it->second.ascii().data());
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     ++m_annotationCount;
 #endif
 }
@@ -239,7 +239,7 @@ void GraphicsContext::endAnnotation()
     canvas()->endCommentGroup();
 
     ASSERT(m_annotationCount > 0);
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     --m_annotationCount;
 #endif
 }
@@ -463,7 +463,7 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
         saveLayer(0, &layerPaint);
     }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     ++m_layerCount;
 #endif
 }
@@ -476,7 +476,7 @@ void GraphicsContext::endLayer()
     restoreLayer();
 
     ASSERT(m_layerCount > 0);
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     --m_layerCount;
 #endif
 }

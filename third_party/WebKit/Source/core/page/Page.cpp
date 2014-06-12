@@ -420,7 +420,7 @@ double Page::timerAlignmentInterval() const
     return m_timerAlignmentInterval;
 }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 void Page::checkSubframeCountConsistency() const
 {
     ASSERT(m_subframeCount >= 0);

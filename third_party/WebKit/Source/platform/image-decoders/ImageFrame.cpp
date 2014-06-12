@@ -39,7 +39,7 @@ ImageFrame::ImageFrame()
     , m_premultiplyAlpha(true)
     , m_pixelsChanged(false)
     , m_requiredPreviousFrameIndex(kNotFound)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     , m_requiredPreviousFrameIndexValid(false)
 #endif
 {
@@ -69,7 +69,7 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     setHasAlpha(other.hasAlpha());
     // Copy raw fields to avoid ASSERT failure in requiredPreviousFrameIndex().
     m_requiredPreviousFrameIndex = other.m_requiredPreviousFrameIndex;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     m_requiredPreviousFrameIndexValid = other.m_requiredPreviousFrameIndexValid;
 #endif
     return *this;

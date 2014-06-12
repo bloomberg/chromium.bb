@@ -60,7 +60,7 @@ public:
     void registerDatabaseContext(DatabaseContext*);
     void unregisterDatabaseContext(DatabaseContext*);
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     void didConstructDatabaseContext();
     void didDestructDatabaseContext();
 #else
@@ -106,7 +106,7 @@ private:
     typedef HashMap<ExecutionContext*, RefPtr<DatabaseContext> > ContextMap;
 #endif
     ContextMap m_contextMap;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     int m_databaseContextRegisteredCount;
     int m_databaseContextInstanceCount;
 #endif

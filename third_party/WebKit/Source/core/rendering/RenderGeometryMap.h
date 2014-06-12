@@ -124,7 +124,7 @@ private:
     void dumpSteps() const;
 #endif
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool isTopmostRenderView(const RenderObject* renderer) const;
 #endif
 

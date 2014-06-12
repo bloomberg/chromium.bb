@@ -118,7 +118,7 @@ public:
         const FloatSize&, const FloatPoint& phase, CompositeOperator,
         const FloatRect&, blink::WebBlendMode = blink::WebBlendModeNormal, const IntSize& repeatSpacing = IntSize());
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     virtual bool notSolidColor() { return true; }
 #endif
 

@@ -49,7 +49,7 @@ private:
     double m_nextFireInterval;
     double m_repeatInterval;
     bool m_active;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool m_suspended;
 #endif
 };

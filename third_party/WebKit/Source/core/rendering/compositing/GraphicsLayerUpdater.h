@@ -64,7 +64,7 @@ public:
 
     bool needsRebuildTree() const { return m_needsRebuildTree; }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     static void assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer&);
 #endif
 

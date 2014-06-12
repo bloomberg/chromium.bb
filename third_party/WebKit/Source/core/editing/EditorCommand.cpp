@@ -1626,14 +1626,14 @@ static const CommandMap& createCommandMap()
     // Unbookmark (not supported)
 
     CommandMap& commandMap = *new CommandMap;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     HashSet<int> idSet;
 #endif
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(commands); ++i) {
         const CommandEntry& command = commands[i];
         ASSERT(!commandMap.get(command.name));
         commandMap.set(command.name, &command.command);
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         ASSERT(!idSet.contains(command.command.idForUserMetrics));
         idSet.add(command.command.idForUserMetrics);
 #endif

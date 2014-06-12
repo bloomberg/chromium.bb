@@ -439,7 +439,7 @@ void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
             }
         }
     }
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     else {
         ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
         ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal);

@@ -141,7 +141,7 @@ namespace double_conversion {
     const int PowersOfTenCache::kMaxDecimalExponent = 340; // kCachedPowers[kCachedPowersLength - 1].decimal_exponent
 
 #ifndef NDEBUG
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
 #endif
 

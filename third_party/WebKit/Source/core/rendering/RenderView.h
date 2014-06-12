@@ -113,7 +113,7 @@ public:
             m_layoutState->addLayoutDelta(delta);
     }
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool layoutDeltaMatches(const LayoutSize& delta)
     {
         ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());

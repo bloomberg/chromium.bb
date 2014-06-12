@@ -112,7 +112,7 @@ public:
     void save();
     void restore();
     unsigned saveCount() { return m_canvasStateStack.size(); }
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     void disableDestructionChecks() { m_disableDestructionChecks = true; }
 #endif
 
@@ -497,7 +497,7 @@ private:
     struct RecordingState;
     Vector<RecordingState> m_recordingStateStack;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     unsigned m_annotationCount;
     unsigned m_layerCount;
     bool m_disableDestructionChecks;

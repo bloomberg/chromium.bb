@@ -91,7 +91,7 @@ static const int MaxOriginalImageArea = 1500 * 1500;
 static const int LinkDragBorderInset = 2;
 static const float DragImageAlpha = 0.75f;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
 static bool dragTypeIsValid(DragSourceAction action)
 {
     switch (action) {

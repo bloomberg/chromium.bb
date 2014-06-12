@@ -2182,7 +2182,7 @@ void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* conte
     if (!hasSelfPaintingLayerDescendant())
         return;
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(m_stackingNode.get());
 #endif
 
@@ -3306,7 +3306,7 @@ LayoutRect RenderLayer::physicalBoundingBoxIncludingReflectionAndStackingChildre
 
     const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this)->stackingNode());
 #endif
 
@@ -3376,7 +3376,7 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
 
     ASSERT(m_stackingNode->isStackingContext() || !m_stackingNode->hasPositiveZOrderList());
 
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this)->stackingNode());
 #endif
 
