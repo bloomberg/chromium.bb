@@ -1308,8 +1308,7 @@ void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Obj
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
     if (referencedName) {
-        if (!DOMDataStore::containsWrapper<V8TestInterface>(referencedName, isolate))
-            wrap(referencedName, creationContext, isolate);
+        ASSERT(DOMDataStore::containsWrapper<V8TestInterface>(referencedName, isolate));
         DOMDataStore::setWrapperReference<V8TestInterface>(wrapper, referencedName, isolate);
     }
     setObjectGroup(object, wrapper, isolate);
