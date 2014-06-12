@@ -427,28 +427,11 @@ private:
     static void draw2xMarker(SkBitmap*, int);
 #endif
 
-    // Return value % max, but account for value possibly being negative.
-    static int fastMod(int value, int max)
-    {
-        bool isNeg = false;
-        if (value < 0) {
-            value = -value;
-            isNeg = true;
-        }
-        if (value >= max)
-            value %= max;
-        if (isNeg)
-            value = -value;
-        return value;
-    }
-
     // Helpers for drawing a focus ring (drawFocusRing)
     void drawOuterPath(const SkPath&, SkPaint&, int);
     void drawInnerPath(const SkPath&, SkPaint&, int);
 
     // SkCanvas wrappers.
-    bool isDrawingToLayer() const { return m_canvas->isDrawingToLayer(); }
-
     void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
