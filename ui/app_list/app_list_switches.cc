@@ -55,7 +55,11 @@ bool IsVoiceSearchEnabled() {
 }
 
 bool IsAppInfoEnabled() {
+#if defined(TOOLKIT_VIEWS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
+#else
+  return false;
+#endif
 }
 
 bool IsExperimentalAppListEnabled() {
