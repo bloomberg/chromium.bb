@@ -421,6 +421,12 @@ void WebKitTestController::RenderProcessGone(base::TerminationStatus status) {
   DiscardMainWindow();
 }
 
+void WebKitTestController::DevToolsProcessCrashed() {
+  DCHECK(CalledOnValidThread());
+  printer_->AddErrorMessage("#CRASHED - devtools");
+  DiscardMainWindow();
+}
+
 void WebKitTestController::WebContentsDestroyed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("FAIL: main window was destroyed");

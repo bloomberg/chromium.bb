@@ -45,6 +45,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   // DevToolsFrontendHostDelegate implementation
   virtual void DispatchOnEmbedder(const std::string& message) OVERRIDE {}

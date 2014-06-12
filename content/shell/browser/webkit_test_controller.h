@@ -129,6 +129,8 @@ class WebKitTestController : public base::NonThreadSafe,
     printer_.reset(printer);
   }
 
+  void DevToolsProcessCrashed();
+
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void PluginCrashed(const base::FilePath& plugin_path,
