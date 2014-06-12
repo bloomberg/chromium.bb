@@ -168,9 +168,10 @@ void AppListMainView::ModelChanged() {
   Layout();
 }
 
-void AppListMainView::OnContentsViewActivePageChanged() {
+void AppListMainView::UpdateSearchBoxVisibility() {
   search_box_view_->SetVisible(
-      !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
+      !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START) ||
+      contents_view_->IsShowingSearchResults());
 }
 
 void AppListMainView::OnStartPageSearchButtonPressed() {
@@ -266,6 +267,7 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
   base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
+  UpdateSearchBoxVisibility();
 
   if (should_show_search)
     delegate_->StartSearch();

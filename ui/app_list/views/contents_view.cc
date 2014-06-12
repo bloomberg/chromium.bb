@@ -37,25 +37,26 @@ const double kFinishTransitionThreshold = 0.33;
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListModel* model,
                            AppListViewDelegate* view_delegate)
-    : start_page_view_(NULL),
+    : search_results_view_(NULL),
+      start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
 
-  search_results_view_ =
-      new SearchResultListView(app_list_main_view, view_delegate);
-  AddLauncherPage(search_results_view_, NAMED_PAGE_SEARCH_RESULTS);
-
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     start_page_view_ = new StartPageView(app_list_main_view, view_delegate);
     AddLauncherPage(start_page_view_, NAMED_PAGE_START);
+  } else {
+    search_results_view_ =
+        new SearchResultListView(app_list_main_view, view_delegate);
+    AddLauncherPage(search_results_view_, NAMED_PAGE_SEARCH_RESULTS);
+    search_results_view_->SetResults(model->results());
   }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view, model);
   active_page_ = AddLauncherPage(apps_container_view_, NAMED_PAGE_APPS);
 
-  search_results_view_->SetResults(model->results());
 }
 
 ContentsView::~ContentsView() {
@@ -109,15 +110,39 @@ void ContentsView::ActivePageChanged() {
       search_results_view_->visible()) {
     search_results_view_->SetSelectedIndex(0);
   }
-  search_results_view_->UpdateAutoLaunchState();
-
-  // Notify parent AppListMainView of the page change.
-  app_list_main_view_->OnContentsViewActivePageChanged();
+  if (search_results_view_)
+    search_results_view_->UpdateAutoLaunchState();
 
   if (IsNamedPageActive(NAMED_PAGE_START))
     start_page_view_->Reset();
 
+  // Notify parent AppListMainView of the page change.
+  app_list_main_view_->UpdateSearchBoxVisibility();
+
   AnimateToIdealBounds();
+}
+
+void ContentsView::ShowSearchResults(bool show) {
+  NamedPage new_named_page = show ? NAMED_PAGE_SEARCH_RESULTS : NAMED_PAGE_APPS;
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    new_named_page = NAMED_PAGE_START;
+
+  SetActivePage(GetPageIndexForNamedPage(new_named_page));
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    if (show)
+      start_page_view_->ShowSearchResults();
+    else
+      start_page_view_->Reset();
+    app_list_main_view_->UpdateSearchBoxVisibility();
+  }
+}
+
+bool ContentsView::IsShowingSearchResults() const {
+  return app_list::switches::IsExperimentalAppListEnabled()
+             ? IsNamedPageActive(NAMED_PAGE_START) &&
+                   start_page_view_->IsShowingSearchResults()
+             : IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS);
 }
 
 void ContentsView::CalculateIdealBounds() {
@@ -169,11 +194,6 @@ PaginationModel* ContentsView::GetAppsPaginationModel() {
   return apps_container_view_->apps_grid_view()->pagination_model();
 }
 
-void ContentsView::ShowSearchResults(bool show) {
-  NamedPage new_named_page = show ? NAMED_PAGE_SEARCH_RESULTS : NAMED_PAGE_APPS;
-  SetActivePage(GetPageIndexForNamedPage(new_named_page));
-}
-
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
   apps_container_view_->ShowActiveFolder(item);
 }
@@ -200,7 +220,9 @@ int ContentsView::AddLauncherPage(views::View* view, NamedPage named_page) {
 gfx::Size ContentsView::GetPreferredSize() const {
   const gfx::Size container_size =
       apps_container_view_->apps_grid_view()->GetPreferredSize();
-  const gfx::Size results_size = search_results_view_->GetPreferredSize();
+  const gfx::Size results_size = search_results_view_
+                                     ? search_results_view_->GetPreferredSize()
+                                     : gfx::Size();
 
   int width = std::max(container_size.width(), results_size.width());
   int height = std::max(container_size.height(), results_size.height());

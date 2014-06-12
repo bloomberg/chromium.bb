@@ -18,6 +18,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
@@ -76,8 +77,11 @@ class AppListViewTestContext {
   // Tests displaying of the experimental app list and shows the start page.
   void RunStartPageTest();
 
-  // Tests that changing the App List profile.
+  // Tests changing the App List profile.
   void RunProfileChangeTest();
+
+  // Tests displaying of the search results.
+  void RunSearchResultsTest();
 
   // A standard set of checks on a view, e.g., ensuring it is drawn and visible.
   static void CheckView(views::View* subview);
@@ -355,6 +359,56 @@ void AppListViewTestContext::RunProfileChangeTest() {
   Close();
 }
 
+void AppListViewTestContext::RunSearchResultsTest() {
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
+  AppListTestModel* model = delegate_->GetTestModel();
+  model->PopulateApps(3);
+
+  Show();
+
+  AppListMainView* main_view = view_->app_list_main_view();
+  ContentsView* contents_view = main_view->contents_view();
+  contents_view->SetActivePage(
+      contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
+  EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
+  EXPECT_TRUE(main_view->search_box_view()->visible());
+
+  // Show the search results.
+  contents_view->ShowSearchResults(true);
+  contents_view->Layout();
+  EXPECT_TRUE(contents_view->IsShowingSearchResults());
+  EXPECT_TRUE(main_view->search_box_view()->visible());
+
+  if (test_type_ == EXPERIMENTAL) {
+    EXPECT_TRUE(
+        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->start_page_view()));
+  } else {
+    EXPECT_TRUE(contents_view->IsNamedPageActive(
+        ContentsView::NAMED_PAGE_SEARCH_RESULTS));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->search_results_view()));
+  }
+
+  // Hide the search results.
+  contents_view->ShowSearchResults(false);
+  contents_view->Layout();
+  EXPECT_FALSE(contents_view->IsShowingSearchResults());
+  if (test_type_ == EXPERIMENTAL) {
+    EXPECT_TRUE(
+        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->start_page_view()));
+    EXPECT_FALSE(main_view->search_box_view()->visible());
+  } else {
+    EXPECT_TRUE(
+        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_APPS));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
+    EXPECT_TRUE(main_view->search_box_view()->visible());
+  }
+
+  Close();
+}
+
 class AppListViewTestAura : public views::ViewsTestBase,
                             public ::testing::WithParamInterface<int> {
  public:
@@ -475,6 +529,15 @@ TEST_P(AppListViewTestAura, ProfileChangeTest) {
 
 TEST_P(AppListViewTestDesktop, ProfileChangeTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunProfileChangeTest());
+}
+
+// Tests that the correct views are displayed for showing search results.
+TEST_P(AppListViewTestAura, SearchResultsTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunSearchResultsTest());
+}
+
+TEST_P(AppListViewTestDesktop, SearchResultsTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunSearchResultsTest());
 }
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,

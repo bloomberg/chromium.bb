@@ -10,6 +10,7 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -76,15 +77,17 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
     : app_list_main_view_(app_list_main_view),
       model_(NULL),
       view_delegate_(view_delegate),
+      results_view_(
+          new SearchResultListView(app_list_main_view, view_delegate)),
       instant_container_(new views::View),
-      tiles_container_(new views::View) {
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, kTopMargin, kInstantContainerSpacing));
-
+      tiles_container_(new views::View),
+      show_state_(SHOW_START_PAGE) {
   // The view containing the start page WebContents and the BarPlaceholder.
   AddChildView(instant_container_);
   views::BoxLayout* instant_layout_manager = new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0, kInstantContainerSpacing);
+  instant_layout_manager->set_inside_border_insets(
+      gfx::Insets(kTopMargin, 0, kInstantContainerSpacing, 0));
   instant_layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   instant_container_->SetLayoutManager(instant_layout_manager);
@@ -94,6 +97,9 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   if (web_view)
     instant_container_->AddChildView(web_view);
   instant_container_->AddChildView(new BarPlaceholderButton(this));
+
+  // The view containing the search results.
+  AddChildView(results_view_);
 
   // The view containing the start page tiles.
   AddChildView(tiles_container_);
@@ -124,11 +130,12 @@ void StartPageView::SetModel(AppListModel* model) {
     model_->RemoveObserver(this);
   model_ = model;
   model_->AddObserver(this);
+  results_view_->SetResults(model_->results());
   Reset();
 }
 
 void StartPageView::Reset() {
-  instant_container_->SetVisible(true);
+  SetShowState(SHOW_START_PAGE);
   if (!model_ || !model_->top_level_item_list())
     return;
 
@@ -138,14 +145,53 @@ void StartPageView::Reset() {
       item = model_->top_level_item_list()->item_at(i);
     tile_views_[i]->SetAppListItem(item);
   }
+}
 
-  Layout();
+void StartPageView::ShowSearchResults() {
+  SetShowState(SHOW_SEARCH_RESULTS);
+}
+
+void StartPageView::SetShowState(ShowState show_state) {
+  instant_container_->SetVisible(show_state == SHOW_START_PAGE);
+  results_view_->SetVisible(show_state == SHOW_SEARCH_RESULTS);
+
+  if (show_state_ == show_state)
+    return;
+
+  show_state_ = show_state;
+
+  results_view_->UpdateAutoLaunchState();
+  if (show_state == SHOW_SEARCH_RESULTS)
+    results_view_->SetSelectedIndex(0);
+}
+
+bool StartPageView::IsShowingSearchResults() const {
+  return show_state_ == SHOW_SEARCH_RESULTS;
+}
+
+bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (show_state_ == SHOW_SEARCH_RESULTS)
+    return results_view_->OnKeyPressed(event);
+
+  return false;
+}
+
+void StartPageView::Layout() {
+  // Instant and search results take up the height of the instant container.
+  gfx::Rect bounds(GetContentsBounds());
+  bounds.set_height(instant_container_->GetHeightForWidth(bounds.width()));
+  instant_container_->SetBoundsRect(bounds);
+  results_view_->SetBoundsRect(bounds);
+
+  // Tiles begin where the instant container ends.
+  bounds.set_y(bounds.bottom());
+  bounds.set_height(tiles_container_->GetHeightForWidth(bounds.width()));
+  tiles_container_->SetBoundsRect(bounds);
 }
 
 void StartPageView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   app_list_main_view_->OnStartPageSearchButtonPressed();
-  instant_container_->SetVisible(false);
 }
 
 void StartPageView::OnProfilesChanged() {

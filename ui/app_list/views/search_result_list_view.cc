@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
@@ -21,6 +22,7 @@
 namespace {
 
 const int kMaxResults = 6;
+const int kExperimentAppListMaxResults = 3;
 const int kTimeoutIndicatorHeight = 2;
 const int kTimeoutFramerate = 60;
 const SkColor kTimeoutIndicatorColor = SkColorSetRGB(30, 144, 255);
@@ -43,7 +45,11 @@ SearchResultListView::SearchResultListView(
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
-  for (int i = 0; i < kMaxResults; ++i)
+  int max_results = kMaxResults;
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    max_results = kExperimentAppListMaxResults;
+
+  for (int i = 0; i < max_results; ++i)
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
 

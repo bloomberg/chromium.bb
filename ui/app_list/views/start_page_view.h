@@ -16,6 +16,7 @@ namespace app_list {
 class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
+class SearchResultListView;
 class TileItemView;
 
 // The start page for the experimental app list.
@@ -29,10 +30,23 @@ class StartPageView : public views::View,
   virtual ~StartPageView();
 
   void Reset();
+  void ShowSearchResults();
+
+  bool IsShowingSearchResults() const;
 
   const std::vector<TileItemView*>& tile_views() const { return tile_views_; }
 
+  // Overridden from views::View:
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
  private:
+  enum ShowState {
+    SHOW_SEARCH_RESULTS,
+    SHOW_START_PAGE,
+  };
+
+  void SetShowState(ShowState show_state);
   void SetModel(AppListModel* model);
 
   // Overridden from views::ButtonListener:
@@ -55,10 +69,13 @@ class StartPageView : public views::View,
 
   AppListViewDelegate* view_delegate_;  // Owned by AppListView.
 
+  SearchResultListView* results_view_;  // Owned by views hierarchy.
   views::View* instant_container_;  // Owned by views hierarchy.
   views::View* tiles_container_;    // Owned by views hierarchy.
 
   std::vector<TileItemView*> tile_views_;
+
+  ShowState show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
 };

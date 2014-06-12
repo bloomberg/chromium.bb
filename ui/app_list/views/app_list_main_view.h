@@ -53,7 +53,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   void ModelChanged();
 
-  void OnContentsViewActivePageChanged();
+  void UpdateSearchBoxVisibility();
 
   void OnStartPageSearchButtonPressed();
 

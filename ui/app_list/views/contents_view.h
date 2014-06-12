@@ -61,6 +61,7 @@ class APP_LIST_EXPORT ContentsView : public views::View {
 
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
+  bool IsShowingSearchResults() const;
 
   // Sets the active launcher page and animates the pages into place.
   void SetActivePage(int page_index);
@@ -78,6 +79,7 @@ class APP_LIST_EXPORT ContentsView : public views::View {
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
   StartPageView* start_page_view() { return start_page_view_; }
+  SearchResultListView* search_results_view() { return search_results_view_; }
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
