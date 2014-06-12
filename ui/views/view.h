@@ -1248,6 +1248,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class FocusManager;
   friend class Widget;
 
+  typedef gfx::RTree<intptr_t> BoundsTree;
+
   // Painting  -----------------------------------------------------------------
 
   enum SchedulePaintType {
@@ -1340,17 +1342,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // If needed, updates the bounds rectangle in paint root coordinate space
   // in the supplied RTree. Recurses to children for recomputation as well.
-  void UpdateRootBounds(gfx::RTree* bounds_tree, const gfx::Vector2d& offset);
+  void UpdateRootBounds(BoundsTree* bounds_tree, const gfx::Vector2d& offset);
 
   // Remove self and all children from the supplied bounds tree. This is used,
   // for example, when a view gets a layer and therefore becomes paint root. It
   // needs to remove all references to itself and its children from any previous
   // paint root that may have been tracking it.
-  void RemoveRootBounds(gfx::RTree* bounds_tree);
+  void RemoveRootBounds(BoundsTree* bounds_tree);
 
   // Traverse up the View hierarchy to the first ancestor that is a paint root
   // and return a pointer to its |bounds_tree_| or NULL if no tree is found.
-  gfx::RTree* GetBoundsTreeFromPaintRoot();
+  BoundsTree* GetBoundsTreeFromPaintRoot();
 
   // Transformations -----------------------------------------------------------
 
@@ -1531,7 +1533,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // If this View IsPaintRoot() then this will be a pointer to a spatial data
   // structure where we will keep the bounding boxes of all our children, for
   // efficient paint damage rectangle intersection.
-  scoped_ptr<gfx::RTree> bounds_tree_;
+  scoped_ptr<BoundsTree> bounds_tree_;
 
   // Transformations -----------------------------------------------------------
 
