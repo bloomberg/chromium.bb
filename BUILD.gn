@@ -119,6 +119,11 @@ group("root") {
     ]
   }
 
+  if (cpu_arch == "x86" || cpu_arch == "x64") {
+    # YASM is x86/x64 only.
+    deps += [ "//third_party/yasm($host_toolchain)" ]
+  }
+
   if (is_android) {
     deps -= [
       "//cc",

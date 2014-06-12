@@ -57,10 +57,6 @@ void NinjaActionTargetWriter::Run() {
     // Write a rule that invokes the script once with the outputs as outputs,
     // and the data as inputs.
     out_ << "build";
-    if (target_->action_values().has_depfile()) {
-      out_ << " ";
-      WriteDepfile(SourceFile());
-    }
     const Target::FileList& outputs = target_->action_values().outputs();
     for (size_t i = 0; i < outputs.size(); i++) {
       OutputFile output_path(
@@ -211,12 +207,6 @@ void NinjaActionTargetWriter::WriteOutputFilesForBuildLine(
     const FileTemplate& output_template,
     const SourceFile& source,
     std::vector<OutputFile>* output_files) {
-  // If there is a depfile specified we need to list it as the first output as
-  // that is what ninja will expect the depfile to refer to itself as.
-  if (target_->action_values().has_depfile()) {
-    out_ << " ";
-    WriteDepfile(source);
-  }
   std::vector<std::string> output_template_result;
   output_template.ApplyString(source.value(), &output_template_result);
   for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {

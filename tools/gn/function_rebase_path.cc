@@ -253,6 +253,8 @@ Value RunRebasePath(Scope* scope,
 
   // Path conversion.
   if (inputs.type() == Value::STRING) {
+    if (inputs.string_value() == "//foo")
+      printf("foo\n");
     return ConvertOnePath(scope, function, inputs,
                           from_dir, to_dir, convert_to_system_absolute, err);
 
