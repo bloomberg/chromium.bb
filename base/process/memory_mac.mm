@@ -438,7 +438,7 @@ void oom_killer_new() {
 // === Core Foundation CFAllocators ===
 
 bool CanGetContextForCFAllocator() {
-  return !base::mac::IsOSYosemiteOrLater();
+  return !base::mac::IsOSLaterThanYosemite_DontCallThis();
 }
 
 CFAllocatorContext* ContextForCFAllocator(CFAllocatorRef allocator) {
@@ -449,7 +449,8 @@ CFAllocatorContext* ContextForCFAllocator(CFAllocatorRef allocator) {
     return &our_allocator->_context;
   } else if (base::mac::IsOSLion() ||
              base::mac::IsOSMountainLion() ||
-             base::mac::IsOSMavericks()) {
+             base::mac::IsOSMavericks() ||
+             base::mac::IsOSYosemite()) {
     ChromeCFAllocatorLions* our_allocator =
         const_cast<ChromeCFAllocatorLions*>(
             reinterpret_cast<const ChromeCFAllocatorLions*>(allocator));
@@ -722,8 +723,9 @@ void EnableTerminationOnOutOfMemory() {
         << "Failed to get kCFAllocatorMallocZone allocation function.";
     context->allocate = oom_killer_cfallocator_malloc_zone;
   } else {
-    NSLog(@"Internals of CFAllocator not known; out-of-memory failures via "
-        "CFAllocator will not result in termination. http://crbug.com/45650");
+    DLOG(WARNING) << "Internals of CFAllocator not known; out-of-memory "
+                     "failures via CFAllocator will not result in termination. "
+                     "http://crbug.com/45650";
   }
 #endif
 
