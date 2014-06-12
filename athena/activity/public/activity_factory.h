@@ -31,6 +31,10 @@ class ATHENA_EXPORT ActivityFactory {
   // Create an activity of a web page.
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const GURL& url) = 0;
+
+  // Create an activity of an app.
+  virtual Activity* CreateAppActivity(content::BrowserContext* browser_context,
+                                      const std::string& app_id) = 0;
 };
 
 }  // namespace athena

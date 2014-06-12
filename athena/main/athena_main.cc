@@ -7,6 +7,7 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
 #include "athena/content/public/content_activity_factory.h"
+#include "athena/content/public/content_app_model_builder.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
 #include "base/command_line.h"
@@ -28,7 +29,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     athena::StartAthena(
         apps::ShellDesktopController::instance()->host()->window(),
-        new athena::ContentActivityFactory());
+        new athena::ContentActivityFactory(),
+        new athena::ContentAppModelBuilder(context));
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(kAppSwitch)) {
       base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));

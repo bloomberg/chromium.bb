@@ -38,6 +38,7 @@
         'home/app_list_view_delegate.cc',
         'home/app_list_view_delegate.h',
         'home/home_card_impl.cc',
+        'home/public/app_model_builder.h',
         'home/public/home_card.h',
 	'input/public/input_manager.h',
 	'input/public/accelerator_manager.h',
@@ -62,6 +63,7 @@
       'dependencies': [
         'athena_lib',
         '../content/content.gyp:content_browser',
+        '../ui/app_list/app_list.gyp:app_list',
         '../ui/views/controls/webview/webview.gyp:webview',
         '../skia/skia.gyp:skia',
       ],
@@ -70,7 +72,9 @@
       ],
       'sources': [
         'content/public/content_activity_factory.h',
+        'content/public/content_app_model_builder.h',
         'content/content_activity_factory.cc',
+        'content/content_app_model_builder.cc',
         'content/web_activity.h',
         'content/web_activity.cc',
       ],
@@ -83,6 +87,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../ui/accessibility/accessibility.gyp:ax_gen',
+        '../ui/app_list/app_list.gyp:app_list',
         '../ui/aura/aura.gyp:aura_test_support',
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/compositor/compositor.gyp:compositor_test_support',
@@ -104,6 +109,8 @@
         'test/sample_activity.h',
         'test/sample_activity_factory.cc',
         'test/sample_activity_factory.h',
+        'test/test_app_model_builder.cc',
+        'test/test_app_model_builder.h',
       ],
     },
     {

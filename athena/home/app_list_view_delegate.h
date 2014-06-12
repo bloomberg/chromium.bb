@@ -10,15 +10,14 @@
 #include "ui/app_list/app_list_view_delegate.h"
 
 namespace athena {
+class AppModelBuilder;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
-  AppListViewDelegate();
+  explicit AppListViewDelegate(AppModelBuilder* model_builder);
   virtual ~AppListViewDelegate();
 
  private:
-  void PopulateApps();
-
   // Overridden from app_list::AppListViewDelegate:
   virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;

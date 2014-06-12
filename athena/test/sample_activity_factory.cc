@@ -17,6 +17,9 @@ namespace test {
 namespace {
 const SkColor kDefaultColor = SK_ColorRED;
 const SkColor kDefaultContentColor = SK_ColorGREEN;
+
+const SkColor kDefaultAppColor = SK_ColorYELLOW;
+const SkColor kDefaultAppContentColor = SK_ColorBLUE;
 }
 
 SampleActivityFactory::SampleActivityFactory() {}
@@ -28,6 +31,13 @@ Activity* SampleActivityFactory::CreateWebActivity(
     const GURL& url) {
   return new SampleActivity(
       kDefaultColor, kDefaultContentColor, base::UTF8ToUTF16(url.spec()));
+}
+
+Activity* SampleActivityFactory::CreateAppActivity(
+    content::BrowserContext* browser_context,
+    const std::string& app_id) {
+  return new SampleActivity(
+      kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16(app_id));
 }
 
 }  // namespace test

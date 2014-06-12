@@ -37,7 +37,8 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(athena::RootWindowState,
                                  NULL);
 
 void StartAthena(aura::Window* root_window,
-                 athena::ActivityFactory* activity_factory) {
+                 athena::ActivityFactory* activity_factory,
+                 athena::AppModelBuilder* app_model_builder) {
 #if defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
@@ -51,7 +52,7 @@ void StartAthena(aura::Window* root_window,
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
-  athena::HomeCard::Create();
+  athena::HomeCard::Create(app_model_builder);
   athena::ActivityManager::Create();
   athena::ActivityFactory::RegisterActivityFactory(activity_factory);
   SetupBackgroundImage();

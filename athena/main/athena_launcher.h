@@ -11,10 +11,12 @@ class Window;
 
 namespace athena {
 class ActivityFactory;
+class AppModelBuilder;
 
 // Starts/shuts down the athena shell environment.
 void StartAthena(aura::Window* root_window,
-                 ActivityFactory* activity_factory);
+                 ActivityFactory* activity_factory,
+                 AppModelBuilder* app_model_builder);
 void ShutdownAthena();
 
 }  // namespace athena

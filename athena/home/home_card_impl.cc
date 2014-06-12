@@ -5,6 +5,7 @@
 #include "athena/home/public/home_card.h"
 
 #include "athena/home/app_list_view_delegate.h"
+#include "athena/home/public/app_model_builder.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "ui/app_list/pagination_model.h"
@@ -71,7 +72,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
 
 class HomeCardImpl : public HomeCard, public AcceleratorHandler {
  public:
-  HomeCardImpl();
+  explicit HomeCardImpl(AppModelBuilder* model_builder);
   virtual ~HomeCardImpl();
 
   void Init();
@@ -94,13 +95,16 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
     return true;
   }
 
+  scoped_ptr<AppModelBuilder> model_builder_;
+
   views::Widget* home_card_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
 };
 
-HomeCardImpl::HomeCardImpl()
-  : home_card_widget_(NULL) {
+HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
+    : model_builder_(model_builder),
+      home_card_widget_(NULL) {
   DCHECK(!instance);
   instance = this;
 }
@@ -120,7 +124,7 @@ void HomeCardImpl::Init() {
   wm::SetChildWindowVisibilityChangesAnimated(container);
 
   app_list::AppListView* view = new app_list::AppListView(
-      new AppListViewDelegate);
+      new AppListViewDelegate(model_builder_.get()));
   view->InitAsBubbleAtFixedLocation(
       container,
       0 /* initial_apps_page */,
@@ -143,8 +147,8 @@ void HomeCardImpl::InstallAccelerators() {
 }  // namespace
 
 // static
-HomeCard* HomeCard::Create() {
-  (new HomeCardImpl())->Init();
+HomeCard* HomeCard::Create(AppModelBuilder* model_builder) {
+  (new HomeCardImpl(model_builder))->Init();
   DCHECK(instance);
   return instance;
 }

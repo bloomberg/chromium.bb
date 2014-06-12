@@ -8,12 +8,13 @@
 #include "athena/athena_export.h"
 
 namespace athena {
+class AppModelBuilder;
 
 class ATHENA_EXPORT HomeCard {
  public:
   // Creates and deletes the singleton object of the HomeCard
-  // implementation.
-  static HomeCard* Create();
+  // implementation. Takes the ownership of |model_builder|.
+  static HomeCard* Create(AppModelBuilder* model_builder);
   static void Shutdown();
 
   virtual ~HomeCard() {}
