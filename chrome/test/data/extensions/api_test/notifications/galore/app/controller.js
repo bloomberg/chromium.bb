@@ -2,242 +2,359 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var Galore = Galore || {};
+var STOPPED = "Stopped";
+var RECORDING = "Recording";
+var PAUSED_RECORDING = "Recording Paused";
+var PAUSED_PLAYING = "Playing Paused";
+var PLAYING = "Playing";
 
-Galore.controller = {
-  /** @constructor */
-  create: function() {
-    var controller = Object.create(this);
-    controller.api = chrome;
-    controller.counter = 0;
-    return controller;
-  },
+var recordingState = STOPPED;
 
-  createWindow: function() {
-    chrome.storage.sync.get('settings', this.onSettingsFetched_.bind(this));
-  },
+// Timestamp when current segment started.
+var segmentStart;
+// Segment duration accumulated before pause button was hit.
+var pausedDuration;
+// The array of segments, with delay and action.
+var recordingList;
+// When this timer fires, the next segment from recordingList should be played.
+var playingTimer;
+var currentSegmentIndex;
+// A set of web Notifications - used to delete them during playback by id.
+var webNotifications = {};
 
-  /** @private */
-  onSettingsFetched_: function(items) {
-    var request = new XMLHttpRequest();
-    var settings = items.settings || {};
-    var source = settings.data || '/data/' + this.getDataVersion_();
-    request.open('GET', source, true);
-    request.responseType = 'text';
-    request.onload = this.onDataFetched_.bind(this, settings, request);
-    request.send();
-  },
+var recorderButtons = [ "play", "record", "pause", "stop"];
+var recorderButtonStates = [
+  { state: STOPPED, enabled: "play record" },
+  { state: RECORDING, enabled: "pause stop" },
+  { state: PAUSED_RECORDING, enabled: "record stop" },
+  { state: PAUSED_PLAYING, enabled: "play stop" },
+  { state: PLAYING, enabled: "pause stop" }
+];
 
-  /** @private */
-  onDataFetched_: function(settings, request) {
-    var count = 0;
-    var data = JSON.parse(request.response);
-    data.forEach(function(section) {
-      (section.notificationOptions || []).forEach(function(options) {
-        ++count;
-        this.fetchImages_(options, function() {
-          if (--count == 0)
-            this.onImagesFetched_(settings, data);
-        }.bind(this));
-      }, this);
-    }, this);
-  },
-
-  /** @private */
-  onImagesFetched_: function(settings, data) {
-    this.settings = settings;
-    this.view = Galore.view.create(this.settings, function() {
-      // Create buttons.
-      data.forEach(function(section) {
-        var defaults = section.globals || data[0].globals;
-        var type = section.notificationType;
-        (section.notificationOptions || []).forEach(function(options) {
-          var defaulted = this.getDefaultedOptions_(options, defaults);
-          var create = this.createNotification_.bind(this, type, defaulted);
-          this.view.addNotificationButton(section.sectionName,
-                                          defaulted.title,
-                                          defaulted.iconUrl,
-                                          create);
-        }, this);
-      }, this);
-      // Set the API entry point and use it to set event listeners.
-      this.api = this.getApi_(data);
-      if (this.api)
-        this.addListeners_(this.api, data[0].events);
-      // Display the completed and ready window.
-      this.view.showWindow();
-    }.bind(this), this.onSettingsChange_.bind(this));
-  },
-
-  /** @private */
-  fetchImages_: function(options, onFetched) {
-    var count = 0;
-    var replacements = {};
-    this.mapStrings_(options, function(string) {
-      if (string.indexOf("/images/") == 0 || string.search(/https?:\//) == 0) {
-        ++count;
-        this.fetchImage_(string, function(url) {
-          replacements[string] = url;
-          if (--count == 0) {
-            this.mapStrings_(options, function(string) {
-              return replacements[string] || string;
-            });
-            onFetched.call(this, options);
-          }
-        });
-      }
-    });
-  },
-
-  /** @private */
-  fetchImage_: function(url, onFetched) {
-    var request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.responseType = 'blob';
-    request.onload = function() {
-      var url = window.URL.createObjectURL(request.response);
-      onFetched.call(this, url);
-    }.bind(this);
-    request.send();
-  },
-
-  /** @private */
-  onSettingsChange_: function(settings) {
-    this.settings = settings;
-    chrome.storage.sync.set({settings: this.settings});
-  },
-
-  /** @private */
-  createNotification_: function(type, options) {
-    var id = this.getNextId_();
-    var priority = Number(this.settings.priority || 0);
-    var expanded = this.getExpandedOptions_(options, id, type, priority);
-    if (type == 'webkit')
-      this.createWebKitNotification_(expanded);
-    else
-      this.createRichNotification_(expanded, id, type, priority);
-  },
-
-  /** @private */
-  createWebKitNotification_: function(options) {
-    var iconUrl = options.iconUrl;
-    var title = options.title;
-    var message = options.message;
-    new Notification(title, {
-      body: message,
-      icon: iconUrl
-    });
-    this.handleEvent_('create', '?', 'title: "' + title + '"');
-  },
-
-  /** @private */
-  createRichNotification_: function(options, id, type, priority) {
-    this.api.create(id, options, function() {
-      var argument1 = 'type: "' + type + '"';
-      var argument2 = 'priority: ' + priority;
-      var argument3 = 'title: "' + options.title + '"';
-      this.handleEvent_('create', id, argument1, argument2, argument3);
-    }.bind(this));
-  },
-
-  /** @private */
-  getNextId_: function() {
-    this.counter += 1;
-    return String(this.counter);
-  },
-
-  /** @private */
-  getDefaultedOptions_: function(options, defaults) {
-    var defaulted = this.deepCopy_(options);
-    Object.keys(defaults || {}).forEach(function (key) {
-      defaulted[key] = options[key] || defaults[key];
-    });
-    return defaulted;
-  },
-
-  /** @private */
-  getExpandedOptions_: function(options, id, type, priority) {
-    var expanded = this.deepCopy_(options);
-    return this.mapStrings_(expanded, function(string) {
-      return this.getExpandedOption_(string, id, type, priority);
-    }, this);
-  },
-
-  /** @private */
-  getExpandedOption_: function(option, id, type, priority) {
-    if (option == '$!') {
-      option = priority;  // Avoids making priorities into strings.
-    } else {
-      option = option.replace(/\$#/g, id);
-      option = option.replace(/\$\?/g, type);
-      option = option.replace(/\$\!/g, priority);
+// This function forms 2 selector lists - one that includes enabled buttons
+// and one that includes disabled ones. Then it applies "disabled" attribute to
+// corresponding sets of buttons.
+function updateButtonsState() {
+  recorderButtonStates.map(function(entry) {
+    if (entry.state != recordingState)
+      return;
+    // Found entry with current recorder state. Now compute the sets
+    // of enabled/disabled buttons.
+    // Copy a list of all buttons.
+    var disabled = recorderButtons.slice(0);
+    // Get an array of enabled buttons for the state.
+    var enabled = entry.enabled.split(" ");
+    // Remove enabled buttons from disabled list, prefix them with "#" so they
+    // form proper id selectors.
+    for (var i = 0; i < enabled.length; i++) {
+      disabled.splice(disabled.indexOf(enabled[i]), 1);
+      enabled[i] = "#" + enabled[i];
     }
-    return option;
-  },
-
-  /** @private */
-  deepCopy_: function(value) {
-    var copy = value;
-    if (Array.isArray(value)) {
-      copy = value.map(this.deepCopy_, this);
-    } else if (value && typeof value === 'object') {
-      copy = {}
-      Object.keys(value).forEach(function (key) {
-        copy[key] = this.deepCopy_(value[key]);
-      }, this);
+    // Prefix remaining disabled ids to form proper id selectors.
+    for (var i = 0; i < disabled.length; i++) {
+      disabled[i] = "#" + disabled[i];
     }
-    return copy;
-  },
+    getElements(disabled.join(", ")).forEach(function(element) {
+      element.setAttribute("disabled", "true")
+    })
+    getElements(enabled.join(", ")).forEach(function(element) {
+      element.removeAttribute("disabled")
+    })
+  })
+}
 
-  /** @private */
-  mapStrings_: function(value, map) {
-    var mapped = value;
-    if (typeof value === 'string') {
-      mapped = map.call(this, value);
-      mapped = (typeof mapped !== 'undefined') ? mapped : value;
-    } else if (value && typeof value == 'object') {
-      Object.keys(value).forEach(function (key) {
-        mapped[key] = this.mapStrings_(value[key], map);
-      }, this);
-    }
-    return mapped;
-  },
 
-  /** @private */
-  addListeners_: function(api, events) {
-    (events || []).forEach(function(event) {
-      var listener = this.handleEvent_.bind(this, event);
-      if (api[event])
-        api[event].addListener(listener);
-      else
-        console.log('Event ' + event + ' not defined.');
-    }, this);
-  },
+function setRecordingState(newState) {
+  setRecorderStatusText(newState);
+  recordingState = newState;
+  updateButtonsState();
+}
 
-  /** @private */
-  handleEvent_: function(event, id, var_args) {
-    this.view.logEvent('Notification #' + id + ': ' + event + '(' +
-                       Array.prototype.slice.call(arguments, 2).join(', ') +
-                       ')');
-  },
+function updateRecordingStats(context) {
+  var length = 0;
+  var segmentCnt = 0;
+  recordingList.slice(currentSegmentIndex).forEach(function(segment) {
+    length += segment.delay || 0;
+    segmentCnt++;
+  })
+  updateRecordingStatsDisplay(context + ": " + (segmentCnt-1) + " segments, " +
+                              Math.floor(length/1000) + " seconds.");
+}
 
-  /** @private */
-  getDataVersion_: function() {
-    var version = navigator.appVersion.replace(/^.* Chrome\//, '');
-    return (version > '28.0.1500.70') ? '28.0.1500.70.json' :
-           (version > '27.0.1433.1') ? '27.0.1433.1.json' :
-           (version > '27.0.1432.2') ? '27.0.1432.2.json' :
-           '27.0.0.0.json';
-  },
+function loadRecording() {
+  chrome.storage.local.get("recording", function(items) {
+    recordingList = JSON.parse(items["recording"] || "[]");
+    setRecordingState(STOPPED);
+    updateRecordingStats("Loaded record");
+  })
+}
 
-  /** @private */
-  getApi_: function(data) {
-    var path = data[0].api || 'notifications';
-    var api = chrome;
-    path.split('.').forEach(function(key) { api = api && api[key]; });
-    if (!api)
-      this.view.logError('No API found - chrome.' + path + ' is undefined');
-    return api;
+function finalizeRecording() {
+  chrome.storage.local.set({"recording": JSON.stringify(recordingList)});
+  updateRecordingStats("Recorded");
+}
+
+function setPreviousSegmentDuration() {
+  var now  = new Date().getTime();
+  var delay = now - segmentStart;
+  segmentStart = now;
+  recordingList[recordingList.length - 1].delay = delay;
+}
+
+function recordCreate(kind, id, options) {
+  if (recordingState != RECORDING)
+    return;
+  setPreviousSegmentDuration();
+  recordingList.push({ type: "create", kind: kind, id: id, options: options });
+  updateRecordingStats("Recording");
+}
+
+function recordDelete(kind, id) {
+  if (recordingState != RECORDING)
+    return;
+  setPreviousSegmentDuration();
+  recordingList.push({ type: "delete", kind: kind, id: id });
+  updateRecordingStats("Recording");
+}
+
+function startPlaying() {
+  if (recordingList.length < 2)
+    return false;
+
+  setRecordingState(PLAYING);
+
+  if (playingTimer)
+    clearTimeout(playingTimer);
+
+  webNotifications = {};
+  currentSegmentIndex = 0;
+  playingTimer = setTimeout(playNextSegment,
+                            recordingList[currentSegmentIndex].delay);
+  updateRecordingStats("Playing");
+}
+
+function playNextSegment() {
+  currentSegmentIndex++;
+  var segment = recordingList[currentSegmentIndex];
+  if (!segment) {
+    stopPlaying();
+    return;
   }
 
-};
+  if (segment.type == "create") {
+    createNotificationForPlay(segment.kind, segment.id, segment.options);
+  } else { // type == "delete"
+    deleteNotificationForPlay(segment.kind, segment.id);
+  }
+  playingTimer = setTimeout(playNextSegment,
+                            recordingList[currentSegmentIndex].delay);
+  segmentStart = new Date().getTime();
+  updateRecordingStats("Playing");
+}
+
+function deleteNotificationForPlay(kind, id) {
+  if (kind == 'web') {
+    webNotifications[id].close();
+  } else {
+    chrome.notifications.clear(id, function(wasClosed) {
+      // nothing to do
+    });
+  }
+}
+
+function createNotificationForPlay(kind, id, options) {
+  if (kind == 'web') {
+    webNotifications[id] = createWebNotification(id, options);
+  } else {
+    var type = options.type;
+    var priority = options.priority;
+    createRichNotification(id, type, priority, options);
+  }
+}
+function stopPlaying() {
+  currentSegmentIndex = 0;
+  clearTimeout(playingTimer);
+  updateRecordingStats("Record");
+  setRecordingState(STOPPED);
+}
+
+function pausePlaying() {
+  clearTimeout(playingTimer);
+  pausedDuration = new Date().getTime() - segmentStart;
+  setRecordingState(PAUSED_PLAYING);
+}
+
+function unpausePlaying() {
+  var remainingInSegment =
+      recordingList[currentSegmentIndex].delay - pausedDuration;
+  if (remainingInSegment < 0)
+    remainingInSegment = 0;
+  playingTimer = setTimeout(playNextSegment, remainingInSegment);
+  segmentStart = new Date().getTime() - pausedDuration;
+}
+
+function onRecord() {
+  if (recordingState == STOPPED) {
+    segmentStart = new Date().getTime();
+    pausedDuration = 0;
+    // This item is only needed to keep a duration of the delay between start
+    // and first action.
+    recordingList = [ { type:"start" } ];
+  } else if (recordingState == PAUSED_RECORDING) {
+    segmentStart = new Date().getTime() - pausedDuration;
+    pausedDuration = 0;
+  } else {
+    return;
+  }
+  updateRecordingStats("Recording");
+  setRecordingState(RECORDING);
+}
+
+function pauseRecording() {
+  pausedDuration = new Date().getTime() - segmentStart;
+  segmentStart = 0;
+  setRecordingState(PAUSED_RECORDING);
+}
+
+function onPause() {
+  if (recordingState == RECORDING) {
+    pauseRecording();
+  } else if (recordingState == PLAYING) {
+    pausePlaying();
+  } else {
+    return;
+  }
+}
+
+function  onStop() {
+  switch (recordingState) {
+    case PAUSED_RECORDING:
+      segmentStart = new Date().getTime() - pausedDuration;
+      // fall through
+    case RECORDING:
+      finalizeRecording();
+      break;
+    case PLAYING:
+    case PAUSED_PLAYING:
+      stopPlaying();
+      break;
+  }
+  setRecordingState(STOPPED);
+}
+
+function onPlay() {
+  if (recordingState == STOPPED) {
+    if (!startPlaying())
+      return;
+  } else if (recordingState == PAUSED_PLAYING) {
+    unpausePlaying();
+  }
+  setRecordingState(PLAYING);
+}
+
+function createWindow() {
+  chrome.storage.local.get('settings', onSettingsFetched);
+}
+
+function onSettingsFetched(items) {
+  settings = items.settings || settings;
+  var request = new XMLHttpRequest();
+  var source = '/data/data.json';
+  request.open('GET', source, true);
+  request.responseType = 'text';
+  request.onload = onDataFetched;
+  request.send();
+}
+
+function onDataFetched() {
+  var data = JSON.parse(this.response);
+  createAppWindow(function() {
+    // Create notification buttons.
+    data.forEach(function(section) {
+      var type = section.notificationType;
+      (section.notificationOptions || []).forEach(function(options) {
+        addNotificationButton(section.sectionName,
+                              options.title,
+                              options.iconUrl,
+                              function() { createNotification(type, options) });
+      });
+    });
+    loadRecording();
+    addListeners();
+    showWindow();
+  });
+}
+
+function onSettingsChange(settings) {
+  chrome.storage.local.set({settings: settings});
+}
+
+function createNotification(type, options) {
+var id = getNextId();
+var priority = Number(settings.priority || 0);
+if (type == 'web')
+    createWebNotification(id, options);
+  else
+    createRichNotification(id, type, priority, options);
+}
+
+function createWebNotification(id, options) {
+  var iconUrl = options.iconUrl;
+  var title = options.title;
+  var message = options.message;
+  var n = new Notification(title, {
+    body: message,
+    icon: iconUrl,
+    tag: id
+  });
+  n.onshow = function() { logEvent('WebNotification #' + id + ': onshow'); }
+  n.onclick = function() { logEvent('WebNotification #' + id + ': onclick'); }
+  n.onclose = function() {
+    logEvent('WebNotification #' + id + ': onclose');
+    recordDelete('web', id);
+  }
+  logCreate('Web', id, 'title: "' + title + '"');
+  recordCreate('web', id, options);
+  return n;
+}
+
+function createRichNotification(id, type, priority, options) {
+  options["type"] = type;
+  options["priority"] = priority;
+  chrome.notifications.create(id, options, function() {
+    var argument1 = 'type: "' + type + '"';
+    var argument2 = 'priority: ' + priority;
+    var argument3 = 'title: "' + options.title + '"';
+    logCreate('Rich', id, argument1, argument2, argument3);
+  });
+  recordCreate('rich', id, options);
+}
+
+var counter = 0;
+function getNextId() {
+    return String(counter++);
+}
+
+function addListeners() {
+  chrome.notifications.onClosed.addListener(onClosed);
+  chrome.notifications.onClicked.addListener(onClicked);
+  chrome.notifications.onButtonClicked.addListener(onButtonClicked);
+}
+
+function logCreate(kind, id, var_args) {
+  logEvent(kind + ' Notification #' + id + ': created ' + '(' +
+  Array.prototype.slice.call(arguments, 2).join(', ') + ')');
+}
+
+function onClosed(id) {
+  logEvent('Notification #' + id + ': onClosed');
+  recordDelete('rich', id);
+}
+
+function onClicked(id) {
+  logEvent('Notification #' + id + ': onClicked');
+}
+
+function onButtonClicked(id, index) {
+  logEvent('Notification #' + id + ': onButtonClicked, btn: ' + index);
+}

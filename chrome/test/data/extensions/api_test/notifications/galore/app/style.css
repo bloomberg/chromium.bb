@@ -3,18 +3,27 @@
  * found in the LICENSE file. */
 
 /* Globals ********************************************************************/
+html {
+  height: 100%
+}
 
 body {
-  -webkit-app-region: drag;
   cursor: default;
-  margin: 0;
-  padding: 15px 4px 4px;
+  margin: 0px;
+  padding: 0px 4px 4px;
+  overflow:hidden;
+  height: 100%;
 }
 
 .section {
-  margin: 12px 0 0;
-  position: relative;
-  padding: 23px 0 0;
+  overflow:hidden;
+  margin:14px 0 12px 0;
+}
+
+.subsection {
+  margin:2px;
+  padding:3px;
+  border:1px solid lightgrey;
 }
 
 h1 {
@@ -24,12 +33,8 @@ h1 {
                                       white 65%, white);
   font: normal 16px 'Arimo', 'Gill Sans', 'Open Sans',
                     'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  left: 0;
-  margin: 0;
-  position: absolute;
-  right: 0;
+  margin: 0 0 8px 0;
   text-align: center;
-  top: 0;
 }
 
 h1 span {
@@ -37,32 +42,32 @@ h1 span {
   padding: 0 4px;
 }
 
-button {
-  background: none;
-  border: 1px solid white;
-  margin: 0;
+button.borderless {
+  background-color: white;
+  border:1px solid rgba(0,0,0,0.1);
+  margin: 3px;
   padding: 3px;
 }
 
-::-webkit-scrollbar {
-  display: none !important;
+button.borderless:hover {
+  border:1px solid rgba(0,0,0,1);
+}
+
+button.borderless:hover[disabled] {
+  border:1px solid rgba(0,0,0,0.1);
 }
 
 /* Template section (invisible) ***********************************************/
 
 #templates {
-  position: absolute;
-  visibility: hidden;
+  display: none;
 }
 
 /* Priority section ***********************************************************/
 
 #priority {
   font-size: 0;  /* To collapse the spaces between buttons. */
-}
-
-#priority .priority:first-of-type {
-  margin: 0 0 0 96px;  /* Leftmost button is 96 pixels in. */
+  text-align: center;
 }
 
 button.priority {
@@ -72,14 +77,30 @@ button.priority {
   width: 48px;
 }
 
-/* Notification sections ******************************************************/
-
-button.notification {
-  height: 48px;
-  width: 48px;
+/* Recorder *******************************************************************/
+#recording-status {
+  font-size:18pt;
+  text-align: center;
 }
 
-img {
+#recording-stats {
+  font-size:9pt;
+  text-align: center;
+}
+
+button.control img {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+button.control[disabled="true"] {
+  opacity: 0.2;
+}
+
+/* Notification sections ******************************************************/
+
+button.notification img  {
   display: block;
   height: 40px;
   margin: 0;
@@ -90,32 +111,13 @@ img {
 /* Events section *************************************************************/
 
 #events {
-  position: relative;
-  height: 183px;
-}
-
-#events-scroll {
-  bottom: 4px;
+  margin:0;
   font-weight: lighter;
-  left: 4px;
   padding: 0;
-  max-height: 190px;
-  overflow: scroll;
-  position: absolute;
-  right: 4px;
-  -webkit-user-select: text;
-}
-
-#events-fade {
-  background: -webkit-linear-gradient(rgba(255, 255, 255, 1),
-                                      rgba(255, 255, 255, 1) 50%,
-                                      rgba(255, 255, 255, 0));
-  height: 46px;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
+  height:180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: gold;
 }
 
 .event {
@@ -131,116 +133,7 @@ img {
   text-align: center;
 }
 
-/* Menu ***********************************************************************/
-
-body[data-active="menu"] #popup,
-body[data-popup="true"] #popup {
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-body:not([data-active="menu"]):not([data-popup="true"]) #popup {
-  left: -9999px !important;
-  position: absolute !important;
-  top: -9999px !important;
-}
-
-#shadow {
-  background: gray;
-  bottom: 0;
-  left: 0;
-  opacity: 0.33;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#menu {
-  left: 12px;
-  padding: 0;
-  position: absolute;
-  top: 26px;
-  width: auto;
-}
-
-#menu-items {
-  background: white;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.7);
-  margin: 7px 0 0;
-  padding: 4px;
-}
-
-#menu-items button {
-  display: block;
-  text-align: left;
-  width: 100%;
-}
-
-#show-settings {
-  /* TODO(dharcourt): Add a settings panel and make this open it. */
-  display: none !important;
-}
-
-#arrow {
-  border-bottom: 7px solid white;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  height: 0;
-  position: absolute;
-  top: 0;
-  width: 0;
-}
-
-/* Menu and close buttons *****************************************************/
-
-#show-menu,
-#close {
-  border: 1px solid transparent;
-  height: 16px;
-  opacity: 0.15;
-  position: absolute;
-  top: 11px;
-  width: 16px;
-}
-
-#show-menu {
-  background: url("/images/menu-14x14.png");
-  left: 11px;
-}
-
-#close {
-  background: url("/images/close-14x14.png");
-  right: 11px;
-}
-
-#show-menu:hover,
-#close:hover {
-  opacity: 0.6;
-}
-
-body[data-active="close"] #close,
-body[data-active="menu"] #show-menu {
-  opacity: 1;
-}
-
 /* Highlighting ***************************************************************/
-
-body[data-active=""] button[data-hover="true"],
-body[data-active="close"] button.close[data-hover="true"],
-body[data-active="menu"] button.menu[data-hover="true"],
-body[data-active="notification"] button.notification[data-hover="true"],
-body[data-active="priority"] button.priority[data-hover="true"] {
-  border: 1px solid black !important;
-}
-
-body[data-active="notification"] button.notification[data-hover="true"],
-body[data-active="priority"] button.priority[data-hover="true"] {
-  opacity: 0.5;
-}
-
 body[data-priority="-2"] button.priority[data-priority="-2"],
 body[data-priority="-1"] button.priority[data-priority="-1"],
 body[data-priority="0"] button.priority[data-priority="0"],
@@ -249,20 +142,3 @@ body[data-priority="2"] button.priority[data-priority="2"] {
   background: rgb(255, 255, 85);
   -webkit-box-shadow: inset 3px 3px 0 white, inset -3px -3px 0 white;
 }
-
-/* Cursor and dragging control ************************************************/
-
-body:not([data-active=""]),
-body:not([data-active="menu"]):not([data-popup="true"]) button,
-button.menu,
-button.close {
-  -webkit-app-region: no-drag;
-  cursor: pointer;
-}
-
-body:not([data-active="menu"]):not([data-popup="true") #events {
-  -webkit-app-region: no-drag;
-  cursor: text;
-}
-
-/* That's all folks! **********************************************************/

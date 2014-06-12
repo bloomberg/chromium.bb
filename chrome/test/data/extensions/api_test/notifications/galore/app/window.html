@@ -7,41 +7,40 @@
     <title>Notifications Galore!</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
-  <body data-active="" data-popup="false">
+  <body data-active="">
     <div id="templates">
       <div class="section"><h1><span/></h1></div>
       <div class="event"></div>
       <div class="error"></div>
       <div class="spacer"></div>
-      <button class="notification">
+      <button class="notification borderless">
         <img src="images/white-40x40.png">
       </button>
     </div>
     <div id="priority" class="section">
       <h1><span>Priority</span></h1>
-      <button class="priority" data-priority="-2">-2</button>
-      <button class="priority" data-priority="-1">-1</button>
-      <button class="priority" data-priority="0">0</button>
-      <button class="priority" data-priority="1">1</button>
-      <button class="priority" data-priority="2">2</button>
+      <button class="priority borderless" data-priority="-2">-2</button>
+      <button class="priority borderless" data-priority="-1">-1</button>
+      <button class="priority borderless" data-priority="0">0</button>
+      <button class="priority borderless" data-priority="1">1</button>
+      <button class="priority borderless" data-priority="2">2</button>
     </div>
-    <div id="notifications"></div>
-    <div id="events" class="section">
-      <div id="events-scroll"></div>
-      <div id="events-fade"></div>
-      <h1><span>Events</span></h1>
-    </div>
-    <div id="popup">
-      <div id="shadow" class="shadow"></div>
-      <div id="menu">
-        <div id="menu-items">
-          <button id="show-settings" class="menu">Settings...</button>
-          <button id="clear-events" class="menu">Clear Events</button>
-        </div>
-        <div id="arrow"></div>
+    <div id="other-controls" xclass="section">
+      <h1><span>Controls</span></h1>
+      <div class="subsection">
+        <button id="clear-events">Clear Events</button>
+      </div>
+      <div class="subsection">
+        <button id="record" class="control borderless"><img src="images/record.png"></img></button>
+        <button id="pause"  class="control borderless"><img src="images/pause.png"></img></button>
+        <button id="stop"   class="control borderless"><img src="images/stop.png"></img></button>
+        <button id="play"   class="control borderless"><img src="images/play.png"></img></button>
+        <sup id="recording-status">Stopped</sup>
+        <div id="recording-stats"> </div>
       </div>
     </div>
-    <button id="close" class="close" name="Close"></button>
-    <button id="show-menu" class="menu" name="Show Menu"></button>
+    <div id="notifications"></div>
+    <h1><span>Events</span></h1>
+    <div id="events" class="section"></div>
   </body>
 </html>

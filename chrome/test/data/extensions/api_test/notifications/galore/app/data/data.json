@@ -1,25 +1,7 @@
 [
   {
-    "copyright": [
-      "Copyright (c) 2013 The Chromium Authors. All rights reserved.",
-      "Use of this source code is governed by a BSD-style license that can be",
-      "found in the LICENSE file."
-    ],
-    "api": "notifications",
-    "events": [
-      "onDisplayed",
-      "onClosed",
-      "onClicked",
-      "onButtonClicked"
-    ],
-    "globals": {
-      "type": "$?",
-      "priority": "$!"
-    }
-  },
-  {
-    "sectionName": "WebKit Notifications",
-    "notificationType": "webkit",
+    "sectionName": "Web Notifications",
+    "notificationType": "web",
     "notificationOptions": [
       {
         "iconUrl": "/images/man1-40x40.jpg",
