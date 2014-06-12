@@ -113,6 +113,14 @@ void MediaStreamAudioSourceNode::process(size_t numberOfFrames)
     }
 }
 
+void MediaStreamAudioSourceNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaStream);
+    visitor->trace(m_audioTrack);
+    AudioSourceNode::trace(visitor);
+    AudioSourceProviderClient::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

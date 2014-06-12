@@ -40,6 +40,7 @@ class AudioContext;
 class HTMLMediaElement;
 
 class MediaElementAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
     static PassRefPtrWillBeRawPtr<MediaElementAudioSourceNode> create(AudioContext*, HTMLMediaElement*);
 
@@ -56,13 +57,15 @@ public:
     virtual void lock() OVERRIDE;
     virtual void unlock() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MediaElementAudioSourceNode(AudioContext*, HTMLMediaElement*);
 
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const OVERRIDE { return false; }
 
-    RefPtr<HTMLMediaElement> m_mediaElement;
+    RefPtrWillBeMember<HTMLMediaElement> m_mediaElement;
     Mutex m_processLock;
 
     unsigned m_sourceNumberOfChannels;

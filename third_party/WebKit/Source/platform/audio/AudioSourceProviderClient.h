@@ -25,13 +25,16 @@
 #ifndef AudioSourceProviderClient_h
 #define AudioSourceProviderClient_h
 
+#include "platform/heap/Handle.h"
+
 namespace WebCore {
 
-class AudioSourceProviderClient {
+class AudioSourceProviderClient : public WillBeGarbageCollectedMixin {
 public:
     virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
     virtual void lock() { }
     virtual void unlock() { }
+    virtual void trace(Visitor*) { }
 protected:
     virtual ~AudioSourceProviderClient() { }
 };

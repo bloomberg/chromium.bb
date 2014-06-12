@@ -80,6 +80,9 @@ public:
     static bool isMediaStreamURL(const String& url);
 
     virtual void trace(Visitor*) OVERRIDE;
+#if ENABLE(WEB_AUDIO)
+    void clearWeakMembers(Visitor*);
+#endif
 
     // Do not use player().
     // FIXME: Replace all uses with webMediaPlayer() and remove this API.
@@ -367,7 +370,7 @@ private:
     void loadNextSourceChild();
     void userCancelledLoad();
     void clearMediaPlayer(int flags);
-    void clearMediaPlayerAndAudioSourceProviderClient();
+    void clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
     bool havePotentialSourceChild();
     void noneSupported();
     void mediaEngineError(PassRefPtrWillBeRawPtr<MediaError>);
@@ -520,7 +523,8 @@ private:
 
 #if ENABLE(WEB_AUDIO)
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
-    AudioSourceProviderClient* m_audioSourceNode;
+    // FIXME: Oilpan: Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.
+    RawPtrWillBeWeakMember<AudioSourceProviderClient> m_audioSourceNode;
 #endif
 
     friend class MediaController;

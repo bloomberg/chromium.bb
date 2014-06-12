@@ -63,7 +63,9 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, 
 
 MediaElementAudioSourceNode::~MediaElementAudioSourceNode()
 {
+#if !ENABLE(OILPAN)
     m_mediaElement->setAudioSourceNode(0);
+#endif
     uninitialize();
 }
 
@@ -146,6 +148,13 @@ void MediaElementAudioSourceNode::unlock()
 {
     m_processLock.unlock();
     deref();
+}
+
+void MediaElementAudioSourceNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaElement);
+    AudioSourceNode::trace(visitor);
+    AudioSourceProviderClient::trace(visitor);
 }
 
 } // namespace WebCore

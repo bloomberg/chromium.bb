@@ -284,7 +284,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_textTracks(nullptr)
     , m_ignoreTrackDisplayUpdate(0)
 #if ENABLE(WEB_AUDIO)
-    , m_audioSourceNode(0)
+    , m_audioSourceNode(nullptr)
 #endif
 {
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
@@ -372,7 +372,13 @@ HTMLMediaElement::~HTMLMediaElement()
     // crbug.com/378229
     m_isFinalizing = true;
 #endif
-    clearMediaPlayerAndAudioSourceProviderClient();
+
+    // The m_audioSourceNode is either dead already or it is dying together with
+    // this HTMLMediaElement which it strongly keeps alive.
+#if !ENABLE(OILPAN)
+    ASSERT(!m_audioSourceNode);
+#endif
+    clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
 
 #if !ENABLE(OILPAN)
     document().decrementLoadEventDelayCount();
@@ -3119,22 +3125,13 @@ void HTMLMediaElement::userCancelledLoad()
     updateActiveTextTrackCues(0);
 }
 
-void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClient()
+void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLocking()
 {
 #if ENABLE(WEB_AUDIO)
-    if (m_audioSourceNode)
-        m_audioSourceNode->lock();
-
     if (audioSourceProvider())
         audioSourceProvider()->setClient(0);
 #endif
-
     m_player.clear();
-
-#if ENABLE(WEB_AUDIO)
-    if (m_audioSourceNode)
-        m_audioSourceNode->unlock();
-#endif
 }
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
@@ -3145,7 +3142,17 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     m_delayingLoadForPreloadNone = false;
 
-    clearMediaPlayerAndAudioSourceProviderClient();
+#if ENABLE(WEB_AUDIO)
+    if (m_audioSourceNode)
+        m_audioSourceNode->lock();
+#endif
+
+    clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
+
+#if ENABLE(WEB_AUDIO)
+    if (m_audioSourceNode)
+        m_audioSourceNode->unlock();
+#endif
 
     stopPeriodicTimers();
     m_loadTimer.stop();
@@ -3657,8 +3664,19 @@ void HTMLMediaElement::trace(Visitor* visitor)
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
     visitor->trace(m_mediaController);
+#if ENABLE(WEB_AUDIO)
+    visitor->registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
+#endif
     WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
 }
+
+#if ENABLE(WEB_AUDIO)
+void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
+{
+    if (!visitor->isAlive(m_audioSourceNode) && audioSourceProvider())
+        audioSourceProvider()->setClient(0);
+}
+#endif
 
 }
