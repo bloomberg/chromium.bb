@@ -323,30 +323,31 @@ void BrowserFeatureExtractor::StartExtractFeatures(
     callback.Run(false, request);
     return;
   }
-  CancelableRequestProvider::Handle handle = history->QueryURL(
-      GURL(request->url()),
-      true /* wants_visits */,
-      &request_consumer_,
-      base::Bind(&BrowserFeatureExtractor::QueryUrlHistoryDone,
-                 base::Unretained(this)));
-
-  StorePendingQuery(handle, request, callback);
+  // HistoryService::QueryURL migrated from CancelableRequestComsumer to
+  // CancelableRequestTracker and there is no Handle to associate to the
+  // request. Instead manage the request object lifetime by using a scoped_ptr
+  // and using base::Passed(). So if the asynchronous call is canceled, the
+  // request is deleted, otherwise the callback becomes the owner.
+  scoped_ptr<ClientPhishingRequest> owned_request(request);
+  history->QueryURL(GURL(request->url()),
+                    true /* wants_visits */,
+                    base::Bind(&BrowserFeatureExtractor::QueryUrlHistoryDone,
+                               base::Unretained(this),
+                               base::Passed(&owned_request),
+                               callback),
+                    &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryUrlHistoryDone(
-    CancelableRequestProvider::Handle handle,
+    scoped_ptr<ClientPhishingRequest> owned_request,
+    const DoneCallback& callback,
     bool success,
-    const history::URLRow* row,
-    history::VisitVector* visits) {
+    const history::URLRow& row,
+    const history::VisitVector& visits) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClientPhishingRequest* request;
-  DoneCallback callback;
-  if (!GetPendingQuery(handle, &request, &callback)) {
-    DLOG(FATAL) << "No pending history query found";
-    return;
-  }
-  DCHECK(request);
+  DCHECK(owned_request);
   DCHECK(!callback.is_null());
+  ClientPhishingRequest* request = owned_request.release();
   if (!success) {
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
@@ -355,15 +356,16 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     return;
   }
   AddFeature(features::kUrlHistoryVisitCount,
-             static_cast<double>(row->visit_count()),
+             static_cast<double>(row.visit_count()),
              request);
 
   base::Time threshold = base::Time::Now() - base::TimeDelta::FromDays(1);
   int num_visits_24h_ago = 0;
   int num_visits_typed = 0;
   int num_visits_link = 0;
-  for (history::VisitVector::const_iterator it = visits->begin();
-       it != visits->end(); ++it) {
+  for (history::VisitVector::const_iterator it = visits.begin();
+       it != visits.end();
+       ++it) {
     if (!content::PageTransitionIsMainFrame(it->transition)) {
       continue;
     }

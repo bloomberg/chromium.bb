@@ -233,20 +233,20 @@ class HistoryService : public CancelableRequestProvider,
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef base::Callback<void(
-      Handle,
-      bool,  // Success flag, when false, nothing else is valid.
-      const history::URLRow*,
-      history::VisitVector*)> QueryURLCallback;
+  typedef base::Callback<
+      void(bool,  // Success flag, when false, nothing else is valid.
+           const history::URLRow&,
+           const history::VisitVector&)> QueryURLCallback;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
   // set |want_visits| to true. If these are not needed, the function will be
   // faster by setting this to false.
-  Handle QueryURL(const GURL& url,
-                  bool want_visits,
-                  CancelableRequestConsumerBase* consumer,
-                  const QueryURLCallback& callback);
+  base::CancelableTaskTracker::TaskId QueryURL(
+      const GURL& url,
+      bool want_visits,
+      const QueryURLCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Provides the result of a query. See QueryResults in history_types.h.
   // The common use will be to use QueryResults.Swap to suck the contents of

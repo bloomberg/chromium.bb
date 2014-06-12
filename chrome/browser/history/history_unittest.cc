@@ -39,6 +39,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/download_row.h"
@@ -970,22 +971,23 @@ class HistoryTest : public testing::Test {
   // information about the given URL and returns true. If the URL was not
   // found, this will return false and those structures will not be changed.
   bool QueryURL(HistoryService* history, const GURL& url) {
-    history_service_->QueryURL(url, true, &consumer_,
-                               base::Bind(&HistoryTest::SaveURLAndQuit,
-                                          base::Unretained(this)));
+    history_service_->QueryURL(
+        url,
+        true,
+        base::Bind(&HistoryTest::SaveURLAndQuit, base::Unretained(this)),
+        &tracker_);
     base::MessageLoop::current()->Run();  // Will be exited in SaveURLAndQuit.
     return query_url_success_;
   }
 
   // Callback for HistoryService::QueryURL.
-  void SaveURLAndQuit(HistoryService::Handle handle,
-                      bool success,
-                      const URLRow* url_row,
-                      VisitVector* visit_vector) {
+  void SaveURLAndQuit(bool success,
+                      const URLRow& url_row,
+                      const VisitVector& visits) {
     query_url_success_ = success;
     if (query_url_success_) {
-      query_url_row_ = *url_row;
-      query_url_visits_.swap(*visit_vector);
+      query_url_row_ = url_row;
+      query_url_visits_ = visits;
     } else {
       query_url_row_ = URLRow();
       query_url_visits_.clear();
@@ -1045,6 +1047,7 @@ class HistoryTest : public testing::Test {
   bool redirect_query_success_;
 
   // For history requests.
+  base::CancelableTaskTracker tracker_;
   CancelableRequestConsumer consumer_;
 
   // For saving URL info after a call to QueryURL

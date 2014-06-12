@@ -152,6 +152,14 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   scoped_refptr<HistoryBackend> history_backend_;
 };
 
+// HistoryBackend::QueryURLResult ----------------------------------------------
+
+HistoryBackend::QueryURLResult::QueryURLResult() : success(false) {
+}
+
+HistoryBackend::QueryURLResult::~QueryURLResult() {
+}
+
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
@@ -988,26 +996,15 @@ bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {
   return false;
 }
 
-void HistoryBackend::QueryURL(scoped_refptr<QueryURLRequest> request,
-                              const GURL& url,
-                              bool want_visits) {
-  if (request->canceled())
-    return;
-
-  bool success = false;
-  URLRow* row = &request->value.a;
-  VisitVector* visits = &request->value.b;
-  if (db_) {
-    if (db_->GetRowForURL(url, row)) {
-      // Have a row.
-      success = true;
-
-      // Optionally query the visits.
-      if (want_visits)
-        db_->GetVisitsForURL(row->id(), visits);
-    }
+HistoryBackend::QueryURLResult HistoryBackend::QueryURL(const GURL& url,
+                                                        bool want_visits) {
+  QueryURLResult result;
+  result.success = db_ && db_->GetRowForURL(url, &result.row);
+  // Optionally query the visits.
+  if (result.success && want_visits) {
+    db_->GetVisitsForURL(result.row.id(), &result.visits);
   }
-  request->ForwardResult(request->handle(), success, row, visits);
+  return result;
 }
 
 TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {

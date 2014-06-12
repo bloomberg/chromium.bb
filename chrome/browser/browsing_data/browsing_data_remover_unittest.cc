@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
@@ -384,9 +385,9 @@ class RemoveHistoryTester {
     history_service_->QueryURL(
         url,
         true,
-        &consumer_,
         base::Bind(&RemoveHistoryTester::SaveResultAndQuit,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &tracker_);
     message_loop_runner->Run();
     return query_url_success_;
   }
@@ -399,16 +400,15 @@ class RemoveHistoryTester {
 
  private:
   // Callback for HistoryService::QueryURL.
-  void SaveResultAndQuit(HistoryService::Handle,
-                         bool success,
-                         const history::URLRow*,
-                         history::VisitVector*) {
+  void SaveResultAndQuit(bool success,
+                         const history::URLRow&,
+                         const history::VisitVector&) {
     query_url_success_ = success;
     quit_closure_.Run();
   }
 
   // For History requests.
-  CancelableRequestConsumer consumer_;
+  base::CancelableTaskTracker tracker_;
   bool query_url_success_;
   base::Closure quit_closure_;
 
