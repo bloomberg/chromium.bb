@@ -4380,10 +4380,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxCancel) {
   prerender->WaitForStop();
 }
 
-// Checks that closing the omnibox popup cancels an omnibox prerender.
-// Disabled: flaky on all platforms. See http://crbug.com/368721.
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
-                       DISABLED_PrerenderOmniboxAbandon) {
+// Checks that accepting omnibox input abandons an omnibox prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxAbandon) {
   // Set the abandon timeout to something high so it does not introduce
   // flakiness if the prerender times out before the test completes.
   GetPrerenderManager()->mutable_config().abandon_time_to_live =
@@ -4409,6 +4407,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   scoped_ptr<TestPrerender> prerender = StartOmniboxPrerender(
       test_server()->GetURL("files/empty.html?2"),
       FINAL_STATUS_APP_TERMINATING);
+
+  // The final status may be either FINAL_STATUS_APP_TERMINATING or
+  // FINAL_STATUS_CANCELLED. Although closing the omnibox will not cancel an
+  // abandoned prerender, the AutocompleteActionPredictor will cancel the
+  // predictor on destruction.
+  prerender->contents()->set_skip_final_checks(true);
 
   // Navigate to the URL entered.
   omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
