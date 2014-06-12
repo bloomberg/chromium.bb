@@ -12,6 +12,11 @@ class TabSwitchingTop10(test.Test):
   page_set = 'page_sets/top_10.py'
 
 
+class TabSwitchingTypical25(test.Test):
+  test = tab_switching.TabSwitching
+  page_set = 'page_sets/typical_25.py'
+
+
 class TabSwitchingFiveBlankTabs(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/five_blank_pages.py'
