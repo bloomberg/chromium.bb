@@ -378,9 +378,6 @@ public:
 
     void setIsLink(bool f);
 
-    bool hasScopedHTMLStyleChild() const { return getFlag(HasScopedHTMLStyleChildFlag); }
-    void setHasScopedHTMLStyleChild(bool flag) { setFlag(flag, HasScopedHTMLStyleChildFlag); }
-
     bool hasEventTargetData() const { return getFlag(HasEventTargetDataFlag); }
     void setHasEventTargetData(bool flag) { setFlag(flag, HasEventTargetDataFlag); }
 
@@ -655,10 +652,6 @@ public:
     void unregisterTransientMutationObserver(MutationObserverRegistration*);
     void notifyMutationObserversNodeWillDetach();
 
-    virtual void registerScopedHTMLStyleChild();
-    virtual void unregisterScopedHTMLStyleChild();
-    size_t numberOfScopedHTMLStyleChildren() const;
-
     unsigned connectedSubframeCount() const;
     void incrementConnectedSubframeCount(unsigned amount = 1);
     void decrementConnectedSubframeCount(unsigned amount = 1);
@@ -726,13 +719,10 @@ private:
         // HTML dir=auto.
         SelfOrAncestorHasDirAutoFlag = 1 << 29,
 
-        // FIXME: Remove <style scoped> support.
-        HasScopedHTMLStyleChildFlag = 1 << 30,
-
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
-    // 1 bits remaining.
+    // 2 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }

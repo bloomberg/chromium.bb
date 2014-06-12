@@ -60,7 +60,6 @@ namespace WebCore {
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalCSSExclusionsEnabled(RuntimeEnabledFeatures::cssExclusionsEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
-    , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
     , m_originalCSP(RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
     , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
@@ -81,7 +80,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(m_originalCSSExclusionsEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
-    RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(m_originalCSP);
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_originalOverlayScrollbarsEnabled);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
@@ -174,11 +172,6 @@ void InternalSettings::setMockScrollbarsEnabled(bool enabled, ExceptionState& ex
 void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 {
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(isEnabled);
-}
-
-void InternalSettings::setStyleScopedEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setStyleScopedEnabled(enabled);
 }
 
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)
