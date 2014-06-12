@@ -490,8 +490,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
 
     if (!contextDisabled()) {
         IntRect recordingRect = enclosingIntRect(bounds);
-        m_canvas = displayList->beginRecording(recordingRect.size(),
-            SkPicture::kUsePathBoundsForClip_RecordingFlag);
+        m_canvas = displayList->beginRecording(recordingRect.size());
 
         // We want the bounds offset mapped to (0, 0), such that the display list content
         // is fully contained within the SkPictureRecord's bounds.
