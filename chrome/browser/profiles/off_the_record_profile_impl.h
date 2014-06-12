@@ -42,7 +42,7 @@ class OffTheRecordProfileImpl : public Profile {
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual bool IsManaged() OVERRIDE;
+  virtual bool IsSupervised() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;

@@ -360,7 +360,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kVariationsRestrictParameter,
     base::Value::TYPE_STRING },
   { key::kSupervisedUserCreationEnabled,
-    prefs::kManagedUserCreationAllowed,
+    prefs::kSupervisedUserCreationAllowed,
     base::Value::TYPE_BOOLEAN },
   { key::kForceEphemeralProfiles,
     prefs::kForceEphemeralProfiles,

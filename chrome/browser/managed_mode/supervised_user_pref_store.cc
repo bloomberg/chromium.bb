@@ -25,15 +25,15 @@ struct ManagedUserSettingsPrefMappingEntry {
 ManagedUserSettingsPrefMappingEntry kManagedUserSettingsPrefMapping[] = {
   {
     managed_users::kContentPackDefaultFilteringBehavior,
-    prefs::kDefaultManagedModeFilteringBehavior,
+    prefs::kDefaultSupervisedUserFilteringBehavior,
   },
   {
     managed_users::kContentPackManualBehaviorHosts,
-    prefs::kManagedModeManualHosts,
+    prefs::kSupervisedUserManualHosts,
   },
   {
     managed_users::kContentPackManualBehaviorURLs,
-    prefs::kManagedModeManualURLs,
+    prefs::kSupervisedUserManualURLs,
   },
   {
     managed_users::kForceSafeSearch,
@@ -92,7 +92,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     // Set hardcoded prefs.
     prefs_->SetValue(prefs::kAllowDeletingBrowserHistory,
                      new FundamentalValue(false));
-    prefs_->SetValue(prefs::kDefaultManagedModeFilteringBehavior,
+    prefs_->SetValue(prefs::kDefaultSupervisedUserFilteringBehavior,
                      new FundamentalValue(ManagedModeURLFilter::ALLOW));
     prefs_->SetValue(prefs::kForceSafeSearch, new FundamentalValue(true));
     prefs_->SetValue(prefs::kHideWebStoreIcon, new FundamentalValue(true));

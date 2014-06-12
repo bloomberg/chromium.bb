@@ -774,7 +774,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
         active_item.profile_path);
     DCHECK(profile);
 
-    if (profile->IsManaged())
+    if (profile->IsSupervised())
       return true;
 
     profiles::UpdateProfileName(profile, new_profile_name);
@@ -849,7 +849,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
-  if (browser_->profile()->IsManaged()) {
+  if (browser_->profile()->IsSupervised()) {
     layout->StartRow(0, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
     layout->StartRow(1, 0);
@@ -1051,7 +1051,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     current_profile_photo_->AddChildView(question_mark_button_);
   }
 
-  if (browser_->profile()->IsManaged()) {
+  if (browser_->profile()->IsSupervised()) {
     views::ImageView* supervised_icon = new views::ImageView();
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     supervised_icon->SetImage(
@@ -1070,7 +1070,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   layout->AddView(current_profile_photo_);
 
   // Profile name, centered.
-  bool editing_allowed = !is_guest && !browser_->profile()->IsManaged();
+  bool editing_allowed = !is_guest && !browser_->profile()->IsSupervised();
   current_profile_name_ = new EditableProfileName(
       this, profiles::GetAvatarNameForProfile(browser_->profile()),
                                               editing_allowed);
@@ -1221,7 +1221,7 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
                     views::kRelatedControlVerticalSpacing,
                     views::kButtonHEdgeMarginNew);
   views::Label* disclaimer = new views::Label(
-      avatar_menu_->GetManagedUserInformation());
+      avatar_menu_->GetSupervisedUserInformation());
   disclaimer->SetMultiLine(true);
   disclaimer->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();

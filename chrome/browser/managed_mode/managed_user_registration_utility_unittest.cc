@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::ManagedUserSpecifics;
-using syncer::MANAGED_USERS;
+using syncer::SUPERVISED_USERS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncChangeProcessor;
@@ -39,7 +39,7 @@ using syncer::SyncMergeResult;
 
 namespace {
 
-const char kManagedUserToken[] = "managedusertoken";
+const char kSupervisedUserToken[] = "supervisedusertoken";
 
 class MockChangeProcessor : public SyncChangeProcessor {
  public:
@@ -80,7 +80,7 @@ class MockManagedUserRefreshTokenFetcher
                      const std::string& device_name,
                      const TokenCallback& callback) OVERRIDE {
     GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-    callback.Run(error, kManagedUserToken);
+    callback.Run(error, kSupervisedUserToken);
   }
 };
 
@@ -180,7 +180,7 @@ ManagedUserRegistrationUtilityTest::CreateErrorFactory() {
 SyncMergeResult ManagedUserRegistrationUtilityTest::StartInitialSync() {
   SyncDataList initial_sync_data;
   SyncMergeResult result =
-      service()->MergeDataAndStartSyncing(MANAGED_USERS,
+      service()->MergeDataAndStartSyncing(SUPERVISED_USERS,
                                           initial_sync_data,
                                           CreateChangeProcessor(),
                                           CreateErrorFactory());
@@ -249,7 +249,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, Register) {
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(base::ASCIIToUTF16("Dug"), 0),
       GetRegistrationCallback());
-  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
   Acknowledge();
 
   EXPECT_TRUE(received_callback());
@@ -262,7 +262,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, RegisterBeforeInitialSync) {
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(base::ASCIIToUTF16("Nemo"), 5),
       GetRegistrationCallback());
-  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
   StartInitialSync();
   Acknowledge();
 
@@ -277,9 +277,9 @@ TEST_F(ManagedUserRegistrationUtilityTest, SyncServiceShutdownBeforeRegFinish) {
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(base::ASCIIToUTF16("Remy"), 12),
       GetRegistrationCallback());
-  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
   service()->Shutdown();
-  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::REQUEST_CANCELED, error().state());
   EXPECT_EQ(std::string(), token());
@@ -291,9 +291,9 @@ TEST_F(ManagedUserRegistrationUtilityTest, StopSyncingBeforeRegFinish) {
       ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(base::ASCIIToUTF16("Mike"), 17),
       GetRegistrationCallback());
-  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
-  service()->StopSyncing(MANAGED_USERS);
-  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
+  service()->StopSyncing(SUPERVISED_USERS);
+  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kSupervisedUsers)->size());
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::REQUEST_CANCELED, error().state());
   EXPECT_EQ(std::string(), token());

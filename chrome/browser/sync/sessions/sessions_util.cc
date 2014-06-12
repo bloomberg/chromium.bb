@@ -21,7 +21,7 @@ bool ShouldSyncTab(const SyncedTabDelegate& tab) {
   }
 
   // Does the tab have a valid NavigationEntry?
-  if (tab.ProfileIsManaged() && tab.GetBlockedNavigations()->size() > 0)
+  if (tab.ProfileIsSupervised() && tab.GetBlockedNavigations()->size() > 0)
     return true;
 
   int entry_count = tab.GetEntryCount();

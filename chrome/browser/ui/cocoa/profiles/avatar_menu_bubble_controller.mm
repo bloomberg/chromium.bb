@@ -27,7 +27,7 @@
 
 @interface AvatarMenuBubbleController (Private)
 - (AvatarMenu*)menu;
-- (NSView*)configureManagedUserInformation:(CGFloat)width;
+- (NSView*)configureSupervisedUserInformation:(CGFloat)width;
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset
                   updateWidthAdjust:(CGFloat*)widthAdjust;
 - (NSButton*)configureSwitchUserButton:(CGFloat)yOffset
@@ -37,7 +37,7 @@
                                  setYOffset:(CGFloat)yOffset;
 - (void)setWindowFrame:(CGFloat)yOffset widthAdjust:(CGFloat)width;
 - (void)initMenuContents;
-- (void)initManagedUserContents;
+- (void)initSupervisedUserContents;
 - (void)keyDown:(NSEvent*)theEvent;
 - (void)moveDown:(id)sender;
 - (void)moveUp:(id)sender;
@@ -59,8 +59,9 @@ const CGFloat kVerticalSpacing = 10.0;
 const CGFloat kLinkSpacing = 15.0;
 const CGFloat kLabelInset = 49.0;
 
-// The offset of the managed user information label and the "switch user" link.
-const CGFloat kManagedUserSpacing = 26.0;
+// The offset of the supervised user information label and the "switch user"
+// link.
+const CGFloat kSupervisedUserSpacing = 26.0;
 
 }  // namespace
 
@@ -195,8 +196,8 @@ const CGFloat kManagedUserSpacing = 26.0;
 - (void)setWindowFrame:(CGFloat)yOffset widthAdjust:(CGFloat)width {
   // Set the window frame, clamping the width at a sensible max.
   NSRect frame = [[self window] frame];
-  // Adjust the origin after we have switched from the managed user menu to the
-  // regular menu.
+  // Adjust the origin after we have switched from the supervised user menu to
+  // the regular menu.
   CGFloat newWidth = std::min(kBubbleMinWidth + width, kBubbleMaxWidth);
   if (expanded_) {
     frame.origin.x += frame.size.width - newWidth;
@@ -246,7 +247,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   [self setWindowFrame:yOffset widthAdjust:widthAdjust];
 }
 
-- (void)initManagedUserContents {
+- (void)initSupervisedUserContents {
   NSView* contentView = [[self window] contentView];
 
   // |yOffset| is the next position at which to draw in contentView coordinates.
@@ -270,7 +271,7 @@ const CGFloat kManagedUserSpacing = 26.0;
 
   // First init the active profile in order to determine the required width. We
   // will have to adjust its frame later after adding general information about
-  // managed users.
+  // supervised users.
   AvatarMenuItemController* itemView =
       [self initAvatarItem:menu_->GetActiveProfileIndex()
           updateWidthAdjust:&widthAdjust
@@ -281,8 +282,8 @@ const CGFloat kManagedUserSpacing = 26.0;
   widthAdjust = std::min(widthAdjust, kBubbleMaxWidth - kBubbleMinWidth);
   CGFloat newWidth = kBubbleMinWidth + widthAdjust;
 
-  // Add general information about managed users.
-  NSView* info = [self configureManagedUserInformation:newWidth];
+  // Add general information about supervised users.
+  NSView* info = [self configureSupervisedUserInformation:newWidth];
   [info setFrameOrigin:NSMakePoint(0, yOffset)];
   [contentView addSubview:info];
   yOffset += NSHeight([info frame]) + kVerticalSpacing;
@@ -311,31 +312,31 @@ const CGFloat kManagedUserSpacing = 26.0;
   items_.reset([[NSMutableArray alloc] init]);
   [contentView setSubviews:[NSArray array]];
 
-  if (menu_->GetManagedUserInformation().empty() || expanded_)
+  if (menu_->GetSupervisedUserInformation().empty() || expanded_)
     [self initMenuContents];
   else
-    [self initManagedUserContents];
+    [self initSupervisedUserContents];
 }
 
-- (NSView*)configureManagedUserInformation:(CGFloat)width {
+- (NSView*)configureSupervisedUserInformation:(CGFloat)width {
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSZeroRect]);
 
   // Add the limited user icon on the left side of the information TextView.
   base::scoped_nsobject<NSImageView> iconView(
       [[NSImageView alloc] initWithFrame:NSMakeRect(5, 0, 16, 16)]);
-  [iconView setImage:menu_->GetManagedUserIcon().ToNSImage()];
+  [iconView setImage:menu_->GetSupervisedUserIcon().ToNSImage()];
   [container addSubview:iconView];
 
   NSString* info =
-      base::SysUTF16ToNSString(menu_->GetManagedUserInformation());
+      base::SysUTF16ToNSString(menu_->GetSupervisedUserInformation());
   NSDictionary* attributes =
       @{ NSFontAttributeName : [NSFont labelFontOfSize:12] };
   base::scoped_nsobject<NSAttributedString> attrString(
       [[NSAttributedString alloc] initWithString:info attributes:attributes]);
   base::scoped_nsobject<NSTextView> label(
       [[NSTextView alloc] initWithFrame:NSMakeRect(
-          kManagedUserSpacing, 0, width - kManagedUserSpacing - 5, 0)]);
+          kSupervisedUserSpacing, 0, width - kSupervisedUserSpacing - 5, 0)]);
   [[label textStorage] setAttributedString:attrString];
   [label setHorizontallyResizable:NO];
   [label setEditable:NO];
@@ -370,7 +371,7 @@ const CGFloat kManagedUserSpacing = 26.0;
                      updateWidthAdjust:(CGFloat*)widthAdjust {
   base::scoped_nsobject<NSButton> newButton(
       [[NSButton alloc] initWithFrame:NSMakeRect(
-          kManagedUserSpacing, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
+          kSupervisedUserSpacing, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
   base::scoped_nsobject<HyperlinkButtonCell> buttonCell(
       [[HyperlinkButtonCell alloc] initTextCell:
               l10n_util::GetNSString(IDS_PROFILES_SWITCH_PROFILE_LINK)]);

@@ -121,7 +121,7 @@ Profile* FakeProfile::GetOriginalProfile() {
   return this;
 }
 
-bool FakeProfile::IsManaged() {
+bool FakeProfile::IsSupervised() {
   return false;
 }
 

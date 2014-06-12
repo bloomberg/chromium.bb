@@ -53,7 +53,7 @@ ManagedUserImportHandler::ManagedUserImportHandler()
 
 ManagedUserImportHandler::~ManagedUserImportHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile->IsManaged()) {
+  if (!profile->IsSupervised()) {
     ManagedUserSyncService* service =
         ManagedUserSyncServiceFactory::GetForProfile(profile);
     if (service)
@@ -86,7 +86,7 @@ void ManagedUserImportHandler::GetLocalizedValues(
 
 void ManagedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile->IsManaged()) {
+  if (!profile->IsSupervised()) {
     ManagedUserSyncService* sync_service =
         ManagedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
@@ -124,7 +124,7 @@ void ManagedUserImportHandler::FetchManagedUsers() {
 
 void ManagedUserImportHandler::RequestManagedUserImportUpdate(
     const base::ListValue* /* args */) {
-  if (Profile::FromWebUI(web_ui())->IsManaged())
+  if (Profile::FromWebUI(web_ui())->IsSupervised())
     return;
 
   if (!IsAccountConnected() || HasAuthError()) {
@@ -150,8 +150,8 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
   // Collect the ids of local supervised user profiles.
   std::set<std::string> managed_user_ids;
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (cache.ProfileIsManagedAtIndex(i))
-      managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
+    if (cache.ProfileIsSupervisedAtIndex(i))
+      managed_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
   }
 
   base::ListValue managed_users;

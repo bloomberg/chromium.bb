@@ -1318,7 +1318,7 @@ void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
 DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
 bool DeveloperPrivateIsProfileManagedFunction::RunSync() {
-  SetResult(new base::FundamentalValue(GetProfile()->IsManaged()));
+  SetResult(new base::FundamentalValue(GetProfile()->IsSupervised()));
   return true;
 }
 

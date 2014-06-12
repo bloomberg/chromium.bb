@@ -71,7 +71,7 @@ extern const base::FilePath::CharType kJumpListIconDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kLoginDataFileName[];
-extern const base::FilePath::CharType kManagedUserSettingsFilename[];
+extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNewTabThumbnailsFilename[];
 extern const base::FilePath::CharType kOBCertFilename[];

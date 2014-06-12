@@ -100,8 +100,8 @@ bool ShouldShowPromo(Profile* profile) {
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
-  // Don't show for managed profiles.
-  if (profile->IsManaged())
+  // Don't show for supervised profiles.
+  if (profile->IsSupervised())
     return false;
 
   // Display the signin promo if the user is not signed in.

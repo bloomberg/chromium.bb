@@ -74,8 +74,8 @@ NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
   return web_contents_->GetController().GetVisibleEntry();
 }
 
-bool TabContentsSyncedTabDelegate::ProfileIsManaged() const {
-  return profile()->IsManaged();
+bool TabContentsSyncedTabDelegate::ProfileIsSupervised() const {
+  return profile()->IsSupervised();
 }
 
 const std::vector<const content::NavigationEntry*>*

@@ -20,7 +20,7 @@ using base::FundamentalValue;
 using base::StringValue;
 using base::Value;
 using sync_pb::ManagedUserSharedSettingSpecifics;
-using syncer::MANAGED_USER_SHARED_SETTINGS;
+using syncer::SUPERVISED_USER_SHARED_SETTINGS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncChangeProcessor;
@@ -84,9 +84,9 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
     scoped_ptr<syncer::SyncErrorFactory> error_handler(
-        new MockSyncErrorFactory(MANAGED_USER_SHARED_SETTINGS));
+        new MockSyncErrorFactory(SUPERVISED_USER_SHARED_SETTINGS));
     SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
-        MANAGED_USER_SHARED_SETTINGS,
+        SUPERVISED_USER_SHARED_SETTINGS,
         initial_sync_data,
         scoped_ptr<SyncChangeProcessor>(
             new SyncChangeProcessorWrapperForTest(sync_processor_.get())),
@@ -96,7 +96,7 @@ class ManagedUserSharedSettingsServiceTest : public ::testing::Test {
 
   const base::DictionaryValue* GetAllSettings() {
     return profile_.GetPrefs()->GetDictionary(
-        prefs::kManagedUserSharedSettings);
+        prefs::kSupervisedUserSharedSettings);
   }
 
   void VerifySyncChangesAndClear() {
@@ -145,7 +145,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, Empty) {
   EXPECT_EQ(0u, changed_settings_.size());
   EXPECT_EQ(
       0u,
-      settings_service_.GetAllSyncData(MANAGED_USER_SHARED_SETTINGS).size());
+      settings_service_.GetAllSyncData(SUPERVISED_USER_SHARED_SETTINGS).size());
   EXPECT_EQ(0u, GetAllSettings()->size());
 }
 
@@ -174,7 +174,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, SetAndGet) {
 
   EXPECT_EQ(
       3u,
-      settings_service_.GetAllSyncData(MANAGED_USER_SHARED_SETTINGS).size());
+      settings_service_.GetAllSyncData(SUPERVISED_USER_SHARED_SETTINGS).size());
 
   EXPECT_EQ(ToJson(&name), ToJson(settings_service_.GetValue(kIdA, "name")));
   EXPECT_EQ(ToJson(&age), ToJson(settings_service_.GetValue(kIdA, "age")));
@@ -198,7 +198,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, Merge) {
   settings_service_.SetValue(kIdA, "age", age);
   settings_service_.SetValue(kIdB, "foo", bar);
 
-  settings_service_.StopSyncing(MANAGED_USER_SHARED_SETTINGS);
+  settings_service_.StopSyncing(SUPERVISED_USER_SHARED_SETTINGS);
 
   StringValue name("Jill");
   StringValue blurp("blurp");
@@ -217,7 +217,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, Merge) {
 
   EXPECT_EQ(
       4u,
-      settings_service_.GetAllSyncData(MANAGED_USER_SHARED_SETTINGS).size());
+      settings_service_.GetAllSyncData(SUPERVISED_USER_SHARED_SETTINGS).size());
   EXPECT_EQ(ToJson(&name),
             ToJson(settings_service_.GetValue(kIdA, "name")));
   EXPECT_EQ(ToJson(&age), ToJson(settings_service_.GetValue(kIdA, "age")));
@@ -260,7 +260,7 @@ TEST_F(ManagedUserSharedSettingsServiceTest, ProcessChanges) {
 
   EXPECT_EQ(
       4u,
-      settings_service_.GetAllSyncData(MANAGED_USER_SHARED_SETTINGS).size());
+      settings_service_.GetAllSyncData(SUPERVISED_USER_SHARED_SETTINGS).size());
   EXPECT_EQ(ToJson(&name),
             ToJson(settings_service_.GetValue(kIdA, "name")));
   EXPECT_EQ(ToJson(&age), ToJson(settings_service_.GetValue(kIdA, "age")));

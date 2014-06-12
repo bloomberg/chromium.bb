@@ -45,9 +45,9 @@ class SyncedTabDelegate {
   virtual content::NavigationEntry* GetEntryAtIndex(int i) const = 0;
   virtual content::NavigationEntry* GetActiveEntry() const = 0;
 
-  // Managed user related methods.
+  // Supervised user related methods.
 
-  virtual bool ProfileIsManaged() const = 0;
+  virtual bool ProfileIsSupervised() const = 0;
   virtual const std::vector<const content::NavigationEntry*>*
       GetBlockedNavigations() const = 0;
 

@@ -112,9 +112,9 @@ enum {
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
 #endif
-  DIR_MANAGED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
-                                   // files to be installed when managed user
-                                   // session starts.
+  DIR_SUPERVISED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
+                                      // files to be installed when managed user
+                                      // session starts.
 #if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
   DIR_NATIVE_MESSAGING,         // System directory where native messaging host
                                 // manifest files are stored.

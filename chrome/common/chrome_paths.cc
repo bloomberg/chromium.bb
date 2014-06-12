@@ -435,7 +435,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
 #if defined(OS_LINUX) && defined(ENABLE_MANAGED_USERS)
-    case chrome::DIR_MANAGED_USERS_DEFAULT_APPS:
+    case chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS:
       if (!PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("managed_users"));

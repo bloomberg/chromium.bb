@@ -67,9 +67,9 @@ class ManagedUserSettingsServiceTest : public ::testing::Test {
 
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     scoped_ptr<syncer::SyncErrorFactory> error_handler(
-        new MockSyncErrorFactory(syncer::MANAGED_USER_SETTINGS));
+        new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
     syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
-        syncer::MANAGED_USER_SETTINGS,
+        syncer::SUPERVISED_USER_SETTINGS,
         initial_sync_data,
         CreateSyncProcessor(),
         error_handler.Pass());
@@ -232,7 +232,7 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
 
   // It should also show up in local Sync data.
   syncer::SyncDataList sync_data =
-      settings_service_.GetAllSyncData(syncer::MANAGED_USER_SETTINGS);
+      settings_service_.GetAllSyncData(syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(3u, sync_data.size());
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
@@ -248,7 +248,8 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(syncer::MANAGED_USER_SETTINGS);
+  sync_data = settings_service_.GetAllSyncData(
+      syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
@@ -265,7 +266,8 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(syncer::MANAGED_USER_SETTINGS);
+  sync_data = settings_service_.GetAllSyncData(
+      syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
@@ -280,7 +282,8 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(syncer::MANAGED_USER_SETTINGS);
+  sync_data = settings_service_.GetAllSyncData(
+      syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
@@ -293,7 +296,7 @@ TEST_F(ManagedUserSettingsServiceTest, UploadItem) {
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSplitItemName, &value));
 
   // Restarting sync should not create any new changes.
-  settings_service_.StopSyncing(syncer::MANAGED_USER_SETTINGS);
+  settings_service_.StopSyncing(syncer::SUPERVISED_USER_SETTINGS);
   StartSyncing(sync_data);
   ASSERT_EQ(0u, sync_processor_->changes().size());
 }

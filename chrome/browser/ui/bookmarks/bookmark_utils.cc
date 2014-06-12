@@ -318,9 +318,9 @@ base::string16 FormatBookmarkURLForDisplay(const GURL& url,
 
 bool IsAppsShortcutEnabled(Profile* profile,
                            chrome::HostDesktopType host_desktop_type) {
-  // Managed users can not have apps installed currently so there's no need to
-  // show the apps shortcut.
-  if (profile->IsManaged())
+  // Supervised users can not have apps installed currently so there's no need
+  // to show the apps shortcut.
+  if (profile->IsSupervised())
     return false;
 
   // Don't show the apps shortcut in ash since the app launcher is enabled.

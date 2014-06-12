@@ -31,7 +31,7 @@ class CustomThemeSupplier : public base::RefCountedThreadSafe<
   enum ThemeType {
     EXTENSION,
     NATIVE_X11,
-    MANAGED_USER_THEME,
+    SUPERVISED_USER_THEME,
   };
 
   explicit CustomThemeSupplier(ThemeType type);

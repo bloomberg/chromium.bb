@@ -14,12 +14,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kFakeManagedUserId[] = "fakeID";
+const char kFakeSupervisedUserId[] = "fakeID";
 
 class SupervisedUserPrefMappingServiceTest : public ::testing::Test {
  protected:
   SupervisedUserPrefMappingServiceTest() {
-    profile_.GetPrefs()->SetString(prefs::kManagedUserId, kFakeManagedUserId);
+    profile_.GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                   kFakeSupervisedUserId);
     shared_settings_service_ =
         ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
             &profile_);
@@ -46,11 +47,11 @@ class SupervisedUserPrefMappingServiceTest : public ::testing::Test {
 
 TEST_F(SupervisedUserPrefMappingServiceTest, CheckPrefUpdate) {
   EXPECT_TRUE(shared_settings_service_->GetValue(
-                  kFakeManagedUserId, managed_users::kChromeAvatarIndex) ==
+                  kFakeSupervisedUserId, managed_users::kChromeAvatarIndex) ==
               NULL);
   profile_.GetPrefs()->SetInteger(prefs::kProfileAvatarIndex, 4);
   const base::Value* value = shared_settings_service_->GetValue(
-      kFakeManagedUserId, managed_users::kChromeAvatarIndex);
+      kFakeSupervisedUserId, managed_users::kChromeAvatarIndex);
   int avatar_index;
   value->GetAsInteger(&avatar_index);
   EXPECT_EQ(avatar_index, 4);
@@ -58,10 +59,10 @@ TEST_F(SupervisedUserPrefMappingServiceTest, CheckPrefUpdate) {
 
 TEST_F(SupervisedUserPrefMappingServiceTest, CheckSharedSettingUpdate) {
   EXPECT_EQ(profile_.GetPrefs()->GetInteger(prefs::kProfileAvatarIndex), -1);
-  shared_settings_service_->SetValue(kFakeManagedUserId,
+  shared_settings_service_->SetValue(kFakeSupervisedUserId,
                                      managed_users::kChromeAvatarIndex,
                                      base::FundamentalValue(1));
-  mapping_service_->OnSharedSettingChanged(kFakeManagedUserId,
+  mapping_service_->OnSharedSettingChanged(kFakeSupervisedUserId,
                                            managed_users::kChromeAvatarIndex);
   EXPECT_EQ(profile_.GetPrefs()->GetInteger(prefs::kProfileAvatarIndex), 1);
 }

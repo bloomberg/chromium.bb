@@ -31,7 +31,7 @@ void AppListServiceViews::CreateForProfile(Profile* requested_profile) {
 
 void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
   DCHECK(requested_profile);
-  if (requested_profile->IsManaged())
+  if (requested_profile->IsSupervised())
     return;
 
   ScopedKeepAlive keep_alive;

@@ -57,7 +57,7 @@ ManagedUsersSyncTestAdapter::ManagedUsersSyncTestAdapter(Profile* profile)
   service_ = ManagedUserSyncServiceFactory::GetForProfile(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
-      syncer::MANAGED_USERS,
+      syncer::SUPERVISED_USERS,
       syncer::SyncDataList(),
       scoped_ptr<syncer::SyncChangeProcessor>(processor_),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
@@ -70,7 +70,7 @@ ManagedUsersSyncTestAdapter::GetFirstChange() {
   CHECK(HasChanges())
       << "GetFirstChange() should only be callled if HasChanges() is true";
   const syncer::SyncData& data = processor_->changes().front().sync_data();
-  EXPECT_EQ(syncer::MANAGED_USERS, data.GetDataType());
+  EXPECT_EQ(syncer::SUPERVISED_USERS, data.GetDataType());
   result->CopyFrom(data.GetSpecifics().managed_user());
   return result.Pass();
 }
@@ -106,7 +106,7 @@ ManagedUsersSharedSettingsSyncTestAdapter::
       ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
-      syncer::MANAGED_USER_SHARED_SETTINGS,
+      syncer::SUPERVISED_USER_SHARED_SETTINGS,
       syncer::SyncDataList(),
       scoped_ptr<syncer::SyncChangeProcessor>(processor_),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
@@ -119,7 +119,7 @@ ManagedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
   CHECK(HasChanges())
       << "GetFirstChange() should only be callled if HasChanges() is true";
   const syncer::SyncData& data = processor_->changes().front().sync_data();
-  EXPECT_EQ(syncer::MANAGED_USER_SHARED_SETTINGS, data.GetDataType());
+  EXPECT_EQ(syncer::SUPERVISED_USER_SHARED_SETTINGS, data.GetDataType());
   result->CopyFrom(data.GetSpecifics().managed_user_shared_setting());
   return result.Pass();
 }

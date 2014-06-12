@@ -185,9 +185,9 @@ size_t AvatarMenu::GetActiveProfileIndex() {
   return index;
 }
 
-base::string16 AvatarMenu::GetManagedUserInformation() const {
+base::string16 AvatarMenu::GetSupervisedUserInformation() const {
   // |browser_| can be NULL in unit_tests.
-  if (browser_ && browser_->profile()->IsManaged()) {
+  if (browser_ && browser_->profile()->IsSupervised()) {
 #if defined(ENABLE_MANAGED_USERS)
     ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
         browser_->profile());
@@ -199,7 +199,7 @@ base::string16 AvatarMenu::GetManagedUserInformation() const {
   return base::string16();
 }
 
-const gfx::Image& AvatarMenu::GetManagedUserIcon() const {
+const gfx::Image& AvatarMenu::GetSupervisedUserIcon() const {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_MANAGED_USER_ICON);
 }

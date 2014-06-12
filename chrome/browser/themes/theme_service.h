@@ -204,15 +204,12 @@ class ThemeService : public base::NonThreadSafe,
   // case we don't have a theme pack).
   void BuildFromExtension(const extensions::Extension* extension);
 
-  // Returns true if the profile belongs to a managed user.
-  bool IsManagedUser() const;
+  // Returns true if the profile belongs to a supervised user.
+  bool IsSupervisedUser() const;
 
-  // Sets the current theme to the managed user theme. Should only be used for
-  // managed user profiles.
-  void SetManagedUserTheme();
-
-  // Sets the managed user theme if the user has no custom theme yet.
-  void OnManagedUserInitialized();
+  // Sets the current theme to the supervised user theme. Should only be used
+  // for supervised user profiles.
+  void SetSupervisedUserTheme();
 
 #if defined(OS_MACOSX)
   // |nsimage_cache_| retains the images it has cached.

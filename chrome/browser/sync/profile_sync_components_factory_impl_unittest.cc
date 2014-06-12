@@ -70,8 +70,8 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
         channel == chrome::VersionInfo::CHANNEL_CANARY) {
       datatypes.push_back(syncer::SYNCED_NOTIFICATION_APP_INFO);
     }
-    datatypes.push_back(syncer::MANAGED_USERS);
-    datatypes.push_back(syncer::MANAGED_USER_SHARED_SETTINGS);
+    datatypes.push_back(syncer::SUPERVISED_USERS);
+    datatypes.push_back(syncer::SUPERVISED_USER_SHARED_SETTINGS);
 
     return datatypes;
   }

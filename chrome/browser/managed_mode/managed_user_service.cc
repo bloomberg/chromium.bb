@@ -154,47 +154,48 @@ void ManagedUserService::Shutdown() {
 }
 
 bool ManagedUserService::ProfileIsManaged() const {
-  return profile_->IsManaged();
+  return profile_->IsSupervised();
 }
 
 // static
 void ManagedUserService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
-      prefs::kManagedModeManualHosts,
+      prefs::kSupervisedUserManualHosts,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
-      prefs::kManagedModeManualURLs,
+      prefs::kSupervisedUserManualURLs,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kDefaultManagedModeFilteringBehavior, ManagedModeURLFilter::ALLOW,
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      ManagedModeURLFilter::ALLOW,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kManagedUserCustodianEmail, std::string(),
+      prefs::kSupervisedUserCustodianEmail, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kManagedUserCustodianName, std::string(),
+      prefs::kSupervisedUserCustodianName, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kManagedUserCreationAllowed, true,
+  registry->RegisterBooleanPref(prefs::kSupervisedUserCreationAllowed, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
 void ManagedUserService::MigrateUserPrefs(PrefService* prefs) {
-  if (!prefs->HasPrefPath(prefs::kProfileIsManaged))
+  if (!prefs->HasPrefPath(prefs::kProfileIsSupervised))
     return;
 
-  bool is_managed = prefs->GetBoolean(prefs::kProfileIsManaged);
-  prefs->ClearPref(prefs::kProfileIsManaged);
+  bool is_managed = prefs->GetBoolean(prefs::kProfileIsSupervised);
+  prefs->ClearPref(prefs::kProfileIsSupervised);
 
   if (!is_managed)
     return;
 
-  std::string managed_user_id = prefs->GetString(prefs::kManagedUserId);
+  std::string managed_user_id = prefs->GetString(prefs::kSupervisedUserId);
   if (!managed_user_id.empty())
     return;
 
-  prefs->SetString(prefs::kManagedUserId, "Dummy ID");
+  prefs->SetString(prefs::kSupervisedUserId, "Dummy ID");
 }
 
 void ManagedUserService::SetDelegate(Delegate* delegate) {
@@ -240,7 +241,7 @@ std::string ManagedUserService::GetCustodianEmailAddress() const {
       GetManagerDisplayEmail(
           chromeos::UserManager::Get()->GetActiveUser()->email());
 #else
-  return profile_->GetPrefs()->GetString(prefs::kManagedUserCustodianEmail);
+  return profile_->GetPrefs()->GetString(prefs::kSupervisedUserCustodianEmail);
 #endif
 }
 
@@ -251,7 +252,7 @@ std::string ManagedUserService::GetCustodianName() const {
           chromeos::UserManager::Get()->GetActiveUser()->email()));
 #else
   std::string name = profile_->GetPrefs()->GetString(
-      prefs::kManagedUserCustodianName);
+      prefs::kSupervisedUserCustodianName);
   return name.empty() ? GetCustodianEmailAddress() : name;
 #endif
 }
@@ -361,7 +362,7 @@ void ManagedUserService::SetupSync() {
 
   bool sync_everything = false;
   syncer::ModelTypeSet synced_datatypes;
-  synced_datatypes.Put(syncer::MANAGED_USER_SETTINGS);
+  synced_datatypes.Put(syncer::SUPERVISED_USER_SETTINGS);
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
@@ -416,7 +417,7 @@ ManagedUserSettingsService* ManagedUserService::GetSettingsService() {
 
 void ManagedUserService::OnManagedUserIdChanged() {
   std::string managed_user_id =
-      profile_->GetPrefs()->GetString(prefs::kManagedUserId);
+      profile_->GetPrefs()->GetString(prefs::kSupervisedUserId);
   SetActive(!managed_user_id.empty());
 }
 
@@ -424,7 +425,7 @@ void ManagedUserService::OnDefaultFilteringBehaviorChanged() {
   DCHECK(ProfileIsManaged());
 
   int behavior_value = profile_->GetPrefs()->GetInteger(
-      prefs::kDefaultManagedModeFilteringBehavior);
+      prefs::kDefaultSupervisedUserFilteringBehavior);
   ManagedModeURLFilter::FilteringBehavior behavior =
       ManagedModeURLFilter::BehaviorFromInt(behavior_value);
   url_filter_context_.SetDefaultFilteringBehavior(behavior);
@@ -471,7 +472,7 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
     const std::string& hostname) {
   const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualHosts);
+      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
   bool allow = false;
   if (!dict->GetBooleanWithoutPathExpansion(hostname, &allow))
     return MANUAL_NONE;
@@ -482,7 +483,7 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
     const GURL& url) {
   const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
+      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
   GURL normalized_url = ManagedModeURLFilter::Normalize(url);
   bool allow = false;
   if (!dict->GetBooleanWithoutPathExpansion(normalized_url.spec(), &allow))
@@ -494,7 +495,7 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
 void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
                                                     std::vector<GURL>* urls) {
   const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
+      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     GURL url(it.key());
     if (url.host() == host)
@@ -528,7 +529,7 @@ void ManagedUserService::Init() {
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
-      prefs::kManagedUserId,
+      prefs::kSupervisedUserId,
       base::Bind(&ManagedUserService::OnManagedUserIdChanged,
           base::Unretained(this)));
 
@@ -546,9 +547,10 @@ void ManagedUserService::SetActive(bool active) {
           ->Init();
 
       CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {
+      if (command_line->HasSwitch(switches::kSupervisedUserSyncToken)) {
         InitSync(
-            command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
+            command_line->GetSwitchValueASCII(
+                switches::kSupervisedUserSyncToken));
       }
 
       ProfileOAuth2TokenService* token_service =
@@ -587,7 +589,7 @@ void ManagedUserService::SetActive(bool active) {
           ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile_),
           pref_service->GetString(prefs::kProfileName),
-          pref_service->GetString(prefs::kManagedUserId)));
+          pref_service->GetString(prefs::kSupervisedUserId)));
     }
 
     if (management_policy)
@@ -597,13 +599,13 @@ void ManagedUserService::SetActive(bool active) {
         extensions::ExtensionRegistry::Get(profile_));
 
     pref_change_registrar_.Add(
-        prefs::kDefaultManagedModeFilteringBehavior,
+        prefs::kDefaultSupervisedUserFilteringBehavior,
         base::Bind(&ManagedUserService::OnDefaultFilteringBehaviorChanged,
             base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kManagedModeManualHosts,
+    pref_change_registrar_.Add(prefs::kSupervisedUserManualHosts,
         base::Bind(&ManagedUserService::UpdateManualHosts,
                    base::Unretained(this)));
-    pref_change_registrar_.Add(prefs::kManagedModeManualURLs,
+    pref_change_registrar_.Add(prefs::kSupervisedUserManualURLs,
         base::Bind(&ManagedUserService::UpdateManualURLs,
                    base::Unretained(this)));
 
@@ -626,9 +628,10 @@ void ManagedUserService::SetActive(bool active) {
 
     extension_registry_observer_.RemoveAll();
 
-    pref_change_registrar_.Remove(prefs::kDefaultManagedModeFilteringBehavior);
-    pref_change_registrar_.Remove(prefs::kManagedModeManualHosts);
-    pref_change_registrar_.Remove(prefs::kManagedModeManualURLs);
+    pref_change_registrar_.Remove(
+        prefs::kDefaultSupervisedUserFilteringBehavior);
+    pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
+    pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
 
     if (waiting_for_sync_initialization_) {
       ProfileSyncService* sync_service =
@@ -650,7 +653,7 @@ void ManagedUserService::RegisterAndInitSync(
     const std::string& managed_user_id,
     const AuthErrorCallback& callback) {
   DCHECK(ProfileIsManaged());
-  DCHECK(!custodian_profile->IsManaged());
+  DCHECK(!custodian_profile->IsSupervised());
 
   base::string16 name = base::UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
@@ -676,7 +679,7 @@ void ManagedUserService::RegisterAndInitSync(
 
 void ManagedUserService::OnCustodianProfileDownloaded(
     const base::string16& full_name) {
-  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianName,
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianName,
                                   base::UTF16ToUTF8(full_name));
 }
 
@@ -689,7 +692,7 @@ void ManagedUserService::OnManagedUserRegistered(
     InitSync(token);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(custodian_profile);
-    profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianEmail,
+    profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
                                     signin->GetAuthenticatedUsername());
 
     // The managed-user profile is now ready for use.
@@ -706,7 +709,7 @@ void ManagedUserService::OnManagedUserRegistered(
 
 void ManagedUserService::UpdateManualHosts() {
   const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualHosts);
+      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
   scoped_ptr<std::map<std::string, bool> > host_map(
       new std::map<std::string, bool>());
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
@@ -720,7 +723,7 @@ void ManagedUserService::UpdateManualHosts() {
 
 void ManagedUserService::UpdateManualURLs() {
   const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
+      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
   scoped_ptr<std::map<GURL, bool> > url_map(new std::map<GURL, bool>());
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     bool allow = false;

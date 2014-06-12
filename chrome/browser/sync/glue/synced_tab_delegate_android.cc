@@ -99,9 +99,9 @@ void SyncedTabDelegateAndroid::SetWebContents(
 
 void SyncedTabDelegateAndroid::ResetWebContents() { web_contents_ = NULL; }
 
-bool SyncedTabDelegateAndroid::ProfileIsManaged() const {
+bool SyncedTabDelegateAndroid::ProfileIsSupervised() const {
   return TabContentsSyncedTabDelegate::FromWebContents(web_contents_)
-      ->ProfileIsManaged();
+      ->ProfileIsSupervised();
 }
 
 const std::vector<const content::NavigationEntry*>*

@@ -26,7 +26,7 @@ class FakeProfileStore : public ProfileStore {
       base::Callback<void(Profile*)> callback) OVERRIDE;
   virtual Profile* GetProfileByPath(const base::FilePath& path) OVERRIDE;
   virtual base::FilePath GetUserDataDir() OVERRIDE;
-  virtual bool IsProfileManaged(const base::FilePath& path) OVERRIDE;
+  virtual bool IsProfileSupervised(const base::FilePath& path) OVERRIDE;
 
  private:
   base::FilePath user_data_dir_;

@@ -25,11 +25,11 @@ extern const char kDefaultAppsInstalled[];
 extern const char kDisableScreenshots[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
-extern const char kManagedModeManualHosts[];
-extern const char kManagedModeManualURLs[];
-extern const char kManagedUserCustodianEmail[];
-extern const char kManagedUserCustodianName[];
-extern const char kManagedUserSharedSettings[];
+extern const char kSupervisedUserManualHosts[];
+extern const char kSupervisedUserManualURLs[];
+extern const char kSupervisedUserCustodianEmail[];
+extern const char kSupervisedUserCustodianName[];
+extern const char kSupervisedUserSharedSettings[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kRestoreOnStartupMigrated[];
@@ -368,8 +368,8 @@ extern const char kImportSavedPasswords[];
 
 extern const char kProfileAvatarIndex[];
 extern const char kProfileName[];
-extern const char kProfileIsManaged[];
-extern const char kManagedUserId[];
+extern const char kProfileIsSupervised[];
+extern const char kSupervisedUserId[];
 
 extern const char kProfileGAIAInfoUpdateTime[];
 extern const char kProfileGAIAInfoPictureURL[];
@@ -382,10 +382,10 @@ extern const char kInvertNotificationShown[];
 extern const char kPrintingEnabled[];
 extern const char kPrintPreviewDisabled[];
 
-extern const char kDefaultManagedModeFilteringBehavior[];
+extern const char kDefaultSupervisedUserFilteringBehavior[];
 
-extern const char kManagedUserCreationAllowed[];
-extern const char kManagedUsers[];
+extern const char kSupervisedUserCreationAllowed[];
+extern const char kSupervisedUsers[];
 
 extern const char kMessageCenterDisabledExtensionIds[];
 extern const char kMessageCenterDisabledSystemComponentIds[];

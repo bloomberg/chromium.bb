@@ -429,7 +429,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (!profile->IsManaged()) {
+  if (!profile->IsSupervised()) {
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
@@ -446,8 +446,8 @@ void ExternalProviderImpl::CreateExternalProviders(
 
 #if defined(OS_CHROMEOS)
   if (!is_chromeos_demo_session && !is_chrome_os_public_session) {
-    int external_apps_path_id = profile->IsManaged() ?
-        chrome::DIR_MANAGED_USERS_DEFAULT_APPS :
+    int external_apps_path_id = profile->IsSupervised() ?
+        chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS :
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
@@ -488,7 +488,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 #endif
 
-  if (!profile->IsManaged() && !is_chromeos_demo_session) {
+  if (!profile->IsSupervised() && !is_chromeos_demo_session) {
 #if !defined(OS_WIN)
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(

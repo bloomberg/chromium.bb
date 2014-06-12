@@ -526,7 +526,7 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
       browser_(browser),
       separator_(NULL),
       buttons_view_(NULL),
-      managed_user_info_(NULL),
+      supervised_user_info_(NULL),
       separator_switch_users_(NULL),
       expanded_(false) {
   avatar_menu_.reset(new AvatarMenu(
@@ -558,7 +558,7 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() const {
   }
 
 
-  if (managed_user_info_) {
+  if (supervised_user_info_) {
     // First handle the switch profile link because it can still affect the
     // preferred width.
     gfx::Size size = switch_profile_link_->GetPreferredSize();
@@ -577,13 +577,14 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() const {
 
   // We have to do this after the final width is calculated, since the label
   // will wrap based on the width.
-  if (managed_user_info_) {
+  if (supervised_user_info_) {
     int remaining_width =
         preferred_size.width() - icon_view_->GetPreferredSize().width() -
         views::kRelatedControlSmallHorizontalSpacing;
     preferred_size.Enlarge(
         0,
-        managed_user_info_->GetHeightForWidth(remaining_width) + kItemMarginY);
+        supervised_user_info_->GetHeightForWidth(remaining_width) +
+            kItemMarginY);
   }
 
   return preferred_size;
@@ -600,7 +601,7 @@ void AvatarMenuBubbleView::Layout() {
   }
 
   int separator_height;
-  if (buttons_view_ || managed_user_info_) {
+  if (buttons_view_ || supervised_user_info_) {
     separator_height = separator_->GetPreferredSize().height();
     y += kSeparatorPaddingY;
     separator_->SetBounds(0, y, width(), separator_height);
@@ -610,14 +611,14 @@ void AvatarMenuBubbleView::Layout() {
   if (buttons_view_) {
     buttons_view_->SetBounds(0, y,
         width(), buttons_view_->GetPreferredSize().height());
-  } else if (managed_user_info_) {
+  } else if (supervised_user_info_) {
     gfx::Size icon_size = icon_view_->GetPreferredSize();
     gfx::Rect icon_bounds(0, y, icon_size.width(), icon_size.height());
     icon_view_->SetBoundsRect(icon_bounds);
     int info_width = width() - icon_bounds.right() -
                      views::kRelatedControlSmallHorizontalSpacing;
-    int height = managed_user_info_->GetHeightForWidth(info_width);
-    managed_user_info_->SetBounds(
+    int height = supervised_user_info_->GetHeightForWidth(info_width);
+    supervised_user_info_->SetBounds(
         icon_bounds.right() + views::kRelatedControlSmallHorizontalSpacing,
         y, info_width, height);
     y += height + kItemMarginY + kSeparatorPaddingY;
@@ -745,9 +746,9 @@ void AvatarMenuBubbleView::InitMenuContents(
   }
 }
 
-void AvatarMenuBubbleView::InitManagedUserContents(
+void AvatarMenuBubbleView::InitSupervisedUserContents(
     AvatarMenu* avatar_menu) {
-  // Show the profile of the managed user.
+  // Show the profile of the supervised user.
   size_t active_index = avatar_menu->GetActiveProfileIndex();
   const AvatarMenu::Item& item =
       avatar_menu->GetItemAt(active_index);
@@ -761,19 +762,19 @@ void AvatarMenuBubbleView::InitManagedUserContents(
   separator_ = new views::Separator(views::Separator::HORIZONTAL);
   AddChildView(separator_);
 
-  // Add information about managed users.
-  managed_user_info_ =
-      new views::Label(avatar_menu_->GetManagedUserInformation(),
+  // Add information about supervised users.
+  supervised_user_info_ =
+      new views::Label(avatar_menu_->GetSupervisedUserInformation(),
                        ui::ResourceBundle::GetSharedInstance().GetFontList(
                            ui::ResourceBundle::SmallFont));
-  managed_user_info_->SetMultiLine(true);
-  managed_user_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  managed_user_info_->SetBackgroundColor(color());
-  AddChildView(managed_user_info_);
+  supervised_user_info_->SetMultiLine(true);
+  supervised_user_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  supervised_user_info_->SetBackgroundColor(color());
+  AddChildView(supervised_user_info_);
 
-  // Add the managed user icon.
+  // Add the supervised user icon.
   icon_view_ = new views::ImageView();
-  icon_view_->SetImage(avatar_menu_->GetManagedUserIcon().ToImageSkia());
+  icon_view_->SetImage(avatar_menu_->GetSupervisedUserIcon().ToImageSkia());
   AddChildView(icon_view_);
 
   // Add a link for switching profiles.
@@ -792,14 +793,14 @@ void AvatarMenuBubbleView::OnAvatarMenuChanged(
   // Unset all our child view references and call RemoveAllChildViews() which
   // will actually delete them.
   buttons_view_ = NULL;
-  managed_user_info_ = NULL;
+  supervised_user_info_ = NULL;
   item_views_.clear();
   RemoveAllChildViews(true);
 
-  if (avatar_menu_->GetManagedUserInformation().empty() || expanded_)
+  if (avatar_menu_->GetSupervisedUserInformation().empty() || expanded_)
     InitMenuContents(avatar_menu);
   else
-    InitManagedUserContents(avatar_menu);
+    InitSupervisedUserContents(avatar_menu);
 
   // If the bubble has already been shown then resize and reposition the bubble.
   Layout();

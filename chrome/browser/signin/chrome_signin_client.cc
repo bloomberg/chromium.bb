@@ -117,7 +117,7 @@ bool ChromeSigninClient::CanRevokeCredentials() {
 #else
   // Don't allow revoking credentials for supervised users.
   // See http://crbug.com/332032
-  if (profile_->IsManaged()) {
+  if (profile_->IsSupervised()) {
     LOG(ERROR) << "Attempt to revoke supervised user refresh "
                << "token detected, ignoring.";
     return false;

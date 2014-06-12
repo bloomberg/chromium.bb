@@ -18,7 +18,7 @@ SupervisedUserPrefMappingService::SupervisedUserPrefMappingService(
     ManagedUserSharedSettingsService* shared_settings)
     : prefs_(prefs),
       shared_settings_(shared_settings),
-      managed_user_id_(prefs->GetString(prefs::kManagedUserId)),
+      managed_user_id_(prefs->GetString(prefs::kSupervisedUserId)),
       weak_ptr_factory_(this) {}
 
 SupervisedUserPrefMappingService::~SupervisedUserPrefMappingService() {}

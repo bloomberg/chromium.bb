@@ -1002,7 +1002,7 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
 };
 

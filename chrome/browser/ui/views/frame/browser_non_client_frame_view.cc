@@ -60,7 +60,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
       Profile* profile = browser_view_->browser()->profile();
-      if (profile->IsManaged() && !avatar_label_) {
+      if (profile->IsSupervised() && !avatar_label_) {
         avatar_label_ = new AvatarLabel(browser_view_);
         avatar_label_->set_id(VIEW_ID_AVATAR_LABEL);
         AddChildView(avatar_label_);

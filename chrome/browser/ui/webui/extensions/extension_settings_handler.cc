@@ -810,11 +810,11 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.Set("extensions", extensions_list);
 
-  bool is_managed = profile->IsManaged();
+  bool is_supervised = profile->IsSupervised();
   bool developer_mode =
-      !is_managed &&
+      !is_supervised &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results.SetBoolean("profileIsManaged", is_managed);
+  results.SetBoolean("profileIsManaged", is_supervised);
   results.SetBoolean("developerMode", developer_mode);
 
   // Promote the Chrome Apps & Extensions Developer Tools if they are not
@@ -849,7 +849,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->IsManaged())
+  if (profile->IsSupervised())
     return;
 
   bool developer_mode =

@@ -39,7 +39,7 @@ const char kAnyApiOAuth2Scope[] = "https://www.googleapis.com/auth/any-api";
 const char kChromeSyncOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync";
 // OAuth2 scope for access to the Chrome Sync APIs for managed profiles.
-const char kChromeSyncManagedOAuth2Scope[] =
+const char kChromeSyncSupervisedOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync_playpen";
 // OAuth2 scope for access to Google Talk APIs (XMPP).
 const char kGoogleTalkOAuth2Scope[] =

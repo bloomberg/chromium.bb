@@ -111,13 +111,13 @@
       case ::syncer::FAVICON_TRACKING: \
         PER_DATA_TYPE_MACRO("FaviconTracking"); \
         break; \
-      case ::syncer::MANAGED_USER_SETTINGS: \
+      case ::syncer::SUPERVISED_USER_SETTINGS: \
         PER_DATA_TYPE_MACRO("ManagedUserSetting"); \
         break; \
-      case ::syncer::MANAGED_USERS: \
+      case ::syncer::SUPERVISED_USERS: \
         PER_DATA_TYPE_MACRO("ManagedUser"); \
         break; \
-      case ::syncer::MANAGED_USER_SHARED_SETTINGS: \
+      case ::syncer::SUPERVISED_USER_SHARED_SETTINGS: \
         PER_DATA_TYPE_MACRO("ManagedUserSharedSetting"); \
         break; \
       case ::syncer::ARTICLES: \

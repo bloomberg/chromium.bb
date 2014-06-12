@@ -82,7 +82,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
   ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
   if (themeProvider) {
     NSColor* textColor = themeProvider->GetNSColor(
-        ThemeProperties::COLOR_MANAGED_USER_LABEL);
+        ThemeProperties::COLOR_SUPERVISED_USER_LABEL);
     [themedTitle addAttribute:NSForegroundColorAttributeName
                         value:textColor
                         range:NSMakeRange(0, title.length)];
@@ -97,7 +97,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
     // Draw the label button background using the color provided by
     // |themeProvider|. First paint the border.
     NSColor* borderColor = themeProvider->GetNSColor(
-        ThemeProperties::COLOR_MANAGED_USER_LABEL_BORDER);
+        ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER);
     if ([self isHighlighted]) {
       borderColor = [borderColor blendedColorWithFraction:0.5
                                                   ofColor:[NSColor blackColor]];
@@ -115,7 +115,7 @@ const CGFloat kLabelTextBottomSpacing = 4;
 
     // Now paint the background.
     NSColor* backgroundColor = themeProvider->GetNSColor(
-        ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
+        ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND);
     if ([self isHighlighted]) {
       backgroundColor =
           [backgroundColor blendedColorWithFraction:0.5

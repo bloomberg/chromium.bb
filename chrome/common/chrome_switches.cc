@@ -805,14 +805,14 @@ const char kMalwareInterstitialVersionV3[]  = "malware-interstitial-v3";
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Sets the managed user ID for any loaded or newly created profile to the
+// Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.
-const char kManagedUserId[]                 = "managed-user-id";
+const char kSupervisedUserId[]              = "managed-user-id";
 
-// Used to authenticate requests to the Sync service for managed users. Setting
-// this switch also causes Sync to be set up for a managed user.
-const char kManagedUserSyncToken[]          = "managed-user-sync-token";
+// Used to authenticate requests to the Sync service for supervised users.
+// Setting this switch also causes Sync to be set up for a supervised user.
+const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
 
 // Use to opt-in user into Finch experiment groups.
 const char kManualEnhancedBookmarks[] = "manual-enhanced-bookmarks";
@@ -889,7 +889,7 @@ const char kNoStartupWindow[]               = "no-startup-window";
 // a supervised user. Also disables the timeout during registration that waits
 // for the ack. Useful when debugging against a server that does not
 // support notifications.
-const char kNoManagedUserAcknowledgmentCheck[]  =
+const char kNoSupervisedUserAcknowledgmentCheck[]  =
     "no-managed-user-acknowledgment-check";
 
 // Specifies the maximum number of threads to use for running the Proxy

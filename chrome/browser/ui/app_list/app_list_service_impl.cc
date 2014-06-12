@@ -130,12 +130,13 @@ class ProfileStoreImpl : public ProfileStore {
     return profile_manager_->user_data_dir();
   }
 
-  virtual bool IsProfileManaged(const base::FilePath& profile_path) OVERRIDE {
+  virtual bool IsProfileSupervised(
+      const base::FilePath& profile_path) OVERRIDE {
     ProfileInfoCache& profile_info =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
     return profile_index != std::string::npos &&
-        profile_info.ProfileIsManagedAtIndex(profile_index);
+        profile_info.ProfileIsSupervisedAtIndex(profile_index);
   }
 
  private:
@@ -276,10 +277,10 @@ base::FilePath AppListServiceImpl::GetProfilePath(
 }
 
 void AppListServiceImpl::SetProfilePath(const base::FilePath& profile_path) {
-  // Ensure we don't set the pref to a managed user's profile path.
-  // TODO(calamity): Filter out managed profiles from the settings app so this
-  // can't get hit, so we can remove it.
-  if (profile_store_->IsProfileManaged(profile_path))
+  // Ensure we don't set the pref to a supervised user's profile path.
+  // TODO(calamity): Filter out supervised profiles from the settings app so
+  // this can't get hit, so we can remove it.
+  if (profile_store_->IsProfileSupervised(profile_path))
     return;
 
   local_state_->SetString(

@@ -131,10 +131,10 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     const SkBitmap* icon = rb.GetImageNamed(
         profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
-    std::string managed_user_id = i == 3 ? "TEST_ID" : "";
+    std::string supervised_user_id = i == 3 ? "TEST_ID" : "";
 
     GetCache()->AddProfileToCache(profile_path, profile_name, base::string16(),
-                                  i, managed_user_id);
+                                  i, supervised_user_id);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
     base::string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
@@ -146,9 +146,10 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
         GetCache()->GetAvatarIconOfProfileAtIndex(i).ToSkBitmap();
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
-    EXPECT_EQ(i == 3, GetCache()->ProfileIsManagedAtIndex(i));
+    EXPECT_EQ(i == 3, GetCache()->ProfileIsSupervisedAtIndex(i));
     EXPECT_EQ(i == 3, GetCache()->IsOmittedProfileAtIndex(i));
-    EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
+    EXPECT_EQ(supervised_user_id,
+              GetCache()->GetSupervisedUserIdOfProfileAtIndex(i));
   }
 
   // Reset the cache and test the it reloads correctly.
@@ -410,22 +411,22 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 }
 
-TEST_F(ProfileInfoCacheTest, SetManagedUserId) {
+TEST_F(ProfileInfoCacheTest, SetSupervisedUserId) {
   GetCache()->AddProfileToCache(
       GetProfilePath("test"), ASCIIToUTF16("Test"),
       base::string16(), 0, std::string());
-  EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
+  EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(0));
 
-  GetCache()->SetManagedUserIdOfProfileAtIndex(0, "TEST_ID");
-  EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
-  EXPECT_EQ("TEST_ID", GetCache()->GetManagedUserIdOfProfileAtIndex(0));
+  GetCache()->SetSupervisedUserIdOfProfileAtIndex(0, "TEST_ID");
+  EXPECT_TRUE(GetCache()->ProfileIsSupervisedAtIndex(0));
+  EXPECT_EQ("TEST_ID", GetCache()->GetSupervisedUserIdOfProfileAtIndex(0));
 
   ResetCache();
-  EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
+  EXPECT_TRUE(GetCache()->ProfileIsSupervisedAtIndex(0));
 
-  GetCache()->SetManagedUserIdOfProfileAtIndex(0, std::string());
-  EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
-  EXPECT_EQ("", GetCache()->GetManagedUserIdOfProfileAtIndex(0));
+  GetCache()->SetSupervisedUserIdOfProfileAtIndex(0, std::string());
+  EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(0));
+  EXPECT_EQ("", GetCache()->GetSupervisedUserIdOfProfileAtIndex(0));
 }
 
 TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
@@ -449,23 +450,24 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(0)));
 }
 
-TEST_F(ProfileInfoCacheTest, CreateManagedTestingProfile) {
+TEST_F(ProfileInfoCacheTest, CreateSupervisedTestingProfile) {
   testing_profile_manager_.CreateTestingProfile("default");
-  base::string16 managed_user_name = ASCIIToUTF16("Supervised User");
+  base::string16 supervised_user_name = ASCIIToUTF16("Supervised User");
   testing_profile_manager_.CreateTestingProfile(
       "test1", scoped_ptr<PrefServiceSyncable>(),
-      managed_user_name, 0, "TEST_ID", TestingProfile::TestingFactories());
+      supervised_user_name, 0, "TEST_ID", TestingProfile::TestingFactories());
   for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
-    bool is_managed =
-        GetCache()->GetNameOfProfileAtIndex(i) == managed_user_name;
-    EXPECT_EQ(is_managed, GetCache()->ProfileIsManagedAtIndex(i));
-    std::string managed_user_id = is_managed ? "TEST_ID" : "";
-    EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
+    bool is_supervised =
+        GetCache()->GetNameOfProfileAtIndex(i) == supervised_user_name;
+    EXPECT_EQ(is_supervised, GetCache()->ProfileIsSupervisedAtIndex(i));
+    std::string supervised_user_id = is_supervised ? "TEST_ID" : "";
+    EXPECT_EQ(supervised_user_id,
+              GetCache()->GetSupervisedUserIdOfProfileAtIndex(i));
   }
 
-  // Managed profiles have a custom theme, which needs to be deleted on the FILE
-  // thread. Reset the profile manager now so everything is deleted while we
-  // still have a FILE thread.
+  // Supervised profiles have a custom theme, which needs to be deleted on the
+  // FILE thread. Reset the profile manager now so everything is deleted while
+  // we still have a FILE thread.
   TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 }
 

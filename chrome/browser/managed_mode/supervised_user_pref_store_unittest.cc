@@ -110,7 +110,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // kManagedModeManualHosts does not have a hardcoded value.
   base::DictionaryValue* manual_hosts = NULL;
   EXPECT_FALSE(fixture.changed_prefs()->GetDictionary(
-      prefs::kManagedModeManualHosts, &manual_hosts));
+      prefs::kSupervisedUserManualHosts, &manual_hosts));
 
   // kForceSafeSearch defaults to true for managed users.
   bool force_safesearch = false;
@@ -132,7 +132,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
       scoped_ptr<base::Value>(dict->DeepCopy()));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   ASSERT_TRUE(fixture.changed_prefs()->GetDictionary(
-      prefs::kManagedModeManualHosts, &manual_hosts));
+      prefs::kSupervisedUserManualHosts, &manual_hosts));
   EXPECT_TRUE(manual_hosts->Equals(dict.get()));
 
   // kForceSafeSearch can be configured by the custodian, overriding the

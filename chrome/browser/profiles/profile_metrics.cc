@@ -25,12 +25,12 @@ const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 struct ProfileCounts {
   size_t total;
   size_t signedin;
-  size_t managed;
+  size_t supervised;
   size_t unused;
   size_t gaia_icon;
 
   ProfileCounts()
-      : total(0), signedin(0), managed(0), unused(0), gaia_icon(0) {}
+      : total(0), signedin(0), supervised(0), unused(0), gaia_icon(0) {}
 };
 
 ProfileMetrics::ProfileType GetProfileType(
@@ -72,8 +72,8 @@ bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
     if (info_cache.GetProfileActiveTimeAtIndex(i) < oldest) {
       counts->unused++;
     } else {
-      if (info_cache.ProfileIsManagedAtIndex(i))
-        counts->managed++;
+      if (info_cache.ProfileIsSupervisedAtIndex(i))
+        counts->supervised++;
       if (!info_cache.GetUserNameOfProfileAtIndex(i).empty()) {
         counts->signedin++;
         if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
@@ -142,9 +142,9 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
   if (success) {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfiles",
-                             counts.managed);
+                             counts.supervised);
     UMA_HISTOGRAM_COUNTS_100("Profile.PercentageOfManagedProfiles",
-                             100 * counts.managed / counts.total);
+                             100 * counts.supervised / counts.total);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
                              counts.signedin);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfUnusedProfiles",
@@ -391,7 +391,7 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
 
-  if (profile->IsManaged()) {
+  if (profile->IsSupervised()) {
     content::RecordAction(
         base::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
   }

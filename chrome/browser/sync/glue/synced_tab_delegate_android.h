@@ -42,9 +42,9 @@ class SyncedTabDelegateAndroid : public browser_sync::SyncedTabDelegate {
   virtual int GetSyncId() const OVERRIDE;
   virtual void SetSyncId(int sync_id) OVERRIDE;
 
-  // Managed user related methods.
+  // Supervised user related methods.
 
-  virtual bool ProfileIsManaged() const OVERRIDE;
+  virtual bool ProfileIsSupervised() const OVERRIDE;
   virtual const std::vector<const content::NavigationEntry*>*
       GetBlockedNavigations() const OVERRIDE;
 

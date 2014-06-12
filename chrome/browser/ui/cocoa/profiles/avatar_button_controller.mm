@@ -208,7 +208,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
   base::string16 profileName = [self getElidedAvatarName];
   NSString* buttonTitle = nil;
-  if (browser_->profile()->IsManaged()) {
+  if (browser_->profile()->IsSupervised()) {
     // Add the "supervised" label after eliding the profile name, so the label
     // will not get elided, but will instead enlarge the button.
     buttonTitle = l10n_util::GetNSStringF(IDS_MANAGED_USER_NEW_AVATAR_LABEL,

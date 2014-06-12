@@ -13,7 +13,7 @@ class BrowserView;
 // AvatarLabel
 //
 // A label used to display a string indicating that the current profile belongs
-// to a managed user.
+// to a supervised user.
 class AvatarLabel : public views::LabelButton {
  public:
   explicit AvatarLabel(BrowserView* browser_view);

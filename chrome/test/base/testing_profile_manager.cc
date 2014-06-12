@@ -53,7 +53,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     scoped_ptr<PrefServiceSyncable> prefs,
     const base::string16& user_name,
     int avatar_id,
-    const std::string& managed_user_id,
+    const std::string& supervised_user_id,
     const TestingProfile::TestingFactories& factories) {
   DCHECK(called_set_up_);
 
@@ -65,7 +65,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   TestingProfile::Builder builder;
   builder.SetPath(profile_path);
   builder.SetPrefService(prefs.Pass());
-  builder.SetManagedUserId(managed_user_id);
+  builder.SetSupervisedUserId(supervised_user_id);
 
   for (TestingProfile::TestingFactories::const_iterator it = factories.begin();
        it != factories.end(); ++it) {
@@ -80,7 +80,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_path);
   cache.SetAvatarIconOfProfileAtIndex(index, avatar_id);
-  cache.SetManagedUserIdOfProfileAtIndex(index, managed_user_id);
+  cache.SetSupervisedUserIdOfProfileAtIndex(index, supervised_user_id);
   // SetNameOfProfileAtIndex may reshuffle the list of profiles, so we do it
   // last.
   cache.SetNameOfProfileAtIndex(index, user_name);

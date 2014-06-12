@@ -52,8 +52,8 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
     profile_builder.SetPrefService(prefs.Pass());
   }
 
-  if (params.profile_is_managed)
-    profile_builder.SetManagedUserId("asdf");
+  if (params.profile_is_supervised)
+    profile_builder.SetSupervisedUserId("asdf");
 
   profile_builder.SetPath(params.profile_path);
   return profile_builder.Build();
@@ -63,7 +63,9 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
 
 ExtensionServiceTestBase::ExtensionServiceInitParams::
     ExtensionServiceInitParams()
-    : autoupdate_enabled(false), is_first_run(true), profile_is_managed(false) {
+    : autoupdate_enabled(false),
+      is_first_run(true),
+      profile_is_supervised(false) {
 }
 
 // Our message loop may be used in tests which require it to be an IO loop.

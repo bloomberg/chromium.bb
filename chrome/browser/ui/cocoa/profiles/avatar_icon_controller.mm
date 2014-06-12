@@ -111,9 +111,9 @@ const CGFloat kAvatarLabelRightSpacing = 2;
       [self setButtonEnabled:YES];
       [self updateAvatarButtonAndLayoutParent:NO];
 
-      // Managed users cannot enter incognito mode, so we only need to check
+      // Supervised users cannot enter incognito mode, so we only need to check
       // it in this code path.
-      if (profile->IsManaged()) {
+      if (profile->IsSupervised()) {
         // Initialize the avatar label button.
         CGFloat extraWidth =
             profiles::kAvatarIconWidth + kAvatarLabelRightSpacing;

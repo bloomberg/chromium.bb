@@ -103,7 +103,7 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
   GURL kMooseURL("http://moose.org/baz");
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kManagedModeManualURLs);
+                                prefs::kSupervisedUserManualURLs);
     base::DictionaryValue* dict = update.Get();
     dict->SetBooleanWithoutPathExpansion(kExampleFooURL.spec(), true);
     dict->SetBooleanWithoutPathExpansion(kExampleBarURL.spec(), false);
@@ -131,7 +131,7 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
 
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kManagedModeManualURLs);
+                                prefs::kSupervisedUserManualURLs);
     base::DictionaryValue* dict = update.Get();
     for (std::vector<GURL>::iterator it = exceptions.begin();
          it != exceptions.end(); ++it) {
@@ -177,7 +177,7 @@ class ManagedUserServiceExtensionTestBase
     ExtensionServiceTestBase::SetUp();
     ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();
-    params.profile_is_managed = is_managed_;
+    params.profile_is_supervised = is_managed_;
     InitializeExtensionService(params);
     ManagedUserServiceFactory::GetForProfile(profile_.get())->Init();
   }
@@ -232,7 +232,7 @@ TEST_F(ManagedUserServiceExtensionTestUnmanaged,
        ExtensionManagementPolicyProvider) {
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile_.get());
-  EXPECT_FALSE(profile_->IsManaged());
+  EXPECT_FALSE(profile_->IsSupervised());
 
   scoped_refptr<extensions::Extension> extension = MakeExtension();
   base::string16 error_1;
@@ -250,7 +250,7 @@ TEST_F(ManagedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
       ManagedUserServiceFactory::GetForProfile(profile_.get());
   ManagedModeURLFilterObserver observer(
       managed_user_service->GetURLFilterForUIThread());
-  ASSERT_TRUE(profile_->IsManaged());
+  ASSERT_TRUE(profile_->IsSupervised());
   // Wait for the initial update to finish (otherwise we'll get leaks).
   observer.Wait();
 
@@ -305,13 +305,15 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
 
-  profile_->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
-                                   ManagedModeURLFilter::BLOCK);
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      ManagedModeURLFilter::BLOCK);
   EXPECT_EQ(ManagedModeURLFilter::BLOCK,
             url_filter->GetFilteringBehaviorForURL(example_url));
 
-  profile_->GetPrefs()->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
-                                   ManagedModeURLFilter::WARN);
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      ManagedModeURLFilter::WARN);
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
 

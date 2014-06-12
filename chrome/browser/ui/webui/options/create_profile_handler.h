@@ -69,8 +69,9 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   //   1: icon (string)
   //   2: a flag stating whether we should create a profile desktop shortcut
   //      (optional, boolean)
-  //   3: a flag stating whether the user should be managed (optional, boolean)
-  //   4: a string representing the managed user ID.
+  //   3: a flag stating whether the user should be supervised
+  //      (optional, boolean)
+  //   4: a string representing the supervised user ID.
   void CreateProfile(const base::ListValue* args);
 
   // If a local error occurs during profile creation, then show an appropriate
@@ -80,27 +81,27 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // as the final task after a new profile has been created.
   void OnProfileCreated(bool create_shortcut,
                         chrome::HostDesktopType desktop_type,
-                        const std::string& managed_user_id,
+                        const std::string& supervised_user_id,
                         Profile* profile,
                         Profile::CreateStatus status);
 
   void HandleProfileCreationSuccess(bool create_shortcut,
                                     chrome::HostDesktopType desktop_type,
-                                    const std::string& managed_user_id,
+                                    const std::string& supervised_user_id,
                                     Profile* profile);
 
-  // After a new managed-user profile has been created, registers the user with
-  // the management server.
-  void RegisterManagedUser(bool create_shortcut,
-                           chrome::HostDesktopType desktop_type,
-                           const std::string& managed_user_id,
-                           Profile* new_profile);
+  // After a new supervised-user profile has been created, registers the user
+  // with the management server.
+  void RegisterSupervisedUser(bool create_shortcut,
+                              chrome::HostDesktopType desktop_type,
+                              const std::string& managed_user_id,
+                              Profile* new_profile);
 
-  // Called back with the result of the managed user registration.
-  void OnManagedUserRegistered(bool create_shortcut,
-                               chrome::HostDesktopType desktop_type,
-                               Profile* profile,
-                               const GoogleServiceAuthError& error);
+  // Called back with the result of the supervised user registration.
+  void OnSupervisedUserRegistered(bool create_shortcut,
+                                  chrome::HostDesktopType desktop_type,
+                                  Profile* profile,
+                                  const GoogleServiceAuthError& error);
 
   // Creates desktop shortcut and updates the UI to indicate success
   // when creating a profile.
@@ -114,9 +115,9 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // Updates the UI to show a non-fatal warning when creating a profile.
   void ShowProfileCreationWarning(const base::string16& warning);
 
-  // Cancels creation of a managed-user profile currently in progress, as
+  // Cancels creation of a supervised-user profile currently in progress, as
   // indicated by profile_path_being_created_, removing the object and files
-  // and canceling managed-user registration. This is the handler for the
+  // and canceling supervised-user registration. This is the handler for the
   // "cancelCreateProfile" message. |args| is not used.
   void HandleCancelProfileCreation(const base::ListValue* args);
 
@@ -138,10 +139,10 @@ class CreateProfileHandler: public OptionsPageUIHandler {
       ProfileCreationErrorType error) const;
   std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
 
-  bool IsValidExistingManagedUserId(
-      const std::string& existing_managed_user_id) const;
+  bool IsValidExistingSupervisedUserId(
+      const std::string& existing_supervised_user_id) const;
 
-  // Used to allow cancelling a profile creation (particularly a managed-user
+  // Used to allow cancelling a profile creation (particularly a supervised-user
   // registration) in progress. Set when profile creation is begun, and
   // cleared when all the callbacks have been run and creation is complete.
   base::FilePath profile_path_being_created_;

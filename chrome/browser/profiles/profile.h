@@ -202,8 +202,8 @@ class Profile : public content::BrowserContext {
   // profile is not incognito.
   virtual Profile* GetOriginalProfile() = 0;
 
-  // Returns whether the profile is managed (see ManagedUserService).
-  virtual bool IsManaged() = 0;
+  // Returns whether the profile is supervised (see ManagedUserService).
+  virtual bool IsSupervised() = 0;
 
   // Returns a pointer to the TopSites (thumbnail manager) instance
   // for this profile.

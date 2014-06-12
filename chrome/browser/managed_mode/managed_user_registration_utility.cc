@@ -230,7 +230,7 @@ void ManagedUserRegistrationUtilityImpl::Register(
 
   bool need_password_update = !info.password_data.empty();
   const base::DictionaryValue* dict =
-      prefs_->GetDictionary(prefs::kManagedUsers);
+      prefs_->GetDictionary(prefs::kSupervisedUsers);
   is_existing_managed_user_ = dict->HasKey(managed_user_id);
   if (!is_existing_managed_user_) {
     managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,
@@ -351,7 +351,7 @@ void ManagedUserRegistrationUtilityImpl::OnReceivedToken(
 
 void ManagedUserRegistrationUtilityImpl::CompleteRegistrationIfReady() {
   bool skip_check = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNoManagedUserAcknowledgmentCheck);
+      switches::kNoSupervisedUserAcknowledgmentCheck);
 
   if (!pending_managed_user_acknowledged_ && !skip_check)
     return;

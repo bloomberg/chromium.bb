@@ -56,7 +56,7 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
   registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
       content::Source<Profile>(profile_));
 #if defined(ENABLE_MANAGED_USERS)
-  if (profile_->IsManaged()) {
+  if (profile_->IsSupervised()) {
     ManagedUserService* managed_user_service =
         ManagedUserServiceFactory::GetForProfile(profile_);
     managed_user_service->AddNavigationBlockedCallback(

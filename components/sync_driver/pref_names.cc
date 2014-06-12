@@ -43,10 +43,10 @@ const char kSyncExtensions[] = "sync.extensions";
 const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
-const char kSyncManagedUserSettings[] = "sync.managed_user_settings";
-const char kSyncManagedUserSharedSettings[] =
+const char kSyncSupervisedUserSettings[] = "sync.managed_user_settings";
+const char kSyncSupervisedUserSharedSettings[] =
     "sync.managed_user_shared_settings";
-const char kSyncManagedUsers[] = "sync.managed_users";
+const char kSyncSupervisedUsers[] = "sync.managed_users";
 const char kSyncArticles[] = "sync.articles";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";

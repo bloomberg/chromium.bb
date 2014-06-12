@@ -26,7 +26,7 @@
 #endif
 
 using sync_pb::ManagedUserSpecifics;
-using syncer::MANAGED_USERS;
+using syncer::SUPERVISED_USERS;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using syncer::SyncChangeProcessor;
@@ -153,7 +153,7 @@ SyncData ManagedUserSyncServiceTest::CreateRemoteData(
 
 TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {
   SyncMergeResult result =
-      service()->MergeDataAndStartSyncing(MANAGED_USERS,
+      service()->MergeDataAndStartSyncing(SUPERVISED_USERS,
                                           SyncDataList(),
                                           CreateChangeProcessor(),
                                           CreateErrorFactory());
@@ -166,7 +166,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {
   EXPECT_EQ(0u, service()->GetManagedUsers()->size());
   EXPECT_EQ(0u, change_processor()->changes().size());
 
-  service()->StopSyncing(MANAGED_USERS);
+  service()->StopSyncing(SUPERVISED_USERS);
   service()->Shutdown();
 }
 
@@ -193,7 +193,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
 #endif
   const char kAvatar4[] = "";
   {
-    DictionaryPrefUpdate update(prefs(), prefs::kManagedUsers);
+    DictionaryPrefUpdate update(prefs(), prefs::kSupervisedUsers);
     base::DictionaryValue* managed_users = update.Get();
     base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString(kNameKey, kName1);
@@ -214,7 +214,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   initial_sync_data.push_back(CreateRemoteData(kUserId4, kName4, kAvatar4));
 
   SyncMergeResult result =
-      service()->MergeDataAndStartSyncing(MANAGED_USERS,
+      service()->MergeDataAndStartSyncing(SUPERVISED_USERS,
                                           initial_sync_data,
                                           CreateChangeProcessor(),
                                           CreateErrorFactory());

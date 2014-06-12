@@ -37,7 +37,7 @@ void AvatarMenuActionsChromeOS::EditProfile(Profile* profile, size_t index) {
 
 bool AvatarMenuActionsChromeOS::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
-  return (!browser_ || !browser_->profile()->IsManaged()) &&
+  return (!browser_ || !browser_->profile()->IsSupervised()) &&
       UserManager::Get()->GetUsersAdmittedForMultiProfile().size();
 }
 

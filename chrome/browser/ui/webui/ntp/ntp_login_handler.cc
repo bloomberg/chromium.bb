@@ -227,7 +227,7 @@ void NTPLoginHandler::UpdateLogin() {
     // Chromeos does not show this status header.
     SigninManager* signin = SigninManagerFactory::GetForProfile(
         profile->GetOriginalProfile());
-    if (!profile->IsManaged() && signin->IsSigninAllowed()) {
+    if (!profile->IsSupervised() && signin->IsSigninAllowed()) {
       base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");

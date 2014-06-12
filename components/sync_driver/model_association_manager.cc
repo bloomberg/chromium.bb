@@ -39,9 +39,9 @@ static const syncer::ModelType kStartOrder[] = {
 
   // UI thread data types.
   syncer::BOOKMARKS,
-  syncer::MANAGED_USERS,        //  Syncing managed users on initial login might
-                                //  block creating a new managed user, so we
-                                //  want to do it early.
+  syncer::SUPERVISED_USERS,     //  Syncing supervised users on initial login
+                                //  might block creating a new supervised user,
+                                //  so we want to do it early.
   syncer::PREFERENCES,
   syncer::PRIORITY_PREFERENCES,
   syncer::EXTENSIONS,
@@ -54,8 +54,8 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::DICTIONARY,
   syncer::FAVICON_IMAGES,
   syncer::FAVICON_TRACKING,
-  syncer::MANAGED_USER_SETTINGS,
-  syncer::MANAGED_USER_SHARED_SETTINGS,
+  syncer::SUPERVISED_USER_SETTINGS,
+  syncer::SUPERVISED_USER_SHARED_SETTINGS,
   syncer::ARTICLES,
 };
 

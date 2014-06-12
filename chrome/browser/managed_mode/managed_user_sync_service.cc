@@ -26,7 +26,7 @@
 
 using base::DictionaryValue;
 using user_prefs::PrefRegistrySyncable;
-using syncer::MANAGED_USERS;
+using syncer::SUPERVISED_USERS;
 using syncer::ModelType;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -135,7 +135,7 @@ ManagedUserSyncService::~ManagedUserSyncService() {
 // static
 void ManagedUserSyncService::RegisterProfilePrefs(
     PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kManagedUsers,
+  registry->RegisterDictionaryPref(prefs::kSupervisedUsers,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -266,7 +266,7 @@ void ManagedUserSyncService::UpdateManagedUserImpl(
     const std::string& encryption_key,
     int avatar_index,
     bool add_user) {
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
   scoped_ptr<base::DictionaryValue> value = CreateDictionary(
       name, master_key, signature_key, encryption_key, avatar_index);
@@ -290,7 +290,7 @@ void ManagedUserSyncService::UpdateManagedUserImpl(
 }
 
 void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   bool success = update->RemoveWithoutPathExpansion(id, NULL);
   DCHECK(success);
 
@@ -301,7 +301,7 @@ void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
   change_list.push_back(SyncChange(
       FROM_HERE,
       SyncChange::ACTION_DELETE,
-      SyncData::CreateLocalDelete(id, MANAGED_USERS)));
+      SyncData::CreateLocalDelete(id, SUPERVISED_USERS)));
   SyncError sync_error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   DCHECK(!sync_error.IsSet());
@@ -309,13 +309,13 @@ void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
 
 const base::DictionaryValue* ManagedUserSyncService::GetManagedUsers() {
   DCHECK(sync_processor_);
-  return prefs_->GetDictionary(prefs::kManagedUsers);
+  return prefs_->GetDictionary(prefs::kSupervisedUsers);
 }
 
 bool ManagedUserSyncService::UpdateManagedUserAvatarIfNeeded(
     const std::string& id,
     int avatar_index) {
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
   DCHECK(dict->HasKey(id));
   base::DictionaryValue* value = NULL;
@@ -398,14 +398,14 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     const SyncDataList& initial_sync_data,
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> error_handler) {
-  DCHECK_EQ(MANAGED_USERS, type);
+  DCHECK_EQ(SUPERVISED_USERS, type);
   sync_processor_ = sync_processor.Pass();
   error_handler_ = error_handler.Pass();
 
   SyncChangeList change_list;
-  SyncMergeResult result(MANAGED_USERS);
+  SyncMergeResult result(SUPERVISED_USERS);
 
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
   result.set_num_items_before_association(dict->size());
   std::set<std::string> seen_ids;
@@ -413,7 +413,7 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
   int num_items_modified = 0;
   for (SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end(); ++it) {
-    DCHECK_EQ(MANAGED_USERS, it->GetDataType());
+    DCHECK_EQ(SUPERVISED_USERS, it->GetDataType());
     const ManagedUserSpecifics& managed_user =
         it->GetSpecifics().managed_user();
     base::DictionaryValue* value = new base::DictionaryValue();
@@ -455,7 +455,7 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
 }
 
 void ManagedUserSyncService::StopSyncing(ModelType type) {
-  DCHECK_EQ(MANAGED_USERS, type);
+  DCHECK_EQ(SUPERVISED_USERS, type);
   // The observers may want to change the Sync data, so notify them before
   // resetting the |sync_processor_|.
   NotifyManagedUsersSyncingStopped();
@@ -466,7 +466,7 @@ void ManagedUserSyncService::StopSyncing(ModelType type) {
 SyncDataList ManagedUserSyncService::GetAllSyncData(
     ModelType type) const {
   SyncDataList data;
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance())
     data.push_back(CreateSyncDataFromDictionaryEntry(it.key(), it.value()));
@@ -478,12 +478,12 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
   SyncError error;
-  DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+  DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
     SyncData data = it->sync_data();
-    DCHECK_EQ(MANAGED_USERS, data.GetDataType());
+    DCHECK_EQ(SUPERVISED_USERS, data.GetDataType());
     const ManagedUserSpecifics& managed_user =
         data.GetSpecifics().managed_user();
     switch (it->change_type()) {
@@ -539,7 +539,7 @@ void ManagedUserSyncService::OnLastSignedInUsernameChange() {
 
   // If the last signed in user changes, we clear all data, to avoid managed
   // users from one custodian appearing in another one's profile.
-  prefs_->ClearPref(prefs::kManagedUsers);
+  prefs_->ClearPref(prefs::kSupervisedUsers);
 }
 
 void ManagedUserSyncService::NotifyManagedUserAcknowledged(
@@ -561,7 +561,7 @@ void ManagedUserSyncService::NotifyManagedUsersChanged() {
 
 void ManagedUserSyncService::DispatchCallbacks() {
   const base::DictionaryValue* managed_users =
-      prefs_->GetDictionary(prefs::kManagedUsers);
+      prefs_->GetDictionary(prefs::kSupervisedUsers);
   for (std::vector<ManagedUsersCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {
     it->Run(managed_users);

@@ -82,7 +82,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allow_deleting_history",
                      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
-  source->AddBoolean("show_delete_history", !profile->IsManaged());
+  source->AddBoolean("show_delete_history", !profile->IsSupervised());
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("downloads.css", IDR_DOWNLOADS_CSS);

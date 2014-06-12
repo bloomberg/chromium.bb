@@ -512,7 +512,7 @@ WrenchMenuModel::WrenchMenuModel()
 }
 
 bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsManaged())
+  if (browser_->profile()->IsSupervised())
     return false;
 
   return !browser_->profile()->IsGuestSession();

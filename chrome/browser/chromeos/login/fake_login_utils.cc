@@ -69,13 +69,13 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
 
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
-    std::string managed_user_sync_id =
+    std::string supervised_user_sync_id =
         UserManager::Get()->GetSupervisedUserManager()->
             GetUserSyncId(active_user->email());
-    if (managed_user_sync_id.empty())
-      managed_user_sync_id = "DUMMY ID";
-    profile->GetPrefs()->SetString(prefs::kManagedUserId,
-                                   managed_user_sync_id);
+    if (supervised_user_sync_id.empty())
+      supervised_user_sync_id = "DUMMY ID";
+    profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                   supervised_user_sync_id);
   }
 
   content::NotificationService::current()->Notify(

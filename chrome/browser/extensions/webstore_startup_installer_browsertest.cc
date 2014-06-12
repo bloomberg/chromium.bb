@@ -177,7 +177,7 @@ class WebstoreStartupInstallerManagedUsersTest
   // InProcessBrowserTest overrides:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
 };
 

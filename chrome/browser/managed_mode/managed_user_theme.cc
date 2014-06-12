@@ -43,7 +43,7 @@ int MapToManagedUserResourceIds(int id) {
 }  // namespace
 
 ManagedUserTheme::ManagedUserTheme()
-    : CustomThemeSupplier(MANAGED_USER_THEME) {}
+    : CustomThemeSupplier(SUPERVISED_USER_THEME) {}
 
 ManagedUserTheme::~ManagedUserTheme() {}
 
@@ -55,10 +55,10 @@ bool ManagedUserTheme::GetColor(int id, SkColor* color) const {
     case ThemeProperties::COLOR_FRAME_INACTIVE:
       *color = kDefaultColorFrameManagedUserInactive;
       return true;
-    case ThemeProperties::COLOR_MANAGED_USER_LABEL:
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
       *color = SK_ColorWHITE;
       return true;
-    case ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
       *color = kDefaultColorManagedUserLabelBackground;
       return true;
   }

@@ -100,13 +100,13 @@ class ManageProfileHandler : public OptionsPageUIHandler,
 
   // Callback for the "RequestCreateProfileUpdate" message.
   // Sends the email address of the signed-in user, or an empty string if the
-  // user is not signed in. Also sends information about whether managed users
-  // may be created.
+  // user is not signed in. Also sends information about whether supervised
+  // users may be created.
   void RequestCreateProfileUpdate(const base::ListValue* args);
 
-  // When the pref allowing managed-user creation changes, sends the new value
-  // to the UI.
-  void OnCreateManagedUserPrefChange();
+  // When the pref allowing supervised-user creation changes, sends the new
+  // value to the UI.
+  void OnCreateSupervisedUserPrefChange();
 
   // Callback invoked from the profile manager indicating whether the profile
   // being edited has any desktop shortcuts.
@@ -129,7 +129,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   // URL for the current profile's GAIA picture.
   std::string gaia_picture_url_;
 
-  // Used to observe the preference that allows creating managed users, which
+  // Used to observe the preference that allows creating supervised users, which
   // can be changed by policy.
   PrefChangeRegistrar pref_change_registrar_;
 

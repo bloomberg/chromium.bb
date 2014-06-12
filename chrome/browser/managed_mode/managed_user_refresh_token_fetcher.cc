@@ -22,7 +22,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
-using GaiaConstants::kChromeSyncManagedOAuth2Scope;
+using GaiaConstants::kChromeSyncSupervisedOAuth2Scope;
 using base::Time;
 using gaia::GaiaOAuthClient;
 using net::URLFetcher;
@@ -159,7 +159,7 @@ void ManagedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
       kIssueTokenBodyFormat,
       net::EscapeUrlEncodedData(
           GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true).c_str(),
-      net::EscapeUrlEncodedData(kChromeSyncManagedOAuth2Scope, true).c_str(),
+      net::EscapeUrlEncodedData(kChromeSyncSupervisedOAuth2Scope, true).c_str(),
       net::EscapeUrlEncodedData(managed_user_id_, true).c_str(),
       net::EscapeUrlEncodedData(device_name_, true).c_str());
   url_fetcher_->SetUploadData("application/x-www-form-urlencoded", body);

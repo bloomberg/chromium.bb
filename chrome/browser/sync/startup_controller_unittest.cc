@@ -191,7 +191,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   types.Remove(syncer::SESSIONS);
   types.Remove(syncer::PROXY_TABS);
   types.Remove(syncer::TYPED_URLS);
-  types.Remove(syncer::MANAGED_USER_SETTINGS);
+  types.Remove(syncer::SUPERVISED_USER_SETTINGS);
   sync_prefs()->SetKeepEverythingSynced(false);
   sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
   controller()->Reset(syncer::UserTypes());

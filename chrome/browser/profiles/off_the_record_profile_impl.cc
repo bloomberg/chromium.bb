@@ -263,8 +263,8 @@ ExtensionSpecialStoragePolicy*
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
 }
 
-bool OffTheRecordProfileImpl::IsManaged() {
-  return GetOriginalProfile()->IsManaged();
+bool OffTheRecordProfileImpl::IsSupervised() {
+  return GetOriginalProfile()->IsSupervised();
 }
 
 PrefService* OffTheRecordProfileImpl::GetPrefs() {

@@ -916,7 +916,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   const int min_index = std::max(0, current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab_delegate.GetEntryCount());
-  bool is_managed = tab_delegate.ProfileIsManaged();
+  bool is_supervised = tab_delegate.ProfileIsSupervised();
   session_tab->navigations.clear();
 
   for (int i = min_index; i < max_index; ++i) {
@@ -928,13 +928,13 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
 
     session_tab->navigations.push_back(
         SerializedNavigationEntry::FromNavigationEntry(i, *entry));
-    if (is_managed) {
+    if (is_supervised) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);
     }
   }
 
-  if (is_managed) {
+  if (is_supervised) {
     const std::vector<const NavigationEntry*>& blocked_navigations =
         *tab_delegate.GetBlockedNavigations();
     int offset = session_tab->navigations.size();

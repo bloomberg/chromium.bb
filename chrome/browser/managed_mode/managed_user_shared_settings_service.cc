@@ -20,7 +20,7 @@
 
 using base::DictionaryValue;
 using base::Value;
-using syncer::MANAGED_USER_SHARED_SETTINGS;
+using syncer::SUPERVISED_USER_SHARED_SETTINGS;
 using syncer::ModelType;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -50,11 +50,11 @@ class ScopedManagedUserSharedSettingsUpdate {
  public:
   ScopedManagedUserSharedSettingsUpdate(PrefService* prefs,
                                         const std::string& mu_id)
-      : update_(prefs, prefs::kManagedUserSharedSettings), mu_id_(mu_id) {
+      : update_(prefs, prefs::kSupervisedUserSharedSettings), mu_id_(mu_id) {
     DCHECK(!mu_id.empty());
 
     // A supervised user can only modify their own settings.
-    std::string id = prefs->GetString(prefs::kManagedUserId);
+    std::string id = prefs->GetString(prefs::kSupervisedUserId);
     DCHECK(id.empty() || id == mu_id);
   }
 
@@ -128,7 +128,7 @@ const Value* ManagedUserSharedSettingsService::GetValue(
     const std::string& mu_id,
     const std::string& key) {
   const DictionaryValue* data =
-      prefs_->GetDictionary(prefs::kManagedUserSharedSettings);
+      prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
   const DictionaryValue* dict = NULL;
   if (!data->GetDictionaryWithoutPathExpansion(mu_id, &dict))
     return NULL;
@@ -161,7 +161,7 @@ ManagedUserSharedSettingsService::Subscribe(
 void ManagedUserSharedSettingsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
-      prefs::kManagedUserSharedSettings,
+      prefs::kSupervisedUserSharedSettings,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -191,7 +191,7 @@ ManagedUserSharedSettingsService::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> error_handler) {
-  DCHECK_EQ(MANAGED_USER_SHARED_SETTINGS, type);
+  DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, type);
   sync_processor_ = sync_processor.Pass();
   error_handler_ = error_handler.Pass();
 
@@ -204,7 +204,7 @@ ManagedUserSharedSettingsService::MergeDataAndStartSyncing(
   for (SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end();
        ++it) {
-    DCHECK_EQ(MANAGED_USER_SHARED_SETTINGS, it->GetDataType());
+    DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, it->GetDataType());
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         managed_user_shared_setting =
             it->GetSpecifics().managed_user_shared_setting();
@@ -230,7 +230,7 @@ ManagedUserSharedSettingsService::MergeDataAndStartSyncing(
   // that were just synced down. We filter those out using |seen_keys|.
   SyncChangeList change_list;
   const DictionaryValue* all_settings =
-      prefs_->GetDictionary(prefs::kManagedUserSharedSettings);
+      prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
   for (DictionaryValue::Iterator it(*all_settings); !it.IsAtEnd();
        it.Advance()) {
     const DictionaryValue* dict = NULL;
@@ -251,7 +251,7 @@ ManagedUserSharedSettingsService::MergeDataAndStartSyncing(
     }
   }
 
-  SyncMergeResult result(MANAGED_USER_SHARED_SETTINGS);
+  SyncMergeResult result(SUPERVISED_USER_SHARED_SETTINGS);
   // Process all the accumulated changes.
   if (change_list.size() > 0) {
     result.set_error(
@@ -263,17 +263,17 @@ ManagedUserSharedSettingsService::MergeDataAndStartSyncing(
 }
 
 void ManagedUserSharedSettingsService::StopSyncing(syncer::ModelType type) {
-  DCHECK_EQ(MANAGED_USER_SHARED_SETTINGS, type);
+  DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, type);
   sync_processor_.reset();
   error_handler_.reset();
 }
 
 syncer::SyncDataList ManagedUserSharedSettingsService::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK_EQ(MANAGED_USER_SHARED_SETTINGS, type);
+  DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, type);
   SyncDataList data;
   const DictionaryValue* all_settings =
-      prefs_->GetDictionary(prefs::kManagedUserSharedSettings);
+      prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
   for (DictionaryValue::Iterator it(*all_settings); !it.IsAtEnd();
        it.Advance()) {
     const DictionaryValue* dict = NULL;
@@ -293,7 +293,7 @@ syncer::SyncError ManagedUserSharedSettingsService::ProcessSyncChanges(
        it != change_list.end();
        ++it) {
     SyncData data = it->sync_data();
-    DCHECK_EQ(MANAGED_USER_SHARED_SETTINGS, data.GetDataType());
+    DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, data.GetDataType());
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         managed_user_shared_setting =
             data.GetSpecifics().managed_user_shared_setting();

@@ -569,7 +569,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
   values->SetBoolean("profileIsManaged",
-                     Profile::FromWebUI(web_ui())->IsManaged());
+                     Profile::FromWebUI(web_ui())->IsSupervised());
 
 #if !defined(OS_CHROMEOS)
   values->SetBoolean(
@@ -825,7 +825,7 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kManagedUsers,
+      prefs::kSupervisedUsers,
       base::Bind(&BrowserOptionsHandler::SetupManagingSupervisedUsers,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
@@ -1224,7 +1224,7 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
-    profile_value->SetBoolean("isManaged", cache.ProfileIsManagedAtIndex(i));
+    profile_value->SetBoolean("isManaged", cache.ProfileIsSupervisedAtIndex(i));
 
     bool is_gaia_picture =
         cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
@@ -1271,10 +1271,10 @@ void BrowserOptionsHandler::ObserveThemeChanged() {
   bool is_system_theme = false;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  bool profile_is_managed = profile->IsManaged();
+  bool profile_is_supervised = profile->IsSupervised();
   is_system_theme = theme_service->UsingSystemTheme();
   base::FundamentalValue native_theme_enabled(!is_system_theme &&
-                                              !profile_is_managed);
+                                              !profile_is_supervised);
   web_ui()->CallJavascriptFunction("BrowserOptions.setNativeThemeButtonEnabled",
                                    native_theme_enabled);
 #endif
@@ -1333,7 +1333,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
     return sync_status.Pass();
   }
 
-  sync_status->SetBoolean("supervisedUser", profile->IsManaged());
+  sync_status->SetBoolean("supervisedUser", profile->IsSupervised());
 
   bool signout_prohibited = false;
 #if !defined(OS_CHROMEOS)
@@ -1739,7 +1739,7 @@ void BrowserOptionsHandler::SetupManageCertificatesSection() {
 
 void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
   bool has_users = !Profile::FromWebUI(web_ui())->
-      GetPrefs()->GetDictionary(prefs::kManagedUsers)->empty();
+      GetPrefs()->GetDictionary(prefs::kSupervisedUsers)->empty();
   base::FundamentalValue has_users_value(has_users);
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateManagesSupervisedUsers",

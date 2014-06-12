@@ -151,16 +151,16 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-    case Properties::COLOR_MANAGED_USER_LABEL:
+    case Properties::COLOR_SUPERVISED_USER_LABEL:
       return color_utils::GetReadableColor(
           SK_ColorWHITE,
-          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND));
-    case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
+          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND));
+    case Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
       return color_utils::BlendTowardOppositeLuminance(
           GetColor(Properties::COLOR_FRAME), 0x80);
-    case Properties::COLOR_MANAGED_USER_LABEL_BORDER:
+    case Properties::COLOR_SUPERVISED_USER_LABEL_BORDER:
       return color_utils::AlphaBlend(
-          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND),
+          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND),
           SK_ColorBLACK,
           230);
     case Properties::COLOR_STATUS_BAR_TEXT: {
@@ -373,8 +373,8 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
 void ThemeService::UseDefaultTheme() {
   if (ready_)
     content::RecordAction(UserMetricsAction("Themes_Reset"));
-  if (IsManagedUser()) {
-    SetManagedUserTheme();
+  if (IsSupervisedUser()) {
+    SetSupervisedUserTheme();
     return;
   }
   ClearAllThemeData();
@@ -432,9 +432,9 @@ void ThemeService::LoadThemePrefs() {
 
   std::string current_id = GetThemeID();
   if (current_id == kDefaultThemeID) {
-    // Managed users have a different default theme.
-    if (IsManagedUser())
-      SetManagedUserTheme();
+    // Supervised users have a different default theme.
+    if (IsSupervisedUser())
+      SetSupervisedUserTheme();
     else if (ShouldInitWithSystemTheme())
       UseSystemTheme();
     else
@@ -581,11 +581,11 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
   SwapThemeSupplier(pack);
 }
 
-bool ThemeService::IsManagedUser() const {
-  return profile_->IsManaged();
+bool ThemeService::IsSupervisedUser() const {
+  return profile_->IsSupervised();
 }
 
-void ThemeService::SetManagedUserTheme() {
+void ThemeService::SetSupervisedUserTheme() {
   SetCustomDefaultTheme(new ManagedUserTheme);
 }
 

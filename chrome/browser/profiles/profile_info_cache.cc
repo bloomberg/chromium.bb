@@ -49,10 +49,10 @@ const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
-const char kIsManagedKey[] = "is_managed";
+const char kIsSupervisedKey[] = "is_managed";
 const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
-const char kManagedUserId[] = "managed_user_id";
+const char kSupervisedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kActiveTimeKey[] = "active_time";
 
@@ -178,10 +178,11 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
     // TODO(ibraaaa): delete this when 97% of our users are using M31.
     // http://crbug.com/276163
-    bool is_managed = false;
-    if (info->GetBoolean(kIsManagedKey, &is_managed)) {
-      info->Remove(kIsManagedKey, NULL);
-      info->SetString(kManagedUserId, is_managed ? "DUMMY_ID" : std::string());
+    bool is_supervised = false;
+    if (info->GetBoolean(kIsSupervisedKey, &is_supervised)) {
+      info->Remove(kIsSupervisedKey, NULL);
+      info->SetString(kSupervisedUserId,
+                      is_supervised ? "DUMMY_ID" : std::string());
     }
     info->SetBoolean(kIsUsingDefaultName, IsDefaultName(name));
   }
@@ -203,11 +204,12 @@ ProfileInfoCache::~ProfileInfoCache() {
       avatar_images_downloads_in_progress_.end());
 }
 
-void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
-                                         const base::string16& name,
-                                         const base::string16& username,
-                                         size_t icon_index,
-                                         const std::string& managed_user_id) {
+void ProfileInfoCache::AddProfileToCache(
+    const base::FilePath& profile_path,
+    const base::string16& name,
+    const base::string16& username,
+    size_t icon_index,
+    const std::string& supervised_user_id) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
@@ -219,8 +221,8 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
       profiles::GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
-  info->SetString(kManagedUserId, managed_user_id);
-  info->SetBoolean(kIsOmittedFromProfileListKey, !managed_user_id.empty());
+  info->SetString(kSupervisedUserId, supervised_user_id);
+  info->SetBoolean(kIsOmittedFromProfileListKey, !supervised_user_id.empty());
   info->SetBoolean(kProfileIsEphemeral, false);
   info->SetBoolean(kIsUsingDefaultName, IsDefaultName(name));
   cache->SetWithoutPathExpansion(key, info.release());
@@ -405,8 +407,8 @@ bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
   return value;
 }
 
-bool ProfileInfoCache::ProfileIsManagedAtIndex(size_t index) const {
-  return !GetManagedUserIdOfProfileAtIndex(index).empty();
+bool ProfileInfoCache::ProfileIsSupervisedAtIndex(size_t index) const {
+  return !GetSupervisedUserIdOfProfileAtIndex(index).empty();
 }
 
 bool ProfileInfoCache::IsOmittedProfileAtIndex(size_t index) const {
@@ -422,11 +424,12 @@ bool ProfileInfoCache::ProfileIsSigninRequiredAtIndex(size_t index) const {
   return value;
 }
 
-std::string ProfileInfoCache::GetManagedUserIdOfProfileAtIndex(
+std::string ProfileInfoCache::GetSupervisedUserIdOfProfileAtIndex(
     size_t index) const {
-  std::string managed_user_id;
-  GetInfoForProfileAtIndex(index)->GetString(kManagedUserId, &managed_user_id);
-  return managed_user_id;
+  std::string supervised_user_id;
+  GetInfoForProfileAtIndex(index)->GetString(kSupervisedUserId,
+                                             &supervised_user_id);
+  return supervised_user_id;
 }
 
 bool ProfileInfoCache::ProfileIsEphemeralAtIndex(size_t index) const {
@@ -541,13 +544,14 @@ void ProfileInfoCache::SetIsOmittedProfileAtIndex(size_t index,
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
-                                                        const std::string& id) {
-  if (GetManagedUserIdOfProfileAtIndex(index) == id)
+void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
+    size_t index,
+    const std::string& id) {
+  if (GetSupervisedUserIdOfProfileAtIndex(index) == id)
     return;
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kManagedUserId, id);
+  info->SetString(kSupervisedUserId, id);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

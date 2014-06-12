@@ -30,7 +30,7 @@ class ManagedUserServiceTestManaged : public InProcessBrowserTest {
  public:
   // content::BrowserTestBase:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
 };
 

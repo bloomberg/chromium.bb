@@ -372,7 +372,7 @@ void ProfileManager::CreateProfileAsync(
     const CreateCallback& callback,
     const base::string16& name,
     const base::string16& icon_url,
-    const std::string& managed_user_id) {
+    const std::string& supervised_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
@@ -398,10 +398,10 @@ void ProfileManager::CreateProfileAsync(
     if (profiles::IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
       cache.AddProfileToCache(profile_path, name, base::string16(), icon_index,
-                              managed_user_id);
+                              supervised_user_id);
     }
 
-    if (!managed_user_id.empty()) {
+    if (!supervised_user_id.empty()) {
       content::RecordAction(
           UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
     }
@@ -561,7 +561,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
     const base::string16& name,
     const base::string16& icon_url,
     const CreateCallback& callback,
-    const std::string& managed_user_id) {
+    const std::string& supervised_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -572,7 +572,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
                                       callback,
                                       name,
                                       icon_url,
-                                      managed_user_id);
+                                      supervised_user_id);
   return new_path;
 }
 
@@ -640,22 +640,22 @@ void ProfileManager::ScheduleProfileForDeletion(
       local_state->GetString(prefs::kProfileLastUsed)) {
     // Update the last used profile pref before closing browser windows. This
     // way the correct last used profile is set for any notification observers.
-    base::FilePath last_non_managed_profile_path;
+    base::FilePath last_non_supervised_profile_path;
     for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
       base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
       // Make sure that this profile is not pending deletion.
-      if (cur_path != profile_dir && !cache.ProfileIsManagedAtIndex(i) &&
+      if (cur_path != profile_dir && !cache.ProfileIsSupervisedAtIndex(i) &&
           !IsProfileMarkedForDeletion(cur_path)) {
-        last_non_managed_profile_path = cur_path;
+        last_non_supervised_profile_path = cur_path;
         break;
       }
     }
 
-    // If we're deleting the last (non-managed) profile, then create a new
+    // If we're deleting the last (non-supervised) profile, then create a new
     // profile in its place.
-    const std::string last_non_managed_profile =
-        last_non_managed_profile_path.BaseName().MaybeAsASCII();
-    if (last_non_managed_profile.empty()) {
+    const std::string last_non_supervised_profile =
+        last_non_supervised_profile_path.BaseName().MaybeAsASCII();
+    if (last_non_supervised_profile.empty()) {
       base::FilePath new_path = GenerateNextProfileDirectoryPath();
       // Make sure the last used profile path is pointing at it. This way the
       // correct last used profile is set for any notification observers.
@@ -671,11 +671,11 @@ void ProfileManager::ScheduleProfileForDeletion(
       // are closed, so just in case we are deleting the active profile, and no
       // other profile has been loaded, we must pre-load a next one.
 #if defined(OS_MACOSX)
-      CreateProfileAsync(last_non_managed_profile_path,
+      CreateProfileAsync(last_non_supervised_profile_path,
                          base::Bind(&ProfileManager::OnNewActiveProfileLoaded,
                                     base::Unretained(this),
                                     profile_dir,
-                                    last_non_managed_profile_path,
+                                    last_non_supervised_profile_path,
                                     callback),
                          base::string16(),
                          base::string16(),
@@ -684,7 +684,8 @@ void ProfileManager::ScheduleProfileForDeletion(
 #else
       // For OS_MACOSX the pref is updated in the callback to make sure that
       // it isn't used before the profile is actually loaded.
-      local_state->SetString(prefs::kProfileLastUsed, last_non_managed_profile);
+      local_state->SetString(prefs::kProfileLastUsed,
+                             last_non_supervised_profile);
 #endif
     }
   }
@@ -731,7 +732,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
   size_t avatar_index;
   std::string profile_name;
-  std::string managed_user_id;
+  std::string supervised_user_id;
   if (profile->IsGuestSession()) {
     profile_name = l10n_util::GetStringUTF8(IDS_PROFILES_GUEST_PROFILE_NAME);
     avatar_index = 0;
@@ -744,8 +745,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
       profile_name =
           base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
-      managed_user_id =
-          cache.GetManagedUserIdOfProfileAtIndex(profile_cache_index);
+      supervised_user_id =
+          cache.GetSupervisedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
       avatar_index = 0;
@@ -767,15 +768,16 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool force_managed_user_id =
-      command_line->HasSwitch(switches::kManagedUserId);
-  if (force_managed_user_id) {
-    managed_user_id =
-        command_line->GetSwitchValueASCII(switches::kManagedUserId);
+  bool force_supervised_user_id =
+      command_line->HasSwitch(switches::kSupervisedUserId);
+  if (force_supervised_user_id) {
+    supervised_user_id =
+        command_line->GetSwitchValueASCII(switches::kSupervisedUserId);
   }
-  if (force_managed_user_id ||
-      !profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId)) {
-    profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);
+  if (force_supervised_user_id ||
+      !profile->GetPrefs()->HasPrefPath(prefs::kSupervisedUserId)) {
+    profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                   supervised_user_id);
   }
 }
 
@@ -974,7 +976,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 #if defined(ENABLE_MANAGED_USERS)
   // Initialization needs to happen after extension system initialization (for
   // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
-  // initializing the managed flag if necessary).
+  // initializing the supervised flag if necessary).
   ManagedUserServiceFactory::GetForProfile(profile)->Init();
 #endif
   // Start the deferred task runners once the profile is loaded.
@@ -1133,14 +1135,14 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   size_t icon_index = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarIndex);
 
-  std::string managed_user_id =
-      profile->GetPrefs()->GetString(prefs::kManagedUserId);
+  std::string supervised_user_id =
+      profile->GetPrefs()->GetString(prefs::kSupervisedUserId);
 
   cache.AddProfileToCache(profile->GetPath(),
                           profile_name,
                           username,
                           icon_index,
-                          managed_user_id);
+                          supervised_user_id);
 
   if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
     cache.SetProfileIsEphemeralAtIndex(
@@ -1258,7 +1260,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 #if defined(OS_MACOSX)
 void ProfileManager::OnNewActiveProfileLoaded(
     const base::FilePath& profile_to_delete_path,
-    const base::FilePath& last_non_managed_profile_path,
+    const base::FilePath& last_non_supervised_profile_path,
     const CreateCallback& original_callback,
     Profile* loaded_profile,
     Profile::CreateStatus status) {
@@ -1267,7 +1269,7 @@ void ProfileManager::OnNewActiveProfileLoaded(
 
   // Only run the code if the profile initialization has finished completely.
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    if (IsProfileMarkedForDeletion(last_non_managed_profile_path)) {
+    if (IsProfileMarkedForDeletion(last_non_supervised_profile_path)) {
       // If the profile we tried to load as the next active profile has been
       // deleted, then retry deleting this profile to redo the logic to load
       // the next available profile.
@@ -1276,7 +1278,7 @@ void ProfileManager::OnNewActiveProfileLoaded(
       // Update the local state as promised in the ScheduleProfileForDeletion.
       g_browser_process->local_state()->SetString(
           prefs::kProfileLastUsed,
-          last_non_managed_profile_path.BaseName().MaybeAsASCII());
+          last_non_supervised_profile_path.BaseName().MaybeAsASCII());
       FinishDeletingProfile(profile_to_delete_path);
     }
   }

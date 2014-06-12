@@ -24,7 +24,7 @@ using base::JSONReader;
 using base::UserMetricsAction;
 using base::Value;
 using content::BrowserThread;
-using syncer::MANAGED_USER_SETTINGS;
+using syncer::SUPERVISED_USER_SETTINGS;
 using syncer::ModelType;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -59,7 +59,7 @@ void ManagedUserSettingsService::Init(
     base::SequencedTaskRunner* sequenced_task_runner,
     bool load_synchronously) {
   base::FilePath path =
-      profile_path.Append(chrome::kManagedUserSettingsFilename);
+      profile_path.Append(chrome::kSupervisedUserSettingsFilename);
   PersistentPrefStore* store = new JsonPrefStore(
       path, sequenced_task_runner, scoped_ptr<PrefFilter>());
   Init(store);
@@ -166,7 +166,7 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
     const SyncDataList& initial_sync_data,
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> error_handler) {
-  DCHECK_EQ(MANAGED_USER_SETTINGS, type);
+  DCHECK_EQ(SUPERVISED_USER_SETTINGS, type);
   sync_processor_ = sync_processor.Pass();
   error_handler_ = error_handler.Pass();
 
@@ -174,7 +174,7 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
   Clear();
   for (SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end(); ++it) {
-    DCHECK_EQ(MANAGED_USER_SETTINGS, it->GetDataType());
+    DCHECK_EQ(SUPERVISED_USER_SETTINGS, it->GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         it->GetSpecifics().managed_user_setting();
     scoped_ptr<base::Value> value(
@@ -204,7 +204,7 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
   }
   queued_items->Clear();
 
-  SyncMergeResult result(MANAGED_USER_SETTINGS);
+  SyncMergeResult result(SUPERVISED_USER_SETTINGS);
   // Process all the accumulated changes from the queued items.
   if (change_list.size() > 0) {
     store_->ReportValueChanged(kQueuedItems);
@@ -217,14 +217,14 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
 }
 
 void ManagedUserSettingsService::StopSyncing(ModelType type) {
-  DCHECK_EQ(syncer::MANAGED_USER_SETTINGS, type);
+  DCHECK_EQ(syncer::SUPERVISED_USER_SETTINGS, type);
   sync_processor_.reset();
   error_handler_.reset();
 }
 
 SyncDataList ManagedUserSettingsService::GetAllSyncData(
     ModelType type) const {
-  DCHECK_EQ(syncer::MANAGED_USER_SETTINGS, type);
+  DCHECK_EQ(syncer::SUPERVISED_USER_SETTINGS, type);
   SyncDataList data;
   for (base::DictionaryValue::Iterator it(*GetAtomicSettings()); !it.IsAtEnd();
        it.Advance()) {
@@ -250,7 +250,7 @@ SyncError ManagedUserSettingsService::ProcessSyncChanges(
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
     SyncData data = it->sync_data();
-    DCHECK_EQ(MANAGED_USER_SETTINGS, data.GetDataType());
+    DCHECK_EQ(SUPERVISED_USER_SETTINGS, data.GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         data.GetSpecifics().managed_user_setting();
     std::string key = managed_user_setting.name();

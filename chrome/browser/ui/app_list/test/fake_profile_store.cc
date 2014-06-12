@@ -59,6 +59,6 @@ base::FilePath FakeProfileStore::GetUserDataDir() {
   return user_data_dir_;
 }
 
-bool FakeProfileStore::IsProfileManaged(const base::FilePath& path) {
+bool FakeProfileStore::IsProfileSupervised(const base::FilePath& path) {
   return false;
 }

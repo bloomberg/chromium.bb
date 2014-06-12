@@ -161,7 +161,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   service()->GoogleSigninSucceeded(username_, password_);
 
 #if defined(ENABLE_MANAGED_USERS)
-  std::string account_id = profile_->IsManaged() ?
+  std::string account_id = profile_->IsSupervised() ?
       managed_users::kManagedUserPseudoEmail : username_;
 #else
   std::string account_id = username_;

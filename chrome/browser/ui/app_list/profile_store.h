@@ -29,8 +29,8 @@ class ProfileStore {
   // Chrome.
   virtual base::FilePath GetUserDataDir() = 0;
 
-  // Returns true if the profile at |path| is managed.
-  virtual bool IsProfileManaged(const base::FilePath& path) = 0;
+  // Returns true if the profile at |path| is supervised.
+  virtual bool IsProfileSupervised(const base::FilePath& path) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_PROFILE_STORE_H_

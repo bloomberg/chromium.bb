@@ -1028,7 +1028,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // For supervised users, add the disclaimer text.
-  if (browser_->profile()->IsManaged()) {
+  if (browser_->profile()->IsSupervised()) {
     yOffset += kSmallVerticalSpacing;
     NSView* disclaimerContainer = [self createSupervisedUserDisclaimerView];
     [disclaimerContainer setFrameOrigin:NSMakePoint(0, yOffset)];
@@ -1239,7 +1239,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // Profile name, centered.
-  bool editingAllowed = !isGuestSession_ && !browser_->profile()->IsManaged();
+  bool editingAllowed = !isGuestSession_ &&
+                        !browser_->profile()->IsSupervised();
   base::scoped_nsobject<EditableProfileNameButton> profileName(
       [[EditableProfileNameButton alloc]
           initWithFrame:NSMakeRect(xOffset, yOffset,
@@ -1268,7 +1269,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [container addSubview:iconView];
   yOffset = NSMaxY([iconView frame]);
 
-  if (browser_->profile()->IsManaged()) {
+  if (browser_->profile()->IsSupervised()) {
     base::scoped_nsobject<NSImageView> supervisedIcon(
         [[NSImageView alloc] initWithFrame:NSZeroRect]);
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -1370,7 +1371,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   int availableTextWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
 
   NSTextField* disclaimer = BuildLabel(
-      base::SysUTF16ToNSString(avatarMenu_->GetManagedUserInformation()),
+      base::SysUTF16ToNSString(avatarMenu_->GetSupervisedUserInformation()),
       NSMakePoint(kHorizontalSpacing, yOffset),
       nil /* background_color */,
       nil /* text_color */);

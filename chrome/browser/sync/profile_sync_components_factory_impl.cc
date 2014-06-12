@@ -251,12 +251,12 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
 #if defined(ENABLE_MANAGED_USERS)
-  if (profile_->IsManaged()) {
+  if (profile_->IsSupervised()) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             base::Bind(&ChromeReportUnrecoverableError),
-            syncer::MANAGED_USER_SETTINGS,
+            syncer::SUPERVISED_USER_SETTINGS,
             this,
             pss));
   } else {
@@ -264,7 +264,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             base::Bind(&ChromeReportUnrecoverableError),
-            syncer::MANAGED_USERS,
+            syncer::SUPERVISED_USERS,
             this,
             pss));
   }
@@ -272,7 +272,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             base::Bind(&ChromeReportUnrecoverableError),
-            syncer::MANAGED_USER_SHARED_SETTINGS,
+            syncer::SUPERVISED_USER_SHARED_SETTINGS,
             this,
             pss));
 #endif
@@ -512,13 +512,13 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
                       : base::WeakPtr<syncer::SyncableService>();
     }
 #if defined(ENABLE_MANAGED_USERS)
-    case syncer::MANAGED_USER_SETTINGS:
+    case syncer::SUPERVISED_USER_SETTINGS:
       return ManagedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
-    case syncer::MANAGED_USERS:
+    case syncer::SUPERVISED_USERS:
       return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
-    case syncer::MANAGED_USER_SHARED_SETTINGS:
+    case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
 #endif

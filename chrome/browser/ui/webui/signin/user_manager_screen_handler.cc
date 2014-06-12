@@ -345,9 +345,10 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
     return;
 
-  // This handler could have been called in managed mode, for example because
-  // the user fiddled with the web inspector. Silently return in this case.
-  if (Profile::FromWebUI(web_ui())->IsManaged())
+  // This handler could have been called for a supervised user, for example
+  // because the user fiddled with the web inspector. Silently return in this
+  // case.
+  if (Profile::FromWebUI(web_ui())->IsSupervised())
     return;
 
   if (!profiles::IsMultipleProfilesEnabled())
@@ -576,9 +577,9 @@ void UserManagerScreenHandler::SendUserList() {
 
   user_auth_type_map_.clear();
 
-  // If the active user is a managed user, then they may not perform
+  // If the active user is a supervised user, then they may not perform
   // certain actions (i.e. delete another user).
-  bool active_user_is_managed = Profile::FromWebUI(web_ui())->IsManaged();
+  bool active_user_is_supervised = Profile::FromWebUI(web_ui())->IsSupervised();
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     base::DictionaryValue* profile_value = new base::DictionaryValue();
 
@@ -594,12 +595,12 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetString(kKeyProfilePath, profile_path.MaybeAsASCII());
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(
-        kKeyLocallyManagedUser, info_cache.ProfileIsManagedAtIndex(i));
+        kKeyLocallyManagedUser, info_cache.ProfileIsSupervisedAtIndex(i));
     profile_value->SetBoolean(kKeySignedIn, is_active_user);
     profile_value->SetBoolean(
         kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));
     profile_value->SetBoolean(kKeyIsOwner, false);
-    profile_value->SetBoolean(kKeyCanRemove, !active_user_is_managed);
+    profile_value->SetBoolean(kKeyCanRemove, !active_user_is_supervised);
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(
         kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));

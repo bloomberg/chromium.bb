@@ -87,7 +87,7 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
     // Don't display managed users.
-    if (profile_info.ProfileIsManagedAtIndex(i))
+    if (profile_info.ProfileIsSupervisedAtIndex(i))
       continue;
 
     app_list::AppListViewDelegate::User user;

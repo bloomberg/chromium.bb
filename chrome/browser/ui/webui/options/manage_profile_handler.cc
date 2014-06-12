@@ -137,8 +137,8 @@ void ManageProfileHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
-      prefs::kManagedUserCreationAllowed,
-      base::Bind(&ManageProfileHandler::OnCreateManagedUserPrefChange,
+      prefs::kSupervisedUserCreationAllowed,
+      base::Bind(&ManageProfileHandler::OnCreateSupervisedUserPrefChange,
                  base::Unretained(this)));
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
@@ -149,7 +149,7 @@ void ManageProfileHandler::InitializeHandler() {
 
 void ManageProfileHandler::InitializePage() {
   SendExistingProfileNames();
-  OnCreateManagedUserPrefChange();
+  OnCreateSupervisedUserPrefChange();
 }
 
 void ManageProfileHandler::RegisterMessages() {
@@ -358,7 +358,7 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 
-  if (profile->IsManaged())
+  if (profile->IsSupervised())
     return;
 
   base::string16 new_profile_name;
@@ -472,13 +472,13 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
   GenerateSignedinUserSpecificStrings(&replacements);
   web_ui()->CallJavascriptFunction("loadTimeData.overrideValues", replacements);
 
-  OnCreateManagedUserPrefChange();
+  OnCreateSupervisedUserPrefChange();
 }
 
-void ManageProfileHandler::OnCreateManagedUserPrefChange() {
+void ManageProfileHandler::OnCreateSupervisedUserPrefChange() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   base::FundamentalValue allowed(
-      prefs->GetBoolean(prefs::kManagedUserCreationAllowed));
+      prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed));
   web_ui()->CallJavascriptFunction(
       "CreateProfileOverlay.updateManagedUsersAllowed", allowed);
 }

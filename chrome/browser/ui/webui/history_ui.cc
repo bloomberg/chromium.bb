@@ -184,8 +184,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
-  source->AddBoolean("isManagedProfile", profile->IsManaged());
-  source->AddBoolean("showDeleteVisitUI", !profile->IsManaged());
+  source->AddBoolean("isManagedProfile", profile->IsSupervised());
+  source->AddBoolean("showDeleteVisitUI", !profile->IsSupervised());
 
   return source;
 }
@@ -711,7 +711,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
   ManagedUserService* managed_user_service = NULL;
 #if defined(ENABLE_MANAGED_USERS)
-  if (profile->IsManaged())
+  if (profile->IsSupervised())
     managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
 #endif
   ProfileSyncService* sync_service =

@@ -95,15 +95,15 @@ enum ModelType {
   // These preferences are synced before other user types and are never
   // encrypted.
   PRIORITY_PREFERENCES,
-  // Managed user settings.
-  MANAGED_USER_SETTINGS,
-  // Managed users. Every managed user is a profile that is configured remotely
-  // by this user and can have restrictions applied. MANAGED_USERS and
-  // MANAGED_USER_SETTINGS can not be encrypted.
-  MANAGED_USERS,
-  // Managed user shared settings. Shared settings can be modified both by the
-  // manager and the supervised user.
-  MANAGED_USER_SHARED_SETTINGS,
+  // Supervised user settings.
+  SUPERVISED_USER_SETTINGS,
+  // Supervised users. Every supervised user is a profile that is configured
+  // remotely by this user and can have restrictions applied. SUPERVISED_USERS
+  // and SUPERVISED_USER_SETTINGS can not be encrypted.
+  SUPERVISED_USERS,
+  // Supervised user shared settings. Shared settings can be modified both by
+  // the manager and the supervised user.
+  SUPERVISED_USER_SHARED_SETTINGS,
   // Distilled articles.
   ARTICLES,
   // App List items

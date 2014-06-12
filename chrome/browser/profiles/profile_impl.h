@@ -117,7 +117,7 @@ class ProfileImpl : public Profile {
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual bool IsManaged() OVERRIDE;
+  virtual bool IsSupervised() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
@@ -210,7 +210,7 @@ class ProfileImpl : public Profile {
 
   // Updates the ProfileInfoCache with data from this profile.
   void UpdateProfileUserNameCache();
-  void UpdateProfileManagedUserIdCache();
+  void UpdateProfileSupervisedUserIdCache();
   void UpdateProfileNameCache();
   void UpdateProfileAvatarCache();
   void UpdateProfileIsEphemeralCache();

@@ -62,7 +62,7 @@ void AvatarMenuActionsDesktop::EditProfile(Profile* profile, size_t index) {
 
 bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
-  if (browser_ && browser_->profile()->IsManaged())
+  if (browser_ && browser_->profile()->IsSupervised())
     return false;
 #if defined(OS_WIN)
   return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;

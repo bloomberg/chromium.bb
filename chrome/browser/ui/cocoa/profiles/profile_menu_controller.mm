@@ -161,14 +161,14 @@ class Observer : public chrome::BrowserListObserver,
       menu_->GetActiveProfileIndex());
   if ([menuItem action] == @selector(switchToProfileFromDock:) ||
       [menuItem action] == @selector(switchToProfileFromMenu:)) {
-    if (!itemData.managed)
+    if (!itemData.supervised)
       return YES;
 
     return [menuItem tag] == static_cast<NSInteger>(itemData.menu_index);
   }
 
   if ([menuItem action] == @selector(newProfile:))
-    return !itemData.managed;
+    return !itemData.supervised;
 
   return YES;
 }

@@ -56,7 +56,7 @@ base::string16 GetElidedText(const base::string16& original_text) {
 base::string16 GetButtonText(Profile* profile) {
   base::string16 name = GetElidedText(
       profiles::GetAvatarNameForProfile(profile));
-  if (profile->IsManaged())
+  if (profile->IsSupervised())
     name = l10n_util::GetStringFUTF16(IDS_MANAGED_USER_NEW_AVATAR_LABEL, name);
   return name;
 }

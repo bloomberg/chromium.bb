@@ -34,23 +34,23 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 const char kHomePage[] = "homepage";
 
 // Maps host names to whether the host is manually allowed or blocked.
-const char kManagedModeManualHosts[] = "profile.managed.manual_hosts";
+const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
 // Maps URLs to whether the URL is manually allowed or blocked.
-const char kManagedModeManualURLs[] = "profile.managed.manual_urls";
+const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
 
 // Stores the email address associated with the google account of the custodian
-// of the managed user, set when the managed user is created.
-const char kManagedUserCustodianEmail[] = "profile.managed.custodian_email";
+// of the supervised user, set when the supervised user is created.
+const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
 
 // Stores the display name associated with the google account of the custodian
-// of the managed user, updated (if possible) each time the managed user
+// of the supervised user, updated (if possible) each time the supervised user
 // starts a session.
-const char kManagedUserCustodianName[] = "profile.managed.custodian_name";
+const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
 
 // Stores settings that can be modified both by a supervised user and their
 // manager. See ManagedUserSharedSettingsService for a description of
 // the format.
-const char kManagedUserSharedSettings[] = "profile.managed.shared_settings";
+const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
@@ -1171,11 +1171,11 @@ const char kImportSavedPasswords[] = "import_saved_passwords";
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
 
-// Whether the profile is managed.
-const char kProfileIsManaged[] = "profile.is_managed";
+// Whether the profile is supervised. Deprecated, use kSupervisedUserId below.
+const char kProfileIsSupervised[] = "profile.is_managed";
 
-// The managed user ID.
-const char kManagedUserId[] = "profile.managed_user_id";
+// The supervised user ID.
+const char kSupervisedUserId[] = "profile.managed_user_id";
 
 // 64-bit integer serialization of the base::Time when the user's GAIA info
 // was last updated.
@@ -1209,15 +1209,15 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 // 0: Allow (does nothing)
 // 1: Warn.
 // 2: Block.
-const char kDefaultManagedModeFilteringBehavior[] =
+const char kDefaultSupervisedUserFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
-// Whether this user is permitted to create managed users.
-const char kManagedUserCreationAllowed[] =
+// Whether this user is permitted to create supervised users.
+const char kSupervisedUserCreationAllowed[] =
     "profile.managed_user_creation_allowed";
 
-// List pref containing the users managed by this user.
-const char kManagedUsers[] = "profile.managed_users";
+// List pref containing the users supervised by this user.
+const char kSupervisedUsers[] = "profile.managed_users";
 
 // List pref containing the extension ids which are not allowed to send
 // notifications to the message center.

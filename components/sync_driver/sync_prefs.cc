@@ -330,18 +330,18 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncFaviconImages;
     case syncer::FAVICON_TRACKING:
       return prefs::kSyncFaviconTracking;
-    case syncer::MANAGED_USER_SETTINGS:
-      return prefs::kSyncManagedUserSettings;
+    case syncer::SUPERVISED_USER_SETTINGS:
+      return prefs::kSyncSupervisedUserSettings;
     case syncer::PROXY_TABS:
       return prefs::kSyncTabs;
     case syncer::PRIORITY_PREFERENCES:
       return prefs::kSyncPriorityPreferences;
-    case syncer::MANAGED_USERS:
-      return prefs::kSyncManagedUsers;
+    case syncer::SUPERVISED_USERS:
+      return prefs::kSyncSupervisedUsers;
     case syncer::ARTICLES:
       return prefs::kSyncArticles;
-    case syncer::MANAGED_USER_SHARED_SETTINGS:
-      return prefs::kSyncManagedUserSharedSettings;
+    case syncer::SUPERVISED_USER_SHARED_SETTINGS:
+      return prefs::kSyncSupervisedUserSharedSettings;
     default:
       break;
   }
@@ -423,7 +423,7 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::PROXY_TABS].Put(syncer::FAVICON_IMAGES);
   pref_groups_[syncer::PROXY_TABS].Put(syncer::FAVICON_TRACKING);
 
-  pref_groups_[syncer::MANAGED_USER_SETTINGS].Put(syncer::SESSIONS);
+  pref_groups_[syncer::SUPERVISED_USER_SETTINGS].Put(syncer::SESSIONS);
 
   // TODO(zea): put favicons in the bookmarks group as well once it handles
   // those favicons.

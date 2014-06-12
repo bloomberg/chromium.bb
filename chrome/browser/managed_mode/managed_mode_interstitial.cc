@@ -98,15 +98,15 @@ bool ManagedModeInterstitial::Init() {
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
-      prefs::kDefaultManagedModeFilteringBehavior,
+      prefs::kDefaultSupervisedUserFilteringBehavior,
       base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kManagedModeManualHosts,
+      prefs::kSupervisedUserManualHosts,
       base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kManagedModeManualURLs,
+      prefs::kSupervisedUserManualURLs,
       base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
                  base::Unretained(this)));
 

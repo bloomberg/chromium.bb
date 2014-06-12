@@ -100,9 +100,9 @@ class TestingProfile : public Profile {
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
 
-    // Sets the managed user ID (which is empty by default). If it is set to a
-    // non-empty string, the profile is managed.
-    void SetManagedUserId(const std::string& managed_user_id);
+    // Sets the supervised user ID (which is empty by default). If it is set to
+    // a non-empty string, the profile is supervised.
+    void SetSupervisedUserId(const std::string& supervised_user_id);
 
     // Sets the PolicyService to be used by this profile.
     void SetPolicyService(scoped_ptr<policy::PolicyService> policy_service);
@@ -121,7 +121,7 @@ class TestingProfile : public Profile {
     Delegate* delegate_;
     bool incognito_;
     bool guest_session_;
-    std::string managed_user_id_;
+    std::string supervised_user_id_;
     scoped_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
 
@@ -149,7 +149,7 @@ class TestingProfile : public Profile {
                  scoped_ptr<PrefServiceSyncable> prefs,
                  bool incognito,
                  bool guest_session,
-                 const std::string& managed_user_id,
+                 const std::string& supervised_user_id,
                  scoped_ptr<policy::PolicyService> policy_service,
                  const TestingFactories& factories);
 
@@ -250,7 +250,7 @@ class TestingProfile : public Profile {
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual bool IsManaged() OVERRIDE;
+  virtual bool IsSupervised() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
@@ -381,7 +381,7 @@ class TestingProfile : public Profile {
 
   bool guest_session_;
 
-  std::string managed_user_id_;
+  std::string supervised_user_id_;
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;

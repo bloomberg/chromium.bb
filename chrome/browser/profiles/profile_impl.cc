@@ -336,14 +336,14 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kProfileAvatarIndex,
       -1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kManagedUserId,
+  registry->RegisterStringPref(prefs::kSupervisedUserId,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kProfileName,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kProfileIsManaged,
+      prefs::kProfileIsSupervised,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kHomePage,
@@ -508,8 +508,8 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(&ProfileImpl::UpdateProfileUserNameCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kManagedUserId,
-      base::Bind(&ProfileImpl::UpdateProfileManagedUserIdCache,
+      prefs::kSupervisedUserId,
+      base::Bind(&ProfileImpl::UpdateProfileSupervisedUserIdCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kDefaultZoomLevel,
@@ -542,7 +542,7 @@ void ProfileImpl::DoFinalInit() {
   // kGoogleServicesUsername, initialize components that depend on it to reflect
   // the current value.
   UpdateProfileUserNameCache();
-  UpdateProfileManagedUserIdCache();
+  UpdateProfileSupervisedUserIdCache();
   UpdateProfileIsEphemeralCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
@@ -801,8 +801,8 @@ Profile* ProfileImpl::GetOriginalProfile() {
   return this;
 }
 
-bool ProfileImpl::IsManaged() {
-  return !GetPrefs()->GetString(prefs::kManagedUserId).empty();
+bool ProfileImpl::IsSupervised() {
+  return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {
@@ -1303,13 +1303,14 @@ void ProfileImpl::UpdateProfileUserNameCache() {
   }
 }
 
-void ProfileImpl::UpdateProfileManagedUserIdCache() {
+void ProfileImpl::UpdateProfileSupervisedUserIdCache() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(GetPath());
   if (index != std::string::npos) {
-    std::string managed_user_id = GetPrefs()->GetString(prefs::kManagedUserId);
-    cache.SetManagedUserIdOfProfileAtIndex(index, managed_user_id);
+    std::string supervised_user_id =
+        GetPrefs()->GetString(prefs::kSupervisedUserId);
+    cache.SetSupervisedUserIdOfProfileAtIndex(index, supervised_user_id);
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }

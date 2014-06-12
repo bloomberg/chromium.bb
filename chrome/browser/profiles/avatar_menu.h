@@ -57,9 +57,9 @@ class AvatarMenu : public content::NotificationObserver {
     // Whether or not the current profile requires sign-in before use.
     bool signin_required;
 
-    // Whether or not the current profile is a managed user
+    // Whether or not the current profile is a supervised user
     // (see ManagedUserService).
-    bool managed;
+    bool supervised;
 
     // The index in the menu of this profile, used by views to refer to
     // profiles.
@@ -117,14 +117,14 @@ class AvatarMenu : public content::NotificationObserver {
   // Returns the index of the active profile.
   size_t GetActiveProfileIndex();
 
-  // Returns information about a managed user which will be displayed in the
-  // avatar menu. If the profile does not belong to a managed user, an empty
+  // Returns information about a supervised user which will be displayed in the
+  // avatar menu. If the profile does not belong to a supervised user, an empty
   // string will be returned.
-  base::string16 GetManagedUserInformation() const;
+  base::string16 GetSupervisedUserInformation() const;
 
-  // Returns the icon for the managed user which will be displayed in the
+  // Returns the icon for the supervised user which will be displayed in the
   // avatar menu.
-  const gfx::Image& GetManagedUserIcon() const;
+  const gfx::Image& GetSupervisedUserIcon() const;
 
   // This menu is also used for the always-present Mac system menubar. If the
   // last active browser changes, the menu will need to reference that browser.

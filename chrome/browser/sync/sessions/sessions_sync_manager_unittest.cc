@@ -356,7 +356,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
  public:
   SyncedTabDelegateFake() : current_entry_index_(0),
                             pending_entry_index_(-1),
-                            is_managed_(false),
+                            is_supervised_(false),
                             sync_id_(-1),
                             blocked_navigations_(NULL) {}
   virtual ~SyncedTabDelegateFake() {}
@@ -407,10 +407,10 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE {
    return NULL;
   }
-  virtual bool ProfileIsManaged() const OVERRIDE {
-   return is_managed_;
+  virtual bool ProfileIsSupervised() const OVERRIDE {
+   return is_supervised_;
   }
-  void set_is_managed(bool is_managed) { is_managed_ = is_managed; }
+  void set_is_supervised(bool is_supervised) { is_supervised_ = is_supervised; }
   virtual const std::vector<const content::NavigationEntry*>*
       GetBlockedNavigations() const OVERRIDE {
     return blocked_navigations_;
@@ -447,7 +447,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
  private:
    int current_entry_index_;
    int pending_entry_index_;
-   bool is_managed_;
+   bool is_supervised_;
    int sync_id_;
    std::vector<const content::NavigationEntry*>* blocked_navigations_;
    ScopedVector<content::NavigationEntry> entries_;
@@ -580,8 +580,8 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
 }
 
-// Tests that for managed users blocked navigations are recorded and marked as
-// such, while regular navigations are marked as allowed.
+// Tests that for supervised users blocked navigations are recorded and marked
+// as such, while regular navigations are marked as allowed.
 TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   SyncedTabDelegateFake tab;
   content::NavigationEntry* entry1(content::NavigationEntry::Create());
@@ -599,7 +599,7 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   blocked_navigations.push_back(entry2);
   blocked_navigations.push_back(entry3);
 
-  tab.set_is_managed(true);
+  tab.set_is_supervised(true);
   tab.set_blocked_navigations(&blocked_navigations.get());
 
   SessionTab session_tab;

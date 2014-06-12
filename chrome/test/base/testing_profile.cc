@@ -246,7 +246,7 @@ TestingProfile::TestingProfile(
     scoped_ptr<PrefServiceSyncable> prefs,
     bool incognito,
     bool guest_session,
-    const std::string& managed_user_id,
+    const std::string& supervised_user_id,
     scoped_ptr<policy::PolicyService> policy_service,
     const TestingFactories& factories)
     : start_time_(Time::Now()),
@@ -256,7 +256,7 @@ TestingProfile::TestingProfile(
       force_incognito_(false),
       original_profile_(NULL),
       guest_session_(guest_session),
-      managed_user_id_(managed_user_id),
+      supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
       profile_path_(path),
@@ -637,8 +637,8 @@ Profile* TestingProfile::GetOriginalProfile() {
   return this;
 }
 
-bool TestingProfile::IsManaged() {
-  return !managed_user_id_.empty();
+bool TestingProfile::IsSupervised() {
+  return !supervised_user_id_.empty();
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {
@@ -959,9 +959,9 @@ void TestingProfile::Builder::SetGuestSession() {
   guest_session_ = true;
 }
 
-void TestingProfile::Builder::SetManagedUserId(
-    const std::string& managed_user_id) {
-  managed_user_id_ = managed_user_id;
+void TestingProfile::Builder::SetSupervisedUserId(
+    const std::string& supervised_user_id) {
+  supervised_user_id_ = supervised_user_id;
 }
 
 void TestingProfile::Builder::SetPolicyService(
@@ -986,7 +986,7 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       pref_service_.Pass(),
       incognito_,
       guest_session_,
-      managed_user_id_,
+      supervised_user_id_,
       policy_service_.Pass(),
       testing_factories_));
 }
