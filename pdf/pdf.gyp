@@ -165,5 +165,41 @@
         },
       ],
     },],  # OS=="linux" and chromeos==0
+    ['OS=="win" and fastbuild==0 and target_arch=="ia32" and syzyasan==1', {
+      'variables': {
+        'dest_dir': '<(PRODUCT_DIR)/syzygy',
+      },
+      'targets': [
+        {
+          'target_name': 'pdf_syzyasan',
+          'type': 'none',
+          'sources' : [],
+          'dependencies': [
+            'pdf',
+          ],
+          # Instrument PDFium with SyzyAsan.
+          'actions': [
+            {
+              'action_name': 'Instrument PDFium with SyzyAsan',
+              'inputs': [
+                '<(PRODUCT_DIR)/pdf.dll',
+              ],
+              'outputs': [
+                '<(dest_dir)/pdf.dll',
+                '<(dest_dir)/pdf.dll.pdb',
+              ],
+              'action': [
+                'python',
+                '<(DEPTH)/chrome/tools/build/win/syzygy_instrument.py',
+                '--mode', 'asan',
+                '--input_executable', '<(PRODUCT_DIR)/pdf.dll',
+                '--input_symbol', '<(PRODUCT_DIR)/pdf.dll.pdb',
+                '--destination_dir', '<(dest_dir)',
+              ],
+            },
+          ],
+        },
+      ],
+    }],  # OS=="win" and fastbuild==0 and target_arch=="ia32" and syzyasan==1
   ],
 }
