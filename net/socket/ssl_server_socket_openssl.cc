@@ -616,10 +616,31 @@ int SSLServerSocketOpenSSL::Init() {
 
   // Set certificate and private key.
   DCHECK(cert_->os_cert_handle());
+#if defined(USE_OPENSSL_CERTS)
   if (SSL_use_certificate(ssl_, cert_->os_cert_handle()) != 1) {
     LOG(ERROR) << "Cannot set certificate.";
     return ERR_UNEXPECTED;
   }
+#else
+  // Convert OSCertHandle to X509 structure.
+  std::string der_string;
+  if (!X509Certificate::GetDEREncoded(cert_->os_cert_handle(), &der_string))
+    return ERR_UNEXPECTED;
+
+  const unsigned char* der_string_array =
+      reinterpret_cast<const unsigned char*>(der_string.data());
+
+  crypto::ScopedOpenSSL<X509, X509_free>
+      x509(d2i_X509(NULL, &der_string_array, der_string.length()));
+  if (!x509.get())
+    return ERR_UNEXPECTED;
+
+  // On success, SSL_use_certificate acquires a reference to |x509|.
+  if (SSL_use_certificate(ssl_, x509.get()) != 1) {
+    LOG(ERROR) << "Cannot set certificate.";
+    return ERR_UNEXPECTED;
+  }
+#endif  // USE_OPENSSL_CERTS
 
   DCHECK(key_->key());
   if (SSL_use_PrivateKey(ssl_, key_->key()) != 1) {
