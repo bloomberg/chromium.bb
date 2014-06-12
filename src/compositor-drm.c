@@ -56,6 +56,7 @@
 #include "launcher-util.h"
 #include "vaapi-recorder.h"
 #include "presentation_timing-server-protocol.h"
+#include "linux-dmabuf.h"
 
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
@@ -2965,9 +2966,12 @@ static void
 switch_to_gl_renderer(struct drm_backend *b)
 {
 	struct drm_output *output;
+	bool dmabuf_support_inited;
 
 	if (!b->use_pixman)
 		return;
+
+	dmabuf_support_inited = !!b->compositor->renderer->import_dmabuf;
 
 	weston_log("Switching to GL renderer\n");
 
@@ -2994,6 +2998,12 @@ switch_to_gl_renderer(struct drm_backend *b)
 		drm_output_init_egl(output, b);
 
 	b->use_pixman = 0;
+
+	if (!dmabuf_support_inited && b->compositor->renderer->import_dmabuf) {
+		if (linux_dmabuf_setup(b->compositor) < 0)
+			weston_log("Error: initializing dmabuf "
+				   "support failed.\n");
+	}
 }
 
 static void
@@ -3154,7 +3164,14 @@ drm_backend_create(struct weston_compositor *compositor,
 	weston_compositor_add_debug_binding(compositor, KEY_W,
 					    renderer_switch_binding, b);
 
+	if (compositor->renderer->import_dmabuf) {
+		if (linux_dmabuf_setup(compositor) < 0)
+			weston_log("Error: initializing dmabuf "
+				   "support failed.\n");
+	}
+
 	compositor->backend = &b->base;
+
 	return b;
 
 err_udev_monitor:
