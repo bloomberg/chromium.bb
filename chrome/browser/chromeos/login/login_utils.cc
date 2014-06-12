@@ -459,7 +459,7 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
     if (managed_user_sync_id.empty())
       managed_user_sync_id = "DUMMY_ID";
 
-    user_profile->GetPrefs()->SetString(prefs::kManagedUserId,
+    user_profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                         managed_user_sync_id);
   } else if (UserManager::Get()->IsLoggedInAsRegularUser()) {
     // Make sure that the google service username is properly set (we do this
