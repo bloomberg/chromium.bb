@@ -350,6 +350,10 @@ class BASE_EXPORT MessagePumpMac {
   DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePumpMac);
 };
 
+// Tasks posted to the message loop are posted under this mode, as well
+// as kCFRunLoopCommonModes.
+extern const CFStringRef BASE_EXPORT kMessageLoopExclusiveRunLoopMode;
+
 }  // namespace base
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_
