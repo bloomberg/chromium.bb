@@ -22,7 +22,8 @@ remoting.MediaSourceRenderer = function(videoTag) {
   this.sourceBuffer_ = null;
 
   /** @type {!Array.<ArrayBuffer>} Queue of pending buffers that haven't been
-   * processed . */
+   * processed. A null element indicates that the SourceBuffer can be reset
+   * because the following buffer contains a keyframe. */
   this.buffers_ = [];
 }
 
@@ -68,18 +69,36 @@ remoting.MediaSourceRenderer.prototype.onSourceOpen_ = function(format) {
 remoting.MediaSourceRenderer.prototype.processPendingData_ = function() {
   if (this.sourceBuffer_) {
     while (this.buffers_.length > 0 && !this.sourceBuffer_.updating) {
-      // TODO(sergeyu): Figure out the way to determine when a frame is rendered
-      // and use it to report performance statistics.
-      this.sourceBuffer_.appendBuffer(
-          /** @type {ArrayBuffer} */(this.buffers_.shift()));
+      var buffer = /** @type {ArrayBuffer} */ this.buffers_.shift();
+      if (buffer == null) {
+        // Remove all data from the SourceBuffer. By default Chrome buffers up
+        // 150MB of data in SourceBuffer. We never need to seek the stream, so
+        // it doesn't make sense to keep any of that data.
+        if (this.sourceBuffer_.buffered.length > 0) {
+          this.sourceBuffer_.remove(
+              this.sourceBuffer_.buffered.start(0),
+              this.sourceBuffer_.buffered.end(
+                  this.sourceBuffer_.buffered.length - 1));
+        }
+      } else {
+        // TODO(sergeyu): Figure out the way to determine when a frame is
+        // rendered and use it to report performance statistics.
+        this.sourceBuffer_.appendBuffer(buffer);
+      }
     }
   }
 }
 
 /**
  * @param {ArrayBuffer} data
+ * @param {boolean} keyframe
  */
-remoting.MediaSourceRenderer.prototype.onIncomingData = function(data) {
+remoting.MediaSourceRenderer.prototype.onIncomingData =
+    function(data, keyframe) {
+  if (keyframe) {
+    // Queue SourceBuffer reset request.
+    this.buffers_.push(null);
+  }
   this.buffers_.push(data);
   this.processPendingData_();
 }

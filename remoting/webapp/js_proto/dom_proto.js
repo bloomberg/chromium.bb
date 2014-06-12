@@ -151,10 +151,19 @@ var SourceBuffer = function() {}
 /** @type {boolean} */
 SourceBuffer.prototype.updating;
 
+/** @type {TimeRanges} */
+SourceBuffer.prototype.buffered;
+
 /**
  * @param {ArrayBuffer} buffer
  */
 SourceBuffer.prototype.appendBuffer = function(buffer) {}
+
+/**
+ * @param {number} start
+ * @param {number} end
+ */
+SourceBuffer.prototype.remove = function(start, end) {}
 
 /**
  * @constructor

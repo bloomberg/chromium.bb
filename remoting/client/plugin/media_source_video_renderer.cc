@@ -35,7 +35,8 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
   virtual void ElementStartNotify(mkvmuxer::uint64 element_id,
                                   mkvmuxer::int64 position) OVERRIDE;
 
-  scoped_ptr<DataBuffer> OnVideoFrame(const std::string& video_data);
+  scoped_ptr<DataBuffer> OnVideoFrame(const std::string& video_data,
+                                      bool keyframe);
 
  private:
   webrtc::DesktopSize frame_size_;
@@ -86,7 +87,7 @@ MediaSourceVideoRenderer::VideoWriter::VideoWriter(
   video_track->set_crop_bottom(crop_bottom);
   video_track->set_frame_rate(base::Time::kNanosecondsPerSecond /
                               kFrameIntervalNs);
-  video_track->set_default_duration(base::Time::kNanosecondsPerSecond);
+  video_track->set_default_duration(kFrameIntervalNs);
   mkvmuxer::SegmentInfo* const info = segment_->GetSegmentInfo();
   info->set_writing_app("ChromotingViewer");
   info->set_muxing_app("ChromotingViewer");
@@ -124,13 +125,13 @@ void MediaSourceVideoRenderer::VideoWriter::ElementStartNotify(
 
 scoped_ptr<MediaSourceVideoRenderer::VideoWriter::DataBuffer>
 MediaSourceVideoRenderer::VideoWriter::OnVideoFrame(
-    const std::string& video_data) {
+    const std::string& video_data,
+    bool keyframe) {
   DCHECK(!output_data_);
 
   output_data_.reset(new DataBuffer());
-  bool first_frame = (timecode_ == 0);
   segment_->AddFrame(reinterpret_cast<const uint8_t*>(video_data.data()),
-                     video_data.size(), 1, timecode_, first_frame);
+                     video_data.size(), 1, timecode_, keyframe);
   timecode_ += kFrameIntervalNs;
   return output_data_.Pass();
 }
@@ -215,9 +216,12 @@ void MediaSourceVideoRenderer::ProcessVideoPacket(
     delegate_->OnMediaSourceShape(desktop_shape_);
   }
 
+  // First bit is set to 0 for key frames.
+  bool keyframe = (packet->data()[0] & 1) == 0;
+
   scoped_ptr<VideoWriter::DataBuffer> buffer =
-      writer_->OnVideoFrame(packet->data());
-  delegate_->OnMediaSourceData(&(*(buffer->begin())), buffer->size());
+      writer_->OnVideoFrame(packet->data(), keyframe);
+  delegate_->OnMediaSourceData(&(*(buffer->begin())), buffer->size(), keyframe);
 }
 
 }  // namespace remoting

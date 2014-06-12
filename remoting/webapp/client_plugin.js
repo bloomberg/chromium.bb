@@ -327,8 +327,10 @@ remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
       console.error('Unexpected mediaSourceData.');
       return;
     }
+    // keyframe flag may be absent from the message.
+    var keyframe = !!message.data['keyframe'];
     this.mediaSourceRenderer_.onIncomingData(
-        (/** @type {ArrayBuffer} */ message.data['buffer']));
+        (/** @type {ArrayBuffer} */ message.data['buffer']), keyframe);
   }
 };
 

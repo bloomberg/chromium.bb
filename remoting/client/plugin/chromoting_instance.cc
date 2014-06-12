@@ -1196,14 +1196,15 @@ void ChromotingInstance::OnMediaSourceReset(const std::string& format) {
   PostLegacyJsonMessage("mediaSourceReset", data.Pass());
 }
 
-void ChromotingInstance::OnMediaSourceData(uint8_t* buffer,
-                                           size_t buffer_size) {
+void ChromotingInstance::OnMediaSourceData(uint8_t* buffer, size_t buffer_size,
+                                           bool keyframe) {
   pp::VarArrayBuffer array_buffer(buffer_size);
   void* data_ptr = array_buffer.Map();
   memcpy(data_ptr, buffer, buffer_size);
   array_buffer.Unmap();
   pp::VarDictionary data_dictionary;
   data_dictionary.Set(pp::Var("buffer"), array_buffer);
+  data_dictionary.Set(pp::Var("keyframe"), keyframe);
   PostChromotingMessage("mediaSourceData", data_dictionary);
 }
 

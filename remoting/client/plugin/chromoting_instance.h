@@ -256,7 +256,8 @@ class ChromotingInstance :
                                  const webrtc::DesktopVector& dpi) OVERRIDE;
   virtual void OnMediaSourceShape(const webrtc::DesktopRegion& shape) OVERRIDE;
   virtual void OnMediaSourceReset(const std::string& format) OVERRIDE;
-  virtual void OnMediaSourceData(uint8_t* buffer, size_t buffer_size) OVERRIDE;
+  virtual void OnMediaSourceData(uint8_t* buffer, size_t buffer_size,
+                                 bool keyframe) OVERRIDE;
 
   bool initialized_;
 
