@@ -120,7 +120,7 @@ class NativeViewportX11 : public NativeViewport,
       case MotionNotify:
         return true;
       case ClientMessage:
-        return event->xclient.message_type != atom_wm_protocols_;
+        return event->xclient.message_type == atom_wm_protocols_;
       default:
         return false;
     }
