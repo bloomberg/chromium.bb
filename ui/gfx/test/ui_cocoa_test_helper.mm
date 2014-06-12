@@ -9,6 +9,20 @@
 #include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 
+namespace {
+
+// Some AppKit function leak intentionally, e.g. for caching purposes.
+// Force those leaks here, so there can be a unique calling path, allowing
+// to flag intentional leaks without having to suppress all calls to
+// potentially leaky functions.
+void NOINLINE ForceSystemLeaks() {
+  // First NSCursor push always leaks.
+  [[NSCursor openHandCursor] push];
+  [NSCursor pop];
+}
+
+}  // namespace.
+
 @implementation CocoaTestHelperWindow
 
 - (id)initWithContentRect:(NSRect)contentRect {
@@ -51,6 +65,7 @@
 namespace ui {
 
 CocoaTest::CocoaTest() : called_tear_down_(false), test_window_(nil) {
+  ForceSystemLeaks();
   Init();
 }
 
