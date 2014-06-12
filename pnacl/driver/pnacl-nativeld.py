@@ -51,7 +51,6 @@ EXTRA_ENV = {
                   # Only relevant for ARM where it suppresses a warning.
                   # Ignored for other archs.
                   '--no-fix-cortex-a8 ' +
-                  '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
                   # Using "-pie" adds a PT_INTERP header to the executable
                   # that we don't want.
@@ -75,12 +74,6 @@ EXTRA_ENV = {
                   # too small (e.g., 0) because sel_ldr requires space for
                   # adding a halt sled.
                   '${!USE_IRT ? --rosegment-gap=0xc00000}',
-
-  'LD_EMUL'        : '${LD_EMUL_%BASE_ARCH%}',
-  'LD_EMUL_ARM'    : 'armelf_nacl',
-  'LD_EMUL_X8632'  : 'elf_nacl',
-  'LD_EMUL_X8664'  : 'elf64_nacl',
-  'LD_EMUL_MIPS32' : 'elf32ltsmip_nacl',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
