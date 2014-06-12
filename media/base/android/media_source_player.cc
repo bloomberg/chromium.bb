@@ -744,11 +744,15 @@ void MediaSourcePlayer::OnKeyAdded() {
 
 void MediaSourcePlayer::OnCdmUnset() {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(drm_bridge_);
   // TODO(xhwang): Support detachment of CDM. This will be needed when we start
-  // to support setMediaKeys(0), or when we release MediaDrm when the video is
-  // paused, or when the device goes to sleep. See http://crbug.com/272421
-  DVLOG(1) << "CDM detachment not supported.";
+  // to support setMediaKeys(0) (see http://crbug.com/330324), or when we
+  // release MediaDrm when the video is paused, or when the device goes to
+  // sleep (see http://crbug.com/272421).
+  NOTREACHED() << "CDM detachment not supported.";
+  DCHECK(drm_bridge_);
+  audio_decoder_job_->SetDrmBridge(NULL);
+  video_decoder_job_->SetDrmBridge(NULL);
+  drm_bridge_ = NULL;
 }
 
 }  // namespace media

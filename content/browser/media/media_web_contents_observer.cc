@@ -31,10 +31,12 @@ MediaWebContentsObserver::~MediaWebContentsObserver() {
 void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
-  cdm_managers_.erase(key);
+  // Always destroy the media players before CDMs because we do not support
+  // detaching CDMs from media players yet. See http://crbug.com/330324
 #if defined(OS_ANDROID)
   media_player_managers_.erase(key);
 #endif
+  cdm_managers_.erase(key);
 }
 
 bool MediaWebContentsObserver::OnMessageReceived(
