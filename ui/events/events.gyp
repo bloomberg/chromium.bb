@@ -123,8 +123,6 @@
         'gestures/gesture_types.h',
         'gestures/motion_event_aura.cc',
         'gestures/motion_event_aura.h',
-        'gestures/unified_gesture_detector_enabled.cc',
-        'gestures/unified_gesture_detector_enabled.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
         'ozone/events_ozone.cc',

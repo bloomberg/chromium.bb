@@ -1802,31 +1802,6 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
   EXPECT_EQ(60, params.a.visible_viewport_size.height());
 }
 
-// Ensures that touch event positions are never truncated to integers.
-TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
-  const float kX = 30.58f;
-  const float kY = 50.23f;
-
-  view_->InitAsChild(NULL);
-  view_->Show();
-
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                       gfx::PointF(kX, kY),
-                       0,
-                       ui::EventTimeForNow());
-
-  view_->OnTouchEvent(&press);
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
-  EXPECT_TRUE(view_->touch_event_.cancelable);
-  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_.touches[0].state);
-  EXPECT_EQ(kX, view_->touch_event_.touches[0].screenPosition.x);
-  EXPECT_EQ(kX, view_->touch_event_.touches[0].position.x);
-  EXPECT_EQ(kY, view_->touch_event_.touches[0].screenPosition.y);
-  EXPECT_EQ(kY, view_->touch_event_.touches[0].position.y);
-}
-
 // Tests that scroll ACKs are correctly handled by the overscroll-navigation
 // controller.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollEventOverscrolls) {

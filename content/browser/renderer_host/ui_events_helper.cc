@@ -314,7 +314,7 @@ blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
   point->position.x = event.x();
   point->position.y = event.y();
 
-  const gfx::PointF& root_point = event.root_location_f();
+  const gfx::Point root_point = event.root_location();
   point->screenPosition.x = root_point.x();
   point->screenPosition.y = root_point.y();
 
