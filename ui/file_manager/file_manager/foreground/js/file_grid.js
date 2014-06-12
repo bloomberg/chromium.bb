@@ -53,8 +53,8 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
     return item;
   };
 
-  self.relayoutAggregation_ =
-      new AsyncUtil.Aggregation(self.relayoutImmediately_.bind(self));
+  self.relayoutRateLimiter_ =
+      new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
 };
 
 /**
@@ -83,7 +83,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
  * Redraws the UI. Skips multiple consecutive calls.
  */
 FileGrid.prototype.relayout = function() {
-  this.relayoutAggregation_.run();
+  this.relayoutRateLimiter_.run();
 };
 
 /**

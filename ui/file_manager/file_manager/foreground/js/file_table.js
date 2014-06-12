@@ -305,8 +305,8 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     e.preventDefault();
   });
 
-  self.relayoutAggregation_ =
-      new AsyncUtil.Aggregation(self.relayoutImmediately_.bind(self));
+  self.relayoutRateLimiter_ =
+      new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
 
   // Override header#redraw to use FileTableSplitter.
   self.header_.redraw = function() {
@@ -734,7 +734,7 @@ FileTable.prototype.setBottomMarginForPanel = function(margin) {
  * Redraws the UI. Skips multiple consecutive calls.
  */
 FileTable.prototype.relayout = function() {
-  this.relayoutAggregation_.run();
+  this.relayoutRateLimiter_.run();
 };
 
 /**

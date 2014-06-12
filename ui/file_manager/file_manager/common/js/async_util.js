@@ -255,23 +255,16 @@ AsyncUtil.Group.prototype.finish_ = function(task) {
 };
 
 /**
- * Aggregates consecutive calls and executes the closure only once instead of
- * several times. The first call is always called immediately, and the next
- * consecutive ones are aggregated and the closure is called only once once
- * |delay| amount of time passes after the last call to run().
+ * Samples calls so that they are not called too frequently.
+ * The first call is always called immediately, and the following calls may
+ * be skipped or delayed to keep each interval no less than |minInterval_|.
  *
- * @param {function()} closure Closure to be aggregated.
- * @param {number=} opt_delay Minimum aggregation time in milliseconds. Default
- *     is 50 milliseconds.
+ * @param {function()} closure Closure to be called.
+ * @param {number=} opt_minInterval Minimum interval between each call in
+ *     milliseconds. Default is 200 milliseconds.
  * @constructor
  */
-AsyncUtil.Aggregation = function(closure, opt_delay) {
-  /**
-   * @type {number}
-   * @private
-   */
-  this.delay_ = opt_delay || 50;
-
+AsyncUtil.RateLimiter = function(closure, opt_minInterval) {
   /**
    * @type {function()}
    * @private
@@ -279,41 +272,55 @@ AsyncUtil.Aggregation = function(closure, opt_delay) {
   this.closure_ = closure;
 
   /**
-   * @type {number?}
+   * @type {number}
    * @private
    */
-  this.scheduledRunsTimer_ = null;
+  this.minInterval_ = opt_minInterval || 200;
 
   /**
    * @type {number}
    * @private
    */
+  this.scheduledRunsTimer_ = 0;
+
+  /**
+   * This variable remembers the last time the closure is called.
+   * @type {number}
+   * @private
+   */
   this.lastRunTime_ = 0;
+
+  Object.seal(this);
 };
 
 /**
- * Runs a closure. Skips consecutive calls. The first call is called
- * immediately.
+ * Requests to run the closure.
+ * Skips or delays calls so that the intervals between calls are no less than
+ * |minInteval_| milliseconds.
  */
-AsyncUtil.Aggregation.prototype.run = function() {
-  // If recently called, then schedule the consecutive call with a delay.
-  if (Date.now() - this.lastRunTime_ < this.delay_) {
-    this.cancelScheduledRuns_();
-    this.scheduledRunsTimer_ = setTimeout(this.runImmediately_.bind(this),
-                                          this.delay_ + 1);
-    this.lastRunTime_ = Date.now();
+AsyncUtil.RateLimiter.prototype.run = function() {
+  var now = Date.now();
+  // If |minInterval| has not passed since the closure is run, skips or delays
+  // this run.
+  if (now - this.lastRunTime_ < this.minInterval_) {
+    // Delays this run only when there is no scheduled run.
+    // Otherwise, simply skip this run.
+    if (!this.scheduledRunsTimer_) {
+      this.scheduledRunsTimer_ = setTimeout(
+          this.runImmediately.bind(this),
+          this.lastRunTime_ + this.minInterval_ - now);
+    }
     return;
   }
 
-  // Otherwise, run immediately.
-  this.runImmediately_();
+  // Otherwise, run immediately
+  this.runImmediately();
 };
 
 /**
- * Calls the schedule immediately and cancels any scheduled calls.
- * @private
+ * Calls the scheduled run immediately and cancels any scheduled calls.
  */
-AsyncUtil.Aggregation.prototype.runImmediately_ = function() {
+AsyncUtil.RateLimiter.prototype.runImmediately = function() {
   this.cancelScheduledRuns_();
   this.closure_();
   this.lastRunTime_ = Date.now();
@@ -323,9 +330,9 @@ AsyncUtil.Aggregation.prototype.runImmediately_ = function() {
  * Cancels all scheduled runs (if any).
  * @private
  */
-AsyncUtil.Aggregation.prototype.cancelScheduledRuns_ = function() {
+AsyncUtil.RateLimiter.prototype.cancelScheduledRuns_ = function() {
   if (this.scheduledRunsTimer_) {
     clearTimeout(this.scheduledRunsTimer_);
-    this.scheduledRunsTimer_ = null;
+    this.scheduledRunsTimer_ = 0;
   }
 };
