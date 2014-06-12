@@ -194,9 +194,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->PassSwapPromises(&swap_promise_list_);
 
-  target_tree->SetPageScaleFactorAndLimits(
-      page_scale_factor(), min_page_scale_factor(), max_page_scale_factor());
-  target_tree->SetPageScaleDelta(
+  target_tree->SetPageScaleValues(
+      page_scale_factor(), min_page_scale_factor(), max_page_scale_factor(),
       target_tree->page_scale_delta() / target_tree->sent_page_scale_delta());
   target_tree->set_sent_page_scale_delta(1);
 
@@ -290,64 +289,62 @@ void ForceScrollbarParameterUpdateAfterScaleChange(LayerImpl* current_layer) {
 
 void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
     float min_page_scale_factor, float max_page_scale_factor) {
-  if (!page_scale_factor)
-    return;
+  SetPageScaleValues(page_scale_factor, min_page_scale_factor,
+      max_page_scale_factor, page_scale_delta_);
+}
 
-  if (min_page_scale_factor == min_page_scale_factor_ &&
-      max_page_scale_factor == max_page_scale_factor_ &&
-      page_scale_factor == page_scale_factor_)
-    return;
+void LayerTreeImpl::SetPageScaleDelta(float delta) {
+  SetPageScaleValues(page_scale_factor_, min_page_scale_factor_,
+      max_page_scale_factor_, delta);
+}
+
+void LayerTreeImpl::SetPageScaleValues(float page_scale_factor,
+      float min_page_scale_factor, float max_page_scale_factor,
+      float page_scale_delta) {
+  bool page_scale_changed =
+      min_page_scale_factor != min_page_scale_factor_ ||
+      max_page_scale_factor != max_page_scale_factor_ ||
+      page_scale_factor != page_scale_factor_;
 
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
   page_scale_factor_ = page_scale_factor;
 
+  float total = page_scale_factor_ * page_scale_delta;
+  if (min_page_scale_factor_ && total < min_page_scale_factor_)
+    page_scale_delta = min_page_scale_factor_ / page_scale_factor_;
+  else if (max_page_scale_factor_ && total > max_page_scale_factor_)
+    page_scale_delta = max_page_scale_factor_ / page_scale_factor_;
+
+  if (page_scale_delta_ == page_scale_delta && !page_scale_changed)
+    return;
+
+  if (page_scale_delta_ != page_scale_delta) {
+    page_scale_delta_ = page_scale_delta;
+
+    if (IsActiveTree()) {
+      LayerTreeImpl* pending_tree = layer_tree_host_impl_->pending_tree();
+      if (pending_tree) {
+        DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
+        pending_tree->SetPageScaleDelta(
+            page_scale_delta_ / sent_page_scale_delta_);
+      }
+    }
+
+    set_needs_update_draw_properties();
+  }
+
   if (root_layer_scroll_offset_delegate_) {
     root_layer_scroll_offset_delegate_->UpdateRootLayerState(
         TotalScrollOffset(),
         TotalMaxScrollOffset(),
         ScrollableSize(),
         total_page_scale_factor(),
-        this->min_page_scale_factor(),
-        this->max_page_scale_factor());
+        min_page_scale_factor_,
+        max_page_scale_factor_);
   }
 
   ForceScrollbarParameterUpdateAfterScaleChange(page_scale_layer());
-}
-
-void LayerTreeImpl::SetPageScaleDelta(float delta) {
-  // Clamp to the current min/max limits.
-  float total = page_scale_factor_ * delta;
-  if (min_page_scale_factor_ && total < min_page_scale_factor_)
-    delta = min_page_scale_factor_ / page_scale_factor_;
-  else if (max_page_scale_factor_ && total > max_page_scale_factor_)
-    delta = max_page_scale_factor_ / page_scale_factor_;
-
-  if (delta == page_scale_delta_)
-    return;
-
-  page_scale_delta_ = delta;
-
-  if (IsActiveTree()) {
-    LayerTreeImpl* pending_tree = layer_tree_host_impl_->pending_tree();
-    if (pending_tree) {
-      DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
-      pending_tree->SetPageScaleDelta(
-          page_scale_delta_ / sent_page_scale_delta_);
-    }
-  }
-
-  set_needs_update_draw_properties();
-
-  if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        TotalScrollOffset(),
-        TotalMaxScrollOffset(),
-        ScrollableSize(),
-        total_page_scale_factor(),
-        min_page_scale_factor(),
-        max_page_scale_factor());
-  }
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {

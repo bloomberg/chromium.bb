@@ -342,10 +342,11 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->set_sent_page_scale_delta(1.f);
   }
 
-  sync_tree->SetPageScaleFactorAndLimits(page_scale_factor_,
-                                         min_page_scale_factor_,
-                                         max_page_scale_factor_);
-  sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
+  sync_tree->SetPageScaleValues(
+      page_scale_factor_,
+      min_page_scale_factor_,
+      max_page_scale_factor_,
+      page_scale_delta / sent_page_scale_delta);
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 

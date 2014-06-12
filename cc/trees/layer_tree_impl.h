@@ -155,6 +155,9 @@ class CC_EXPORT LayerTreeImpl {
   void SetPageScaleFactorAndLimits(float page_scale_factor,
       float min_page_scale_factor, float max_page_scale_factor);
   void SetPageScaleDelta(float delta);
+  void SetPageScaleValues(float page_scale_factor,
+      float min_page_scale_factor, float max_page_scale_factor,
+      float page_scale_delta);
   float total_page_scale_factor() const {
     return page_scale_factor_ * page_scale_delta_;
   }
