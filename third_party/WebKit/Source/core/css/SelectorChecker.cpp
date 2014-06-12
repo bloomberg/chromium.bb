@@ -146,7 +146,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
     if (!checkOne(context, siblingTraversalStrategy, &specificity))
         return SelectorFailsLocally;
 
-    if (context.selector->m_match == CSSSelector::PseudoElement) {
+    if (context.selector->match() == CSSSelector::PseudoElement) {
         if (context.selector->isCustomPseudoElement()) {
             if (!matchesCustomPseudoElement(context.element, *context.selector))
                 return SelectorFailsLocally;
@@ -231,7 +231,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     nextContext.hasSelectionPseudo = dynamicPseudo == SELECTION;
     if ((context.elementStyle || m_mode == CollectingCSSRules || m_mode == CollectingStyleRules || m_mode == QueryingRules) && dynamicPseudo != NOPSEUDO
         && !nextContext.hasSelectionPseudo
-        && !(nextContext.hasScrollbarPseudo && nextContext.selector->m_match == CSSSelector::PseudoClass))
+        && !(nextContext.hasScrollbarPseudo && nextContext.selector->match() == CSSSelector::PseudoClass))
         return SelectorFailsCompletely;
 
     nextContext.isSubSelector = true;
@@ -540,19 +540,19 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     if (elementIsHostInItsShadowTree && !selector.isHostPseudoClass())
         return false;
 
-    if (selector.m_match == CSSSelector::Tag)
+    if (selector.match() == CSSSelector::Tag)
         return SelectorChecker::tagMatches(element, selector.tagQName());
 
-    if (selector.m_match == CSSSelector::Class)
+    if (selector.match() == CSSSelector::Class)
         return element.hasClass() && element.classNames().contains(selector.value());
 
-    if (selector.m_match == CSSSelector::Id)
+    if (selector.match() == CSSSelector::Id)
         return element.hasID() && element.idForStyleResolution() == selector.value();
 
     if (selector.isAttributeSelector())
-        return anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector.m_match), selector);
+        return anyAttributeMatches(element, selector.match(), selector);
 
-    if (selector.m_match == CSSSelector::PseudoClass) {
+    if (selector.match() == CSSSelector::PseudoClass) {
         // Handle :not up front.
         if (selector.pseudoType() == CSSSelector::PseudoNot) {
             SelectorCheckingContext subContext(context);
@@ -997,7 +997,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             break;
         }
         return false;
-    } else if (selector.m_match == CSSSelector::PseudoElement && selector.pseudoType() == CSSSelector::PseudoCue) {
+    } else if (selector.match() == CSSSelector::PseudoElement && selector.pseudoType() == CSSSelector::PseudoCue) {
         SelectorCheckingContext subContext(context);
         subContext.isSubSelector = true;
         subContext.behaviorAtBoundary = StaysWithinTreeScope;
@@ -1027,7 +1027,7 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
     if (!scrollbar)
         return false;
 
-    ASSERT(selector.m_match == CSSSelector::PseudoClass);
+    ASSERT(selector.match() == CSSSelector::PseudoClass);
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoEnabled:
         return scrollbar->enabled();

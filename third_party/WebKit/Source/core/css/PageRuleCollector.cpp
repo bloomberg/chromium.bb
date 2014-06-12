@@ -87,7 +87,7 @@ void PageRuleCollector::matchPageRules(RuleSet* rules)
 static bool checkPageSelectorComponents(const CSSSelector* selector, bool isLeftPage, bool isFirstPage, const String& pageName)
 {
     for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
-        if (component->m_match == CSSSelector::Tag) {
+        if (component->match() == CSSSelector::Tag) {
             const AtomicString& localName = component->tagQName().localName();
             if (localName != starAtom && localName != pageName)
                 return false;

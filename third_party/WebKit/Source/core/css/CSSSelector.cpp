@@ -736,7 +736,7 @@ void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
 
 static bool validateSubSelector(const CSSSelector* selector)
 {
-    switch (selector->m_match) {
+    switch (selector->match()) {
     case CSSSelector::Tag:
     case CSSSelector::Id:
     case CSSSelector::Class:
@@ -749,6 +749,7 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::End:
         return true;
     case CSSSelector::PseudoElement:
+    case CSSSelector::Unknown:
         return false;
     case CSSSelector::PagePseudoClass:
     case CSSSelector::PseudoClass:

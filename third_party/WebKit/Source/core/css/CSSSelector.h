@@ -292,6 +292,18 @@ namespace WebCore {
         // FIXME: selectors with no tagHistory() get a relation() of Descendant (and sometimes even SubSelector). It should instead be
         // None.
         Relation relation() const { return static_cast<Relation>(m_relation); }
+        void setRelation(Relation relation)
+        {
+            m_relation = relation;
+            ASSERT(static_cast<Relation>(m_relation) == relation); // using a bitfield.
+        }
+
+        Match match() const { return static_cast<Match>(m_match); }
+        void setMatch(Match match)
+        {
+            m_match = match;
+            ASSERT(static_cast<Match>(m_match) == match); // using a bitfield.
+        }
 
         bool isLastInSelectorList() const { return m_isLastInSelectorList; }
         void setLastInSelectorList() { m_isLastInSelectorList = true; }
@@ -307,11 +319,10 @@ namespace WebCore {
         bool relationIsAffectedByPseudoContent() const { return m_relationIsAffectedByPseudoContent; }
         void setRelationIsAffectedByPseudoContent() { m_relationIsAffectedByPseudoContent = true; }
 
+    private:
         unsigned m_relation           : 3; // enum Relation
         mutable unsigned m_match      : 4; // enum Match
         mutable unsigned m_pseudoType : 8; // PseudoType
-
-    private:
         mutable unsigned m_parsedNth      : 1; // Used for :nth-*
         unsigned m_isLastInSelectorList   : 1;
         unsigned m_isLastInTagHistory     : 1;

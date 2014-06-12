@@ -51,9 +51,9 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
         // This picks the widest scope, not the narrowest, to minimize the number of found scopes.
         for (const CSSSelector* current = selector; current; current = current->tagHistory()) {
             // Prefer ids over classes.
-            if (current->m_match == CSSSelector::Id)
+            if (current->match() == CSSSelector::Id)
                 scopeSelector = current;
-            else if (current->m_match == CSSSelector::Class && (!scopeSelector || scopeSelector->m_match != CSSSelector::Id))
+            else if (current->match() == CSSSelector::Class && (!scopeSelector || scopeSelector->match() != CSSSelector::Id))
                 scopeSelector = current;
             CSSSelector::Relation relation = current->relation();
             // FIXME: it would be better to use setNeedsStyleRecalc for all shadow hosts matching
@@ -65,8 +65,8 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
         }
         if (!scopeSelector)
             return false;
-        ASSERT(scopeSelector->m_match == CSSSelector::Class || scopeSelector->m_match == CSSSelector::Id);
-        if (scopeSelector->m_match == CSSSelector::Id)
+        ASSERT(scopeSelector->match() == CSSSelector::Class || scopeSelector->match() == CSSSelector::Id);
+        if (scopeSelector->match() == CSSSelector::Id)
             idScopes.add(scopeSelector->value().impl());
         else
             classScopes.add(scopeSelector->value().impl());

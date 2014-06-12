@@ -186,7 +186,7 @@ bool CSSParserSelector::isSimple() const
     if (!m_tagHistory)
         return true;
 
-    if (m_selector->m_match == CSSSelector::Tag) {
+    if (m_selector->match() == CSSSelector::Tag) {
         // We can't check against anyQName() here because namespace may not be nullAtom.
         // Example:
         //     @namespace "http://www.w3.org/2000/svg";
@@ -224,7 +224,7 @@ void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool t
     m_tagHistory = second.release();
 
     m_selector = adoptPtr(new CSSSelector(tagQName, tagIsForNamespaceRule));
-    m_selector->m_relation = CSSSelector::SubSelector;
+    m_selector->setRelation(CSSSelector::SubSelector);
 }
 
 bool CSSParserSelector::hasHostPseudoSelector() const

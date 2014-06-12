@@ -44,11 +44,11 @@ namespace WebCore {
 
 static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 {
-    if (selector.m_match == CSSSelector::Tag
-        || selector.m_match == CSSSelector::Id
+    if (selector.match() == CSSSelector::Tag
+        || selector.match() == CSSSelector::Id
         || selector.isAttributeSelector())
         return true;
-    if (selector.m_match == CSSSelector::PseudoElement) {
+    if (selector.match() == CSSSelector::PseudoElement) {
         switch (selector.pseudoType()) {
         case CSSSelector::PseudoBefore:
         case CSSSelector::PseudoAfter:
@@ -59,7 +59,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
             return selector.isCustomPseudoElement();
         }
     }
-    if (selector.m_match != CSSSelector::PseudoClass)
+    if (selector.match() != CSSSelector::PseudoClass)
         return false;
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoEmpty:
@@ -123,8 +123,8 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
     bool foundIdent = false;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
-        if (component->m_match == CSSSelector::Class || component->m_match == CSSSelector::Id
-            || (component->m_match == CSSSelector::Tag && component->tagQName().localName() != starAtom)
+        if (component->match() == CSSSelector::Class || component->match() == CSSSelector::Id
+            || (component->match() == CSSSelector::Tag && component->tagQName().localName() != starAtom)
             || component->isAttributeSelector() || component->isCustomPseudoElement()) {
             if (!foundDescendantRelation)
                 foundIdent = true;
@@ -163,11 +163,11 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
 
 void RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
-    if (selector.m_match == CSSSelector::Tag)
+    if (selector.match() == CSSSelector::Tag)
         features.tagName = selector.tagQName().localName();
-    else if (selector.m_match == CSSSelector::Id)
+    else if (selector.match() == CSSSelector::Id)
         features.id = selector.value();
-    else if (selector.m_match == CSSSelector::Class)
+    else if (selector.match() == CSSSelector::Class)
         features.classes.append(selector.value());
     else if (selector.isAttributeSelector())
         features.attributes.append(selector.attribute().localName());
@@ -186,13 +186,13 @@ RuleFeatureSet::~RuleFeatureSet()
 
 DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& selector)
 {
-    if (selector.m_match == CSSSelector::Class)
+    if (selector.match() == CSSSelector::Class)
         return &ensureClassInvalidationSet(selector.value());
     if (selector.isAttributeSelector())
         return &ensureAttributeInvalidationSet(selector.attribute().localName());
-    if (selector.m_match == CSSSelector::Id)
+    if (selector.match() == CSSSelector::Id)
         return &ensureIdInvalidationSet(selector.value());
-    if (selector.m_match == CSSSelector::PseudoClass) {
+    if (selector.match() == CSSSelector::PseudoClass) {
         CSSSelector::PseudoType pseudo = selector.pseudoType();
         if (pseudo == CSSSelector::PseudoHover || pseudo == CSSSelector::PseudoActive || pseudo == CSSSelector::PseudoFocus)
             return &ensurePseudoInvalidationSet(pseudo);

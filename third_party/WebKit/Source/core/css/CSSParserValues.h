@@ -223,8 +223,8 @@ public:
     void setValue(const AtomicString& value) { m_selector->setValue(value); }
     void setAttribute(const QualifiedName& value) { m_selector->setAttribute(value); }
     void setArgument(const AtomicString& value) { m_selector->setArgument(value); }
-    void setMatch(CSSSelector::Match value) { m_selector->m_match = value; }
-    void setRelation(CSSSelector::Relation value) { m_selector->m_relation = value; }
+    void setMatch(CSSSelector::Match value) { m_selector->setMatch(value); }
+    void setRelation(CSSSelector::Relation value) { m_selector->setRelation(value); }
     void setForPage() { m_selector->setForPage(); }
     void setRelationIsAffectedByPseudoContent() { m_selector->setRelationIsAffectedByPseudoContent(); }
     bool relationIsAffectedByPseudoContent() const { return m_selector->relationIsAffectedByPseudoContent(); }
