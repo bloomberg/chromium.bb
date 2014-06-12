@@ -463,6 +463,8 @@
         'midi/usb_midi_jack.h',
         'midi/usb_midi_output_stream.cc',
         'midi/usb_midi_output_stream.h',
+        'ozone/media_ozone_platform.cc',
+        'ozone/media_ozone_platform.h',
         'video/capture/android/video_capture_device_android.cc',
         'video/capture/android/video_capture_device_android.h',
         'video/capture/android/video_capture_device_factory_android.cc',
@@ -724,6 +726,49 @@
               ],
             }],
           ],
+        }],
+        ['use_ozone==1', {
+          'variables': {
+            'platform_list_txt_file': '<(SHARED_INTERMEDIATE_DIR)/ui/ozone/platform_list.txt',
+            'constructor_list_cc_file': '<(INTERMEDIATE_DIR)/media/ozone/constructor_list.cc',
+          },
+          'include_dirs': [
+              # Used for the generated listing header (ui/ozone/platform_list.h)
+              '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'sources': [
+            '<(constructor_list_cc_file)',
+          ],
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+          'actions': [
+            {
+              # Ozone platform objects are auto-generated using similar
+              # patterns for naming and classes constructors. Here we build the
+              # object MediaOzonePlatform.
+              'action_name': 'generate_constructor_list',
+              'variables': {
+                'generator_path': '../ui/ozone/generate_constructor_list.py',
+              },
+              'inputs': [
+                '<(generator_path)',
+                '<(platform_list_txt_file)',
+              ],
+              'outputs': [
+                '<(constructor_list_cc_file)',
+              ],
+              'action': [
+                'python',
+                '<(generator_path)',
+                '--platform_list=<(platform_list_txt_file)',
+                '--output_cc=<(constructor_list_cc_file)',
+                '--namespace=media',
+                '--typename=MediaOzonePlatform',
+                '--include="media/ozone/media_ozone_platform.h"'
+              ],
+            },
+          ]
         }],
         ['OS!="linux"', {
           'sources!': [

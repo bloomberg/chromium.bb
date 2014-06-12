@@ -10,4 +10,5 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/ozone",
 ]

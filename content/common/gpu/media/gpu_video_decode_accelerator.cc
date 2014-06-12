@@ -35,6 +35,8 @@
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "ui/gl/gl_context_glx.h"
 #include "ui/gl/gl_implementation.h"
+#elif defined(USE_OZONE)
+#include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
@@ -281,6 +283,15 @@ void GpuVideoDecodeAccelerator::Initialize(
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   video_decode_accelerator_.reset(new VaapiVideoDecodeAccelerator(
       glx_context->display(), make_context_current_));
+#elif defined(USE_OZONE)
+  media::MediaOzonePlatform* platform =
+      media::MediaOzonePlatform::GetInstance();
+  video_decode_accelerator_.reset(platform->CreateVideoDecodeAccelerator(
+      make_context_current_));
+  if (!video_decode_accelerator_) {
+    SendCreateDecoderReply(init_done_msg, false);
+    return;
+  }
 #elif defined(OS_ANDROID)
   video_decode_accelerator_.reset(new AndroidVideoDecodeAccelerator(
       stub_->decoder()->AsWeakPtr(),
