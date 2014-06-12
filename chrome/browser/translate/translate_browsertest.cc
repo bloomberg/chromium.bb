@@ -54,10 +54,6 @@ class TranslateBrowserTest : public InProcessBrowserTest {
                       base::FilePath(kTranslateRoot)),
         infobar_service_(NULL) {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    TranslateService::SetUseInfobar(true);
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ASSERT_TRUE(https_server_.Start());
     // Setup alternate security origin for testing in order to allow XHR against
@@ -127,11 +123,9 @@ class TranslateBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   net::TestURLFetcherFactory factory;
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -196,11 +190,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -231,11 +223,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
                        IgnoreRefreshMetaTagInCaseInsensitive) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -265,11 +255,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -299,11 +287,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -333,11 +319,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

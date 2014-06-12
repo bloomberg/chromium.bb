@@ -36,10 +36,6 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
   // Returns true if the new translate bubble is enabled.
   static bool IsTranslateBubbleEnabled();
 
-  // Sets whether of not the infobar UI is used. This method is intended to be
-  // used only for tests.
-  static void SetUseInfobar(bool value);
-
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:
@@ -60,10 +56,6 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
 
   // Helper class to know if it's allowed to make network resource requests.
   ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
-
-  // Whether or not the infobar is used. This is intended to be used
-  // only for testing.
-  bool use_infobar_;
 };
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_SERVICE_H_

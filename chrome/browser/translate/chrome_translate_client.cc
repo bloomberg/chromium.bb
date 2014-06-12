@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/infobars/core/infobar.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -220,7 +221,13 @@ int ChromeTranslateClient::GetInfobarIconID() const {
 }
 
 // ChromeTranslateClient::CreateInfoBar() is implemented in platform-specific
-// files.
+// files, except the TOOLKIT_VIEWS implementation, which has been removed.
+#if defined(TOOLKIT_VIEWS)
+scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    scoped_ptr<TranslateInfoBarDelegate> delegate) const {
+  return scoped_ptr<infobars::InfoBar>();
+}
+#endif
 
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);

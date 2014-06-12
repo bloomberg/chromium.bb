@@ -1865,9 +1865,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 
 // http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
+  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  if (TranslateService::IsTranslateBubbleEnabled())
+    return;
+
   test::ScopedCLDDynamicDataHarness dynamic_data_scope;
   ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
-  TranslateService::SetUseInfobar(true);
 
   // Verifies that translate can be forced enabled or disabled by policy.
 

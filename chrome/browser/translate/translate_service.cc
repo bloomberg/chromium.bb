@@ -26,7 +26,7 @@ namespace {
 TranslateService* g_translate_service = NULL;
 }
 
-TranslateService::TranslateService() : use_infobar_(false) {
+TranslateService::TranslateService() {
   resource_request_allowed_notifier_.Init(this);
 }
 
@@ -90,22 +90,15 @@ void TranslateService::OnResourceRequestsAllowed() {
 // static
 bool TranslateService::IsTranslateBubbleEnabled() {
 #if defined(USE_AURA)
-  Initialize();
-  return !g_translate_service->use_infobar_;
+  return true;
 #elif defined(OS_MACOSX)
   // The bubble UX is experimental on Mac OS X.
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTranslateNewUX);
 #else
-  // The bubble UX is not implemented on the non-Aura platforms.
+  // The bubble UX is not implemented on other platforms.
   return false;
 #endif
-}
-
-// static
-void TranslateService::SetUseInfobar(bool value) {
-  Initialize();
-  g_translate_service->use_infobar_ = value;
 }
 
 // static
