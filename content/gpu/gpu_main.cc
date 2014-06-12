@@ -66,8 +66,18 @@ namespace content {
 
 namespace {
 
+void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
+                               const CommandLine& command_line);
 bool WarmUpSandbox(const CommandLine& command_line);
+
+#if !defined(OS_MACOSX)
+bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info);
+#endif
+
 #if defined(OS_LINUX)
+#if !defined(OS_CHROMEOS)
+bool CanAccessNvidiaDeviceFile();
+#endif
 bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*, bool);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
@@ -201,22 +211,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   gpu::GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
-  DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
-         command_line.HasSwitch(switches::kGpuDeviceID) &&
-         command_line.HasSwitch(switches::kGpuDriverVersion));
-  bool success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuVendorID),
-      &gpu_info.gpu.vendor_id);
-  DCHECK(success);
-  success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
-      &gpu_info.gpu.device_id);
-  DCHECK(success);
-  gpu_info.driver_vendor =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
-  gpu_info.driver_version =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
-  GetContentClient()->SetGpuInfo(gpu_info);
+  GetGpuInfoFromCommandLine(gpu_info, command_line);
 
   base::TimeDelta collect_context_time;
   base::TimeDelta initialize_one_off_time;
@@ -273,20 +268,8 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::TimeTicks before_collect_context_graphics_info =
           base::TimeTicks::Now();
 #if !defined(OS_MACOSX)
-      gpu::CollectInfoResult result =
-          gpu::CollectContextGraphicsInfo(&gpu_info);
-      switch (result) {
-        case gpu::kCollectInfoFatalFailure:
-          LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
-          dead_on_arrival = true;
-          break;
-        case gpu::kCollectInfoNonFatalFailure:
-          VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
-          break;
-        case gpu::kCollectInfoSuccess:
-          break;
-      }
-      GetContentClient()->SetGpuInfo(gpu_info);
+      if (!CollectGraphicsInfo(gpu_info))
+        dead_on_arrival = true;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
       // Recompute gpu driver bug workarounds - this is specifically useful
@@ -301,19 +284,15 @@ int GpuMain(const MainFunctionParams& parameters) {
       initialized_gl_context = true;
 #if !defined(OS_CHROMEOS)
       if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
-          gpu_info.driver_vendor == "NVIDIA") {
-        base::ThreadRestrictions::AssertIOAllowed();
-        if (access("/dev/nvidiactl", R_OK) != 0) {
-          VLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
-          dead_on_arrival = true;
-        }
-      }
+          gpu_info.driver_vendor == "NVIDIA" &&
+          !CanAccessNvidiaDeviceFile())
+        dead_on_arrival = true;
 #endif  // !defined(OS_CHROMEOS)
 #endif  // defined(OS_LINUX)
 #endif  // !defined(OS_MACOSX)
       collect_context_time =
           base::TimeTicks::Now() - before_collect_context_graphics_info;
-    } else {
+    } else {  // gl_initialized
       VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
       dead_on_arrival = true;
     }
@@ -384,7 +363,69 @@ int GpuMain(const MainFunctionParams& parameters) {
 
 namespace {
 
+void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
+                               const CommandLine& command_line) {
+  DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
+         command_line.HasSwitch(switches::kGpuDeviceID) &&
+         command_line.HasSwitch(switches::kGpuDriverVersion));
+  bool success = base::HexStringToUInt(
+      command_line.GetSwitchValueASCII(switches::kGpuVendorID),
+      &gpu_info.gpu.vendor_id);
+  DCHECK(success);
+  success = base::HexStringToUInt(
+      command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
+      &gpu_info.gpu.device_id);
+  DCHECK(success);
+  gpu_info.driver_vendor =
+      command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
+  gpu_info.driver_version =
+      command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
+  GetContentClient()->SetGpuInfo(gpu_info);
+}
+
+bool WarmUpSandbox(const CommandLine& command_line) {
+  {
+    TRACE_EVENT0("gpu", "Warm up rand");
+    // Warm up the random subsystem, which needs to be done pre-sandbox on all
+    // platforms.
+    (void) base::RandUint64();
+  }
+  return true;
+}
+
+#if !defined(OS_MACOSX)
+bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
+  bool res = true;
+  gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
+  switch (result) {
+    case gpu::kCollectInfoFatalFailure:
+      LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
+      res = false;
+      break;
+    case gpu::kCollectInfoNonFatalFailure:
+      VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+      break;
+    case gpu::kCollectInfoSuccess:
+      break;
+  }
+  GetContentClient()->SetGpuInfo(gpu_info);
+  return res;
+}
+#endif
+
 #if defined(OS_LINUX)
+#if !defined(OS_CHROMEOS)
+bool CanAccessNvidiaDeviceFile() {
+  bool res = true;
+  base::ThreadRestrictions::AssertIOAllowed();
+  if (access("/dev/nvidiactl", R_OK) != 0) {
+    VLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
+    res = false;
+  }
+  return res;
+}
+#endif
+
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size()));
@@ -409,19 +450,7 @@ void CreateDummyGlContext() {
     VLOG(1)  << "gfx::GLContext::MakeCurrent failed";
   }
 }
-#endif
 
-bool WarmUpSandbox(const CommandLine& command_line) {
-  {
-    TRACE_EVENT0("gpu", "Warm up rand");
-    // Warm up the random subsystem, which needs to be done pre-sandbox on all
-    // platforms.
-    (void) base::RandUint64();
-  }
-  return true;
-}
-
-#if defined(OS_LINUX)
 void WarmUpSandboxNvidia(const gpu::GPUInfo& gpu_info,
                          bool should_initialize_gl_context) {
   // We special case Optimus since the vendor_id we see may not be Nvidia.
