@@ -1758,9 +1758,9 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(
   return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
-gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
+const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

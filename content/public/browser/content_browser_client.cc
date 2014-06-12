@@ -105,7 +105,7 @@ std::string ContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
   return std::string();
 }
 
-gfx::ImageSkia* ContentBrowserClient::GetDefaultFavicon() {
+const gfx::ImageSkia* ContentBrowserClient::GetDefaultFavicon() {
   static gfx::ImageSkia* empty = new gfx::ImageSkia();
   return empty;
 }

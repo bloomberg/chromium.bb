@@ -742,8 +742,9 @@ gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
   if (!icon.isNull())
     return icon;
 
-  static gfx::ImageSkia* default_icon = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  static const gfx::ImageSkia* default_icon =
+      ResourceBundle::GetSharedInstance().
+      GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
   return *default_icon;
 }
 

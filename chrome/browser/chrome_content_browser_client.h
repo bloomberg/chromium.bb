@@ -134,7 +134,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual std::string GetAcceptLangs(
       content::BrowserContext* context) OVERRIDE;
-  virtual gfx::ImageSkia* GetDefaultFavicon() OVERRIDE;
+  virtual const gfx::ImageSkia* GetDefaultFavicon() OVERRIDE;
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
                              content::ResourceContext* context) OVERRIDE;

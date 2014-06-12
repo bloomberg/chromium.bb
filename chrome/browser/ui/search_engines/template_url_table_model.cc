@@ -36,7 +36,7 @@ static const int kExtensionGroupID = 2;
 // ModelEntry also tracks state information about the URL.
 
 // Icon used while loading, or if a specific favicon can't be found.
-static gfx::ImageSkia* default_icon = NULL;
+static const gfx::ImageSkia* default_icon = NULL;
 
 class ModelEntry {
  public:
@@ -46,7 +46,7 @@ class ModelEntry {
         model_(model) {
     if (!default_icon) {
       default_icon = ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+          GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
     }
   }
 

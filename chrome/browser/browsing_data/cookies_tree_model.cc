@@ -883,12 +883,12 @@ CookiesTreeModel::~CookiesTreeModel() {
 // Returns the set of icons for the nodes in the tree. You only need override
 // this if you don't want to use the default folder icons.
 void CookiesTreeModel::GetIcons(std::vector<gfx::ImageSkia>* icons) {
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_DEFAULT_FAVICON));
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_COOKIE_ICON));
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_COOKIE_STORAGE_ICON));
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_DEFAULT_FAVICON).ToImageSkia());
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_COOKIE_ICON).ToImageSkia());
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_COOKIE_STORAGE_ICON).ToImageSkia());
 }
 
 // Returns the index of the icon to use for |node|. Return -1 to use the
