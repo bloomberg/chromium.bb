@@ -20,6 +20,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.gsd_storage
 import pynacl.hashing_tools
+import pynacl.log_tools
 import pynacl.platform
 import pynacl.repo_tools
 
@@ -641,6 +642,8 @@ def main(argv):
     parser.print_help()
     print 'The rest of the arguments are generic, in toolchain_main.py'
     return 1
+
+  pynacl.log_tools.SetupLogging(options.verbose)
 
   if options.llvm:
     ARCHES.append('pnacl')
