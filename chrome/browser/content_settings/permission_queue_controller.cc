@@ -153,12 +153,6 @@ void PermissionQueueController::CreateInfoBarRequest(
     PermissionDecidedCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // We shouldn't get duplicate requests.
-  for (PendingInfobarRequests::const_iterator i(
-           pending_infobar_requests_.begin());
-       i != pending_infobar_requests_.end(); ++i)
-    DCHECK(!i->id().Equals(id));
-
   pending_infobar_requests_.push_back(PendingInfobarRequest(
       type_, id, requesting_frame, embedder,
       accept_button_label, callback));
@@ -189,7 +183,6 @@ void PermissionQueueController::OnPermissionSet(
     bool update_content_setting,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
   if (update_content_setting)
     UpdateContentSetting(requesting_frame, embedder, allowed);
 
@@ -197,28 +190,29 @@ void PermissionQueueController::OnPermissionSet(
   // is this order important?
   PendingInfobarRequests requests_to_notify;
   PendingInfobarRequests infobars_to_remove;
+  std::vector<PendingInfobarRequests::iterator> pending_requests_to_remove;
   for (PendingInfobarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end(); ) {
-    if (i->IsForPair(requesting_frame, embedder)) {
-      requests_to_notify.push_back(*i);
-      if (i->id().Equals(id)) {
-        // The infobar that called us is i->infobar(), and its delegate is
-        // currently in either Accept() or Cancel(). This means that
-        // RemoveInfoBar() will be called later on, and that will trigger a
-        // notification we're observing.
-        ++i;
-      } else if (i->has_infobar()) {
-        // This infobar is for the same frame/embedder pair, but in a different
-        // tab. We should remove it now that we've got an answer for it.
-        infobars_to_remove.push_back(*i);
-        ++i;
-      } else {
-        // We haven't created an infobar yet, just remove the pending request.
-        i = pending_infobar_requests_.erase(i);
-      }
-    } else {
-      ++i;
+       i != pending_infobar_requests_.end(); ++i) {
+    if (!i->IsForPair(requesting_frame, embedder))
+      continue;
+    requests_to_notify.push_back(*i);
+    if (!i->has_infobar()) {
+      // We haven't created an infobar yet, just record the pending request
+      // index and remove it later.
+      pending_requests_to_remove.push_back(i);
+      continue;
     }
+    if (i->id().Equals(id)) {
+      // The infobar that called us is i->infobar(), and its delegate is
+      // currently in either Accept() or Cancel(). This means that
+      // RemoveInfoBar() will be called later on, and that will trigger a
+      // notification we're observing.
+      continue;
+    }
+
+    // This infobar is for the same frame/embedder pair, but in a different
+    // tab. We should remove it now that we've got an answer for it.
+    infobars_to_remove.push_back(*i);
   }
 
   // Remove all infobars for the same |requesting_frame| and |embedder|.
@@ -230,6 +224,10 @@ void PermissionQueueController::OnPermissionSet(
   for (PendingInfobarRequests::iterator i = requests_to_notify.begin();
        i != requests_to_notify.end(); ++i)
     i->RunCallback(allowed);
+
+  // Remove the pending requests in reverse order.
+  for (int i = pending_requests_to_remove.size() - 1; i >= 0; --i)
+    pending_infobar_requests_.erase(pending_requests_to_remove[i]);
 }
 
 void PermissionQueueController::Observe(
