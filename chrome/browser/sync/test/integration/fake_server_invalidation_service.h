@@ -16,10 +16,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace invalidation {
 class InvalidationLogger;
 }
@@ -32,8 +28,6 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
  public:
   FakeServerInvalidationService();
   virtual ~FakeServerInvalidationService();
-
-  static KeyedService* Build(content::BrowserContext* context);
 
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;

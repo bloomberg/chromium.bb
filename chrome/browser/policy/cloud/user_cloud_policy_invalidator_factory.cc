@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
 
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -28,7 +28,7 @@ UserCloudPolicyInvalidatorFactory::UserCloudPolicyInvalidatorFactory()
     : BrowserContextKeyedServiceFactory(
           "UserCloudPolicyInvalidator",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
+  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
 #else

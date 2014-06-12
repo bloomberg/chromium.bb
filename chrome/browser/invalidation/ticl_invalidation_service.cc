@@ -69,6 +69,12 @@ TiclInvalidationService::TiclInvalidationService(
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK(CalledOnValidThread());
+  settings_provider_->RemoveObserver(this);
+  identity_provider_->RemoveActiveAccountRefreshTokenObserver(this);
+  identity_provider_->RemoveObserver(this);
+  if (IsStarted()) {
+    StopInvalidator();
+  }
 }
 
 void TiclInvalidationService::Init(
@@ -300,18 +306,6 @@ void TiclInvalidationService::OnIncomingInvalidation(
 }
 
 std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
-
-void TiclInvalidationService::Shutdown() {
-  DCHECK(CalledOnValidThread());
-  settings_provider_->RemoveObserver(this);
-  identity_provider_->RemoveActiveAccountRefreshTokenObserver(this);
-  identity_provider_->RemoveObserver(this);
-  if (IsStarted()) {
-    StopInvalidator();
-  }
-  invalidation_state_tracker_.reset();
-  invalidator_registrar_.reset();
-}
 
 bool TiclInvalidationService::IsReadyToStart() {
   if (identity_provider_->GetActiveAccountId().empty()) {

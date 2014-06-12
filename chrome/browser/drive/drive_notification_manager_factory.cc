@@ -6,10 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace drive {
@@ -28,7 +29,7 @@ DriveNotificationManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
-  if (!invalidation::InvalidationServiceFactory::GetForProfile(
+  if (!invalidation::ProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromBrowserContext(context))) {
     // Do not create a DriveNotificationManager for |context|s that do not
     // support invalidation.
@@ -50,18 +51,20 @@ DriveNotificationManagerFactory::DriveNotificationManagerFactory()
         "DriveNotificationManager",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
-  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
+  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
 }
 
 DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
 KeyedService* DriveNotificationManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromBrowserContext(context));
-  DCHECK(invalidation_service);
-  return new DriveNotificationManager(invalidation_service);
+  DCHECK(invalidation_provider);
+  DCHECK(invalidation_provider->GetInvalidationService());
+  return new DriveNotificationManager(
+      invalidation_provider->GetInvalidationService());
 }
 
 }  // namespace drive

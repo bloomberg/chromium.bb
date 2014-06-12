@@ -20,11 +20,6 @@ FakeInvalidationService::FakeInvalidationService()
 FakeInvalidationService::~FakeInvalidationService() {
 }
 
-// static
-KeyedService* FakeInvalidationService::Build(content::BrowserContext* context) {
-  return new FakeInvalidationService();
-}
-
 void FakeInvalidationService::RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) {
   invalidator_registrar_.RegisterHandler(handler);

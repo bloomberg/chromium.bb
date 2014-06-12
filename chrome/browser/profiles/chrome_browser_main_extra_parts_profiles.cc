@@ -17,7 +17,7 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -186,7 +186,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
   HotwordServiceFactory::GetInstance();
-  invalidation::InvalidationServiceFactory::GetInstance();
+  invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();
 #if defined(ENABLE_SERVICE_DISCOVERY)
   local_discovery::PrivetNotificationServiceFactory::GetInstance();

@@ -5,10 +5,11 @@
 #include "chrome/browser/ui/webui/invalidations_message_handler.h"
 
 #include "base/bind.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/invalidation/invalidation_logger.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "content/public/browser/web_ui.h"
 #include "sync/notifier/invalidation_handler.h"
 
@@ -40,11 +41,13 @@ void InvalidationsMessageHandler::RegisterMessages() {
 }
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
-  if (invalidation_service)
-    logger_ = invalidation_service->GetInvalidationLogger();
+  if (invalidation_provider) {
+    logger_ = invalidation_provider->GetInvalidationService()->
+        GetInvalidationLogger();
+  }
   if (logger_ && !logger_->IsObserverRegistered(this))
     logger_->RegisterObserver(this);
   UpdateContent(args);
@@ -52,13 +55,13 @@ void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
 
 void InvalidationsMessageHandler::HandleRequestDetailedStatus(
     const base::ListValue* args) {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
-  if (invalidation_service) {
-    invalidation_service->RequestDetailedStatus(base::Bind(
-        &InvalidationsMessageHandler::OnDetailedStatus,
-        weak_ptr_factory_.GetWeakPtr()));
+  if (invalidation_provider) {
+    invalidation_provider->GetInvalidationService()->RequestDetailedStatus(
+        base::Bind(&InvalidationsMessageHandler::OnDetailedStatus,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

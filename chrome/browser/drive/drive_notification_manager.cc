@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "components/invalidation/invalidation_service.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/notifier/object_id_invalidation_map.h"

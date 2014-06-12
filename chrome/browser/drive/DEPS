@@ -11,13 +11,9 @@ include_rules = [
 # directory. crbug.com/257943
 specific_include_rules = {
   "drive_notification_manager_factory\.cc": [
-    "!chrome/browser/invalidation/invalidation_service_factory.h",
+    "!chrome/browser/invalidation/profile_invalidation_provider_factory.h",
     "!chrome/browser/profiles/profile.h",
     "!chrome/browser/sync/profile_sync_service.h",
     "!chrome/browser/sync/profile_sync_service_factory.h",
-  ],
-  "drive_notification_manager\.cc": [
-    "!chrome/browser/invalidation/invalidation_service_factory.h",
-    "!chrome/browser/profiles/profile.h",
   ],
 }

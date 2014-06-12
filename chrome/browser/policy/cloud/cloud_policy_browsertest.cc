@@ -16,13 +16,16 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -63,11 +66,22 @@ using testing::Mock;
 using testing::Return;
 using testing::_;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace em = enterprise_management;
 
 namespace policy {
 
 namespace {
+
+KeyedService* BuildFakeProfileInvalidationProvider(
+    content::BrowserContext* context) {
+  return new invalidation::ProfileInvalidationProvider(
+      scoped_ptr<invalidation::InvalidationService>(
+          new invalidation::FakeInvalidationService));
+}
 
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
@@ -174,8 +188,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
 
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        RegisterTestingFactory(invalidation::FakeInvalidationService::Build);
+    invalidation::ProfileInvalidationProviderFactory::GetInstance()->
+        RegisterTestingFactory(BuildFakeProfileInvalidationProvider);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -255,8 +269,9 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
   invalidation::FakeInvalidationService* GetInvalidationService() {
     return static_cast<invalidation::FakeInvalidationService*>(
-        invalidation::InvalidationServiceFactory::GetForProfile(
-            browser()->profile()));
+        static_cast<invalidation::ProfileInvalidationProvider*>(
+            invalidation::ProfileInvalidationProviderFactory::GetInstance()->
+                GetForProfile(browser()->profile()))->GetInvalidationService());
   }
 
   void SetServerPolicy(const std::string& policy) {

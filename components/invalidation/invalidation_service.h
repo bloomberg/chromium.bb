@@ -6,7 +6,6 @@
 #define COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_H_
 
 #include "base/callback_forward.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/notifier/invalidation_util.h"
 
@@ -64,12 +63,10 @@ class InvalidationLogger;
 // NOTE(akalin): Invalidations that come in during browser shutdown may get
 // dropped.  This won't matter once we have an Acknowledge API, though: see
 // http://crbug.com/78462 and http://crbug.com/124149.
-//
-// This class inherits from ProfileKeyedService to make it possible to correctly
-// cast from various InvalidationService implementations to ProfileKeyedService
-// in InvalidationServiceFactory.
-class InvalidationService : public KeyedService {
+class InvalidationService {
  public:
+  virtual ~InvalidationService() {}
+
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.
   //
@@ -112,9 +109,6 @@ class InvalidationService : public KeyedService {
 
   // Returns the identity provider.
   virtual IdentityProvider* GetIdentityProvider() = 0;
-
- protected:
-  virtual ~InvalidationService() { }
 };
 
 }  // namespace invalidation

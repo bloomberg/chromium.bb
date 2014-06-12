@@ -30,7 +30,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,6 +64,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -685,9 +686,14 @@ void ProfileSyncService::StartUpSlowBackendComponents(
       base::FilePath(kSyncDataFolderName) :
       base::FilePath(kSyncBackupDataFolderName);
 
-  invalidation::InvalidationService* invalidator = backend_mode_ == SYNC ?
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_) :
-      NULL;
+  invalidation::InvalidationService* invalidator = NULL;
+  if (backend_mode_ == SYNC) {
+    invalidation::ProfileInvalidationProvider* provider =
+        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+            profile_);
+    if (provider)
+      invalidator = provider->GetInvalidationService();
+  }
 
   backend_.reset(
       factory_->CreateSyncBackendHost(

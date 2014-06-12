@@ -34,6 +34,8 @@
         'invalidation/invalidator_registrar.h',
         'invalidation/invalidator_storage.cc',
         'invalidation/invalidator_storage.h',
+        'invalidation/profile_invalidation_provider.cc',
+        'invalidation/profile_invalidation_provider.h',
         'invalidation/ticl_settings_provider.cc',
         'invalidation/ticl_settings_provider.h',
       ],

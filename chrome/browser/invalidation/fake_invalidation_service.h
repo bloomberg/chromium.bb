@@ -16,10 +16,6 @@
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "sync/notifier/mock_ack_handler.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace syncer {
 class Invalidation;
 }
@@ -34,8 +30,6 @@ class FakeInvalidationService : public InvalidationService {
  public:
   FakeInvalidationService();
   virtual ~FakeInvalidationService();
-
-  static KeyedService* Build(content::BrowserContext* context);
 
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;

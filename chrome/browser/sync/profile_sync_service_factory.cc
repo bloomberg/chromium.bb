@@ -11,7 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -65,7 +65,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
-  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
+  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());

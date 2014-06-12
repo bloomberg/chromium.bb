@@ -22,7 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -50,9 +50,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/invalidation_switches.h"
 #include "components/invalidation/p2p_invalidation_service.h"
 #include "components/invalidation/p2p_invalidator.h"
+#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -81,7 +84,6 @@
 #endif
 
 using content::BrowserThread;
-using invalidation::InvalidationServiceFactory;
 
 namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
@@ -142,27 +144,36 @@ void SetProxyConfigCallback(
   done->Signal();
 }
 
-KeyedService* BuildP2PInvalidationService(
+KeyedService* BuildFakeServerProfileInvalidationProvider(
+    content::BrowserContext* context) {
+  return new invalidation::ProfileInvalidationProvider(
+      scoped_ptr<invalidation::InvalidationService>(
+          new fake_server::FakeServerInvalidationService));
+}
+
+KeyedService* BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
-  return new invalidation::P2PInvalidationService(
-      scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
-          SigninManagerFactory::GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          LoginUIServiceFactory::GetForProfile(profile))),
-      profile->GetRequestContext(),
-      notification_target);
+  return new invalidation::ProfileInvalidationProvider(
+      scoped_ptr<invalidation::InvalidationService>(
+          new invalidation::P2PInvalidationService(
+              scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+                  SigninManagerFactory::GetForProfile(profile),
+                  ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+                  LoginUIServiceFactory::GetForProfile(profile))),
+              profile->GetRequestContext(),
+              notification_target)));
 }
 
-KeyedService* BuildSelfNotifyingP2PInvalidationService(
+KeyedService* BuildSelfNotifyingP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return BuildP2PInvalidationService(context, syncer::NOTIFY_ALL);
+  return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_ALL);
 }
 
-KeyedService* BuildRealisticP2PInvalidationService(
+KeyedService* BuildRealisticP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return BuildP2PInvalidationService(context, syncer::NOTIFY_OTHERS);
+  return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_OTHERS);
 }
 
 }  // namespace
@@ -401,9 +412,12 @@ void SyncTest::InitializeInvalidations(int index) {
     CHECK(fake_server_.get());
     fake_server::FakeServerInvalidationService* invalidation_service =
         static_cast<fake_server::FakeServerInvalidationService*>(
-            InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                GetProfile(index),
-                fake_server::FakeServerInvalidationService::Build));
+            static_cast<invalidation::ProfileInvalidationProvider*>(
+                invalidation::ProfileInvalidationProviderFactory::
+                    GetInstance()->SetTestingFactoryAndUse(
+                        GetProfile(index),
+                        BuildFakeServerProfileInvalidationProvider))->
+                            GetInvalidationService());
     fake_server_->AddObserver(invalidation_service);
     if (TestUsesSelfNotifications()) {
       invalidation_service->EnableSelfNotifications();
@@ -414,11 +428,14 @@ void SyncTest::InitializeInvalidations(int index) {
   } else {
     invalidation::P2PInvalidationService* p2p_invalidation_service =
         static_cast<invalidation::P2PInvalidationService*>(
-            InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                GetProfile(index),
-                TestUsesSelfNotifications() ?
-                    BuildSelfNotifyingP2PInvalidationService
-                    : BuildRealisticP2PInvalidationService));
+            static_cast<invalidation::ProfileInvalidationProvider*>(
+                invalidation::ProfileInvalidationProviderFactory::
+                    GetInstance()->SetTestingFactoryAndUse(
+                        GetProfile(index),
+                        TestUsesSelfNotifications() ?
+                            BuildSelfNotifyingP2PProfileInvalidationProvider :
+                            BuildRealisticP2PProfileInvalidationProvider))->
+                                GetInvalidationService());
     p2p_invalidation_service->UpdateCredentials(username_, password_);
     // Start listening for and emitting notifications of commits.
     invalidation_forwarders_[index] =

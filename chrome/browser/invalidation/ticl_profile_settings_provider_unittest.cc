@@ -63,7 +63,7 @@ void TiclProfileSettingsProviderTest::SetUp() {
 }
 
 void TiclProfileSettingsProviderTest::TearDown() {
-  invalidation_service_->Shutdown();
+  invalidation_service_.reset();
 }
 
 TiclInvalidationService::InvalidationNetworkChannel

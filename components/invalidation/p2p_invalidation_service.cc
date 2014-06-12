@@ -41,10 +41,6 @@ void P2PInvalidationService::UpdateCredentials(const std::string& username,
   invalidator_->UpdateCredentials(username, password);
 }
 
-void P2PInvalidationService::Shutdown() {
-  invalidator_.reset();
-}
-
 void P2PInvalidationService::RegisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
   invalidator_->RegisterHandler(handler);

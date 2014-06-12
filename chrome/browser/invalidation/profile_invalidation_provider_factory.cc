@@ -1,14 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/invalidation/fake_invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_android.h"
 #include "chrome/browser/invalidation/ticl_invalidation_service.h"
 #include "chrome/browser/invalidation/ticl_profile_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/invalidator_storage.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/ticl_settings_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -31,6 +30,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
+#include "chrome/browser/invalidation/invalidation_service_android.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -45,7 +45,7 @@
 namespace invalidation {
 
 // static
-InvalidationService* InvalidationServiceFactory::GetForProfile(
+ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
     Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Using ProfileHelper::GetSigninProfile() here would lead to an infinite loop
@@ -60,16 +60,17 @@ InvalidationService* InvalidationServiceFactory::GetForProfile(
     return NULL;
   }
 #endif
-  return static_cast<InvalidationService*>(
+  return static_cast<ProfileInvalidationProvider*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-InvalidationServiceFactory* InvalidationServiceFactory::GetInstance() {
-  return Singleton<InvalidationServiceFactory>::get();
+ProfileInvalidationProviderFactory*
+ProfileInvalidationProviderFactory::GetInstance() {
+  return Singleton<ProfileInvalidationProviderFactory>::get();
 }
 
-InvalidationServiceFactory::InvalidationServiceFactory()
+ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
     : BrowserContextKeyedServiceFactory(
         "InvalidationService",
         BrowserContextDependencyManager::GetInstance()),
@@ -82,14 +83,15 @@ InvalidationServiceFactory::InvalidationServiceFactory()
 #endif
 }
 
-InvalidationServiceFactory::~InvalidationServiceFactory() {}
+ProfileInvalidationProviderFactory::~ProfileInvalidationProviderFactory() {
+}
 
-void InvalidationServiceFactory::RegisterTestingFactory(
+void ProfileInvalidationProviderFactory::RegisterTestingFactory(
     TestingFactoryFunction testing_factory) {
   testing_factory_ = testing_factory;
 }
 
-KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
+KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
@@ -97,8 +99,9 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
     return testing_factory_(context);
 
 #if defined(OS_ANDROID)
-  return new InvalidationServiceAndroid(profile,
-                                        new InvalidationControllerAndroid());
+  return new ProfileInvalidationProvider(scoped_ptr<InvalidationService>(
+      new InvalidationServiceAndroid(profile,
+                                     new InvalidationControllerAndroid())));
 #else
 
   scoped_ptr<IdentityProvider> identity_provider;
@@ -121,19 +124,20 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
         LoginUIServiceFactory::GetForProfile(profile)));
   }
 
-  TiclInvalidationService* service = new TiclInvalidationService(
+  scoped_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       identity_provider.Pass(),
       scoped_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(profile)),
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-      profile->GetRequestContext());
+      profile->GetRequestContext()));
   service->Init(scoped_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
-  return service;
+
+  return new ProfileInvalidationProvider(service.PassAs<InvalidationService>());
 #endif
 }
 
-void InvalidationServiceFactory::RegisterProfilePrefs(
+void ProfileInvalidationProviderFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kInvalidationServiceUseGCMChannel,

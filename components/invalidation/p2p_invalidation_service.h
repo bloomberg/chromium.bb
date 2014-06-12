@@ -27,9 +27,8 @@ class InvalidationLogger;
 // This service is a wrapper around P2PInvalidator.  Unlike other
 // InvalidationServices, it can both send and receive invalidations.  It is used
 // only in tests, where we're unable to connect to a real invalidations server.
-class P2PInvalidationService
-    : public base::NonThreadSafe,
-      public InvalidationService {
+class P2PInvalidationService : public base::NonThreadSafe,
+                               public InvalidationService {
  public:
   P2PInvalidationService(
       scoped_ptr<IdentityProvider> identity_provider,
@@ -37,11 +36,8 @@ class P2PInvalidationService
       syncer::P2PNotificationTarget notification_target);
   virtual ~P2PInvalidationService();
 
-  // Overrides KeyedService method.
-  virtual void Shutdown() OVERRIDE;
-
   // InvalidationService implementation.
-  // It is an error to have registered handlers when Shutdown() is called.
+  // It is an error to have registered handlers when the service is destroyed.
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(

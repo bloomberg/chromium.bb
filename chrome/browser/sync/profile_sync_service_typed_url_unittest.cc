@@ -25,7 +25,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -45,6 +45,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
@@ -71,6 +73,10 @@ using testing::DoAll;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::_;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace {
 
@@ -118,6 +124,13 @@ class HistoryServiceMock : public HistoryService {
  private:
   virtual ~HistoryServiceMock() {}
 };
+
+KeyedService* BuildFakeProfileInvalidationProvider(
+    content::BrowserContext* context) {
+  return new invalidation::ProfileInvalidationProvider(
+      scoped_ptr<invalidation::InvalidationService>(
+          new invalidation::FakeInvalidationService));
+}
 
 KeyedService* BuildHistoryService(content::BrowserContext* profile) {
   return new HistoryServiceMock(NULL, static_cast<Profile*>(profile));
@@ -208,8 +221,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         0,
         std::string(),
         testing_factories);
-    invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
-        profile_, invalidation::FakeInvalidationService::Build);
+    invalidation::ProfileInvalidationProviderFactory::GetInstance()->
+        SetTestingFactory(profile_, BuildFakeProfileInvalidationProvider);
     history_backend_ = new HistoryBackendMock();
     history_service_ = static_cast<HistoryServiceMock*>(
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(

@@ -53,7 +53,6 @@ class TiclInvalidationServiceTestDelegate {
   TiclInvalidationServiceTestDelegate() {}
 
   ~TiclInvalidationServiceTestDelegate() {
-    DestroyInvalidationService();
   }
 
   void CreateInvalidationService() {
@@ -83,7 +82,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void DestroyInvalidationService() {
-    invalidation_service_->Shutdown();
+    invalidation_service_.reset();
   }
 
   void TriggerOnInvalidatorStateChange(syncer::InvalidatorState state) {

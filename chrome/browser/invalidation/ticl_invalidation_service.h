@@ -70,7 +70,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
       scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker);
 
   // InvalidationService implementation.
-  // It is an error to have registered handlers when Shutdown() is called.
+  // It is an error to have registered handlers when the service is destroyed.
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(
@@ -112,9 +112,6 @@ class TiclInvalidationService : public base::NonThreadSafe,
   virtual void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
   virtual std::string GetOwnerName() const OVERRIDE;
-
-  // Overrides KeyedService method.
-  virtual void Shutdown() OVERRIDE;
 
  protected:
   // Initializes with an injected invalidator.

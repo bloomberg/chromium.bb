@@ -11,13 +11,15 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/invalidation/fake_invalidator.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,7 +28,9 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::_;
 
-using invalidation::InvalidationServiceFactory;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -37,6 +41,13 @@ invalidation::ObjectId ExtensionAndSubchannelToObjectId(
   return invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
       base::StringPrintf("U/%s/%d", extension_id.c_str(), subchannel_id));
+}
+
+KeyedService* BuildFakeProfileInvalidationProvider(
+    content::BrowserContext* context) {
+  return new invalidation::ProfileInvalidationProvider(
+      scoped_ptr<invalidation::InvalidationService>(
+          new invalidation::FakeInvalidationService));
 }
 
 class MockInvalidationMapper : public PushMessagingInvalidationMapper {
@@ -66,8 +77,8 @@ class PushMessagingApiTest : public ExtensionApiTest {
   }
 
   virtual void SetUp() OVERRIDE {
-    InvalidationServiceFactory::GetInstance()->RegisterTestingFactory(
-        invalidation::FakeInvalidationService::Build);
+    invalidation::ProfileInvalidationProviderFactory::GetInstance()->
+        RegisterTestingFactory(BuildFakeProfileInvalidationProvider);
     ExtensionApiTest::SetUp();
   }
 
@@ -75,8 +86,10 @@ class PushMessagingApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     fake_invalidation_service_ =
         static_cast<invalidation::FakeInvalidationService*>(
-            InvalidationServiceFactory::GetInstance()->GetForProfile(
-                profile()));
+            static_cast<invalidation::ProfileInvalidationProvider*>(
+                invalidation::ProfileInvalidationProviderFactory::
+                    GetInstance()->GetForProfile(profile()))->
+                        GetInvalidationService());
   }
 
   void EmitInvalidation(

@@ -16,12 +16,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/push_messaging.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/profile_invalidation_provider.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,16 +105,17 @@ bool PushMessagingGetChannelIdFunction::RunAsync() {
   // Balanced in ReportResult()
   AddRef();
 
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
-  if (!invalidation_service) {
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+          GetProfile());
+  if (!invalidation_provider) {
     error_ = kAPINotAvailableForUser;
     ReportResult(std::string(), error_);
     return false;
   }
 
   IdentityProvider* identity_provider =
-      invalidation_service->GetIdentityProvider();
+      invalidation_provider->GetInvalidationService()->GetIdentityProvider();
   if (!identity_provider->GetTokenService()->RefreshTokenIsAvailable(
           identity_provider->GetActiveAccountId())) {
     if (interactive_ && identity_provider->RequestLogin()) {
@@ -133,11 +135,12 @@ bool PushMessagingGetChannelIdFunction::RunAsync() {
 }
 
 void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
-  CHECK(invalidation_service);
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+          GetProfile());
+  CHECK(invalidation_provider);
   IdentityProvider* identity_provider =
-      invalidation_service->GetIdentityProvider();
+      invalidation_provider->GetInvalidationService()->GetIdentityProvider();
 
   std::vector<std::string> scope_vector =
       extensions::ObfuscatedGaiaIdFetcher::GetScopes();
@@ -149,10 +152,11 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
 
 void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
-  CHECK(invalidation_service);
-  invalidation_service->GetIdentityProvider()->
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+          GetProfile());
+  CHECK(invalidation_provider);
+  invalidation_provider->GetInvalidationService()->GetIdentityProvider()->
       RemoveActiveAccountRefreshTokenObserver(this);
   DVLOG(2) << "Newly logged in: " << GetProfile()->GetProfileName();
   StartAccessTokenFetch();
@@ -271,11 +275,12 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED: {
-      invalidation::InvalidationService* invalidation_service =
-          invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
-      CHECK(invalidation_service);
-      if (!interactive_ ||
-          !invalidation_service->GetIdentityProvider()->RequestLogin()) {
+      invalidation::ProfileInvalidationProvider* invalidation_provider =
+          invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+              GetProfile());
+      CHECK(invalidation_provider);
+      if (!interactive_ || !invalidation_provider->GetInvalidationService()->
+              GetIdentityProvider()->RequestLogin()) {
         ReportResult(std::string(), error_text);
       }
       return;
@@ -319,16 +324,17 @@ PushMessagingAPI::GetFactoryInstance() {
 }
 
 bool PushMessagingAPI::InitEventRouterAndHandler() {
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
-  if (!invalidation_service)
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+  if (!invalidation_provider)
     return false;
 
   if (!event_router_)
     event_router_.reset(new PushMessagingEventRouter(profile_));
   if (!handler_) {
-    handler_.reset(new PushMessagingInvalidationHandler(invalidation_service,
-                                                        event_router_.get()));
+    handler_.reset(new PushMessagingInvalidationHandler(
+        invalidation_provider->GetInvalidationService(),
+        event_router_.get()));
   }
 
   return true;
@@ -383,7 +389,7 @@ template <>
 void
 BrowserContextKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
+  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
 }
 
 }  // namespace extensions
