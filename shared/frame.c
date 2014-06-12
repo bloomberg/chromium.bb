@@ -837,6 +837,37 @@ frame_touch_up(struct frame *frame, void *data, int32_t id)
 	}
 }
 
+enum theme_location
+frame_double_click(struct frame *frame, void *data,
+		   uint32_t btn, enum frame_button_state state)
+{
+	struct frame_pointer *pointer = frame_pointer_get(frame, data);
+	struct frame_button *button;
+	enum theme_location location = THEME_LOCATION_EXTERIOR;
+
+	location = theme_get_location(frame->theme, pointer->x, pointer->y,
+				      frame->width, frame->height,
+				      frame->flags & FRAME_FLAG_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
+
+	button = frame_find_button(frame, pointer->x, pointer->y);
+
+	if (location != THEME_LOCATION_TITLEBAR || btn != BTN_LEFT)
+		return location;
+
+	if (state == FRAME_BUTTON_PRESSED) {
+		if (button)
+			frame_button_press(button);
+		else
+			frame->status |= FRAME_STATUS_MAXIMIZE;
+	} else if (state == FRAME_BUTTON_RELEASED) {
+		if (button)
+			frame_button_release(button);
+	}
+
+	return location;
+}
+
 void
 frame_repaint(struct frame *frame, cairo_t *cr)
 {

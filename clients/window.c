@@ -365,6 +365,9 @@ struct window_frame {
 	struct widget *widget;
 	struct widget *child;
 	struct frame *frame;
+
+	uint32_t last_time;
+	uint32_t did_double, double_click;
 };
 
 struct menu {
@@ -2340,6 +2343,7 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 	}
 }
 
+#define DOUBLE_CLICK_PERIOD 250
 static void
 frame_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
@@ -2350,7 +2354,27 @@ frame_button_handler(struct widget *widget,
 	struct window_frame *frame = data;
 	enum theme_location location;
 
-	location = frame_pointer_button(frame->frame, input, button, state);
+	frame->double_click = 0;
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		if (time - frame->last_time <= DOUBLE_CLICK_PERIOD) {
+			frame->double_click = 1;
+			frame->did_double = 1;
+		} else
+			frame->did_double = 0;
+
+		frame->last_time = time;
+	} else if (frame->did_double == 1) {
+		frame->double_click = 1;
+		frame->did_double = 0;
+	}
+
+	if (frame->double_click)
+		location = frame_double_click(frame->frame, input,
+					      button, state);
+	else
+		location = frame_pointer_button(frame->frame, input,
+						button, state);
+
 	frame_handle_status(frame, input, time, location);
 }
 
