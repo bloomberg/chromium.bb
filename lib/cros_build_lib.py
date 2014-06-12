@@ -145,10 +145,11 @@ class CommandResult(object):
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
+
   def __init__(self, msg, result, exception=None):
     self.msg, self.result, self.exception = msg, result, exception
     if exception is not None and not isinstance(exception, Exception):
-      raise ValueError("exception must be an exception instance; got %r"
+      raise ValueError('exception must be an exception instance; got %r'
                        % (exception,))
     Exception.__init__(self, msg)
     self.args = (msg, result, exception)
@@ -348,7 +349,7 @@ class _Popen(subprocess.Popen):
         raise
 
 
-#pylint: disable=W0622
+# pylint: disable=W0622
 def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
                shell=False, env=None, extra_env=None, ignore_sigint=False,
@@ -401,8 +402,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     log_output: Log the command and its output automatically.
     stdout_to_pipe: Redirect stdout to pipe.
     capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
-    quiet: Set |print_cmd| to False, |stdout_to_pipe| and |combine_stdout_stderr|
-      to True.
+    quiet: Set |print_cmd| to False, |stdout_to_pipe| and
+           |combine_stdout_stderr| to True.
 
   Returns:
     A CommandResult object.
@@ -602,7 +603,7 @@ def Error(message, *args, **kwargs):
   logger.error(message, *args, **kwargs)
 
 
-#pylint: disable=W0622
+# pylint: disable=W0622
 def Warning(message, *args, **kwargs):
   """Emits a warning message using the logging module."""
   logger.warn(message, *args, **kwargs)
@@ -673,10 +674,12 @@ def IsInsideChroot():
   """Returns True if we are inside chroot."""
   return os.path.exists('/etc/cros_chroot_version')
 
+
 def AssertInsideChroot():
   """Die if we are outside the chroot"""
   if not IsInsideChroot():
     Die('%s: please run inside the chroot', os.path.basename(sys.argv[0]))
+
 
 def AssertOutsideChroot():
   """Die if we are inside the chroot"""
@@ -697,10 +700,10 @@ def GetChromeosVersion(str_obj):
   if str_obj is not None:
     match = re.search(r'CHROMEOS_VERSION_STRING=([0-9_.]+)', str_obj)
     if match and match.group(1):
-      Info ('CHROMEOS_VERSION_STRING = %s' % match.group(1))
+      Info('CHROMEOS_VERSION_STRING = %s' % match.group(1))
       return match.group(1)
 
-  Info ('CHROMEOS_VERSION_STRING NOT found')
+  Info('CHROMEOS_VERSION_STRING NOT found')
   return None
 
 
@@ -754,6 +757,8 @@ COMP_NONE = 0
 COMP_GZIP = 1
 COMP_BZIP2 = 2
 COMP_XZ = 3
+
+
 def FindCompressor(compression, chroot=None):
   """Locate a compressor utility program (possibly in a chroot).
 
@@ -893,7 +898,7 @@ def GetChoice(prompt, options):
   return choice
 
 
-def BooleanPrompt(prompt="Do you want to continue?", default=True,
+def BooleanPrompt(prompt='Do you want to continue?', default=True,
                   true_value='yes', false_value='no', prolog=None):
   """Helper function for processing boolean choice prompts.
 
@@ -910,7 +915,7 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
   true_value, false_value = true_value.lower(), false_value.lower()
   true_text, false_text = true_value, false_value
   if true_value == false_value:
-    raise ValueError("true_value and false_value must differ: got %r"
+    raise ValueError('true_value and false_value must differ: got %r'
                      % true_value)
 
   if default:
@@ -988,7 +993,7 @@ def BooleanShellValue(sval, default, msg=None):
 
 
 # Suppress whacked complaints about abstract class being unused.
-#pylint: disable=R0921
+# pylint: disable=R0921
 class MasterPidContextManager(object):
   """Allow context managers to restrict their exit to within the same PID."""
 
@@ -1333,7 +1338,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
         if len(val) >= 2 and val[0] in "\"'" and val[0] == val[-1]:
           # Strip matching quotes on the same line.
           val = val[1:-1]
-        elif val and multiline and val[0] in "\"'" :
+        elif val and multiline and val[0] in "\"'":
           # Unmatched quote here indicates a multiline value. Do not
           # strip the '\n' at the end of the line.
           in_quotes = val[0]
@@ -1516,6 +1521,7 @@ class FrozenAttributesClass(type):
 
     # Replace cls.__setattr__ with the one that honors freezing.
     orig_setattr = cls.__setattr__
+
     def SetAttr(obj, name, value):
       """If the object is frozen then abort."""
       # pylint: disable=W0212
@@ -1631,6 +1637,7 @@ def Collection(classname, **kwargs):
     # Print out a (will be the default 0) and b (will be 4).
     print('a = %i, b = %i' % (foo.a, foo.b))
   """
+
   def sn_init(self, **kwargs):
     """The new class's __init__ function."""
     # First verify the kwargs don't have excess settings.

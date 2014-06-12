@@ -80,6 +80,7 @@ class RemoteRef(object):
   'https://chromium.googlesource.com/chromiumos/chromite.git', etc.) and a ref
   name (e.g., 'refs/heads/master').
   """
+
   def __init__(self, remote, ref):
     self.remote = remote
     self.ref = ref
@@ -167,6 +168,8 @@ def IsGitRepositoryCorrupted(cwd):
 
 
 _HEX_CHARS = frozenset(string.hexdigits)
+
+
 def IsSHA1(value, full=True):
   """Returns True if the given value looks like a sha1.
 
@@ -186,7 +189,7 @@ def IsRefsTags(value):
 
   Currently this is identified via refs/tags/ prefixing.
   """
-  return value.startswith("refs/tags/")
+  return value.startswith('refs/tags/')
 
 
 def GetGitRepoRevision(cwd, branch='HEAD'):
@@ -242,8 +245,8 @@ def StripRefsHeads(ref, strict=True):
 def StripRefs(ref):
   """Remove leading 'refs/heads', 'refs/remotes/[^/]+/' from a ref name."""
   ref = StripRefsHeads(ref, False)
-  if ref.startswith("refs/remotes/"):
-    return ref.split("/", 3)[-1]
+  if ref.startswith('refs/remotes/'):
+    return ref.split('/', 3)[-1]
   return ref
 
 
@@ -289,7 +292,8 @@ class ProjectCheckout(dict):
 
   def IsBranchableProject(self):
     """Return whether this project is hosted on ChromeOS git servers."""
-    return (self['remote'] in constants.CROS_REMOTES and
+    return (
+        self['remote'] in constants.CROS_REMOTES and
         re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name']))
 
   def IsPatchable(self):
@@ -390,8 +394,8 @@ class Manifest(object):
     elif name == 'include':
       if self.manifest_include_dir is None:
         raise OSError(
-            errno.ENOENT, "No manifest_include_dir given, but an include was "
-            "encountered; attrs=%r" % (attrs,))
+            errno.ENOENT, 'No manifest_include_dir given, but an include was '
+            'encountered; attrs=%r' % (attrs,))
       # Include is calculated relative to the manifest that has the include;
       # thus set the path temporarily to the dirname of the target.
       original_include_dir = self.manifest_include_dir
@@ -538,8 +542,8 @@ class ManifestCheckout(Manifest):
     root = os.path.normpath(os.path.realpath(root))
     if not search:
       if os.path.normpath(os.path.realpath(path)) != root:
-        raise OSError(errno.ENOENT, "Path %s is not a repo root, and search "
-                      "is disabled." % path)
+        raise OSError(errno.ENOENT, 'Path %s is not a repo root, and search '
+                      'is disabled.' % path)
     if manifest_path is None:
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
@@ -707,7 +711,7 @@ class ManifestCheckout(Manifest):
     current_branch = GetCurrentBranch(path)
     if current_branch != 'default':
       raise OSError(errno.ENOENT,
-                    "Manifest repository at %s is checked out to %s.  "
+                    'Manifest repository at %s is checked out to %s.  '
                     "It should be checked out to 'default'."
                     % (root, 'detached HEAD' if current_branch is None
                        else current_branch))
@@ -720,8 +724,8 @@ class ManifestCheckout(Manifest):
 
     raise OSError(errno.ENOENT,
                   "Manifest repository at %s is checked out to 'default', but "
-                  "the git tracking configuration for that branch is broken; "
-                  "failing due to that." % (root,))
+                  'the git tracking configuration for that branch is broken; '
+                  'failing due to that.' % (root,))
 
   # pylint: disable=W0221
   @classmethod
@@ -943,8 +947,8 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
     elif remote == '.':
       if recurse == 0:
         raise Exception(
-            "While tracing out tracking branches, we recursed too deeply: "
-            "bailing at %s" % branch)
+            'While tracing out tracking branches, we recursed too deeply: '
+            'bailing at %s' % branch)
       return GetTrackingBranchViaGitConfig(
           git_repo, StripRefsHeads(rev), for_checkout=for_checkout,
           allow_broken_merge_settings=allow_broken_merge_settings,
@@ -1136,10 +1140,10 @@ def SyncPushBranch(git_repo, remote, rebase_target):
       start with refs/remotes/ (specifically must be a proper remote
       target rather than an ambiguous name).
   """
-  if not rebase_target.startswith("refs/remotes/"):
+  if not rebase_target.startswith('refs/remotes/'):
     raise Exception(
-        "Was asked to rebase to a non branch target w/in the push pathways.  "
-        "This is highly indicative of an internal bug.  remote %s, rebase %s"
+        'Was asked to rebase to a non branch target w/in the push pathways.  '
+        'This is highly indicative of an internal bug.  remote %s, rebase %s'
         % (remote, rebase_target))
 
   cmd = ['remote', 'update', remote]
@@ -1178,11 +1182,11 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
   # impedence here; cros_mark_as_stable
   _, local_ref = GetTrackingBranch(git_repo, branch, for_push=True)
 
-  if not ref.startswith("refs/heads/"):
-    raise Exception("Was asked to push to a non branch namespace: %s" % (ref,))
+  if not ref.startswith('refs/heads/'):
+    raise Exception('Was asked to push to a non branch namespace: %s' % (ref,))
 
   push_command = ['push', remote, '%s:%s' % (branch, ref)]
-  cros_build_lib.Debug("Trying to push %s to %s:%s", git_repo, branch, ref)
+  cros_build_lib.Debug('Trying to push %s to %s:%s', git_repo, branch, ref)
 
   if dryrun:
     push_command.append('--dry-run')
@@ -1198,7 +1202,7 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
         continue
       raise
 
-  cros_build_lib.Info("Successfully pushed %s to %s:%s", git_repo, branch, ref)
+  cros_build_lib.Info('Successfully pushed %s to %s:%s', git_repo, branch, ref)
 
 
 def CleanAndDetachHead(git_repo):
@@ -1256,8 +1260,8 @@ def GetChromiteTrackingBranch():
   # Not a manifest checkout.
   Warning(
       "Chromite checkout at %s isn't controlled by repo, nor is it on a "
-      "branch (or if it is, the tracking configuration is missing or broken).  "
-      "Falling back to assuming the chromite checkout is derived from "
+      'branch (or if it is, the tracking configuration is missing or broken).  '
+      'Falling back to assuming the chromite checkout is derived from '
       "'master'; this *may* result in breakage." % cwd)
   return 'master'
 
