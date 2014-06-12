@@ -86,7 +86,10 @@ private:
 
     void dispatchInvalidationCallbacks();
 
-    RawPtrWillBeMember<Document> m_document;
+    // FIXME: Oilpan: Ideally this should just be a traced Member but that will
+    // currently leak because RenderStyle and its data are not on the heap.
+    // See crbug.com/383860 for details.
+    RawPtrWillBeWeakMember<Document> m_document;
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
