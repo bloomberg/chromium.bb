@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 
 #include "apps/saved_files_service.h"
 #include "base/callback.h"
@@ -31,9 +31,9 @@ using base::FilePath;
 using testing::Contains;
 using testing::Eq;
 
-class AppInfoPermissionsTabTest : public testing::Test {
+class AppInfoPermissionsPanelTest : public testing::Test {
  protected:
-  AppInfoPermissionsTabTest() : window_(NULL) {};
+  AppInfoPermissionsPanelTest() : window_(NULL) {};
 
   scoped_ptr<base::DictionaryValue> ValidAppManifest() {
     return extensions::DictionaryBuilder()
@@ -57,27 +57,21 @@ class AppInfoPermissionsTabTest : public testing::Test {
 };
 
 // Tests that an app with no permissions is treated correctly.
-TEST_F(AppInfoPermissionsTabTest, NoPermissionsObtainedCorrectly) {
+TEST_F(AppInfoPermissionsPanelTest, NoPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsPanel panel(window_, &profile_, app, base::Closure());
 
-  EXPECT_TRUE(tab.GetRequiredPermissions()->IsEmpty());
-  EXPECT_TRUE(tab.GetRequiredPermissionMessages().empty());
-
-  EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
-  EXPECT_TRUE(tab.GetOptionalPermissionMessages().empty());
-
-  EXPECT_TRUE(tab.GetRetainedFilePermissions().empty());
-  EXPECT_TRUE(tab.GetRetainedFilePermissionMessages().empty());
+  EXPECT_TRUE(panel.GetActivePermissionMessages().empty());
+  EXPECT_TRUE(panel.GetRetainedFilePaths().empty());
 }
 
 // Tests that an app's required permissions are detected and converted to
 // messages correctly.
-TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
+TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
@@ -93,29 +87,23 @@ TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
                                              // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsPanel panel(window_, &profile_, app, base::Closure());
 
-  const extensions::PermissionSet* required_permissions =
-      tab.GetRequiredPermissions();
-  EXPECT_FALSE(required_permissions->IsEmpty());
-  EXPECT_EQ(3U, required_permissions->GetAPIsAsStrings().size());
+  EXPECT_TRUE(panel.GetRetainedFilePaths().empty());
 
-  EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
-  EXPECT_TRUE(tab.GetRetainedFilePermissions().empty());
-
-  const std::vector<base::string16> required_permission_messages =
-      tab.GetRequiredPermissionMessages();
-  ASSERT_EQ(2U, required_permission_messages.size());
+  const std::vector<base::string16> permission_messages =
+      panel.GetActivePermissionMessages();
+  ASSERT_EQ(2U, permission_messages.size());
   EXPECT_EQ(
       l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE),
-      base::UTF16ToUTF8(required_permission_messages[0]));
+      base::UTF16ToUTF8(permission_messages[0]));
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-            base::UTF16ToUTF8(required_permission_messages[1]));
+            base::UTF16ToUTF8(permission_messages[1]));
 }
 
 // Tests that an app's optional permissions are detected and converted to
 // messages correctly.
-TEST_F(AppInfoPermissionsTabTest, OptionalPermissionsObtainedCorrectly) {
+TEST_F(AppInfoPermissionsPanelTest, OptionalPermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
@@ -131,28 +119,18 @@ TEST_F(AppInfoPermissionsTabTest, OptionalPermissionsObtainedCorrectly) {
                                             // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsPanel panel(window_, &profile_, app, base::Closure());
 
-  const extensions::PermissionSet* optional_permissions =
-      tab.GetOptionalPermissions();
-  EXPECT_FALSE(optional_permissions->IsEmpty());
-  EXPECT_EQ(3U, optional_permissions->GetAPIsAsStrings().size());
-
-  EXPECT_TRUE(tab.GetRequiredPermissions()->IsEmpty());
-  EXPECT_TRUE(tab.GetRetainedFilePermissions().empty());
-
-  const std::vector<base::string16> optional_permission_messages =
-      tab.GetOptionalPermissionMessages();
-  ASSERT_EQ(2U, optional_permission_messages.size());
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD),
-            base::UTF16ToUTF8(optional_permission_messages[0]));
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-            base::UTF16ToUTF8(optional_permission_messages[1]));
+  // Optional permissions don't appear until they are 'activated' at runtime.
+  // TODO(sashab): Activate the optional permissions and ensure they are
+  // successfully added to the dialog.
+  EXPECT_TRUE(panel.GetActivePermissionMessages().empty());
+  EXPECT_TRUE(panel.GetRetainedFilePaths().empty());
 }
 
 // Tests that an app's retained files are detected and converted to paths
 // correctly.
-TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
+TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
   scoped_refptr<const extensions::Extension> app =
       extensions::ExtensionBuilder()
           .SetManifest(ValidAppManifest())
@@ -164,7 +142,7 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
                       extensions::ListBuilder().Append("retainEntries")))))
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsPanel panel(window_, &profile_, app, base::Closure());
 
   apps::SavedFilesService* files_service =
       apps::SavedFilesService::Get(&profile_);
@@ -175,42 +153,19 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
   files_service->RegisterFileEntry(
       app->id(), "file_id_3", FilePath(FILE_PATH_LITERAL("file_3.ext")), false);
 
-  // There should be 2 required permissions: fileSystem and
-  // fileSystem.retainEntries.
-  const extensions::PermissionSet* required_permissions =
-      tab.GetRequiredPermissions();
-  EXPECT_FALSE(required_permissions->IsEmpty());
-  EXPECT_EQ(2U, required_permissions->GetAPIsAsStrings().size());
-
-  EXPECT_TRUE(tab.GetOptionalPermissions()->IsEmpty());
-
-  // Convert the list of FilePaths into a list of StringTypes for comparisons
-  // using Contains.
-  const std::vector<FilePath> retained_files = tab.GetRetainedFilePermissions();
-  std::vector<FilePath::StringType> retained_file_paths;
-  for (size_t i = 0; i < retained_files.size(); ++i)
-    retained_file_paths.push_back(retained_files[i].value());
+  const std::vector<base::string16> permission_messages =
+      panel.GetActivePermissionMessages();
+  ASSERT_TRUE(permission_messages.empty());
 
   // Since we have no guarantees on the order of retained files, make sure the
   // list is the expected length and all required entries are present.
-  ASSERT_EQ(3U, retained_files.size());
-  EXPECT_THAT(
-      retained_file_paths,
-      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_1.ext")))));
-  EXPECT_THAT(
-      retained_file_paths,
-      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_2.ext")))));
-  EXPECT_THAT(
-      retained_file_paths,
-      Contains(Eq(FilePath::StringType(FILE_PATH_LITERAL("file_3.ext")))));
-
-  const std::vector<base::string16> retained_file_messages =
-      tab.GetRetainedFilePermissionMessages();
-  ASSERT_EQ(3U, retained_file_messages.size());
-  EXPECT_THAT(retained_file_messages,
+  const std::vector<base::string16> retained_file_paths =
+      panel.GetRetainedFilePaths();
+  ASSERT_EQ(3U, retained_file_paths.size());
+  EXPECT_THAT(retained_file_paths,
               Contains(Eq(base::UTF8ToUTF16("file_1.ext"))));
-  EXPECT_THAT(retained_file_messages,
+  EXPECT_THAT(retained_file_paths,
               Contains(Eq(base::UTF8ToUTF16("file_2.ext"))));
-  EXPECT_THAT(retained_file_messages,
+  EXPECT_THAT(retained_file_paths,
               Contains(Eq(base::UTF8ToUTF16("file_3.ext"))));
 }

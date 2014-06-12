@@ -4,17 +4,18 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_manage_tab.h"
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_tab.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_manager.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
 void ShowAppInfoDialog(gfx::NativeWindow parent_window,
                        const gfx::Rect& dialog_widget_bounds,
@@ -36,19 +37,42 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
       profile_(profile),
       app_(app),
       close_callback_(close_callback) {
-  SetLayoutManager(new views::FillLayout());
+  // The width of this margin determines the spacing either side of the
+  // horizontal separator underneath the summary panel.
+  const int kHorizontalBorderSpacing = 1;
+  const int kHorizontalSeparatorHeight = 2;
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, kHorizontalBorderSpacing, 0, 0));
+  AppInfoHeaderPanel* dialog_header =
+      new AppInfoHeaderPanel(parent_window_, profile_, app_, close_callback_);
+  dialog_header->SetBorder(views::Border::CreateSolidSidedBorder(
+      0, 0, kHorizontalSeparatorHeight, 0, SK_ColorLTGRAY));
 
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
-  AddChildView(tabbed_pane);
+  // Make a vertically stacked view of all the panels we want to display in the
+  // dialog.
+  views::View* dialog_body = new views::View();
+  dialog_body->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           views::kButtonHEdgeMarginNew,
+                           views::kPanelVertMargin,
+                           views::kUnrelatedControlVerticalSpacing));
+  dialog_body->AddChildView(
+      new AppInfoSummaryPanel(parent_window_, profile_, app_, close_callback_));
+  dialog_body->AddChildView(new AppInfoPermissionsPanel(
+      parent_window_, profile_, app_, close_callback_));
 
-  tabbed_pane->AddTab(
-      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE),
-      new AppInfoSummaryTab(parent_window_, profile_, app_, close_callback_));
-  tabbed_pane->AddTab(
-      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE),
-      new AppInfoPermissionsTab(
-          parent_window_, profile_, app_, close_callback_));
-  // TODO(sashab): Add the manage tab back once there is content for it.
+  // Clip the scrollable view so that the scrollbar appears. As long as this
+  // is larger than the height of the dialog, it will be resized to the dialog's
+  // actual height.
+  // TODO(sashab): Add ClipHeight() as a parameter-less method to
+  // views::ScrollView(), which mimics this behaviour.
+  const int kMaxDialogHeight = 1000;
+  views::ScrollView* dialog_body_scrollview = new views::ScrollView();
+  dialog_body_scrollview->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
+  dialog_body_scrollview->SetContents(dialog_body);
+
+  AddChildView(dialog_header);
+  AddChildView(dialog_body_scrollview);
 }
 
 AppInfoDialog::~AppInfoDialog() {}
