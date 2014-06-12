@@ -18,6 +18,10 @@ import logging
 import os
 import sys
 
+# Add android_webview/tools to path to get at known_issues.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'tools'))
+import known_issues
+
 
 class DepsWhitelist(object):
   def __init__(self):
@@ -62,6 +66,11 @@ class DepsWhitelist(object):
       'tools/grit',
       'tools/gyp',
       'v8',
+    ]
+
+    # We can save some time by not rsyncing code we don't use.
+    self._prune_from_rsync_build = [
+        'third_party/WebKit/LayoutTests',
     ]
 
     # Dependencies required to build android_webview.
@@ -125,6 +134,13 @@ class DepsWhitelist(object):
       deps.update(os_specific_deps)
     return deps.keys()
 
+  def _get_known_issues(self):
+    issues = []
+    for root, paths in known_issues.KNOWN_INCOMPATIBLE.items():
+      for path in paths:
+        issues.append(os.path.normpath(os.path.join(root, path)))
+    return issues
+
   def _make_gclient_blacklist(self, deps_file_path, whitelisted_deps):
     """Calculates the list of deps that need to be excluded from the deps_file
     so that the only deps left are the one in the whitelist."""
@@ -136,6 +152,21 @@ class DepsWhitelist(object):
     whitelisted_deps = map(prepend_root, whitelisted_deps)
     deps_blacklist = set(all_deps).difference(set(whitelisted_deps))
     return dict(map(lambda(x): (x, None), deps_blacklist))
+
+  def _make_blacklist(self, deps_file_path, whitelisted_deps):
+    """Calculates the list of paths we should exclude """
+    all_deps = self._read_deps_file(deps_file_path)
+    def remove_src_prefix(path):
+      return path.replace('src/', '', 1)
+    all_deps = map(remove_src_prefix, all_deps)
+    # Ignore all deps except those whitelisted.
+    blacklist = set(all_deps).difference(whitelisted_deps)
+    # Ignore the 'known issues'. Typically these are the licence incompatible
+    # things checked directly into Chromium.
+    blacklist = blacklist.union(self._get_known_issues())
+    # Ignore any other non-deps, non-licence paths we don't like.
+    blacklist = blacklist.union(self._prune_from_rsync_build)
+    return list(blacklist)
 
   def get_deps_for_android_build(self, deps_file_path):
     """This is used to calculate the custom_deps list for the Android bot.
@@ -154,6 +185,15 @@ class DepsWhitelist(object):
                                         self._compile_dependencies +
                                         self._test_data_dependencies)
 
+  def get_blacklist_for_android_rsync_build(self, deps_file_path):
+    """Calculates the list of paths we should exclude when building Android
+    either because of license compatibility or because they are large and
+    uneeded.
+    """
+    if not deps_file_path:
+      raise Exception('You need to specify a DEPS file path.')
+    return self._make_blacklist(deps_file_path, self._compile_dependencies)
+
   def get_deps_for_android_merge(self, _):
     """Calculates the list of deps that need to be merged into the Android tree
     in order to build the C++ and Java android_webview code."""
@@ -164,13 +204,15 @@ class DepsWhitelist(object):
     compatibility"""
     return self._compile_dependencies
 
+
   def execute_method(self, method_name, deps_file_path):
     methods = {
       'android_build': self.get_deps_for_android_build,
       'android_build_and_test':
         self.get_deps_for_android_build_and_test,
       'android_merge': self.get_deps_for_android_merge,
-      'license_check': self.get_deps_for_license_check
+      'license_check': self.get_deps_for_license_check,
+      'android_rsync_build': self.get_blacklist_for_android_rsync_build,
     }
     if not method_name in methods:
       raise Exception('Method name %s is not valid. Valid choices are %s' %
