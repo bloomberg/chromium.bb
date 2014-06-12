@@ -13831,6 +13831,12 @@ Do you accept?
           OEM folder
         </message>
       </if>
+      <message name="IDS_ADD_TO_APP_LIST_NOTIFICATION_TEXT" desc="Text explaining that the current site can be added to the App Launcher.">
+        This page can be added to the App Launcher
+      </message>
+      <message name="IDS_ADD_TO_APP_LIST_HINT" desc="Hint text for the button allowing the current site to be added to the App Launcher.">
+        Add to the App Launcher
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
           New Tab
