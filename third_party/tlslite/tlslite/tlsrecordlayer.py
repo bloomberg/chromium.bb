@@ -286,7 +286,9 @@ class TLSRecordLayer(object):
         except GeneratorExit:
             raise
         except Exception:
-            self._shutdown(False)
+            # Don't invalidate the session on write failure if abrupt closes are
+            # okay.
+            self._shutdown(self.ignoreAbruptClose)
             raise
 
     def close(self):
