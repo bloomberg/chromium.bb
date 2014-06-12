@@ -7,10 +7,6 @@
 
 #include "printing/printing_export.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace printing {
 
 // Struct that holds margin and content area sizes of a page. Units are
@@ -23,9 +19,6 @@ struct PageSizeMargins {
   double margin_bottom;
   double margin_left;
 };
-
-PRINTING_EXPORT void GetCustomMarginsFromJobSettings(
-    const base::DictionaryValue& settings, PageSizeMargins* page_size_margins);
 
 }  // namespace printing
 

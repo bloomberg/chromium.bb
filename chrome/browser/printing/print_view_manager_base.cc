@@ -50,12 +50,16 @@
 using base::TimeDelta;
 using content::BrowserThread;
 
+namespace printing {
+
+namespace {
+
 #if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
 // Limits memory usage by raster to 64 MiB.
 const int kMaxRasterSizeInPixels = 16*1024*1024;
 #endif
 
-namespace printing {
+}  // namespace
 
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -233,6 +237,8 @@ void PrintViewManagerBase::OnDidPrintPage(
     scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
         reinterpret_cast<const unsigned char*>(shared_buf.memory()),
         params.data_size);
+
+    document->DebugDumpData(bytes, FILE_PATH_LITERAL(".pdf"));
 
     if (!pdf_to_emf_converter_)
       pdf_to_emf_converter_ = PdfToEmfConverter::CreateDefault();

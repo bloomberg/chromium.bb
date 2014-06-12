@@ -8,12 +8,9 @@
 
 #include <algorithm>
 
-#include "base/i18n/file_util_icu.h"
-#include "base/i18n/time_formatting.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/printing_info_win.h"
@@ -30,8 +27,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #endif
-
-using base::Time;
 
 namespace {
 
@@ -408,22 +403,11 @@ PrintingContext::Result PrintingContextWin::NewDocument(
   di.lpszDocName = document_name.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
-  base::FilePath debug_dump_path = PrintedDocument::debug_dump_path();
-  if (!debug_dump_path.empty()) {
-    // Create a filename.
-    std::wstring filename;
-    Time now(Time::Now());
-    filename = base::TimeFormatShortDateNumeric(now);
-    filename += L"_";
-    filename += base::TimeFormatTimeOfDay(now);
-    filename += L"_";
-    filename += document_name;
-    filename += L"_";
-    filename += L"buffer.prn";
-    file_util::ReplaceIllegalCharactersInPath(&filename, '_');
-    debug_dump_path = debug_dump_path.Append(filename);
-    di.lpszOutput = debug_dump_path.value().c_str();
-  }
+  base::string16 debug_dump_path =
+      PrintedDocument::CreateDebugDumpPath(document_name,
+                                           FILE_PATH_LITERAL(".prn")).value();
+  if (!debug_dump_path.empty())
+    di.lpszOutput = debug_dump_path.c_str();
 
   // No message loop running in unit tests.
   DCHECK(!base::MessageLoop::current() ||

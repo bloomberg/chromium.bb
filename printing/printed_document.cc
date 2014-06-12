@@ -9,16 +9,23 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/values.h"
 #include "printing/page_number.h"
+#include "printing/print_settings_conversion.h"
 #include "printing/printed_page.h"
 #include "printing/printed_pages_source.h"
 #include "printing/units.h"
@@ -26,30 +33,65 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_elider.h"
 
+namespace printing {
+
 namespace {
 
-struct PrintDebugDumpPath {
-  PrintDebugDumpPath()
-    : enabled(false) {
-  }
-
-  bool enabled;
-  base::FilePath debug_dump_path;
-};
-
-base::LazyInstance<PrintDebugDumpPath> g_debug_dump_info =
+base::LazyInstance<base::FilePath> g_debug_dump_info =
     LAZY_INSTANCE_INITIALIZER;
+
+void DebugDumpPageTask(const base::string16& doc_name,
+                       const PrintedPage* page) {
+  if (g_debug_dump_info.Get().empty())
+    return;
+
+  base::string16 filename = doc_name;
+  filename +=
+      base::ASCIIToUTF16(base::StringPrintf("_%04d", page->page_number()));
+#if defined(OS_WIN)
+  page->metafile()->SaveTo(PrintedDocument::CreateDebugDumpPath(
+      filename, FILE_PATH_LITERAL(".emf")));
+#else   // OS_WIN
+  page->metafile()->SaveTo(PrintedDocument::CreateDebugDumpPath(
+      filename, FILE_PATH_LITERAL(".pdf")));
+#endif  // OS_WIN
+}
+
+void DebugDumpDataTask(const base::string16& doc_name,
+                       const base::FilePath::StringType& extension,
+                       const base::RefCountedMemory* data) {
+  base::FilePath path =
+      PrintedDocument::CreateDebugDumpPath(doc_name, extension);
+  if (path.empty())
+    return;
+  base::WriteFile(path,
+                  reinterpret_cast<const char*>(data->front()),
+                  base::checked_cast<int>(data->size()));
+}
+
+void DebugDumpSettings(const base::string16& doc_name,
+                       const PrintSettings& settings,
+                       base::TaskRunner* blocking_runner) {
+  base::DictionaryValue job_settings;
+  PrintSettingsToJobSettingsDebug(settings, &job_settings);
+  std::string settings_str;
+  base::JSONWriter::WriteWithOptions(
+      &job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
+  scoped_refptr<base::RefCountedMemory> data =
+      base::RefCountedString::TakeString(&settings_str);
+  blocking_runner->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &DebugDumpDataTask, doc_name, FILE_PATH_LITERAL(".json"), data));
+}
 
 }  // namespace
 
-namespace printing {
-
 PrintedDocument::PrintedDocument(const PrintSettings& settings,
                                  PrintedPagesSource* source,
-                                 int cookie)
-    : mutable_(source),
-      immutable_(settings, source, cookie) {
-
+                                 int cookie,
+                                 base::TaskRunner* blocking_runner)
+    : mutable_(source), immutable_(settings, source, cookie, blocking_runner) {
   // Records the expected page count if a range is setup.
   if (!settings.ranges().empty()) {
     // If there is a range, set the number of page
@@ -58,6 +100,9 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
       mutable_.expected_page_count_ += range.to - range.from + 1;
     }
   }
+
+  if (!g_debug_dump_info.Get().empty())
+    DebugDumpSettings(name(), settings, blocking_runner);
 }
 
 PrintedDocument::~PrintedDocument() {
@@ -86,20 +131,22 @@ void PrintedDocument::SetPage(int page_number,
       mutable_.first_page = page_number;
 #endif
   }
-  DebugDump(*page.get());
+
+  if (!g_debug_dump_info.Get().empty()) {
+    immutable_.blocking_runner_->PostTask(
+        FROM_HERE, base::Bind(&DebugDumpPageTask, name(), page));
+  }
 }
 
-bool PrintedDocument::GetPage(int page_number,
-                              scoped_refptr<PrintedPage>* page) {
-  base::AutoLock lock(lock_);
-  PrintedPages::const_iterator itr = mutable_.pages_.find(page_number);
-  if (itr != mutable_.pages_.end()) {
-    if (itr->second.get()) {
-      *page = itr->second;
-      return true;
-    }
+scoped_refptr<PrintedPage> PrintedDocument::GetPage(int page_number) {
+  scoped_refptr<PrintedPage> page;
+  {
+    base::AutoLock lock(lock_);
+    PrintedPages::const_iterator itr = mutable_.pages_.find(page_number);
+    if (itr != mutable_.pages_.end())
+      page = itr->second;
   }
-  return false;
+  return page;
 }
 
 bool PrintedDocument::IsComplete() const {
@@ -173,35 +220,40 @@ int PrintedDocument::expected_page_count() const {
   return mutable_.expected_page_count_;
 }
 
-void PrintedDocument::DebugDump(const PrintedPage& page) {
-  if (!g_debug_dump_info.Get().enabled)
-    return;
-
-  base::string16 filename;
-  filename += name();
-  filename += base::ASCIIToUTF16("_");
-  filename += base::ASCIIToUTF16(
-      base::StringPrintf("%02d", page.page_number()));
-#if defined(OS_WIN)
-  filename += base::ASCIIToUTF16("_.emf");
-  page.metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(filename));
-#else  // OS_WIN
-  filename += base::ASCIIToUTF16("_.pdf");
-  page.metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(
-          base::UTF16ToUTF8(filename)));
-#endif  // OS_WIN
-}
-
 void PrintedDocument::set_debug_dump_path(
     const base::FilePath& debug_dump_path) {
-  g_debug_dump_info.Get().enabled = !debug_dump_path.empty();
-  g_debug_dump_info.Get().debug_dump_path = debug_dump_path;
+  g_debug_dump_info.Get() = debug_dump_path;
 }
 
-const base::FilePath& PrintedDocument::debug_dump_path() {
-  return g_debug_dump_info.Get().debug_dump_path;
+base::FilePath PrintedDocument::CreateDebugDumpPath(
+    const base::string16& document_name,
+    const base::FilePath::StringType& extension) {
+  if (g_debug_dump_info.Get().empty())
+    return base::FilePath();
+  // Create a filename.
+  base::string16 filename;
+  base::Time now(base::Time::Now());
+  filename = base::TimeFormatShortDateAndTime(now);
+  filename += base::ASCIIToUTF16("_");
+  filename += document_name;
+  base::FilePath::StringType system_filename;
+#if defined(OS_WIN)
+  system_filename = filename;
+#else   // OS_WIN
+  system_filename = base::UTF16ToUTF8(filename);
+#endif  // OS_WIN
+  file_util::ReplaceIllegalCharactersInPath(&system_filename, '_');
+  return g_debug_dump_info.Get().Append(system_filename).AddExtension(
+      extension);
+}
+
+void PrintedDocument::DebugDumpData(
+    const base::RefCountedMemory* data,
+    const base::FilePath::StringType& extension) {
+  if (g_debug_dump_info.Get().empty())
+    return;
+  immutable_.blocking_runner_->PostTask(
+      FROM_HERE, base::Bind(&DebugDumpDataTask, name(), extension, data));
 }
 
 PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
@@ -218,11 +270,12 @@ PrintedDocument::Mutable::~Mutable() {
 
 PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
                                       PrintedPagesSource* source,
-                                      int cookie)
+                                      int cookie,
+                                      base::TaskRunner* blocking_runner)
     : settings_(settings),
-      source_message_loop_(base::MessageLoop::current()),
       name_(source->RenderSourceName()),
-      cookie_(cookie) {
+      cookie_(cookie),
+      blocking_runner_(blocking_runner) {
 }
 
 PrintedDocument::Immutable::~Immutable() {

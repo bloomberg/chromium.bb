@@ -64,8 +64,7 @@ class PRINTING_EXPORT PrintingContext {
 
   // Updates Print Settings. |job_settings| contains all print job
   // settings information. |ranges| has the new page range settings.
-  Result UpdatePrintSettings(const base::DictionaryValue& job_settings,
-                             const PageRanges& ranges);
+  Result UpdatePrintSettings(const base::DictionaryValue& job_settings);
 
   // Initializes with predefined settings.
   virtual Result InitWithSettings(const PrintSettings& settings) = 0;

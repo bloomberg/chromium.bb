@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -14,8 +15,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class FilePath;
-class MessageLoop;
+class RefCountedMemory;
+class TaskRunner;
 }
 
 namespace printing {
@@ -38,7 +39,8 @@ class PRINTING_EXPORT PrintedDocument
   // originating source and settings.
   PrintedDocument(const PrintSettings& settings,
                   PrintedPagesSource* source,
-                  int cookie);
+                  int cookie,
+                  base::TaskRunner* blocking_runner);
 
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
@@ -51,9 +53,9 @@ class PRINTING_EXPORT PrintedDocument
                const gfx::Rect& page_rect);
 
   // Retrieves a page. If the page is not available right now, it
-  // requests to have this page be rendered and returns false.
+  // requests to have this page be rendered and returns NULL.
   // Note: locks for a short amount of time.
-  bool GetPage(int page_number, scoped_refptr<PrintedPage>* page);
+  scoped_refptr<PrintedPage> GetPage(int page_number);
 
   // Draws the page in the context.
   // Note: locks for a short amount of time in debug only.
@@ -102,7 +104,16 @@ class PRINTING_EXPORT PrintedDocument
   // no files are generated.
   static void set_debug_dump_path(const base::FilePath& debug_dump_path);
 
-  static const base::FilePath& debug_dump_path();
+  // Creates debug file name from given |document_name| and |extension|.
+  // |extension| should include '.', example ".pdf"
+  // Returns empty |base::FilePath| if debug dumps is not enabled.
+  static base::FilePath CreateDebugDumpPath(
+      const base::string16& document_name,
+      const base::FilePath::StringType& extension);
+
+  // Dump data on blocking task runner if debug dumps enabled.
+  void DebugDumpData(const base::RefCountedMemory* data,
+                     const base::FilePath::StringType& extension);
 
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;
@@ -143,15 +154,14 @@ class PRINTING_EXPORT PrintedDocument
   // any lock held. This is because it can't be changed after the object's
   // construction.
   struct Immutable {
-    Immutable(const PrintSettings& settings, PrintedPagesSource* source,
-              int cookie);
+    Immutable(const PrintSettings& settings,
+              PrintedPagesSource* source,
+              int cookie,
+              base::TaskRunner* blocking_runner);
     ~Immutable();
 
     // Print settings used to generate this document. Immutable.
     PrintSettings settings_;
-
-    // Native thread for the render source.
-    base::MessageLoop* source_message_loop_;
 
     // Document name. Immutable.
     base::string16 name_;
@@ -163,9 +173,10 @@ class PRINTING_EXPORT PrintedDocument
     // simpler hash of PrintSettings since a new document is made each time the
     // print settings change.
     int cookie_;
-  };
 
-  void DebugDump(const PrintedPage& page);
+    // Native thread for blocking operations, like file access.
+    scoped_refptr<base::TaskRunner> blocking_runner_;
+  };
 
   // All writable data member access must be guarded by this lock. Needs to be
   // mutable since it can be acquired from const member functions.

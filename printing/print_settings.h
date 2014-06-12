@@ -49,6 +49,9 @@ class PRINTING_EXPORT PrintSettings {
   void Clear();
 
   void SetCustomMargins(const PageMargins& requested_margins_in_points);
+  const PageMargins& requested_custom_margins_in_points() const {
+    return requested_custom_margins_in_points_;
+  }
   void set_margin_type(MarginType margin_type) { margin_type_ = margin_type; }
   MarginType margin_type() const { return margin_type_; }
 

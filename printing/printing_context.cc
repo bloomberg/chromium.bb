@@ -9,7 +9,7 @@
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
-#include "printing/print_settings_initializer.h"
+#include "printing/print_settings_conversion.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -63,16 +63,14 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings->SetBoolean(kSettingPrintToPDF, true);
   pdf_settings->SetBoolean(kSettingCloudPrintDialog, false);
   pdf_settings->SetBoolean(kSettingPrintWithPrivet, false);
-  return UpdatePrintSettings(*pdf_settings, PageRanges());
+  return UpdatePrintSettings(*pdf_settings);
 }
 
 PrintingContext::Result PrintingContext::UpdatePrintSettings(
-    const base::DictionaryValue& job_settings,
-    const PageRanges& ranges) {
+    const base::DictionaryValue& job_settings) {
   ResetSettings();
 
-  if (!PrintSettingsInitializer::InitSettings(job_settings, ranges,
-                                              &settings_)) {
+  if (!PrintSettingsFromJobSettings(job_settings, &settings_)) {
     NOTREACHED();
     return OnError();
   }
@@ -100,9 +98,9 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
       float deviceMicronsPerDeviceUnit =
           (kHundrethsMMPerInch * 10.0f) / settings_.device_units_per_inch();
       paper_size = gfx::Size(settings_.requested_media().size_microns.width() /
-                             deviceMicronsPerDeviceUnit,
+                                 deviceMicronsPerDeviceUnit,
                              settings_.requested_media().size_microns.height() /
-                             deviceMicronsPerDeviceUnit);
+                                 deviceMicronsPerDeviceUnit);
     }
     gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
     if (print_to_cloud || print_with_privet) {
