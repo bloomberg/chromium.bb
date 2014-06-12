@@ -54,7 +54,8 @@ class BufferedResourceHandler
   bool ShouldSniffContent();
   bool DetermineMimeType();
   bool SelectNextHandler(bool* defer);
-  bool UseAlternateNextHandler(scoped_ptr<ResourceHandler> handler);
+  bool UseAlternateNextHandler(scoped_ptr<ResourceHandler> handler,
+                               const std::string& payload_for_old_handler);
 
   bool ReplayReadCompleted(bool* defer);
   void CallReplayReadCompleted();

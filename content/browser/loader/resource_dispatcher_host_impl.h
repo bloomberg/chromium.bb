@@ -210,10 +210,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadUrlParameters::OnStartedCallback& started_cb);
 
   // Must be called after the ResourceRequestInfo has been created
-  // and associated with the request.
+  // and associated with the request.  If |payload| is set to a non-empty value,
+  // the value will be sent to the old resource handler instead of cancelling
+  // it, except on HTTP errors.
   scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
       net::URLRequest* request,
-      ResourceResponse* response);
+      ResourceResponse* response,
+      std::string* payload);
 
   void ClearSSLClientAuthHandlerForRequest(net::URLRequest* request);
 

@@ -61,6 +61,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     const std::string& extension_id,
     content::WebContents* web_contents,
     scoped_ptr<content::StreamHandle> stream,
+    const std::string& view_id,
     int64 expected_content_size) {
   // Create the event's arguments value.
   streams_private::StreamInfo info;
@@ -68,6 +69,10 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   info.original_url = stream->GetOriginalURL().spec();
   info.stream_url = stream->GetURL().spec();
   info.tab_id = ExtensionTabUtil::GetTabId(web_contents);
+
+  if (!view_id.empty()) {
+    info.view_id.reset(new std::string(view_id));
+  }
 
   int size = -1;
   if (expected_content_size <= INT_MAX)

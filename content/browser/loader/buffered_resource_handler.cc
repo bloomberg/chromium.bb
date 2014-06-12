@@ -15,6 +15,7 @@
 #include "content/browser/loader/certificate_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
@@ -305,7 +306,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     info->set_is_download(true);
     scoped_ptr<ResourceHandler> handler(
         new CertificateResourceHandler(request()));
-    return UseAlternateNextHandler(handler.Pass());
+    return UseAlternateNextHandler(handler.Pass(), std::string());
   }
 
   if (!info->allow_download())
@@ -316,10 +317,12 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (net::IsSupportedMimeType(mime_type))
       return true;
 
+    std::string payload;
     scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request(), response_.get()));
-    if (handler)
-      return UseAlternateNextHandler(handler.Pass());
+        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
+    if (handler) {
+      return UseAlternateNextHandler(handler.Pass(), payload);
+    }
 
 #if defined(ENABLE_PLUGINS)
     bool stale;
@@ -348,11 +351,12 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
           content::DownloadItem::kInvalidId,
           scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
           DownloadUrlParameters::OnStartedCallback()));
-  return UseAlternateNextHandler(handler.Pass());
+  return UseAlternateNextHandler(handler.Pass(), std::string());
 }
 
 bool BufferedResourceHandler::UseAlternateNextHandler(
-    scoped_ptr<ResourceHandler> new_handler) {
+    scoped_ptr<ResourceHandler> new_handler,
+    const std::string& payload_for_old_handler) {
   if (response_->head.headers.get() &&  // Can be NULL if FTP.
       response_->head.headers->response_code() / 100 != 2) {
     // The response code indicates that this is an error page, but we don't
@@ -373,10 +377,29 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   // which does so is CrossSiteResourceHandler. Cross-site transitions should
   // not trigger when switching handlers.
   DCHECK(!defer_ignored);
-  net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
-                               net::ERR_ABORTED);
-  next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
-  DCHECK(!defer_ignored);
+  if (payload_for_old_handler.empty()) {
+    net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
+                                 net::ERR_ABORTED);
+    next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
+    DCHECK(!defer_ignored);
+  } else {
+    scoped_refptr<net::IOBuffer> buf;
+    int size = 0;
+
+    next_handler_->OnWillRead(&buf, &size, payload_for_old_handler.length());
+    CHECK_GE(size, static_cast<int>(payload_for_old_handler.length()));
+
+    memcpy(buf->data(), payload_for_old_handler.c_str(),
+           payload_for_old_handler.length());
+
+    next_handler_->OnReadCompleted(payload_for_old_handler.length(),
+                                   &defer_ignored);
+    DCHECK(!defer_ignored);
+
+    net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+    next_handler_->OnResponseCompleted(status, std::string(), &defer_ignored);
+    DCHECK(!defer_ignored);
+  }
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.

@@ -41,6 +41,8 @@ class MimeTypesHandler {
   // The URL that will be used to handle MIME type requests.
   const std::string handler_url() const { return handler_url_; }
 
+  const std::set<std::string>& mime_type_set() const { return mime_type_set_; }
+
  private:
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).

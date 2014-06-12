@@ -96,32 +96,28 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type);
 
-  // Returns true and sets |origin| and |target_id| if a Stream should be
-  // created for the resource.
+  // Returns true and sets |origin| if a Stream should be created for the
+  // resource.
   // If true is returned, a new Stream will be created and OnStreamCreated()
   // will be called with
-  // - the |target_id| returned by this function
   // - a StreamHandle instance for the Stream. The handle contains the URL for
   //   reading the Stream etc.
   // The Stream's origin will be set to |origin|.
+  //
+  // If the stream will be rendered in a BrowserPlugin, |payload| will contain
+  // the data that should be given to the old ResourceHandler to forward to the
+  // renderer process.
   virtual bool ShouldInterceptResourceAsStream(
-      content::ResourceContext* resource_context,
-      const GURL& url,
+      net::URLRequest* request,
       const std::string& mime_type,
       GURL* origin,
-      std::string* target_id);
+      std::string* payload);
 
-  // Informs the delegate that a Stream was created. |target_id| will be filled
-  // with the parameter returned by ShouldInterceptResourceAsStream(). The
-  // Stream can be read from the blob URL of the Stream, but can only be read
-  // once.
+  // Informs the delegate that a Stream was created. The Stream can be read from
+  // the blob URL of the Stream, but can only be read once.
   virtual void OnStreamCreated(
-      content::ResourceContext* resource_context,
-      int render_process_id,
-      int render_view_id,
-      const std::string& target_id,
-      scoped_ptr<StreamHandle> stream,
-      int64 expected_content_size);
+      net::URLRequest* request,
+      scoped_ptr<content::StreamHandle> stream);
 
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(

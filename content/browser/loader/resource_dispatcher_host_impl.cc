@@ -608,18 +608,17 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
 
 scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
-                                                   ResourceResponse* response) {
+                                                   ResourceResponse* response,
+                                                   std::string* payload) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
   const std::string& mime_type = response->head.mime_type;
 
   GURL origin;
-  std::string target_id;
   if (!delegate_ ||
-      !delegate_->ShouldInterceptResourceAsStream(info->GetContext(),
-                                                  request->url(),
+      !delegate_->ShouldInterceptResourceAsStream(request,
                                                   mime_type,
                                                   &origin,
-                                                  &target_id)) {
+                                                  payload)) {
     return scoped_ptr<ResourceHandler>();
   }
 
@@ -633,15 +632,11 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
 
   info->set_is_stream(true);
   delegate_->OnStreamCreated(
-      info->GetContext(),
-      info->GetChildID(),
-      info->GetRouteID(),
-      target_id,
+      request,
       handler->stream()->CreateHandle(
           request->url(),
           mime_type,
-          response->head.headers),
-      request->GetExpectedContentSize());
+          response->head.headers));
   return handler.PassAs<ResourceHandler>();
 }
 

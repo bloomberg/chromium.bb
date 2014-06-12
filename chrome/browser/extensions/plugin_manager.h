@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 
+#include <set>
+#include <string>
+
 #include "base/scoped_observer.h"
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -41,6 +44,9 @@ class PluginManager : public BrowserContextKeyedAPI,
   void RegisterNaClModule(const NaClModuleInfo& info);
   void UnregisterNaClModule(const NaClModuleInfo& info);
 
+  void RegisterMimeTypeHandler(const std::string& extension_id);
+  void UnregisterMimeTypeHandler(const std::string& extension_id);
+
   // Call UpdatePluginListWithNaClModules() after registering or unregistering
   // a NaCl module to see those changes reflected in the PluginList.
   void UpdatePluginListWithNaClModules();
@@ -60,6 +66,10 @@ class PluginManager : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   extensions::NaClModuleInfo::List nacl_module_list_;
+
+  // The set of extensions that are registered as the handler for at least one
+  // MIME type.
+  std::set<std::string> mime_type_handler_extension_ids_;
 
   Profile* profile_;
 

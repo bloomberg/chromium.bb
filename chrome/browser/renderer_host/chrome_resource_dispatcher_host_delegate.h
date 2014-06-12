@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 
+#include <map>
 #include <set>
 
 #include "base/compiler_specific.h"
@@ -70,18 +71,13 @@ class ChromeResourceDispatcherHostDelegate
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type) OVERRIDE;
   virtual bool ShouldInterceptResourceAsStream(
-      content::ResourceContext* resource_context,
-      const GURL& url,
+      net::URLRequest* request,
       const std::string& mime_type,
       GURL* origin,
-      std::string* target_id) OVERRIDE;
+      std::string* payload) OVERRIDE;
   virtual void OnStreamCreated(
-      content::ResourceContext* resource_context,
-      int render_process_id,
-      int render_view_id,
-      const std::string& target_id,
-      scoped_ptr<content::StreamHandle> stream,
-      int64 expected_content_size) OVERRIDE;
+      net::URLRequest* request,
+      scoped_ptr<content::StreamHandle> stream) OVERRIDE;
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
@@ -100,6 +96,11 @@ class ChromeResourceDispatcherHostDelegate
       ExternalProtocolHandler::Delegate* delegate);
 
  private:
+  struct StreamTargetInfo {
+    std::string extension_id;
+    std::string view_id;
+  };
+
   void AppendStandardResourceThrottles(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
@@ -118,6 +119,7 @@ class ChromeResourceDispatcherHostDelegate
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   scoped_refptr<extensions::UserScriptListener> user_script_listener_;
   prerender::PrerenderTracker* prerender_tracker_;
+  std::map<net::URLRequest*, StreamTargetInfo> stream_target_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);
 };

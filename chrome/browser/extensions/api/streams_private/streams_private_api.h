@@ -30,9 +30,15 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   explicit StreamsPrivateAPI(content::BrowserContext* context);
   virtual ~StreamsPrivateAPI();
 
+  // Send the onExecuteMimeTypeHandler event to |extension_id|.
+  // |web_contents| is used to determine the tabId where the document is being
+  // opened. The data for the document will be readable from |stream|, and
+  // should be |expected_content_size| bytes long. If the viewer is being opened
+  // in a BrowserPlugin, specify a non-empty |view_id| of the plugin.
   void ExecuteMimeTypeHandler(const std::string& extension_id,
                               content::WebContents* web_contents,
                               scoped_ptr<content::StreamHandle> stream,
+                              const std::string& view_id,
                               int64 expected_content_size);
 
   void AbortStream(const std::string& extension_id,

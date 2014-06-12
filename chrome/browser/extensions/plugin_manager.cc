@@ -6,11 +6,13 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
+#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -77,6 +79,13 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
     UpdatePluginListWithNaClModules();
   }
 
+  const MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  if (handler && !handler->handler_url().empty()) {
+    plugins_or_nacl_changed = true;
+    RegisterMimeTypeHandler(handler->extension_id());
+    UpdatePluginListWithNaClModules();
+  }
+
   if (plugins_or_nacl_changed)
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
@@ -109,6 +118,12 @@ void PluginManager::OnExtensionUnloaded(
       UnregisterNaClModule(*module);
     }
     UpdatePluginListWithNaClModules();
+  }
+
+  const MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  if (handler && !handler->handler_url().empty()) {
+    plugins_or_nacl_changed = true;
+    UnregisterMimeTypeHandler(handler->extension_id());
   }
 
   if (plugins_or_nacl_changed)
@@ -172,6 +187,45 @@ void PluginManager::UpdatePluginListWithNaClModules() {
       break;
     }
   }
+
+  for (std::set<std::string>::iterator ix =
+       mime_type_handler_extension_ids_.begin();
+       ix != mime_type_handler_extension_ids_.end(); ++ix) {
+    const std::string& extension_id = *ix;
+    const Extension* extension =
+        profile_->GetExtensionService()->GetExtensionById(extension_id, false);
+    const MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+    if (handler && !handler->handler_url().empty()) {
+      PluginService::GetInstance()->UnregisterInternalPlugin(
+          base::FilePath::FromUTF8Unsafe(extension_id));
+
+      content::WebPluginInfo info;
+      info.type = content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN;
+      info.name = base::UTF8ToUTF16(extension_id);
+      info.path = base::FilePath::FromUTF8Unsafe(extension_id);
+
+      for (std::set<std::string>::const_iterator mime_type =
+               handler->mime_type_set().begin();
+           mime_type != handler->mime_type_set().end(); ++mime_type) {
+        content::WebPluginMimeType mime_type_info;
+        mime_type_info.mime_type = *mime_type;
+        info.mime_types.push_back(mime_type_info);
+      }
+
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->RegisterInternalPlugin(info, true);
+    }
+  }
+}
+
+void PluginManager::RegisterMimeTypeHandler(const std::string& extension_id) {
+  mime_type_handler_extension_ids_.insert(extension_id);
+}
+
+void PluginManager::UnregisterMimeTypeHandler(const std::string& extension_id) {
+  mime_type_handler_extension_ids_.erase(extension_id);
+  PluginService::GetInstance()->UnregisterInternalPlugin(
+    base::FilePath::FromUTF8Unsafe(extension_id));
 }
 
 NaClModuleInfo::List::iterator PluginManager::FindNaClModule(const GURL& url) {
