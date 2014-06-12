@@ -33,6 +33,19 @@ function waitForSlideImage(document, width, height, name) {
 }
 
 /**
+ * Shorthand for clicking an element.
+ * @param {AppWindow} appWindow application window.
+ * @param {string} query Query for the element.
+ * @param {Promise} Promise to be fulfilled with the clicked element.
+ */
+function waitAndClickElement(appWindow, query) {
+  return waitForElement(appWindow, query).then(function(element) {
+    element.click();
+    return element;
+  });
+}
+
+/**
  * Runs a test to traverse images in the slide mode.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -45,23 +58,22 @@ function traverseSlideImages(testVolumeName, volumeType) {
   var launchedPromise = launchWithTestEntries(
       testVolumeName, volumeType, testEntries, testEntries.slice(0, 1));
   var appWindow;
-  var clickElement = function(element) { element.click(); };
   return launchedPromise.then(function(args) {
     appWindow = args.appWindow;
     return waitForSlideImage(appWindow.contentWindow.document,
                              800, 600, 'My Desktop Background');
   }).then(function() {
-    return waitForElement(appWindow, '.arrow.right').then(clickElement);
+    return waitAndClickElement(appWindow, '.arrow.right');
   }).then(function() {
     return waitForSlideImage(appWindow.contentWindow.document,
                              1024, 768, 'image2');
   }).then(function() {
-    return waitForElement(appWindow, '.arrow.right').then(clickElement);
+    return waitAndClickElement(appWindow, '.arrow.right');
   }).then(function() {
     return waitForSlideImage(appWindow.contentWindow.document,
                              640, 480, 'image3');
   }).then(function() {
-    return waitForElement(appWindow, '.arrow.right').then(clickElement);
+    return waitAndClickElement(appWindow, '.arrow.right');
   }).then(function() {
     return waitForSlideImage(appWindow.contentWindow.document,
                              800, 600, 'My Desktop Background');
@@ -101,6 +113,36 @@ function renameImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Runs a test to delete an image.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function deleteImage(testVolumeName, volumeType) {
+  var launchedPromise = launchWithTestEntries(
+      testVolumeName, volumeType, [ENTRIES.desktop]);
+  var appWindow;
+  return launchedPromise.then(function(args) {
+    appWindow = args.appWindow;
+    return waitForSlideImage(appWindow.contentWindow.document,
+                             800, 600, 'My Desktop Background');
+  }).then(function() {
+    return waitAndClickElement(appWindow, 'button.delete').
+        then(waitAndClickElement.bind(null, appWindow, '.cr-dialog-ok'));
+  }).then(function() {
+    return repeatUntil(function() {
+      return getFilesUnderVolume(volumeType, ['New Image Name.png']).then(
+          function() {
+            return pending('"New Image Name.png" is still there.');
+          },
+          function() { return true; });
+    });
+  });
+}
+
+/**
  * The traverseSlideImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
@@ -130,4 +172,20 @@ function renameImageOnDownloads() {
  */
 function renameImageOnDrive() {
   return renameImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
+}
+
+/**
+ * The deleteImage test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function deleteImageOnDownloads() {
+  return deleteImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
+}
+
+/**
+ * The deleteImage test for Google Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function deleteImageOnDrive() {
+  return deleteImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
 }

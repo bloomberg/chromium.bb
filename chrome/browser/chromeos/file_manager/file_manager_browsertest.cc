@@ -1319,7 +1319,6 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
-  AddScript("gallery/test_util.js");
   AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDownloads");
   StartTest();
@@ -1327,16 +1326,33 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        RenameImageOnDownloads) {
-  AddScript("gallery/test_util.js");
   AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDrive) {
-  AddScript("gallery/test_util.js");
   AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDrive");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDownloads) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("deleteImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       DeleteImageOnDownloads) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("deleteImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("deleteImageOnDrive");
   StartTest();
 }
 
