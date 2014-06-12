@@ -1753,8 +1753,7 @@ internal_paladin.add_config('winky-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
-  # TODO: unset warn_only when wolf is stable.
-  hw_tests=HWTestConfig.DefaultListCQ(warn_only=True),
+  hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
 internal_paladin.add_config('x86-zgb-paladin',
