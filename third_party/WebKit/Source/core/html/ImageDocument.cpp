@@ -233,9 +233,9 @@ float ImageDocument::scale() const
     return min(widthScale, heightScale);
 }
 
-void ImageDocument::resizeImageToFit()
+void ImageDocument::resizeImageToFit(ScaleType type)
 {
-    if (!m_imageElement || m_imageElement->document() != this || pageZoomFactor(this) > 1)
+    if (!m_imageElement || m_imageElement->document() != this || (pageZoomFactor(this) > 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), pageZoomFactor(this));
@@ -255,9 +255,9 @@ void ImageDocument::imageClicked(int x, int y)
     m_shouldShrinkImage = !m_shouldShrinkImage;
 
     if (m_shouldShrinkImage)
-        windowSizeChanged();
+        windowSizeChanged(ScaleZoomedDocument);
     else {
-        restoreImageSize();
+        restoreImageSize(ScaleZoomedDocument);
 
         updateLayout();
 
@@ -284,13 +284,13 @@ void ImageDocument::imageUpdated()
 
     if (shouldShrinkToFit()) {
         // Force resizing of the image
-        windowSizeChanged();
+        windowSizeChanged(ScaleOnlyUnzoomedDocument);
     }
 }
 
-void ImageDocument::restoreImageSize()
+void ImageDocument::restoreImageSize(ScaleType type)
 {
-    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || pageZoomFactor(this) < 1)
+    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || (pageZoomFactor(this) < 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), 1.0f);
@@ -320,7 +320,7 @@ bool ImageDocument::imageFitsInWindow() const
     return imageSize.width() <= windowSize.width() && imageSize.height() <= windowSize.height();
 }
 
-void ImageDocument::windowSizeChanged()
+void ImageDocument::windowSizeChanged(ScaleType type)
 {
     if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this)
         return;
@@ -341,13 +341,13 @@ void ImageDocument::windowSizeChanged()
         // If the window has been resized so that the image fits, restore the image size
         // otherwise update the restored image size.
         if (fitsInWindow)
-            restoreImageSize();
+            restoreImageSize(type);
         else
-            resizeImageToFit();
+            resizeImageToFit(type);
     } else {
         // If the image isn't resized but needs to be, then resize it.
         if (!fitsInWindow) {
-            resizeImageToFit();
+            resizeImageToFit(type);
             m_didShrinkImage = true;
         }
     }
@@ -385,7 +385,7 @@ void ImageDocument::trace(Visitor* visitor)
 void ImageEventListener::handleEvent(ExecutionContext*, Event* event)
 {
     if (event->type() == EventTypeNames::resize)
-        m_doc->windowSizeChanged();
+        m_doc->windowSizeChanged(ImageDocument::ScaleOnlyUnzoomedDocument);
     else if (event->type() == EventTypeNames::click && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         m_doc->imageClicked(mouseEvent->x(), mouseEvent->y());
