@@ -5,19 +5,17 @@
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
 
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::WebContents;
 using extensions::Extension;
-using extensions::ExtensionSystem;
+using extensions::ExtensionRegistry;
 using extensions::WebstoreInstaller;
 
 namespace {
@@ -72,11 +70,9 @@ EphemeralAppLauncher::CreateForLink(
 }
 
 void EphemeralAppLauncher::Start() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  DCHECK(extension_service);
-
-  const Extension* extension = extension_service->GetInstalledExtension(id());
+  const Extension* extension =
+      ExtensionRegistry::Get(profile())
+          ->GetExtensionById(id(), ExtensionRegistry::EVERYTHING);
   if (extension) {
     if (extensions::util::IsAppLaunchableWithoutEnabling(extension->id(),
                                                          profile())) {
@@ -101,7 +97,6 @@ void EphemeralAppLauncher::Start() {
   }
 
   // Fetch the app from the webstore.
-  StartObserving();
   BeginInstall();
 }
 
@@ -110,7 +105,6 @@ EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
                                            gfx::NativeWindow parent_window,
                                            const Callback& callback)
     : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
-      extension_registry_observer_(this),
       parent_window_(parent_window),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))) {
@@ -123,16 +117,10 @@ EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
                                   ProfileForWebContents(web_contents),
                                   callback),
       content::WebContentsObserver(web_contents),
-      extension_registry_observer_(this),
       parent_window_(NativeWindowForWebContents(web_contents)) {
 }
 
 EphemeralAppLauncher::~EphemeralAppLauncher() {}
-
-void EphemeralAppLauncher::StartObserving() {
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile()));
-}
 
 void EphemeralAppLauncher::LaunchApp(const Extension* extension) const {
   DCHECK(extension);
@@ -238,46 +226,25 @@ EphemeralAppLauncher::CreateApproval() const {
 }
 
 void EphemeralAppLauncher::CompleteInstall(const std::string& error) {
-  if (!error.empty())
-    WebstoreStandaloneInstaller::CompleteInstall(error);
+  if (error.empty()) {
+    const Extension* extension =
+        ExtensionRegistry::Get(profile())
+            ->GetExtensionById(id(), ExtensionRegistry::ENABLED);
+    if (extension)
+      LaunchApp(extension);
+  }
 
-  // If the installation succeeds, we reach this point as a result of
-  // chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED, but this is
-  // broadcasted before
-  // ExtensionService has added the extension to its list of installed
-  // extensions and is too early to launch the app. Instead, we will launch at
-  // EphemeralAppLauncher::OnExtensionLoaded().
-  // TODO(tmdiep): Refactor extensions/WebstoreInstaller or
-  // WebstoreStandaloneInstaller to support this cleanly.
+  WebstoreStandaloneInstaller::CompleteInstall(error);
 }
 
 void EphemeralAppLauncher::WebContentsDestroyed() {
   AbortInstall();
 }
 
-void EphemeralAppLauncher::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
-  if (extension->id() == id()) {
-    LaunchApp(extension);
-    WebstoreStandaloneInstaller::CompleteInstall(std::string());
-  }
-}
-
 void EphemeralAppLauncher::ExtensionEnableFlowFinished() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  DCHECK(extension_service);
-
-  const Extension* extension = extension_service->GetExtensionById(id(), false);
-  if (extension) {
-    LaunchApp(extension);
-    WebstoreStandaloneInstaller::CompleteInstall(std::string());
-  } else {
-    WebstoreStandaloneInstaller::CompleteInstall(kLaunchAbortedError);
-  }
+  CompleteInstall(std::string());
 }
 
 void EphemeralAppLauncher::ExtensionEnableFlowAborted(bool user_initiated) {
-  WebstoreStandaloneInstaller::CompleteInstall(kLaunchAbortedError);
+  CompleteInstall(kLaunchAbortedError);
 }

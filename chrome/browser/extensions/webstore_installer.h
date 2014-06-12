@@ -160,7 +160,7 @@ class WebstoreInstaller : public content::NotificationObserver,
     // Required minimum version.
     scoped_ptr<Version> minimum_version;
 
-    // Ephemeral apps (experimental) are not permanently installed in Chrome.
+    // Ephemeral apps are transiently installed.
     bool is_ephemeral;
 
     // The authuser index required to download the item being installed. May be
@@ -199,12 +199,8 @@ class WebstoreInstaller : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ExtensionRegistryObserver.
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension) OVERRIDE;
 
   // Removes the reference to the delegate passed in the constructor. Used when
   // the delegate object must be deleted before this object.

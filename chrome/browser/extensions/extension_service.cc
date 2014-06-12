@@ -1978,7 +1978,7 @@ void ExtensionService::FinishInstallation(
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 
-  ExtensionRegistry::Get(profile_)->TriggerOnWillBeInstalled(
+  registry_->TriggerOnWillBeInstalled(
       extension, is_update, from_ephemeral, old_name);
 
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
@@ -1991,6 +1991,9 @@ void ExtensionService::FinishInstallation(
   }
 
   AddExtension(extension);
+
+  // Notify observers that need to know when an installation is complete.
+  registry_->TriggerOnInstalled(extension);
 
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it. We do this last so that it has already been
@@ -2077,6 +2080,8 @@ void ExtensionService::PromoteEphemeralApp(
 
     registry_->TriggerOnLoaded(extension);
   }
+
+  registry_->TriggerOnInstalled(extension);
 
   if (!is_from_sync && extension_sync_service_)
     extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);

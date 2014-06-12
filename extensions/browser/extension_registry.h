@@ -86,6 +86,10 @@ class ExtensionRegistry : public KeyedService {
                                 bool from_ephemeral,
                                 const std::string& old_name);
 
+  // Invokes the observer method OnExtensionInstalled(). The extension must be
+  // contained in one of the registry's extension sets.
+  void TriggerOnInstalled(const Extension* extension);
+
   // Invokes the observer method OnExtensionUninstalled(). The extension must
   // not be any installed extension with |extension|'s ID.
   void TriggerOnUninstalled(const Extension* extension);

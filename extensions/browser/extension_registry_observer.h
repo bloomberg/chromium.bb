@@ -59,7 +59,13 @@ class ExtensionRegistryObserver {
       bool from_ephemeral,
       const std::string& old_name) {}
 
-  // Called after an extension is uninstalled. The extension no longer exsit in
+  // Called when the installation of |extension| is complete. At this point the
+  // extension is tracked in one of the ExtensionRegistry sets, but is not
+  // necessarily enabled.
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension) {}
+
+  // Called after an extension is uninstalled. The extension no longer exists in
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) {}
