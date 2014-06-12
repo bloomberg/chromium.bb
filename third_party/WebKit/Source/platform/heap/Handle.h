@@ -612,7 +612,7 @@ protected:
 
     T* m_raw;
 
-    template<bool x, bool y, ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
+    template<bool x, WTF::WeakHandlingFlag y, ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     friend class Visitor;
 };
 
@@ -1049,6 +1049,12 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
 
     static PeekOutType peek(const WebCore::WeakMember<T>& value) { return value; }
     static PassOutType passOut(const WebCore::WeakMember<T>& value) { return value; }
+    static bool shouldRemoveFromCollection(WebCore::Visitor* visitor, WebCore::WeakMember<T>& value) { return !visitor->isAlive(value); }
+    static void traceInCollection(WebCore::Visitor* visitor, WebCore::WeakMember<T>& weakMember, WebCore::ShouldWeakPointersBeMarkedStrongly strongify)
+    {
+        if (strongify == WebCore::WeakPointersActStrong)
+            visitor->trace(reinterpret_cast<WebCore::Member<T>&>(weakMember)); // Strongified visit.
+    }
 };
 
 template<typename T> struct PtrHash<WebCore::Member<T> > : PtrHash<T*> {
@@ -1093,11 +1099,6 @@ struct NeedsTracing<WebCore::Member<T> > {
 template<typename T>
 struct IsWeak<WebCore::WeakMember<T> > {
     static const bool value = true;
-};
-
-template<typename Table>
-struct IsWeak<WebCore::HeapHashTableBacking<Table> > {
-    static const bool value = Table::ValueTraits::isWeak;
 };
 
 template<typename T> inline T* getPtr(const WebCore::Member<T>& p)

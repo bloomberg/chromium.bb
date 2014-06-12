@@ -996,6 +996,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U, typename V>
     void ListHashSet<T, inlineCapacity, U, V>::trace(typename Allocator::Visitor* visitor)
     {
+        COMPILE_ASSERT(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, ListHashSetDoesNotSupportWeakness);
         // This marks all the nodes and their contents live that can be
         // accessed through the HashTable.
         m_impl.trace(visitor);

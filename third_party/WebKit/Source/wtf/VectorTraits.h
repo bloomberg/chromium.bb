@@ -45,7 +45,7 @@ namespace WTF {
         struct NeedsTracingLazily {
             static const bool value = NeedsTracing<T>::value;
         };
-        static const bool isWeak = IsWeak<T>::value;
+        static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
     };
 
     template<typename T>
@@ -87,7 +87,7 @@ namespace WTF {
         struct NeedsTracingLazily {
             static const bool value = ShouldBeTraced<FirstTraits>::value || ShouldBeTraced<SecondTraits>::value;
         };
-        static const bool isWeak = FirstTraits::isWeak || SecondTraits::isWeak;
+        static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
     };
 
 } // namespace WTF

@@ -97,7 +97,7 @@ namespace WTF {
     class HashTableConstIterator;
     template<typename Value, typename HashFunctions, typename HashTraits, typename Allocator>
     class LinkedHashSet;
-    template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
+    template<WeakHandlingFlag x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
     struct WeakProcessingHashTableHelper;
 
     typedef enum { HashItemKnownGood } HashItemKnownGoodTag;
@@ -532,7 +532,7 @@ namespace WTF {
         mutable OwnPtr<Stats> m_stats;
 #endif
 
-        template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z> friend struct WeakProcessingHashTableHelper;
+        template<WeakHandlingFlag x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z> friend struct WeakProcessingHashTableHelper;
         template<typename T, typename U, typename V, typename W> friend class LinkedHashSet;
     };
 
@@ -1097,16 +1097,16 @@ namespace WTF {
         return *this;
     }
 
-    template<bool isWeak, typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    template<WeakHandlingFlag weakHandlingFlag, typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     struct WeakProcessingHashTableHelper;
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    struct WeakProcessingHashTableHelper<false, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+    struct WeakProcessingHashTableHelper<NoWeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
         static void process(typename Allocator::Visitor* visitor, void* closure) { }
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    struct WeakProcessingHashTableHelper<true, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+    struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
         static void process(typename Allocator::Visitor* visitor, void* closure)
         {
             typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
@@ -1120,7 +1120,7 @@ namespace WTF {
                 // strongly).
                 for (typename HashTableType::ValueType* element = table->m_table + table->m_tableSize - 1; element >= table->m_table; element--) {
                     if (!HashTableType::isEmptyOrDeletedBucket(*element)) {
-                        if (Allocator::hasDeadMember(visitor, *element)) {
+                        if (Traits::shouldRemoveFromCollection(visitor, *element)) {
                             table->registerModification();
                             HashTableType::deleteBucket(*element); // Also calls the destructor.
                             table->m_deletedCount++;
@@ -1156,10 +1156,10 @@ namespace WTF {
         // while we are iterating over them. The weakProcessing callback will
         // mark the backing as a void pointer, and will perform weak processing
         // if needed.
-        if (!Traits::isWeak)
+        if (Traits::weakHandlingFlag == NoWeakHandlingInCollections)
             Allocator::markNoTracing(visitor, m_table);
         else
-            Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::isWeak, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
+            Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
         if (ShouldBeTraced<Traits>::value) {
             for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
                 if (!isEmptyOrDeletedBucket(*element))

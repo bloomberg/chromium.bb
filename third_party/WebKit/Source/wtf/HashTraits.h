@@ -63,7 +63,9 @@ namespace WTF {
         struct NeedsTracingLazily {
             static const bool value = NeedsTracing<T>::value;
         };
-        static const bool isWeak = IsWeak<T>::value;
+        static const WeakHandlingFlag weakHandlingFlag = IsWeak<T>::value ? WeakHandlingInCollections : NoWeakHandlingInCollections;
+        template<typename Visitor>
+        static bool shouldRemoveFromCollection(Visitor*, T&) { return false; }
     };
 
     // Default integer traits disallow both 0 and -1 as keys (max value instead of -1 for unsigned).
@@ -270,12 +272,18 @@ namespace WTF {
         struct NeedsTracingLazily {
             static const bool value = ShouldBeTraced<KeyTraits>::value || ShouldBeTraced<ValueTraits>::value;
         };
-        static const bool isWeak = KeyTraits::isWeak || ValueTraits::isWeak;
+        static const WeakHandlingFlag weakHandlingFlag = (KeyTraits::weakHandlingFlag == WeakHandlingInCollections || ValueTraits::weakHandlingFlag == WeakHandlingInCollections) ? WeakHandlingInCollections : NoWeakHandlingInCollections;
 
         static const unsigned minimumTableSize = KeyTraits::minimumTableSize;
 
         static void constructDeletedValue(TraitType& slot) { KeyTraits::constructDeletedValue(slot.key); }
         static bool isDeletedValue(const TraitType& value) { return KeyTraits::isDeletedValue(value.key); }
+        template<typename Visitor>
+        static bool shouldRemoveFromCollection(Visitor* visitor, TraitType& pair)
+        {
+            return KeyTraits::shouldRemoveFromCollection(visitor, pair.key)
+                || ValueTraits::shouldRemoveFromCollection(visitor, pair.value);
+        }
     };
 
     template<typename Key, typename Value>

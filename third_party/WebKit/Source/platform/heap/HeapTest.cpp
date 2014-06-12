@@ -44,6 +44,37 @@
 
 namespace WebCore {
 
+class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
+public:
+    static IntWrapper* create(int x)
+    {
+        return new IntWrapper(x);
+    }
+
+    virtual ~IntWrapper()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+    static void trace(Visitor*) { }
+
+    int value() const { return m_x; }
+
+    bool operator==(const IntWrapper& other) const { return other.value() == value(); }
+
+    unsigned hash() { return IntHash<int>::hash(m_x); }
+
+protected:
+    IntWrapper(int x) : m_x(x) { }
+
+private:
+    IntWrapper();
+    int m_x;
+};
+
+USED_FROM_MULTIPLE_THREADS(IntWrapper);
+
 class ThreadMarker {
 public:
     ThreadMarker() : m_creatingThread(reinterpret_cast<ThreadState*>(0)), m_num(0) { }
@@ -75,6 +106,49 @@ struct ThreadMarkerHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
+typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeakPair;
+
+struct PairWithWeakHandling : public StrongWeakPair {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+
+public:
+    // Regular constructor.
+    PairWithWeakHandling(IntWrapper* one, IntWrapper* two)
+        : StrongWeakPair(one, two)
+    {
+        ASSERT(one); // We use null first field to indicate empty slots in the hash table.
+    }
+
+    // The HashTable (via the HashTrait) calls this constructor with a
+    // placement new to mark slots in the hash table as being deleted. We will
+    // never call trace or the destructor on these slots. We mark ourselves deleted
+    // with a pointer to -1 in the first field.
+    PairWithWeakHandling(WTF::HashTableDeletedValueType)
+        : StrongWeakPair(reinterpret_cast<IntWrapper*>(-1), nullptr)
+    {
+    }
+
+    // Used by the HashTable (via the HashTrait) to skip deleted slots in the
+    // table. Recognizes objects that were 'constructed' using the above
+    // constructor.
+    bool isHashTableDeletedValue() const { return first == reinterpret_cast<IntWrapper*>(-1); }
+
+    // Since we don't allocate independent objects of this type, we don't need
+    // a regular trace method. Instead, we use a traceInCollection method.
+    void traceInCollection(Visitor* visitor, ShouldWeakPointersBeMarkedStrongly strongify)
+    {
+        visitor->trace(first);
+        visitor->traceInCollection(second, strongify);
+    }
+    // The traceInCollection may not trace the weak members, so it is vital
+    // that shouldRemoveFromCollection checks them so the entry can be removed
+    // from the collection (otherwise it would contain a dangling pointer).
+    bool shouldRemoveFromCollection(Visitor* visitor)
+    {
+        return !visitor->isAlive(second);
+    }
+};
+
 }
 
 namespace WTF {
@@ -89,6 +163,29 @@ template<> struct HashTraits<WebCore::ThreadMarker> : GenericHashTraits<WebCore:
     static const bool emptyValueIsZero = true;
     static void constructDeletedValue(WebCore::ThreadMarker& slot) { new (NotNull, &slot) WebCore::ThreadMarker(HashTableDeletedValue); }
     static bool isDeletedValue(const WebCore::ThreadMarker& slot) { return slot.isHashTableDeletedValue(); }
+};
+
+// The hash algorithm for our custom pair class is just the standard double
+// hash for pairs. Note that this means you can't mutate either of the parts of
+// the pair while they are in the hash table, as that would change their hash
+// code and thus their preferred placement in the table.
+template<> struct DefaultHash<WebCore::PairWithWeakHandling> {
+    typedef PairHash<WebCore::Member<WebCore::IntWrapper>, WebCore::WeakMember<WebCore::IntWrapper> > Hash;
+};
+
+// Custom traits for the pair. These are weakness handling traits, which means
+// PairWithWeakHandling must implement the traceInCollection and
+// shouldRemoveFromCollection methods. In addition, these traits are concerned
+// with the two magic values for the object, that represent empty and deleted
+// slots in the hash table. The SimpleClassHashTraits allow empty slots in the
+// table to be initialzed with memset to zero, and we use -1 in the first part
+// of the pair to represent deleted slots.
+template<> struct HashTraits<WebCore::PairWithWeakHandling> : WebCore::WeakHandlingHashTraits<WebCore::PairWithWeakHandling> {
+    static const bool needsDestruction = false;
+    static const bool hasIsEmptyValueFunction = true;
+    static bool isEmptyValue(const WebCore::PairWithWeakHandling& value) { return !value.first; }
+    static void constructDeletedValue(WebCore::PairWithWeakHandling& slot) { new (NotNull, &slot) WebCore::PairWithWeakHandling(HashTableDeletedValue); }
+    static bool isDeletedValue(const WebCore::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
 };
 
 }
@@ -293,35 +390,6 @@ static void clearOutOldGarbage(HeapStats* heapStats)
     }
 }
 
-class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
-public:
-    static IntWrapper* create(int x)
-    {
-        return new IntWrapper(x);
-    }
-
-    virtual ~IntWrapper()
-    {
-        ++s_destructorCalls;
-    }
-
-    static int s_destructorCalls;
-    static void trace(Visitor*) { }
-
-    int value() const { return m_x; }
-
-    bool operator==(const IntWrapper& other) const { return other.value() == value(); }
-
-    unsigned hash() { return IntHash<int>::hash(m_x); }
-
-protected:
-    IntWrapper(int x) : m_x(x) { }
-
-private:
-    IntWrapper();
-    int m_x;
-};
-
 class OffHeapInt : public RefCounted<OffHeapInt> {
 public:
     static RefPtr<OffHeapInt> create(int x)
@@ -350,8 +418,6 @@ private:
     OffHeapInt();
     int m_x;
 };
-
-USED_FROM_MULTIPLE_THREADS(IntWrapper);
 
 int IntWrapper::s_destructorCalls = 0;
 int OffHeapInt::s_destructorCalls = 0;
@@ -3317,12 +3383,19 @@ TEST(HeapTest, CheckAndMarkPointer)
         EXPECT_TRUE(scope.allThreadsParked());
         Heap::makeConsistentForGC();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
-            EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
-            EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, endAddresses[i]));
+            // We would like to assert that checkAndMarkPointer returned false
+            // here because the pointers no longer point into a valid object
+            // (it's been freed by the GCs. But checkAndMarkPointer will return
+            // true for any pointer that points into a heap page, regardless of
+            // whether it points at a valid object (this ensures the
+            // correctness of the page-based on-heap address caches), so we
+            // can't make that assert.
+            Heap::checkAndMarkPointer(&visitor, objectAddresses[i]);
+            Heap::checkAndMarkPointer(&visitor, endAddresses[i]);
         }
         EXPECT_EQ(0ul, visitor.count());
-        EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, largeObjectAddress));
-        EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress));
+        Heap::checkAndMarkPointer(&visitor, largeObjectAddress);
+        Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress);
         EXPECT_EQ(0ul, visitor.count());
     }
     // This round of GC is important to make sure that the object start
@@ -3977,6 +4050,204 @@ TEST(HeapTest, NeedsAdjustAndMark)
     // class UseMixin : public SimpleObject, public Mixin {};
     EXPECT_FALSE(NeedsAdjustAndMark<UseMixin>::value);
     EXPECT_FALSE(NeedsAdjustAndMark<const UseMixin>::value);
+}
+
+template<typename Set>
+void setWithCustomWeaknessHandling()
+{
+    typedef typename Set::iterator Iterator;
+    Persistent<IntWrapper> livingInt(IntWrapper::create(42));
+    Persistent<Set> set1(new Set());
+    {
+        Set set2;
+        Set* set3 = new Set();
+        set2.add(PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)));
+        set3->add(PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)));
+        set1->add(PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)));
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        // The first set is pointed to from a persistent, so it's referenced, but
+        // the weak processing may have taken place.
+        if (set1->size()) {
+            Iterator i1 = set1->begin();
+            EXPECT_EQ(4, i1->first->value());
+            EXPECT_EQ(5, i1->second->value());
+        }
+        // The second set is on-stack, so its backing store must be referenced from
+        // the stack. That makes the weak references strong.
+        Iterator i2 = set2.begin();
+        EXPECT_EQ(0, i2->first->value());
+        EXPECT_EQ(1, i2->second->value());
+        // The third set is pointed to from the stack, so it's referenced, but the
+        // weak processing may have taken place.
+        if (set3->size()) {
+            Iterator i3 = set3->begin();
+            EXPECT_EQ(2, i3->first->value());
+            EXPECT_EQ(3, i3->second->value());
+        }
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, set1->size());
+    set1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt));
+    set1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103))); // This one gets zapped at GC time because nothing holds the 103 alive.
+    set1->add(PairWithWeakHandling(IntWrapper::create(103), IntWrapper::create(103))); // This one gets zapped too.
+    set1->add(PairWithWeakHandling(livingInt, livingInt));
+    set1->add(PairWithWeakHandling(livingInt, livingInt)); // This one is identical to the previous and doesn't add anything.
+    EXPECT_EQ(4u, set1->size());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2u, set1->size());
+    Iterator i1 = set1->begin();
+    EXPECT_TRUE(i1->first->value() == 103 || i1->first == livingInt);
+    EXPECT_EQ(livingInt, i1->second);
+    ++i1;
+    EXPECT_TRUE(i1->first->value() == 103 || i1->first == livingInt);
+    EXPECT_EQ(livingInt, i1->second);
+}
+
+TEST(HeapTest, SetWithCustomWeaknessHandling)
+{
+    setWithCustomWeaknessHandling<HeapHashSet<PairWithWeakHandling> >();
+    setWithCustomWeaknessHandling<HeapLinkedHashSet<PairWithWeakHandling> >();
+}
+
+TEST(HeapTest, MapWithCustomWeaknessHandling)
+{
+    typedef HeapHashMap<PairWithWeakHandling, RefPtr<OffHeapInt> > Map;
+    typedef Map::iterator Iterator;
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    OffHeapInt::s_destructorCalls = 0;
+
+    Persistent<Map> map1(new Map());
+    Persistent<IntWrapper> livingInt(IntWrapper::create(42));
+    {
+        Map map2;
+        Map* map3 = new Map();
+        map2.add(PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)), OffHeapInt::create(1001));
+        map3->add(PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)), OffHeapInt::create(1002));
+        map1->add(PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)), OffHeapInt::create(1003));
+        EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
+
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        // The first map2 is pointed to from a persistent, so it's referenced, but
+        // the weak processing may have taken place.
+        if (map1->size()) {
+            Iterator i1 = map1->begin();
+            EXPECT_EQ(4, i1->key.first->value());
+            EXPECT_EQ(5, i1->key.second->value());
+            EXPECT_EQ(1003, i1->value->value());
+        }
+        // The second map2 is on-stack, so its backing store must be referenced from
+        // the stack. That makes the weak references strong.
+        Iterator i2 = map2.begin();
+        EXPECT_EQ(0, i2->key.first->value());
+        EXPECT_EQ(1, i2->key.second->value());
+        EXPECT_EQ(1001, i2->value->value());
+        // The third map2 is pointed to from the stack, so it's referenced, but the
+        // weak processing may have taken place.
+        if (map3->size()) {
+            Iterator i3 = map3->begin();
+            EXPECT_EQ(2, i3->key.first->value());
+            EXPECT_EQ(3, i3->key.second->value());
+            EXPECT_EQ(1002, i3->value->value());
+        }
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    EXPECT_EQ(0u, map1->size());
+    EXPECT_EQ(3, OffHeapInt::s_destructorCalls);
+
+    OffHeapInt::s_destructorCalls = 0;
+
+    map1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt), OffHeapInt::create(2000));
+    map1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103)), OffHeapInt::create(2001)); // This one gets zapped at GC time because nothing holds the 103 alive.
+    map1->add(PairWithWeakHandling(IntWrapper::create(103), IntWrapper::create(103)), OffHeapInt::create(2002)); // This one gets zapped too.
+    RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
+    map1->add(PairWithWeakHandling(livingInt, livingInt), dupeInt);
+    map1->add(PairWithWeakHandling(livingInt, livingInt), dupeInt); // This one is identical to the previous and doesn't add anything.
+    dupeInt.clear();
+
+    EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
+    EXPECT_EQ(4u, map1->size());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, OffHeapInt::s_destructorCalls);
+    EXPECT_EQ(2u, map1->size());
+    Iterator i1 = map1->begin();
+    EXPECT_TRUE(i1->key.first->value() == 103 || i1->key.first == livingInt);
+    EXPECT_EQ(livingInt, i1->key.second);
+    ++i1;
+    EXPECT_TRUE(i1->key.first->value() == 103 || i1->key.first == livingInt);
+    EXPECT_EQ(livingInt, i1->key.second);
+}
+
+TEST(HeapTest, MapWithCustomWeaknessHandling2)
+{
+    typedef HeapHashMap<RefPtr<OffHeapInt>, PairWithWeakHandling> Map;
+    typedef Map::iterator Iterator;
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    OffHeapInt::s_destructorCalls = 0;
+
+    Persistent<Map> map1(new Map());
+    Persistent<IntWrapper> livingInt(IntWrapper::create(42));
+
+    {
+        Map map2;
+        Map* map3 = new Map();
+        map2.add(OffHeapInt::create(1001), PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)));
+        map3->add(OffHeapInt::create(1002), PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)));
+        map1->add(OffHeapInt::create(1003), PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)));
+        EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
+
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        // The first map2 is pointed to from a persistent, so it's referenced, but
+        // the weak processing may have taken place.
+        if (map1->size()) {
+            Iterator i1 = map1->begin();
+            EXPECT_EQ(4, i1->value.first->value());
+            EXPECT_EQ(5, i1->value.second->value());
+            EXPECT_EQ(1003, i1->key->value());
+        }
+        // The second map2 is on-stack, so its backing store must be referenced from
+        // the stack. That makes the weak references strong.
+        Iterator i2 = map2.begin();
+        EXPECT_EQ(0, i2->value.first->value());
+        EXPECT_EQ(1, i2->value.second->value());
+        EXPECT_EQ(1001, i2->key->value());
+        // The third map2 is pointed to from the stack, so it's referenced, but the
+        // weak processing may have taken place.
+        if (map3->size()) {
+            Iterator i3 = map3->begin();
+            EXPECT_EQ(2, i3->value.first->value());
+            EXPECT_EQ(3, i3->value.second->value());
+            EXPECT_EQ(1002, i3->key->value());
+        }
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    EXPECT_EQ(0u, map1->size());
+    EXPECT_EQ(3, OffHeapInt::s_destructorCalls);
+
+    OffHeapInt::s_destructorCalls = 0;
+
+    map1->add(OffHeapInt::create(2000), PairWithWeakHandling(IntWrapper::create(103), livingInt));
+    map1->add(OffHeapInt::create(2001), PairWithWeakHandling(livingInt, IntWrapper::create(103))); // This one gets zapped at GC time because nothing holds the 103 alive.
+    map1->add(OffHeapInt::create(2002), PairWithWeakHandling(IntWrapper::create(103), IntWrapper::create(103))); // This one gets zapped too.
+    RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
+    map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt));
+    map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt)); // This one is identical to the previous and doesn't add anything.
+    dupeInt.clear();
+
+    EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
+    EXPECT_EQ(4u, map1->size());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, OffHeapInt::s_destructorCalls);
+    EXPECT_EQ(2u, map1->size());
+    Iterator i1 = map1->begin();
+    EXPECT_TRUE(i1->value.first->value() == 103 || i1->value.first == livingInt);
+    EXPECT_EQ(livingInt, i1->value.second);
+    ++i1;
+    EXPECT_TRUE(i1->value.first->value() == 103 || i1->value.first == livingInt);
+    EXPECT_EQ(livingInt, i1->value.second);
 }
 
 TEST(HeapTest, Bind)
