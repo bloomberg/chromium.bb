@@ -101,13 +101,9 @@ if test.format == 'make':
 
 
 # Test $AR and $AR_host environment variables.
-try:
-  os.environ['AR'] = 'my_ar_target2'
-  os.environ['AR_host'] = 'my_ar_host2'
+with TestGyp.LocalEnv({'AR': 'my_ar_target2',
+                       'AR_host': 'my_ar_host2'}):
   test.run_gyp('make_global_settings_ar.gyp')
-finally:
-  del os.environ['AR']
-  del os.environ['AR_host']
 # Ninja generator resolves $AR in gyp phase. Make generator doesn't.
 if test.format == 'ninja':
   if sys.platform == 'win32':
@@ -119,12 +115,9 @@ verify_ar_host(test, ar='my_ar_host2', rel_path=False)
 
 
 # Test 'AR' in 'make_global_settings' with $AR_host environment variable.
-try:
-  os.environ['AR_host'] = 'my_ar_host3'
+with TestGyp.LocalEnv({'AR_host': 'my_ar_host3'}):
   test.run_gyp('make_global_settings_ar.gyp',
                '-Dcustom_ar_target=my_ar_target3')
-finally:
-  del os.environ['AR_host']
 # TODO(yukawa): Support 'AR' in Ninja generator
 if test.format == 'make':
   verify_ar_target(test, ar='my_ar_target3', rel_path=True)
