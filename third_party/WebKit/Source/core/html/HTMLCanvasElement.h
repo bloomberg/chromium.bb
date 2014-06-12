@@ -176,7 +176,7 @@ private:
 
     void updateExternallyAllocatedMemory() const;
 
-    String toDataURLInternal(const String& mimeType, const double* quality) const;
+    String toDataURLInternal(const String& mimeType, const double* quality, bool isSaving = false) const;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> > m_observers;
 

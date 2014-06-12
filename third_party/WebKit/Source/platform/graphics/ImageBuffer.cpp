@@ -219,7 +219,7 @@ Platform3DObject ImageBuffer::getBackingTexture()
     return m_surface->getBackingTexture();
 }
 
-bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer)
+bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer, bool fromFrontBuffer)
 {
     if (!drawingBuffer)
         return false;
@@ -230,9 +230,10 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     Platform3DObject tex = m_surface->getBackingTexture();
     if (!context3D || !tex)
         return false;
+
     m_surface->invalidateCachedBitmap();
     return drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
-        GL_UNSIGNED_BYTE, 0, true, false);
+        GL_UNSIGNED_BYTE, 0, true, false, fromFrontBuffer);
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op)

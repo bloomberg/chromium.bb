@@ -429,10 +429,15 @@ bool DrawingBuffer::initialize(const IntSize& size)
     return true;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
 {
     if (!m_context->makeContextCurrent())
         return false;
+
+    GLint textureId = m_colorBuffer.textureId;
+    if (fromFrontBuffer)
+        textureId = m_frontColorBuffer.textureId;
+
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
             commit();
@@ -450,7 +455,7 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     RefPtr<MailboxInfo> bufferMailbox = adoptRef(new MailboxInfo());
     m_context->genMailboxCHROMIUM(bufferMailbox->mailbox.name);
-    m_context->bindTexture(GL_TEXTURE_2D, m_colorBuffer.textureId);
+    m_context->bindTexture(GL_TEXTURE_2D, textureId);
     m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
     m_context->flush();
 

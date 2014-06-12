@@ -348,6 +348,7 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
+    void setSavingImage(bool isSaving) { m_savingImage = isSaving; }
 protected:
     friend class WebGLDrawBuffers;
     friend class WebGLFramebuffer;
@@ -534,6 +535,8 @@ protected:
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
+
+    bool m_savingImage;
 
     enum ExtensionFlags {
         ApprovedExtension               = 0x00,

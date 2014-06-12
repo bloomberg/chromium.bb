@@ -376,10 +376,10 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
 
 const AtomicString HTMLCanvasElement::imageSourceURL() const
 {
-    return AtomicString(toDataURLInternal("image/png", 0));
+    return AtomicString(toDataURLInternal("image/png", 0, true));
 }
 
-String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality) const
+String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, bool isSaving) const
 {
     if (m_size.isEmpty() || !buffer())
         return String("data:,");
@@ -392,8 +392,11 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     if (imageData)
         return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
 
-    if (m_context)
+    if (m_context && m_context->is3d()) {
+        toWebGLRenderingContext(m_context.get())->setSavingImage(isSaving);
         m_context->paintRenderingResultsToCanvas();
+        toWebGLRenderingContext(m_context.get())->setSavingImage(false);
+    }
 
     return buffer()->toDataURL(encodingMimeType, quality);
 }

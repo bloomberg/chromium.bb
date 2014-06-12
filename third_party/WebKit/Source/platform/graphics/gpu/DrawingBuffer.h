@@ -158,7 +158,7 @@ public:
 
     // Destroys the TEXTURE_2D binding for the owned context
     bool copyToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
-        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY);
+        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer = false);
 
     void setPackAlignment(GLint param);
 
