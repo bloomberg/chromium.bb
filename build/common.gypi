@@ -4406,6 +4406,9 @@
                 ],
               }],
               ['_type=="shared_library" or _type=="loadable_module"', {
+                'ldflags!': [
+                  '-Wl,--exclude-libs=ALL',
+                ],
                 'ldflags': [
                   '-Wl,-shared,-Bsymbolic',
                 ],

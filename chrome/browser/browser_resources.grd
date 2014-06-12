@@ -87,7 +87,7 @@
         <include name="IDR_ABOUT_FLASH_JS" file="resources\about_flash.js" type="BINDATA" />
       </if>
       <include name="IDR_ABOUT_MEMORY_JS" file="resources\about_memory.js" flattenhtml="true" type="BINDATA" />
-      <if expr="not is_android">
+      <if expr="not disable_nacl">
         <include name="IDR_ABOUT_NACL_HTML" file="resources\about_nacl.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl.css" flattenhtml="true" type="chrome_html" />
         <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl.js" type="BINDATA" />
@@ -225,7 +225,7 @@
       <if expr="chromeos">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_chromeos.json" type="BINDATA" />
       </if>
-      <if expr="desktop_linux">
+      <if expr="desktop_linux or (is_android and enable_plugins)">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
       </if>
       <if expr="is_android">
