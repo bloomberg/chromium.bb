@@ -168,6 +168,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- GCMDriver multiplexed GCM receiver -->
+        <service android:exported="false"
+                 android:name="org.chromium.components.gcm_driver.GCMListener"/>
+        <receiver android:exported="false"
+                  android:name="org.chromium.components.gcm_driver.GCMListener$Receiver">
+            <intent-filter>
+                <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
+            </intent-filter>
+        </receiver>
+
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
                   android:authorities="org.chromium.chrome.shell"
                   android:exported="true" />
