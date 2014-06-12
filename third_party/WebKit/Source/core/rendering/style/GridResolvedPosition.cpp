@@ -15,9 +15,16 @@ static const NamedGridLinesMap& gridLinesForSide(const RenderStyle& style, GridP
     return (side == ColumnStartSide || side == ColumnEndSide) ? style.namedGridColumnLines() : style.namedGridRowLines();
 }
 
-static inline bool isNonExistentNamedLineOrArea(const String& lineName, const RenderStyle& style, GridPositionSide side)
+static inline String implicitNamedGridLineForSide(const String& lineName, GridPositionSide side)
 {
-    return !style.namedGridArea().contains(lineName) && !gridLinesForSide(style, side).contains(lineName);
+    return lineName + ((side == ColumnStartSide || side == RowStartSide) ? "-start" : "-end");
+}
+
+static bool isValidNamedLineOrArea(const String& lineName, const RenderStyle& style, GridPositionSide side)
+{
+    const NamedGridLinesMap& gridLineNames = gridLinesForSide(style, side);
+
+    return gridLineNames.contains(implicitNamedGridLineForSide(lineName, side)) || gridLineNames.contains(lineName);
 }
 
 static GridPositionSide calculateInitialPositionSide(GridTrackSizingDirection direction)
@@ -42,10 +49,12 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const RenderStyle& 
     if (initialPosition.isSpan() && finalPosition.isSpan())
         finalPosition.setAutoPosition();
 
-    if (initialPosition.isNamedGridArea() && isNonExistentNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, initialPositionSide))
+    // Try to early detect the case of non existing named grid lines. This way we could assume later that
+    // GridResolvedPosition::resolveGrisPositionFromStyle() always return a valid resolved position.
+    if (initialPosition.isNamedGridArea() && !isValidNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, initialPositionSide))
         initialPosition.setAutoPosition();
 
-    if (finalPosition.isNamedGridArea() && isNonExistentNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
+    if (finalPosition.isNamedGridArea() && !isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
         finalPosition.setAutoPosition();
 }
 
@@ -172,9 +181,10 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const Re
         // ''<custom-ident>-start (for grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the first such
         // line to the grid item’s placement.
         String namedGridLine = position.namedGridLine();
-        String implicitNamedGridLine = namedGridLine + ((side == ColumnStartSide || side == RowStartSide) ? "-start" : "-end");
+        ASSERT(isValidNamedLineOrArea(namedGridLine, gridContainerStyle, side));
+
         const NamedGridLinesMap& gridLineNames = gridLinesForSide(gridContainerStyle, side);
-        NamedGridLinesMap::const_iterator implicitLineIter = gridLineNames.find(implicitNamedGridLine);
+        NamedGridLinesMap::const_iterator implicitLineIter = gridLineNames.find(implicitNamedGridLineForSide(namedGridLine, side));
         if (implicitLineIter != gridLineNames.end())
             return adjustGridPositionForSide(implicitLineIter->value[0], side);
 
@@ -184,8 +194,10 @@ GridResolvedPosition GridResolvedPosition::resolveGridPositionFromStyle(const Re
         if (explicitLineIter != gridLineNames.end())
             return adjustGridPositionForSide(explicitLineIter->value[0], side);
 
-        // FIXME: if none of the above works specs mandate us to treat it as auto. We cannot return auto right here
-        // right now because callers expect a resolved position. We need deeper changes to support this use case.
+        // If none of the above works specs mandate us to treat it as auto BUT we should have detected it before calling
+        // this function in GridResolvedPosition::resolveGridPositionsFromStyle(). We should be also covered by the
+        // ASSERT at the beginning of this block.
+        ASSERT_NOT_REACHED();
         return GridResolvedPosition(0);
     }
     case AutoPosition:
