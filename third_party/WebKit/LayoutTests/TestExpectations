@@ -1094,3 +1094,9 @@ crbug.com/361045 inspector/layers/tracing-layer-tree.html [ Pass Failure ]
 # Started failing w/ Skia roll to b0b1aa0:679426c (chromium r276705).
 # (suppressing until I can triage w/ the skia folks).
 Bug(dpranke) virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Failure ]
+
+crbug.com/383596 fast/js/implicit-call-with-global-reentry.html [ Failure ]
+crbug.com/383596 fast/js/reserved-words-as-property.html [ Failure ]
+crbug.com/383596 inspector-protocol/runtime/runtime-getProperties.html [ Failure ]
+crbug.com/383596 inspector/console/console-eval-scoped.html [ Failure ]
+crbug.com/383596 inspector/console/console-object-preview-accessors.html [ Failure ]
