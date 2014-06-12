@@ -24,42 +24,45 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 import java.net.URISyntaxException;
 
 /**
  * Java side of Android implementation of the website settings UI.
  */
-class WebsiteSettingsPopup implements OnClickListener {
+public class WebsiteSettingsPopup implements OnClickListener {
     private static final String HELP_URL =
             "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
     private final Context mContext;
     private final Dialog mDialog;
     private final LinearLayout mContainer;
-    private final ContentViewCore mContentViewCore;
+    private final WebContents mWebContents;
     private final int mPadding;
     private TextView mCertificateViewer, mMoreInfoLink;
     private String mLinkUrl;
 
-    private WebsiteSettingsPopup(Context context, ContentViewCore contentViewCore,
-            final long nativeWebsiteSettingsPopup) {
+    private WebsiteSettingsPopup(Context context, WebContents webContents) {
         mContext = context;
+        mWebContents = webContents;
+
+        mContainer = new LinearLayout(mContext);
+        mContainer.setOrientation(LinearLayout.VERTICAL);
+        mPadding = (int) context.getResources().getDimension(R.dimen.certificate_viewer_padding);
+        mContainer.setPadding(mPadding, 0, mPadding, 0);
+
         mDialog = new Dialog(mContext);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setCanceledOnTouchOutside(true);
-        mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+        // This needs to come after other member initialization.
+        final long nativeWebsiteSettingsPopup = nativeInit(this, webContents);
+        mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
-            public void onCancel(DialogInterface dialogInterface) {
+            public void onDismiss(DialogInterface dialog) {
                 assert nativeWebsiteSettingsPopup != 0;
                 nativeDestroy(nativeWebsiteSettingsPopup);
             }
         });
-        mContainer = new LinearLayout(mContext);
-        mContainer.setOrientation(LinearLayout.VERTICAL);
-        mContentViewCore = contentViewCore;
-        mPadding = (int) context.getResources().getDimension(R.dimen.certificate_viewer_padding);
-        mContainer.setPadding(mPadding, 0, mPadding, 0);
     }
 
     /** Adds a section, which contains an icon, a headline, and a description. */
@@ -118,7 +121,7 @@ class WebsiteSettingsPopup implements OnClickListener {
 
     /** Displays the WebsiteSettingsPopup. */
     @CalledByNative
-    private void show() {
+    private void showDialog() {
         ScrollView scrollView = new ScrollView(mContext);
         scrollView.addView(mContainer);
         mDialog.addContentView(scrollView,
@@ -131,7 +134,12 @@ class WebsiteSettingsPopup implements OnClickListener {
     public void onClick(View v) {
         mDialog.dismiss();
         if (mCertificateViewer == v) {
-            byte[][] certChain = nativeGetCertificateChain(mContentViewCore);
+            byte[][] certChain = nativeGetCertificateChain(mWebContents);
+            if (certChain == null) {
+                // The WebContents may have been destroyed/invalidated. If so,
+                // ignore this request.
+                return;
+            }
             CertificateViewer.showCertificateChain(mContext, certChain);
         } else if (mMoreInfoLink == v) {
             try {
@@ -143,12 +151,22 @@ class WebsiteSettingsPopup implements OnClickListener {
         }
     }
 
-    @CalledByNative
-    private static WebsiteSettingsPopup create(Context context, ContentViewCore contentViewCore,
-            long nativeWebsiteSettingsPopup) {
-        return new WebsiteSettingsPopup(context, contentViewCore, nativeWebsiteSettingsPopup);
+    /**
+     * Shows a WebsiteSettings dialog for the provided WebContents.
+     *
+     * The popup adds itself to the view hierarchy which owns the reference while it's
+     * visible.
+     *
+     * @param context Context which is used for launching a dialog.
+     * @param webContents The WebContents for which to show Website information. This
+     *         information is retrieved for the visible entry.
+     */
+    @SuppressWarnings("unused")
+    public static void show(Context context, WebContents webContents) {
+        new WebsiteSettingsPopup(context, webContents);
     }
 
+    private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
     private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
-    private native byte[][] nativeGetCertificateChain(ContentViewCore contentViewCore);
+    private native byte[][] nativeGetCertificateChain(WebContents webContents);
 }
