@@ -68,9 +68,10 @@ class MockAudioRendererSource : public WebRtcAudioRendererSource {
  public:
   MockAudioRendererSource() {}
   virtual ~MockAudioRendererSource() {}
-  MOCK_METHOD3(RenderData, void(media::AudioBus* audio_bus,
+  MOCK_METHOD4(RenderData, void(media::AudioBus* audio_bus,
                                 int sample_rate,
-                                int audio_delay_milliseconds));
+                                int audio_delay_milliseconds,
+                                base::TimeDelta* current_time));
   MOCK_METHOD1(RemoveAudioRenderer, void(WebRtcAudioRenderer* renderer));
 };
 

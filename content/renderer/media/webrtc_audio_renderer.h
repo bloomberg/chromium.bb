@@ -194,8 +194,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;
 
-  // Protects access to |state_|, |source_| and |sink_|.
-  base::Lock lock_;
+  // Protects access to |state_|, |source_|, |sink_| and |current_time_|.
+  mutable base::Lock lock_;
 
   // Ref count for the MediaPlayers which are playing audio.
   int play_ref_count_;
@@ -213,6 +213,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Delay due to the FIFO in milliseconds.
   int fifo_delay_milliseconds_;
+
+  base::TimeDelta current_time_;
 
   // Saved volume and playing state of the root renderer.
   PlayingState playing_state_;

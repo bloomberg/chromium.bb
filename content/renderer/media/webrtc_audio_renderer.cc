@@ -450,7 +450,9 @@ void WebRtcAudioRenderer::SetVolume(float volume) {
 }
 
 base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {
-  return base::TimeDelta();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
+  return current_time_;
 }
 
 bool WebRtcAudioRenderer::IsLocalRenderer() const {
@@ -495,7 +497,8 @@ void WebRtcAudioRenderer::SourceCallback(
   // We need to keep render data for the |source_| regardless of |state_|,
   // otherwise the data will be buffered up inside |source_|.
   source_->RenderData(audio_bus, sink_params_.sample_rate(),
-                      output_delay_milliseconds);
+                      output_delay_milliseconds,
+                      &current_time_);
 
   // Avoid filling up the audio bus if we are not playing; instead
   // return here and ensure that the returned value in Render() is 0.

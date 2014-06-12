@@ -126,7 +126,8 @@ void WebRtcAudioDeviceImpl::OnSetFormat(
 
 void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                        int sample_rate,
-                                       int audio_delay_milliseconds) {
+                                       int audio_delay_milliseconds,
+                                       base::TimeDelta* current_time) {
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
 
   {
@@ -179,7 +180,9 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
                                                   &ntp_time_ms);
       accumulated_audio_frames += num_audio_frames;
     }
-
+    if (elapsed_time_ms >= 0) {
+      *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
+    }
     audio_data += bytes_per_10_ms;
   }
 

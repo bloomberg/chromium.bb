@@ -189,7 +189,8 @@ class WebRtcAudioRendererSource {
   // Callback to get the rendered data.
   virtual void RenderData(media::AudioBus* audio_bus,
                           int sample_rate,
-                          int audio_delay_milliseconds) = 0;
+                          int audio_delay_milliseconds,
+                          base::TimeDelta* current_time) = 0;
 
   // Callback to notify the client that the renderer is going away.
   virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) = 0;
@@ -390,7 +391,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Called on the AudioOutputDevice worker thread.
   virtual void RenderData(media::AudioBus* audio_bus,
                           int sample_rate,
-                          int audio_delay_milliseconds) OVERRIDE;
+                          int audio_delay_milliseconds,
+                          base::TimeDelta* current_time) OVERRIDE;
 
   // Called on the main render thread.
   virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
