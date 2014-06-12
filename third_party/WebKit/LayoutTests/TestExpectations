@@ -1087,3 +1087,10 @@ crbug.com/381102 inspector/sources/debugger/debugger-step-into-custom-element-ca
 
 crbug.com/382884 fast/canvas/alpha.html [ NeedsRebaseline ]
 crbug.com/382884 virtual/gpu/fast/canvas/alpha.html [ NeedsRebaseline ]
+
+# Started being flaky in r175790.
+crbug.com/361045 inspector/layers/tracing-layer-tree.html [ Pass Failure ]
+
+# Started failing w/ Skia roll to b0b1aa0:679426c (chromium r276705).
+# (suppressing until I can triage w/ the skia folks).
+Bug(dpranke) virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Failure ]
