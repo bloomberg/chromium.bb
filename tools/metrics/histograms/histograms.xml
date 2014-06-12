@@ -31894,6 +31894,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The success or failure of web fonts CORS-enabled fetching.</summary>
 </histogram>
 
+<histogram name="WebFont.DiskCache.EntryAge.Evict" units="hours">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Recorded upon an eviction of a cache entry for a font in Google Fonts.
+    Records the age of the cache entry.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DiskCache.EntryAge.Hit" units="hours">
+  <owner>kenjibaheux@chromium.org</owner>
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Recorded upon a cache hit for a font in Google Fonts. Records the age of the
+    cache entry.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.DiskCache.ReuseCount.Evict">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
@@ -48122,6 +48140,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="roboto" label="Roboto font"/>
   <suffix name="opensans" label="Open Sans font"/>
   <suffix name="others" label="Fonts other than Roboto and Open Sans"/>
+  <affected-histogram name="WebFont.DiskCache.EntryAge.Evict"/>
+  <affected-histogram name="WebFont.DiskCache.EntryAge.Hit"/>
   <affected-histogram name="WebFont.DiskCache.ReuseCount.Evict"/>
   <affected-histogram name="WebFont.DiskCache.ReuseCount.Hit"/>
   <affected-histogram name="WebFont.DiskCacheHit"/>

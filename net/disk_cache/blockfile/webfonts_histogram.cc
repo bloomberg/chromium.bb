@@ -78,21 +78,27 @@ void RecordEvictedEntry(const std::string& key) {
 }
 
 void RecordCacheHit(EntryImpl* entry) {
-  const char* label = HistogramLabel(entry->entry()->Data()->key);
+  const char* label = HistogramLabel(entry->GetKey());
   if (!label)
     return;
+  EntryStore* info = entry->entry()->Data();
   CACHE_HISTOGRAM_COUNTS_10000(HistogramName("DiskCache.ReuseCount.Hit", label),
-                               entry->entry()->Data()->reuse_count);
+                               info->reuse_count);
+  CACHE_HISTOGRAM_AGE(HistogramName("DiskCache.EntryAge.Hit", label),
+                      base::Time::FromInternalValue(info->creation_time));
   RecordCacheEvent(CACHE_EVENT_HIT, label);
 }
 
 void RecordEviction(EntryImpl* entry) {
-  const char* label = HistogramLabel(entry->entry()->Data()->key);
-  if (label)
+  const char* label = HistogramLabel(entry->GetKey());
+  if (!label)
     return;
+  EntryStore* info = entry->entry()->Data();
   CACHE_HISTOGRAM_COUNTS_10000(
       HistogramName("DiskCache.ReuseCount.Evict", label),
-      entry->entry()->Data()->reuse_count);
+      info->reuse_count);
+  CACHE_HISTOGRAM_AGE(HistogramName("DiskCache.EntryAge.Evict", label),
+                      base::Time::FromInternalValue(info->creation_time));
 }
 
 }  // namespace web_fonts_histogram
