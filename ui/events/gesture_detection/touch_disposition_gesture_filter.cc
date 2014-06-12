@@ -20,14 +20,13 @@ GestureEventData CreateGesture(EventType type,
                                const base::TimeTicks& timestamp,
                                const gfx::PointF& location) {
   GestureEventDetails details(type, 0, 0);
-  return GestureEventData(type,
+  return GestureEventData(details,
                           motion_event_id,
                           timestamp,
                           location.x(),
                           location.y(),
                           1,
-                          gfx::RectF(location.x(), location.y(), 0, 0),
-                          details);
+                          gfx::RectF(location.x(), location.y(), 0, 0));
 }
 
 enum RequiredTouches {
@@ -223,9 +222,9 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
 
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
     const GestureEventData& gesture = packet.gesture(i);
-    DCHECK(ET_GESTURE_TYPE_START <= gesture.type &&
-           gesture.type <= ET_GESTURE_TYPE_END);
-    if (state_.Filter(gesture.type)) {
+    DCHECK_GE(gesture.details.type(), ET_GESTURE_TYPE_START);
+    DCHECK_LE(gesture.details.type(), ET_GESTURE_TYPE_END);
+    if (state_.Filter(gesture.details.type())) {
       CancelTapIfNecessary();
       continue;
     }
@@ -245,7 +244,7 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
 void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
   // TODO(jdduke): Factor out gesture stream reparation code into a standalone
   // utility class.
-  switch (event.type) {
+  switch (event.type()) {
     case ET_GESTURE_LONG_TAP:
       if (!needs_tap_ending_event_)
         return;
@@ -270,8 +269,13 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
     case ET_GESTURE_TAP:
       DCHECK(needs_tap_ending_event_);
       if (needs_show_press_event_) {
-        GestureEventData show_press_event(event);
-        show_press_event.type = ET_GESTURE_SHOW_PRESS;
+        GestureEventData show_press_event(ET_GESTURE_SHOW_PRESS,
+                                          event.motion_event_id,
+                                          event.time,
+                                          event.x,
+                                          event.y,
+                                          event.details.touch_points(),
+                                          event.details.bounding_box_f());
         SendGesture(show_press_event);
         DCHECK(!needs_show_press_event_);
       }

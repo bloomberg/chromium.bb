@@ -21,7 +21,10 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   EventType type() const { return type_; }
 
   int touch_points() const { return touch_points_; }
-  void set_touch_points(int touch_points) { touch_points_ = touch_points; }
+  void set_touch_points(int touch_points) {
+    DCHECK_GT(touch_points, 0);
+    touch_points_ = touch_points;
+  }
 
   // TODO(tdresser): Return RectF. See crbug.com/337824.
   const gfx::Rect bounding_box() const {
@@ -107,6 +110,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   }
 
   void set_tap_count(int tap_count) {
+    DCHECK_GE(tap_count, 0);
     DCHECK(type_ == ET_GESTURE_TAP ||
            type_ == ET_GESTURE_TAP_UNCONFIRMED ||
            type_ == ET_GESTURE_DOUBLE_TAP);

@@ -13,6 +13,8 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_y)
     : type_(type),
       touch_points_(1) {
+  DCHECK_GE(type, ET_GESTURE_TYPE_START);
+  DCHECK_LE(type, ET_GESTURE_TYPE_END);
   switch (type_) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       data.scroll_begin.x_hint = delta_x;

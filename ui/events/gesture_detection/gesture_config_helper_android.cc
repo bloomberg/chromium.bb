@@ -13,6 +13,10 @@ namespace ui {
 namespace {
 // TODO(jdduke): Adopt GestureConfiguration on Android, crbug/339203.
 
+// This was the minimum tap/press size used on Android before the new gesture
+// detection pipeline.
+const float kMinGestureBoundsLengthDips = 24.f;
+
 GestureDetector::Config DefaultGestureDetectorConfig(
     const gfx::Display& display) {
   GestureDetector::Config config;
@@ -62,6 +66,7 @@ GestureProvider::Config DefaultGestureProviderConfig() {
   config.scale_gesture_detector_config =
       DefaultScaleGestureDetectorConfig(config.display);
   config.gesture_begin_end_types_enabled = false;
+  config.min_gesture_bounds_length = kMinGestureBoundsLengthDips;
   return config;
 }
 

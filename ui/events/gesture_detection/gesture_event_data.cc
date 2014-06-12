@@ -8,25 +8,20 @@
 
 namespace ui {
 
-GestureEventData::GestureEventData(EventType type,
+GestureEventData::GestureEventData(const GestureEventDetails& details,
                                    int motion_event_id,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
                                    int touch_point_count,
-                                   const gfx::RectF& bounding_box,
-                                   const GestureEventDetails& details)
-    : type(type),
+                                   const gfx::RectF& bounding_box)
+    : details(details),
       motion_event_id(motion_event_id),
       time(time),
       x(x),
-      y(y),
-      details(details) {
+      y(y) {
   DCHECK_GE(motion_event_id, 0);
   DCHECK_NE(0, touch_point_count);
-  DCHECK_GE(type, ET_GESTURE_TYPE_START);
-  DCHECK_LE(type, ET_GESTURE_TYPE_END);
-  DCHECK_EQ(type, details.type());
   this->details.set_touch_points(touch_point_count);
   this->details.set_bounding_box(bounding_box);
 }
@@ -38,20 +33,17 @@ GestureEventData::GestureEventData(EventType type,
                                    float y,
                                    int touch_point_count,
                                    const gfx::RectF& bounding_box)
-    : type(type),
+    : details(GestureEventDetails(type, 0, 0)),
       motion_event_id(motion_event_id),
       time(time),
       x(x),
-      y(y),
-      details(GestureEventDetails(type, 0, 0)) {
+      y(y) {
   DCHECK_GE(motion_event_id, 0);
-  DCHECK_NE(0, touch_point_count);
-  DCHECK_GE(type, ET_GESTURE_TYPE_START);
-  DCHECK_LE(type, ET_GESTURE_TYPE_END);
   details.set_touch_points(touch_point_count);
   details.set_bounding_box(bounding_box);
 }
 
-GestureEventData::GestureEventData() : type(ET_UNKNOWN), x(0), y(0) {}
+GestureEventData::GestureEventData() : x(0), y(0) {
+}
 
 }  //  namespace ui

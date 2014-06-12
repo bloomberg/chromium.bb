@@ -65,6 +65,8 @@ GestureProvider::Config DefaultGestureProviderConfig() {
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();
   config.gesture_begin_end_types_enabled = true;
+  // Half the size of the default touch length is a reasonable minimum.
+  config.min_gesture_bounds_length = GestureConfiguration::default_radius();
   return config;
 }
 

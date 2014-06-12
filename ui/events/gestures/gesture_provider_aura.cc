@@ -62,7 +62,7 @@ void GestureProviderAura::OnGestureEvent(
     const GestureEventData& gesture) {
   GestureEventDetails details = gesture.details;
 
-  if (gesture.type == ET_GESTURE_TAP) {
+  if (gesture.type() == ET_GESTURE_TAP) {
     int tap_count = 1;
     if (previous_tap_ && IsConsideredDoubleTap(*previous_tap_, gesture))
       tap_count = 1 + (previous_tap_->details.tap_count() % 3);
@@ -72,12 +72,12 @@ void GestureProviderAura::OnGestureEvent(
     else
       *previous_tap_ = gesture;
     previous_tap_->details = details;
-  } else if (gesture.type == ET_GESTURE_TAP_CANCEL) {
+  } else if (gesture.type() == ET_GESTURE_TAP_CANCEL) {
     previous_tap_.reset();
   }
 
   scoped_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(gesture.type,
+      new ui::GestureEvent(gesture.type(),
                            gesture.x,
                            gesture.y,
                            last_touch_event_flags_,

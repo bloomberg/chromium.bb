@@ -9,13 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
+#include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
 #include "ui/events/gesture_detection/snap_scroll_controller.h"
 #include "ui/gfx/display.h"
 
 namespace ui {
-
-struct GestureEventData;
 
 class GESTURE_DETECTION_EXPORT GestureProviderClient {
  public:
@@ -45,6 +44,12 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
     // event for every added touch point, and an ET_GESTURE_END event for every
     // removed touch point. Defaults to false.
     bool gesture_begin_end_types_enabled;
+
+    // The minimum size (both length and width, in dips) of the generated
+    // bounding box for all gesture types. This is useful for touch streams
+    // that may report zero or unreasonably small touch sizes.
+    // Defaults to 0.
+    float min_gesture_bounds_length;
   };
 
   GestureProvider(const Config& config, GestureProviderClient* client);
@@ -87,7 +92,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   bool CanHandle(const MotionEvent& event) const;
 
   void Fling(const MotionEvent& e, float velocity_x, float velocity_y);
-  void Send(const GestureEventData& gesture);
+  void Send(GestureEventData gesture);
   bool SendLongTapIfNecessary(const MotionEvent& event);
   void EndTouchScrollIfNecessary(const MotionEvent& event,
                                  bool send_scroll_end_event);
@@ -121,7 +126,9 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // GESTURE_TAP_CANCEL for removing any ::active styling.
   base::TimeTicks current_longpress_time_;
 
-  bool gesture_begin_end_types_enabled_;
+  const bool gesture_begin_end_types_enabled_;
+
+  const float min_gesture_bounds_length_;
 };
 
 }  //  namespace ui

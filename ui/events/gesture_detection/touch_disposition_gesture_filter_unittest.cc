@@ -31,7 +31,7 @@ class TouchDispositionGestureFilterTest
   virtual void ForwardGestureEvent(const GestureEventData& event) OVERRIDE {
     ++sent_gesture_count_;
     last_sent_gesture_time_ = event.time;
-    sent_gestures_.push_back(event.type);
+    sent_gestures_.push_back(event.type());
     last_sent_gesture_location_ = gfx::PointF(event.x, event.y);
     if (cancel_after_next_gesture_) {
       CancelTouchPoint();

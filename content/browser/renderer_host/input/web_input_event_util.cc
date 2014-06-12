@@ -241,7 +241,7 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
   gesture.timeStampSeconds = (data.time - base::TimeTicks()).InSecondsF();
   gesture.sourceDevice = blink::WebGestureDeviceTouchscreen;
 
-  switch (data.type) {
+  switch (data.type()) {
     case ui::ET_GESTURE_SHOW_PRESS:
       gesture.type = WebInputEvent::GestureShowPress;
       gesture.data.showPress.width = data.details.bounding_box_f().width();

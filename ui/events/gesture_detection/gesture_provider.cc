@@ -42,22 +42,20 @@ gfx::RectF GetBoundingBox(const MotionEvent& event) {
   return bounds;
 }
 
-GestureEventData CreateGesture(EventType type,
+GestureEventData CreateGesture(const GestureEventDetails& details,
                                int motion_event_id,
                                base::TimeTicks time,
                                float x,
                                float y,
                                size_t touch_point_count,
-                               const gfx::RectF& bounding_box,
-                               const GestureEventDetails& details) {
-  return GestureEventData(type,
+                               const gfx::RectF& bounding_box) {
+  return GestureEventData(details,
                           motion_event_id,
                           time,
                           x,
                           y,
                           static_cast<int>(touch_point_count),
-                          bounding_box,
-                          details);
+                          bounding_box);
 }
 
 GestureEventData CreateGesture(EventType type,
@@ -76,17 +74,15 @@ GestureEventData CreateGesture(EventType type,
                           bounding_box);
 }
 
-GestureEventData CreateGesture(EventType type,
-                               const MotionEvent& event,
-                               const GestureEventDetails& details) {
-  return CreateGesture(type,
+GestureEventData CreateGesture(const GestureEventDetails& details,
+                               const MotionEvent& event) {
+  return CreateGesture(details,
                        event.GetId(),
                        event.GetEventTime(),
                        event.GetX(),
                        event.GetY(),
                        event.GetPointerCount(),
-                       GetBoundingBox(event),
-                       details);
+                       GetBoundingBox(event));
 }
 
 GestureEventData CreateGesture(EventType type,
@@ -100,8 +96,7 @@ GestureEventData CreateGesture(EventType type,
                        GetBoundingBox(event));
 }
 
-GestureEventDetails CreateTapGestureDetails(EventType type,
-                                            const MotionEvent& event) {
+GestureEventDetails CreateTapGestureDetails(EventType type) {
   // Set the tap count to 1 even for ET_GESTURE_DOUBLE_TAP, in order to be
   // consistent with double tap behavior on a mobile viewport. See
   // crbug.com/234986 for context.
@@ -116,7 +111,8 @@ GestureEventDetails CreateTapGestureDetails(EventType type,
 GestureProvider::Config::Config()
     : display(gfx::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
       disable_click_delay(false),
-      gesture_begin_end_types_enabled(false) {}
+      gesture_begin_end_types_enabled(false),
+      min_gesture_bounds_length(0) {}
 
 GestureProvider::Config::~Config() {}
 
@@ -205,14 +201,13 @@ class GestureProvider::ScaleGestureListenerImpl
                        std::abs(dy));
     }
     GestureEventDetails pinch_details(ET_GESTURE_PINCH_UPDATE, scale, 0);
-    provider_->Send(CreateGesture(ET_GESTURE_PINCH_UPDATE,
+    provider_->Send(CreateGesture(pinch_details,
                                   e.GetId(),
                                   detector.GetEventTime(),
                                   detector.GetFocusX(),
                                   detector.GetFocusY(),
                                   e.GetPointerCount(),
-                                  GetBoundingBox(e),
-                                  pinch_details));
+                                  GetBoundingBox(e)));
     return true;
   }
 
@@ -303,7 +298,7 @@ class GestureProvider::GestureListenerImpl
     seen_first_scroll_event_ = false;
 
     GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN, 0, 0);
-    provider_->Send(CreateGesture(ET_GESTURE_TAP_DOWN, e, tap_details));
+    provider_->Send(CreateGesture(tap_details, e));
 
     // Return true to indicate that we want to handle touch.
     return true;
@@ -345,28 +340,26 @@ class GestureProvider::GestureListenerImpl
 
       // Use the co-ordinates from the touch down, as these co-ordinates are
       // used to determine which layer the scroll should affect.
-      provider_->Send(CreateGesture(ET_GESTURE_SCROLL_BEGIN,
+      provider_->Send(CreateGesture(scroll_details,
                                     e2.GetId(),
                                     e2.GetEventTime(),
                                     e1.GetX(),
                                     e1.GetY(),
                                     e2.GetPointerCount(),
-                                    GetBoundingBox(e2),
-                                    scroll_details));
+                                    GetBoundingBox(e2)));
     }
 
     if (distance_x || distance_y) {
       const gfx::RectF bounding_box = GetBoundingBox(e2);
       GestureEventDetails scroll_details(
           ET_GESTURE_SCROLL_UPDATE, -distance_x, -distance_y);
-      provider_->Send(CreateGesture(ET_GESTURE_SCROLL_UPDATE,
+      provider_->Send(CreateGesture(scroll_details,
                                     e2.GetId(),
                                     e2.GetEventTime(),
                                     bounding_box.CenterPoint().x(),
                                     bounding_box.CenterPoint().y(),
                                     e2.GetPointerCount(),
-                                    bounding_box,
-                                    scroll_details));
+                                    bounding_box));
     }
 
     return true;
@@ -393,7 +386,7 @@ class GestureProvider::GestureListenerImpl
                        float velocity_x,
                        float velocity_y) OVERRIDE {
     GestureEventDetails swipe_details(ET_GESTURE_SWIPE, velocity_x, velocity_y);
-    provider_->Send(CreateGesture(ET_GESTURE_SWIPE, e2, swipe_details));
+    provider_->Send(CreateGesture(swipe_details, e2));
     return true;
   }
 
@@ -404,21 +397,19 @@ class GestureProvider::GestureListenerImpl
     GestureEventDetails two_finger_tap_details(ET_GESTURE_TWO_FINGER_TAP,
                                                e1.GetTouchMajor(),
                                                e1.GetTouchMajor());
-    provider_->Send(CreateGesture(ET_GESTURE_TWO_FINGER_TAP,
+    provider_->Send(CreateGesture(two_finger_tap_details,
                                   e2.GetId(),
                                   e2.GetEventTime(),
                                   e1.GetX(),
                                   e1.GetY(),
                                   e2.GetPointerCount(),
-                                  GetBoundingBox(e2),
-                                  two_finger_tap_details));
+                                  GetBoundingBox(e2)));
     return true;
   }
 
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
     GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS, 0, 0);
-    provider_->Send(
-        CreateGesture(ET_GESTURE_SHOW_PRESS, e, show_press_details));
+    provider_->Send(CreateGesture(show_press_details, e));
   }
 
   virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE {
@@ -439,9 +430,7 @@ class GestureProvider::GestureListenerImpl
         // Notify Blink about this tapUp event anyway, when none of the above
         // conditions applied.
         provider_->Send(CreateGesture(
-            ET_GESTURE_TAP_UNCONFIRMED,
-            e,
-            CreateTapGestureDetails(ET_GESTURE_TAP_UNCONFIRMED, e)));
+            CreateTapGestureDetails(ET_GESTURE_TAP_UNCONFIRMED), e));
       }
     }
 
@@ -459,8 +448,7 @@ class GestureProvider::GestureListenerImpl
 
     ignore_single_tap_ = true;
 
-    provider_->Send(CreateGesture(
-        ET_GESTURE_TAP, e, CreateTapGestureDetails(ET_GESTURE_TAP, e)));
+    provider_->Send(CreateGesture(CreateTapGestureDetails(ET_GESTURE_TAP), e));
     return true;
   }
 
@@ -476,9 +464,7 @@ class GestureProvider::GestureListenerImpl
         if (!provider_->IsPinchInProgress() &&
             !provider_->IsScrollInProgress()) {
           provider_->Send(
-              CreateGesture(ET_GESTURE_DOUBLE_TAP,
-                            e,
-                            CreateTapGestureDetails(ET_GESTURE_DOUBLE_TAP, e)));
+              CreateGesture(CreateTapGestureDetails(ET_GESTURE_DOUBLE_TAP), e));
           return true;
         }
         break;
@@ -493,8 +479,7 @@ class GestureProvider::GestureListenerImpl
     SetIgnoreSingleTap(true);
 
     GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS, 0, 0);
-    provider_->Send(
-        CreateGesture(ET_GESTURE_LONG_PRESS, e, long_press_details));
+    provider_->Send(CreateGesture(long_press_details, e));
 
     // Returning true puts the GestureDetector in "longpress" mode, disabling
     // further scrolling.  This is undesirable, as it is quite common for a
@@ -554,7 +539,8 @@ GestureProvider::GestureProvider(const Config& config,
       pinch_in_progress_(false),
       double_tap_support_for_page_(true),
       double_tap_support_for_platform_(true),
-      gesture_begin_end_types_enabled_(config.gesture_begin_end_types_enabled) {
+      gesture_begin_end_types_enabled_(config.gesture_begin_end_types_enabled),
+      min_gesture_bounds_length_(config.min_gesture_bounds_length) {
   DCHECK(client);
   InitGestureDetectors(config);
 }
@@ -644,25 +630,33 @@ void GestureProvider::Fling(const MotionEvent& event,
     // start hint.
     GestureEventDetails scroll_details(
         ET_GESTURE_SCROLL_BEGIN, velocity_x, velocity_y);
-    Send(CreateGesture(ET_GESTURE_SCROLL_BEGIN, event, scroll_details));
+    Send(CreateGesture(scroll_details, event));
   }
   EndTouchScrollIfNecessary(event, false);
 
   GestureEventDetails fling_details(
       ET_SCROLL_FLING_START, velocity_x, velocity_y);
-  Send(CreateGesture(
-      ET_SCROLL_FLING_START, event, fling_details));
+  Send(CreateGesture(fling_details, event));
 }
 
-void GestureProvider::Send(const GestureEventData& gesture) {
+void GestureProvider::Send(GestureEventData gesture) {
   DCHECK(!gesture.time.is_null());
   // The only valid events that should be sent without an active touch sequence
   // are SHOW_PRESS and TAP, potentially triggered by the double-tap
   // delay timing out.
-  DCHECK(current_down_event_ || gesture.type == ET_GESTURE_TAP ||
-         gesture.type == ET_GESTURE_SHOW_PRESS);
+  DCHECK(current_down_event_ || gesture.type() == ET_GESTURE_TAP ||
+         gesture.type() == ET_GESTURE_SHOW_PRESS);
 
-  switch (gesture.type) {
+  // TODO(jdduke): Provide a way of skipping this clamping for stylus and/or
+  // mouse-based input, perhaps by exposing the source type on MotionEvent.
+  const gfx::RectF& gesture_bounds = gesture.details.bounding_box_f();
+  gesture.details.set_bounding_box(gfx::RectF(
+      gesture_bounds.x(),
+      gesture_bounds.y(),
+      std::max(min_gesture_bounds_length_, gesture_bounds.width()),
+      std::max(min_gesture_bounds_length_, gesture_bounds.height())));
+
+  switch (gesture.type()) {
     case ET_GESTURE_LONG_PRESS:
       DCHECK(!scale_gesture_listener_->IsScaleGestureDetectionInProgress());
       current_longpress_time_ = gesture.time;
@@ -720,7 +714,7 @@ bool GestureProvider::SendLongTapIfNecessary(const MotionEvent& event) {
       !current_longpress_time_.is_null() &&
       !scale_gesture_listener_->IsScaleGestureDetectionInProgress()) {
     GestureEventDetails long_tap_details(ET_GESTURE_LONG_TAP, 0, 0);
-    Send(CreateGesture(ET_GESTURE_LONG_TAP, event, long_tap_details));
+    Send(CreateGesture(long_tap_details, event));
     return true;
   }
   return false;
