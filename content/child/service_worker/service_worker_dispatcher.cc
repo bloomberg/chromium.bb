@@ -57,6 +57,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
+                        OnSetWaitingServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
                         OnSetCurrentServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
@@ -104,6 +106,7 @@ void ServiceWorkerDispatcher::RemoveProviderContext(
   DCHECK(provider_context);
   DCHECK(ContainsKey(provider_contexts_, provider_context->provider_id()));
   provider_contexts_.erase(provider_context->provider_id());
+  worker_to_provider_.erase(provider_context->waiting_handle_id());
   worker_to_provider_.erase(provider_context->current_handle_id());
 }
 
@@ -151,6 +154,9 @@ void ServiceWorkerDispatcher::OnWorkerRunLoopStopped() {
 WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
     const ServiceWorkerObjectInfo& info,
     bool adopt_handle) {
+  if (info.handle_id == kInvalidServiceWorkerHandleId)
+    return NULL;
+
   WorkerObjectMap::iterator existing_worker =
       service_workers_.find(info.handle_id);
 
@@ -228,6 +234,33 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
     provider->second->OnServiceWorkerStateChanged(handle_id, state);
 }
 
+void ServiceWorkerDispatcher::OnSetWaitingServiceWorker(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider != provider_contexts_.end()) {
+    int existing_waiting_id = provider->second->waiting_handle_id();
+    if (existing_waiting_id != info.handle_id &&
+        existing_waiting_id != kInvalidServiceWorkerHandleId) {
+      WorkerToProviderMap::iterator associated_provider =
+          worker_to_provider_.find(existing_waiting_id);
+      DCHECK(associated_provider != worker_to_provider_.end());
+      DCHECK(associated_provider->second->provider_id() == provider_id);
+      worker_to_provider_.erase(associated_provider);
+    }
+    provider->second->OnSetWaitingServiceWorker(provider_id, info);
+    if (info.handle_id != kInvalidServiceWorkerHandleId)
+      worker_to_provider_[info.handle_id] = provider->second;
+  }
+
+  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  if (found != script_clients_.end()) {
+    // Populate the .waiting field with the new worker object.
+    found->second->setWaiting(GetServiceWorker(info, false));
+  }
+}
+
 void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
     int thread_id,
     int provider_id,
@@ -240,8 +273,8 @@ void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
 
   ScriptClientMap::iterator found = script_clients_.find(provider_id);
   if (found != script_clients_.end()) {
-    // Populate the .current field with the new worker object.
-    found->second->setCurrentServiceWorker(GetServiceWorker(info, false));
+    // Populate the .controller field with the new worker object.
+    found->second->setController(GetServiceWorker(info, false));
   }
 }
 

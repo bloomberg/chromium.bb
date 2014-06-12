@@ -61,8 +61,10 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered,
                         OnStaleRegistered)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
+                        OnStaleSetServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
-                        OnStaleSetCurrentServiceWorker)
+                        OnStaleSetServiceWorker)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -73,7 +75,7 @@ void ServiceWorkerMessageFilter::OnStaleRegistered(
   SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
 }
 
-void ServiceWorkerMessageFilter::OnStaleSetCurrentServiceWorker(
+void ServiceWorkerMessageFilter::OnStaleSetServiceWorker(
     int thread_id,
     int provider_id,
     const ServiceWorkerObjectInfo& info) {

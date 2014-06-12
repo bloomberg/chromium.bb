@@ -36,9 +36,9 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   void OnStaleRegistered(int thread_id,
                          int request_id,
                          const ServiceWorkerObjectInfo& info);
-  void OnStaleSetCurrentServiceWorker(int thread_id,
-                                      int provider_id,
-                                      const ServiceWorkerObjectInfo& info);
+  void OnStaleSetServiceWorker(int thread_id,
+                               int provider_id,
+                               const ServiceWorkerObjectInfo& info);
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

@@ -55,6 +55,12 @@ void ServiceWorkerProviderHost::SetActiveVersion(
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetCurrentServiceWorker(
+      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
+}
+
+ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
+    ServiceWorkerVersion* version) {
   ServiceWorkerObjectInfo info;
   if (context_ && version) {
     scoped_ptr<ServiceWorkerHandle> handle =
@@ -63,9 +69,7 @@ void ServiceWorkerProviderHost::SetActiveVersion(
     info = handle->GetObjectInfo();
     dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
   }
-  dispatcher_host_->Send(
-      new ServiceWorkerMsg_SetCurrentServiceWorker(
-          kDocumentMainThreadId, provider_id(), info));
+  return info;
 }
 
 void ServiceWorkerProviderHost::SetWaitingVersion(
@@ -82,7 +86,8 @@ void ServiceWorkerProviderHost::SetWaitingVersion(
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
-  // TODO(kinuko): dispatch pendingchange event to the document.
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetWaitingServiceWorker(
+      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {

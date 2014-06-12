@@ -157,6 +157,13 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* handle_id */,
                      blink::WebServiceWorkerState)
 
+// Tells the child process to set the waiting ServiceWorker for the given
+// provider.
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetWaitingServiceWorker,
+                     int /* thread_id */,
+                     int /* provider_id */,
+                     content::ServiceWorkerObjectInfo)
+
 // Tells the child process to set the current ServiceWorker for the given
 // provider.
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetCurrentServiceWorker,

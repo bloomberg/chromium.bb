@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "webkit/common/resource_type.h"
 
 namespace IPC {
@@ -28,7 +29,7 @@ class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 
-// This class is the browser-process representation of a serice worker
+// This class is the browser-process representation of a service worker
 // provider. There is a provider per document and the lifetime of this
 // object is tied to the lifetime of its document in the renderer process.
 // This class holds service worker state that is scoped to an individual
@@ -94,6 +95,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                    const std::vector<int>& sent_message_port_ids);
 
  private:
+  // Creates a ServiceWorkerHandle to retain |version| and returns a
+  // ServiceWorkerInfo with the handle ID to pass to the provider. The
+  // provider is responsible for releasing the handle.
+  ServiceWorkerObjectInfo CreateHandleAndPass(ServiceWorkerVersion* version);
+
   const int process_id_;
   const int provider_id_;
   GURL document_url_;

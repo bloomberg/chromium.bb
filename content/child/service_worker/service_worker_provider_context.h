@@ -40,11 +40,14 @@ class ServiceWorkerProviderContext
   // Called from ServiceWorkerDispatcher.
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
+  void OnSetWaitingServiceWorker(int provider_id,
+                                 const ServiceWorkerObjectInfo& info);
   void OnSetCurrentServiceWorker(int provider_id,
                                  const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
 
+  ServiceWorkerHandleReference* waiting();
   // Gets the context's handle reference for .controller.
   // TODO(dominicc): Rename this to "controller".
   ServiceWorkerHandleReference* current();
@@ -54,6 +57,11 @@ class ServiceWorkerProviderContext
   // by a Service Worker.
   int current_handle_id() const;
 
+  // Gets the handle ID of the waiting Service Worker, or
+  // kInvalidServiceWorkerHandleId if the provider does not have a
+  // waiting Service Worker.
+  int waiting_handle_id() const;
+
  private:
   friend class base::RefCounted<ServiceWorkerProviderContext>;
   ~ServiceWorkerProviderContext();
@@ -61,6 +69,7 @@ class ServiceWorkerProviderContext
   const int provider_id_;
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_ptr<ServiceWorkerHandleReference> waiting_;
   scoped_ptr<ServiceWorkerHandleReference> current_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
