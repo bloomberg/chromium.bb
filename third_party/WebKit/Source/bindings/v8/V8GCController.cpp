@@ -48,6 +48,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGElement.h"
+#include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
 #include <algorithm>
 
@@ -435,6 +436,20 @@ void V8GCController::collectGarbage(v8::Isolate* isolate)
     ScriptState::Scope scope(scriptState.get());
     V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, "if (gc) gc();"), isolate);
     scriptState->disposePerContextData();
+}
+
+void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
+{
+    if (!isMainThread())
+        return;
+
+    static size_t lastUsageReportedToV8 = 0;
+
+    size_t currentUsage = Partitions::currentDOMMemoryUsage();
+    int64_t diff = static_cast<int64_t>(currentUsage) - static_cast<int64_t>(lastUsageReportedToV8);
+    isolate->AdjustAmountOfExternalAllocatedMemory(diff);
+
+    lastUsageReportedToV8 = currentUsage;
 }
 
 }  // namespace WebCore

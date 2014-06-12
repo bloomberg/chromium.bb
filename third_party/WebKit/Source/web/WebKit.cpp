@@ -33,6 +33,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8Initializer.h"
 #include "core/Init.h"
 #include "core/animation/AnimationClock.h"
@@ -75,6 +76,7 @@ public:
     virtual void didProcessTask() OVERRIDE
     {
         WebCore::Microtask::performCheckpoint();
+        WebCore::V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
     }
 };
 

@@ -990,6 +990,8 @@ TEST(PartitionAllocTest, FreeCache)
 {
     TestSetup();
 
+    EXPECT_EQ(0U, allocator.root()->totalSizeOfCommittedPages);
+
     size_t bigSize = allocator.root()->maxAllocation - kExtraAllocSize;
     size_t bucketIdx = (bigSize + kExtraAllocSize) >> WTF::kBucketShift;
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
@@ -999,6 +1001,7 @@ TEST(PartitionAllocTest, FreeCache)
     WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(0, bucket->freePagesHead);
     EXPECT_EQ(1, page->numAllocatedSlots);
+    EXPECT_EQ(WTF::kPartitionPageSize, allocator.root()->totalSizeOfCommittedPages);
     partitionFree(ptr);
     EXPECT_EQ(0, page->numAllocatedSlots);
     EXPECT_NE(-1, page->freeCacheIndex);
@@ -1010,6 +1013,8 @@ TEST(PartitionAllocTest, FreeCache)
     EXPECT_FALSE(page->freelistHead);
     EXPECT_EQ(-1, page->freeCacheIndex);
     EXPECT_EQ(0, page->numAllocatedSlots);
+    WTF::PartitionBucket* cycleFreeCacheBucket = &allocator.root()->buckets()[kTestBucketIndex];
+    EXPECT_EQ(cycleFreeCacheBucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize, allocator.root()->totalSizeOfCommittedPages);
 
     // Check that an allocation works ok whilst in this state (a free'd page
     // as the active pages head).
@@ -1025,7 +1030,7 @@ TEST(PartitionAllocTest, FreeCache)
         partitionFree(ptr);
         EXPECT_TRUE(page->freelistHead);
     }
-
+    EXPECT_EQ(WTF::kPartitionPageSize, allocator.root()->totalSizeOfCommittedPages);
     TestShutdown();
 }
 

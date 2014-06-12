@@ -254,6 +254,7 @@ struct PartitionSuperPageExtentEntry {
 };
 
 struct WTF_EXPORT PartitionRootBase {
+    size_t totalSizeOfCommittedPages;
     size_t totalSizeOfSuperPages;
     unsigned numBuckets;
     unsigned maxAllocation;
