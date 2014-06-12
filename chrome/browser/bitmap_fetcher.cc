@@ -67,12 +67,8 @@ void BitmapFetcher::OnURLFetchDownloadProgress(const net::URLFetcher* source,
 
 void BitmapFetcher::OnImageDecoded(const ImageDecoder* decoder,
                                    const SkBitmap& decoded_image) {
-  // Make a copy of the bitmap which we pass back to the UI thread.
-  scoped_ptr<SkBitmap> bitmap(new SkBitmap());
-  decoded_image.deepCopyTo(bitmap.get());
-
   // Report success.
-  delegate_->OnFetchComplete(url_, bitmap.get());
+  delegate_->OnFetchComplete(url_, &decoded_image);
 }
 
 void BitmapFetcher::OnDecodeImageFailed(const ImageDecoder* decoder) {
