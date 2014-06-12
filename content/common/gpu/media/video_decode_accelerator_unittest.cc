@@ -99,10 +99,7 @@ const base::FilePath::CharType* g_test_video_data =
 const base::FilePath::CharType* g_output_log = NULL;
 
 // The value is set by the switch "--rendering_fps".
-double g_rendering_fps = 0;
-
-// Disable rendering, the value is set by the switch "--disable_rendering".
-bool g_disable_rendering = false;
+double g_rendering_fps = 60;
 
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
@@ -145,10 +142,7 @@ struct TestVideoFile {
   std::string data_str;
 };
 
-// Presumed minimal display size.
-// We subtract one pixel from the width because some ARM chromebooks do not
-// support two fullscreen app running at the same time. See crbug.com/270064.
-const gfx::Size kThumbnailsDisplaySize(1366 - 1, 768);
+const gfx::Size kThumbnailsDisplaySize(1366, 768);
 const gfx::Size kThumbnailsPageSize(1600, 1200);
 const gfx::Size kThumbnailSize(160, 120);
 const int kMD5StringLength = 32;
@@ -196,156 +190,11 @@ enum ClientState {
   CS_MAX,  // Must be last entry.
 };
 
-// A wrapper client that throttles the PictureReady callbacks to a given rate.
-// It may drops or queues frame to deliver them on time.
-class ThrottlingVDAClient : public VideoDecodeAccelerator::Client,
-                            public base::SupportsWeakPtr<ThrottlingVDAClient> {
- public:
-  // Callback invoked whan the picture is dropped and should be reused for
-  // the decoder again.
-  typedef base::Callback<void(int32 picture_buffer_id)> ReusePictureCB;
-
-  ThrottlingVDAClient(VideoDecodeAccelerator::Client* client,
-                      double fps,
-                      ReusePictureCB reuse_picture_cb);
-  virtual ~ThrottlingVDAClient();
-
-  // VideoDecodeAccelerator::Client implementation
-  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                     const gfx::Size& dimensions,
-                                     uint32 texture_target) OVERRIDE;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
-
-  int num_decoded_frames() { return num_decoded_frames_; }
-
- private:
-
-  void CallClientPictureReady(int version);
-
-  VideoDecodeAccelerator::Client* client_;
-  ReusePictureCB reuse_picture_cb_;
-  base::TimeTicks next_frame_delivered_time_;
-  base::TimeDelta frame_duration_;
-
-  int num_decoded_frames_;
-  int stream_version_;
-  std::deque<media::Picture> pending_pictures_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ThrottlingVDAClient);
-};
-
-ThrottlingVDAClient::ThrottlingVDAClient(VideoDecodeAccelerator::Client* client,
-                                         double fps,
-                                         ReusePictureCB reuse_picture_cb)
-    : client_(client),
-      reuse_picture_cb_(reuse_picture_cb),
-      num_decoded_frames_(0),
-      stream_version_(0) {
-  CHECK(client_);
-  CHECK_GT(fps, 0);
-  frame_duration_ = base::TimeDelta::FromSeconds(1) / fps;
-}
-
-ThrottlingVDAClient::~ThrottlingVDAClient() {}
-
-void ThrottlingVDAClient::ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                                const gfx::Size& dimensions,
-                                                uint32 texture_target) {
-  client_->ProvidePictureBuffers(
-      requested_num_of_buffers, dimensions, texture_target);
-}
-
-void ThrottlingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
-  client_->DismissPictureBuffer(picture_buffer_id);
-}
-
-void ThrottlingVDAClient::PictureReady(const media::Picture& picture) {
-  ++num_decoded_frames_;
-
-  if (pending_pictures_.empty()) {
-    base::TimeDelta delay =
-        next_frame_delivered_time_.is_null()
-            ? base::TimeDelta()
-            : next_frame_delivered_time_ - base::TimeTicks::Now();
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ThrottlingVDAClient::CallClientPictureReady,
-                   AsWeakPtr(),
-                   stream_version_),
-        delay);
-  }
-  pending_pictures_.push_back(picture);
-}
-
-void ThrottlingVDAClient::CallClientPictureReady(int version) {
-  // Just return if we have reset the decoder
-  if (version != stream_version_)
-    return;
-
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  if (next_frame_delivered_time_.is_null())
-    next_frame_delivered_time_ = now;
-
-  if (next_frame_delivered_time_ + frame_duration_ < now) {
-    // Too late, drop the frame
-    reuse_picture_cb_.Run(pending_pictures_.front().picture_buffer_id());
-  } else {
-    client_->PictureReady(pending_pictures_.front());
-  }
-
-  pending_pictures_.pop_front();
-  next_frame_delivered_time_ += frame_duration_;
-  if (!pending_pictures_.empty()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ThrottlingVDAClient::CallClientPictureReady,
-                   AsWeakPtr(),
-                   stream_version_),
-        next_frame_delivered_time_ - base::TimeTicks::Now());
-  }
-}
-
-void ThrottlingVDAClient::NotifyEndOfBitstreamBuffer(
-    int32 bitstream_buffer_id) {
-  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
-}
-
-void ThrottlingVDAClient::NotifyFlushDone() {
-  if (!pending_pictures_.empty()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ThrottlingVDAClient::NotifyFlushDone,
-                   base::Unretained(this)),
-        next_frame_delivered_time_ - base::TimeTicks::Now());
-    return;
-  }
-  client_->NotifyFlushDone();
-}
-
-void ThrottlingVDAClient::NotifyResetDone() {
-  ++stream_version_;
-  while (!pending_pictures_.empty()) {
-    reuse_picture_cb_.Run(pending_pictures_.front().picture_buffer_id());
-    pending_pictures_.pop_front();
-  }
-  next_frame_delivered_time_ = base::TimeTicks();
-  client_->NotifyResetDone();
-}
-
-void ThrottlingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
-  client_->NotifyError(error);
-}
-
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
 class GLRenderingVDAClient
     : public VideoDecodeAccelerator::Client,
+      public RenderingHelper::Client,
       public base::SupportsWeakPtr<GLRenderingVDAClient> {
  public:
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
@@ -359,9 +208,7 @@ class GLRenderingVDAClient
   // calls have been made, N>=0 means interpret as ClientState.
   // Both |reset_after_frame_num| & |delete_decoder_state| apply only to the
   // last play-through (governed by |num_play_throughs|).
-  // |rendering_fps| indicates the target rendering fps. 0 means no target fps
-  // and it would render as fast as possible.
-  // |suppress_rendering| indicates GL rendering is suppressed or not.
+  // |suppress_rendering| indicates GL rendering is supressed or not.
   // After |delay_reuse_after_frame_num| frame has been delivered, the client
   // will start delaying the call to ReusePictureBuffer() for kReuseDelay.
   // |decode_calls_per_second| is the number of VDA::Decode calls per second.
@@ -377,10 +224,10 @@ class GLRenderingVDAClient
                        int frame_width,
                        int frame_height,
                        media::VideoCodecProfile profile,
-                       double rendering_fps,
                        bool suppress_rendering,
                        int delay_reuse_after_frame_num,
-                       int decode_calls_per_second);
+                       int decode_calls_per_second,
+                       bool render_as_thumbnails);
   virtual ~GLRenderingVDAClient();
   void CreateAndStartDecoder();
 
@@ -397,6 +244,9 @@ class GLRenderingVDAClient
   virtual void NotifyResetDone() OVERRIDE;
   virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
 
+  // RenderingHelper::Client implementation.
+  virtual void RenderContent(RenderingHelper*) OVERRIDE;
+
   void OutputFrameDeliveryTimes(base::File* output);
 
   void NotifyFrameDropped(int32 picture_buffer_id);
@@ -405,7 +255,7 @@ class GLRenderingVDAClient
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_skipped_fragments() { return num_skipped_fragments_; }
   int num_queued_fragments() { return num_queued_fragments_; }
-  int num_decoded_frames();
+  int num_decoded_frames() { return num_decoded_frames_; }
   double frames_per_second();
   // Return the median of the decode time of all decoded frames.
   base::TimeDelta decode_time_median();
@@ -416,6 +266,7 @@ class GLRenderingVDAClient
 
   void SetState(ClientState new_state);
   void FinishInitialization();
+  void ReturnPicture(int32 picture_buffer_id);
 
   // Delete the associated decoder helper.
   void DeleteDecoder();
@@ -462,15 +313,15 @@ class GLRenderingVDAClient
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
   int delay_reuse_after_frame_num_;
-  scoped_ptr<ThrottlingVDAClient> throttling_client_;
   // A map from bitstream buffer id to the decode start time of the buffer.
   std::map<int, base::TimeTicks> decode_start_time_;
   // The decode time of all decoded frames.
   std::vector<base::TimeDelta> decode_time_;
   // The number of VDA::Decode calls per second. This is to simulate webrtc.
   int decode_calls_per_second_;
-  // The id of the picture which is being hold for displayed.
-  int on_hold_picture_buffer_id_;
+  bool render_as_thumbnails_;
+  bool pending_picture_updated_;
+  std::deque<int32> pending_picture_buffer_ids_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
@@ -487,10 +338,10 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int frame_width,
     int frame_height,
     media::VideoCodecProfile profile,
-    double rendering_fps,
     bool suppress_rendering,
     int delay_reuse_after_frame_num,
-    int decode_calls_per_second)
+    int decode_calls_per_second,
+    bool render_as_thumbnails)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data),
@@ -511,10 +362,10 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second),
-      on_hold_picture_buffer_id_(-1) {
+      render_as_thumbnails_(render_as_thumbnails),
+      pending_picture_updated_(true) {
   CHECK_GT(num_in_flight_decodes, 0);
   CHECK_GT(num_play_throughs, 0);
-  CHECK_GE(rendering_fps, 0);
   // |num_in_flight_decodes_| is unsupported if |decode_calls_per_second_| > 0.
   if (decode_calls_per_second_ > 0)
     CHECK_EQ(1, num_in_flight_decodes_);
@@ -523,13 +374,6 @@ GLRenderingVDAClient::GLRenderingVDAClient(
   profile_ = (profile != media::VIDEO_CODEC_PROFILE_UNKNOWN
                   ? profile
                   : media::H264PROFILE_BASELINE);
-
-  if (rendering_fps > 0)
-    throttling_client_.reset(new ThrottlingVDAClient(
-        this,
-        rendering_fps,
-        base::Bind(&GLRenderingVDAClient::NotifyFrameDropped,
-                   base::Unretained(this))));
 }
 
 GLRenderingVDAClient::~GLRenderingVDAClient() {
@@ -547,10 +391,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 
   VideoDecodeAccelerator::Client* client = this;
   base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
-  if (throttling_client_) {
-    client = throttling_client_.get();
-    weak_client = throttling_client_->AsWeakPtr();
-  }
 #if defined(OS_WIN)
   decoder_.reset(
       new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
@@ -621,6 +461,38 @@ void GLRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
   picture_buffers_by_id_.erase(it);
 }
 
+void GLRenderingVDAClient::RenderContent(RenderingHelper*) {
+  CHECK(!render_as_thumbnails_);
+
+  // No decoded texture for rendering yet, just skip.
+  if (pending_picture_buffer_ids_.size() == 0)
+    return;
+
+  int32 buffer_id = pending_picture_buffer_ids_.front();
+  media::PictureBuffer* picture_buffer = picture_buffers_by_id_[buffer_id];
+
+  CHECK(picture_buffer);
+  if (!pending_picture_updated_) {
+    // Frame dropped, just redraw the last texture.
+    rendering_helper_->RenderTexture(texture_target_,
+                                     picture_buffer->texture_id());
+    return;
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  frame_delivery_times_.push_back(now);
+
+  rendering_helper_->RenderTexture(texture_target_,
+                                   picture_buffer->texture_id());
+
+  if (pending_picture_buffer_ids_.size() == 1) {
+    pending_picture_updated_ = false;
+  } else {
+    pending_picture_buffer_ids_.pop_front();
+    ReturnPicture(buffer_id);
+  }
+}
+
 void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // We shouldn't be getting pictures delivered after Reset has completed.
   CHECK_LT(state_, CS_RESET);
@@ -629,7 +501,6 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
     return;
 
   base::TimeTicks now = base::TimeTicks::Now();
-  frame_delivery_times_.push_back(now);
   // Save the decode time of this picture.
   std::map<int, base::TimeTicks>::iterator it =
       decode_start_time_.find(picture.bitstream_buffer_id());
@@ -643,7 +514,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // Mid-stream reset applies only to the last play-through per constructor
   // comment.
   if (remaining_play_throughs_ == 1 &&
-      reset_after_frame_num_ == num_decoded_frames()) {
+      reset_after_frame_num_ == num_decoded_frames_) {
     reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
@@ -651,30 +522,40 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
     encoded_data_next_pos_to_decode_ = 0;
   }
 
-  media::PictureBuffer* picture_buffer =
-      picture_buffers_by_id_[picture.picture_buffer_id()];
-  CHECK(picture_buffer);
-
-  int released_picture_buffer_id = picture.picture_buffer_id();
-  if (!suppress_rendering_) {
-    // Replace with the last holding picture buffer.
-    std::swap(released_picture_buffer_id, on_hold_picture_buffer_id_);
-    rendering_helper_->RenderTexture(texture_target_,
-                                     picture_buffer->texture_id());
+  if (render_as_thumbnails_) {
+    frame_delivery_times_.push_back(now);
+    media::PictureBuffer* picture_buffer =
+        picture_buffers_by_id_[picture.picture_buffer_id()];
+    CHECK(picture_buffer);
+    rendering_helper_->RenderThumbnail(texture_target_,
+                                       picture_buffer->texture_id());
+    ReturnPicture(picture.picture_buffer_id());
+  } else if (!suppress_rendering_) {
+    // Keep the picture for rendering.
+    pending_picture_buffer_ids_.push_back(picture.picture_buffer_id());
+    if (pending_picture_buffer_ids_.size() > 1 && !pending_picture_updated_) {
+      ReturnPicture(pending_picture_buffer_ids_.front());
+      pending_picture_buffer_ids_.pop_front();
+      pending_picture_updated_ = true;
+    }
+  } else {
+    frame_delivery_times_.push_back(now);
+    ReturnPicture(picture.picture_buffer_id());
   }
+}
 
-  if (released_picture_buffer_id < 0)
+void GLRenderingVDAClient::ReturnPicture(int32 picture_buffer_id) {
+  if (decoder_deleted())
     return;
-
-  if ((num_decoded_frames() > delay_reuse_after_frame_num_)) {
+  if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
                    weak_decoder_factory_->GetWeakPtr(),
-                   released_picture_buffer_id),
+                   picture_buffer_id),
         kReuseDelay);
   } else {
-    decoder_->ReusePictureBuffer(released_picture_buffer_id);
+    decoder_->ReusePictureBuffer(picture_buffer_id);
   }
 }
 
@@ -706,6 +587,14 @@ void GLRenderingVDAClient::NotifyFlushDone() {
 void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
+
+  // Clear pending_pictures and reuse them.
+  while (!pending_picture_buffer_ids_.empty()) {
+    decoder_->ReusePictureBuffer(pending_picture_buffer_ids_.front());
+    pending_picture_buffer_ids_.pop_front();
+  }
+  pending_picture_updated_ = true;
+
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
     DecodeNextFragment();
@@ -948,14 +837,9 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   }
 }
 
-int GLRenderingVDAClient::num_decoded_frames() {
-  return throttling_client_ ? throttling_client_->num_decoded_frames()
-                            : num_decoded_frames_;
-}
-
 double GLRenderingVDAClient::frames_per_second() {
   base::TimeDelta delta = frame_delivery_times_.back() - initialize_done_ticks_;
-  return num_decoded_frames() / delta.InSecondsF();
+  return num_decoded_frames_ / delta.InSecondsF();
 }
 
 base::TimeDelta GLRenderingVDAClient::decode_time_median() {
@@ -1209,14 +1093,15 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   UpdateTestVideoFileParams(
       num_concurrent_decoders, reset_point, &test_video_files_);
 
-  // Suppress GL rendering for all tests when the "--disable_rendering" is set.
-  const bool suppress_rendering = g_disable_rendering;
+  // Suppress GL rendering for all tests when the "--rendering_fps" is 0.
+  const bool suppress_rendering = g_rendering_fps == 0;
 
   std::vector<ClientStateNotification<ClientState>*>
       notes(num_concurrent_decoders, NULL);
   std::vector<GLRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
 
   RenderingHelperParams helper_params;
+  helper_params.rendering_fps = g_rendering_fps;
   helper_params.num_windows = num_concurrent_decoders;
   helper_params.render_as_thumbnails = render_as_thumbnails;
   if (render_as_thumbnails) {
@@ -1236,7 +1121,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       helper_params.window_dimensions.push_back(frame_size);
     }
   }
-  InitializeRenderingHelper(helper_params);
 
   // First kick off all the decoders.
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
@@ -1264,14 +1148,21 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
                                  video_file->width,
                                  video_file->height,
                                  video_file->profile,
-                                 g_rendering_fps,
                                  suppress_rendering,
                                  delay_after_frame_num,
-                                 0);
-    clients[index] = client;
+                                 0,
+                                 render_as_thumbnails);
 
-    CreateAndStartDecoder(client, note);
+    clients[index] = client;
+    helper_params.clients.push_back(client->AsWeakPtr());
   }
+
+  InitializeRenderingHelper(helper_params);
+
+  for (size_t index = 0; index < num_concurrent_decoders; ++index) {
+    CreateAndStartDecoder(clients[index], notes[index]);
+  }
+
   // Then wait for all the decodes to finish.
   // Only check performance & correctness later if we play through only once.
   bool skip_performance_and_correctness_checks = num_play_throughs > 1;
@@ -1488,13 +1379,15 @@ INSTANTIATE_TEST_CASE_P(
 // second.
 TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   RenderingHelperParams helper_params;
+
+  // Disable rendering by setting the rendering_fps = 0.
+  helper_params.rendering_fps = 0;
   helper_params.num_windows = 1;
   helper_params.render_as_thumbnails = false;
   gfx::Size frame_size(test_video_files_[0]->width,
                        test_video_files_[0]->height);
   helper_params.frame_dimensions.push_back(frame_size);
   helper_params.window_dimensions.push_back(frame_size);
-  InitializeRenderingHelper(helper_params);
 
   ClientStateNotification<ClientState>* note =
       new ClientStateNotification<ClientState>();
@@ -1510,10 +1403,12 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
                                test_video_files_[0]->width,
                                test_video_files_[0]->height,
                                test_video_files_[0]->profile,
-                               g_rendering_fps,
                                true,
                                std::numeric_limits<int>::max(),
-                               kWebRtcDecodeCallsPerSecond);
+                               kWebRtcDecodeCallsPerSecond,
+                               false /* render_as_thumbnail */);
+  helper_params.clients.push_back(client->AsWeakPtr());
+  InitializeRenderingHelper(helper_params);
   CreateAndStartDecoder(client, note);
   WaitUntilDecodeFinish(note);
 
@@ -1571,8 +1466,9 @@ int main(int argc, char **argv) {
       CHECK(base::StringToDouble(input, &content::g_rendering_fps));
       continue;
     }
+    // TODO(owenlin): Remove this flag once it is not used in autotest.
     if (it->first == "disable_rendering") {
-      content::g_disable_rendering = true;
+      content::g_rendering_fps = 0;
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")

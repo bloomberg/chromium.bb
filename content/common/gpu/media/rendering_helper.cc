@@ -94,8 +94,9 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     done.Wait();
   }
 
-  // TODO(owenlin): pass fps from params
-  frame_duration_ = base::TimeDelta::FromSeconds(1) / 60;
+  frame_duration_ = params.rendering_fps > 0
+                        ? base::TimeDelta::FromSeconds(1) / params.rendering_fps
+                        : base::TimeDelta();
 
   gfx::InitializeStaticGLBindings(kGLImplementation);
   scoped_refptr<gfx::GLContextStubWithExtensions> stub_context(
@@ -182,16 +183,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   stub_context->SetGLVersionString(
       reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 #endif
-
+  clients_ = params.clients;
   // Per-window/surface X11 & EGL initialization.
-  CHECK(texture_ids_.empty());
-  CHECK(texture_targets_.empty());
-
-  // Initialize to an invalid texture id: 0 to indicate no texture
-  // for rendering.
-  texture_ids_.resize(params.num_windows, 0);
-  texture_targets_.resize(params.num_windows, 0);
-
   for (int i = 0; i < params.num_windows; ++i) {
     // Arrange X windows whimsically, with some padding.
     int j = i % params.window_dimensions.size();
@@ -308,11 +301,6 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-    // In render_as_thumbnails_ mode, we render the FBO content on the
-    // screen instead of the decoded textures.
-    texture_targets_[0] = GL_TEXTURE_2D;
-    texture_ids_[0] = thumbnails_texture_id_;
   }
 
   // These vertices and texture coords. map (0,0) in the texture to the
@@ -392,8 +380,10 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
-  render_timer_.Start(
-      FROM_HERE, frame_duration_, this, &RenderingHelper::RenderContent);
+  if (frame_duration_ != base::TimeDelta()) {
+    render_timer_.Start(
+        FROM_HERE, frame_duration_, this, &RenderingHelper::RenderContent);
+  }
   done->Signal();
 }
 
@@ -453,39 +443,33 @@ void RenderingHelper::CreateTexture(int window_id,
   done->Signal();
 }
 
-void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
-  if (texture_id == 0)
-    return;
-
-  if (render_as_thumbnails_) {
-    const int width = thumbnail_size_.width();
-    const int height = thumbnail_size_.height();
-    const int thumbnails_in_row = thumbnails_fbo_size_.width() / width;
-    const int thumbnails_in_column = thumbnails_fbo_size_.height() / height;
-    const int row = (frame_count_ / thumbnails_in_row) % thumbnails_in_column;
-    const int col = frame_count_ % thumbnails_in_row;
-
-    gfx::Rect area(col * width, row * height, width, height);
-
-    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
-    DrawTexture(area, texture_target, texture_id);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-    ++frame_count_;
-  } else {
-    size_t window_id = texture_id_to_surface_index_[texture_id];
-    texture_targets_[window_id] = texture_target;
-    texture_ids_[window_id] = texture_id;
-  }
-}
-
-void RenderingHelper::DrawTexture(const gfx::Rect& area,
-                                  uint32 texture_target,
-                                  uint32 texture_id) {
+// Helper function to set GL viewport.
+static inline void GLSetViewPort(const gfx::Rect& area) {
   glViewport(area.x(), area.y(), area.width(), area.height());
   glScissor(area.x(), area.y(), area.width(), area.height());
+}
 
+void RenderingHelper::RenderThumbnail(uint32 texture_target,
+                                      uint32 texture_id) {
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  const int width = thumbnail_size_.width();
+  const int height = thumbnail_size_.height();
+  const int thumbnails_in_row = thumbnails_fbo_size_.width() / width;
+  const int thumbnails_in_column = thumbnails_fbo_size_.height() / height;
+  const int row = (frame_count_ / thumbnails_in_row) % thumbnails_in_column;
+  const int col = frame_count_ % thumbnails_in_row;
+
+  gfx::Rect area(col * width, row * height, width, height);
+
+  glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
+  GLSetViewPort(area);
+  RenderTexture(texture_target, texture_id);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  ++frame_count_;
+}
+
+void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
   // Unbound texture samplers default to (0, 0, 0, 1).  Use this fact to switch
   // between GL_TEXTURE_2D and GL_TEXTURE_EXTERNAL_OES as appopriate.
   if (texture_target == GL_TEXTURE_2D) {
@@ -588,8 +572,19 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
 
 void RenderingHelper::RenderContent() {
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
-  for (size_t i = 0; i < render_areas_.size(); ++i) {
-    DrawTexture(render_areas_[i], texture_targets_[i], texture_ids_[i]);
+
+  if (render_as_thumbnails_) {
+    // In render_as_thumbnails_ mode, we render the FBO content on the
+    // screen instead of the decoded textures.
+    GLSetViewPort(render_areas_[0]);
+    RenderTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
+  } else {
+    for (size_t i = 0; i < clients_.size(); ++i) {
+      if (clients_[i]) {
+        GLSetViewPort(render_areas_[i]);
+        clients_[i]->RenderContent(this);
+      }
+    }
   }
 
 #if GL_VARIANT_GLX
