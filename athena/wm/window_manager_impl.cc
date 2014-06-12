@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/wm/public/window_types.h"
 
 namespace athena {
 namespace {
@@ -124,7 +125,9 @@ void WindowManagerImpl::Layout() {
   for (aura::Window::Windows::const_iterator iter = children.begin();
        iter != children.end();
        ++iter) {
-    (*iter)->SetBounds(bounds);
+    if ((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+        (*iter)->type() == ui::wm::WINDOW_TYPE_POPUP)
+      (*iter)->SetBounds(bounds);
   }
 }
 

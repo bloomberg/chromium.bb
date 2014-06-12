@@ -87,7 +87,10 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) OVERRIDE {
     DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
-    home_card_widget_->Show();
+    if (home_card_widget_->IsVisible())
+      home_card_widget_->Hide();
+    else
+      home_card_widget_->Show();
     return true;
   }
 
