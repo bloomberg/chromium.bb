@@ -258,9 +258,10 @@ void Dispatcher::DidCreateScriptContext(
           .release();
   script_context_set_.Add(context);
 
-  if (extension) {
+  // Initialize origin permissions for content scripts, which can't be
+  // initialized in |OnActivateExtension|.
+  if (context_type == Feature::CONTENT_SCRIPT_CONTEXT)
     InitOriginPermissions(extension);
-  }
 
   {
     scoped_ptr<ModuleSystem> module_system(
@@ -495,6 +496,8 @@ void Dispatcher::WebKitInitialized() {
        ++iter) {
     const Extension* extension = extensions_.GetByID(*iter);
     CHECK(extension);
+
+    InitOriginPermissions(extension);
   }
 
   EnableCustomElementWhiteList();
@@ -551,6 +554,8 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   if (is_webkit_initialized_) {
     extensions::DOMActivityLogger::AttachToWorld(
         extensions::DOMActivityLogger::kMainWorldId, extension_id);
+
+    InitOriginPermissions(extension);
   }
 
   UpdateActiveExtensions();
