@@ -8,8 +8,8 @@ import subprocess
 import sys
 import tempfile
 
-from chrome_profiler import controllers
-from chrome_profiler import ui
+from adb_profile_chrome import controllers
+from adb_profile_chrome import ui
 
 from pylib import android_commands
 from pylib import constants

@@ -5,8 +5,8 @@
 import os
 import json
 
-from chrome_profiler import controllers_unittest
-from chrome_profiler import perf_controller
+from adb_profile_chrome import controllers_unittest
+from adb_profile_chrome import perf_controller
 
 
 class PerfProfilerControllerTest(controllers_unittest.BaseControllerTest):

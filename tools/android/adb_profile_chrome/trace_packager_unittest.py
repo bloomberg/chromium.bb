@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from chrome_profiler import trace_packager
+from adb_profile_chrome import trace_packager
 
 import json
 import tempfile
