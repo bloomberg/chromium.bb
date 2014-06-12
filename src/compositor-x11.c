@@ -56,6 +56,7 @@
 #include "shared/helpers.h"
 #include "shared/image-loader.h"
 #include "presentation_timing-server-protocol.h"
+#include "linux-dmabuf.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 
@@ -1665,7 +1666,14 @@ x11_backend_create(struct weston_compositor *compositor,
 				     x11_backend_handle_event, b);
 	wl_event_source_check(b->xcb_source);
 
+	if (compositor->renderer->import_dmabuf) {
+		if (linux_dmabuf_setup(compositor) < 0)
+			weston_log("Error: initializing dmabuf "
+				   "support failed.\n");
+	}
+
 	compositor->backend = &b->base;
+
 	return b;
 
 err_x11_input:
