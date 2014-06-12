@@ -60,7 +60,7 @@ ExecutionContext* SpeechSynthesis::executionContext() const
 void SpeechSynthesis::voicesDidChange()
 {
     m_voiceList.clear();
-    if (!executionContext()->activeDOMObjectsAreStopped())
+    if (executionContext() && !executionContext()->activeDOMObjectsAreStopped())
         dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
@@ -145,7 +145,7 @@ void SpeechSynthesis::resume()
 
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
-    if (!executionContext()->activeDOMObjectsAreStopped())
+    if (executionContext() && !executionContext()->activeDOMObjectsAreStopped())
         utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
 }
 
