@@ -1,0 +1,18 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.navigation {
+
+struct NavigationDetails {
+  string url;
+  // TODO(aa): method, data, etc.
+};
+
+// Applications implement this interface to support navigation of their views
+// by embedders.
+interface Navigator {
+  Navigate(uint32 node_id, NavigationDetails details);
+};
+
+}

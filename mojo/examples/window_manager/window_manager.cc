@@ -4,8 +4,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -29,6 +31,19 @@ namespace mojo {
 namespace examples {
 
 class WindowManager;
+
+namespace {
+
+const SkColor kColors[] = { SK_ColorYELLOW,
+                            SK_ColorRED,
+                            SK_ColorGREEN,
+                            SK_ColorMAGENTA };
+
+const char kEmbeddedAppURL[] = "mojo:mojo_embedded_app";
+const char kNestingAppURL[] = "mojo:mojo_nesting_app";
+const char kMojoBrowserURL[] = "mojo:mojo_browser";
+
+}  // namespace
 
 class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
  public:
@@ -69,11 +84,11 @@ class WindowManager : public Application,
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED) {
       if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
-        CreateWindow("mojo:mojo_embedded_app");
+        CreateWindow(kEmbeddedAppURL);
       else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
-        CreateWindow("mojo:mojo_nesting_app");
+        CreateWindow(kNestingAppURL);
       else if (event->flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-        CreateWindow("mojo:mojo_browser");
+        CreateWindow(kMojoBrowserURL);
     }
   }
 
@@ -94,7 +109,7 @@ class WindowManager : public Application,
     view->AddObserver(this);
   }
 
-  void CreateWindow(const String& url) {
+  void CreateWindow(const std::string& url) {
     ViewTreeNode* node = view_manager_->GetNodeById(parent_node_id_);
 
     gfx::Rect bounds(50, 50, 200, 200);
@@ -108,6 +123,23 @@ class WindowManager : public Application,
     node->AddChild(embedded);
     embedded->SetBounds(bounds);
     embedded->Embed(url);
+
+    // TODO(aa): Is there a way to ask for an interface and test whether it
+    // succeeded? That would be nicer than hard-coding the URLs that are known
+    // to support navigation.
+    if (url == kEmbeddedAppURL || url == kNestingAppURL) {
+      // TODO(aa): This means that there can only ever be one instance of every
+      // app, which seems wrong. Instead, perhaps embedder should get back a
+      // service provider that allows it to talk to embeddee.
+      navigation::NavigatorPtr navigator;
+      ConnectTo(url, &navigator);
+      navigation::NavigationDetailsPtr details(
+          navigation::NavigationDetails::New());
+      size_t index = node->children().size() - 1;
+      details->url = base::StringPrintf(
+          "%s/%x", kEmbeddedAppURL, kColors[index % arraysize(kColors)]);
+      navigator->Navigate(embedded->id(), details.Pass());
+    }
   }
 
   ViewManager* view_manager_;

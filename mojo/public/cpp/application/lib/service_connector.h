@@ -123,8 +123,6 @@ class ServiceConnector : public internal::ServiceConnectorBase {
       if (*it == impl) {
         delete impl;
         connections_.erase(it);
-        if (connections_.empty())
-          owner_->RemoveServiceConnector(this);
         return;
       }
     }

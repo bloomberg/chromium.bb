@@ -35,6 +35,10 @@ class TestServiceImpl : public InterfaceImpl<TestService> {
     --context_->num_impls;
   }
 
+  virtual void OnConnectionError() OVERRIDE {
+    base::MessageLoop::current()->Quit();
+  }
+
   // TestService implementation:
   virtual void Test(const String& test_string) OVERRIDE {
     context_->last_test_string = test_string;
@@ -75,8 +79,7 @@ class TestServiceLoader : public ServiceLoader {
  public:
   TestServiceLoader()
       : context_(NULL),
-        num_loads_(0),
-        quit_after_error_(false) {
+        num_loads_(0) {
   }
 
   virtual ~TestServiceLoader() {
@@ -86,10 +89,6 @@ class TestServiceLoader : public ServiceLoader {
   }
 
   void set_context(TestContext* context) { context_ = context; }
-  void set_quit_after_error(bool quit_after_error) {
-    quit_after_error_ = quit_after_error;
-  }
-
   int num_loads() const { return num_loads_; }
 
  private:
@@ -104,16 +103,11 @@ class TestServiceLoader : public ServiceLoader {
 
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE {
-    if (quit_after_error_) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
-    }
   }
 
   scoped_ptr<Application> test_app_;
   TestContext* context_;
   int num_loads_;
-  bool quit_after_error_;
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
 
@@ -223,7 +217,6 @@ class ServiceManagerTest : public testing::Test {
 
     TestServiceLoader* default_loader = new TestServiceLoader;
     default_loader->set_context(&context_);
-    default_loader->set_quit_after_error(true);
     service_manager_->set_default_loader(
         scoped_ptr<ServiceLoader>(default_loader));
 
@@ -264,7 +257,7 @@ TEST_F(ServiceManagerTest, ClientError) {
   test_client_.reset(NULL);
   loop_.Run();
   EXPECT_EQ(0, context_.num_impls);
-  EXPECT_FALSE(HasFactoryForTestURL());
+  EXPECT_TRUE(HasFactoryForTestURL());
 }
 
 TEST_F(ServiceManagerTest, Deletes) {

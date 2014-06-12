@@ -183,6 +183,20 @@
       ],
     },
     {
+      'target_name': 'mojo_navigation_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/navigation/navigation.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
       'sources': [
