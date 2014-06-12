@@ -1317,5 +1317,28 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
   set_test_case_name("traverseSlideImagesOnDrive");
   StartTest();
 }
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
+  AddScript("gallery/test_util.js");
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("renameImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       RenameImageOnDownloads) {
+  AddScript("gallery/test_util.js");
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("renameImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDrive) {
+  AddScript("gallery/test_util.js");
+  AddScript("gallery/slide_mode.js");
+  set_test_case_name("renameImageOnDrive");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager

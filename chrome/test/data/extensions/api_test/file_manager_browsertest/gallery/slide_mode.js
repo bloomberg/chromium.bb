@@ -69,6 +69,38 @@ function traverseSlideImages(testVolumeName, volumeType) {
 }
 
 /**
+ * Runs a test to rename an image.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function renameImage(testVolumeName, volumeType) {
+  var launchedPromise = launchWithTestEntries(
+      testVolumeName, volumeType, [ENTRIES.desktop]);
+  var appWindow;
+  return launchedPromise.then(function(args) {
+    appWindow = args.appWindow;
+    return waitForSlideImage(appWindow.contentWindow.document,
+                             800, 600, 'My Desktop Background');
+  }).then(function() {
+    var nameBox = appWindow.contentWindow.document.querySelector('.namebox');
+    nameBox.focus();
+    nameBox.value = 'New Image Name';
+    nameBox.blur();
+    return waitForSlideImage(appWindow.contentWindow.document,
+                             800, 600, 'New Image Name');
+  }).then(function() {
+    return repeatUntil(function() {
+      return getFilesUnderVolume(volumeType, ['New Image Name.png']).then(
+          function() { return true; },
+          function() { return pending('"New Image Name.png" is not found.'); });
+    });
+  });
+}
+
+/**
  * The traverseSlideImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
@@ -82,4 +114,20 @@ function traverseSlideImagesOnDownloads() {
  */
 function traverseSlideImagesOnDrive() {
   return traverseSlideImages('drive', VolumeManagerCommon.VolumeType.DRIVE);
+}
+
+/**
+ * The renameImage test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function renameImageOnDownloads() {
+  return renameImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
+}
+
+/**
+ * The renameImage test for Google Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function renameImageOnDrive() {
+  return renameImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
 }
