@@ -415,7 +415,7 @@ void FastTextAutosizer::inflateAutoTable(RenderTable* table)
                     continue;
 
                 beginLayout(cell);
-                inflate(cell);
+                inflate(cell, DescendToInnerBlocks);
                 endLayout(cell);
             }
         }
@@ -441,13 +441,13 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
     }
 }
 
-float FastTextAutosizer::inflate(RenderObject* parent, float multiplier)
+float FastTextAutosizer::inflate(RenderObject* parent, InflateBehavior behavior, float multiplier)
 {
     Cluster* cluster = currentCluster();
     bool hasTextChild = false;
 
     RenderObject* child = 0;
-    if (parent->isRenderBlock() && parent->childrenInline())
+    if (parent->isRenderBlock() && (parent->childrenInline() || behavior == DescendToInnerBlocks))
         child = toRenderBlock(parent)->firstChild();
     else if (parent->isRenderInline())
         child = toRenderInline(parent)->firstChild();
@@ -464,7 +464,10 @@ float FastTextAutosizer::inflate(RenderObject* parent, float multiplier)
             if (parent->isRenderInline())
                 child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
         } else if (child->isRenderInline()) {
-            multiplier = inflate(child, multiplier);
+            multiplier = inflate(child, behavior, multiplier);
+        } else if (child->isRenderBlock() && behavior == DescendToInnerBlocks
+            && !classifyBlock(child, INDEPENDENT | EXPLICIT_WIDTH | SUPPRESSING)) {
+            multiplier = inflate(child, behavior, multiplier);
         }
         child = child->nextSibling();
     }

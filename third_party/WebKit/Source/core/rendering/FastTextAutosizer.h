@@ -107,6 +107,11 @@ private:
         ContinueLayout
     };
 
+    enum InflateBehavior {
+        ThisBlockOnly,
+        DescendToInnerBlocks
+    };
+
     enum BlockFlag {
         // A block that is evaluated for becoming a cluster root.
         POTENTIAL_ROOT = 1 << 0,
@@ -245,7 +250,7 @@ private:
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
     void inflateAutoTable(RenderTable*);
-    float inflate(RenderObject*, float multiplier = 0);
+    float inflate(RenderObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
