@@ -97,9 +97,6 @@ leak:LoginUtilsBlockingLoginTest_EnterpriseLoginBlocksForEnterpriseUser
 leak:LoginUtilsTest::SetUp
 leak:LoginUtilsTest::PrepareProfile
 
-# http://crbug.com/371974
-leak:base::ImportantFileWriter::PostWriteTask
-
 # http://crbug.com/328092
 leak:WebCore::ResourceFetcher::requestResource
 leak:content::ResourceFetcherTests::ResourceFetcherDeletedInCallbackOnRenderer
