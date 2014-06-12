@@ -12,6 +12,12 @@ declare_args() {
   # that is normally turned on for Debug builds. These are generally useful for
   # catching bugs but in some cases may cause conflicts or excessive slowness.
   disable_iterator_debugging = false
+
+  # Set to true to force deterministic builds (this isn't working yet but this
+  # flag will help us to get there). See http://crbug.com/314403.
+  # TODO(sebmarchand): Update this comment once this flag guarantee a
+  #     deterministic build.
+  force_deterministic_build = false
 }
 
 # TODO(brettw) Most of these should be removed. Instead of global feature
@@ -70,6 +76,9 @@ config("feature_flags") {
   }
   if (enable_spellcheck) {
     defines += [ "ENABLE_SPELLCHECK=1" ]
+  }
+  if (force_deterministic_build) {
+    defines += [ "FORCE_DETERMINISTIC_BUILD" ]
   }
   if (use_udev) {
     # TODO(brettw) should probably be "=1".
