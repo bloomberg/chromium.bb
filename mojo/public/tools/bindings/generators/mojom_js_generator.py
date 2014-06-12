@@ -164,6 +164,7 @@ class Generator(generator.Generator):
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)
   def GenerateJsModule(self):
     return {
+      "namespace": self.module.namespace,
       "imports": self.GetImports(),
       "kinds": self.module.kinds,
       "enums": self.module.enums,
