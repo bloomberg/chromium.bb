@@ -314,9 +314,10 @@ void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineCon
     LayoutUnit crossAxisStartEdge = lineContexts.isEmpty() ? LayoutUnit() : lineContexts[0].crossAxisOffset;
     alignFlexLines(lineContexts);
 
-    // If we have a single line flexbox, the line height is all the available space.
+    // If we have a single line flexbox or a multiline line flexbox with only one flex line,
+    // the line height is all the available space.
     // For flex-direction: row, this means we need to use the height, so we do this after calling updateLogicalHeight.
-    if (!isMultiline() && lineContexts.size() == 1)
+    if (lineContexts.size() == 1)
         lineContexts[0].crossAxisExtent = crossAxisContentExtent();
     alignChildren(lineContexts);
 
