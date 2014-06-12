@@ -55,13 +55,10 @@ void WebContentLayerImpl::PaintContents(
     return;
 
   blink::WebFloatRect web_opaque;
-  // For picture layers, always record with LCD text.  PictureLayerImpl
-  // will turn this off later during rasterization.
-  bool use_lcd_text = WebLayerImpl::UsingPictureLayer() || can_use_lcd_text_;
   client_->paintContents(
       canvas,
       clip,
-      use_lcd_text,
+      can_use_lcd_text_,
       web_opaque,
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled

@@ -49,6 +49,8 @@ class CC_EXPORT PictureLayer : public Layer {
   explicit PictureLayer(ContentLayerClient* client);
   virtual ~PictureLayer();
 
+  void UpdateCanUseLCDText();
+
  private:
   ContentLayerClient* client_;
   scoped_refptr<PicturePile> pile_;
@@ -62,6 +64,7 @@ class CC_EXPORT PictureLayer : public Layer {
   bool is_mask_;
 
   int update_source_frame_number_;
+  bool can_use_lcd_text_last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };

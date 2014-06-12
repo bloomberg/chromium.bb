@@ -21,7 +21,9 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       pile_(make_scoped_refptr(new PicturePile())),
       instrumentation_object_tracker_(id()),
       is_mask_(false),
-      update_source_frame_number_(-1) {}
+      update_source_frame_number_(-1),
+      can_use_lcd_text_last_frame_(can_use_lcd_text()) {
+}
 
 PictureLayer::~PictureLayer() {
 }
@@ -87,6 +89,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker<Layer>* occlusion) {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
+
+  UpdateCanUseLCDText();
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());
@@ -155,6 +159,15 @@ Picture::RecordingMode PictureLayer::RecordingMode() const {
 
 bool PictureLayer::SupportsLCDText() const {
   return true;
+}
+
+void PictureLayer::UpdateCanUseLCDText() {
+  if (can_use_lcd_text_last_frame_ == can_use_lcd_text())
+    return;
+
+  can_use_lcd_text_last_frame_ = can_use_lcd_text();
+  if (client_)
+    client_->DidChangeLayerCanUseLCDText();
 }
 
 skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
