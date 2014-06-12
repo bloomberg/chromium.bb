@@ -422,7 +422,10 @@ public:
     // GL_CHROMIUM_texture_mailbox
     virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { }
     virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { }
+    virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) { }
+
     virtual void consumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { }
+    virtual WebGLId createAndConsumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { return 0; }
 
     // GL_EXT_debug_marker
     virtual void insertEventMarkerEXT(const WGC3Dchar* marker) { }
