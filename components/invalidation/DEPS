@@ -4,6 +4,7 @@ include_rules = [
   "+components/gcm_driver",
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/signin",
 
   "+google/cacheinvalidation",
   "+google_apis/gaia",

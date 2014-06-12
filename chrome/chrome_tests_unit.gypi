@@ -1053,10 +1053,7 @@
         'browser/install_verification/win/module_verification_test.h',
         'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
-        'browser/invalidation/invalidation_service_test_template.cc',
-        'browser/invalidation/invalidation_service_test_template.h',
         'browser/invalidation/invalidator_storage_unittest.cc',
-        'browser/invalidation/ticl_invalidation_service_unittest.cc',
         'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
         'browser/local_discovery/gcd_api_flow_unittest.cc',
         'browser/local_discovery/gcd_registration_ticket_request_unittest.cc',
@@ -2595,7 +2592,6 @@
             # Android uses a different invaliator.
             'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
             'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
-            'browser/invalidation/ticl_invalidation_service_unittest.cc',
 
             # The importer code is not used on Android.
             'common/importer/firefox_importer_utils_unittest.cc',

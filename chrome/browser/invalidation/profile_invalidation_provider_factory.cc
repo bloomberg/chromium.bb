@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/invalidation/ticl_invalidation_service.h"
 #include "chrome/browser/invalidation/ticl_profile_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
@@ -16,10 +15,12 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/invalidator_storage.h"
 #include "components/invalidation/profile_invalidation_provider.h"
+#include "components/invalidation/ticl_invalidation_service.h"
 #include "components/invalidation/ticl_settings_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -125,6 +126,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   }
 
   scoped_ptr<TiclInvalidationService> service(new TiclInvalidationService(
+      GetUserAgent(),
       identity_provider.Pass(),
       scoped_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(profile)),

@@ -1,14 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/ticl_invalidation_service.h"
+#include "components/invalidation/ticl_invalidation_service.h"
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/invalidation/gcm_invalidation_bridge.h"
 #include "components/invalidation/invalidation_service_util.h"
 #include "components/invalidation/non_blocking_invalidator.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -53,11 +52,13 @@ static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 namespace invalidation {
 
 TiclInvalidationService::TiclInvalidationService(
+    const std::string& user_agent,
     scoped_ptr<IdentityProvider> identity_provider,
     scoped_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : OAuth2TokenService::Consumer("ticl_invalidation"),
+      user_agent_(user_agent),
       identity_provider_(identity_provider.Pass()),
       settings_provider_(settings_provider.Pass()),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
@@ -392,7 +393,7 @@ void TiclInvalidationService::StartInvalidator(
           invalidation_state_tracker_->GetSavedInvalidations(),
           invalidation_state_tracker_->GetBootstrapData(),
           invalidation_state_tracker_.get(),
-          GetUserAgent(),
+          user_agent_,
           request_context_));
 
   UpdateInvalidatorCredentials();

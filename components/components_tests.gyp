@@ -502,6 +502,7 @@
                 'invalidation/push_client_channel_unittest.cc',
                 'invalidation/sync_invalidation_listener_unittest.cc',
                 'invalidation/sync_system_resources_unittest.cc',
+                'invalidation/ticl_invalidation_service_unittest.cc',
               ],
             }],
             ['chromeos==1', {

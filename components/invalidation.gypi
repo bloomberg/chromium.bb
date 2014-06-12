@@ -13,8 +13,10 @@
         '../jingle/jingle.gyp:notifier',
         '../sync/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        'gcm_driver',
         'keyed_service_core',
         'pref_registry',
+        'signin_core_browser',
       ],
       'include_dirs': [
         '..',
@@ -36,12 +38,12 @@
         'invalidation/invalidator_storage.h',
         'invalidation/profile_invalidation_provider.cc',
         'invalidation/profile_invalidation_provider.h',
-        'invalidation/ticl_settings_provider.cc',
-        'invalidation/ticl_settings_provider.h',
       ],
       'conditions': [
           ['OS != "android"', {
             'sources': [
+              'invalidation/gcm_invalidation_bridge.cc',
+              'invalidation/gcm_invalidation_bridge.h',
               'invalidation/gcm_network_channel.cc',
               'invalidation/gcm_network_channel.h',
               'invalidation/gcm_network_channel_delegate.h',
@@ -60,6 +62,10 @@
               'invalidation/sync_invalidation_listener.h',
               'invalidation/sync_system_resources.cc',
               'invalidation/sync_system_resources.h',
+              'invalidation/ticl_invalidation_service.cc',
+              'invalidation/ticl_invalidation_service.h',
+              'invalidation/ticl_settings_provider.cc',
+              'invalidation/ticl_settings_provider.h',
             ],
           }],
       ],
@@ -78,6 +84,7 @@
         '../sync/sync.gyp:test_support_sync_notifier',
         '../testing/gmock.gyp:gmock',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        'gcm_driver_test_support',
         'keyed_service_core',
       ],
       'include_dirs': [
@@ -90,6 +97,8 @@
         'invalidation/fake_invalidation_state_tracker.h',
         'invalidation/fake_invalidator.cc',
         'invalidation/fake_invalidator.h',
+        'invalidation/invalidation_service_test_template.cc',
+        'invalidation/invalidation_service_test_template.h',
         'invalidation/invalidator_test_template.cc',
         'invalidation/invalidator_test_template.h',
       ],

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
-#define CHROME_BROWSER_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
+#ifndef COMPONENTS_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
+#define COMPONENTS_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
 
 #include <string>
 
@@ -60,6 +60,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   };
 
   TiclInvalidationService(
+      const std::string& user_agent,
       scoped_ptr<IdentityProvider> identity_provider,
       scoped_ptr<TiclSettingsProvider> settings_provider,
       gcm::GCMDriver* gcm_driver,
@@ -131,6 +132,8 @@ class TiclInvalidationService : public base::NonThreadSafe,
   void UpdateInvalidatorCredentials();
   void StopInvalidator();
 
+  const std::string user_agent_;
+
   scoped_ptr<IdentityProvider> identity_provider_;
   scoped_ptr<TiclSettingsProvider> settings_provider_;
 
@@ -166,4 +169,4 @@ class TiclInvalidationService : public base::NonThreadSafe,
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_TICL_INVALIDATION_SERVICE_H_
+#endif  // COMPONENTS_INVALIDATION_TICL_INVALIDATION_SERVICE_H_

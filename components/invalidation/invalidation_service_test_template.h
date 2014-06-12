@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,14 +68,13 @@
 //
 // Easy!
 
-#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
-#define CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
+#define COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "components/invalidation/fake_invalidation_handler.h"
 #include "components/invalidation/invalidation_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/ack_handle.h"
@@ -101,7 +100,6 @@ class InvalidationServiceTest : public testing::Test {
     return this->delegate_.GetInvalidationService();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   InvalidatorTestDelegate delegate_;
 
   const invalidation::ObjectId id1;
@@ -387,4 +385,4 @@ REGISTER_TYPED_TEST_CASE_P(InvalidationServiceTest,
                            Basic, MultipleHandlers, EmptySetUnregisters,
                            GetInvalidatorStateAlwaysCurrent);
 
-#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_

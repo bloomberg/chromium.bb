@@ -1,18 +1,18 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/ticl_invalidation_service.h"
+#include "components/invalidation/ticl_invalidation_service.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
 #include "components/invalidation/fake_invalidator.h"
+#include "components/invalidation/gcm_invalidation_bridge.h"
+#include "components/invalidation/invalidation_service_test_template.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -63,6 +63,7 @@ class TiclInvalidationServiceTestDelegate {
   void CreateUninitializedInvalidationService() {
     gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
+        "TestUserAgent",
         scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
         scoped_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
         gcm_driver_.get(),
