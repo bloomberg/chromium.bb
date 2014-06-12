@@ -4,8 +4,8 @@
 @charset "utf-8";
 /* Document */
 body{font-family:'Open Sans',sans-serif;font-size:18px;line-height:1.4;}
-/* Don't let images bleed out of viewport. */
-img{max-width:100%;}
+/* Don't let images or video bleed out of viewport. */
+img,video{max-width:100%;}
 /* Margin */
 .margin-x-narrow{width:95%;}
 .margin-narrow{width:85%;}

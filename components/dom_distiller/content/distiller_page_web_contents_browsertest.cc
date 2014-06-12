@@ -28,6 +28,7 @@ using testing::Not;
 namespace dom_distiller {
 
 const char* kSimpleArticlePath = "/simple_article.html";
+const char* kVideoArticlePath = "/video_article.html";
 
 class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
@@ -215,6 +216,32 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
               ContainsRegex("src=\"http://127.0.0.1:.*/relativeimage.png\""));
   EXPECT_THAT(page_info_.get()->html,
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
+}
+
+
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
+  DistillerPageWebContents distiller_page(
+      shell()->web_contents()->GetBrowserContext(),
+      scoped_ptr<SourcePageHandleWebContents>());
+  distiller_page_ = &distiller_page;
+
+  base::RunLoop run_loop;
+  DistillPage(run_loop.QuitClosure(), kVideoArticlePath);
+  run_loop.Run();
+
+  // A relative source/track should've been updated.
+  EXPECT_THAT(
+      page_info_.get()->html,
+      ContainsRegex("src=\"http://127.0.0.1:.*/relative_video.mp4\""));
+  EXPECT_THAT(
+      page_info_.get()->html,
+      ContainsRegex("src=\"http://127.0.0.1:.*/relative_track_en.vtt\""));
+  EXPECT_THAT(
+      page_info_.get()->html,
+      HasSubstr("src=\"http://www.google.com/absolute_video.ogg\""));
+  EXPECT_THAT(
+      page_info_.get()->html,
+      HasSubstr("src=\"http://www.google.com/absolute_track_fr.vtt\""));
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
