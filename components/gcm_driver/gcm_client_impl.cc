@@ -341,6 +341,7 @@ void GCMClientImpl::InitializeMCSClient(
       network_session_,
       net_log_.net_log(),
       &recorder_);
+  connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
       chrome_build_info_.version,
       clock_.get(),
@@ -711,8 +712,9 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   stats.is_recording = recorder_.is_recording();
   stats.gcm_client_state = GetStateString();
   stats.connection_client_created = mcs_client_.get() != NULL;
+  if (connection_factory_.get())
+    stats.connection_state = connection_factory_->GetConnectionStateString();
   if (mcs_client_.get()) {
-    stats.connection_state = mcs_client_->GetStateString();
     stats.send_queue_size = mcs_client_->GetSendQueueSize();
     stats.resend_queue_size = mcs_client_->GetResendQueueSize();
   }
@@ -728,6 +730,17 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
 }
 
 void GCMClientImpl::OnActivityRecorded() {
+  delegate_->OnActivityRecorded();
+}
+
+void GCMClientImpl::OnConnected(const GURL& current_server,
+                                const net::IPEndPoint& ip_endpoint) {
+  // TODO(zea): inform GCMClient::Delegate and app handlers as well.
+  delegate_->OnActivityRecorded();
+}
+
+void GCMClientImpl::OnDisconnected() {
+  // TODO(zea): inform GCMClient::Delegate and app handlers as well.
   delegate_->OnActivityRecorded();
 }
 

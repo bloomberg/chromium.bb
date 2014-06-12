@@ -254,14 +254,24 @@ void TestConnectionFactoryImpl::SetDelayLogin(bool delay_login) {
   fake_handler_->set_fail_login(delay_login_);
 }
 
-class ConnectionFactoryImplTest : public testing::Test {
+}  // namespace
+
+class ConnectionFactoryImplTest
+    : public testing::Test,
+      public ConnectionFactory::ConnectionListener {
  public:
   ConnectionFactoryImplTest();
   virtual ~ConnectionFactoryImplTest();
 
   TestConnectionFactoryImpl* factory() { return &factory_; }
+  GURL& connected_server() { return connected_server_; }
 
   void WaitForConnections();
+
+  // ConnectionFactory::ConnectionListener
+  virtual void OnConnected(const GURL& current_server,
+                           const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
  private:
   void ConnectionsComplete();
@@ -269,12 +279,15 @@ class ConnectionFactoryImplTest : public testing::Test {
   TestConnectionFactoryImpl factory_;
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> run_loop_;
+
+  GURL connected_server_;
 };
 
 ConnectionFactoryImplTest::ConnectionFactoryImplTest()
    : factory_(base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
                          base::Unretained(this))),
      run_loop_(new base::RunLoop()) {
+  factory()->SetConnectionListener(this);
   factory()->Initialize(
       ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
@@ -293,11 +306,22 @@ void ConnectionFactoryImplTest::ConnectionsComplete() {
   run_loop_->Quit();
 }
 
+void ConnectionFactoryImplTest::OnConnected(
+    const GURL& current_server,
+    const net::IPEndPoint& ip_endpoint) {
+  connected_server_ = current_server;
+}
+
+void ConnectionFactoryImplTest::OnDisconnected() {
+  connected_server_ = GURL();
+}
+
 // Verify building a connection handler works.
 TEST_F(ConnectionFactoryImplTest, Initialize) {
   ConnectionHandler* handler = factory()->GetConnectionHandler();
   ASSERT_TRUE(handler);
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
 }
 
 // An initial successful connection should not result in backoff.
@@ -307,6 +331,7 @@ TEST_F(ConnectionFactoryImplTest, ConnectSuccess) {
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
   EXPECT_EQ(factory()->GetCurrentEndpoint(), BuildEndpoints()[0]);
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 }
 
 // A connection failure should result in backoff, and attempting the fallback
@@ -317,6 +342,7 @@ TEST_F(ConnectionFactoryImplTest, ConnectFail) {
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
   EXPECT_EQ(factory()->GetCurrentEndpoint(), BuildEndpoints()[1]);
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
 }
 
 // A connection success after a failure should reset backoff.
@@ -326,6 +352,7 @@ TEST_F(ConnectionFactoryImplTest, FailThenSucceed) {
   factory()->Connect();
   WaitForConnections();
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
   base::TimeTicks retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
   EXPECT_GE((retry_time - connect_time).InMilliseconds(), CalculateBackoff(1));
@@ -333,6 +360,7 @@ TEST_F(ConnectionFactoryImplTest, FailThenSucceed) {
   WaitForConnections();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 }
 
 // Multiple connection failures should retry with an exponentially increasing
@@ -346,6 +374,7 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
   factory()->Connect();
   WaitForConnections();
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
   base::TimeTicks retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
   EXPECT_GE((retry_time - connect_time).InMilliseconds(),
@@ -355,6 +384,7 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
   WaitForConnections();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 }
 
 // IP events should trigger canary connections.
@@ -408,12 +438,15 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsThenDisconnects) {
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   WaitForConnections();
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 
   factory()->SetConnectResult(net::OK);
   factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
   WaitForConnections();
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 }
 
 // Verify that if a canary connects, but hasn't finished the handshake, a
@@ -486,6 +519,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
 
   factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
   EXPECT_NE(retry_time, factory()->NextRetryAttempt());
   retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
@@ -499,6 +533,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
   WaitForConnections();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
   EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(connected_server().is_valid());
 
   factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
   EXPECT_NE(retry_time, factory()->NextRetryAttempt());
@@ -507,7 +542,7 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
   EXPECT_GE((retry_time - connect_time).InMilliseconds(),
             CalculateBackoff(3));
   EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_FALSE(connected_server().is_valid());
 }
 
-}  // namespace
 }  // namespace gcm

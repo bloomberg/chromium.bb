@@ -48,8 +48,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual ConnectionHandler* GetConnectionHandler() const OVERRIDE;
   virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
+  virtual std::string GetConnectionStateString() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
   virtual void SignalConnectionReset(ConnectionResetReason reason) OVERRIDE;
+  virtual void SetConnectionListener(ConnectionListener* listener) OVERRIDE;
 
   // NetworkChangeNotifier observer implementations.
   virtual void OnConnectionTypeChanged(
@@ -60,6 +62,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // a connection is currently pending, the server to which the next connection
   // attempt will be made.
   GURL GetCurrentEndpoint() const;
+
+  // Returns the IPEndpoint to which the factory is currently connected. If no
+  // connection is active, returns an empty IPEndpoint.
+  net::IPEndPoint GetPeerIP();
 
  protected:
   // Implementation of Connect(..). If not in backoff, uses |login_request_|
@@ -160,6 +166,9 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
+
+  // Listener for connection change events.
+  ConnectionListener* listener_;
 
   base::WeakPtrFactory<ConnectionFactoryImpl> weak_ptr_factory_;
 

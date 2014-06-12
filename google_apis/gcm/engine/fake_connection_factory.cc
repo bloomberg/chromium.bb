@@ -41,6 +41,10 @@ bool FakeConnectionFactory::IsEndpointReachable() const {
   return connection_handler_.get() && connection_handler_->CanSendMessage();
 }
 
+std::string FakeConnectionFactory::GetConnectionStateString() const {
+  return "";
+}
+
 base::TimeTicks FakeConnectionFactory::NextRetryAttempt() const {
   return base::TimeTicks();
 }
@@ -51,6 +55,10 @@ void FakeConnectionFactory::SignalConnectionReset(
     Connect();
   else
     reconnect_pending_ = true;
+}
+
+void FakeConnectionFactory::SetConnectionListener(
+    ConnectionListener* listener) {
 }
 
 }  // namespace gcm

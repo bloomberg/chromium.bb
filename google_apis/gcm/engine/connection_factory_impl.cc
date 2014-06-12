@@ -59,6 +59,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     waiting_for_backoff_(false),
     logging_in_(false),
     recorder_(recorder),
+    listener_(NULL),
     weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
 }
@@ -140,6 +141,18 @@ bool ConnectionFactoryImpl::IsEndpointReachable() const {
   return connection_handler_ && connection_handler_->CanSendMessage();
 }
 
+std::string ConnectionFactoryImpl::GetConnectionStateString() const {
+  if (IsEndpointReachable())
+    return "CONNECTED";
+  if (logging_in_)
+    return "LOGGING IN";
+  if (connecting_)
+    return "CONNECTING";
+  if (waiting_for_backoff_)
+    return "WAITING FOR BACKOFF";
+  return "NOT CONNECTED";
+}
+
 void ConnectionFactoryImpl::SignalConnectionReset(
     ConnectionResetReason reason) {
   // A failure can trigger multiple resets, so no need to do anything if a
@@ -148,6 +161,9 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     DVLOG(1) << "Connection in progress, ignoring reset.";
     return;
   }
+
+  if (listener_)
+    listener_->OnDisconnected();
 
   UMA_HISTOGRAM_ENUMERATION("GCM.ConnectionResetReason",
                             reason,
@@ -202,6 +218,11 @@ void ConnectionFactoryImpl::SignalConnectionReset(
   Connect();
 }
 
+void ConnectionFactoryImpl::SetConnectionListener(
+    ConnectionListener* listener) {
+  listener_ = listener;
+}
+
 base::TimeTicks ConnectionFactoryImpl::NextRetryAttempt() const {
   if (!backoff_entry_)
     return base::TimeTicks();
@@ -232,6 +253,18 @@ GURL ConnectionFactoryImpl::GetCurrentEndpoint() const {
   if (IsEndpointReachable())
     return mcs_endpoints_[last_successful_endpoint_];
   return mcs_endpoints_[next_endpoint_];
+}
+
+net::IPEndPoint ConnectionFactoryImpl::GetPeerIP() {
+  if (!socket_handle_.socket())
+    return net::IPEndPoint();
+
+  net::IPEndPoint ip_endpoint;
+  int result = socket_handle_.socket()->GetPeerAddress(&ip_endpoint);
+  if (result != net::OK)
+    return net::IPEndPoint();
+
+  return ip_endpoint;
 }
 
 void ConnectionFactoryImpl::ConnectImpl() {
@@ -348,6 +381,9 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   previous_backoff_.swap(backoff_entry_);
   backoff_entry_->Reset();
   logging_in_ = false;
+
+  if (listener_)
+    listener_->OnConnected(GetCurrentEndpoint(), GetPeerIP());
 }
 
 // This has largely been copied from

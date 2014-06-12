@@ -74,12 +74,13 @@ class GCMInternalsBuilder {
 // Checkins. It also allows for registering user delegates that host
 // applications that send and receive messages.
 class GCMClientImpl
-    : public GCMClient, public GCMStatsRecorder::Delegate {
+    : public GCMClient, public GCMStatsRecorder::Delegate,
+      public ConnectionFactory::ConnectionListener {
  public:
   explicit GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder);
   virtual ~GCMClientImpl();
 
-  // Overridden from GCMClient:
+  // GCMClient implementation.
   virtual void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
@@ -101,7 +102,14 @@ class GCMClientImpl
   virtual void SetRecording(bool recording) OVERRIDE;
   virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
+
+  // GCMStatsRecorder::Delegate implemenation.
   virtual void OnActivityRecorded() OVERRIDE;
+
+  // ConnectionFactory::ConnectionListener implementation.
+  virtual void OnConnected(const GURL& current_server,
+                           const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
  private:
   // State representation of the GCMClient.

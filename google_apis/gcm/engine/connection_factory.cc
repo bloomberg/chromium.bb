@@ -6,6 +6,9 @@
 
 namespace gcm {
 
+ConnectionFactory::ConnectionListener::ConnectionListener() {}
+ConnectionFactory::ConnectionListener::~ConnectionListener() {}
+
 ConnectionFactory::ConnectionFactory() {}
 ConnectionFactory::~ConnectionFactory() {}
 
