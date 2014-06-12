@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/search_terms_data.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -19,7 +19,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
 #include "url/gurl.h"
@@ -29,60 +28,6 @@
 #endif
 
 using content::BrowserThread;
-
-SearchTermsData::SearchTermsData() {
-}
-
-SearchTermsData::~SearchTermsData() {
-}
-
-std::string SearchTermsData::GoogleBaseURLValue() const {
-  return GoogleURLTracker::kDefaultGoogleHomepage;
-}
-
-std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
-  // Start with the Google base URL.
-  const GURL base_url(GoogleBaseURLValue());
-  DCHECK(base_url.is_valid());
-
-  GURL::Replacements repl;
-
-  // Replace any existing path with "/complete/".
-  // SetPathStr() requires its argument to stay in scope as long as |repl| is,
-  // so "/complete/" can't be passed to SetPathStr() directly, it needs to be in
-  // a variable.
-  const std::string suggest_path("/complete/");
-  repl.SetPathStr(suggest_path);
-
-  // Clear the query and ref.
-  repl.ClearQuery();
-  repl.ClearRef();
-  return base_url.ReplaceComponents(repl).spec();
-}
-
-std::string SearchTermsData::GetApplicationLocale() const {
-  return "en";
-}
-
-base::string16 SearchTermsData::GetRlzParameterValue(bool from_app_list) const {
-  return base::string16();
-}
-
-std::string SearchTermsData::GetSearchClient() const {
-  return std::string();
-}
-
-std::string SearchTermsData::GetSuggestClient() const {
-  return std::string();
-}
-
-std::string SearchTermsData::GetSuggestRequestIdentifier() const {
-  return std::string();
-}
-
-std::string SearchTermsData::NTPIsThemedParam() const {
-  return std::string();
-}
 
 // static
 std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
@@ -112,7 +57,7 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
-// Android implementations are located in search_terms_data_android.cc.
+// Android implementations are in ui_thread_search_terms_data_android.cc.
 #if !defined(OS_ANDROID)
 base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
     bool from_app_list) const {

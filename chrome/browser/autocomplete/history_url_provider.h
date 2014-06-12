@@ -15,10 +15,10 @@
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 
 class Profile;
+class SearchTermsData;
 
 namespace base {
 class MessageLoop;

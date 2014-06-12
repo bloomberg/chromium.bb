@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
-#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;

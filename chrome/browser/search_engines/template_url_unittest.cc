@@ -10,8 +10,8 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/search_engines/search_terms_data_android.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data_android.h"
 #endif
 
 using base::ASCIIToUTF16;

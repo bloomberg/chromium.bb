@@ -17,6 +17,8 @@
       ],
       'sources': [
         'search_engines/search_engine_type.h',
+        'search_engines/search_terms_data.cc',
+        'search_engines/search_terms_data.h',
         'search_engines/template_url_data.cc',
         'search_engines/template_url_data.h',
         'search_engines/template_url_id.h',
