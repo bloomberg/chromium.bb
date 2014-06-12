@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Provides a variety of device interactions based on adb.
+"""Provides a variety of device interactions based on adb.
 
 Eventually, this will be based on adb_wrapper.
 """
@@ -15,6 +14,7 @@ import pylib.android_commands
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
+from pylib.utils import apk_helper
 from pylib.utils import parallelizer
 
 _DEFAULT_TIMEOUT = 30
@@ -24,7 +24,7 @@ _DEFAULT_RETRIES = 3
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
 def GetAVDs():
-  """ Returns a list of Android Virtual Devices.
+  """Returns a list of Android Virtual Devices.
 
   Returns:
     A list containing the configured AVDs.
@@ -35,7 +35,7 @@ def GetAVDs():
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
 def RestartServer():
-  """ Restarts the adb server.
+  """Restarts the adb server.
 
   Raises:
     CommandFailedError if we fail to kill or restart the server.
@@ -47,7 +47,7 @@ class DeviceUtils(object):
 
   def __init__(self, device, default_timeout=_DEFAULT_TIMEOUT,
                default_retries=_DEFAULT_RETRIES):
-    """ DeviceUtils constructor.
+    """DeviceUtils constructor.
 
     Args:
       device: Either a device serial, an existing AdbWrapper instance, an
@@ -77,7 +77,7 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsOnline(self, timeout=None, retries=None):
-    """ Checks whether the device is online.
+    """Checks whether the device is online.
 
     Args:
       timeout: An integer containing the number of seconds to wait for the
@@ -91,7 +91,7 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def HasRoot(self, timeout=None, retries=None):
-    """ Checks whether or not adbd has root privileges.
+    """Checks whether or not adbd has root privileges.
 
     Args:
       timeout: Same as for |IsOnline|.
@@ -103,7 +103,7 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def EnableRoot(self, timeout=None, retries=None):
-    """ Restarts adbd with root privileges.
+    """Restarts adbd with root privileges.
 
     Args:
       timeout: Same as for |IsOnline|.
@@ -113,11 +113,11 @@ class DeviceUtils(object):
     """
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
-          'adb root', 'Could not enable root.')
+          ['adb', 'root'], 'Could not enable root.')
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetExternalStoragePath(self, timeout=None, retries=None):
-    """ Get the device's path to its SD card.
+    """Get the device's path to its SD card.
 
     Args:
       timeout: Same as for |IsOnline|.
@@ -128,11 +128,12 @@ class DeviceUtils(object):
     try:
       return self.old_interface.GetExternalStorage()
     except AssertionError as e:
-      raise device_errors.CommandFailedError(str(e))
+      raise device_errors.CommandFailedError(
+          ['adb', 'shell', 'echo', '$EXTERNAL_STORAGE'], str(e))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def WaitUntilFullyBooted(self, wifi=False, timeout=None, retries=None):
-    """ Wait for the device to fully boot.
+    """Wait for the device to fully boot.
 
     This means waiting for the device to boot, the package manager to be
     available, and the SD card to be ready. It can optionally mean waiting
@@ -146,6 +147,25 @@ class DeviceUtils(object):
       CommandTimeoutError if one of the component waits times out.
       DeviceUnreachableError if the device becomes unresponsive.
     """
+    self._WaitUntilFullyBootedImpl(wifi=wifi, timeout=timeout)
+
+  def _WaitUntilFullyBootedImpl(self, wifi=False, timeout=None):
+    """ Implementation of WaitUntilFullyBooted.
+
+    This is split from WaitUntilFullyBooted to allow other DeviceUtils methods
+    to call WaitUntilFullyBooted without spawning a new timeout thread.
+
+    TODO(jbudorick) Remove the timeout parameter once this is no longer
+    implemented via AndroidCommands.
+
+    Args:
+      wifi: Same as for |WaitUntilFullyBooted|.
+      timeout: Same as for |IsOnline|.
+    Raises:
+      Same as for |WaitUntilFullyBooted|.
+    """
+    if timeout is None:
+      timeout = self._default_timeout
     self.old_interface.WaitForSystemBootCompleted(timeout)
     self.old_interface.WaitForDevicePm()
     self.old_interface.WaitForSdCardReady(timeout)
@@ -154,13 +174,71 @@ class DeviceUtils(object):
           self.old_interface.RunShellCommand('dumpsys wifi')):
         time.sleep(0.1)
 
+  @decorators.WithTimeoutAndRetriesDefaults(
+      10 * _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
+  def Reboot(self, block=True, timeout=None, retries=None):
+    """Reboot the device.
+
+    Args:
+      block: A boolean indicating if we should wait for the reboot to complete.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.Reboot()
+    if block:
+      self._WaitUntilFullyBootedImpl(timeout=timeout)
+
+  @decorators.WithTimeoutAndRetriesDefaults(
+      4 * _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
+  def Install(self, apk_path, reinstall=False, timeout=None, retries=None):
+    """Install an APK.
+
+    Noop if an identical APK is already installed.
+
+    Args:
+      apk_path: A string containing the path to the APK to install.
+      reinstall: A boolean indicating if we should keep any existing app data.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Raises:
+      CommandFailedError if the installation fails.
+      CommandTimeoutError if the installation times out.
+    """
+    package_name = apk_helper.GetPackageName(apk_path)
+    device_path = self.old_interface.GetApplicationPath(package_name)
+    if device_path is not None:
+      files_changed = self.old_interface.GetFilesChanged(
+          apk_path, device_path, ignore_filenames=True)
+      if len(files_changed) > 0:
+        should_install = True
+        if not reinstall:
+          out = self.old_interface.Uninstall(package_name)
+          for line in out.splitlines():
+            if 'Failure' in line:
+              raise device_errors.CommandFailedError(
+                  ['adb', 'uninstall', package_name], line.strip())
+      else:
+        should_install = False
+    else:
+      should_install = True
+    if should_install:
+      try:
+        out = self.old_interface.Install(apk_path, reinstall=reinstall)
+        for line in out.splitlines():
+          if 'Failure' in line:
+            raise device_errors.CommandFailedError(
+                ['adb', 'install', apk_path], line.strip())
+      except AssertionError as e:
+        raise device_errors.CommandFailedError(
+            ['adb', 'install', apk_path], str(e))
+
   def __str__(self):
     """Returns the device serial."""
     return self.old_interface.GetDevice()
 
   @staticmethod
   def parallel(devices=None, async=False):
-    """ Creates a Parallelizer to operate over the provided list of devices.
+    """Creates a Parallelizer to operate over the provided list of devices.
 
     If |devices| is either |None| or an empty list, the Parallelizer will
     operate over all attached devices.

@@ -131,7 +131,7 @@ def ProvisionDevices(options):
     device.old_interface.EnableAdbRoot()
     WipeDeviceData(device)
   try:
-    device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
+    device_utils.DeviceUtils.parallel(devices).Reboot(True)
   except errors.DeviceUnresponsiveError:
     pass
   for device_serial in devices:
@@ -148,7 +148,7 @@ def ProvisionDevices(options):
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
   try:
-    device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
+    device_utils.DeviceUtils.parallel(devices).Reboot(True)
   except errors.DeviceUnresponsiveError:
     pass
   for device_serial in devices:
@@ -186,8 +186,7 @@ def main(argv):
       device = device_utils.DeviceUtils(device_serial)
       WipeDeviceData(device)
     try:
-      (device_utils.DeviceUtils.parallel(devices)
-          .old_interface.Reboot(True).pFinish(None))
+      device_utils.DeviceUtils.parallel(devices).Reboot(True)
     except errors.DeviceUnresponsiveError:
       pass
   else:

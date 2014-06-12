@@ -152,7 +152,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
                       str(self.device))
     else:
       if self.device.old_interface.SetJavaAssertsEnabled(True):
-        self.device.old_interface.Reboot(full_reboot=False)
+        # TODO(jbudorick) How to best do shell restart after the
+        #                 android_commands refactor?
+        self.device.old_interface.RunShellCommand('stop')
+        self.device.old_interface.RunShellCommand('start')
 
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to

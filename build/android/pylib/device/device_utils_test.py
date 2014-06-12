@@ -9,6 +9,7 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 # pylint: disable=W0212
 # pylint: disable=W0613
 
+import functools
 import random
 import time
 import unittest
@@ -20,10 +21,20 @@ from pylib.device import device_errors
 from pylib.device import device_utils
 
 
+def TestRequiresDevice(f):
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if len(adb_wrapper.AdbWrapper.GetDevices()) > 0:
+      return f(*args, **kwargs)
+    return unittest.skip('Test requires an attached device.')
+  return wrapper
+
+
 class DeviceUtilsTest(unittest.TestCase):
   def testGetAVDs(self):
     pass
 
+  @TestRequiresDevice
   def testRestartServerNotRunning(self):
     self.assertEqual(0, cmd_helper.RunCmd(['pkill', 'adb']),
                      msg='Unable to kill adb during setup.')
@@ -32,6 +43,7 @@ class DeviceUtilsTest(unittest.TestCase):
     device_utils.RestartServer()
     self.assertEqual(0, cmd_helper.RunCmd(['pgrep', 'adb']))
 
+  @TestRequiresDevice
   def testRestartServerAlreadyRunning(self):
     if cmd_helper.RunCmd(['pgrep', 'adb']) != 0:
       device_utils.RestartServer()
@@ -89,12 +101,14 @@ class DeviceUtilsTest(unittest.TestCase):
       if serial not in used_devices:
         return serial
 
+  @TestRequiresDevice
   def testIsOnline(self):
     d = device_utils.DeviceUtils(self._getTestAdbWrapper())
     self.assertTrue(d is None or d.IsOnline())
     d = device_utils.DeviceUtils(self._getUnusedSerial())
     self.assertFalse(d.IsOnline())
 
+  @TestRequiresDevice
   def testHasRoot(self):
     a = self._getTestAdbWrapper()
     d = device_utils.DeviceUtils(a)
@@ -112,6 +126,7 @@ class DeviceUtilsTest(unittest.TestCase):
     else:
       self.assertTrue(d.HasRoot())
 
+  @TestRequiresDevice
   def testEnableRoot(self):
     a = self._getTestAdbWrapper()
     d = device_utils.DeviceUtils(a)
@@ -148,6 +163,7 @@ class DeviceUtilsTest(unittest.TestCase):
       d.EnableRoot()
       self.assertTrue(d.HasRoot())
 
+  @TestRequiresDevice
   def testGetExternalStorage(self):
     a = self._getTestAdbWrapper()
     d = device_utils.DeviceUtils(a)
@@ -156,6 +172,7 @@ class DeviceUtilsTest(unittest.TestCase):
     if actual_external_storage and len(actual_external_storage) != 0:
       self.assertEquals(actual_external_storage, d.GetExternalStoragePath())
 
+  @TestRequiresDevice
   def testWaitUntilFullyBooted(self):
     a = self._getTestAdbWrapper()
     d = device_utils.DeviceUtils(a)
@@ -172,7 +189,25 @@ class DeviceUtilsTest(unittest.TestCase):
     self.assertTrue(
         'Wi-Fi is enabled' in a.Shell('dumpsys wifi').splitlines())
 
+  @TestRequiresDevice
+  def testBlockingReboot(self):
+    a = self._getTestAdbWrapper()
+    d = device_utils.DeviceUtils(a)
+
+    old_boot_time = a.Shell('getprop ro.runtime.firstboot').strip()
+    if old_boot_time and len(old_boot_time):
+      d.Reboot(block=True, timeout=120)
+      self.assertNotEquals(old_boot_time,
+                           a.Shell('getprop ro.runtime.firstboot').strip())
+      self.assertEquals(
+          '1', a.Shell('getprop sys.boot_completed').splitlines()[0])
+      self.assertTrue(
+          a.Shell('pm path android').splitlines()[0].startswith('package:'))
+      self.assertTrue(a.Shell('ls $EXTERNAL_STORAGE'))
+    else:
+      self.skipTest("No 'ro.runtime.firstboot' property on %s." % str(a))
+
 
 if __name__ == '__main__':
-  unittest.main(verbosity=2, buffer=True)
+  unittest.main(verbosity=2)
 

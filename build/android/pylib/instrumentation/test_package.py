@@ -34,6 +34,5 @@ class TestPackage(test_jar.TestJar):
 
   # Override.
   def Install(self, device):
-    device.old_interface.ManagedInstall(
-        self.GetApkPath(), package_name=self.GetPackageName())
+    device.Install(self.GetApkPath())
 

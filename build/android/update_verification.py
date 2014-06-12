@@ -29,6 +29,7 @@ def _SaveAppData(device, package_name, from_apk=None, data_dir=None):
 
   if from_apk:
     logging.info('Installing %s...', from_apk)
+    # TODO(jbudorick) Switch to AdbWrapper.Install on the impl switch.
     output = device.old_interface.Install(from_apk, reinstall=True)
     if 'Success' not in output:
       raise Exception('Unable to install %s. output: %s' % (from_apk, output))
@@ -47,6 +48,7 @@ def _VerifyAppUpdate(device, to_apk, app_data, from_apk=None):
 
   if from_apk:
     logging.info('Installing %s...', from_apk)
+    # TODO(jbudorick) Switch to AdbWrapper.Install on the impl switch.
     output = device.old_interface.Install(from_apk, reinstall=True)
     if 'Success' not in output:
       raise Exception('Unable to install %s. output: %s' % (from_apk, output))
@@ -57,6 +59,7 @@ def _VerifyAppUpdate(device, to_apk, app_data, from_apk=None):
 
   logging.info('Verifying that %s cannot be installed side-by-side...',
                to_apk)
+  # TODO(jbudorick) Switch to AdbWrapper.Install on the impl switch.
   output = device.old_interface.Install(to_apk)
   if 'INSTALL_FAILED_ALREADY_EXISTS' not in output:
     if 'Success' in output:
@@ -65,6 +68,7 @@ def _VerifyAppUpdate(device, to_apk, app_data, from_apk=None):
       raise Exception(output)
 
   logging.info('Verifying that %s can be overinstalled...', to_apk)
+  # TODO(jbudorick) Switch to AdbWrapper.Install on the impl switch.
   output = device.old_interface.Install(to_apk, reinstall=True)
   if 'Success' not in output:
     raise Exception('Unable to install %s.\n output: %s' % (to_apk, output))

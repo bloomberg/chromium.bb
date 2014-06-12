@@ -131,5 +131,4 @@ class TestPackageApk(TestPackage):
   #override
   def Install(self, device):
     self.tool.CopyFiles()
-    device.old_interface.ManagedInstall(
-        self.suite_path, False, package_name=self._package_info.package)
+    device.Install(self.suite_path)
