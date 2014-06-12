@@ -4,13 +4,24 @@
 
 #include "mojo/services/test_service/test_service_impl.h"
 
+#include "mojo/services/test_service/test_service_application.h"
+
 namespace mojo {
 namespace test {
 
-TestServiceImpl::TestServiceImpl() {
+TestServiceImpl::TestServiceImpl(TestServiceApplication* application)
+    : application_(application) {
 }
 
 TestServiceImpl::~TestServiceImpl() {
+}
+
+void TestServiceImpl::OnConnectionEstablished() {
+  application_->AddRef();
+}
+
+void TestServiceImpl::OnConnectionError() {
+  application_->ReleaseRef();
 }
 
 void TestServiceImpl::Ping(const mojo::Callback<void()>& callback) {

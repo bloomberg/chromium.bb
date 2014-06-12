@@ -358,6 +358,7 @@
       'sources': [
         'public/cpp/application/lib/mojo_main_standalone.cc',
         'services/test_service/test_service_application.cc',
+        'services/test_service/test_service_application.h',
         'services/test_service/test_service_impl.cc',
         'services/test_service/test_service_impl.h',
       ],
