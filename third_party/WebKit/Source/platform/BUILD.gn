@@ -185,9 +185,7 @@ component("platform") {
 
   include_dirs = [
     #"$angle_path/include",
-    # FIXME: This should be removed once files include the generated files with
-    # the correct path.
-    "$root_gen_dir/blink/platform",
+    "$root_gen_dir/blink",
   ]
 
   deps = [

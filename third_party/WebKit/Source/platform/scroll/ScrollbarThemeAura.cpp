@@ -31,9 +31,9 @@
 #include "config.h"
 #include "platform/scroll/ScrollbarThemeAura.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"

@@ -30,9 +30,9 @@
 #include "config.h"
 #include "platform/fonts/FontCache.h"
 
-#include "FontFamilyNames.h"
+#include "platform/FontFamilyNames.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/FontCacheKey.h"

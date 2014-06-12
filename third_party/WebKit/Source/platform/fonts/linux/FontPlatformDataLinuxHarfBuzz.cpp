@@ -31,9 +31,9 @@
 #include "config.h"
 #include "public/platform/Platform.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "SkTypeface.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
 #include "public/platform/linux/WebFontInfo.h"
 #include "public/platform/linux/WebFontRenderStyle.h"

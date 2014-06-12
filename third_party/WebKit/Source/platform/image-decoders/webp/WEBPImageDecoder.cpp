@@ -29,8 +29,8 @@
 #include "config.h"
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "platform/PlatformInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 #if USE(QCMSLIB)
 #include "qcms.h"

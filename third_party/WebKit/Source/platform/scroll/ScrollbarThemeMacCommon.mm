@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 
 #include <Carbon/Carbon.h>

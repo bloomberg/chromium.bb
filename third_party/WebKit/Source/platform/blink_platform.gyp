@@ -58,9 +58,7 @@
       'INSIDE_BLINK',
     ],
     'include_dirs': [
-      # FIXME: Remove these once scripts generate qualified
-      # includes correctly: http://crbug.com/380054
-      '<(blink_platform_output_dir)',
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
       'exported/WebCString.cpp',
@@ -217,7 +215,7 @@
     ],
     'include_dirs': [
       '<(angle_path)/include',
-      '<(blink_platform_output_dir)',
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'xcode_settings': {
       # Some Mac-specific parts of WebKit won't compile without having this

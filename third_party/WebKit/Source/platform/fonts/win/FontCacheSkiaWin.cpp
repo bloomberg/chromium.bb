@@ -32,9 +32,9 @@
 #include "config.h"
 #include "platform/fonts/FontCache.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfbuzz.h"

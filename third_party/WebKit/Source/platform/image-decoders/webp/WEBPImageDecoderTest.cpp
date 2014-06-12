@@ -32,7 +32,7 @@
 
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"

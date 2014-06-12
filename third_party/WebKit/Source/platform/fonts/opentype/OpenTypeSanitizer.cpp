@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/fonts/opentype/OpenTypeSanitizer.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"

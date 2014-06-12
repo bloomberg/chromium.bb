@@ -31,8 +31,8 @@
 #import "platform/fonts/FontCache.h"
 
 #import <AppKit/AppKit.h>
-#import "RuntimeEnabledFeatures.h"
 #import "platform/LayoutTestSupport.h"
+#import "platform/RuntimeEnabledFeatures.h"
 #import "platform/fonts/FontDescription.h"
 #import "platform/fonts/FontPlatformData.h"
 #import "platform/fonts/SimpleFontData.h"
