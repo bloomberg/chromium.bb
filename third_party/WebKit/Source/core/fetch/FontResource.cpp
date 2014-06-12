@@ -46,6 +46,33 @@ namespace WebCore {
 
 static const double fontLoadWaitLimitSec = 3.0;
 
+enum FontPackageFormat {
+    PackageFormatUnknown,
+    PackageFormatSFNT,
+    PackageFormatWOFF,
+    PackageFormatWOFF2,
+    PackageFormatSVG,
+    PackageFormatEnumMax
+};
+
+static FontPackageFormat packageFormatOf(SharedBuffer* buffer)
+{
+    if (buffer->size() < 4)
+        return PackageFormatUnknown;
+
+    const char* data = buffer->data();
+    if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F')
+        return PackageFormatWOFF;
+    if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2')
+        return PackageFormatWOFF2;
+    return PackageFormatSFNT;
+}
+
+static void recordPackageFormatHistogram(FontPackageFormat format)
+{
+    blink::Platform::current()->histogramEnumeration("WebFont.PackageFormat", format, PackageFormatEnumMax);
+}
+
 FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
     , m_loadInitiated(false)
@@ -91,8 +118,13 @@ bool FontResource::ensureCustomFontData()
     if (!m_fontData && !errorOccurred() && !isLoading()) {
         if (m_data)
             m_fontData = FontCustomPlatformData::create(m_data.get());
-        if (!m_fontData)
+
+        if (m_fontData) {
+            recordPackageFormatHistogram(packageFormatOf(m_data.get()));
+        } else {
             setStatus(DecodeError);
+            recordPackageFormatHistogram(PackageFormatUnknown);
+        }
     }
     return m_fontData;
 }
@@ -123,8 +155,12 @@ bool FontResource::ensureSVGFontData()
             if (decoder->sawError())
                 m_externalSVGDocument = nullptr;
         }
-        if (!m_externalSVGDocument)
+        if (m_externalSVGDocument) {
+            recordPackageFormatHistogram(PackageFormatSVG);
+        } else {
             setStatus(DecodeError);
+            recordPackageFormatHistogram(PackageFormatUnknown);
+        }
     }
 
     return m_externalSVGDocument;
