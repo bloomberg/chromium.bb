@@ -47,11 +47,6 @@ PassRefPtrWillBeRawPtr<SVGAnimateElement> SVGAnimateElement::create(Document& do
 
 SVGAnimateElement::~SVGAnimateElement()
 {
-    // FIXME: Oilpan: Below prevent stopAnimValAnimation being called on |targetElement|. This should be moved to |removeFrom| equivalent.
-#if !ENABLE(OILPAN)
-    if (targetElement())
-        clearAnimatedType(targetElement());
-#endif
 }
 
 AnimatedPropertyType SVGAnimateElement::animatedPropertyType()

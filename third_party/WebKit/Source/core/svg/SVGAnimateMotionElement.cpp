@@ -51,11 +51,6 @@ DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement()
 {
-    // FIXME: Oilpan: We should not comment this out and this should be moved to |removeFrom| equivalent.
-#if !ENABLE(OILPAN)
-    if (targetElement())
-        clearAnimatedType(targetElement());
-#endif
 }
 
 bool SVGAnimateMotionElement::hasValidAttributeType()
