@@ -612,3 +612,11 @@ system call NtCreateEvent
 *!mojo::system::Core::WaitManyInternal
 *!mojo::system::Core::WaitMany
 *!MojoWaitMany
+
+UNADDRESSABLE ACCESS
+name=IntentionalCrashPluginTest.plugin_client.cc
+npapi_test_plugin.dll!NP_Initialize
+...
+*!content::PluginLib::NP_Initialize
+*!content::PluginThread::PluginThread
+*!content::PluginMain
