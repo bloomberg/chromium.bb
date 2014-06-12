@@ -81,8 +81,7 @@ class DragTestView : public views::View {
     gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), 1.0f);
     gfx::ImageSkia image_skia(image_rep);
 
-    drag_utils::SetDragImageOnDataObject(
-        image_skia, image_skia.size(), gfx::Vector2d(), data);
+    drag_utils::SetDragImageOnDataObject(image_skia, gfx::Vector2d(), data);
   }
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {

@@ -1124,7 +1124,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       scoped_ptr<gfx::Canvas> canvas(
           views::GetCanvasForDragImage(button->GetWidget(), button->size()));
       button->PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
-      drag_utils::SetDragImageOnDataObject(*canvas, button->size(),
+      drag_utils::SetDragImageOnDataObject(*canvas,
                                            press_pt.OffsetFromOrigin(),
                                            data);
       WriteBookmarkDragData(model()->bookmark_bar_node()->GetChild(i), data);

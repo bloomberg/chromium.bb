@@ -15,13 +15,14 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace drag_utils {
 
 static void SetDragImageOnDataObject(HBITMAP hbitmap,
-                                     const gfx::Size& size,
+                                     const gfx::Size& size_in_pixels,
                                      const gfx::Vector2d& cursor_offset,
                                      IDataObject* data_object) {
   base::win::ScopedComPtr<IDragSourceHelper> helper;
@@ -29,7 +30,7 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
                                 IID_IDragSourceHelper, helper.ReceiveVoid());
   if (SUCCEEDED(rv)) {
     SHDRAGIMAGE sdi;
-    sdi.sizeDragImage = size.ToSIZE();
+    sdi.sizeDragImage = size_in_pixels.ToSIZE();
     sdi.crColorKey = 0xFFFFFFFF;
     sdi.hbmpDragImage = hbitmap;
     sdi.ptOffset = gfx::PointAtOffsetFromOrigin(cursor_offset).ToPOINT();
@@ -57,10 +58,9 @@ static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
 }
 
 void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
-                              const gfx::Size& size,
                               const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
-  DCHECK(data_object && !size.IsEmpty());
+  DCHECK(data_object && !image_skia.size().IsEmpty());
   // InitializeFromBitmap() doesn't expect an alpha channel and is confused
   // by premultiplied colors, so unpremultiply the bitmap.
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
@@ -68,7 +68,10 @@ void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
       SkBitmapOperations::UnPreMultiply(*image_skia.bitmap()));
   if (bitmap) {
     // Attach 'bitmap' to the data_object.
-    SetDragImageOnDataObject(bitmap, size, cursor_offset,
+    SetDragImageOnDataObject(
+        bitmap,
+        gfx::Size(image_skia.bitmap()->width(), image_skia.bitmap()->height()),
+        cursor_offset,
         ui::OSExchangeDataProviderWin::GetIDataObject(*data_object));
   }
 

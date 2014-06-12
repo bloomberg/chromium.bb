@@ -14,7 +14,6 @@
 namespace drag_utils {
 
 void SetDragImageOnDataObject(const gfx::ImageSkia& image,
-                              const gfx::Size& size,
                               const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
 

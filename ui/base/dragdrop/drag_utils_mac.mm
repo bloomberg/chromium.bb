@@ -9,14 +9,12 @@
 namespace drag_utils {
 
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
-                              const gfx::Size& size,
                               const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   NOTIMPLEMENTED();
 }
 
 void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
-                              const gfx::Size& size,
                               const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   NOTIMPLEMENTED();

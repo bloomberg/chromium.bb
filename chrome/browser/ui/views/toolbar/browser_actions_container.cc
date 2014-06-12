@@ -427,7 +427,7 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
     if (button == sender) {
       // Set the dragging image for the icon.
       gfx::ImageSkia badge(browser_action_views_[i]->GetIconWithBadge());
-      drag_utils::SetDragImageOnDataObject(badge, button->size(),
+      drag_utils::SetDragImageOnDataObject(badge,
                                            press_pt.OffsetFromOrigin(),
                                            data);
 

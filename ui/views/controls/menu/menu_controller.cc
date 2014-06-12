@@ -964,7 +964,7 @@ void MenuController::StartDrag(SubmenuView* source,
 
   OSExchangeData data;
   item->GetDelegate()->WriteDragData(item, &data);
-  drag_utils::SetDragImageOnDataObject(*canvas, item->size(),
+  drag_utils::SetDragImageOnDataObject(*canvas,
                                        press_loc.OffsetFromOrigin(),
                                        &data);
   StopScrolling();

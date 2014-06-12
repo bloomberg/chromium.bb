@@ -92,15 +92,14 @@ void CreateDragImageForFile(const base::FilePath& file_name,
   gfx::ImageSkia image = gfx::ImageSkia(source, size);
 
   gfx::Vector2d cursor_offset(size.width() / 2, kLinkDragImageVPadding);
-  SetDragImageOnDataObject(image, size, cursor_offset, data_object);
+  SetDragImageOnDataObject(image, cursor_offset, data_object);
 }
 
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
-                              const gfx::Size& size,
                               const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   gfx::ImageSkia image = gfx::ImageSkia(canvas.ExtractImageRep());
-  SetDragImageOnDataObject(image, size, cursor_offset, data_object);
+  SetDragImageOnDataObject(image, cursor_offset, data_object);
 }
 
 }  // namespace drag_utils

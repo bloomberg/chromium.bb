@@ -1009,7 +1009,7 @@ void Textfield::WriteDragDataForView(View* sender,
 #endif
   label.Paint(canvas.get(), views::CullSet());
   const gfx::Vector2d kOffset(-15, 0);
-  drag_utils::SetDragImageOnDataObject(*canvas, label.size(), kOffset, data);
+  drag_utils::SetDragImageOnDataObject(*canvas, kOffset, data);
   if (controller_)
     controller_->OnWriteDragData(data);
 }

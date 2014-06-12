@@ -1196,10 +1196,8 @@ void WebContentsViewAura::StartDragging(
 
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
 
-  if (!image.isNull()) {
-    drag_utils::SetDragImageOnDataObject(image,
-        gfx::Size(image.width(), image.height()), image_offset, &data);
-  }
+  if (!image.isNull())
+    drag_utils::SetDragImageOnDataObject(image, image_offset, &data);
 
   scoped_ptr<WebDragSourceAura> drag_source(
       new WebDragSourceAura(GetNativeView(), web_contents_));

@@ -295,7 +295,6 @@ class SynchronousDrag : public ui::DragSourceWin {
     gfx::Size image_size(image.size());
     drag_utils::SetDragImageOnDataObject(
         image,
-        image.size(),
         drag_view_offset_ - drag_view_->GetDragImageOffset(),
         data);
   }
