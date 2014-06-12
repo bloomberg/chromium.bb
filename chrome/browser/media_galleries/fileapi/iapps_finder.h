@@ -23,6 +23,15 @@ void FindIPhotoLibrary(const IAppsFinderCallback& callback);
 
 void FindITunesLibrary(const IAppsFinderCallback& callback);
 
+// These methods returns true if |path| should be interpreted as the device
+// indicated by |device_id|.
+
+bool PathIndicatesIPhotoLibrary(const std::string& device_id,
+                                const base::FilePath& path);
+
+bool PathIndicatesITunesLibrary(const std::string& device_id,
+                                const base::FilePath& path);
+
 }  // namespace iapps
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_IAPPS_FINDER_H_

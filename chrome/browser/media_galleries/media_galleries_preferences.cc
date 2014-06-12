@@ -668,6 +668,18 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
     const base::FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
   DCHECK(IsInitialized());
+
+  // First check if the path matches an imported gallery.
+  for (MediaGalleriesPrefInfoMap::const_iterator it =
+           known_galleries_.begin(); it != known_galleries_.end(); ++it) {
+    const std::string& device_id = it->second.device_id;
+    if (iapps::PathIndicatesIPhotoLibrary(device_id, path) ||
+        iapps::PathIndicatesITunesLibrary(device_id, path)) {
+      *gallery_info = it->second;
+      return true;
+    }
+  }
+
   StorageInfo info;
   base::FilePath relative_path;
   if (!MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {

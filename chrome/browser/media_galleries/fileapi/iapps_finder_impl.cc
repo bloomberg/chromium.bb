@@ -54,4 +54,39 @@ void FindITunesLibrary(const IAppsFinderCallback& callback) {
 }
 #endif
 
+bool PathIndicatesIPhotoLibrary(const std::string& device_id,
+                                const base::FilePath& path) {
+  storage_monitor::StorageInfo::Type device_type;
+  std::string unique_id;
+  storage_monitor::StorageInfo::CrackDeviceId(
+      device_id, &device_type, &unique_id);
+  if (device_type != storage_monitor::StorageInfo::IPHOTO)
+    return false;
+
+  // |unique_id| is the path to the library XML file at the library root.
+  base::FilePath library_root =
+      base::FilePath::FromUTF8Unsafe(unique_id).DirName();
+  return (path == library_root) ||
+      (path == library_root.AppendASCII("Data")) ||
+      (path == library_root.AppendASCII("Originals")) ||
+      (path == library_root.AppendASCII("Masters"));
+}
+
+bool PathIndicatesITunesLibrary(const std::string& device_id,
+                                const base::FilePath& path) {
+  storage_monitor::StorageInfo::Type device_type;
+  std::string unique_id;
+  storage_monitor::StorageInfo::CrackDeviceId(
+      device_id, &device_type, &unique_id);
+  if (device_type != storage_monitor::StorageInfo::ITUNES)
+    return false;
+
+  // |unique_id| is the path to the library XML file at the library root.
+  base::FilePath library_root =
+      base::FilePath::FromUTF8Unsafe(unique_id).DirName();
+  return (path == library_root) ||
+      (path == library_root.AppendASCII("iTunes Media")) ||
+      (path == library_root.AppendASCII("iTunes Media").AppendASCII("Music"));
+}
+
 }  // namespace iapps

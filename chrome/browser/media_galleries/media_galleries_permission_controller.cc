@@ -289,10 +289,13 @@ void MediaGalleriesPermissionController::FileSelected(
     const base::FilePath& path,
     int /*index*/,
     void* /*params*/) {
-  extensions::file_system_api::SetLastChooseEntryDirectory(
-      extensions::ExtensionPrefs::Get(GetProfile()),
-      extension_->id(),
-      path);
+  // |web_contents_| is NULL in tests.
+  if (web_contents_) {
+    extensions::file_system_api::SetLastChooseEntryDirectory(
+          extensions::ExtensionPrefs::Get(GetProfile()),
+          extension_->id(),
+          path);
+  }
 
   // Try to find it in the prefs.
   MediaGalleryPrefInfo gallery;
@@ -323,8 +326,9 @@ void MediaGalleriesPermissionController::FileSelected(
   }
 
   // Lastly, if not found, add a new gallery to |new_galleries_|.
-  DCHECK_EQ(kInvalidMediaGalleryPrefId, gallery.pref_id);
-  gallery.pref_id = GetDialogId(kInvalidMediaGalleryPrefId);
+  // prefId == kInvalidMediaGalleryPrefId for completely new galleries.
+  // The old prefId is retained for blacklisted galleries.
+  gallery.pref_id = GetDialogId(gallery.pref_id);
   new_galleries_[gallery.pref_id] = Entry(gallery, true);
   dialog_->UpdateGalleries();
 }

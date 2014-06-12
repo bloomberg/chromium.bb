@@ -113,7 +113,8 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
 
   GalleryDialogId GetDialogIdFromPrefId(MediaGalleryPrefId pref_id);
 
-  void TestForgottenType(MediaGalleryPrefInfo::Type type);
+  void TestForgottenType(MediaGalleryPrefInfo::Type type,
+                         bool forget_preserves_pref_id);
 
  protected:
   EnsureMediaDirectoriesExists mock_gallery_locations_;
@@ -175,7 +176,7 @@ MediaGalleriesPermissionControllerTest::GetDialogIdFromPrefId(
 }
 
 void MediaGalleriesPermissionControllerTest::TestForgottenType(
-    MediaGalleryPrefInfo::Type type) {
+    MediaGalleryPrefInfo::Type type, bool forget_preserves_pref_id) {
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   MediaGalleryPrefId forgotten1 = gallery_prefs()->AddGalleryByPath(
@@ -208,32 +209,46 @@ void MediaGalleriesPermissionControllerTest::TestForgottenType(
   controller()->DialogFinished(true);
   EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
+  // Add back and test whether the same pref id is preserved.
+  StartDialog();
+  controller()->FileSelected(
+      MakeMediaGalleriesTestingPath("forgotten1"), 0, NULL);
+  controller()->DialogFinished(true);
+  EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
+  MediaGalleryPrefInfo retrieved_info;
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(
+      MakeMediaGalleriesTestingPath("forgotten1"), &retrieved_info));
+  EXPECT_EQ(forget_preserves_pref_id, retrieved_info.pref_id == forgotten1);
+
   // Add a new one and forget it & see that it's gone.
   MediaGalleryPrefId forgotten3 = gallery_prefs()->AddGalleryByPath(
       MakeMediaGalleriesTestingPath("forgotten3"), type);
   StartDialog();
-  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(2U, controller()->GetSectionEntries(0).size());
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
             controller()->GetSectionEntries(1).size());
   controller()->DidToggleEntry(GetDialogIdFromPrefId(forgotten3), true);
   controller()->DidForgetEntry(GetDialogIdFromPrefId(forgotten3));
-  EXPECT_EQ(1U, controller()->GetSectionEntries(0).size());
+  EXPECT_EQ(2U, controller()->GetSectionEntries(0).size());
   EXPECT_EQ(static_cast<unsigned long>(mock_gallery_locations_.num_galleries()),
             controller()->GetSectionEntries(1).size());
   controller()->DialogFinished(true);
-  EXPECT_EQ(1U, gallery_prefs()->GalleriesForExtension(*extension()).size());
+  EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 }
 
 TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenUserAdded) {
-  TestForgottenType(MediaGalleryPrefInfo::kUserAdded);
+  TestForgottenType(MediaGalleryPrefInfo::kUserAdded,
+                    false /* forget_preserves_pref_id */);
 }
 
 TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenAutoDetected) {
-  TestForgottenType(MediaGalleryPrefInfo::kAutoDetected);
+  TestForgottenType(MediaGalleryPrefInfo::kAutoDetected,
+                    true /* forget_preserves_pref_id */);
 }
 
 TEST_F(MediaGalleriesPermissionControllerTest, TestForgottenScanResult) {
-  TestForgottenType(MediaGalleryPrefInfo::kScanResult);
+  TestForgottenType(MediaGalleryPrefInfo::kScanResult,
+                    true /* forget_preserves_pref_id */);
 }
 
 TEST_F(MediaGalleriesPermissionControllerTest, TestNameGeneration) {

@@ -1086,20 +1086,17 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
 TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   MediaGalleryPrefId id;
   base::FilePath path;
-  StorageInfo info;
-  base::FilePath relative_path;
   Verify();
 
   // Add a new auto detect gallery to test with.
   path = MakeMediaGalleriesTestingPath("new_auto");
-  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   base::string16 gallery_name = base::ASCIIToUTF16("NewAutoGallery");
-  info.set_device_id(StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
-                                               path.AsUTF8Unsafe()));
-  id = AddGalleryWithNameV2(info.device_id(), gallery_name, relative_path,
+  std::string device_id = StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
+                                                    path.AsUTF8Unsafe());
+  id = AddGalleryWithNameV2(device_id, gallery_name, base::FilePath(),
                             MediaGalleryPrefInfo::kAutoDetected);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
-  AddGalleryExpectation(id, gallery_name, info.device_id(), relative_path,
+  AddGalleryExpectation(id, gallery_name, device_id, base::FilePath(),
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
@@ -1111,9 +1108,9 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   std::string updated_device_id =
       StorageInfo::MakeDeviceId(StorageInfo::ITUNES, path.AsUTF8Unsafe());
   EXPECT_TRUE(UpdateDeviceIDForSingletonType(updated_device_id));
-  AddGalleryExpectation(id, gallery_name, updated_device_id, relative_path,
+  AddGalleryExpectation(id, gallery_name, updated_device_id, base::FilePath(),
                         MediaGalleryPrefInfo::kAutoDetected);
-  expected_device_map[info.device_id()].erase(id);
+  expected_device_map[device_id].erase(id);
   expected_device_map[updated_device_id].insert(id);
   Verify();
   EXPECT_EQ(1, observer.notifications());
@@ -1122,6 +1119,30 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   std::string new_device_id =
       StorageInfo::MakeDeviceId(StorageInfo::PICASA, path.AsUTF8Unsafe());
   EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
+}
+
+TEST_F(MediaGalleriesPreferencesTest, LookupImportedGalleryByPath) {
+  MediaGalleryPrefId id;
+  base::FilePath path;
+  Verify();
+
+  // iTunes device path points to an XML file in the library directory.
+  path = MakeMediaGalleriesTestingPath("new_auto").AppendASCII("library.xml");
+  base::string16 gallery_name = base::ASCIIToUTF16("NewAutoGallery");
+  std::string device_id = StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
+                                                    path.AsUTF8Unsafe());
+  id = AddGalleryWithNameV2(device_id, gallery_name, base::FilePath(),
+                            MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddGalleryExpectation(id, gallery_name, device_id, base::FilePath(),
+                        MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+
+  // Verify we can look up the imported gallery by its path.
+  MediaGalleryPrefInfo gallery_info;
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(path.DirName(),
+                                                   &gallery_info));
+  EXPECT_EQ(id, gallery_info.pref_id);
 }
 
 TEST_F(MediaGalleriesPreferencesTest, ScanResults) {
