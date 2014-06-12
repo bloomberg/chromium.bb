@@ -838,10 +838,6 @@ content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
 #endif
 }
 
-content::PushMessagingService* TestingProfile::GetPushMessagingService() {
-  return NULL;
-}
-
 bool TestingProfile::IsSameProfile(Profile *p) {
   return this == p;
 }

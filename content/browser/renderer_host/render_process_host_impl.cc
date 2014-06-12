@@ -888,7 +888,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new VibrationMessageFilter());
   screen_orientation_dispatcher_host_ = new ScreenOrientationDispatcherHost();
   AddFilter(screen_orientation_dispatcher_host_);
-  AddFilter(new PushMessagingMessageFilter(GetID()));
+  AddFilter(new PushMessagingMessageFilter());
   AddFilter(new BatteryStatusMessageFilter());
 }
 

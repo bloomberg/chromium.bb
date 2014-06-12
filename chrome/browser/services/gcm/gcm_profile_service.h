@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 // TODO(jianli): include needed for obsolete methods that are going to be
 // removed soon.
 #include "components/gcm_driver/gcm_driver.h"
@@ -59,10 +58,6 @@ class GCMProfileService : public KeyedService {
 
   GCMDriver* driver() const { return driver_.get(); }
 
-  content::PushMessagingService* push_messaging_service() {
-    return &push_messaging_service_;
-  }
-
  protected:
   // Used for constructing fake GCMProfileService for testing purpose.
   GCMProfileService();
@@ -72,9 +67,6 @@ class GCMProfileService : public KeyedService {
   Profile* profile_;
 
   scoped_ptr<GCMDriver> driver_;
-
-  // Implementation of content::PushMessagingService using GCMProfileService.
-  PushMessagingServiceImpl push_messaging_service_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMProfileService);
 };

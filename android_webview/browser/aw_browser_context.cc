@@ -318,11 +318,6 @@ quota::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }
 
-content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
-  // TODO(johnme): Support push messaging in WebView.
-  return NULL;
-}
-
 void AwBrowserContext::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   // Android WebView rebuilds from WebChromeClient.getVisitedHistory. The client

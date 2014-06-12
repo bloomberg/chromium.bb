@@ -66,7 +66,6 @@ class TestBrowserContext : public BrowserContext {
       GetGeolocationPermissionContext() OVERRIDE;
   virtual BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
-  virtual PushMessagingService* GetPushMessagingService() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);

@@ -102,10 +102,6 @@ quota::SpecialStoragePolicy* FakeProfile::GetSpecialStoragePolicy() {
   return NULL;
 }
 
-content::PushMessagingService* FakeProfile::GetPushMessagingService() {
-  return NULL;
-}
-
 scoped_refptr<base::SequencedTaskRunner>
 FakeProfile::GetIOTaskRunner() {
   return scoped_refptr<base::SequencedTaskRunner>();

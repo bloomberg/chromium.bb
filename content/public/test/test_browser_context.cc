@@ -151,8 +151,4 @@ quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return special_storage_policy_.get();
 }
 
-PushMessagingService* TestBrowserContext::GetPushMessagingService() {
-  return NULL;
-}
-
 }  // namespace content
