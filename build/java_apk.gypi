@@ -52,6 +52,7 @@
 #  never_lint - Set to 1 to not run lint on this target.
 {
   'variables': {
+    'tested_apk_dex_path%': '/',
     'additional_input_paths': [],
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
@@ -151,6 +152,7 @@
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
     'extra_native_libs': [],
+    'apk_dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -158,6 +160,7 @@
   'all_dependent_settings': {
     'variables': {
       'apk_output_jar_path': '<(jar_path)',
+      'tested_apk_dex_path': '<(dex_path)',
     },
   },
   'conditions': [
@@ -668,20 +671,37 @@
     {
       'action_name': 'dex_<(_target_name)',
       'variables': {
-        'conditions': [
-          ['emma_instrument != 0', {
-            'dex_no_locals': 1,
-            'dex_input_paths': [ '<(emma_device_jar)' ],
-          }],
-        ],
-        'dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
-        'dex_generated_input_dirs': [ '<(classes_final_dir)' ],
         'output_path': '<(dex_path)',
+        'dex_input_paths': [
+          '>@(apk_dex_input_paths)',
+          '<(jar_path)',
+        ],
         'proguard_enabled_input_path': '<(obfuscated_jar_path)',
       },
+      'target_conditions': [
+        ['emma_instrument != 0', {
+          'dex_no_locals': 1,
+          'dex_input_paths': [
+            '<(emma_device_jar)'
+          ],
+        }],
+        ['is_test_apk == 1 and tested_apk_dex_path != "/"', {
+          'variables': {
+            'dex_additional_options': [
+              '--excluded-paths-file', '>(tested_apk_dex_path).inputs'
+            ],
+          },
+          'inputs': [
+            '>(tested_apk_dex_path).inputs',
+          ],
+        }],
+      ],
       'conditions': [
-        ['proguard_enabled == "true"', { 'inputs': [ '<(obfuscate_stamp)' ] },
-                                       { 'inputs': [ '<(instr_stamp)' ] }],
+        ['proguard_enabled == "true"', {
+          'inputs': [ '<(obfuscate_stamp)' ]
+        }, {
+          'inputs': [ '<(instr_stamp)' ]
+        }],
       ],
       'includes': [ 'android/dex_action.gypi' ],
     },

@@ -32,6 +32,7 @@
     'proguard_enabled%': 'false',
     'proguard_enabled_input_path%': '',
     'dex_no_locals%': 0,
+    'dex_additional_options': [],
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -41,6 +42,7 @@
   ],
   'outputs': [
     '<(output_path)',
+    '<(output_path).inputs',
   ],
   'action': [
     'python', '<(DEPTH)/build/android/gyp/dex.py',
@@ -49,7 +51,8 @@
     '--configuration-name=<(CONFIGURATION_NAME)',
     '--proguard-enabled=<(proguard_enabled)',
     '--proguard-enabled-input-path=<(proguard_enabled_input_path)',
-    '--no-locals=<(dex_no_locals)',
+    '--no-locals=>(dex_no_locals)',
+    '>@(dex_additional_options)',
     '>@(dex_input_paths)',
     '>@(dex_generated_input_dirs)',
   ]

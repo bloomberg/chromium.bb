@@ -25,9 +25,9 @@ def DoDex(options, paths):
       lambda: build_utils.CheckOutput(dex_cmd, print_stderr=False),
       record_path=record_path,
       input_paths=paths,
-      input_strings=dex_cmd)
-
-  build_utils.Touch(options.dex_path)
+      input_strings=dex_cmd,
+      force=not os.path.exists(options.dex_path))
+  build_utils.WriteJson(paths, options.dex_path + '.inputs')
 
 
 def main():
@@ -44,12 +44,19 @@ def main():
                           'is enabled.'))
   parser.add_option('--no-locals',
                     help='Exclude locals list from the dex file.')
+  parser.add_option('--excluded-paths-file',
+                    help='Path to a file containing a list of paths to exclude '
+                    'from the dex file.')
 
   options, paths = parser.parse_args()
 
   if (options.proguard_enabled == 'true'
       and options.configuration_name == 'Release'):
     paths = [options.proguard_enabled_input_path]
+
+  if options.excluded_paths_file:
+    exclude_paths = build_utils.ReadJson(options.excluded_paths_file)
+    paths = [p for p in paths if not p in exclude_paths]
 
   DoDex(options, paths)
 
