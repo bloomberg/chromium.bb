@@ -1077,7 +1077,7 @@ class Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1
 //    Vm: Vm(3:0),
 //    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//    baseline: VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -1092,7 +1092,7 @@ class Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,
@@ -1114,7 +1114,7 @@ class Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1
 //    Vm: Vm(3:0),
 //    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//    baseline: VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0,
 //    d: D:Vd,
 //    defs: {},
 //    elements: 64 / esize,
@@ -1129,7 +1129,7 @@ class Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,

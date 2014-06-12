@@ -1628,12 +1628,12 @@ class VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0_
     : public VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0 {
 };
 
-class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL
-    : public VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0 {
+class VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL
+    : public VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0 {
 };
 
-class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL
-    : public VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0 {
+class VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL
+    : public VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0 {
 };
 
 class VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_0_VPADD_floating_point
@@ -8663,28 +8663,28 @@ class NamedVORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_ca
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0_VORR_register_or_VMOV_register_A1);
 };
 
-class NamedVPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL
+class NamedVPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL
     : public NamedClassDecoder {
  public:
-  NamedVPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL()
-    : NamedClassDecoder(decoder_, "VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0 VPADAL")
+  NamedVPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL()
+    : NamedClassDecoder(decoder_, "VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0 VPADAL")
   {}
 
  private:
-  nacl_arm_dec::VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL);
+  nacl_arm_dec::VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL);
 };
 
-class NamedVPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL
+class NamedVPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL
     : public NamedClassDecoder {
  public:
-  NamedVPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL()
-    : NamedClassDecoder(decoder_, "VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0 VPADDL")
+  NamedVPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL()
+    : NamedClassDecoder(decoder_, "VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0 VPADDL")
   {}
 
  private:
-  nacl_arm_dec::VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL);
+  nacl_arm_dec::VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL);
 };
 
 class NamedVPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_0_VPADD_floating_point

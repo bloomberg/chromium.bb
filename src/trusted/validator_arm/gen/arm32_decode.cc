@@ -2590,9 +2590,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000300)  ==
-          0x00000200 /* B(10:6)=x10xx */ &&
-      (inst.Bits() & 0x00000040)  ==
-          0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
+          0x00000200 /* B(10:6)=x10xx */) {
     return Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_instance_;
   }
 

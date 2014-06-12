@@ -6207,7 +6207,7 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
-// VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0:
+// VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0:
 //
 //   {D: D(22),
 //    F: F(10),
@@ -6230,7 +6230,7 @@ uses(Instruction inst) const {
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,
@@ -6242,14 +6242,14 @@ uses(Instruction inst) const {
 //    size: size(19:18),
 //    unsigned: (op(0)=1),
 //    uses: {}}
-RegisterList VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0::
+RegisterList VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0::
+SafetyLevel VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -6273,14 +6273,14 @@ safety(Instruction inst) const {
 }
 
 
-RegisterList VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0::
+RegisterList VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
   return RegisterList();
 }
 
-// VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0:
+// VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0:
 //
 //   {D: D(22),
 //    F: F(10),
@@ -6303,7 +6303,7 @@ uses(Instruction inst) const {
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,
@@ -6315,14 +6315,14 @@ uses(Instruction inst) const {
 //    size: size(19:18),
 //    unsigned: (op(0)=1),
 //    uses: {}}
-RegisterList VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0::
+RegisterList VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0::
+SafetyLevel VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -6346,7 +6346,7 @@ safety(Instruction inst) const {
 }
 
 
-RegisterList VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0::
+RegisterList VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

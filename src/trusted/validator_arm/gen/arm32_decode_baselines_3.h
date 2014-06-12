@@ -3593,7 +3593,7 @@ class VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0
       VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0);
 };
 
-// VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0:
+// VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0:
 //
 //   {D: D(22),
 //    F: F(10),
@@ -3616,7 +3616,7 @@ class VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,
@@ -3628,20 +3628,20 @@ class VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0
 //    size: size(19:18),
 //    unsigned: (op(0)=1),
 //    uses: {}}
-class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0
+class VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0
      : public ClassDecoder {
  public:
-  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0()
+  VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0);
+      VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0);
 };
 
-// VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0:
+// VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0:
 //
 //   {D: D(22),
 //    F: F(10),
@@ -3664,7 +3664,7 @@ class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0
 //      Vm(3:0)],
 //    m: M:Vm,
 //    op: op(8:7),
-//    pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//    pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //    regs: 1
 //         if Q(6)=0
 //         else 2,
@@ -3676,17 +3676,17 @@ class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0
 //    size: size(19:18),
 //    unsigned: (op(0)=1),
 //    uses: {}}
-class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0
+class VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0
      : public ClassDecoder {
  public:
-  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0()
+  VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0);
+      VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0);
 };
 
 // VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_0:

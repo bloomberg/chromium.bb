@@ -3564,19 +3564,15 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000700)  ==
-          0x00000200 /* B(10:6)=010xx */ &&
-      (inst.Bits() & 0x00000040)  ==
-          0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
-    return VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL_instance_;
+          0x00000200 /* B(10:6)=010xx */) {
+    return VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000700)  ==
-          0x00000600 /* B(10:6)=110xx */ &&
-      (inst.Bits() & 0x00000040)  ==
-          0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
-    return VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL_instance_;
+          0x00000600 /* B(10:6)=110xx */) {
+    return VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==

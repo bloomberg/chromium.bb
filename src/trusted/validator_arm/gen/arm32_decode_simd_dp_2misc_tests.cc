@@ -432,15 +432,15 @@ bool VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-// A(17:16)=00 & B(10:6)=010xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=010xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//       baseline: VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -448,17 +448,17 @@ bool VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
+class VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0TesterCase9
     : public Arm32DecoderTester {
  public:
-  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+  VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
+bool VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -470,24 +470,21 @@ bool VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
   // B(10:6)=~010xx
   if ((inst.Bits() & 0x00000700)  !=
           0x00000200) return false;
-  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
-  if ((inst.Bits() & 0x00000040)  !=
-          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-// A(17:16)=00 & B(10:6)=110xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=110xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//       baseline: VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -495,17 +492,17 @@ bool VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10
+class VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0TesterCase10
     : public Arm32DecoderTester {
  public:
-  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+  VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10
+bool VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -517,9 +514,6 @@ bool VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10
   // B(10:6)=~110xx
   if ((inst.Bits() & 0x00000700)  !=
           0x00000600) return false;
-  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
-  if ((inst.Bits() & 0x00000040)  !=
-          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
@@ -1923,15 +1917,15 @@ class VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8
   {}
 };
 
-// A(17:16)=00 & B(10:6)=010xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=010xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//       baseline: VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -1939,24 +1933,24 @@ class VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9
-    : public VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9 {
+class VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0Tester_Case9
+    : public VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0TesterCase9 {
  public:
-  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9()
-    : VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9(
-      state_.VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL_instance_)
+  VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0Tester_Case9()
+    : VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0TesterCase9(
+      state_.VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0_VPADDL_instance_)
   {}
 };
 
-// A(17:16)=00 & B(10:6)=110xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=110xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//       baseline: VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -1964,12 +1958,12 @@ class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10
-    : public VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10 {
+class VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0Tester_Case10
+    : public VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0TesterCase10 {
  public:
-  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10()
-    : VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10(
-      state_.VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL_instance_)
+  VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0Tester_Case10()
+    : VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0TesterCase10(
+      state_.VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0_VPADAL_instance_)
   {}
 };
 
@@ -2871,15 +2865,15 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111100111d11ss00dddd01111qm0mmmm");
 }
 
-// A(17:16)=00 & B(10:6)=010xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=010xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//       baseline: VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0010pqm0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2888,22 +2882,22 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9_TestCase9) {
-  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9 baseline_tester;
+       VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0Tester_Case9_TestCase9) {
+  VPADDL_111100111d11ss00dddd0010pqm0mmmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VPADDL actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("111100111d11ss00dddd0010p1m0mmmm");
+  a_vs_b_tester.Test("111100111d11ss00dddd0010pqm0mmmm");
 }
 
-// A(17:16)=00 & B(10:6)=110xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx
+// A(17:16)=00 & B(10:6)=110xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//       baseline: VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//       pattern: 111100111d11ss00dddd0110pqm0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2912,11 +2906,11 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10_TestCase10) {
-  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10 baseline_tester;
+       VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0Tester_Case10_TestCase10) {
+  VPADAL_111100111d11ss00dddd0110pqm0mmmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VPADAL actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("111100111d11ss00dddd0110p1m0mmmm");
+  a_vs_b_tester.Test("111100111d11ss00dddd0110pqm0mmmm");
 }
 
 // A(17:16)=01 & B(10:6)=0000x
