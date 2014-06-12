@@ -700,7 +700,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
 @failures_lib.SetFailureType(SuiteTimedOut, timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
-                   retry=None, debug=True):
+                   retry=None, minimum_duts=0, debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -717,6 +717,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     timeout_mins: Timeout in minutes for the suite job and its sub-jobs.
     retry: If True, will enable job-level retry. Only works when
            wait_for_results is True.
+    minimum_duts: The minimum number of DUTs should be available in lab for the
+                  suite job to be created. If it's set to 0, the check will be
+                  skipped.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -748,6 +751,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
   if retry is not None:
     cmd += ['--retry', str(retry)]
+
+  if minimum_duts != 0:
+    cmd += ['--minimum_duts', str(minimum_duts)]
 
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
