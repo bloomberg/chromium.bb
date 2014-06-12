@@ -1018,6 +1018,26 @@ PASS converter.testEnforceRangeUnsignedShort is 0
 PASS converter.testEnforceRangeUnsignedShort = undefined threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedShort' property on 'TypeConversions': Value is not of type 'unsigned short'..
 PASS converter.testEnforceRangeUnsignedShort = {valueOf:function(){throw new Error('custom');}} threw exception Error: custom.
 
+converter.testByteString = '!@#123ABCabc\x00\x80\xFF\r\n\t'
+PASS converter.testByteString is "!@#123ABCabc\u0000ÿ\r\n\t"
+PASS converter.testByteString = '\u0100' threw exception TypeError: Failed to set the 'testByteString' property on 'TypeConversions': Value is not a valid ByteString..
+PASS converter.testByteString = {toString: function() { throw Error(); }} threw exception Error.
+PASS converter.testByteString is "!@#123ABCabc\u0000ÿ\r\n\t"
+converter.testByteString = true
+PASS converter.testByteString is "true"
+converter.testByteString = 123
+PASS converter.testByteString is "123"
+converter.testByteString = null
+PASS converter.testByteString is "null"
+converter.testByteString = undefined
+PASS converter.testByteString is "undefined"
+PASS converter.setTestByteString('abc') did not throw exception.
+PASS converter.setTestByteStringDefaultNull('abc') did not throw exception.
+PASS converter.setTestByteString('\u0100') threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': Value is not a valid ByteString..
+PASS converter.setTestByteStringDefaultNull('\u0100') threw exception TypeError: Failed to execute 'setTestByteStringDefaultNull' on 'TypeConversions': Value is not a valid ByteString..
+PASS converter.setTestByteString() threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': 1 argument required, but only 0 present..
+PASS converter.setTestByteStringDefaultNull() did not throw exception.
+PASS converter.testByteString is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -108,7 +108,7 @@ def generate_attribute(interface, attribute):
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
             has_type_checking_nullable or has_type_checking_unrestricted or
-            idl_type.is_integer_type,
+            idl_type.is_integer_type or idl_type.name == 'ByteString',
         'has_type_checking_interface': has_type_checking_interface,
         'has_type_checking_nullable': has_type_checking_nullable,
         'has_type_checking_unrestricted': has_type_checking_unrestricted,

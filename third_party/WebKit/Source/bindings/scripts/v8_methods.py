@@ -119,7 +119,7 @@ def generate_method(interface, method):
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
-                if argument.idl_type.name == 'SerializedScriptValue' or
+                if argument.idl_type.name in ('ByteString', 'SerializedScriptValue') or
                    argument.idl_type.is_integer_type),
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -286,7 +286,7 @@ def v8_value_to_local_cpp_value(argument, index):
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(argument, index)
     # [Default=NullString]
-    if (argument.is_optional and idl_type.name == 'String' and
+    if (argument.is_optional and idl_type.name in ('String', 'ByteString') and
         extended_attributes.get('Default') == 'NullString'):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:

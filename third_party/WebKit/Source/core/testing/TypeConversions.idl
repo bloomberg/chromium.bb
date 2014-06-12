@@ -45,4 +45,8 @@
     [EnforceRange, ImplementedAs=testShort] attribute short testEnforceRangeShort;
     attribute unsigned short testUnsignedShort;
     [EnforceRange, ImplementedAs=testUnsignedShort] attribute unsigned short testEnforceRangeUnsignedShort;
+
+    attribute ByteString testByteString;
+    void setTestByteString(ByteString byteString);
+    [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull([Default=NullString] optional ByteString byteString);
 };

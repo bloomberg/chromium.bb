@@ -38,10 +38,11 @@ NUMERIC_TYPES = (INTEGER_TYPES | frozenset([
 PRIMITIVE_TYPES = (frozenset(['boolean']) | NUMERIC_TYPES)
 BASIC_TYPES = (PRIMITIVE_TYPES | frozenset([
     # Built-in, non-composite, non-object data types
-    # http://www.w3.org/TR/WebIDL/#idl-types
+    # http://heycam.github.io/webidl/#idl-types
     'DOMString',
+    'ByteString',
     'Date',
-    # http://www.w3.org/TR/WebIDL/#es-type-mapping
+    # http://heycam.github.io/webidl/#es-type-mapping
     'void',
 ]))
 TYPE_NAMES = {
@@ -63,6 +64,7 @@ TYPE_NAMES = {
     'DOMString': 'String',
     'ByteString': 'ByteString',
     'object': 'Object',
+    'Date': 'Date',
 }
 
 

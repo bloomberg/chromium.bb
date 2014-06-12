@@ -87,6 +87,7 @@ interface TestObject {
     // Basic types
     attribute Date dateAttribute;
     attribute DOMString stringAttribute;
+    attribute ByteString byteStringAttribute;
     attribute DOMTimeStamp domTimeStampAttribute;
     attribute boolean booleanAttribute;
     attribute byte byteAttribute;
@@ -261,6 +262,7 @@ interface TestObject {
     // Basic types
     Date dateMethod();
     DOMString stringMethod();
+    ByteString byteStringMethod();
     DOMTimeStamp readonlyDOMTimeStampMethod();
     boolean booleanMethod();
     byte byteMethod();
@@ -276,6 +278,7 @@ interface TestObject {
 
     void voidMethodDateArg(Date dateArg);
     void voidMethodStringArg(DOMString stringArg);
+    void voidMethodByteStringArg(ByteString stringArg);
     void voidMethodDOMTimeStampArg(DOMTimeStamp domTimeStampArg);
     void voidMethodBooleanArg(boolean booleanArg);
     void voidMethodByteArg(byte byteArg);

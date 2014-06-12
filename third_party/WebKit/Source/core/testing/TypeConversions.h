@@ -59,6 +59,9 @@ public:
     uint16_t testUnsignedShort() { return m_unsignedShort; }
     void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
 
+    const String& testByteString() const { return m_byteString; }
+    void setTestByteString(const String& value) { m_byteString = value; }
+
     void trace(Visitor*) { }
 
 private:
@@ -74,6 +77,7 @@ private:
     uint8_t m_octet;
     int16_t m_short;
     uint16_t m_unsignedShort;
+    String m_byteString;
 };
 
 } // namespace WebCore

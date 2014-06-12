@@ -581,4 +581,21 @@ testNonNumericToNumericEnforceRange(type);
 convertThrows(type, "{valueOf:function(){throw new Error('custom');}}");
 debug("");
 
+evalAndLog("converter.testByteString = '!@#123ABCabc\\x00\\x80\\xFF\\r\\n\\t'");
+shouldBeEqualToString("converter.testByteString", "!@#123ABCabc\x00\x80\xFF\r\n\t");
+shouldThrow("converter.testByteString = '\\u0100'");
+shouldThrow("converter.testByteString = {toString: function() { throw Error(); }}");
+shouldBeEqualToString("converter.testByteString", "!@#123ABCabc\x00\x80\xFF\r\n\t");
+["true", "123", "null", "undefined"].forEach(function(value) {
+    evalAndLog("converter.testByteString = " + value);
+    shouldBeEqualToString("converter.testByteString", value);
+});
+shouldNotThrow("converter.setTestByteString('abc')");
+shouldNotThrow("converter.setTestByteStringDefaultNull('abc')");
+shouldThrow("converter.setTestByteString('\\u0100')");
+shouldThrow("converter.setTestByteStringDefaultNull('\\u0100')");
+shouldThrow("converter.setTestByteString()");
+shouldNotThrow("converter.setTestByteStringDefaultNull()");
+shouldBeEqualToString("converter.testByteString", "");
+
 </script>

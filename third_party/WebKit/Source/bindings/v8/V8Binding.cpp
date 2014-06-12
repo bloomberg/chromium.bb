@@ -492,6 +492,31 @@ float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     return numberObject->NumberValue();
 }
 
+String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    // Handle [Default=NullString]
+    if (value.IsEmpty())
+        return String();
+
+    // From the Web IDL spec: http://heycam.github.io/webidl/#es-ByteString
+
+    // 1. Let x be ToString(v)
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::String>, stringObject, value->ToString(), exceptionState, String());
+    String x = toCoreString(stringObject);
+
+    // 2. If the value of any element of x is greater than 255, then throw a TypeError.
+    if (!x.containsOnlyLatin1()) {
+        exceptionState.throwTypeError("Value is not a valid ByteString.");
+        return String();
+    }
+
+    // 3. Return an IDL ByteString value whose length is the length of x, and where the
+    // value of each element is the value of the corresponding element of x.
+    // Blink: A ByteString is simply a String with a range constrained per the above, so
+    // this is the identity operation.
+    return x;
+}
+
 PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = nullptr;

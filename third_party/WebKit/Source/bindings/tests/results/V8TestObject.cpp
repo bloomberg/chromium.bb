@@ -190,6 +190,36 @@ static void stringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Lo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void byteStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueString(info, impl->byteStringAttribute(), info.GetIsolate());
+}
+
+static void byteStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectV8Internal::byteStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void byteStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "byteStringAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
+    impl->setByteStringAttribute(cppValue);
+}
+
+static void byteStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectV8Internal::byteStringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void domTimeStampAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
@@ -4636,6 +4666,19 @@ static void stringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void byteStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, impl->byteStringMethod(), info.GetIsolate());
+}
+
+static void byteStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::byteStringMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void readonlyDOMTimeStampMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -4833,6 +4876,30 @@ static void voidMethodStringArgMethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectV8Internal::voidMethodStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<> stringArg;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(stringArg, toByteString(info[0], exceptionState), exceptionState);
+    }
+    impl->voidMethodByteStringArg(stringArg);
+}
+
+static void voidMethodByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodByteStringArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -8964,6 +9031,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"readonlyLongAttribute", TestObjectV8Internal::readonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"dateAttribute", TestObjectV8Internal::dateAttributeAttributeGetterCallback, TestObjectV8Internal::dateAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"byteStringAttribute", TestObjectV8Internal::byteStringAttributeAttributeGetterCallback, TestObjectV8Internal::byteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"domTimeStampAttribute", TestObjectV8Internal::domTimeStampAttributeAttributeGetterCallback, TestObjectV8Internal::domTimeStampAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"booleanAttribute", TestObjectV8Internal::booleanAttributeAttributeGetterCallback, TestObjectV8Internal::booleanAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"byteAttribute", TestObjectV8Internal::byteAttributeAttributeGetterCallback, TestObjectV8Internal::byteAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -9117,6 +9185,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethod", TestObjectV8Internal::voidMethodMethodCallback, 0, 0},
     {"dateMethod", TestObjectV8Internal::dateMethodMethodCallback, 0, 0},
     {"stringMethod", TestObjectV8Internal::stringMethodMethodCallback, 0, 0},
+    {"byteStringMethod", TestObjectV8Internal::byteStringMethodMethodCallback, 0, 0},
     {"readonlyDOMTimeStampMethod", TestObjectV8Internal::readonlyDOMTimeStampMethodMethodCallback, 0, 0},
     {"booleanMethod", TestObjectV8Internal::booleanMethodMethodCallback, 0, 0},
     {"byteMethod", TestObjectV8Internal::byteMethodMethodCallback, 0, 0},
@@ -9131,6 +9200,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"unsignedShortMethod", TestObjectV8Internal::unsignedShortMethodMethodCallback, 0, 0},
     {"voidMethodDateArg", TestObjectV8Internal::voidMethodDateArgMethodCallback, 0, 1},
     {"voidMethodStringArg", TestObjectV8Internal::voidMethodStringArgMethodCallback, 0, 1},
+    {"voidMethodByteStringArg", TestObjectV8Internal::voidMethodByteStringArgMethodCallback, 0, 1},
     {"voidMethodDOMTimeStampArg", TestObjectV8Internal::voidMethodDOMTimeStampArgMethodCallback, 0, 1},
     {"voidMethodBooleanArg", TestObjectV8Internal::voidMethodBooleanArgMethodCallback, 0, 1},
     {"voidMethodByteArg", TestObjectV8Internal::voidMethodByteArgMethodCallback, 0, 1},

@@ -185,6 +185,11 @@ public:
         m_v8Object = object;
     }
 
+    void operator=(const String& string)
+    {
+        setString(string);
+    }
+
     bool prepare()
     {
         if (m_v8Object.IsEmpty())
