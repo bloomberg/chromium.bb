@@ -210,8 +210,12 @@ class RealDelegate(Delegate):
   def GetHistory(self):
     """See Delegate.GetHistory"""
     url_stream = urllib2.urlopen('https://omahaproxy.appspot.com/history')
-    return [(platform, channel, version, date)
+    history = [(platform, channel, version, date)
         for platform, channel, version, date in csv.reader(url_stream)]
+
+    # The first line of this URL is the header:
+    #   os,channel,version,timestamp
+    return history[1:]
 
   def GetTrunkRevision(self, version):
     """See Delegate.GetTrunkRevision"""
