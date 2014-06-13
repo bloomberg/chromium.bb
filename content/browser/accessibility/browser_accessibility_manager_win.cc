@@ -127,6 +127,15 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return;
 
+  // NVDA gets confused if we focus the main document element when it hasn't
+  // finished loading and it has no children at all, so suppress that event.
+  if (event_type == ui::AX_EVENT_FOCUS &&
+      node == GetRoot() &&
+      node->PlatformChildCount() == 0 &&
+      !node->GetBoolAttribute(ui::AX_ATTR_DOC_LOADED)) {
+    return;
+  }
+
   LONG event_id = EVENT_MIN;
   switch (event_type) {
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
@@ -214,6 +223,10 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     // object and pass it that same id, which we can use to retrieve the
     // IAccessible for this node.
     LONG child_id = node->ToBrowserAccessibilityWin()->unique_id_win();
+
+    // Always send a focus before a load complete.
+    if (event_type == ui::AX_EVENT_LOAD_COMPLETE)
+      MaybeCallNotifyWinEvent(EVENT_OBJECT_FOCUS, child_id);
     MaybeCallNotifyWinEvent(event_id, child_id);
   }
 

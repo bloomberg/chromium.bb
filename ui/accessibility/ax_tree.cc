@@ -157,8 +157,6 @@ bool AXTree::UpdateNode(
   if (node) {
     update_state->pending_nodes.erase(node);
     node->SetData(src);
-    if (delegate_)
-      delegate_->OnNodeChanged(node);
   } else {
     if (src.role != AX_ROLE_ROOT_WEB_AREA) {
       error_ = base::StringPrintf(
@@ -170,6 +168,9 @@ bool AXTree::UpdateNode(
     update_state->new_nodes.insert(node);
     node->SetData(src);
   }
+
+  if (delegate_)
+    delegate_->OnNodeChanged(node);
 
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
