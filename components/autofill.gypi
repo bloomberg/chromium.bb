@@ -108,6 +108,7 @@
         'autofill_regexes',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
+        'keyed_service_core',
         'os_crypt',
         'pref_registry',
         'webdata_common',

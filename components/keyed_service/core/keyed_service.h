@@ -15,11 +15,13 @@
 // drop references are services deleted.
 class KEYED_SERVICE_EXPORT KeyedService {
  public:
+  KeyedService();
+
   // The first pass is to call Shutdown on a KeyedService.
-  virtual void Shutdown() {}
+  virtual void Shutdown();
 
   // The second pass is the actual deletion of each object.
-  virtual ~KeyedService() {}
+  virtual ~KeyedService();
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_H_

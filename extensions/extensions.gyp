@@ -229,6 +229,7 @@
       'type': 'static_library',
       'dependencies': [
         '../components/components.gyp:keyed_service_content',
+        '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:pref_registry',
         '../components/components.gyp:usb_service',
         '../content/content.gyp:content_browser',
