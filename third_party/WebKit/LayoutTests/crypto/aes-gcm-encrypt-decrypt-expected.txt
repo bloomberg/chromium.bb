@@ -29,8 +29,8 @@ PASS typeof tmpKey.extractable is 'boolean'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is "AES-GCM"
 PASS tmpKey.usages.join(',') is "encrypt,decrypt"
-PASS: Encryption should be [c4489fa64a6edf80e7e6a3b8855bc37c772ee7de0f91a981c36c93a35c88] and was
-PASS: Decryption should be [d30b02c343487105219d6fa080acc743] and was
+PASS: Encryption should be [fda718aa1ec163487e21afc34f5a3a34795a9ee71dd3e7ee9a18fdb24181dc982b29c6ec723294a130ca2234952bb0ef68c0f34795fbe0] and was
+PASS: Decryption should be [69fd0c9da10b56ec6786333f8d76d4b74f8a434195f2f241f088b2520fb5fa29455df9893164fb1638abe6617915d9497a8fe2] and was
 PASS successfullyParsed is true
 
 TEST COMPLETE

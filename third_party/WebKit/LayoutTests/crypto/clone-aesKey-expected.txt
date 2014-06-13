@@ -26,24 +26,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is ""
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: 3f004b0101180118800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
 PASS importedKey is not clonedKey
@@ -74,24 +56,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 3f004b010110031030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt"
-Serialized key bytes: 3f004b0101180318800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -134,24 +98,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
-Serialized key bytes: 3f004b0101184518800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
 PASS importedKey is not clonedKey
@@ -182,24 +128,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 3f004b010110c3011030112233445566778899aabbccddeeff00
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-Serialized key bytes: 3f004b010118c30118800102030405060708090a0b0c0d0e0f101112131415161700
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -241,23 +169,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is ""
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: 3f004b0101180018800102030405060708090a0b0c0d0e0f1011121314151617
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is ""
 PASS importedKey is not clonedKey
@@ -286,23 +197,6 @@ PASS clonedKey.algorithm.name is "AES-CBC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 3f004b010110021030112233445566778899aabbccddeeff
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt"
-Serialized key bytes: 3f004b0101180218800102030405060708090a0b0c0d0e0f1011121314151617
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -343,23 +237,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
-Serialized key bytes: 3f004b0101184418800102030405060708090a0b0c0d0e0f1011121314151617
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-CBC"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
 PASS importedKey is not clonedKey
@@ -388,23 +265,6 @@ PASS clonedKey.algorithm.name is "AES-CBC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 3f004b010110c2011030112233445566778899aabbccddeeff00
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-CBC"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-CBC"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-Serialized key bytes: 3f004b010118c20118800102030405060708090a0b0c0d0e0f101112131415161700
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -440,24 +300,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is ""
 Serialized key bytes: 3f004b010910011030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is ""
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: 3f004b0109180118800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -500,24 +342,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt"
-Serialized key bytes: 3f004b0109180318800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
 PASS importedKey is not clonedKey
@@ -548,24 +372,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
 Serialized key bytes: 3f004b010910451030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
-Serialized key bytes: 3f004b0109184518800102030405060708090a0b0c0d0e0f1011121314151617
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -608,24 +414,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is true
 PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is true
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-Serialized key bytes: 3f004b010918c30118800102030405060708090a0b0c0d0e0f101112131415161700
-PASS: Cloned key exported data should be [800102030405060708090a0b0c0d0e0f1011121314151617] and was
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is true
-PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 PASS importedKey is not clonedKey
@@ -655,23 +443,6 @@ PASS clonedKey.algorithm.name is "AES-GCM"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is ""
 Serialized key bytes: 3f004b010910001030112233445566778899aabbccddeeff
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is ""
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: 3f004b0109180018800102030405060708090a0b0c0d0e0f1011121314151617
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -712,23 +483,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt"
-Serialized key bytes: 3f004b0109180218800102030405060708090a0b0c0d0e0f1011121314151617
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "encrypt"
 PASS importedKey is not clonedKey
@@ -763,23 +517,6 @@ PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
 PASS importedKey.extractable is false
 PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "decrypt,wrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
-Serialized key bytes: 3f004b0109184418800102030405060708090a0b0c0d0e0f1011121314151617
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-GCM"
 PASS importedKey.algorithm.length is 256
 PASS importedKey.usages.join(',') is "decrypt,wrapKey"
 PASS importedKey is not clonedKey
@@ -808,23 +545,6 @@ PASS clonedKey.algorithm.name is "AES-GCM"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 3f004b010910c2011030112233445566778899aabbccddeeff00
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "AES-GCM"
-PASS importedKey.algorithm.length is 192
-PASS importedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "AES-GCM"
-PASS clonedKey.algorithm.length is 192
-PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-Serialized key bytes: 3f004b010918c20118800102030405060708090a0b0c0d0e0f101112131415161700
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"

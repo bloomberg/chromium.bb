@@ -17,11 +17,11 @@ error is: SyntaxError: Invalid keyFormat argument
 error is: SyntaxError: Invalid keyFormat argument
 
 Exporting the key as raw data...
-PASS bytesToHexString(new Uint8Array(exportedData)) is '8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b'
+PASS bytesToHexString(new Uint8Array(exportedData)) is '8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b8e73b0f7da0e6452'
 Exporting the key as JWK...
 PASS exportedJWK.kty is 'oct'
-PASS exportedJWK.k is 'jnOw99oOZFLIEPMrgJB55WL46tJSLGt7'
-PASS exportedJWK.alg is 'A192CBC'
+PASS exportedJWK.k is 'jnOw99oOZFLIEPMrgJB55WL46tJSLGt7jnOw99oOZFI'
+PASS exportedJWK.alg is 'A256CBC'
 PASS exportedJWK.ext is true
 PASS exportedJWK.use is undefined
 PASS exportedJWK.key_ops is ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']

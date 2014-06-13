@@ -13,13 +13,6 @@ PASS Generated unique key data of length: 128 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is ""
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is ""
 PASS keyData.byteLength is 32
@@ -31,13 +24,6 @@ PASS generatedKey.algorithm.length is 128
 PASS generatedKey.usages.join(',') is "encrypt"
 PASS keyData.byteLength is 16
 PASS Generated unique key data of length: 128 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-CBC"
@@ -55,13 +41,6 @@ PASS Generated unique key data of length: 128 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS keyData.byteLength is 32
@@ -73,13 +52,6 @@ PASS generatedKey.algorithm.length is 128
 PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 PASS keyData.byteLength is 16
 PASS Generated unique key data of length: 128 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-CBC"
@@ -95,11 +67,6 @@ PASS generatedKey.usages.join(',') is ""
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is ""
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is ""
 PASS typeof generatedKey.extractable is 'boolean'
@@ -110,11 +77,6 @@ PASS generatedKey.usages.join(',') is "encrypt"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "encrypt"
 PASS typeof generatedKey.extractable is 'boolean'
@@ -125,22 +87,12 @@ PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-CBC"
 PASS generatedKey.algorithm.length is 128
-PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-CBC"
-PASS generatedKey.algorithm.length is 192
 PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
@@ -154,13 +106,6 @@ PASS generatedKey.algorithm.length is 128
 PASS generatedKey.usages.join(',') is ""
 PASS keyData.byteLength is 16
 PASS Generated unique key data of length: 128 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is ""
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-GCM"
@@ -178,13 +123,6 @@ PASS Generated unique key data of length: 128 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "encrypt"
 PASS keyData.byteLength is 32
@@ -196,13 +134,6 @@ PASS generatedKey.algorithm.length is 128
 PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS keyData.byteLength is 16
 PASS Generated unique key data of length: 128 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-GCM"
@@ -220,13 +151,6 @@ PASS Generated unique key data of length: 128 bits
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is true
 PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS keyData.byteLength is 24
-PASS Generated unique key data of length: 192 bits
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is true
-PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 PASS keyData.byteLength is 32
@@ -239,11 +163,6 @@ PASS generatedKey.usages.join(',') is ""
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is ""
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is ""
 PASS typeof generatedKey.extractable is 'boolean'
@@ -254,11 +173,6 @@ PASS generatedKey.usages.join(',') is "encrypt"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "encrypt"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "encrypt"
 PASS typeof generatedKey.extractable is 'boolean'
@@ -269,22 +183,12 @@ PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
-PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 256
 PASS generatedKey.usages.join(',') is "decrypt,wrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false
 PASS generatedKey.algorithm.name is "AES-GCM"
 PASS generatedKey.algorithm.length is 128
-PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
-PASS typeof generatedKey.extractable is 'boolean'
-PASS generatedKey.extractable is false
-PASS generatedKey.algorithm.name is "AES-GCM"
-PASS generatedKey.algorithm.length is 192
 PASS generatedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 PASS typeof generatedKey.extractable is 'boolean'
 PASS generatedKey.extractable is false

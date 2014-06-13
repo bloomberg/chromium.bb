@@ -21,23 +21,11 @@ var kWrappingTestCases = [
     "key": "00112233445566778899AABBCCDDEEFF",
     "ciphertext": "1FA68B0A8112B447AEF34BD8FB5A7B829D3E862371D2CFE5"
   },
-  // 4.2 Wrap 128 bits of Key Data with a 192-bit KEK
-  {
-    "wrappingKey": "000102030405060708090A0B0C0D0E0F1011121314151617",
-    "key": "00112233445566778899AABBCCDDEEFF",
-    "ciphertext": "96778B25AE6CA435F92B5B97C050AED2468AB8A17AD84E5D"
-   },
   // 4.3 Wrap 128 bits of Key Data with a 256-bit KEK
   {
     "wrappingKey": "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F",
     "key": "00112233445566778899AABBCCDDEEFF",
     "ciphertext": "64E8C3F9CE0F5BA263E9777905818A2A93C8191E7D6E8AE7"
-  },
-  // 4.4 Wrap 192 bits of Key Data with a 192-bit KEK
-  {
-    "wrappingKey": "000102030405060708090A0B0C0D0E0F1011121314151617",
-    "key": "00112233445566778899AABBCCDDEEFF0001020304050607",
-    "ciphertext": "031D33264E15D33268F24EC260743EDCE1C6C7DDEE725A936BA814915C6762D2"
   },
   // 4.5 Wrap 192 bits of Key Data with a 256-bit KEK
   {
@@ -70,9 +58,9 @@ function runTestCase(testCase)
         wrappingKey = result;
 
         // Import the key to be wrapped.
-        var importAlgorithm = {name: 'aes-cbc'};
+        var importAlgorithm = {name: 'HMAC', hash: {name: 'sha-1'}};
         var keyData = hexStringToUint8Array(testCase.key);
-        var usages = ['encrypt', 'decrypt'];
+        var usages = ['sign', 'verify'];
         var extractable = true;
 
         return crypto.subtle.importKey('raw', keyData, importAlgorithm, extractable, usages);
@@ -88,17 +76,18 @@ function runTestCase(testCase)
         // Unwrap the key.
         var wrappedKeyData = hexStringToUint8Array(testCase.ciphertext);
         var unwrapAlgorithm = {name: 'aes-kw'};
-        var unwrappedKeyAlgorithm = {name: 'aes-cbc'};
+        var unwrappedKeyAlgorithm = {name: 'HMAC', hash: {name: 'sha-1'}};
         var extractable = true;
-        var usages = ['decrypt'];
+        var usages = ['sign'];
         return crypto.subtle.unwrapKey('raw', wrappedKeyData, wrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, usages);
     }).then(function(result) {
         unwrappedKey = result;
 
-        shouldEvaluateAs("unwrappedKey.algorithm.name", "AES-CBC");
+        shouldEvaluateAs("unwrappedKey.algorithm.name", "HMAC");
+        shouldEvaluateAs("unwrappedKey.algorithm.hash.name", "SHA-1");
         shouldEvaluateAs("unwrappedKey.algorithm.length", testCase.key.length * 4);
         shouldEvaluateAs("unwrappedKey.extractable", true);
-        shouldEvaluateAs("unwrappedKey.usages.join(',')", "decrypt");
+        shouldEvaluateAs("unwrappedKey.usages.join(',')", "sign");
 
         return crypto.subtle.exportKey('raw', unwrappedKey);
     }).then(function(result) {
