@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/process/process_handle.h"
 #include "content/browser/histogram_subscriber.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -72,13 +73,21 @@ void HistogramController::GetHistogramDataFromChildProcesses(
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    int type = iter.GetData().process_type;
+    const ChildProcessData& data = iter.GetData();
+    int type = data.process_type;
     if (type != PROCESS_TYPE_PLUGIN &&
         type != PROCESS_TYPE_GPU &&
         type != PROCESS_TYPE_PPAPI_PLUGIN &&
         type != PROCESS_TYPE_PPAPI_BROKER) {
       continue;
     }
+
+    // In some cases, there may be no child process of the given type (for
+    // example, the GPU process may not exist and there may instead just be a
+    // GPU thread in the browser process). If that's the case, then the process
+    // handle will be base::kNullProcessHandle and we shouldn't ask it for data.
+    if (data.handle == base::kNullProcessHandle)
+      continue;
 
     ++pending_processes;
     if (!iter.Send(new ChildProcessMsg_GetChildHistogramData(sequence_number)))
