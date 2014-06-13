@@ -41,7 +41,6 @@ bool PrintWebViewHelper::RenderPreviewPage(
                     print_preview_context_.GetPrintCanvasSize(),
                     print_preview_context_.prepared_frame(),
                     initial_render_metafile,
-                    true,
                     NULL,
                     NULL);
   print_preview_context_.RenderedPreviewPage(
@@ -66,12 +65,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   std::vector<int> printed_pages;
-  std::vector<double> shrink;
-  std::vector<gfx::Size> page_size_in_dpi;
-  std::vector<gfx::Rect> content_area_in_dpi;
-  double dpi_shrink =
-      static_cast<float>(params.params.desired_dpi / params.params.dpi);
-
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       printed_pages.push_back(i);
@@ -87,11 +80,8 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  for (size_t i = 0; i < printed_pages.size(); ++i) {
-    shrink.push_back(dpi_shrink);
-    page_size_in_dpi.push_back(gfx::Size());
-    content_area_in_dpi.push_back(gfx::Rect());
-  }
+  std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
+  std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
 
   PrintMsg_PrintPage_Params page_params;
   page_params.params = params.params;
@@ -101,7 +91,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                       canvas_size,
                       frame,
                       &metafile,
-                      false,
                       &page_size_in_dpi[i],
                       &content_area_in_dpi[i]);
   }
@@ -161,7 +150,6 @@ void PrintWebViewHelper::PrintPageInternal(
     const gfx::Size& canvas_size,
     WebFrame* frame,
     Metafile* metafile,
-    bool is_preview,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi) {
   PageSizeMargins page_layout_in_points;
@@ -184,23 +172,9 @@ void PrintWebViewHelper::PrintPageInternal(
   }
 
   if (content_area_in_dpi) {
+    // Output PDF matches paper size and should be printer edge to edge.
     *content_area_in_dpi =
-        gfx::Rect(static_cast<int>(
-                      ConvertUnitDouble(content_area.x(), kPointsPerInch, dpi)),
-                  static_cast<int>(
-                      ConvertUnitDouble(content_area.y(), kPointsPerInch, dpi)),
-                  static_cast<int>(ConvertUnitDouble(
-                      content_area.width(), kPointsPerInch, dpi)),
-                  static_cast<int>(ConvertUnitDouble(
-                      content_area.height(), kPointsPerInch, dpi)));
-  }
-
-  if (!is_preview) {
-    page_size =
-        gfx::Size(static_cast<int>(page_layout_in_points.content_width *
-                                   params.params.max_shrink),
-                  static_cast<int>(page_layout_in_points.content_height *
-                                   params.params.max_shrink));
+        gfx::Rect(0, 0, page_size_in_dpi->width(), page_size_in_dpi->height());
   }
 
   gfx::Rect canvas_area =
