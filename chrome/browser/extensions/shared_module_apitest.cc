@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 
 using extensions::Extension;
 
@@ -34,4 +35,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleWhitelist) {
   EXPECT_FALSE(InstallExtension(
       test_data_dir_.AppendASCII("shared_module")
           .AppendASCII("import_not_in_whitelist"), 0));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleInstallEvent) {
+  ExtensionTestMessageListener listener1("ready", false);
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("shared_module").AppendASCII("shared"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("shared_module").AppendASCII("import_pass"),
+      1));
+
+  EXPECT_TRUE(listener1.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listener2("shared_module_updated", false);
+  ReloadExtension(extension->id());
+
+  EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }

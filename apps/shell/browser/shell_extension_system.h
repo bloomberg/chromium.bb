@@ -70,6 +70,8 @@ class ShellExtensionSystem : public ExtensionSystem {
       const UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
   virtual ContentVerifier* content_verifier() OVERRIDE;
+  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension) OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

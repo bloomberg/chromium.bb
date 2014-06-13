@@ -51,11 +51,10 @@ class SharedModuleService : public ExtensionRegistryObserver {
   // list if |extension| came from the webstore.
   ImportStatus SatisfyImports(const Extension* extension);
 
- private:
   // Returns a set of extensions that import a given extension.
-  scoped_ptr<const ExtensionSet> GetDependentExtensions(
-      const Extension* extension);
+  scoped_ptr<ExtensionSet> GetDependentExtensions(const Extension* extension);
 
+ private:
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) OVERRIDE;

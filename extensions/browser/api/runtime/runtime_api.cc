@@ -32,6 +32,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
@@ -45,10 +46,12 @@ namespace {
 
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
+const char kInstallId[] = "id";
 const char kInstallReason[] = "reason";
 const char kInstallReasonChromeUpdate[] = "chrome_update";
 const char kInstallReasonUpdate[] = "update";
 const char kInstallReasonInstall[] = "install";
+const char kInstallReasonSharedModuleUpdate[] = "shared_module_update";
 const char kInstallPreviousVersion[] = "previousVersion";
 const char kInvalidUrlError[] = "Invalid URL.";
 const char kPlatformInfoUnavailable[] = "Platform information unavailable.";
@@ -334,6 +337,30 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
       new Event(runtime::OnInstalled::kEventName, event_args.Pass()));
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
+
+  if (old_version.IsValid()) {
+    const Extension* extension =
+        ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+            extension_id);
+    if (extension && SharedModuleInfo::IsSharedModule(extension)) {
+      scoped_ptr<ExtensionSet> dependents =
+          system->GetDependentExtensions(extension);
+      for (ExtensionSet::const_iterator i = dependents->begin();
+           i != dependents->end();
+           i++) {
+        scoped_ptr<base::ListValue> sm_event_args(new base::ListValue());
+        base::DictionaryValue* sm_info = new base::DictionaryValue();
+        sm_event_args->Append(sm_info);
+        sm_info->SetString(kInstallReason, kInstallReasonSharedModuleUpdate);
+        sm_info->SetString(kInstallPreviousVersion, old_version.GetString());
+        sm_info->SetString(kInstallId, extension_id);
+        scoped_ptr<Event> sm_event(
+            new Event(runtime::OnInstalled::kEventName, sm_event_args.Pass()));
+        system->event_router()->DispatchEventWithLazyListener((*i)->id(),
+                                                              sm_event.Pass());
+      }
+    }
+  }
 }
 
 // static

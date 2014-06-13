@@ -183,4 +183,10 @@ ContentVerifier* ShellExtensionSystem::content_verifier() {
   return NULL;
 }
 
+scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
+    const Extension* extension) {
+  scoped_ptr<ExtensionSet> empty(new ExtensionSet());
+  return empty.PassAs<ExtensionSet>();
+}
+
 }  // namespace extensions

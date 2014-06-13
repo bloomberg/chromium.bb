@@ -78,6 +78,8 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual QuotaService* quota_service() OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
   virtual ContentVerifier* content_verifier() OVERRIDE;
+  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension) OVERRIDE;
 
   void SetReady() {
     LOG(INFO) << "SetReady()";

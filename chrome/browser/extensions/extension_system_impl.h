@@ -59,6 +59,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   virtual const OneShotEvent& ready() const OVERRIDE;
   virtual ContentVerifier* content_verifier() OVERRIDE;  // shared
+  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension) OVERRIDE;
 
  private:
   friend class ExtensionSystemSharedFactory;

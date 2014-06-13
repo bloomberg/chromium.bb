@@ -104,7 +104,7 @@ SharedModuleService::ImportStatus SharedModuleService::SatisfyImports(
   return status;
 }
 
-scoped_ptr<const ExtensionSet> SharedModuleService::GetDependentExtensions(
+scoped_ptr<ExtensionSet> SharedModuleService::GetDependentExtensions(
     const Extension* extension) {
   scoped_ptr<ExtensionSet> dependents(new ExtensionSet());
 
@@ -127,7 +127,7 @@ scoped_ptr<const ExtensionSet> SharedModuleService::GetDependentExtensions(
       }
     }
   }
-  return dependents.PassAs<const ExtensionSet>();
+  return dependents.PassAs<ExtensionSet>();
 }
 
 void SharedModuleService::OnExtensionUninstalled(
@@ -149,7 +149,7 @@ void SharedModuleService::OnExtensionUninstalled(
         registry->GetExtensionById(iter->extension_id,
                                    ExtensionRegistry::EVERYTHING);
     if (imported_module && imported_module->from_webstore()) {
-      scoped_ptr<const ExtensionSet> dependents =
+      scoped_ptr<ExtensionSet> dependents =
           GetDependentExtensions(imported_module);
       if (dependents->is_empty()) {
         service->UninstallExtension(iter->extension_id,

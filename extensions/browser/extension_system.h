@@ -30,6 +30,7 @@ class ContentVerifier;
 class ErrorConsole;
 class EventRouter;
 class Extension;
+class ExtensionSet;
 class ExtensionWarningService;
 class InfoMap;
 class InstallVerifier;
@@ -128,6 +129,12 @@ class ExtensionSystem : public KeyedService {
 
   // Returns the content verifier, if any.
   virtual ContentVerifier* content_verifier() = 0;
+
+  // Get a set of extensions that depend on the given extension.
+  // TODO(elijahtaylor): Move SharedModuleService out of chrome/browser
+  // so it can be retrieved from ExtensionSystem directly.
+  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension) = 0;
 };
 
 }  // namespace extensions

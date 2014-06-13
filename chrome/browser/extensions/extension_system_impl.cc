@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/navigation_observer.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -493,6 +494,12 @@ QuotaService* ExtensionSystemImpl::quota_service() {
 
 ContentVerifier* ExtensionSystemImpl::content_verifier() {
   return shared_->content_verifier();
+}
+
+scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
+    const Extension* extension) {
+  return extension_service()->shared_module_service()->GetDependentExtensions(
+      extension);
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
