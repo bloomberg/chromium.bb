@@ -577,7 +577,13 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
     for (size_t i = 0; i < layers.size(); ++i) {
         LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].renderLayer->computeOffsetFromTransformedAncestor();
         LayoutSize offsetFromSquashLayerOrigin = (offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor) - squashLayerOriginInOwningLayerSpace;
-        layers[i].offsetFromRenderer = -flooredIntSize(offsetFromSquashLayerOrigin);
+
+        // It is ok to repaint here, because all of the geometry needed to correctly repaint is computed by this point.
+        IntSize newOffsetFromRenderer = -flooredIntSize(offsetFromSquashLayerOrigin);
+        if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer)
+            layers[i].renderLayer->repainter().repaintIncludingNonCompositingDescendants();
+        layers[i].offsetFromRenderer = newOffsetFromRenderer;
+        layers[i].offsetFromRendererSet = true;
 
         layers[i].renderLayer->setSubpixelAccumulation(offsetFromSquashLayerOrigin.fraction());
         ASSERT(layers[i].renderLayer->subpixelAccumulation() ==
@@ -586,7 +592,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         // FIXME: find a better design to avoid this redundant value - most likely it will make
         // sense to move the paint task info into RenderLayer's m_compositingProperties.
         layers[i].renderLayer->setOffsetFromSquashingLayerOrigin(layers[i].offsetFromRenderer);
-
     }
 
     for (size_t i = 0; i < layers.size(); ++i)

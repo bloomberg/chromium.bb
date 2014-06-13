@@ -48,11 +48,15 @@ struct GraphicsLayerPaintInfo {
 
     // Offset describing where this squashed RenderLayer paints into the shared GraphicsLayer backing.
     IntSize offsetFromRenderer;
+    bool offsetFromRendererSet;
+
     LayoutSize subpixelAccumulation;
 
     GraphicsLayerPaintingPhase paintingPhase;
 
     bool isBackgroundLayer;
+
+    GraphicsLayerPaintInfo() : renderLayer(0), offsetFromRendererSet(false), isBackgroundLayer(false) { }
 
     bool isEquivalentForSquashing(const GraphicsLayerPaintInfo& other)
     {
