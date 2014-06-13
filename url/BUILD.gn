@@ -59,10 +59,11 @@ component("url") {
 
   configs += [ ":url_icu_config" ]
 
-  # if (is_win) {
-  #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  #   'msvs_disabled_warnings': [ 4267, ]
-  # }
+  if (is_win) {
+    cflags = [
+      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    ]
+  }
 
   deps = [
     "//base",
@@ -107,10 +108,12 @@ if (!is_android) {
     #  }
     #}
 
-    # if (is_win) {
-    #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    #   'msvs_disabled_warnings': [ 4267, ]
-    # }
+    if (is_win) {
+      cflags = [
+        # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+        "/wd4267",
+      ]
+    }
 
     deps = [
       ":url",
