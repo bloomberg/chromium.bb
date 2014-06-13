@@ -92,6 +92,23 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      'target_name': 'mojo_html_viewer',
+      'type': 'shared_library',
+      'dependencies': [
+        'mojo_application',
+        'mojo_cpp_bindings',
+        'mojo_environment_standalone',
+        'mojo_network_bindings',
+        'mojo_launcher_bindings',
+        'mojo_system',
+        'mojo_utility',
+      ],
+      'sources': [
+        'examples/html_viewer/html_viewer.cc',
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+    },
+    {
       'target_name': 'mojo_pepper_container_app',
       'type': 'shared_library',
       'dependencies': [
@@ -247,6 +264,7 @@
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/resources/ui_resources.gyp:ui_test_pak',
             '../ui/views/views.gyp:views',
+            '../url/url.gyp:url_lib',
             'mojo_application',
             'mojo_aura_support',
             'mojo_common_lib',
@@ -254,6 +272,7 @@
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_input_events_lib',
+            'mojo_launcher_bindings',
             'mojo_system_impl',
             'mojo_views_support',
             'mojo_view_manager_bindings',

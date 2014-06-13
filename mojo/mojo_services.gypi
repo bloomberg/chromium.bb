@@ -246,6 +246,39 @@
       ],
     },
     {
+      'target_name': 'mojo_launcher_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/launcher/launcher.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+        'mojo_network_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_launcher',
+      'type': 'shared_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'mojo_application',
+        'mojo_cpp_bindings',
+        'mojo_environment_chromium',
+        'mojo_launcher_bindings',
+        'mojo_network_bindings',
+        'mojo_system_impl',
+        'mojo_utility',
+      ],
+      'sources': [
+        'services/launcher/launcher.cc',
+        'public/cpp/application/lib/mojo_main_chromium.cc',
+      ],
+    },
+    {
       'target_name': 'mojo_view_manager_bindings',
       'type': 'static_library',
       'sources': [

@@ -1,0 +1,18 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "../network/url_loader.mojom"
+
+module mojo.launcher {
+
+interface Launcher {
+  Launch(string url);
+};
+
+interface Launchable {
+  OnLaunch(mojo.URLResponse response,
+           handle<data_pipe_consumer> response_body_stream);
+};
+
+}

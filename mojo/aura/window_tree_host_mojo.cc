@@ -99,7 +99,6 @@ ui::EventSource* WindowTreeHostMojo::GetEventSource() {
 }
 
 gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
-  NOTIMPLEMENTED() << "GetAcceleratedWidget";
   return gfx::kNullAcceleratedWidget;
 }
 

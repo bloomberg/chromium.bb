@@ -9,19 +9,24 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "url/gurl.h"
 
 namespace mojo {
 namespace examples {
 
 // This is the basics of creating a views widget with a textfield.
 // TODO: cleanup!
-class Browser : public Application, public view_manager::ViewManagerDelegate {
+class Browser : public Application,
+                public view_manager::ViewManagerDelegate,
+                public views::TextfieldController {
  public:
   Browser() : view_manager_(NULL), view_(NULL) {}
 
@@ -34,10 +39,13 @@ class Browser : public Application, public view_manager::ViewManagerDelegate {
     views_init_.reset(new ViewsInit);
 
     view_manager::ViewManager::Create(this, this);
+
+    ConnectTo("mojo:mojo_launcher", &launcher_);
   }
 
   void CreateWidget() {
     views::Textfield* textfield = new views::Textfield;
+    textfield->set_controller(this);
 
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
     widget_delegate->GetContentsView()->AddChildView(textfield);
@@ -67,10 +75,22 @@ class Browser : public Application, public view_manager::ViewManagerDelegate {
                              view_manager::ViewTreeNode* root) OVERRIDE {
   }
 
+  // views::TextfieldController:
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE {
+    if (key_event.key_code() == ui::VKEY_RETURN) {
+      GURL url(sender->text());
+      printf("User entered this URL: %s\n", url.spec().c_str());
+      launcher_->Launch(url.spec());
+    }
+    return false;
+  }
+
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
   view_manager::View* view_;
+  launcher::LauncherPtr launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
