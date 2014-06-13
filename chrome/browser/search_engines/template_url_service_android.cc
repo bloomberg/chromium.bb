@@ -165,7 +165,7 @@ TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(JNIEnv* env,
   std::string url;
 
   if (!query.empty()) {
-    GURL gurl = GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query);
+    GURL gurl(GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query));
     if (google_util::IsGoogleSearchUrl(gurl))
       gurl = net::AppendQueryParameter(gurl, "inm", "vs");
     url = gurl.spec();
@@ -192,6 +192,23 @@ TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
       return ConvertUTF8ToJavaString(env, destination_url.spec());
   }
   return base::android::ScopedJavaLocalRef<jstring>(env, NULL);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(JNIEnv* env,
+                                                          jobject obj,
+                                                          jstring jquery) {
+  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
+  std::string url;
+
+  if (!query.empty()) {
+    GURL gurl(GetDefaultSearchURLForSearchTerms(GetOriginalProfile(), query));
+    if (google_util::IsGoogleSearchUrl(gurl))
+      gurl = net::AppendQueryParameter(gurl, "ctxs", "1");
+    url = gurl.spec();
+  }
+
+  return ConvertUTF8ToJavaString(env, url);
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {

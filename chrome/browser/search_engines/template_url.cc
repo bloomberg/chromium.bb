@@ -63,9 +63,17 @@ const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
 const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
 const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
+const char kGoogleContextualSearchContextData[] =
+    "google:contextualSearchContextData";
+const char kGoogleContextualSearchVersion[] = "google:contextualSearchVersion";
 const char kGoogleCurrentPageUrlParameter[] = "google:currentPageUrl";
 const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleForceInstantResultsParameter[] = "google:forceInstantResults";
+const char kGoogleImageSearchSource[] = "google:imageSearchSource";
+const char kGoogleImageThumbnailParameter[] = "google:imageThumbnail";
+const char kGoogleImageOriginalWidth[] = "google:imageOriginalWidth";
+const char kGoogleImageOriginalHeight[] = "google:imageOriginalHeight";
+const char kGoogleImageURLParameter[] = "google:imageURL";
 const char kGoogleInputTypeParameter[] = "google:inputType";
 const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
@@ -95,12 +103,6 @@ const char kGoogleUnescapedSearchTermsParameter[] =
     "google:unescapedSearchTerms";
 const char kGoogleUnescapedSearchTermsParameterFull[] =
     "{google:unescapedSearchTerms}";
-
-const char kGoogleImageSearchSource[] = "google:imageSearchSource";
-const char kGoogleImageThumbnailParameter[] = "google:imageThumbnail";
-const char kGoogleImageURLParameter[] = "google:imageURL";
-const char kGoogleImageOriginalWidth[] = "google:imageOriginalWidth";
-const char kGoogleImageOriginalHeight[] = "google:imageOriginalHeight";
 
 // Display value for kSearchTermsParameter.
 const char kDisplaySearchTerms[] = "%s";
@@ -209,12 +211,41 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       bookmark_bar_pinned(false),
       append_extra_query_params(false),
       force_instant_results(false),
-      from_app_list(false) {
+      from_app_list(false),
+      contextual_search_params(ContextualSearchParams()) {
 }
 
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
 }
 
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
+    ContextualSearchParams()
+    : version(-1),
+      start(base::string16::npos),
+      end(base::string16::npos) {
+}
+
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
+    ContextualSearchParams(
+        const int version,
+        const size_t start,
+        const size_t end,
+        const std::string& selection,
+        const std::string& content,
+        const std::string& base_page_url,
+        const std::string& encoding)
+    : version(version),
+      start(start),
+      end(end),
+      selection(selection),
+      content(content),
+      base_page_url(base_page_url),
+      encoding(encoding) {
+}
+
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
+    ~ContextualSearchParams() {
+}
 
 // TemplateURLRef -------------------------------------------------------------
 
@@ -251,24 +282,26 @@ TemplateURLRef::~TemplateURLRef() {
 
 std::string TemplateURLRef::GetURL() const {
   switch (type_) {
-    case SEARCH:  return owner_->url();
-    case SUGGEST: return owner_->suggestions_url();
-    case INSTANT: return owner_->instant_url();
-    case IMAGE:   return owner_->image_url();
-    case NEW_TAB: return owner_->new_tab_url();
-    case INDEXED: return owner_->GetURL(index_in_owner_);
-    default:      NOTREACHED(); return std::string();  // NOLINT
+    case SEARCH:            return owner_->url();
+    case SUGGEST:           return owner_->suggestions_url();
+    case INSTANT:           return owner_->instant_url();
+    case IMAGE:             return owner_->image_url();
+    case NEW_TAB:           return owner_->new_tab_url();
+    case CONTEXTUAL_SEARCH: return owner_->contextual_search_url();
+    case INDEXED:           return owner_->GetURL(index_in_owner_);
+    default:       NOTREACHED(); return std::string();  // NOLINT
   }
 }
 
 std::string TemplateURLRef::GetPostParamsString() const {
   switch (type_) {
     case INDEXED:
-    case SEARCH:  return owner_->search_url_post_params();
-    case SUGGEST: return owner_->suggestions_url_post_params();
-    case INSTANT: return owner_->instant_url_post_params();
-    case NEW_TAB: return std::string();
-    case IMAGE:   return owner_->image_url_post_params();
+    case SEARCH:            return owner_->search_url_post_params();
+    case SUGGEST:           return owner_->suggestions_url_post_params();
+    case INSTANT:           return owner_->instant_url_post_params();
+    case NEW_TAB:           return std::string();
+    case CONTEXTUAL_SEARCH: return std::string();
+    case IMAGE:             return owner_->image_url_post_params();
     default:      NOTREACHED(); return std::string();  // NOLINT
   }
 }
@@ -595,6 +628,12 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_NTP_IS_THEMED, start));
   } else if (parameter == kGoogleOmniboxStartMarginParameter) {
     replacements->push_back(Replacement(GOOGLE_OMNIBOX_START_MARGIN, start));
+  } else if (parameter == kGoogleContextualSearchVersion) {
+    replacements->push_back(
+        Replacement(GOOGLE_CONTEXTUAL_SEARCH_VERSION, start));
+  } else if (parameter == kGoogleContextualSearchContextData) {
+    replacements->push_back(
+        Replacement(GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA, start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));
@@ -937,6 +976,51 @@ std::string TemplateURLRef::HandleReplacements(
         }
         break;
 
+      case GOOGLE_CONTEXTUAL_SEARCH_VERSION:
+        if (search_terms_args.contextual_search_params.version >= 0) {
+          HandleReplacement(
+              "ctxs",
+              base::IntToString(
+                  search_terms_args.contextual_search_params.version),
+              *i,
+              &url);
+        }
+        break;
+
+      case GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA: {
+        DCHECK(!i->is_post_param);
+        std::string context_data;
+
+        const SearchTermsArgs::ContextualSearchParams& params =
+            search_terms_args.contextual_search_params;
+
+        if (params.start != std::string::npos) {
+          context_data.append("ctxs_start=" + base::IntToString(
+              params.start) + "&");
+        }
+
+        if (params.end != std::string::npos) {
+          context_data.append("ctxs_end=" + base::IntToString(
+              params.end) + "&");
+        }
+
+        if (!params.selection.empty())
+          context_data.append("q=" + params.selection + "&");
+
+        if (!params.content.empty())
+          context_data.append("ctxs_content=" + params.content + "&");
+
+        if (!params.base_page_url.empty())
+          context_data.append("ctxs_url=" + params.base_page_url + "&");
+
+        if (!params.encoding.empty()) {
+          context_data.append("ctxs_encoding=" + params.encoding + "&");
+        }
+
+        HandleReplacement(std::string(), context_data, *i, &url);
+        break;
+      }
+
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
         DCHECK(!i->is_post_param);
         if (search_terms_args.accepted_suggestion >= 0 ||
@@ -1075,7 +1159,8 @@ TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
       instant_url_ref_(this,
                        TemplateURLRef::INSTANT),
       image_url_ref_(this, TemplateURLRef::IMAGE),
-      new_tab_url_ref_(this, TemplateURLRef::NEW_TAB) {
+      new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
+      contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH) {
   SetPrepopulateId(data_.prepopulate_id);
 
   if (data_.search_terms_replacement_key ==

@@ -39,6 +39,7 @@ struct TemplateURLData {
   std::string instant_url;
   std::string image_url;
   std::string new_tab_url;
+  std::string contextual_search_url;
 
   // The following post_params are comma-separated lists used to specify the
   // post parameters for the corresponding URL.

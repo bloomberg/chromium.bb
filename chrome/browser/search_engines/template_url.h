@@ -54,6 +54,7 @@ class TemplateURLRef {
     INSTANT,
     IMAGE,
     NEW_TAB,
+    CONTEXTUAL_SEARCH,
     INDEXED
   };
 
@@ -70,6 +71,39 @@ class TemplateURLRef {
   struct SearchTermsArgs {
     explicit SearchTermsArgs(const base::string16& search_terms);
     ~SearchTermsArgs();
+
+    struct ContextualSearchParams {
+      ContextualSearchParams();
+      ContextualSearchParams(const int version,
+                             const size_t start,
+                             const size_t end,
+                             const std::string& selection,
+                             const std::string& content,
+                             const std::string& base_page_url,
+                             const std::string& encoding);
+      ~ContextualSearchParams();
+
+      // The version of contextual search.
+      int version;
+
+      // Offset into the page content of the start of the user selection.
+      size_t start;
+
+      // Offset into the page content of the end of the user selection.
+      size_t end;
+
+      // The user selection.
+      std::string selection;
+
+      // The text including and surrounding the user selection.
+      std::string content;
+
+      // The URL of the page containing the user selection.
+      std::string base_page_url;
+
+      // The encoding of content.
+      std::string encoding;
+    };
 
     // The search terms (query).
     base::string16 search_terms;
@@ -144,6 +178,8 @@ class TemplateURLRef {
     // True if the search was made using the app list search box. Otherwise, the
     // search was made using the omnibox.
     bool from_app_list;
+
+    ContextualSearchParams contextual_search_params;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -276,6 +312,8 @@ class TemplateURLRef {
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_OMNIBOX_START_MARGIN,
+    GOOGLE_CONTEXTUAL_SEARCH_VERSION,
+    GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_PAGE_CLASSIFICATION,
     GOOGLE_RLZ,
@@ -488,6 +526,9 @@ class TemplateURL {
   const std::string& instant_url() const { return data_.instant_url; }
   const std::string& image_url() const { return data_.image_url; }
   const std::string& new_tab_url() const { return data_.new_tab_url; }
+  const std::string& contextual_search_url() const {
+    return data_.contextual_search_url;
+  }
   const std::string& search_url_post_params() const {
     return data_.search_url_post_params;
   }
@@ -543,6 +584,9 @@ class TemplateURL {
   const TemplateURLRef& instant_url_ref() const { return instant_url_ref_; }
   const TemplateURLRef& image_url_ref() const { return image_url_ref_; }
   const TemplateURLRef& new_tab_url_ref() const { return new_tab_url_ref_; }
+  const TemplateURLRef& contextual_search_url_ref() const {
+    return contextual_search_url_ref_;
+  }
 
   // Returns true if |url| supports replacement.
   bool SupportsReplacement() const;
@@ -673,6 +717,7 @@ class TemplateURL {
   TemplateURLRef instant_url_ref_;
   TemplateURLRef image_url_ref_;
   TemplateURLRef new_tab_url_ref_;
+  TemplateURLRef contextual_search_url_ref_;
   scoped_ptr<AssociatedExtensionInfo> extension_info_;
 
   // TODO(sky): Add date last parsed OSD file.

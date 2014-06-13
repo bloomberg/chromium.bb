@@ -45,6 +45,10 @@ class TemplateUrlServiceAndroid {
       jobject obj,
       jstring jquery,
       jstring jcurrent_url);
+  base::android::ScopedJavaLocalRef<jstring> GetUrlForContextualSearchQuery(
+      JNIEnv* env,
+      jobject obj,
+      jstring jquery);
 
   static bool Register(JNIEnv* env);
 

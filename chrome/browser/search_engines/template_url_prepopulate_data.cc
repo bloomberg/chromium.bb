@@ -1062,6 +1062,7 @@ scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
     const base::StringPiece& instant_url,
     const base::StringPiece& image_url,
     const base::StringPiece& new_tab_url,
+    const base::StringPiece& contextual_search_url,
     const base::StringPiece& search_url_post_params,
     const base::StringPiece& suggest_url_post_params,
     const base::StringPiece& instant_url_post_params,
@@ -1080,6 +1081,7 @@ scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
   data->instant_url = instant_url.as_string();
   data->image_url = image_url.as_string();
   data->new_tab_url = new_tab_url.as_string();
+  data->contextual_search_url = contextual_search_url.as_string();
   data->search_url_post_params = search_url_post_params.as_string();
   data->suggestions_url_post_params = suggest_url_post_params.as_string();
   data->instant_url_post_params = instant_url_post_params.as_string();
@@ -1134,6 +1136,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
       std::string instant_url;
       std::string image_url;
       std::string new_tab_url;
+      std::string contextual_search_url;
       std::string search_url_post_params;
       std::string suggest_url_post_params;
       std::string instant_url_post_params;
@@ -1145,6 +1148,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
       engine->GetString("instant_url", &instant_url);
       engine->GetString("image_url", &image_url);
       engine->GetString("new_tab_url", &new_tab_url);
+      engine->GetString("contextual_search_url", &contextual_search_url);
       engine->GetString("search_url_post_params", &search_url_post_params);
       engine->GetString("suggest_url_post_params", &suggest_url_post_params);
       engine->GetString("instant_url_post_params", &instant_url_post_params);
@@ -1154,10 +1158,10 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
           &search_terms_replacement_key);
       t_urls.push_back(MakePrepopulatedTemplateURLData(name, keyword,
           search_url, suggest_url, instant_url, image_url, new_tab_url,
-          search_url_post_params, suggest_url_post_params,
-          instant_url_post_params, image_url_post_params,
-          favicon_url, encoding, *alternate_urls, search_terms_replacement_key,
-          id).release());
+          contextual_search_url, search_url_post_params,
+          suggest_url_post_params, instant_url_post_params,
+          image_url_post_params, favicon_url, encoding, *alternate_urls,
+          search_terms_replacement_key, id).release());
     }
   }
   return t_urls.Pass();
@@ -1179,6 +1183,7 @@ scoped_ptr<TemplateURLData>
                                          engine.instant_url,
                                          engine.image_url,
                                          engine.new_tab_url,
+                                         engine.contextual_search_url,
                                          engine.search_url_post_params,
                                          engine.suggest_url_post_params,
                                          engine.instant_url_post_params,

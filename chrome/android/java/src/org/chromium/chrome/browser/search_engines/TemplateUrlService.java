@@ -223,6 +223,16 @@ public class TemplateUrlService {
         return nativeReplaceSearchTermsInUrl(mNativeTemplateUrlServiceAndroid, query, url);
     }
 
+    /**
+     * Finds the default search engine for the default provider and returns the url query
+     * {@link String} for {@code query} with the contextual search version param set.
+     * @return      A {@link String} that contains the url of the default search engine with
+     *              {@code query} inserted as the search parameter and contextual search param set.
+     */
+    public String getUrlForContextualSearchQuery(String query) {
+        return nativeGetUrlForContextualSearchQuery(mNativeTemplateUrlServiceAndroid, query);
+    }
+
     private native long nativeInit();
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);
@@ -241,4 +251,6 @@ public class TemplateUrlService {
             String query);
     private native String nativeReplaceSearchTermsInUrl(long nativeTemplateUrlServiceAndroid,
             String query, String currentUrl);
+    private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
+            String query);
 }
