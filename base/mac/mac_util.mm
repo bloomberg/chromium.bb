@@ -376,6 +376,20 @@ bool WasLaunchedAsLoginOrResumeItem() {
   return result == YES;
 }
 
+bool WasLaunchedAsLoginItemRestoreState() {
+  if (!WasLaunchedAsLoginOrResumeItem())
+    return false;
+  CFStringRef app = CFSTR("com.apple.loginwindow");
+  CFStringRef save_state = CFSTR("TALLogoutSavesState");
+  ScopedCFTypeRef<CFPropertyListRef> plist(
+      CFPreferencesCopyAppValue(save_state, app));
+  if (plist) {
+    if (CFBooleanRef restore_state = base::mac::CFCast<CFBooleanRef>(plist))
+      return CFBooleanGetValue(restore_state);
+  }
+  return false;
+}
+
 bool WasLaunchedAsHiddenLoginItem() {
   if (!WasLaunchedAsLoginOrResumeItem())
     return false;

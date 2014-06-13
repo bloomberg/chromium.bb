@@ -113,6 +113,12 @@ BASE_EXPORT void RemoveFromLoginItems();
 BASE_EXPORT bool WasLaunchedAsLoginOrResumeItem();
 
 // Returns true if the current process was automatically launched as a
+// 'Login Item' or via Resume, and the 'Reopen windows when logging back in'
+// checkbox was selected by the user.  This indicates that the previous
+// session should be restored.
+BASE_EXPORT bool WasLaunchedAsLoginItemRestoreState();
+
+// Returns true if the current process was automatically launched as a
 // 'Login Item' with 'hide on startup' flag. Used to suppress opening windows.
 BASE_EXPORT bool WasLaunchedAsHiddenLoginItem();
 

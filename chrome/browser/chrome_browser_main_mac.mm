@@ -163,7 +163,10 @@ ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
 void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 
-  if (base::mac::WasLaunchedAsHiddenLoginItem()) {
+  if (base::mac::WasLaunchedAsLoginItemRestoreState()) {
+    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+    singleton_command_line->AppendSwitch(switches::kRestoreLastSession);
+  } else if (base::mac::WasLaunchedAsHiddenLoginItem()) {
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
   }
