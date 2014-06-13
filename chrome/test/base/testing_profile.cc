@@ -92,6 +92,10 @@
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#endif
+
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
@@ -323,6 +327,11 @@ void TestingProfile::Init() {
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+#if defined(OS_ANDROID)
+  // Make sure token service knows its running in tests.
+  AndroidProfileOAuth2TokenService::set_is_testing_profile();
+#endif
 
   // Normally this would happen during browser startup, but for tests
   // we need to trigger creation of Profile-related services.

@@ -20,11 +20,11 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -42,6 +42,10 @@ public final class OAuth2TokenService {
     @VisibleForTesting
     public static final String STORED_ACCOUNTS_KEY = "google.services.stored_accounts";
 
+    /**
+     * Classes that want to listen for refresh token availability should
+     * implement this interface and register with {@link #addObserver}.
+     */
     public interface OAuth2TokenServiceObserver {
         void onRefreshTokenAvailable(Account account);
         void onRefreshTokenRevoked(Account account);
@@ -219,11 +223,21 @@ public final class OAuth2TokenService {
         }
     }
 
+    /**
+     * TODO(rogerta): This overload exists until a CL lands in the clank repo to use the
+     * version that takes a boolean second arg.
+     */
     public void validateAccounts(Context context) {
+      validateAccounts(context, false);
+    }
+
+    @CalledByNative
+    public void validateAccounts(Context context, boolean forceNotifications) {
         ThreadUtils.assertOnUiThread();
         String currentlySignedInAccount =
                 ChromeSigninController.get(context).getSignedInAccountName();
-        nativeValidateAccounts(mNativeProfileOAuth2TokenService, currentlySignedInAccount);
+        nativeValidateAccounts(mNativeProfileOAuth2TokenService, currentlySignedInAccount,
+                               forceNotifications);
     }
 
     /**
@@ -300,7 +314,8 @@ public final class OAuth2TokenService {
             String authToken, boolean result, long nativeCallback);
     private native void nativeValidateAccounts(
             long nativeAndroidProfileOAuth2TokenService,
-            String currentlySignedInAccount);
+            String currentlySignedInAccount,
+            boolean forceNotifications);
     private native void nativeFireRefreshTokenAvailableFromJava(
             long nativeAndroidProfileOAuth2TokenService, String accountName);
     private native void nativeFireRefreshTokenRevokedFromJava(
