@@ -435,16 +435,19 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_ = NULL;
 }
 
-void LayerTreeImpl::UpdateDrawProperties() {
-  needs_update_draw_properties_ = false;
-  render_surface_layer_list_.clear();
+bool LayerTreeImpl::UpdateDrawProperties() {
+  if (!needs_update_draw_properties_)
+    return true;
 
   // For max_texture_size.
   if (!layer_tree_host_impl_->renderer())
-    return;
+    return false;
 
   if (!root_layer())
-    return;
+    return false;
+
+  needs_update_draw_properties_ = false;
+  render_surface_layer_list_.clear();
 
   {
     TRACE_EVENT2("cc",
@@ -507,6 +510,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
 
   DCHECK(!needs_update_draw_properties_) <<
       "CalcDrawProperties should not set_needs_update_draw_properties()";
+  return true;
 }
 
 const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
@@ -1224,6 +1228,10 @@ struct HitTestVisibleScrollableOrTouchableFunctor {
 
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
+  if (!root_layer())
+    return NULL;
+  if (!UpdateDrawProperties())
+    return NULL;
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
   FindClosestMatchingLayer(screen_space_point,
                            root_layer(),
@@ -1263,6 +1271,10 @@ struct FindTouchEventLayerFunctor {
 
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point) {
+  if (!root_layer())
+    return NULL;
+  if (!UpdateDrawProperties())
+    return NULL;
   FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
   FindClosestMatchingLayer(

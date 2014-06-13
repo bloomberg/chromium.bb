@@ -515,8 +515,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual skia::RefPtr<SkPicture> GetPicture();
 
-  virtual bool AreVisibleResourcesReady() const;
-
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 

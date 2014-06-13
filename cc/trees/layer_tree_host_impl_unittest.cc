@@ -538,7 +538,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
 
   // We should not crash when trying to scroll after the renderer initialization
   // fails.
-  EXPECT_EQ(InputHandler::ScrollIgnored,
+  EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
 }
 

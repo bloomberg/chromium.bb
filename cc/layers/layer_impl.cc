@@ -479,10 +479,6 @@ skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
   return skia::RefPtr<SkPicture>();
 }
 
-bool LayerImpl::AreVisibleResourcesReady() const {
-  return true;
-}
-
 scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_);
 }

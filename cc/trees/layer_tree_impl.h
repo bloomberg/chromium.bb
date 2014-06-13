@@ -171,8 +171,8 @@ class CC_EXPORT LayerTreeImpl {
   float sent_page_scale_delta() const { return sent_page_scale_delta_; }
 
   // Updates draw properties and render surface layer list, as well as tile
-  // priorities.
-  void UpdateDrawProperties();
+  // priorities. Returns false if it was unable to update.
+  bool UpdateDrawProperties();
 
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;

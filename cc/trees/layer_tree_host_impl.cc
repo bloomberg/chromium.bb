@@ -154,17 +154,17 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
           new DebugScopedSetImplThread(layer_tree_host_impl_->proxy()));
     }
 
-    // TODO(enne): This should probably happen post-animate.
-    if (layer_tree_host_impl_->pending_tree()) {
-      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
-      layer_tree_host_impl_->ManageTiles();
-    }
-
     layer_tree_host_impl_->Animate(
         layer_tree_host_impl_->CurrentFrameTimeTicks());
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
+
+    if (layer_tree_host_impl_->pending_tree()) {
+      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
+      layer_tree_host_impl_->ManageTiles();
+    }
+
     layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
   }
 
@@ -474,9 +474,6 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   if (!CurrentlyScrollingLayer())
     return false;
 
-  if (!EnsureRenderSurfaceLayerList())
-    return false;
-
   gfx::PointF device_viewport_point =
       gfx::ScalePoint(viewport_point, device_scale_factor_);
 
@@ -493,8 +490,6 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
     const gfx::Point& viewport_point) {
   if (!settings_.touch_hit_testing)
     return true;
-  if (!EnsureRenderSurfaceLayerList())
-    return false;
 
   gfx::PointF device_viewport_point =
       gfx::ScalePoint(viewport_point, device_scale_factor_);
@@ -1094,7 +1089,8 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   }
   need_to_update_visible_tiles_before_draw_ = true;
 
-  active_tree_->UpdateDrawProperties();
+  bool ok = active_tree_->UpdateDrawProperties();
+  DCHECK(ok) << "UpdateDrawProperties failed during draw";
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
@@ -2134,11 +2130,6 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   SetFullRootLayerDamage();
 }
 
-bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
-  active_tree_->UpdateDrawProperties();
-  return !active_tree_->RenderSurfaceLayerList().empty();
-}
-
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
   DCHECK(input_handler_client_ == NULL);
   input_handler_client_ = client;
@@ -2159,7 +2150,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   DCHECK(scroll_on_main_thread);
 
   // Walk up the hierarchy and look for a scrollable layer.
-  LayerImpl* potentially_scrolling_layer_impl = 0;
+  LayerImpl* potentially_scrolling_layer_impl = NULL;
   for (; layer_impl; layer_impl = NextScrollLayer(layer_impl)) {
     // The content layer can also block attempts to scroll outside the main
     // thread.
@@ -2220,9 +2211,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
-
-  if (!EnsureRenderSurfaceLayerList())
-    return ScrollIgnored;
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
                                                       device_scale_factor_);
@@ -2587,9 +2575,6 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
-  if (!EnsureRenderSurfaceLayerList())
-    return;
-
   gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
                                                       device_scale_factor_);
   LayerImpl* layer_impl =

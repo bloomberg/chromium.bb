@@ -522,7 +522,6 @@ class CC_EXPORT LayerTreeHostImpl
   // the frame should be drawn.
   DrawResult CalculateRenderPasses(FrameData* frame);
 
-  bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();
 
   bool HandleMouseOverScrollbar(LayerImpl* layer_impl,

@@ -66,10 +66,6 @@ class PictureImageLayerImplTest : public testing::Test {
     return make_scoped_ptr(layer);
   }
 
-  void UpdateDrawProperties() {
-    host_impl_.pending_tree()->UpdateDrawProperties();
-  }
-
  protected:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
@@ -95,29 +91,6 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
   EXPECT_FLOAT_EQ(1.f, contents_scale_x);
   EXPECT_FLOAT_EQ(1.f, contents_scale_y);
   EXPECT_EQ(layer->bounds(), content_bounds);
-}
-
-TEST_F(PictureImageLayerImplTest, AreVisibleResourcesReady) {
-  scoped_ptr<TestablePictureImageLayerImpl> layer(CreateLayer(1, PENDING_TREE));
-  layer->SetBounds(gfx::Size(100, 200));
-  layer->SetDrawsContent(true);
-
-  UpdateDrawProperties();
-
-  float contents_scale_x;
-  float contents_scale_y;
-  gfx::Size content_bounds;
-  layer->CalculateContentsScale(2.f,
-                                3.f,
-                                4.f,
-                                1.f,
-                                false,
-                                &contents_scale_x,
-                                &contents_scale_y,
-                                &content_bounds);
-  layer->UpdateTilePriorities();
-
-  EXPECT_TRUE(layer->AreVisibleResourcesReady());
 }
 
 TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
