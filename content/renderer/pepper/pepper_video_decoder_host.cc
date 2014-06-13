@@ -10,9 +10,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
-#include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
-#include "media/video/picture.h"
+#include "content/renderer/pepper/video_decoder_shim.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -119,9 +117,10 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
       graphics_context.host_resource(), true);
   if (enter_graphics.failed())
     return PP_ERROR_FAILED;
-  graphics3d_ = static_cast<PPB_Graphics3D_Impl*>(enter_graphics.object());
+  PPB_Graphics3D_Impl* graphics3d =
+      static_cast<PPB_Graphics3D_Impl*>(enter_graphics.object());
 
-  int command_buffer_route_id = graphics3d_->GetCommandBufferRouteId();
+  int command_buffer_route_id = graphics3d->GetCommandBufferRouteId();
   if (!command_buffer_route_id)
     return PP_ERROR_FAILED;
 
@@ -129,7 +128,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
   // it is okay to immediately send IPC messages through the returned channel.
-  GpuChannelHost* channel = graphics3d_->channel();
+  GpuChannelHost* channel = graphics3d->channel();
   DCHECK(channel);
   decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
   if (decoder_ && decoder_->Initialize(media_profile, this)) {
@@ -138,8 +137,14 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   }
   decoder_.reset();
 
-  // TODO(bbudge) Implement software fallback.
-  return PP_ERROR_NOTSUPPORTED;
+  if (!allow_software_fallback)
+    return PP_ERROR_NOTSUPPORTED;
+
+  decoder_.reset(new VideoDecoderShim(this));
+  initialize_reply_context_ = context->MakeReplyMessageContext();
+  decoder_->Initialize(media_profile, this);
+
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
@@ -176,8 +181,8 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
     shm_buffers_.push_back(shm.release());
     shm_buffer_busy_.push_back(false);
   } else {
-    // Fill in the new resized buffer. Delete it manually since ScopedVector
-    // won't delete the existing element if we just assign it.
+    // Remove the old buffer. Delete manually since ScopedVector won't delete
+    // the existing element if we just assign over it.
     delete shm_buffers_[shm_id];
     shm_buffers_[shm_id] = shm.release();
   }
@@ -262,7 +267,6 @@ int32_t PepperVideoDecoderHost::OnHostMsgRecyclePicture(
     return PP_ERROR_FAILED;
 
   decoder_->ReusePictureBuffer(texture_id);
-
   return PP_OK;
 }
 
@@ -298,17 +302,13 @@ void PepperVideoDecoderHost::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     uint32 texture_target) {
-  DCHECK(RenderThreadImpl::current());
-  host()->SendUnsolicitedReply(
-      pp_resource(),
-      PpapiPluginMsg_VideoDecoder_RequestTextures(
-          requested_num_of_buffers,
-          PP_MakeSize(dimensions.width(), dimensions.height()),
-          texture_target));
+  RequestTextures(requested_num_of_buffers,
+                  dimensions,
+                  texture_target,
+                  std::vector<gpu::Mailbox>());
 }
 
 void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
-  DCHECK(RenderThreadImpl::current());
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoDecoder_PictureReady(picture.bitstream_buffer_id(),
@@ -316,15 +316,40 @@ void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
 }
 
 void PepperVideoDecoderHost::DismissPictureBuffer(int32 picture_buffer_id) {
-  DCHECK(RenderThreadImpl::current());
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoDecoder_DismissPicture(picture_buffer_id));
 }
 
+void PepperVideoDecoderHost::NotifyEndOfBitstreamBuffer(
+    int32 bitstream_buffer_id) {
+  PendingDecodeMap::iterator it = pending_decodes_.find(bitstream_buffer_id);
+  if (it == pending_decodes_.end()) {
+    NOTREACHED();
+    return;
+  }
+  const PendingDecode& pending_decode = it->second;
+  host()->SendReply(
+      pending_decode.reply_context,
+      PpapiPluginMsg_VideoDecoder_DecodeReply(pending_decode.shm_id));
+  shm_buffer_busy_[pending_decode.shm_id] = false;
+  pending_decodes_.erase(it);
+}
+
+void PepperVideoDecoderHost::NotifyFlushDone() {
+  host()->SendReply(flush_reply_context_,
+                    PpapiPluginMsg_VideoDecoder_FlushReply());
+  flush_reply_context_ = ppapi::host::ReplyMessageContext();
+}
+
+void PepperVideoDecoderHost::NotifyResetDone() {
+  host()->SendReply(reset_reply_context_,
+                    PpapiPluginMsg_VideoDecoder_ResetReply());
+  reset_reply_context_ = ppapi::host::ReplyMessageContext();
+}
+
 void PepperVideoDecoderHost::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
-  DCHECK(RenderThreadImpl::current());
   int32_t pp_error = PP_ERROR_FAILED;
   switch (error) {
     case media::VideoDecodeAccelerator::UNREADABLE_INPUT:
@@ -342,34 +367,35 @@ void PepperVideoDecoderHost::NotifyError(
       pp_resource(), PpapiPluginMsg_VideoDecoder_NotifyError(pp_error));
 }
 
-void PepperVideoDecoderHost::NotifyResetDone() {
-  DCHECK(RenderThreadImpl::current());
-  host()->SendReply(reset_reply_context_,
-                    PpapiPluginMsg_VideoDecoder_ResetReply());
-  reset_reply_context_ = ppapi::host::ReplyMessageContext();
-}
-
-void PepperVideoDecoderHost::NotifyEndOfBitstreamBuffer(
-    int32 bitstream_buffer_id) {
-  DCHECK(RenderThreadImpl::current());
-  PendingDecodeMap::iterator it = pending_decodes_.find(bitstream_buffer_id);
-  if (it == pending_decodes_.end()) {
-    NOTREACHED();
-    return;
+void PepperVideoDecoderHost::OnInitializeComplete(int32_t result) {
+  if (!initialized_) {
+    if (result == PP_OK)
+      initialized_ = true;
+    initialize_reply_context_.params.set_result(result);
+    host()->SendReply(initialize_reply_context_,
+                      PpapiPluginMsg_VideoDecoder_InitializeReply());
   }
-  const PendingDecode& pending_decode = it->second;
-  host()->SendReply(
-      pending_decode.reply_context,
-      PpapiPluginMsg_VideoDecoder_DecodeReply(pending_decode.shm_id));
-  shm_buffer_busy_[pending_decode.shm_id] = false;
-  pending_decodes_.erase(it);
 }
 
-void PepperVideoDecoderHost::NotifyFlushDone() {
-  DCHECK(RenderThreadImpl::current());
-  host()->SendReply(flush_reply_context_,
-                    PpapiPluginMsg_VideoDecoder_FlushReply());
-  flush_reply_context_ = ppapi::host::ReplyMessageContext();
+const uint8_t* PepperVideoDecoderHost::DecodeIdToAddress(uint32_t decode_id) {
+  PendingDecodeMap::const_iterator it = pending_decodes_.find(decode_id);
+  DCHECK(it != pending_decodes_.end());
+  uint32_t shm_id = it->second.shm_id;
+  return static_cast<uint8_t*>(shm_buffers_[shm_id]->memory());
+}
+
+void PepperVideoDecoderHost::RequestTextures(
+    uint32 requested_num_of_buffers,
+    const gfx::Size& dimensions,
+    uint32 texture_target,
+    const std::vector<gpu::Mailbox>& mailboxes) {
+  host()->SendUnsolicitedReply(
+      pp_resource(),
+      PpapiPluginMsg_VideoDecoder_RequestTextures(
+          requested_num_of_buffers,
+          PP_MakeSize(dimensions.width(), dimensions.height()),
+          texture_target,
+          mailboxes));
 }
 
 }  // namespace content

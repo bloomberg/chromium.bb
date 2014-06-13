@@ -10,11 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/host/host_message_context.h"
@@ -30,6 +28,7 @@ namespace content {
 class PPB_Graphics3D_Impl;
 class RendererPpapiHost;
 class RenderViewImpl;
+class VideoDecoderShim;
 
 class CONTENT_EXPORT PepperVideoDecoderHost
     : public ppapi::host::ResourceHost,
@@ -50,6 +49,8 @@ class CONTENT_EXPORT PepperVideoDecoderHost
     const ppapi::host::ReplyMessageContext reply_context;
   };
 
+  friend class VideoDecoderShim;
+
   // ResourceHost implementation.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -61,10 +62,10 @@ class CONTENT_EXPORT PepperVideoDecoderHost
                                      uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
-  virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
+  virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
 
   int32_t OnHostMsgInitialize(ppapi::host::HostMessageContext* context,
                               const ppapi::HostResource& graphics_context,
@@ -85,11 +86,19 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgReset(ppapi::host::HostMessageContext* context);
 
+  // These methods are needed by VideoDecodeShim, to look like a
+  // VideoDecodeAccelerator.
+  void OnInitializeComplete(int32_t result);
+  const uint8_t* DecodeIdToAddress(uint32_t decode_id);
+  void RequestTextures(uint32 requested_num_of_buffers,
+                       const gfx::Size& dimensions,
+                       uint32 texture_target,
+                       const std::vector<gpu::Mailbox>& mailboxes);
+
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
 
   scoped_ptr<media::VideoDecodeAccelerator> decoder_;
-  scoped_refptr<PPB_Graphics3D_Impl> graphics3d_;
 
   // A vector holding our shm buffers, in sync with a similar vector in the
   // resource. We use a buffer's index in these vectors as its id on both sides
@@ -106,6 +115,8 @@ class CONTENT_EXPORT PepperVideoDecoderHost
 
   ppapi::host::ReplyMessageContext flush_reply_context_;
   ppapi::host::ReplyMessageContext reset_reply_context_;
+  // Only used when in software fallback mode.
+  ppapi::host::ReplyMessageContext initialize_reply_context_;
 
   bool initialized_;
 

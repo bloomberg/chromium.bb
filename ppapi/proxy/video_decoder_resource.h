@@ -19,6 +19,7 @@
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 
 namespace gpu {
+struct Mailbox;
 namespace gles2 {
 class GLES2Implementation;
 }
@@ -107,7 +108,8 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
   void OnPluginMsgRequestTextures(const ResourceMessageReplyParams& params,
                                   uint32_t num_textures,
                                   const PP_Size& size,
-                                  uint32_t texture_target);
+                                  uint32_t texture_target,
+                                  const std::vector<gpu::Mailbox>& mailboxes);
   void OnPluginMsgPictureReady(const ResourceMessageReplyParams& params,
                                int32_t decode_id,
                                uint32_t texture_id);
