@@ -25,6 +25,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
 namespace {
@@ -136,6 +137,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
       network_session.get(), net::HttpCache::DefaultBackend::InMemory(0)));
   // In-memory cookie store.
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
+  storage_.set_job_factory(new net::URLRequestJobFactoryImpl());
   storage_.set_http_user_agent_settings(new net::StaticHttpUserAgentSettings(
       "en-us,fr", user_agent));
 }

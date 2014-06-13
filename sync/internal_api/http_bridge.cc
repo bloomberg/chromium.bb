@@ -16,6 +16,7 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 
@@ -122,7 +123,8 @@ HttpBridge::RequestContext::RequestContext(
         network_task_runner,
     const std::string& user_agent)
     : baseline_context_(baseline_context),
-      network_task_runner_(network_task_runner) {
+      network_task_runner_(network_task_runner),
+      job_factory_(new net::URLRequestJobFactoryImpl()) {
   DCHECK(!user_agent.empty());
 
   // Create empty, in-memory cookie store.
@@ -132,6 +134,9 @@ HttpBridge::RequestContext::RequestContext(
   set_host_resolver(baseline_context->host_resolver());
   set_proxy_service(baseline_context->proxy_service());
   set_ssl_config_service(baseline_context->ssl_config_service());
+
+  // Use its own job factory, which only supports http and https.
+  set_job_factory(job_factory_.get());
 
   // We want to share the HTTP session data with the network layer factory,
   // which includes auth_cache for proxies.

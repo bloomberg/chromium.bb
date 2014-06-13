@@ -21,6 +21,7 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -93,9 +94,7 @@ class ConnectionTesterTest : public PlatformTest {
         test_server_(net::SpawnedTestServer::TYPE_HTTP,
                      net::SpawnedTestServer::kLocalhost,
                      // Nothing is read in this directory.
-                     base::FilePath(FILE_PATH_LITERAL("chrome"))),
-        proxy_script_fetcher_context_(new net::URLRequestContext) {
-    InitializeRequestContext();
+                     base::FilePath(FILE_PATH_LITERAL("chrome"))) {
   }
 
  protected:
@@ -107,56 +106,15 @@ class ConnectionTesterTest : public PlatformTest {
   base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
   net::SpawnedTestServer test_server_;
+  net::TestURLRequestContext proxy_script_fetcher_context_;
   ConnectionTesterDelegate test_delegate_;
-  net::MockHostResolver host_resolver_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  scoped_ptr<net::ProxyService> proxy_service_;
-  scoped_refptr<net::SSLConfigService> ssl_config_service_;
-  scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
-  net::HttpAuthHandlerRegistryFactory http_auth_handler_factory_;
-  net::HttpServerPropertiesImpl http_server_properties_impl_;
-  scoped_ptr<net::URLRequestContext> proxy_script_fetcher_context_;
-
- private:
-  void InitializeRequestContext() {
-    proxy_script_fetcher_context_->set_host_resolver(&host_resolver_);
-    cert_verifier_.reset(new net::MockCertVerifier);
-    transport_security_state_.reset(new net::TransportSecurityState);
-    proxy_script_fetcher_context_->set_cert_verifier(cert_verifier_.get());
-    proxy_script_fetcher_context_->set_transport_security_state(
-        transport_security_state_.get());
-    proxy_script_fetcher_context_->set_http_auth_handler_factory(
-        &http_auth_handler_factory_);
-    proxy_service_.reset(net::ProxyService::CreateDirect());
-    proxy_script_fetcher_context_->set_proxy_service(proxy_service_.get());
-    ssl_config_service_ = new net::SSLConfigServiceDefaults;
-    net::HttpNetworkSession::Params session_params;
-    session_params.host_resolver = &host_resolver_;
-    session_params.cert_verifier = cert_verifier_.get();
-    session_params.transport_security_state = transport_security_state_.get();
-    session_params.http_auth_handler_factory = &http_auth_handler_factory_;
-    session_params.ssl_config_service = ssl_config_service_.get();
-    session_params.proxy_service = proxy_service_.get();
-    session_params.http_server_properties =
-        http_server_properties_impl_.GetWeakPtr();
-    scoped_refptr<net::HttpNetworkSession> network_session(
-        new net::HttpNetworkSession(session_params));
-    http_transaction_factory_.reset(
-        new net::HttpNetworkLayer(network_session.get()));
-    proxy_script_fetcher_context_->set_http_transaction_factory(
-        http_transaction_factory_.get());
-    // In-memory cookie store.
-    proxy_script_fetcher_context_->set_cookie_store(
-        content::CreateCookieStore(content::CookieStoreConfig()));
-  }
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
   ASSERT_TRUE(test_server_.Start());
 
   ConnectionTester tester(&test_delegate_,
-                          proxy_script_fetcher_context_.get(),
+                          &proxy_script_fetcher_context_,
                           NULL);
 
   // Start the test suite on URL "echoall".
@@ -183,7 +141,7 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
 
   scoped_ptr<ConnectionTester> tester(
       new ConnectionTester(&test_delegate_,
-                           proxy_script_fetcher_context_.get(),
+                           &proxy_script_fetcher_context_,
                            NULL));
 
   // Start the test suite on URL "echoall".

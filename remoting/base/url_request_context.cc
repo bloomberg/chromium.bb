@@ -15,6 +15,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "remoting/base/vlog_net_log.h"
 
 #if defined(OS_WIN)
@@ -95,6 +96,7 @@ URLRequestContext::URLRequestContext(
       scoped_ptr<net::HttpServerProperties>(
           new net::HttpServerPropertiesImpl()));
   storage_.set_transport_security_state(new net::TransportSecurityState);
+  storage_.set_job_factory(new net::URLRequestJobFactoryImpl());
 
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver();

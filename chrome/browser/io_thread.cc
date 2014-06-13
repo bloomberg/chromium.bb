@@ -259,6 +259,7 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->system_proxy_service.get());
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
+  context->set_job_factory(globals->system_url_request_job_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
@@ -1045,6 +1046,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(
           new net::HttpNetworkSession(system_params)));
+  globals_->system_url_request_job_factory.reset(
+      new net::URLRequestJobFactoryImpl());
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
 

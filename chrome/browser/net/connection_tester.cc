@@ -36,6 +36,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/net/firefox_proxy_settings.h"
@@ -134,6 +135,9 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // In-memory cookie store.
     storage_.set_cookie_store(
         content::CreateCookieStore(content::CookieStoreConfig()));
+    // Creating a new job factory avoids added ProtocolHandlers and
+    // layered URLRequestInterceptingJobFactories.
+    storage_.set_job_factory(new net::URLRequestJobFactoryImpl());
 
     return net::OK;
   }
