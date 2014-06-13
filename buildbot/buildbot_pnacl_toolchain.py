@@ -128,34 +128,30 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
 
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
-try:
-  cmd = ToolchainBuildCmd(cygwin_python if host_os == 'win' else None,
-                          host_os != 'win', # On Windows, we synced already
-                          ['--packages-file', TEMP_PACKAGES_FILE])
-  logging.info('Running: ' + ' '.join(cmd))
-  subprocess.check_call(cmd)
+cmd = ToolchainBuildCmd(cygwin_python if host_os == 'win' else None,
+                        host_os != 'win', # On Windows, we synced already
+                        ['--packages-file', TEMP_PACKAGES_FILE])
+logging.info('Running: ' + ' '.join(cmd))
+subprocess.check_call(cmd)
 
-  if args.buildbot or args.trybot:
-    # Don't upload packages from the 32-bit linux bot to avoid racing on
-    # uploading the same packages as the 64-bit linux bot
-    if host_os != 'linux' or pynacl.platform.IsArch64Bit():
-      if host_os == 'win':
-        # Since we are currently running the build in cygwin, the filenames in
-        # TEMP_PACKAGES_FILE will have cygwin paths. Convert them to system
-        # paths so we dont' have to worry about running package_version tools
-        # in cygwin.
-        converted = []
-        with open(TEMP_PACKAGES_FILE) as f:
-          for line in f:
-            converted.append(
-              subprocess.check_output(['cygpath', '-w', line]).strip())
-        with open(TEMP_PACKAGES_FILE, 'w') as f:
-          f.write('\n'.join(converted))
-      packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+if args.buildbot or args.trybot:
+  # Don't upload packages from the 32-bit linux bot to avoid racing on
+  # uploading the same packages as the 64-bit linux bot
+  if host_os != 'linux' or pynacl.platform.IsArch64Bit():
+    if host_os == 'win':
+      # Since we are currently running the build in cygwin, the filenames in
+      # TEMP_PACKAGES_FILE will have cygwin paths. Convert them to system
+      # paths so we dont' have to worry about running package_version tools
+      # in cygwin.
+      converted = []
+      with open(TEMP_PACKAGES_FILE) as f:
+        for line in f:
+          converted.append(
+            subprocess.check_output(['cygpath', '-w', line]).strip())
+      with open(TEMP_PACKAGES_FILE, 'w') as f:
+        f.write('\n'.join(converted))
+    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
-except subprocess.CalledProcessError:
-  # Ignore any failures and keep going (but make the bot stage red).
-  print '@@@STEP_FAILURE@@@'
 sys.stdout.flush()
 
 # Since mac and windows bots don't build target libraries or run tests yet,
