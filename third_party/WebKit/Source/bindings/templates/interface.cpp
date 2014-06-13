@@ -892,7 +892,12 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
     {% filter indent(runtime_enabled_indent, true) %}
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount,
-        {# Test needed as size 0 constant arrays are not allowed in VC++ #}
+        {# Test needed as size 0 arrays definitions are not allowed per standard
+           (so objects have distinct addresses), which is enforced by MSVC.
+           8.5.1 Aggregates [dcl.init.aggr]
+           An array of unknown size initialized with a brace-enclosed
+           initializer-list containing n initializer-clauses, where n shall be
+           greater than zero, is defined as having n elements (8.3.4). #}
         {% set attributes_name, attributes_length =
                ('%sAttributes' % v8_class,
                 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class)
