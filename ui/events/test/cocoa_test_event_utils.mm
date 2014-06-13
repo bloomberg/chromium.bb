@@ -67,6 +67,14 @@ static NSEvent* MouseEventAtPointInWindow(NSPoint point,
                             pressure:1.0];
 }
 
+NSEvent* RightMouseDownAtPointInWindow(NSPoint point, NSWindow* window) {
+  return MouseEventAtPointInWindow(point, NSRightMouseDown, window, 1);
+}
+
+NSEvent* RightMouseDownAtPoint(NSPoint point) {
+  return RightMouseDownAtPointInWindow(point, nil);
+}
+
 NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window) {
   return MouseEventAtPointInWindow(point, NSLeftMouseDown, window, 1);
 }

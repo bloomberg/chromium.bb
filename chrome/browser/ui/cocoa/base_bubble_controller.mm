@@ -241,14 +241,16 @@
   // The eventTap_ catches clicks within the application that are outside the
   // window.
   eventTap_ = [NSEvent
-      addLocalMonitorForEventsMatchingMask:NSLeftMouseDownMask
+      addLocalMonitorForEventsMatchingMask:NSLeftMouseDownMask |
+                                           NSRightMouseDownMask
       handler:^NSEvent* (NSEvent* event) {
           if (event.window != window) {
-            // Call via the runloop because this block is called in the
-            // middle of event dispatch.
-            [self performSelector:@selector(windowDidResignKey:)
-                       withObject:note
-                       afterDelay:0];
+            // Do it right now, because if this event is right mouse event,
+            // it may pop up a menu. windowDidResignKey: will not run until
+            // the menu is closed.
+            if ([self respondsToSelector:@selector(windowDidResignKey:)]) {
+              [self windowDidResignKey:note];
+            }
           }
           return event;
       }];

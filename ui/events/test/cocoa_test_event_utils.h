@@ -36,6 +36,8 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                            NSUInteger modifiers);
 NSEvent* LeftMouseDownAtPoint(NSPoint point);
 NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
+NSEvent* RightMouseDownAtPoint(NSPoint point);
+NSEvent* RightMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 
 // Return a mouse down and an up event with the given |clickCount| at
 // |view|'s midpoint.

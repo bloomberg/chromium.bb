@@ -8,7 +8,6 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -17,6 +16,72 @@ const CGFloat kBubbleWindowHeight = 50;
 const CGFloat kAnchorPointX = 400;
 const CGFloat kAnchorPointY = 300;
 }  // namespace
+
+@interface ContextMenuController : NSObject<NSMenuDelegate> {
+ @private
+  NSMenu* menu_;
+  NSWindow* window_;
+  BOOL isMenuOpen_;
+  BOOL didOpen_;
+}
+
+- (id)initWithMenu:(NSMenu*)menu andWindow:(NSWindow*)window;
+
+- (BOOL)isMenuOpen;
+- (BOOL)didOpen;
+- (BOOL)isWindowVisible;
+
+// NSMenuDelegate methods
+- (void)menuWillOpen:(NSMenu*)menu;
+- (void)menuDidClose:(NSMenu*)menu;
+
+@end
+
+@implementation ContextMenuController
+
+- (id)initWithMenu:(NSMenu*)menu andWindow:(NSWindow*)window {
+  if (self = [super init]) {
+    menu_ = menu;
+    window_ = window;
+    isMenuOpen_ = NO;
+    didOpen_ = NO;
+    [menu_ setDelegate:self];
+  }
+  return self;
+}
+
+- (BOOL)isMenuOpen {
+  return isMenuOpen_;
+}
+
+- (BOOL)didOpen {
+  return didOpen_;
+}
+
+- (BOOL)isWindowVisible {
+  if (window_) {
+    return [window_ isVisible];
+  }
+  return NO;
+}
+
+- (void)menuWillOpen:(NSMenu*)menu {
+  isMenuOpen_ = YES;
+  didOpen_ = NO;
+
+  NSArray* modes = @[NSEventTrackingRunLoopMode, NSDefaultRunLoopMode];
+  [menu_ performSelector:@selector(cancelTracking)
+              withObject:nil
+              afterDelay:0.1
+                 inModes:modes];
+}
+
+- (void)menuDidClose:(NSMenu*)menu {
+  isMenuOpen_ = NO;
+  didOpen_ = YES;
+}
+
+@end
 
 class BaseBubbleControllerTest : public CocoaTest {
  public:
@@ -174,7 +239,7 @@ TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
 
 // Test that clicking outside the window causes the bubble to close if
 // shouldCloseOnResignKey is YES.
-TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
+TEST_F(BaseBubbleControllerTest, LionClickOutsideClosesWithoutContextMenu) {
   // The event tap is only installed on 10.7+.
   if (!base::mac::IsOSLionOrLater())
     return;
@@ -194,7 +259,12 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
   NSEvent* event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
       NSMakePoint(10, 10), test_window());
   [NSApp sendEvent:event];
-  chrome::testing::NSRunLoopRunAllPending();
+
+  EXPECT_TRUE([window isVisible]);
+
+  event = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
+      NSMakePoint(10, 10), test_window());
+  [NSApp sendEvent:event];
 
   EXPECT_TRUE([window isVisible]);
 
@@ -202,7 +272,70 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
   event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
       NSMakePoint(10, 10), test_window());
   [NSApp sendEvent:event];
-  chrome::testing::NSRunLoopRunAllPending();
+
+  EXPECT_FALSE([window isVisible]);
+
+  [controller_ showWindow:nil]; // Show it again
+  EXPECT_TRUE([window isVisible]);
+  EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify.
+
+  event = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
+      NSMakePoint(10, 10), test_window());
+  [NSApp sendEvent:event];
 
   EXPECT_FALSE([window isVisible]);
 }
+
+// Test that right-clicking the window with displaying a context menu causes
+// the bubble  to close.
+TEST_F(BaseBubbleControllerTest, LionRightClickOutsideClosesWithContextMenu) {
+  // The event tap is only installed on 10.7+.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  // Closing the bubble will autorelease the controller.
+  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  NSWindow* window = [controller_ window];
+
+  EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify default value.
+  EXPECT_FALSE([window isVisible]);
+
+  [controller_ showWindow:nil];
+
+  EXPECT_TRUE([window isVisible]);
+
+  base::scoped_nsobject<NSMenu> context_menu(
+      [[NSMenu alloc] initWithTitle:@""]);
+  [context_menu addItemWithTitle:@"ContextMenuTest"
+                          action:nil
+                   keyEquivalent:@""];
+  base::scoped_nsobject<ContextMenuController> menu_controller(
+      [[ContextMenuController alloc] initWithMenu:context_menu
+                                        andWindow:window]);
+
+  // Set the menu as the contextual menu of contentView of test_window().
+  [[test_window() contentView] setMenu:context_menu];
+
+  // RightMouseDown in test_window() would close the bubble window and then
+  // dispaly the contextual menu.
+  NSEvent* event = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
+      NSMakePoint(10, 10), test_window());
+  // Verify bubble's window is closed when contextual menu is open.
+  CFRunLoopPerformBlock(CFRunLoopGetCurrent(), NSEventTrackingRunLoopMode, ^{
+      EXPECT_TRUE([menu_controller isMenuOpen]);
+      EXPECT_FALSE([menu_controller isWindowVisible]);
+  });
+
+  EXPECT_FALSE([menu_controller isMenuOpen]);
+  EXPECT_FALSE([menu_controller didOpen]);
+
+  [NSApp sendEvent:event];
+
+  // When we got here, menu has already run its RunLoop.
+  // See -[ContextualMenuController menuWillOpen:].
+  EXPECT_FALSE([window isVisible]);
+
+  EXPECT_FALSE([menu_controller isMenuOpen]);
+  EXPECT_TRUE([menu_controller didOpen]);
+}
+
