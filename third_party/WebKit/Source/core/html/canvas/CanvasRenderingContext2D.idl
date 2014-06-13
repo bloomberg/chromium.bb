@@ -88,29 +88,19 @@ enum CanvasFillRule { "nonzero", "evenodd" };
 
     // path API (see also CanvasPathMethods)
     void beginPath();
-    // FIXME: Simplify these using optional CanvasFillRule once crbug.com/339000 gets fixed.
-    void fill();
-    void fill(CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] void fill(Path2D path);
-    [RuntimeEnabled=Path2D] void fill(Path2D path, CanvasFillRule winding);
+    void fill(optional CanvasFillRule winding);
+    [RuntimeEnabled=Path2D] void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
     [RuntimeEnabled=Path2D] void stroke(Path2D path);
     // Focus rings
     void drawFocusIfNeeded(Element element);
     [RuntimeEnabled=Path2D] void drawFocusIfNeeded(Path2D path, Element element);
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView();
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView(Path2D path);
-    // FIXME: Simplify these using optional CanvasFillRule once crbug.com/339000 gets fixed.
-    void clip();
-    void clip(CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] void clip(Path2D path);
-    [RuntimeEnabled=Path2D] void clip(Path2D path, CanvasFillRule winding);
-    // FIXME: Simplify these using optional CanvasFillRule once crbug.com/339000 gets fixed.
-    boolean isPointInPath(unrestricted float x, unrestricted float y);
-    boolean isPointInPath(unrestricted float x, unrestricted float y, CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y);
-    [RuntimeEnabled=Path2D] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y, CanvasFillRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView(optional Path2D path);
+    void clip(optional CanvasFillRule winding);
+    [RuntimeEnabled=Path2D] void clip(Path2D path, optional CanvasFillRule winding);
+    boolean isPointInPath(unrestricted float x, unrestricted float y, optional CanvasFillRule winding);
+    [RuntimeEnabled=Path2D] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y, optional CanvasFillRule winding);
     boolean isPointInStroke(unrestricted float x, unrestricted float y);
     [RuntimeEnabled=Path2D] boolean isPointInStroke(Path2D path, unrestricted float x, unrestricted float y);
 
