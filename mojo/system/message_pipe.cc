@@ -100,13 +100,13 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
 MojoResult MessagePipe::AddWaiter(unsigned port,
                                   Waiter* waiter,
                                   MojoWaitFlags flags,
-                                  MojoResult wake_result) {
+                                  uint32_t context) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
 
-  return endpoints_[port]->AddWaiter(waiter, flags, wake_result);
+  return endpoints_[port]->AddWaiter(waiter, flags, context);
 }
 
 void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {

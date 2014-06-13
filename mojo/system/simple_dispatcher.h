@@ -37,7 +37,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
-                                         MojoResult wake_result) OVERRIDE;
+                                         uint32_t context) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
 
  private:

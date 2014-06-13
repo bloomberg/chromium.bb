@@ -18,7 +18,8 @@ Waiter::Waiter()
       initialized_(false),
 #endif
       awoken_(false),
-      wait_result_(MOJO_RESULT_INTERNAL) {
+      awake_context_(static_cast<uint32_t>(-1)),
+      awake_result_(MOJO_RESULT_INTERNAL) {
 }
 
 Waiter::~Waiter() {
@@ -30,8 +31,8 @@ void Waiter::Init() {
 #endif
   awoken_ = false;
   // NOTE(vtl): If performance ever becomes an issue, we can disable the setting
-  // of |wait_result_| (except the first one in |Awake()|) in Release builds.
-  wait_result_ = MOJO_RESULT_INTERNAL;
+  // of |awake_result_| (except the first one in |Awake()|) in Release builds.
+  awake_result_ = MOJO_RESULT_INTERNAL;
 }
 
 // TODO(vtl): Fast-path the |deadline == 0| case?
@@ -46,8 +47,11 @@ MojoResult Waiter::Wait(MojoDeadline deadline) {
 
   // Fast-path the already-awoken case:
   if (awoken_) {
-    DCHECK_NE(wait_result_, MOJO_RESULT_INTERNAL);
-    return wait_result_;
+    DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
+    // TODO(vtl): This is a temporary hack until I add a |context| out parameter
+    // and update all the call sites.
+    return (awake_result_ == MOJO_RESULT_OK) ?
+      static_cast<MojoResult>(awake_context_) : awake_result_;
   }
 
   // |MojoDeadline| is actually a |uint64_t|, but we need a signed quantity.
@@ -65,25 +69,30 @@ MojoResult Waiter::Wait(MojoDeadline deadline) {
         base::TimeDelta::FromMicroseconds(static_cast<int64_t>(deadline));
     do {
       base::TimeTicks now_time = base::TimeTicks::HighResNow();
-      if (now_time >= end_time)
+      if (now_time >= end_time) {
         return MOJO_RESULT_DEADLINE_EXCEEDED;
+      }
 
       cv_.TimedWait(end_time - now_time);
     } while (!awoken_);
   }
 
-  DCHECK_NE(wait_result_, MOJO_RESULT_INTERNAL);
-  return wait_result_;
+  DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
+  // TODO(vtl): This is a temporary hack until I add a |context| out parameter
+  // and update all the call sites.
+  return (awake_result_ == MOJO_RESULT_OK) ?
+      static_cast<MojoResult>(awake_context_) : awake_result_;
 }
 
-void Waiter::Awake(MojoResult wait_result) {
+void Waiter::Awake(uint32_t context, MojoResult result) {
   base::AutoLock locker(lock_);
 
   if (awoken_)
     return;
 
   awoken_ = true;
-  wait_result_ = wait_result;
+  awake_context_ = context;
+  awake_result_ = result;
   cv_.Signal();
   // |cv_.Wait()|/|cv_.TimedWait()| will return after |lock_| is released.
 }

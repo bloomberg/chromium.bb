@@ -129,7 +129,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
 
 MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
                                                MojoWaitFlags flags,
-                                               MojoResult wake_result) {
+                                               uint32_t context) {
   DCHECK(is_open_);
 
   WaitFlagsState state = GetWaitFlagsState();
@@ -138,7 +138,7 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
   if (!state.can_satisfy(flags))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  waiter_list_.AddWaiter(waiter, flags, wake_result);
+  waiter_list_.AddWaiter(waiter, flags, context);
   return MOJO_RESULT_OK;
 }
 

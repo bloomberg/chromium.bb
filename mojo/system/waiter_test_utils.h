@@ -5,8 +5,10 @@
 #ifndef MOJO_SYSTEM_WAITER_TEST_UTILS_H_
 #define MOJO_SYSTEM_WAITER_TEST_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/types.h"
@@ -68,7 +70,7 @@ class WaiterThread : public base::SimpleThread {
   WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                MojoWaitFlags wait_flags,
                MojoDeadline deadline,
-               MojoResult success_result,
+               uint32_t context,
                bool* did_wait_out,
                MojoResult* result_out);
   virtual ~WaiterThread();
@@ -79,7 +81,7 @@ class WaiterThread : public base::SimpleThread {
   const scoped_refptr<Dispatcher> dispatcher_;
   const MojoWaitFlags wait_flags_;
   const MojoDeadline deadline_;
-  const MojoResult success_result_;
+  const uint32_t context_;
   bool* const did_wait_out_;
   MojoResult* const result_out_;
 

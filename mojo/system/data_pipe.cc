@@ -178,7 +178,7 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
 
 MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
                                        MojoWaitFlags flags,
-                                       MojoResult wake_result) {
+                                       uint32_t context) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
@@ -188,7 +188,7 @@ MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
   if (!producer_state.can_satisfy(flags))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  producer_waiter_list_->AddWaiter(waiter, flags, wake_result);
+  producer_waiter_list_->AddWaiter(waiter, flags, context);
   return MOJO_RESULT_OK;
 }
 
@@ -330,7 +330,7 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
 
 MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
                                        MojoWaitFlags flags,
-                                       MojoResult wake_result) {
+                                       uint32_t context) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
@@ -340,7 +340,7 @@ MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
   if (!consumer_state.can_satisfy(flags))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  consumer_waiter_list_->AddWaiter(waiter, flags, wake_result);
+  consumer_waiter_list_->AddWaiter(waiter, flags, context);
   return MOJO_RESULT_OK;
 }
 

@@ -38,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
                                  MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
-                               MojoResult wake_result) OVERRIDE;
+                               uint32_t context) OVERRIDE;
   virtual void RemoveWaiter(Waiter* waiter) OVERRIDE;
 
   // This is only to be used by |ProxyMessagePipeEndpoint|:

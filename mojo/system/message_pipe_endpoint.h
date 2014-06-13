@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/c/system/message_pipe.h"
@@ -68,7 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
                                  MojoReadMessageFlags flags);
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
-                               MojoResult wake_result);
+                               uint32_t context);
   virtual void RemoveWaiter(Waiter* waiter);
 
   // Implementations must override these if they represent a proxy endpoint. An

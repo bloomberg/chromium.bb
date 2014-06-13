@@ -5,9 +5,11 @@
 #ifndef MOJO_SYSTEM_WAITER_LIST_H_
 #define MOJO_SYSTEM_WAITER_LIST_H_
 
+#include <stdint.h>
+
 #include <list>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -31,17 +33,17 @@ class MOJO_SYSTEM_IMPL_EXPORT WaiterList {
 
   void AwakeWaitersForStateChange(const WaitFlagsState& state);
   void CancelAllWaiters();
-  void AddWaiter(Waiter* waiter, MojoWaitFlags flags, MojoResult wake_result);
+  void AddWaiter(Waiter* waiter, MojoWaitFlags flags, uint32_t context);
   void RemoveWaiter(Waiter* waiter);
 
  private:
   struct WaiterInfo {
-    WaiterInfo(Waiter* waiter, MojoWaitFlags flags, MojoResult wake_result)
-        : waiter(waiter), flags(flags), wake_result(wake_result) {}
+    WaiterInfo(Waiter* waiter, MojoWaitFlags flags, uint32_t context)
+        : waiter(waiter), flags(flags), context(context) {}
 
     Waiter* waiter;
     MojoWaitFlags flags;
-    MojoResult wake_result;
+    uint32_t context;
   };
   typedef std::list<WaiterInfo> WaiterInfoList;
 

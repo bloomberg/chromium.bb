@@ -131,7 +131,7 @@ class MockDispatcher : public Dispatcher {
 
   virtual MojoResult AddWaiterImplNoLock(Waiter* /*waiter*/,
                                          MojoWaitFlags /*flags*/,
-                                         MojoResult /*wake_result*/) OVERRIDE {
+                                         uint32_t /*context*/) OVERRIDE {
     info_->IncrementAddWaiterCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_FAILED_PRECONDITION;

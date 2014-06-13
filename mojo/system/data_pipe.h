@@ -5,7 +5,9 @@
 #ifndef MOJO_SYSTEM_DATA_PIPE_H_
 #define MOJO_SYSTEM_DATA_PIPE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -59,7 +61,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   MojoResult ProducerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
-                               MojoResult wake_result);
+                               uint32_t context);
   void ProducerRemoveWaiter(Waiter* waiter);
   bool ProducerIsBusy() const;
 
@@ -82,7 +84,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
-                               MojoResult wake_result);
+                               uint32_t context);
   void ConsumerRemoveWaiter(Waiter* waiter);
   bool ConsumerIsBusy() const;
 

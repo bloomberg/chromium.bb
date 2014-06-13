@@ -129,7 +129,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
   Waiter waiter;
   waiter.Init();
 
-  MojoResult add_result = mp->AddWaiter(0, &waiter, flags, MOJO_RESULT_OK);
+  MojoResult add_result = mp->AddWaiter(0, &waiter, flags, 0);
   if (add_result != MOJO_RESULT_OK) {
     return (add_result == MOJO_RESULT_ALREADY_EXISTS) ? MOJO_RESULT_OK :
                                                         add_result;

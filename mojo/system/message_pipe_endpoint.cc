@@ -29,7 +29,7 @@ MojoResult MessagePipeEndpoint::ReadMessage(void* /*bytes*/,
 
 MojoResult MessagePipeEndpoint::AddWaiter(Waiter* /*waiter*/,
                                           MojoWaitFlags /*flags*/,
-                                          MojoResult /*wake_result*/) {
+                                          uint32_t /*context*/) {
   NOTREACHED();
   return MOJO_RESULT_INTERNAL;
 }
