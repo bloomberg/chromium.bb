@@ -29,8 +29,15 @@ IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.
 
-// Synchronously get a list of supported EME key systems.
+// Synchronously query key system information. If the key system is supported,
+// the response will be populated.
 IPC_SYNC_MESSAGE_CONTROL1_1(
-    ChromeViewHostMsg_GetSupportedKeySystems,
+    ChromeViewHostMsg_QueryKeySystemSupport,
     SupportedKeySystemRequest /* key system information request */,
     SupportedKeySystemResponse /* key system information response */)
+
+// Synchronously get a list of platform-supported EME key system names that
+// are not explicitly handled by Chrome.
+IPC_SYNC_MESSAGE_CONTROL0_1(
+    ChromeViewHostMsg_GetPlatformKeySystemNames,
+    std::vector<std::string> /* key system names */)

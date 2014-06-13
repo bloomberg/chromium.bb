@@ -23,11 +23,6 @@ void AddWidevineWithCodecs(
     content::SupportedCodecs supported_codecs,
     std::vector<content::KeySystemInfo>* concrete_key_systems);
 
-#if defined(OS_ANDROID)
-void AddAndroidWidevine(
-    std::vector<content::KeySystemInfo>* concrete_key_systems);
-#endif  // defined(OS_ANDROID)
-
 }  // namespace cdm
 
 #endif  // COMPONENTS_CDM_RENDERER_WIDEVINE_KEY_SYSTEMS_H_

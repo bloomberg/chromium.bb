@@ -48,6 +48,10 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Checks whether |key_system| is supported.
   static bool IsKeySystemSupported(const std::string& key_system);
 
+  // Returns the list of the platform-supported key system names that
+  // are not handled by Chrome explicitly.
+  static std::vector<std::string> GetPlatformKeySystemNames();
+
   // Adds a new |key_system| with the associated |uuid|.
   // This is used for other platforms to have a chance to register their
   // own UUID mapping.

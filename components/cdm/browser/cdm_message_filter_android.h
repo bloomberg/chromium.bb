@@ -29,10 +29,11 @@ class CdmMessageFilterAndroid
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
 
-  // Retrieve the supported key systems.
-  void OnGetSupportedKeySystems(
-      const SupportedKeySystemRequest& request,
-      SupportedKeySystemResponse* response);
+  // Query the key system information.
+  void OnQueryKeySystemSupport(const SupportedKeySystemRequest& request,
+                               SupportedKeySystemResponse* response);
+
+  void OnGetPlatformKeySystemNames(std::vector<std::string>* key_systems);
 
   DISALLOW_COPY_AND_ASSIGN(CdmMessageFilterAndroid);
 };

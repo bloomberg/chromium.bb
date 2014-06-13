@@ -36,6 +36,14 @@
         'cdm/renderer/widevine_key_systems.cc',
         'cdm/renderer/widevine_key_systems.h',
       ],
+      'conditions': [
+        ['OS == "android"', {
+          'sources': [
+            'cdm/renderer/android_key_systems.cc',
+            'cdm/renderer/android_key_systems.h',
+	  ],
+	}],
+      ],
     },
   ],
   'conditions': [

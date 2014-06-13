@@ -8,11 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/cdm/common/cdm_messages_android.h"
-#include "content/public/renderer/key_system_info.h"
-#include "content/public/renderer/render_thread.h"
 
-#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -58,35 +55,6 @@ void AddWidevineWithCodecs(WidevineCdmType widevine_cdm_type,
 
   concrete_key_systems->push_back(info);
 }
-
-#if defined(OS_ANDROID)
-void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
-  SupportedKeySystemRequest request;
-  SupportedKeySystemResponse response;
-
-  request.key_system = kWidevineKeySystem;
-  request.codecs = content::EME_CODEC_WEBM_ALL | content::EME_CODEC_MP4_ALL;
-  content::RenderThread::Get()->Send(
-      new ChromeViewHostMsg_GetSupportedKeySystems(request, &response));
-  DCHECK(response.compositing_codecs & content::EME_CODEC_ALL)
-      << "unrecognized codec";
-  DCHECK(response.non_compositing_codecs & content::EME_CODEC_ALL)
-      << "unrecognized codec";
-  if (response.compositing_codecs != content::EME_CODEC_NONE) {
-    AddWidevineWithCodecs(
-        WIDEVINE,
-        static_cast<SupportedCodecs>(response.compositing_codecs),
-        concrete_key_systems);
-  }
-
-  if (response.non_compositing_codecs != content::EME_CODEC_NONE) {
-    AddWidevineWithCodecs(
-        WIDEVINE_HR_NON_COMPOSITING,
-        static_cast<SupportedCodecs>(response.non_compositing_codecs),
-        concrete_key_systems);
-  }
-}
-#endif  // OS_ANDROID
 
 }  // namespace cdm
 

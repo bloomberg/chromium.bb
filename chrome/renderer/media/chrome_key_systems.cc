@@ -15,6 +15,10 @@
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "content/public/renderer/render_thread.h"
 
+#if defined(OS_ANDROID)
+#include "components/cdm/renderer/android_key_systems.h"
+#endif
+
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
 // The following must be after widevine_cdm_version.h.

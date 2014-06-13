@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "android_webview/renderer/aw_key_systems.h"
-#include "components/cdm/renderer/widevine_key_systems.h"
+#include "components/cdm/renderer/android_key_systems.h"
 
 namespace android_webview {
 
 void AwAddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems_info) {
   cdm::AddAndroidWidevine(key_systems_info);
+  cdm::AddAndroidPlatformKeySystems(key_systems_info);
 }
 
 }  // namespace android_webview

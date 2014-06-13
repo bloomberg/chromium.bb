@@ -5,6 +5,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 
 #include <string>
+#include <vector>
 
 #include "components/cdm/common/cdm_messages_android.h"
 #include "ipc/ipc_message_macros.h"
@@ -73,8 +74,10 @@ CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
 bool CdmMessageFilterAndroid::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CdmMessageFilterAndroid, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetSupportedKeySystems,
-                        OnGetSupportedKeySystems)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_QueryKeySystemSupport,
+                        OnQueryKeySystemSupport)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPlatformKeySystemNames,
+                        OnGetPlatformKeySystemNames)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -83,11 +86,11 @@ bool CdmMessageFilterAndroid::OnMessageReceived(const IPC::Message& message) {
 void CdmMessageFilterAndroid::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   // Move the IPC handling to FILE thread as it is not very cheap.
-  if (message.type() == ChromeViewHostMsg_GetSupportedKeySystems::ID)
+  if (message.type() == ChromeViewHostMsg_QueryKeySystemSupport::ID)
     *thread = BrowserThread::FILE;
 }
 
-void CdmMessageFilterAndroid::OnGetSupportedKeySystems(
+void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
     const SupportedKeySystemRequest& request,
     SupportedKeySystemResponse* response) {
   if (!response) {
@@ -108,6 +111,11 @@ void CdmMessageFilterAndroid::OnGetSupportedKeySystems(
   // TODO(qinmin): check composition is supported or not.
   response->compositing_codecs = GetSupportedCodecs(request, true);
   response->non_compositing_codecs = GetSupportedCodecs(request, false);
+}
+
+void CdmMessageFilterAndroid::OnGetPlatformKeySystemNames(
+    std::vector<std::string>* key_systems) {
+  *key_systems = MediaDrmBridge::GetPlatformKeySystemNames();
 }
 
 }  // namespace cdm

@@ -73,6 +73,7 @@ class KeySystemUuidManager {
   KeySystemUuidManager();
   UUID GetUUID(const std::string& key_system);
   void AddMapping(const std::string& key_system, const UUID& uuid);
+  std::vector<std::string> GetPlatformKeySystemNames();
 
  private:
   typedef base::hash_map<std::string, UUID> KeySystemUuidMap;
@@ -103,6 +104,17 @@ void KeySystemUuidManager::AddMapping(const std::string& key_system,
   if (it != key_system_uuid_map_.end())
     return;
   key_system_uuid_map_[key_system] = uuid;
+}
+
+std::vector<std::string> KeySystemUuidManager::GetPlatformKeySystemNames() {
+  std::vector<std::string> key_systems;
+  for (KeySystemUuidMap::iterator it = key_system_uuid_map_.begin();
+       it != key_system_uuid_map_.end(); ++it) {
+    // Rule out the key system handled by Chrome explicitly.
+    if (it->first != kWidevineKeySystem)
+      key_systems.push_back(it->first);
+  }
+  return key_systems;
 }
 
 base::LazyInstance<KeySystemUuidManager>::Leaky g_key_system_uuid_manager =
@@ -264,10 +276,15 @@ bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
   return media_drm_bridge->SetSecurityLevel(security_level);
 }
 
-//static
+// static
 void MediaDrmBridge::AddKeySystemUuidMapping(const std::string& key_system,
                                              const std::vector<uint8>& uuid) {
   g_key_system_uuid_manager.Get().AddMapping(key_system, uuid);
+}
+
+// static
+std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
+  return g_key_system_uuid_manager.Get().GetPlatformKeySystemNames();
 }
 
 // static
