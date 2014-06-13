@@ -238,31 +238,40 @@ function checkElementDisplayed(el, isDisplayed) {
 
 function getCddTemplate(printerId) {
   return {
-    "printerId": printerId,
-    "capabilities": {
-      "version": "1.0",
-      "printer": {
-        "supported_content_type": [{"content_type": "application/pdf"}],
-        "collate": {},
-        "color": {
-          "option": [
-            {"is_default": true, "type": "STANDARD_COLOR"},
-            {"type": "STANDARD_MONOCHROME"}
+    printerId: printerId,
+    capabilities: {
+      version: '1.0',
+      printer: {
+        supported_content_type: [{content_type: 'application/pdf'}],
+        collate: {},
+        color: {
+          option: [
+            {type: 'STANDARD_COLOR', is_default: true},
+            {type: 'STANDARD_MONOCHROME'}
           ]
         },
-        "copies": {},
-        "duplex": {
-          "option": [
-            {"is_default": true, "type": "NO_DUPLEX"},
-            {"type": "LONG_EDGE"},
-            {"type": "SHORT_EDGE"}
+        copies: {},
+        duplex: {
+          option: [
+            {type: 'NO_DUPLEX', is_default: true},
+            {type: 'LONG_EDGE'},
+            {type: 'SHORT_EDGE'}
           ]
         },
-        "page_orientation": {
-          "option": [
-            {"is_default": true, "type": "PORTRAIT"},
-            {"type": "LANDSCAPE"},
-            {"type": "AUTO"}
+        page_orientation: {
+          option: [
+            {type: 'PORTRAIT', is_default: true},
+            {type: 'LANDSCAPE'},
+            {type: 'AUTO'}
+          ]
+        },
+        media_size: {
+          option: [
+            { name: 'NA_LETTER',
+              width_microns: 215900,
+              height_microns: 279400,
+              is_default: true
+            }
           ]
         }
       }
@@ -352,8 +361,9 @@ TEST_F('PrintPreviewWebUITest',
   checkSectionVisible($('other-options-settings'), false);
 });
 
-// When the source is 'HTML', we always hide the fit to page option.
-TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
+// When the source is 'HTML', we always hide the fit to page option and show
+// media size option.
+TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   var initialSettingsSetEvent =
       new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
@@ -372,11 +382,12 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
   checkElementDisplayed(
       $('other-options-settings').querySelector('.fit-to-page-container'),
       false);
+  checkSectionVisible($('media-size-settings'), true);
 });
 
 // When the source is "PDF", depending on the selected destination printer, we
-// show/hide the fit to page option.
-TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
+// show/hide the fit to page option and hide media size selection.
+TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
 
   var initialSettingsSetEvent =
@@ -400,6 +411,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
   expectTrue(
       $('other-options-settings').querySelector('.fit-to-page-checkbox').
           checked);
+  checkSectionVisible($('media-size-settings'), false);
 });
 
 // When the print scaling is disabled for the source "PDF", we show the fit

@@ -125,6 +125,7 @@ cr.define('print_preview', function() {
     this.mediaSize_ = new print_preview.ticket_items.MediaSize(
         this.appState_,
         this.destinationStore_,
+        this.documentInfo_,
         this.marginsType_,
         this.customMargins_);
 
