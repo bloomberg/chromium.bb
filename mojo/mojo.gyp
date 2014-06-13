@@ -139,6 +139,7 @@
       ],
     },
     {
+      # GN version: //mojo/system
       'target_name': 'mojo_system_impl',
       'type': '<(component)',
       'dependencies': [
@@ -315,6 +316,7 @@
       ],
     },
     {
+      # GN version: //mojo/common
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
       'defines': [
@@ -386,6 +388,7 @@
       ],
     },
     {
+      # GN version: //mojo/environment:chromium
       'target_name': 'mojo_environment_chromium',
       'type': 'static_library',
       'dependencies': [
@@ -404,6 +407,7 @@
       ],
     },
     {
+      # GN version: //mojo/environment:chromium_impl
       'target_name': 'mojo_environment_chromium_impl',
       'type': '<(component)',
       'defines': [
@@ -423,6 +427,7 @@
       ],
     },
     {
+      # GN version: //mojo/service_manager
       'target_name': 'mojo_service_manager',
       'type': '<(component)',
       'defines': [
