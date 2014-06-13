@@ -78,11 +78,16 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
                                   bool* unknown_encoding) {
   if (unknown_encoding)
     *unknown_encoding = false;
+
+  // Get name for debugging.
+  std::string name;
+  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
+
   std::string hex_ssid;
   properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
-    NET_LOG_ERROR("GetSSIDFromProperties", "No HexSSID set.");
+    NET_LOG_DEBUG("GetSSIDFromProperties: No HexSSID set.", name);
     return std::string();
   }
 
@@ -91,11 +96,14 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
     NET_LOG_DEBUG(
-        "GetSSIDFromProperties",
-        base::StringPrintf("%s, SSID: %s", hex_ssid.c_str(), ssid.c_str()));
+        "GetSSIDFromProperties: " +
+            base::StringPrintf("%s, SSID: %s", hex_ssid.c_str(), ssid.c_str()),
+        name);
   } else {
-    NET_LOG_ERROR("GetSSIDFromProperties",
-                  base::StringPrintf("Error processing: %s", hex_ssid.c_str()));
+    NET_LOG_ERROR(
+        "GetSSIDFromProperties: " +
+            base::StringPrintf("Error processing: %s", hex_ssid.c_str()),
+        name);
     return std::string();
   }
 
@@ -126,8 +134,9 @@ std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
   if (unknown_encoding)
     *unknown_encoding = true;
   NET_LOG_DEBUG(
-      "GetSSIDFromProperties",
-      base::StringPrintf("Unrecognized Encoding=%s", encoding.c_str()));
+      "GetSSIDFromProperties: " +
+          base::StringPrintf("Unrecognized Encoding=%s", encoding.c_str()),
+      name);
   return ssid;
 }
 

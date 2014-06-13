@@ -21,7 +21,7 @@ void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   (*response)[kNetworkEventLogEntry] =
       chromeos::network_event_log::GetAsString(
           chromeos::network_event_log::OLDEST_FIRST,
-          "time,file,desc",
+          "time,file,level,desc",
           chromeos::network_event_log::kDefaultLogLevel,
           kMaxNetworkEventsForAboutSystem);
   callback.Run(response.get());
