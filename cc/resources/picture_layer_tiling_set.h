@@ -55,7 +55,7 @@ class CC_EXPORT PictureLayerTilingSet {
   void RemoveAllTiles();
 
   void UpdateTilePriorities(WhichTree tree,
-                            const gfx::Rect& visible_content_rect,
+                            const gfx::Rect& visible_layer_rect,
                             float layer_contents_scale,
                             double current_frame_time_in_seconds);
 

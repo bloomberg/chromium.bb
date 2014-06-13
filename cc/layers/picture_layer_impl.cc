@@ -138,10 +138,28 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(!needs_post_commit_initialization_);
-  gfx::Rect rect(visible_content_rect());
+
+  float max_contents_scale = MaximumTilingContentsScale();
+  gfx::Transform scaled_draw_transform = draw_transform();
+  scaled_draw_transform.Scale(SK_MScalar1 / max_contents_scale,
+                              SK_MScalar1 / max_contents_scale);
+  gfx::Size scaled_content_bounds =
+      gfx::ToCeiledSize(gfx::ScaleSize(content_bounds(), max_contents_scale));
+
+  gfx::Rect scaled_visible_content_rect =
+      gfx::ScaleToEnclosingRect(visible_content_rect(), max_contents_scale);
+  scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
 
   SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  shared_quad_state->SetAll(scaled_draw_transform,
+                            scaled_content_bounds,
+                            scaled_visible_content_rect,
+                            draw_properties().clip_rect,
+                            draw_properties().is_clipped,
+                            draw_properties().opacity,
+                            blend_mode());
+
+  gfx::Rect rect = scaled_visible_content_rect;
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
@@ -161,7 +179,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     gfx::Size texture_size = rect.size();
     gfx::RectF texture_rect = gfx::RectF(texture_size);
     gfx::Rect quad_content_rect = rect;
-    float contents_scale = contents_scale_x();
 
     scoped_ptr<PictureDrawQuad> quad = PictureDrawQuad::Create();
     quad->SetNew(shared_quad_state,
@@ -172,7 +189,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  texture_size,
                  RGBA_8888,
                  quad_content_rect,
-                 contents_scale,
+                 max_contents_scale,
                  pile_);
     quad_sink->Append(quad.PassAs<DrawQuad>());
     append_quads_data->num_missing_tiles++;
@@ -183,7 +200,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(
-        tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
+             tilings_.get(), max_contents_scale, rect, ideal_contents_scale_);
          iter;
          ++iter) {
       SkColor color;
@@ -203,7 +220,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         } else if (iter->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION) {
           color = DebugColors::LowResTileBorderColor();
           width = DebugColors::LowResTileBorderWidth(layer_tree_impl());
-        } else if (iter->contents_scale() > contents_scale_x()) {
+        } else if (iter->contents_scale() > max_contents_scale) {
           color = DebugColors::ExtraHighResTileBorderColor();
           width = DebugColors::ExtraHighResTileBorderWidth(layer_tree_impl());
         } else {
@@ -235,7 +252,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   size_t missing_tile_count = 0u;
   size_t on_demand_missing_tile_count = 0u;
   for (PictureLayerTilingSet::CoverageIterator iter(
-      tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
+           tilings_.get(), max_contents_scale, rect, ideal_contents_scale_);
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
@@ -372,8 +389,15 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 void PictureLayerImpl::UpdateTilePriorities() {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
-  DCHECK(!needs_post_commit_initialization_);
-  CHECK(should_update_tile_priorities_);
+  DoPostCommitInitializationIfNeeded();
+  UpdateIdealScales();
+  // TODO(sohanjg): Avoid needlessly update priorities when syncing to a
+  // non-updated tree which will then be updated immediately afterwards.
+  should_update_tile_priorities_ = true;
+  if (CanHaveTilings()) {
+    ManageTilings(draw_properties().screen_space_transform_is_animating,
+                  draw_properties().maximum_animation_contents_scale);
+  }
 
   if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
@@ -413,12 +437,15 @@ void PictureLayerImpl::UpdateTilePriorities() {
     }
   }
 
+  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
+      visible_rect_in_content_space, 1.f / contents_scale_x());
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-
+  // TODO(sohanjg): Passing MaximumContentsScale as layer contents scale
+  // in UpdateTilePriorities is wrong and should be ideal contents scale.
   tilings_->UpdateTilePriorities(tree,
-                                 visible_rect_in_content_space,
-                                 contents_scale_x(),
+                                 visible_layer_rect,
+                                 MaximumTilingContentsScale(),
                                  current_frame_time_in_seconds);
 
   if (layer_tree_impl()->IsPendingTree())
@@ -456,74 +483,6 @@ void PictureLayerImpl::ReleaseResources() {
   // the tilings have not been managed, request an update draw properties
   // to force tilings to get managed.
   layer_tree_impl()->set_needs_update_draw_properties();
-}
-
-void PictureLayerImpl::CalculateContentsScale(
-    float ideal_contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    float maximum_animation_contents_scale,
-    bool animating_transform_to_screen,
-    float* contents_scale_x,
-    float* contents_scale_y,
-    gfx::Size* content_bounds) {
-  DoPostCommitInitializationIfNeeded();
-
-  // This function sets valid raster scales and manages tilings, so tile
-  // priorities can now be updated.
-  should_update_tile_priorities_ = true;
-
-  if (!CanHaveTilings()) {
-    ideal_page_scale_ = page_scale_factor;
-    ideal_device_scale_ = device_scale_factor;
-    ideal_contents_scale_ = ideal_contents_scale;
-    ideal_source_scale_ =
-        ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
-    *contents_scale_x = ideal_contents_scale_;
-    *contents_scale_y = ideal_contents_scale_;
-    *content_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(),
-                                                       ideal_contents_scale_,
-                                                       ideal_contents_scale_));
-    return;
-  }
-
-  float min_contents_scale = MinimumContentsScale();
-  DCHECK_GT(min_contents_scale, 0.f);
-  float min_page_scale = layer_tree_impl()->min_page_scale_factor();
-  DCHECK_GT(min_page_scale, 0.f);
-  float min_device_scale = 1.f;
-  float min_source_scale =
-      min_contents_scale / min_page_scale / min_device_scale;
-
-  float ideal_page_scale = page_scale_factor;
-  float ideal_device_scale = device_scale_factor;
-  float ideal_source_scale =
-      ideal_contents_scale / ideal_page_scale / ideal_device_scale;
-
-  ideal_contents_scale_ = std::max(ideal_contents_scale, min_contents_scale);
-  ideal_page_scale_ = ideal_page_scale;
-  ideal_device_scale_ = ideal_device_scale;
-  ideal_source_scale_ = std::max(ideal_source_scale, min_source_scale);
-
-  ManageTilings(animating_transform_to_screen,
-                maximum_animation_contents_scale);
-
-  // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
-  // There are (usually) several tilings at different scales.  However, the
-  // content bounds is the (integer!) space in which quads are generated.
-  // In order to guarantee that we can fill this integer space with any set of
-  // tilings (and then map back to floating point texture coordinates), the
-  // contents scale must be at least as large as the largest of the tilings.
-  float max_contents_scale = min_contents_scale;
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    const PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    max_contents_scale = std::max(max_contents_scale, tiling->contents_scale());
-  }
-
-  *contents_scale_x = max_contents_scale;
-  *contents_scale_y = max_contents_scale;
-  *content_bounds = gfx::ToCeiledSize(
-      gfx::ScaleSize(bounds(), max_contents_scale, max_contents_scale));
 }
 
 skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
@@ -750,7 +709,7 @@ void PictureLayerImpl::SetIsMask(bool is_mask) {
 
 ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
-  float scale = contents_scale_x();
+  float scale = MaximumTilingContentsScale();
   PictureLayerTilingSet::CoverageIterator iter(
       tilings_.get(), scale, content_rect, ideal_contents_scale_);
 
@@ -1319,6 +1278,44 @@ void PictureLayerImpl::SanityCheckTilingState() const {
 #endif
 }
 
+float PictureLayerImpl::MaximumTilingContentsScale() const {
+  float max_contents_scale = MinimumContentsScale();
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    const PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    max_contents_scale = std::max(max_contents_scale, tiling->contents_scale());
+  }
+  return max_contents_scale;
+}
+
+void PictureLayerImpl::UpdateIdealScales() {
+  if (!CanHaveTilings()) {
+    ideal_page_scale_ = draw_properties().page_scale_factor;
+    ideal_device_scale_ = draw_properties().device_scale_factor;
+    ideal_contents_scale_ = draw_properties().ideal_contents_scale;
+    ideal_source_scale_ =
+        ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
+    return;
+  }
+
+  float min_contents_scale = MinimumContentsScale();
+  DCHECK_GT(min_contents_scale, 0.f);
+  float min_page_scale = layer_tree_impl()->min_page_scale_factor();
+  DCHECK_GT(min_page_scale, 0.f);
+  float min_device_scale = 1.f;
+  float min_source_scale =
+      min_contents_scale / min_page_scale / min_device_scale;
+
+  float ideal_page_scale = draw_properties().page_scale_factor;
+  float ideal_device_scale = draw_properties().device_scale_factor;
+  float ideal_source_scale = draw_properties().ideal_contents_scale /
+                             ideal_page_scale / ideal_device_scale;
+  ideal_contents_scale_ =
+      std::max(draw_properties().ideal_contents_scale, min_contents_scale);
+  ideal_page_scale_ = draw_properties().page_scale_factor;
+  ideal_device_scale_ = draw_properties().device_scale_factor;
+  ideal_source_scale_ = std::max(ideal_source_scale, min_source_scale);
+}
+
 void PictureLayerImpl::GetDebugBorderProperties(
     SkColor* color,
     float* width) const {
@@ -1330,7 +1327,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   const_cast<PictureLayerImpl*>(this)->DoPostCommitInitializationIfNeeded();
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
-  state->SetDouble("geometry_contents_scale", contents_scale_x());
+  state->SetDouble("geometry_contents_scale", MaximumTilingContentsScale());
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());

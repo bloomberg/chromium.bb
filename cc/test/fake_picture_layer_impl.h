@@ -48,6 +48,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::SanityCheckTilingState;
 
+  using PictureLayerImpl::UpdateIdealScales;
+  using PictureLayerImpl::MaximumTilingContentsScale;
+  using PictureLayerImpl::ManageTilings;
+
   void SetNeedsPostCommitInitialization() {
     needs_post_commit_initialization_ = true;
   }
@@ -89,6 +93,15 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);
   void ResetAllTilesPriorities();
+
+  void ScaleAndManageTilings(bool animating_transform_to_screen,
+                             float maximum_animation_contents_scale) {
+    UpdateIdealScales();
+    if (CanHaveTilings()) {
+      ManageTilings(animating_transform_to_screen,
+                    maximum_animation_contents_scale);
+    }
+  }
 
  protected:
   FakePictureLayerImpl(

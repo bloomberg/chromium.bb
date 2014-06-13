@@ -96,14 +96,6 @@ class CC_EXPORT PictureLayerImpl
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
-  virtual void CalculateContentsScale(float ideal_contents_scale,
-                                      float device_scale_factor,
-                                      float page_scale_factor,
-                                      float maximum_animation_contents_scale,
-                                      bool animating_transform_to_screen,
-                                      float* contents_scale_x,
-                                      float* contents_scale_y,
-                                      gfx::Size* content_bounds) OVERRIDE;
   virtual skia::RefPtr<SkPicture> GetPicture() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
@@ -178,6 +170,9 @@ class CC_EXPORT PictureLayerImpl
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
   virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;
+
+  virtual void UpdateIdealScales();
+  float MaximumTilingContentsScale() const;
 
   PictureLayerImpl* twin_layer_;
 

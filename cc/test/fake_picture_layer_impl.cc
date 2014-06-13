@@ -19,6 +19,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
   pile_ = pile;
   CHECK(pile->tiling_rect().origin() == gfx::Point());
   SetBounds(pile_->tiling_rect().size());
+  SetContentBounds(pile_->tiling_rect().size());
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
@@ -28,6 +29,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
     : PictureLayerImpl(tree_impl, id), append_quads_count_(0) {
   pile_ = pile;
   SetBounds(layer_bounds);
+  SetContentBounds(layer_bounds);
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)

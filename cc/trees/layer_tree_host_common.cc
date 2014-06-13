@@ -81,7 +81,7 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
   minimal_surface_rect.Intersect(layer_rect_in_target_space);
 
   if (minimal_surface_rect.IsEmpty())
-      return gfx::Rect();
+    return gfx::Rect();
 
   // Project the corners of the target surface rect into the layer space.
   // This bounding rectangle may be larger than it needs to be (being
@@ -916,6 +916,20 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   }
 
   return next_scroll_compensation_matrix;
+}
+
+template <typename LayerType>
+static inline void UpdateLayerScaleDrawProperties(
+    LayerType* layer,
+    float ideal_contents_scale,
+    float maximum_animation_contents_scale,
+    float page_scale_factor,
+    float device_scale_factor) {
+  layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
+  layer->draw_properties().maximum_animation_contents_scale =
+      maximum_animation_contents_scale;
+  layer->draw_properties().page_scale_factor = page_scale_factor;
+  layer->draw_properties().device_scale_factor = device_scale_factor;
 }
 
 template <typename LayerType>
@@ -1759,6 +1773,40 @@ static void CalculateDrawPropertiesInternal(
           : 1.f,
       combined_maximum_animation_contents_scale,
       animating_transform_to_screen);
+
+  UpdateLayerScaleDrawProperties(
+      layer,
+      ideal_contents_scale,
+      combined_maximum_animation_contents_scale,
+      data_from_ancestor.in_subtree_of_page_scale_application_layer
+          ? globals.page_scale_factor
+          : 1.f,
+      globals.device_scale_factor);
+
+  LayerType* mask_layer = layer->mask_layer();
+  if (mask_layer) {
+    UpdateLayerScaleDrawProperties(
+        mask_layer,
+        ideal_contents_scale,
+        combined_maximum_animation_contents_scale,
+        data_from_ancestor.in_subtree_of_page_scale_application_layer
+            ? globals.page_scale_factor
+            : 1.f,
+        globals.device_scale_factor);
+  }
+
+  LayerType* replica_mask_layer =
+      layer->replica_layer() ? layer->replica_layer()->mask_layer() : NULL;
+  if (replica_mask_layer) {
+    UpdateLayerScaleDrawProperties(
+        replica_mask_layer,
+        ideal_contents_scale,
+        combined_maximum_animation_contents_scale,
+        data_from_ancestor.in_subtree_of_page_scale_application_layer
+            ? globals.page_scale_factor
+            : 1.f,
+        globals.device_scale_factor);
+  }
 
   // The draw_transform that gets computed below is effectively the layer's
   // draw_transform, unless the layer itself creates a render_surface. In that

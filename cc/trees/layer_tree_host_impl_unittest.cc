@@ -6530,12 +6530,14 @@ TEST_F(LayerTreeHostImplTest, UpdateTilesForMasksWithNoVisibleContent) {
       FakePictureLayerImpl::Create(host_impl_->pending_tree(), 2);
 
   layer_with_mask->SetBounds(bounds);
+  layer_with_mask->SetContentBounds(bounds);
 
   scoped_ptr<FakePictureLayerImpl> mask =
       FakePictureLayerImpl::Create(host_impl_->pending_tree(), 3);
 
   mask->SetIsMask(true);
   mask->SetBounds(bounds);
+  mask->SetContentBounds(bounds);
 
   FakePictureLayerImpl* pending_mask_content = mask.get();
   layer_with_mask->SetMaskLayer(mask.PassAs<LayerImpl>());
@@ -6544,6 +6546,7 @@ TEST_F(LayerTreeHostImplTest, UpdateTilesForMasksWithNoVisibleContent) {
       FakePictureLayerImpl::Create(host_impl_->pending_tree(), 4);
 
   child_of_layer_with_mask->SetBounds(bounds);
+  child_of_layer_with_mask->SetContentBounds(bounds);
   child_of_layer_with_mask->SetDrawsContent(true);
 
   layer_with_mask->AddChild(child_of_layer_with_mask.PassAs<LayerImpl>());

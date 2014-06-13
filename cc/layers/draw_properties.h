@@ -36,7 +36,11 @@ struct CC_EXPORT DrawProperties {
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
         num_render_surfaces_added(0),
-        last_drawn_render_surface_layer_list_id(0) {}
+        last_drawn_render_surface_layer_list_id(0),
+        ideal_contents_scale(0.f),
+        maximum_animation_contents_scale(0.f),
+        page_scale_factor(0.f),
+        device_scale_factor(0.f) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -132,6 +136,21 @@ struct CC_EXPORT DrawProperties {
   // or the layer doesn't contribute anything, then this ID will be either out
   // of date or 0.
   int last_drawn_render_surface_layer_list_id;
+
+  // The scale at which content for the layer should be rastered in order to be
+  // perfectly crisp.
+  float ideal_contents_scale;
+
+  // The maximum scale during the layers current animation at which content
+  // should be rastered at to be crisp.
+  float maximum_animation_contents_scale;
+
+  // The page scale factor that is applied to the layer. Since some layers may
+  // have page scale applied and others not, this may differ between layers.
+  float page_scale_factor;
+
+  // The device scale factor that is applied to the layer.
+  float device_scale_factor;
 };
 
 }  // namespace cc
