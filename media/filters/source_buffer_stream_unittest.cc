@@ -3562,6 +3562,36 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedBuffers("90K 121 151");
 }
 
+TEST_F(SourceBufferStreamTest, Remove_GapAtBeginningOfMediaSegment) {
+  Seek(0);
+
+  // Append a media segment that has a gap at the beginning of it.
+  NewSegmentAppend(base::TimeDelta::FromMilliseconds(0),
+                   "30K 60 90 120K 150");
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  // Remove the gap that doesn't contain any buffers.
+  RemoveInMs(0, 10, 180);
+  CheckExpectedRangesByTimestamp("{ [10,180) }");
+
+  // Verify we still get the first buffer still since only part of
+  // the gap was removed.
+  // TODO(acolwell/wolenetz): Consider not returning a buffer at this
+  // point since the current seek position has been explicitly
+  // removed but didn't happen to remove any buffers.
+  // http://crbug.com/384016
+  CheckExpectedBuffers("30K");
+
+  // Remove a range that includes the first GOP.
+  RemoveInMs(0, 60, 180);
+
+  // Verify that no buffer is returned because the current buffer
+  // position has been removed.
+  CheckNoNextBuffer();
+
+  CheckExpectedRangesByTimestamp("{ [120,180) }");
+}
+
 TEST_F(SourceBufferStreamTest, Text_Append_SingleRange) {
   SetTextStream();
   NewSegmentAppend("0K 500K 1000K");
