@@ -1067,12 +1067,12 @@ crbug.com/383495 svg/filters/feTurbulence-tiled.svg [ NeedsRebaseline ]
 # Started being flaky in r175790.
 crbug.com/361045 inspector/layers/tracing-layer-tree.html [ Pass Failure ]
 
-# Started failing w/ Skia roll to b0b1aa0:679426c (chromium r276705).
-# (suppressing until I can triage w/ the skia folks).
-Bug(dpranke) virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Failure ]
-
 crbug.com/383596 fast/js/implicit-call-with-global-reentry.html [ Failure ]
 crbug.com/383596 fast/js/reserved-words-as-property.html [ Failure ]
 crbug.com/383596 inspector-protocol/runtime/runtime-getProperties.html [ Failure ]
 crbug.com/383596 inspector/console/console-eval-scoped.html [ Failure ]
 crbug.com/383596 inspector/console/console-object-preview-accessors.html [ Failure ]
+
+crbug.com/384564 crypto/rsassa-pkcs1-v1_5-generate-key.html [ Pass Timeout ]
+
+crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]

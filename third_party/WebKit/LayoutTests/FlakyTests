@@ -622,7 +622,7 @@ Bug(gardener) [ Release Linux ] inspector/console/console-object-preview.html [ 
 Bug(gardener) [ Release Linux ] inspector/console/console-repeat-count.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/console/console-stack-overflow.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/console/console-tests.html [ Failure Pass ]
-Bug(gardener) [ Release Win7 ] inspector/console/console-viewport-selection.html [ Failure Pass ]
+Bug(gardener) [ Win7 ] inspector/console/console-viewport-selection.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/device-emulation/device-emulation-restore.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/elements/event-listeners-about-blank.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] inspector/elements/iframe-load-event.html [ Failure Pass ]
