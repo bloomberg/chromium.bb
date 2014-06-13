@@ -43,8 +43,10 @@ BaseIdentityInternalsWebUITest.prototype = {
    * @return {Date} Expiration date of the token.
    */
   getExpirationTime: function(tokenEntry) {
+    // Full-date format has 'at' between date and time in en-US, but
+    // ECMAScript's Date.parse cannot grok it.
     return Date.parse(tokenEntry.querySelector('.expiration-time')
-        .innerText);
+        .innerText.replace(' at ', ' '));
   },
 
   /**
@@ -162,9 +164,11 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
       tokenListEntries[0].querySelector('.access-token').innerText);
   expectEquals(this.getTokenStatus(tokenListEntries[0]),
       tokenListEntries[0].querySelector('.token-status').innerText);
+  // Full-date format has 'at' between date and time in en-US, but
+  // ECMAScript's Date.parse cannot grok it.
   expectEquals(this.getExpirationTime(tokenListEntries[0]),
       Date.parse(tokenListEntries[0].querySelector('.expiration-time')
-          .innerText));
+          .innerText.replace(' at ', ' ')));
   var scopes = tokenListEntries[0].querySelector('.scope-list')
       .innerHTML.split('<br>');
   var actualScopes = this.getScopes(tokenListEntries[0]);

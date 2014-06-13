@@ -67,7 +67,10 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       // better, but it leads to an empty set error in Thai.
       // "$ALetter   = [[\\p{script=%s}] & [\\p{Word_Break = ALetter}]];"
       "$ALetter      = [\\p{script=%s}%s];"
-      "$MidNumLet    = [\\p{Word_Break = MidNumLet}];"
+      // U+0027 (single quote/apostrophe) is not in MidNumLet any more
+      // in UAX 29 rev 21 or later. For our purpose, U+0027
+      // has to be treated as MidNumLet. ( http://crbug.com/364072 )
+      "$MidNumLet    = [\\p{Word_Break = MidNumLet} \\u0027];"
       "$MidLetter    = [\\p{Word_Break = MidLetter}%s];"
       "$MidNum       = [\\p{Word_Break = MidNum}];"
       "$Numeric      = [\\p{Word_Break = Numeric}];"
@@ -153,7 +156,8 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       "$ALetterPlus  = [$ALetter [$dictionary-$Extend-$Control]];";
   const char kWithoutDictionary[] = "$ALetterPlus  = $ALetter;";
   const char* aletter_plus = kWithoutDictionary;
-  if (script_code_ == USCRIPT_HANGUL || script_code_ == USCRIPT_THAI)
+  if (script_code_ == USCRIPT_HANGUL || script_code_ == USCRIPT_THAI ||
+      script_code_ == USCRIPT_LAO || script_code_ == USCRIPT_KHMER)
     aletter_plus = kWithDictionary;
 
   // Treat numbers as word characters except for Arabic and Hebrew.

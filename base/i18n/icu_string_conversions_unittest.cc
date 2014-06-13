@@ -186,13 +186,6 @@ static const struct {
    true,
    L"\x05E9\x05C1\x05B8\x05DC\x05D5\x05B9\x05DD",
    NULL},
-  // Hindi Devanagari (ISCII)
-  {"iscii-dev",
-   "\xEF\x42" "\xC6\xCC\xD7\xE8\xB3\xDA\xCF",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x0928\x092E\x0938\x094D\x0915\x093E\x0930",
-   NULL},
   // Korean (EUC)
   {"euc-kr",
    "\xBE\xC8\xB3\xE7\xC7\xCF\xBC\xBC\xBF\xE4",
@@ -202,10 +195,10 @@ static const struct {
    NULL},
   // Japanese (EUC)
   {"euc-jp",
-   "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF\xB0\xEC\x8F\xB0\xA1\x8E\xA6",
+   "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF\xB0\xEC\x8E\xA6",
    OnStringConversionError::FAIL,
    true,
-   L"\x3053\x3093\x306B\x3061\x306F\x4E00\x4E02\xFF66",
+   L"\x3053\x3093\x306B\x3061\x306F\x4E00\xFF66",
    NULL},
   // Japanese (ISO-2022)
   {"iso-2022-jp",
@@ -237,13 +230,6 @@ static const struct {
    true,
    L"\x0E2A\x0E27\x0E31\x0E2A\x0E14\x0E35"
    L"\x0E04\x0E23\x0e31\x0E1A",
-   NULL},
-  // Empty text
-  {"iscii-dev",
-   "",
-   OnStringConversionError::FAIL,
-   true,
-   L"",
    NULL},
 };
 

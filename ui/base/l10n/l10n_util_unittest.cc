@@ -357,10 +357,15 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
   base::string16 result =
       l10n_util::GetDisplayNameForLocale("zh-CN", "en", false);
-  EXPECT_EQ(ASCIIToUTF16("Chinese (Simplified Han)"), result);
+  EXPECT_EQ(ASCIIToUTF16("Chinese (Simplified)"), result);
 
   result = l10n_util::GetDisplayNameForLocale("zh-TW", "en", false);
-  EXPECT_EQ(ASCIIToUTF16("Chinese (Traditional Han)"), result);
+  EXPECT_EQ(ASCIIToUTF16("Chinese (Traditional)"), result);
+
+  // tl and fil are not identical to be strict, but we treat them as
+  // synonyms.
+  result = l10n_util::GetDisplayNameForLocale("tl", "en", false);
+  EXPECT_EQ(l10n_util::GetDisplayNameForLocale("fil", "en", false), result);
 
   result = l10n_util::GetDisplayNameForLocale("pt-BR", "en", false);
   EXPECT_EQ(ASCIIToUTF16("Portuguese (Brazil)"), result);
