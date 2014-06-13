@@ -161,9 +161,11 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(AccessibilityFeatureaApiTestInstantiatePermission,
-                        AccessibilityFeaturesApiTest,
-                        testing::Bool());
+// Disabled now as this test is being flaky, see http://crbug.com/384266.
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_AccessibilityFeatureaApiTestInstantiatePermission,
+    AccessibilityFeaturesApiTest,
+    testing::Bool());
 
 // Tests that an extension with read permission can read accessibility features
 // state, while an extension that doesn't have the permission cannot.
