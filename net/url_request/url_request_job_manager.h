@@ -5,7 +5,6 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_JOB_MANAGER_H_
 #define NET_URL_REQUEST_URL_REQUEST_JOB_MANAGER_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -23,11 +22,8 @@ namespace net {
 //
 // MULTI-THREADING NOTICE:
 //   URLRequest is designed to have all consumers on a single thread, and
-//   so no attempt is made to support ProtocolFactory or Interceptor instances
-//   being registered/unregistered or in any way poked on multiple threads.
-//   However, we do support checking for supported schemes FROM ANY THREAD
-//   (i.e., it is safe to call SupportsScheme on any thread).
-//
+//   so no attempt is made to support Interceptor instances being
+//   registered/unregistered or in any way poked on multiple threads.
 class URLRequestJobManager {
  public:
   // Returns the singleton instance.
@@ -52,23 +48,14 @@ class URLRequestJobManager {
   URLRequestJob* MaybeInterceptResponse(
       URLRequest* request, NetworkDelegate* network_delegate) const;
 
-  // Returns true if there is a protocol factory registered for the given
-  // scheme.  Note: also returns true if there is a built-in handler for the
-  // given scheme.
-  bool SupportsScheme(const std::string& scheme) const;
-
-  // Register a protocol factory associated with the given scheme.  The factory
-  // parameter may be null to clear any existing association.  Returns the
-  // previously registered protocol factory if any.
-  URLRequest::ProtocolFactory* RegisterProtocolFactory(
-      const std::string& scheme, URLRequest::ProtocolFactory* factory);
+  // Returns true if the manager has a built-in handler for |scheme|.
+  static bool SupportsScheme(const std::string& scheme);
 
   // Register/unregister a request interceptor.
   void RegisterRequestInterceptor(URLRequest::Interceptor* interceptor);
   void UnregisterRequestInterceptor(URLRequest::Interceptor* interceptor);
 
  private:
-  typedef std::map<std::string, URLRequest::ProtocolFactory*> FactoryMap;
   typedef std::vector<URLRequest::Interceptor*> InterceptorList;
   friend struct DefaultSingletonTraits<URLRequestJobManager>;
 
@@ -105,7 +92,6 @@ class URLRequestJobManager {
 #endif
 
   mutable base::Lock lock_;
-  FactoryMap factories_;
   InterceptorList interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestJobManager);

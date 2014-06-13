@@ -52,6 +52,7 @@ class TestURLRequestInterceptor : public URLRequestInterceptor {
 TEST(URLRequestFilter, BasicMatching) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
+  URLRequestFilter* filter = URLRequestFilter::GetInstance();
 
   GURL url_1("http://foo.com/");
   TestURLRequest request_1(
@@ -62,91 +63,82 @@ TEST(URLRequestFilter, BasicMatching) {
       url_2, DEFAULT_PRIORITY, &delegate, &request_context);
 
   // Check AddUrlHandler checks for invalid URLs.
-  EXPECT_FALSE(URLRequestFilter::GetInstance()->AddUrlHandler(GURL(),
-                                                              &FactoryA));
+  EXPECT_FALSE(filter->AddUrlHandler(GURL(), &FactoryA));
 
   // Check URL matching.
-  URLRequestFilter::GetInstance()->ClearHandlers();
-  EXPECT_TRUE(URLRequestFilter::GetInstance()->AddUrlHandler(url_1,
-                                                             &FactoryA));
+  filter->ClearHandlers();
+  EXPECT_TRUE(filter->AddUrlHandler(url_1, &FactoryA));
   {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, NULL, url_1.scheme());
+    scoped_refptr<URLRequestJob> found =
+        filter->MaybeInterceptRequest(&request_1, NULL);
     EXPECT_EQ(job_a, found);
     EXPECT_TRUE(job_a != NULL);
     job_a = NULL;
   }
-  EXPECT_EQ(URLRequestFilter::GetInstance()->hit_count(), 1);
+  EXPECT_EQ(filter->hit_count(), 1);
 
   // Check we don't match other URLs.
-  EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_2, NULL, url_2.scheme()) == NULL);
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_2, NULL) == NULL);
+  EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove URL matching.
-  URLRequestFilter::GetInstance()->RemoveUrlHandler(url_1);
-  EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_1, NULL, url_1.scheme()) == NULL);
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  filter->RemoveUrlHandler(url_1);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_1, NULL) == NULL);
+  EXPECT_EQ(1, filter->hit_count());
 
   // Check hostname matching.
-  URLRequestFilter::GetInstance()->ClearHandlers();
-  EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  URLRequestFilter::GetInstance()->AddHostnameHandler(url_1.scheme(),
-                                                      url_1.host(),
-                                                      &FactoryB);
+  filter->ClearHandlers();
+  EXPECT_EQ(0, filter->hit_count());
+  filter->AddHostnameHandler(url_1.scheme(), url_1.host(), &FactoryB);
   {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, NULL, url_1.scheme());
+    scoped_refptr<URLRequestJob> found =
+        filter->MaybeInterceptRequest(&request_1, NULL);
     EXPECT_EQ(job_b, found);
     EXPECT_TRUE(job_b != NULL);
     job_b = NULL;
   }
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_EQ(1, filter->hit_count());
 
   // Check we don't match other hostnames.
-  EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_2, NULL, url_2.scheme()) == NULL);
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_2, NULL) == NULL);
+  EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove hostname matching.
-  URLRequestFilter::GetInstance()->RemoveHostnameHandler(url_1.scheme(),
-                                                         url_1.host());
-  EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_1, NULL, url_1.scheme()) == NULL);
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  filter->RemoveHostnameHandler(url_1.scheme(), url_1.host());
+  EXPECT_TRUE(filter->MaybeInterceptRequest(&request_1, NULL) == NULL);
+  EXPECT_EQ(1, filter->hit_count());
 
-  // Check ProtocolHandler hostname matching.
-  URLRequestFilter::GetInstance()->ClearHandlers();
-  EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+  // Check URLRequestInterceptor hostname matching.
+  filter->ClearHandlers();
+  EXPECT_EQ(0, filter->hit_count());
+  filter->AddHostnameInterceptor(
       url_1.scheme(), url_1.host(),
       scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, NULL, url_1.scheme());
+    scoped_refptr<URLRequestJob> found =
+        filter->MaybeInterceptRequest(&request_1, NULL);
     EXPECT_EQ(job_c, found);
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
   }
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_EQ(1, filter->hit_count());
 
-  // Check ProtocolHandler URL matching.
-  URLRequestFilter::GetInstance()->ClearHandlers();
-  EXPECT_EQ(0, URLRequestFilter::GetInstance()->hit_count());
-  URLRequestFilter::GetInstance()->AddUrlInterceptor(
+  // Check URLRequestInterceptor URL matching.
+  filter->ClearHandlers();
+  EXPECT_EQ(0, filter->hit_count());
+  filter->AddUrlInterceptor(
       url_2,
       scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
-    scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_2, NULL, url_2.scheme());
+    scoped_refptr<URLRequestJob> found =
+        filter->MaybeInterceptRequest(&request_2, NULL);
     EXPECT_EQ(job_c, found);
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
   }
-  EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
+  EXPECT_EQ(1, filter->hit_count());
 
-  URLRequestFilter::GetInstance()->ClearHandlers();
+  filter->ClearHandlers();
 }
 
 }  // namespace

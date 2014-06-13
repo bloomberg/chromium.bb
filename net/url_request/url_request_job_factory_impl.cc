@@ -6,10 +6,17 @@
 
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_manager.h"
 #include "url/gurl.h"
 
 namespace net {
+
+namespace {
+
+URLRequestInterceptor* g_interceptor_for_testing = NULL;
+
+}  // namespace
 
 URLRequestJobFactoryImpl::URLRequestJobFactoryImpl() {}
 
@@ -43,6 +50,13 @@ URLRequestJob* URLRequestJobFactoryImpl::MaybeCreateJobWithProtocolHandler(
     URLRequest* request,
     NetworkDelegate* network_delegate) const {
   DCHECK(CalledOnValidThread());
+  if (g_interceptor_for_testing) {
+    URLRequestJob* job = g_interceptor_for_testing->MaybeInterceptRequest(
+        request, network_delegate);
+    if (job)
+      return job;
+  }
+
   ProtocolHandlerMap::const_iterator it = protocol_handler_map_.find(scheme);
   if (it == protocol_handler_map_.end())
     return NULL;
@@ -78,6 +92,14 @@ bool URLRequestJobFactoryImpl::IsSafeRedirectTarget(
     return true;
   }
   return it->second->IsSafeRedirectTarget(location);
+}
+
+// static
+void URLRequestJobFactoryImpl::SetInterceptorForTesting(
+    URLRequestInterceptor* interceptor) {
+  DCHECK(!interceptor || !g_interceptor_for_testing);
+
+  g_interceptor_for_testing = interceptor;
 }
 
 }  // namespace net

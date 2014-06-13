@@ -15,6 +15,8 @@
 
 namespace net {
 
+class URLRequestInterceptor;
+
 class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
  public:
   URLRequestJobFactoryImpl();
@@ -36,7 +38,18 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
+  // For testing only.
+  friend class URLRequestFilter;
+
   typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
+
+  // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
+  // is given the chance to intercept any request before the corresponding
+  // ProtocolHandler, but after any other URLRequestJobFactories layered on top
+  // of the URLRequestJobFactoryImpl.
+  // If an interceptor is set, the old interceptor must be cleared before
+  // setting a new one.
+  static void SetInterceptorForTesting(URLRequestInterceptor* interceptor);
 
   ProtocolHandlerMap protocol_handler_map_;
 
