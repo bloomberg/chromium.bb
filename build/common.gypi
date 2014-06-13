@@ -2453,9 +2453,6 @@
       ['enable_one_click_signin==1', {
         'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
       }],
-      ['chromeos==1', {
-        'defines': ['OS_CHROMEOS=1'],
-      }],
       ['use_xi2_mt!=0 and use_x11==1', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],
       }],
@@ -2795,6 +2792,9 @@
       }],
       ['<(use_nss)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['USE_NSS=1'],
+      }],
+      ['<(chromeos)==1 and >(nacl_untrusted_build)==0', {
+        'defines': ['OS_CHROMEOS=1'],
       }],
       ['enable_wexit_time_destructors==1', {
         'conditions': [

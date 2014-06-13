@@ -320,13 +320,8 @@ TimeTicks TimeTicks::ThreadNow() {
 #endif
 }
 
-// NaCl IRT does not support the Chrome OS specific clock
-// ID. build/common.gypi sets OS_CHROMEOS without any other OS_*
-// macros for untrusted NaCl build so we need to check
-// __native_client__ explicitly.
-// TODO(hamaji): Do not specify OS_CHROMEOS for untrusted NaCl build
-// and remove !defined(__native_client__).
-#if defined(OS_CHROMEOS) && !defined(__native_client__)
+// Use the Chrome OS specific system-wide clock.
+#if defined(OS_CHROMEOS)
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
   uint64_t absolute_micro;
@@ -344,14 +339,14 @@ TimeTicks TimeTicks::NowFromSystemTraceTime() {
   return TimeTicks(absolute_micro);
 }
 
-#else  // !(defined(OS_CHROMEOS) && !defined(__native_client__))
+#else  // !defined(OS_CHROMEOS)
 
 // static
 TimeTicks TimeTicks::NowFromSystemTraceTime() {
   return HighResNow();
 }
 
-#endif  // defined(OS_CHROMEOS) && !defined(__native_client__)
+#endif  // defined(OS_CHROMEOS)
 
 #endif  // !OS_MACOSX
 
