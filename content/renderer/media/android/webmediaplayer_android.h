@@ -193,9 +193,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // RenderFrameObserver implementation.
   virtual void OnDestruct() OVERRIDE;
 
-  // Detach the player from its manager.
-  void Detach();
-
 #if defined(VIDEO_HOLE)
   // Calculate the boundary rectangle of the media player (i.e. location and
   // size of the video frame).

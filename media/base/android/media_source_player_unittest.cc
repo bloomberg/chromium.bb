@@ -73,7 +73,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                                   int height) OVERRIDE {}
   virtual MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE { return NULL; }
   virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
-  virtual void DestroyAllMediaPlayers() OVERRIDE {}
   virtual void RequestFullScreen(int player_id) OVERRIDE {}
 
   bool playback_completed() const {

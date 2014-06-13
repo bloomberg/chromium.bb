@@ -198,9 +198,6 @@ IPC_MESSAGE_ROUTED0(MediaPlayerMsg_PauseVideo)
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,
                     int /* player_id */)
 
-// Destroy all the players.
-IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
-
 // Initialize a media player object with the given type and player_id. The other
 // parameters are used depending on the type of player.
 //
@@ -210,13 +207,12 @@ IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
 //
 // demuxer_client_id: the demuxer associated with this player when initializing
 // a media source player.
-IPC_MESSAGE_ROUTED5(
-    MediaPlayerHostMsg_Initialize,
-    MediaPlayerHostMsg_Initialize_Type /* type */,
-    int /* player_id */,
-    GURL /* url */,
-    GURL /* first_party_for_cookies */,
-    int /* demuxer_client_id */)
+IPC_MESSAGE_ROUTED5(MediaPlayerHostMsg_Initialize,
+                    MediaPlayerHostMsg_Initialize_Type /* type */,
+                    int /* player_id */,
+                    GURL /* url */,
+                    GURL /* first_party_for_cookies */,
+                    int /* demuxer_client_id */)
 
 // Pause the player.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Pause,

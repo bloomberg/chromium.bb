@@ -129,9 +129,6 @@ bool MediaWebContentsObserver::OnMediaPlayerMessageReceived(
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyMediaPlayer,
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnDestroyPlayer)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyAllMediaPlayers,
-                        GetMediaPlayerManager(render_frame_host),
-                        BrowserMediaPlayerManager::DestroyAllMediaPlayers)
 #if defined(VIDEO_HOLE)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_NotifyExternalSurface,
                         GetMediaPlayerManager(render_frame_host),

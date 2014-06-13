@@ -63,9 +63,6 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Returns the player with the specified id.
   virtual MediaPlayerAndroid* GetPlayer(int player_id) = 0;
 
-  // Release all the players managed by this object.
-  virtual void DestroyAllMediaPlayers() = 0;
-
   // Called by the player to get a hardware protected surface.
   virtual void RequestFullScreen(int player_id) = 0;
 };

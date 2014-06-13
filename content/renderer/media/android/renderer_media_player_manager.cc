@@ -23,14 +23,9 @@ RendererMediaPlayerManager::RendererMediaPlayerManager(
 }
 
 RendererMediaPlayerManager::~RendererMediaPlayerManager() {
-  std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
-  for (player_it = media_players_.begin();
-      player_it != media_players_.end(); ++player_it) {
-    WebMediaPlayerAndroid* player = player_it->second;
-    player->Detach();
-  }
-
-  Send(new MediaPlayerHostMsg_DestroyAllMediaPlayers(routing_id()));
+  DCHECK(media_players_.empty())
+      << "RendererMediaPlayerManager is owned by RenderFrameImpl and is "
+         "destroyed only after all media players are destroyed.";
 }
 
 bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {

@@ -124,7 +124,12 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
       weak_ptr_factory_(this) {
 }
 
-BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {}
+BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
+  // During the tear down process, OnDestroyPlayer() may or may not be called
+  // (e.g. the WebContents may be destroyed before the render process). So
+  // we cannot DCHECK(players_.empty()) here. Instead, all media players in
+  // |players_| will be destroyed here because |player_| is a ScopedVector.
+}
 
 void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
@@ -304,14 +309,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
       return *it;
   }
   return NULL;
-}
-
-void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
-  players_.clear();
-  if (fullscreen_player_id_ != -1) {
-    video_view_.reset();
-    fullscreen_player_id_ = -1;
-  }
 }
 
 void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {

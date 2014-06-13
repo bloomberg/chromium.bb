@@ -879,27 +879,9 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
 }
 
 void WebMediaPlayerAndroid::OnDestruct() {
-  if (player_manager_)
-    player_manager_->UnregisterMediaPlayer(player_id_);
-  Detach();
-}
-
-void WebMediaPlayerAndroid::Detach() {
-  if (stream_id_) {
-    GLES2Interface* gl = stream_texture_factory_->ContextGL();
-    gl->DeleteTextures(1, &texture_id_);
-    texture_id_ = 0;
-    texture_mailbox_ = gpu::Mailbox();
-    stream_id_ = 0;
-  }
-
-  media_source_delegate_.reset();
-  {
-    base::AutoLock auto_lock(current_frame_lock_);
-    current_frame_ = NULL;
-  }
-  is_remote_ = false;
-  player_manager_ = NULL;
+  NOTREACHED() << "WebMediaPlayer should be destroyed before any "
+                  "RenderFrameObserver::OnDestruct() gets called when "
+                  "the RenderFrame goes away.";
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
