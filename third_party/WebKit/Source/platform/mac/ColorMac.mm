@@ -33,39 +33,6 @@ namespace WebCore {
 
 // NSColor calls don't throw, so no need to block Cocoa exceptions in this file
 
-static bool useOldAquaFocusRingColor;
-
-RGBA32 oldAquaFocusRingColor()
-{
-    return 0xFF7DADD9;
-}
-
-void setUsesTestModeFocusRingColor(bool newValue)
-{
-    useOldAquaFocusRingColor = newValue;
-}
-
-bool usesTestModeFocusRingColor()
-{
-    return useOldAquaFocusRingColor;
-}
-
-static RGBA32 makeRGBAFromNSColor(NSColor *c)
-{
-    CGFloat redComponent;
-    CGFloat greenComponent;
-    CGFloat blueComponent;
-    CGFloat alpha;
-    [c getRed:&redComponent green:&greenComponent blue:&blueComponent alpha:&alpha];
-
-    return makeRGBA(255 * redComponent, 255 * greenComponent, 255 * blueComponent, 255 * alpha);
-}
-
-Color colorFromNSColor(NSColor *c)
-{
-    return Color(makeRGBAFromNSColor(c));
-}
-
 NSColor *nsColor(const Color& color)
 {
     RGBA32 c = color.rgb();

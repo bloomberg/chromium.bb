@@ -216,8 +216,9 @@ Color RenderThemeChromiumMac::platformInactiveListBoxSelectionForegroundColor() 
 
 Color RenderThemeChromiumMac::platformFocusRingColor() const
 {
+    static const RGBA32 oldAquaFocusRingColor = 0xFF7DADD9;
     if (usesTestModeFocusRingColor())
-        return oldAquaFocusRingColor();
+        return oldAquaFocusRingColor;
 
     return systemColor(CSSValueWebkitFocusRingColor);
 }

@@ -35,15 +35,8 @@ OBJC_CLASS NSColor;
 
 namespace WebCore {
 
-    // These functions assume NSColors are in DeviceRGB colorspace
-    Color PLATFORM_EXPORT colorFromNSColor(NSColor *);
-    NSColor* PLATFORM_EXPORT nsColor(const Color&);
-
-    bool PLATFORM_EXPORT usesTestModeFocusRingColor();
-    void PLATFORM_EXPORT setUsesTestModeFocusRingColor(bool);
-
-    // Focus ring color used for testing purposes.
-    RGBA32 PLATFORM_EXPORT oldAquaFocusRingColor();
+// This function assumes NSColors are in DeviceRGB colorspace
+PLATFORM_EXPORT NSColor* nsColor(const Color&);
 
 }
 

@@ -32,7 +32,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/mac/BlockExceptions.h"
-#include "platform/mac/EmptyProtocolDefinitions.h"
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollView.h"
 #include "platform/scroll/ScrollableArea.h"
