@@ -153,8 +153,8 @@ bool Display::Draw() {
   return true;
 }
 
-int Display::CurrentSurfaceID() {
-  return current_surface_ ? current_surface_->surface_id() : 0;
+SurfaceId Display::CurrentSurfaceId() {
+  return current_surface_ ? current_surface_->surface_id() : SurfaceId();
 }
 
 void Display::ReturnResources(const ReturnedResourceArray& resources) {

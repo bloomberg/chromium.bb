@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/surfaces/surface_id.h"
 
 namespace cc {
 
@@ -18,7 +19,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   }
   virtual ~SurfaceLayerImpl();
 
-  void SetSurfaceId(int surface_id);
+  void SetSurfaceId(SurfaceId surface_id);
 
   // LayerImpl overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -36,7 +37,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
-  int surface_id_;
+  SurfaceId surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };

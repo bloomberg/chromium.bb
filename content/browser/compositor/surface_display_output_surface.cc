@@ -30,8 +30,8 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
-  int surface_id = display_->CurrentSurfaceID();
-  cc::Surface* surface = surface_manager_->GetSurfaceForID(surface_id);
+  cc::SurfaceId surface_id = display_->CurrentSurfaceId();
+  cc::Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return;
 

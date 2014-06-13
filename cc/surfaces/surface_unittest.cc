@@ -13,15 +13,15 @@ namespace {
 TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceManager manager;
 
-  int surface_id = 0;
+  SurfaceId surface_id;
   {
     Surface surface(&manager, NULL, gfx::Size(5, 5));
     surface_id = surface.surface_id();
-    EXPECT_GT(surface_id, 0);
-    EXPECT_EQ(&surface, manager.GetSurfaceForID(surface_id));
+    EXPECT_TRUE(!surface_id.is_null());
+    EXPECT_EQ(&surface, manager.GetSurfaceForId(surface_id));
   }
 
-  EXPECT_EQ(NULL, manager.GetSurfaceForID(surface_id));
+  EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
 }
 
 }  // namespace

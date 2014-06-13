@@ -494,6 +494,7 @@
         'surfaces/display_client.h',
         'surfaces/surface.cc',
         'surfaces/surface.h',
+        'surfaces/surface_id.h',
         'surfaces/surface_aggregator.cc',
         'surfaces/surface_aggregator.h',
         'surfaces/surface_client.h',

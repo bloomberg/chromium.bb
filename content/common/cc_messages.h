@@ -25,6 +25,7 @@
 #include "cc/resources/resource_format.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
@@ -137,6 +138,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
   IPC_STRUCT_TRAITS_MEMBER(layer_id)
   IPC_STRUCT_TRAITS_MEMBER(index)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::SurfaceId)
+IPC_STRUCT_TRAITS_MEMBER(id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::DrawQuad)

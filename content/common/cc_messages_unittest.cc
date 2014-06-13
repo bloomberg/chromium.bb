@@ -403,7 +403,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<DrawQuad> streamvideo_cmp = streamvideo_in->Copy(
       streamvideo_in->shared_quad_state);
 
-  int arbitrary_surface_id = 3;
+  cc::SurfaceId arbitrary_surface_id(3);
   scoped_ptr<SurfaceDrawQuad> surface_in = SurfaceDrawQuad::Create();
   surface_in->SetAll(shared_state3_in,
                      arbitrary_rect2,

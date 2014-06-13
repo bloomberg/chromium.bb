@@ -24,7 +24,7 @@ namespace test {
 
 void AddTestSurfaceQuad(TestRenderPass* pass,
                         const gfx::Size& surface_size,
-                        int surface_id) {
+                        SurfaceId surface_id) {
   gfx::Transform content_to_target_transform;
   gfx::Size content_bounds = surface_size;
   gfx::Rect visible_content_rect = gfx::Rect(surface_size);

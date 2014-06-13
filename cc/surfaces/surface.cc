@@ -15,7 +15,7 @@ Surface::Surface(SurfaceManager* manager,
     : manager_(manager),
       client_(client),
       size_(size) {
-  surface_id_ = manager_->RegisterAndAllocateIDForSurface(this);
+  surface_id_ = manager_->RegisterAndAllocateIdForSurface(this);
 }
 
 Surface::~Surface() {

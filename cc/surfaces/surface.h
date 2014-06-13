@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/size.h"
 
@@ -23,7 +24,7 @@ class CC_SURFACES_EXPORT Surface {
   ~Surface();
 
   const gfx::Size& size() const { return size_; }
-  int surface_id() const { return surface_id_; }
+  SurfaceId surface_id() const { return surface_id_; }
 
   void QueueFrame(scoped_ptr<CompositorFrame> frame);
   // Returns the most recent frame that is eligible to be rendered.
@@ -33,7 +34,7 @@ class CC_SURFACES_EXPORT Surface {
   SurfaceManager* manager_;
   SurfaceClient* client_;
   gfx::Size size_;
-  int surface_id_;
+  SurfaceId surface_id_;
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
 

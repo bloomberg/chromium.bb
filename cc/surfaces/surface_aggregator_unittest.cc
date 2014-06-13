@@ -19,7 +19,12 @@
 
 namespace cc {
 namespace {
-const int kInvalidSurfaceId = -1;
+
+SurfaceId InvalidSurfaceId() {
+  static SurfaceId invalid;
+  invalid.id = -1;
+  return invalid;
+}
 
 class SurfaceAggregatorTest : public testing::Test {
  public:
@@ -31,7 +36,7 @@ class SurfaceAggregatorTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorTest, InvalidSurfaceId) {
-  scoped_ptr<CompositorFrame> frame = aggregator_.Aggregate(kInvalidSurfaceId);
+  scoped_ptr<CompositorFrame> frame = aggregator_.Aggregate(InvalidSurfaceId());
   EXPECT_FALSE(frame);
 }
 
@@ -258,7 +263,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 // be dropped.
 TEST_F(SurfaceAggregatorValidSurfaceTest, InvalidSurfaceReference) {
   test::Quad quads[] = {test::Quad::SolidColorQuad(SK_ColorGREEN),
-                        test::Quad::SurfaceQuad(kInvalidSurfaceId),
+                        test::Quad::SurfaceQuad(InvalidSurfaceId()),
                         test::Quad::SolidColorQuad(SK_ColorBLUE)};
   test::Pass passes[] = {test::Pass(quads, arraysize(quads))};
 

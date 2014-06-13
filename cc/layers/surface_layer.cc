@@ -12,11 +12,12 @@ scoped_refptr<SurfaceLayer> SurfaceLayer::Create() {
   return make_scoped_refptr(new SurfaceLayer);
 }
 
-SurfaceLayer::SurfaceLayer() : Layer(), surface_id_(0) {}
+SurfaceLayer::SurfaceLayer() : Layer() {
+}
 
 SurfaceLayer::~SurfaceLayer() {}
 
-void SurfaceLayer::SetSurfaceId(int surface_id) {
+void SurfaceLayer::SetSurfaceId(SurfaceId surface_id) {
   surface_id_ = surface_id;
   SetNeedsPushProperties();
 }
@@ -26,7 +27,7 @@ scoped_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 }
 
 bool SurfaceLayer::DrawsContent() const {
-  return surface_id_ && Layer::DrawsContent();
+  return !surface_id_.is_null() && Layer::DrawsContent();
 }
 
 void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {

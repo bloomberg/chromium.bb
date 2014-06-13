@@ -11,6 +11,7 @@
 #include "cc/output/renderer.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_client.h"
+#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace gfx {
@@ -39,7 +40,7 @@ class CC_SURFACES_EXPORT Display : public SurfaceClient,
   void Resize(const gfx::Size& new_size);
   bool Draw();
 
-  int CurrentSurfaceID();
+  SurfaceId CurrentSurfaceId();
 
   // OutputSurfaceClient implementation.
   virtual void DeferredInitialize() OVERRIDE {}

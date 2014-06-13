@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/surfaces/surface_id.h"
 
 namespace cc {
 
@@ -18,16 +19,16 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              int surface_id);
+              SurfaceId surface_id);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              int surface_id);
+              SurfaceId surface_id);
 
-  int surface_id;
+  SurfaceId surface_id;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

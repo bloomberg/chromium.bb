@@ -7,6 +7,7 @@
 
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 
@@ -25,7 +26,7 @@ struct Quad {
     return quad;
   }
 
-  static Quad SurfaceQuad(int surface_id) {
+  static Quad SurfaceQuad(SurfaceId surface_id) {
     Quad quad;
     quad.material = DrawQuad::SURFACE_CONTENT;
     quad.surface_id = surface_id;
@@ -41,7 +42,7 @@ struct Quad {
 
   DrawQuad::Material material;
   // Set when material==DrawQuad::SURFACE_CONTENT.
-  int surface_id;
+  SurfaceId surface_id;
   // Set when material==DrawQuad::SOLID_COLOR.
   SkColor color;
   // Set when material==DrawQuad::RENDER_PASS.
@@ -50,7 +51,6 @@ struct Quad {
  private:
   Quad()
       : material(DrawQuad::INVALID),
-        surface_id(-1),
         color(SK_ColorWHITE),
         render_pass_id(-1, -1) {}
 };

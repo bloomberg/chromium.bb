@@ -7,6 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
+#include "cc/surfaces/surface_id.h"
 
 namespace cc {
 
@@ -16,7 +17,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
  public:
   static scoped_refptr<SurfaceLayer> Create();
 
-  void SetSurfaceId(int surface_id);
+  void SetSurfaceId(SurfaceId surface_id);
 
   // Layer overrides.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -30,7 +31,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
  private:
   virtual ~SurfaceLayer();
 
-  int surface_id_;
+  SurfaceId surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };

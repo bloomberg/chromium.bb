@@ -14,21 +14,21 @@ SurfaceManager::SurfaceManager()
 
 SurfaceManager::~SurfaceManager() {}
 
-int SurfaceManager::RegisterAndAllocateIDForSurface(Surface* surface) {
+SurfaceId SurfaceManager::RegisterAndAllocateIdForSurface(Surface* surface) {
   DCHECK(surface);
   int surface_id = next_surface_id_++;
   surface_map_[surface_id] = surface;
-  return surface_id;
+  return SurfaceId(surface_id);
 }
 
-void SurfaceManager::DeregisterSurface(int surface_id) {
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
+void SurfaceManager::DeregisterSurface(SurfaceId surface_id) {
+  SurfaceMap::iterator it = surface_map_.find(surface_id.id);
   DCHECK(it != surface_map_.end());
   surface_map_.erase(it);
 }
 
-Surface* SurfaceManager::GetSurfaceForID(int surface_id) {
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
+Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
+  SurfaceMap::iterator it = surface_map_.find(surface_id.id);
   if (it == surface_map_.end())
     return NULL;
   return it->second;
