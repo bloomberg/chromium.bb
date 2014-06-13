@@ -352,6 +352,8 @@ static PassRefPtrWillBeRawPtr<Node> cloneNodeAndAssociate(Node& toClone)
     SVGElement& svgElement = toSVGElement(toClone);
     ASSERT(!svgElement.correspondingElement());
     toSVGElement(clone.get())->setCorrespondingElement(&svgElement);
+    if (EventTargetData* data = toClone.eventTargetData())
+        data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(clone.get());
     TrackExceptionState exceptionState;
     for (Node* node = toClone.firstChild(); node && !exceptionState.hadException(); node = node->nextSibling())
         clone->appendChild(cloneNodeAndAssociate(*node), exceptionState);
@@ -483,6 +485,8 @@ bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstan
     }
 
     targetInstance->setCorrespondingElement(target);
+    if (EventTargetData* data = target->eventTargetData())
+        data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(targetInstance);
 
     for (Node* child = target->firstChild(); child; child = child->nextSibling()) {
         // Skip any disallowed element.
