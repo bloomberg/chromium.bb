@@ -1568,8 +1568,8 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   // by a sync from the active layer.  This could happen because if the
   // pending layer has not been post-commit initialized it will attempt
   // to sync from the active layer.
-  bool default_lcd_text_setting = pending_layer_->is_using_lcd_text();
-  pending_layer_->force_set_lcd_text(!default_lcd_text_setting);
+  float raster_page_scale = 10.f * pending_layer_->raster_page_scale();
+  pending_layer_->set_raster_page_scale(raster_page_scale);
   EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
 
   host_impl_.ActivatePendingTree();
@@ -1578,7 +1578,7 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
       host_impl_.active_tree()->LayerById(id_));
 
   EXPECT_EQ(0u, active_layer_->num_tilings());
-  EXPECT_EQ(!default_lcd_text_setting, active_layer_->is_using_lcd_text());
+  EXPECT_EQ(raster_page_scale, active_layer_->raster_page_scale());
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 

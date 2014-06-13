@@ -102,7 +102,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
                                                            1.0,
                                                            0,
                                                            0,
-                                                           Tile::USE_LCD_TEXT);
+                                                           0);
       tile->SetPriority(ACTIVE_TREE, active_priority);
       tile->SetPriority(PENDING_TREE, pending_priority);
       tiles.push_back(tile);
@@ -127,16 +127,6 @@ class TileManagerTest : public testing::TestWithParam<bool>,
         ++has_memory_count;
     }
     return has_memory_count;
-  }
-
-  int TilesWithLCDCount(const TileVector& tiles) {
-    int has_lcd_count = 0;
-    for (TileVector::const_iterator it = tiles.begin(); it != tiles.end();
-         ++it) {
-      if ((*it)->GetRasterModeForTesting() == HIGH_QUALITY_RASTER_MODE)
-        ++has_lcd_count;
-    }
-    return has_lcd_count;
   }
 
   bool ready_to_activate() const { return ready_to_activate_; }
@@ -426,150 +416,6 @@ TEST_P(TileManagerTest, TotalOOMMemoryToNewContent) {
   tile_manager()->AssignMemoryToTiles(global_state_);
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(10, AssignedMemoryCount(pending_tree_tiles));
-}
-
-TEST_P(TileManagerTest, RasterAsLCD) {
-  Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-  TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
-  TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
-}
-
-TEST_P(TileManagerTest, RasterAsNoLCD) {
-  Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-  TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
-  TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
-
-  for (TileVector::iterator it = active_tree_tiles.begin();
-       it != active_tree_tiles.end();
-       ++it) {
-    (*it)->set_can_use_lcd_text(false);
-  }
-  for (TileVector::iterator it = pending_tree_tiles.begin();
-       it != pending_tree_tiles.end();
-       ++it) {
-    (*it)->set_can_use_lcd_text(false);
-  }
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
-}
-
-TEST_P(TileManagerTest, ReRasterAsNoLCD) {
-  Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-  TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
-  TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
-
-  for (TileVector::iterator it = active_tree_tiles.begin();
-       it != active_tree_tiles.end();
-       ++it) {
-    (*it)->set_can_use_lcd_text(false);
-  }
-  for (TileVector::iterator it = pending_tree_tiles.begin();
-       it != pending_tree_tiles.end();
-       ++it) {
-    (*it)->set_can_use_lcd_text(false);
-  }
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
-}
-
-TEST_P(TileManagerTest, NoTextDontReRasterAsNoLCD) {
-  Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-  TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
-  TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
-
-  for (TileVector::iterator it = active_tree_tiles.begin();
-       it != active_tree_tiles.end();
-       ++it) {
-    ManagedTileState::TileVersion& tile_version =
-        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
-    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
-    (*it)->set_can_use_lcd_text(false);
-    EXPECT_TRUE((*it)->IsReadyToDraw());
-  }
-  for (TileVector::iterator it = pending_tree_tiles.begin();
-       it != pending_tree_tiles.end();
-       ++it) {
-    ManagedTileState::TileVersion& tile_version =
-        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
-    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
-    (*it)->set_can_use_lcd_text(false);
-    EXPECT_TRUE((*it)->IsReadyToDraw());
-  }
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
-}
-
-TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
-  Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-  TileVector active_tree_tiles =
-      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
-  TileVector pending_tree_tiles =
-      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
-
-  for (TileVector::iterator it = active_tree_tiles.begin();
-       it != active_tree_tiles.end();
-       ++it) {
-    ManagedTileState::TileVersion& tile_version =
-        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
-    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
-    tile_version.SetHasTextForTesting(true);
-    (*it)->set_can_use_lcd_text(false);
-
-    EXPECT_TRUE((*it)->IsReadyToDraw());
-  }
-  for (TileVector::iterator it = pending_tree_tiles.begin();
-       it != pending_tree_tiles.end();
-       ++it) {
-    ManagedTileState::TileVersion& tile_version =
-        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
-    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
-    tile_version.SetHasTextForTesting(true);
-    (*it)->set_can_use_lcd_text(false);
-
-    EXPECT_TRUE((*it)->IsReadyToDraw());
-  }
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-
-  EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
-  EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
 }
 
 TEST_P(TileManagerTest, RespectMemoryLimit) {

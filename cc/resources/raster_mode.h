@@ -13,15 +13,12 @@ class Value;
 
 namespace cc {
 
-// Low quality implies no lcd test;
-// high quality implies lcd text.
 // Note that the order of these matters, from "better" to "worse" in terms of
 // quality.
 enum RasterMode {
-  HIGH_QUALITY_NO_LCD_RASTER_MODE = 0,
-  HIGH_QUALITY_RASTER_MODE = 1,
-  LOW_QUALITY_RASTER_MODE = 2,
-  NUM_RASTER_MODES = 3
+  HIGH_QUALITY_RASTER_MODE = 0,
+  LOW_QUALITY_RASTER_MODE = 1,
+  NUM_RASTER_MODES = 2
 };
 
 scoped_ptr<base::Value> RasterModeAsValue(RasterMode mode);

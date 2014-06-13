@@ -156,7 +156,6 @@ class CC_EXPORT PictureLayerImpl
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
   float SnappedContentsScale(float new_contents_scale);
-  void UpdateLCDTextStatus(bool new_status);
   void ResetRasterScale();
   void MarkVisibleResourcesAsRequired() const;
   bool MarkVisibleTilesAsRequired(
@@ -201,7 +200,6 @@ class CC_EXPORT PictureLayerImpl
 
   bool raster_source_scale_is_fixed_;
   bool was_animating_transform_to_screen_;
-  bool is_using_lcd_text_;
   bool needs_post_commit_initialization_;
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.

@@ -35,8 +35,6 @@ class CC_EXPORT PictureLayerTilingSet {
 
   gfx::Size layer_bounds() const { return layer_bounds_; }
 
-  void SetCanUseLCDText(bool can_use_lcd_text);
-
   PictureLayerTiling* AddTiling(float contents_scale);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;

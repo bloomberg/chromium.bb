@@ -30,18 +30,6 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
-class DisableLCDTextFilter : public SkDrawFilter {
- public:
-  // SkDrawFilter interface.
-  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) OVERRIDE {
-    if (type != SkDrawFilter::kText_Type)
-      return true;
-
-    paint->setLCDRenderText(false);
-    return true;
-  }
-};
-
 class RasterTaskImpl : public RasterTask {
  public:
   RasterTaskImpl(
@@ -145,9 +133,6 @@ class RasterTaskImpl : public RasterTask {
     switch (raster_mode_) {
       case LOW_QUALITY_RASTER_MODE:
         draw_filter = skia::AdoptRef(new skia::PaintSimplifier);
-        break;
-      case HIGH_QUALITY_NO_LCD_RASTER_MODE:
-        draw_filter = skia::AdoptRef(new DisableLCDTextFilter);
         break;
       case HIGH_QUALITY_RASTER_MODE:
         break;
@@ -969,7 +954,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
   DCHECK(tile->IsReadyToDraw());
   ManagedTileState& mts = tile->managed_state();
-  RasterMode used_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
+  RasterMode used_mode = LOW_QUALITY_RASTER_MODE;
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
     if (mts.tile_versions[mode].IsReadyToDraw()) {
       used_mode = static_cast<RasterMode>(mode);

@@ -71,7 +71,6 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   res->Set("active_priority", priority_[ACTIVE_TREE].AsValue().release());
   res->Set("pending_priority", priority_[PENDING_TREE].AsValue().release());
   res->Set("managed_state", managed_state_.AsValue().release());
-  res->SetBoolean("can_use_lcd_text", can_use_lcd_text());
   res->SetBoolean("use_picture_analysis", use_picture_analysis());
   return res.PassAs<base::Value>();
 }
@@ -94,15 +93,9 @@ RasterMode Tile::DetermineOverallRasterMode() const {
 RasterMode Tile::DetermineRasterModeForResolution(
     TileResolution resolution) const {
   RasterMode current_mode = managed_state_.raster_mode;
-  RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
-  if (resolution == LOW_RESOLUTION)
-    raster_mode = LOW_QUALITY_RASTER_MODE;
-  else if (can_use_lcd_text())
-    raster_mode = HIGH_QUALITY_RASTER_MODE;
-  else if (managed_state_.tile_versions[current_mode].has_text_ ||
-           !managed_state_.tile_versions[current_mode].IsReadyToDraw())
-    raster_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
-
+  RasterMode raster_mode = resolution == LOW_RESOLUTION
+                               ? LOW_QUALITY_RASTER_MODE
+                               : HIGH_QUALITY_RASTER_MODE;
   return std::min(raster_mode, current_mode);
 }
 

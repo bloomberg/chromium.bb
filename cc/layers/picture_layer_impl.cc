@@ -62,7 +62,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       low_res_raster_contents_scale_(0.f),
       raster_source_scale_is_fixed_(false),
       was_animating_transform_to_screen_(false),
-      is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
@@ -122,8 +121,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->raster_source_scale_ = raster_source_scale_;
   layer_impl->raster_contents_scale_ = raster_contents_scale_;
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
-
-  layer_impl->UpdateLCDTextStatus(is_using_lcd_text_);
   layer_impl->needs_post_commit_initialization_ = false;
 
   // The invalidation on this soon-to-be-recycled layer must be cleared to
@@ -402,8 +399,6 @@ void PictureLayerImpl::UpdateTilePriorities() {
   if (!tiling_needs_update)
     return;
 
-  UpdateLCDTextStatus(can_use_lcd_text());
-
   // Use visible_content_rect, unless it's empty. If it's empty, then
   // try to inverse project the viewport into layer space and use that.
   gfx::Rect visible_rect_in_content_space = visible_rect_for_tile_priority_;
@@ -541,9 +536,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
     return scoped_refptr<Tile>();
 
   int flags = 0;
-  if (is_using_lcd_text_)
-    flags |= Tile::USE_LCD_TEXT;
-
   // We analyze picture before rasterization to detect solid-color tiles.
   // If the tile is detected as such there is no need to raster or upload.
   // It is drawn directly as a solid-color quad saving memory, raster and upload
@@ -677,8 +669,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   DCHECK(!other->needs_post_commit_initialization_);
   DCHECK(other->tilings_);
-
-  UpdateLCDTextStatus(other->is_using_lcd_text_);
 
   if (!DrawsContent()) {
     RemoveAllTilings();
@@ -1285,18 +1275,6 @@ float PictureLayerImpl::MinimumContentsScale() const {
   return std::max(1.f / min_dimension, setting_min);
 }
 
-void PictureLayerImpl::UpdateLCDTextStatus(bool new_status) {
-  // Once this layer is not using lcd text, don't switch back.
-  if (!is_using_lcd_text_)
-    return;
-
-  if (is_using_lcd_text_ == new_status)
-    return;
-
-  is_using_lcd_text_ = new_status;
-  tilings_->SetCanUseLCDText(is_using_lcd_text_);
-}
-
 void PictureLayerImpl::ResetRasterScale() {
   raster_page_scale_ = 0.f;
   raster_device_scale_ = 0.f;
@@ -1373,7 +1351,6 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
     coverage_tiles->Append(tile_data.release());
   }
   state->Set("coverage_tiles", coverage_tiles.release());
-  state->SetBoolean("is_using_lcd_text", is_using_lcd_text_);
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {

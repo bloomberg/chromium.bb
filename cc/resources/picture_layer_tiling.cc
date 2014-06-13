@@ -122,11 +122,6 @@ Tile* PictureLayerTiling::CreateTile(int i,
   return tile.get();
 }
 
-void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
-  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    it->second->set_can_use_lcd_text(can_use_lcd_text);
-}
-
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
   bool include_borders = true;

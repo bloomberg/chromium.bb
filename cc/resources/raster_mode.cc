@@ -12,9 +12,6 @@ namespace cc {
 
 scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
   switch (raster_mode) {
-    case HIGH_QUALITY_NO_LCD_RASTER_MODE:
-      return scoped_ptr<base::Value>(
-          new base::StringValue("HIGH_QUALITY_NO_LCD_RASTER_MODE"));
     case HIGH_QUALITY_RASTER_MODE:
       return scoped_ptr<base::Value>(
           new base::StringValue("HIGH_QUALITY_RASTER_MODE"));

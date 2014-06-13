@@ -56,8 +56,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return needs_post_commit_initialization_;
   }
 
-  bool is_using_lcd_text() const { return is_using_lcd_text_; }
-  void force_set_lcd_text(bool enabled) { is_using_lcd_text_ = enabled; }
+  float raster_page_scale() const { return raster_page_scale_; }
+  void set_raster_page_scale(float scale) { raster_page_scale_ = scale; }
 
   PictureLayerTiling* HighResTiling() const;
   PictureLayerTiling* LowResTiling() const;

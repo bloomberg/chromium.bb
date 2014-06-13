@@ -103,11 +103,6 @@ void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
     tilings_[i]->RemoveTilesInRegion(region);
 }
 
-void PictureLayerTilingSet::SetCanUseLCDText(bool can_use_lcd_text) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->SetCanUseLCDText(can_use_lcd_text);
-}
-
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
   for (size_t i = 0; i < tilings_.size(); ++i)
     DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);

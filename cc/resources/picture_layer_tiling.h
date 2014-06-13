@@ -129,8 +129,6 @@ class CC_EXPORT PictureLayerTiling {
   void RemoveTilesInRegion(const Region& layer_region);
   void CreateMissingTilesInLiveTilesRect();
 
-  void SetCanUseLCDText(bool can_use_lcd_text);
-
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
   TileResolution resolution() const { return resolution_; }

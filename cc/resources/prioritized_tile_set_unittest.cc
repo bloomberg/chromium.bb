@@ -75,7 +75,7 @@ class PrioritizedTileSetTest : public testing::Test {
                                      1.0,
                                      0,
                                      0,
-                                     Tile::USE_LCD_TEXT);
+                                     0);
   }
 
  private:
