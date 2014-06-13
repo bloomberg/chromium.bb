@@ -76,6 +76,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
+#include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
@@ -424,6 +425,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       cdm_manager_(NULL),
 #endif
       geolocation_dispatcher_(NULL),
+      screen_orientation_dispatcher_(NULL),
       weak_factory_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 
@@ -2900,6 +2902,13 @@ void RenderFrameImpl::initializeChildFrame(const blink::WebRect& frame_rect,
                                            float scale_factor) {
   Send(new FrameHostMsg_InitializeChildFrame(
       routing_id_, frame_rect, scale_factor));
+}
+
+blink::WebScreenOrientationClient*
+    RenderFrameImpl::webScreenOrientationClient() {
+  if (!screen_orientation_dispatcher_)
+    screen_orientation_dispatcher_ = new ScreenOrientationDispatcher(this);
+  return screen_orientation_dispatcher_;
 }
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {

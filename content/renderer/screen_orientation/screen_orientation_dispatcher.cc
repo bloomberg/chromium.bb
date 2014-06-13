@@ -5,26 +5,22 @@
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 
 #include "content/common/screen_orientation_messages.h"
-#include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 
 namespace content {
 
-ScreenOrientationDispatcher::ScreenOrientationDispatcher()
-    : listener_(NULL) {
-  RenderThread::Get()->AddObserver(this);
+ScreenOrientationDispatcher::ScreenOrientationDispatcher(
+    RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {
 }
 
 ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
 }
 
-bool ScreenOrientationDispatcher::OnControlMessageReceived(
+bool ScreenOrientationDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ScreenOrientationDispatcher, message)
-    IPC_MESSAGE_HANDLER(ScreenOrientationMsg_OrientationChange,
-                        OnOrientationChange)
     IPC_MESSAGE_HANDLER(ScreenOrientationMsg_LockSuccess,
                         OnLockSuccess)
     IPC_MESSAGE_HANDLER(ScreenOrientationMsg_LockError,
@@ -33,14 +29,6 @@ bool ScreenOrientationDispatcher::OnControlMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void ScreenOrientationDispatcher::OnOrientationChange(
-    blink::WebScreenOrientationType orientation) {
-  if (!listener_)
-    return;
-
-  listener_->didChangeScreenOrientation(orientation);
 }
 
 void ScreenOrientationDispatcher::OnLockSuccess(
@@ -66,11 +54,6 @@ void ScreenOrientationDispatcher::OnLockError(
   pending_callbacks_.Remove(request_id);
 }
 
-void ScreenOrientationDispatcher::setListener(
-    blink::WebScreenOrientationListener* listener) {
-  listener_ = listener;
-}
-
 void ScreenOrientationDispatcher::CancelPendingLocks() {
   for (CallbackMap::Iterator<blink::WebLockOrientationCallback>
        iterator(&pending_callbacks_); !iterator.IsAtEnd(); iterator.Advance()) {
@@ -80,19 +63,18 @@ void ScreenOrientationDispatcher::CancelPendingLocks() {
   }
 }
 
-void ScreenOrientationDispatcher::LockOrientation(
+void ScreenOrientationDispatcher::lockOrientation(
     blink::WebScreenOrientationLockType orientation,
-    scoped_ptr<blink::WebLockOrientationCallback> callback) {
+    blink::WebLockOrientationCallback* callback) {
   CancelPendingLocks();
 
-  int request_id = pending_callbacks_.Add(callback.release());
-  RenderThread::Get()->Send(
-      new ScreenOrientationHostMsg_LockRequest(orientation, request_id));
+  int request_id = pending_callbacks_.Add(callback);
+  Send(new ScreenOrientationHostMsg_LockRequest(orientation, request_id));
 }
 
-void ScreenOrientationDispatcher::UnlockOrientation() {
+void ScreenOrientationDispatcher::unlockOrientation() {
   CancelPendingLocks();
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Unlock);
+  Send(new ScreenOrientationHostMsg_Unlock);
 }
 
 }  // namespace content

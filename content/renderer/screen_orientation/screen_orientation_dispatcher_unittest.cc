@@ -9,37 +9,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/screen_orientation_messages.h"
-#include "content/public/test/mock_render_thread.h"
 #include "content/public/test/test_utils.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebLockOrientationCallback.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 
 namespace content {
-
-class MockScreenOrientationListener :
-    public blink::WebScreenOrientationListener {
- public:
-  MockScreenOrientationListener();
-  virtual ~MockScreenOrientationListener() {}
-
-  virtual void didChangeScreenOrientation(
-      blink::WebScreenOrientationType) OVERRIDE;
-
-  bool did_change_screen_orientation() const {
-    return did_change_screen_orientation_;
-  }
-
-  blink::WebScreenOrientationType screen_orientation() const {
-    return screen_orientation_;
-  }
-
- private:
-  bool did_change_screen_orientation_;
-  blink::WebScreenOrientationType screen_orientation_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationListener);
-};
 
 // MockLockOrientationCallback is an implementation of
 // WebLockOrientationCallback and takes a LockOrientationResultHolder* as a
@@ -62,11 +37,8 @@ class MockLockOrientationCallback :
     blink::WebLockOrientationCallback::ErrorType error_;
   };
 
-  static scoped_ptr<blink::WebLockOrientationCallback> CreateScoped(
-      LockOrientationResultHolder* results) {
-    return scoped_ptr<blink::WebLockOrientationCallback>(
-        new MockLockOrientationCallback(results));
-  }
+  explicit MockLockOrientationCallback(LockOrientationResultHolder* results)
+      : results_(results) {}
 
   virtual void onSuccess(unsigned angle,
                          blink::WebScreenOrientationType orientation) {
@@ -82,36 +54,32 @@ class MockLockOrientationCallback :
   }
 
  private:
-  explicit MockLockOrientationCallback(LockOrientationResultHolder* results)
-      : results_(results) {}
-
   virtual ~MockLockOrientationCallback() {}
 
   LockOrientationResultHolder* results_;
 };
 
-MockScreenOrientationListener::MockScreenOrientationListener()
-    : did_change_screen_orientation_(false),
-      screen_orientation_(blink::WebScreenOrientationPortraitPrimary) {
-}
+class ScreenOrientationDispatcherWithSink : public ScreenOrientationDispatcher {
+ public:
+  explicit ScreenOrientationDispatcherWithSink(IPC::TestSink* sink)
+      :ScreenOrientationDispatcher(NULL) , sink_(sink) {
+  }
 
-void MockScreenOrientationListener::didChangeScreenOrientation(
-    blink::WebScreenOrientationType orientation) {
-  did_change_screen_orientation_ = true;
-  screen_orientation_ = orientation;
-}
+  virtual bool Send(IPC::Message* message) OVERRIDE {
+    return sink_->Send(message);
+  }
+
+  IPC::TestSink* sink_;
+};
 
 class ScreenOrientationDispatcherTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    render_thread_.reset(new MockRenderThread);
-    listener_.reset(new MockScreenOrientationListener);
-    dispatcher_.reset(new ScreenOrientationDispatcher);
-    dispatcher_->setListener(listener_.get());
+    dispatcher_.reset(new ScreenOrientationDispatcherWithSink(&sink_));
   }
 
   int GetFirstLockRequestIdFromSink() {
-    const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
+    const IPC::Message* msg = sink().GetFirstMessageMatching(
         ScreenOrientationHostMsg_LockRequest::ID);
     EXPECT_TRUE(msg != NULL);
 
@@ -120,65 +88,34 @@ class ScreenOrientationDispatcherTest : public testing::Test {
     return params.b;
   }
 
-  scoped_ptr<MockRenderThread> render_thread_;
-  scoped_ptr<MockScreenOrientationListener> listener_;
+  IPC::TestSink& sink() {
+    return sink_;
+  }
+
+  void LockOrientation(blink::WebScreenOrientationLockType orientation,
+                       blink::WebLockOrientationCallback* callback) {
+    dispatcher_->lockOrientation(orientation, callback);
+  }
+
+  void UnlockOrientation() {
+    dispatcher_->unlockOrientation();
+  }
+
+  void OnMessageReceived(const IPC::Message& message) {
+    dispatcher_->OnMessageReceived(message);
+  }
+
+  IPC::TestSink sink_;
   scoped_ptr<ScreenOrientationDispatcher> dispatcher_;
 };
 
-TEST_F(ScreenOrientationDispatcherTest, ListensToMessages) {
-  EXPECT_TRUE(render_thread_->observers().HasObserver(dispatcher_.get()));
-
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationPortraitPrimary));
-
-  EXPECT_TRUE(listener_->did_change_screen_orientation());
-}
-
-TEST_F(ScreenOrientationDispatcherTest, NullListener) {
-  dispatcher_->setListener(NULL);
-
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationPortraitPrimary));
-
-  EXPECT_FALSE(listener_->did_change_screen_orientation());
-}
-
-TEST_F(ScreenOrientationDispatcherTest, ValidValues) {
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationPortraitPrimary));
-  EXPECT_EQ(blink::WebScreenOrientationPortraitPrimary,
-               listener_->screen_orientation());
-
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationLandscapePrimary));
-  EXPECT_EQ(blink::WebScreenOrientationLandscapePrimary,
-               listener_->screen_orientation());
-
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationPortraitSecondary));
-  EXPECT_EQ(blink::WebScreenOrientationPortraitSecondary,
-               listener_->screen_orientation());
-
-  render_thread_->OnControlMessageReceived(
-      ScreenOrientationMsg_OrientationChange(
-          blink::WebScreenOrientationLandscapeSecondary));
-  EXPECT_EQ(blink::WebScreenOrientationLandscapeSecondary,
-               listener_->screen_orientation());
-}
-
-// Test that calling LockOrientation() followed by UnlockOrientation() cancel
-// the LockOrientation().
+// Test that calling lockOrientation() followed by unlockOrientation() cancel
+// the lockOrientation().
 TEST_F(ScreenOrientationDispatcherTest, CancelPending_Unlocking) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results));
-  dispatcher_->UnlockOrientation();
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results));
+  UnlockOrientation();
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_TRUE(callback_results.failed_);
@@ -186,18 +123,16 @@ TEST_F(ScreenOrientationDispatcherTest, CancelPending_Unlocking) {
             callback_results.error_);
 }
 
-// Test that calling LockOrientation() twice cancel the first LockOrientation().
+// Test that calling lockOrientation() twice cancel the first lockOrientation().
 TEST_F(ScreenOrientationDispatcherTest, CancelPending_DoubleLock) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   // We create the object to prevent leaks but never actually use it.
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results));
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results2));
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results));
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results2));
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_TRUE(callback_results.failed_);
@@ -216,20 +151,18 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
 
   for (std::list<blink::WebLockOrientationCallback::ErrorType>::const_iterator
           it = errors.begin(); it != errors.end(); ++it) {
-    render_thread_->sink().ClearMessages();
-
     MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-    dispatcher_->LockOrientation(
-        blink::WebScreenOrientationLockPortraitPrimary,
-        MockLockOrientationCallback::CreateScoped(&callback_results));
+    LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                    new MockLockOrientationCallback(&callback_results));
 
     int request_id = GetFirstLockRequestIdFromSink();
-    render_thread_->OnControlMessageReceived(
-        ScreenOrientationMsg_LockError(request_id, *it));
+    OnMessageReceived(ScreenOrientationMsg_LockError(request_id, *it));
 
     EXPECT_FALSE(callback_results.succeeded_);
     EXPECT_TRUE(callback_results.failed_);
     EXPECT_EQ(*it, callback_results.error_);
+
+    sink().ClearMessages();
   }
 }
 
@@ -249,23 +182,21 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
   int orientationsCount = 4;
 
   for (int i = 0; i < orientationsCount; ++i) {
-    render_thread_->sink().ClearMessages();
-
     MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-    dispatcher_->LockOrientation(
-        blink::WebScreenOrientationLockPortraitPrimary,
-        MockLockOrientationCallback::CreateScoped(&callback_results));
+    LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                    new MockLockOrientationCallback(&callback_results));
 
     int request_id = GetFirstLockRequestIdFromSink();
-    render_thread_->OnControlMessageReceived(
-        ScreenOrientationMsg_LockSuccess(request_id,
-                                         orientations[i].angle,
-                                         orientations[i].type));
+    OnMessageReceived(ScreenOrientationMsg_LockSuccess(request_id,
+                                                       orientations[i].angle,
+                                                       orientations[i].type));
 
     EXPECT_TRUE(callback_results.succeeded_);
     EXPECT_FALSE(callback_results.failed_);
     EXPECT_EQ(orientations[i].angle, callback_results.angle_);
     EXPECT_EQ(orientations[i].type, callback_results.orientation_);
+
+    sink().ClearMessages();
   }
 }
 
@@ -273,12 +204,11 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
 // callback.
 TEST_F(ScreenOrientationDispatcherTest, SuccessForUnknownRequest) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results));
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results));
 
   int request_id = GetFirstLockRequestIdFromSink();
-  render_thread_->OnControlMessageReceived(ScreenOrientationMsg_LockSuccess(
+  OnMessageReceived(ScreenOrientationMsg_LockSuccess(
       request_id + 1,
       90,
       blink::WebScreenOrientationLandscapePrimary));
@@ -291,12 +221,11 @@ TEST_F(ScreenOrientationDispatcherTest, SuccessForUnknownRequest) {
 // callback.
 TEST_F(ScreenOrientationDispatcherTest, ErrorForUnknownRequest) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results));
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results));
 
   int request_id = GetFirstLockRequestIdFromSink();
-  render_thread_->OnControlMessageReceived(ScreenOrientationMsg_LockError(
+  OnMessageReceived(ScreenOrientationMsg_LockError(
       request_id + 1,
       blink::WebLockOrientationCallback::ErrorTypeCanceled));
 
@@ -314,18 +243,16 @@ TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results1;
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockPortraitPrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results1));
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results1));
   int request_id1 = GetFirstLockRequestIdFromSink();
 
-  dispatcher_->LockOrientation(
-      blink::WebScreenOrientationLockLandscapePrimary,
-      MockLockOrientationCallback::CreateScoped(&callback_results2));
+  LockOrientation(blink::WebScreenOrientationLockLandscapePrimary,
+                  new MockLockOrientationCallback(&callback_results2));
 
   // callback_results1 must be rejected, tested in CancelPending_DoubleLock.
 
-  render_thread_->OnControlMessageReceived(ScreenOrientationMsg_LockSuccess(
+  OnMessageReceived(ScreenOrientationMsg_LockSuccess(
       request_id1,
       0,
       blink::WebScreenOrientationPortraitPrimary));

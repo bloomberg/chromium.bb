@@ -33,7 +33,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
-#include "content/common/screen_orientation_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -53,7 +52,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/screen_orientation/mock_screen_orientation_controller.h"
-#include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -73,7 +71,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/gfx/color_profile.h"
@@ -1159,55 +1156,6 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 }
 
 //------------------------------------------------------------------------------
-
-void RendererWebKitPlatformSupportImpl::EnsureScreenOrientationDispatcher() {
-  if (screen_orientation_dispatcher_)
-    return;
-
-  screen_orientation_dispatcher_.reset(new ScreenOrientationDispatcher());
-}
-
-void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
-    blink::WebScreenOrientationListener* listener) {
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    // If we are in test mode, we want to fully disable the screen orientation
-    // backend in order to let Blink get tested properly, That means that screen
-    // orientation updates have to be done manually instead of from signals sent
-    // by the browser process.
-    g_test_screen_orientation_controller.Get().SetListener(listener);
-    return;
-  }
-
-
-  EnsureScreenOrientationDispatcher();
-  screen_orientation_dispatcher_->setListener(listener);
-}
-
-void RendererWebKitPlatformSupportImpl::lockOrientation(
-    blink::WebScreenOrientationLockType orientation,
-    blink::WebLockOrientationCallback* callback) {
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    g_test_screen_orientation_controller.Get().UpdateLock(orientation);
-    return;
-  }
-
-  EnsureScreenOrientationDispatcher();
-  screen_orientation_dispatcher_->LockOrientation(
-      orientation, scoped_ptr<blink::WebLockOrientationCallback>(callback));
-}
-
-void RendererWebKitPlatformSupportImpl::unlockOrientation() {
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    g_test_screen_orientation_controller.Get().ResetLock();
-    return;
-  }
-
-  EnsureScreenOrientationDispatcher();
-  screen_orientation_dispatcher_->UnlockOrientation();
-}
 
 // static
 void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(

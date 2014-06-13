@@ -69,6 +69,7 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
+class ScreenOrientationDispatcher;
 struct CustomContextMenuContext;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -386,6 +387,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,
                                     float scale_factor);
+  virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
 
   // WebMediaPlayerDelegate implementation:
   virtual void DidPlay(blink::WebMediaPlayer* player) OVERRIDE;
@@ -627,6 +629,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
+
+  // The screen orientation dispatcher attached to the view, lazily initialized.
+  ScreenOrientationDispatcher* screen_orientation_dispatcher_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
