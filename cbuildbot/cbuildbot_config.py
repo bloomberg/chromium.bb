@@ -983,6 +983,11 @@ brillo = _config(
   hw_tests=[],
 )
 
+moblab = brillo.derive(
+  sync_chrome=None,
+  chrome_sdk=True,
+)
+
 brillo_non_testable = brillo.derive(
   # Literally build the minimal possible.
   packages=['virtual/target-os', 'virtual/target-os-dev'],
@@ -1782,9 +1787,8 @@ internal_paladin.add_config('link_freon-paladin',
 )
 
 internal_paladin.add_config('stumpy_moblab-paladin',
-  brillo_non_testable,
+  moblab,
   boards=['stumpy_moblab'],
-  important=False,
   paladin_builder_name='stumpy_moblab paladin',
 )
 
@@ -2140,8 +2144,9 @@ _release.add_config('mipsel-o32-generic-release',
 )
 
 _release.add_config('stumpy_moblab-release',
-  brillo_non_testable,
+  moblab,
   boards=['stumpy_moblab'],
+  images=['base', 'test'],
   paygen_skip_delta_payloads=True,
 )
 
