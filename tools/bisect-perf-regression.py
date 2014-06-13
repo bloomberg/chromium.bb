@@ -3482,25 +3482,6 @@ class BisectPerformanceMetrics(object):
       other_regressions = self._FindOtherRegressions(revision_data_sorted,
           mean_of_bad_runs > mean_of_good_runs)
 
-    # Check for warnings:
-    if len(culprit_revisions) > 1:
-      self.warnings.append('Due to build errors, regression range could '
-                           'not be narrowed down to a single commit.')
-    if self.opts.repeat_test_count == 1:
-      self.warnings.append('Tests were only set to run once. This may '
-                           'be insufficient to get meaningful results.')
-    if confidence < 100:
-      if confidence:
-        self.warnings.append(
-            'Confidence is less than 100%. There could be other candidates for '
-            'this regression. Try bisecting again with increased repeat_count '
-            'or on a sub-metric that shows the regression more clearly.')
-      else:
-        self.warnings.append(
-          'Confidence is 0%. Try bisecting again on another platform, with '
-          'increased repeat_count or on a sub-metric that shows the regression '
-          'more clearly.')
-
     return {
         'first_working_revision': first_working_revision,
         'last_broken_revision': last_broken_revision,
@@ -3510,6 +3491,26 @@ class BisectPerformanceMetrics(object):
         'regression_std_err': regression_std_err,
         'confidence': confidence,
         }
+
+  def _CheckForWarnings(self, results_dict):
+    if len(results_dict['culprit_revisions']) > 1:
+      self.warnings.append('Due to build errors, regression range could '
+                           'not be narrowed down to a single commit.')
+    if self.opts.repeat_test_count == 1:
+      self.warnings.append('Tests were only set to run once. This may '
+                           'be insufficient to get meaningful results.')
+    if results_dict['confidence'] < 100:
+      if results_dict['confidence']:
+        self.warnings.append(
+            'Confidence is less than 100%. There could be other candidates '
+            'for this regression. Try bisecting again with increased '
+            'repeat_count or on a sub-metric that shows the regression more '
+            'clearly.')
+      else:
+        self.warnings.append(
+          'Confidence is 0%. Try bisecting again on another platform, with '
+          'increased repeat_count or on a sub-metric that shows the '
+          'regression more clearly.')
 
   def FormatAndPrintResults(self, bisect_results):
     """Prints the results from a bisection run in a readable format.
@@ -3521,6 +3522,8 @@ class BisectPerformanceMetrics(object):
     revision_data_sorted = sorted(revision_data.iteritems(),
                                   key = lambda x: x[1]['sort'])
     results_dict = self._GetResultsDict(revision_data, revision_data_sorted)
+
+    self._CheckForWarnings(results_dict)
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Build Status Per Revision')
