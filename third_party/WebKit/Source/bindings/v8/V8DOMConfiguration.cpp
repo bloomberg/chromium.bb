@@ -30,6 +30,8 @@
 #include "bindings/v8/V8DOMConfiguration.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
@@ -115,6 +117,20 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     if (callbackCount)
         installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate);
     return defaultSignature;
+}
+
+v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolate* isolate, WrapperTypeInfo* wrapperTypeInfo, void (*configureDOMClassTemplate)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*))
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(wrapperTypeInfo);
+    if (!result.IsEmpty())
+        return result;
+
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
+    result = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureDOMClassTemplate(result, isolate);
+    data->setDOMTemplate(wrapperTypeInfo, result);
+    return result;
 }
 
 } // namespace WebCore

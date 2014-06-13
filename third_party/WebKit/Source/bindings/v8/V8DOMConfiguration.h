@@ -118,6 +118,8 @@ public:
         const AccessorConfiguration*, size_t accessorCount,
         const MethodConfiguration*, size_t callbackCount,
         v8::Isolate*);
+
+    static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*));
 };
 
 } // namespace WebCore
