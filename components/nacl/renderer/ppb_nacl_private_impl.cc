@@ -601,7 +601,31 @@ int32_t GetNexeFd(PP_Instance instance,
   return enter.SetResult(PP_OK_COMPLETIONPENDING);
 }
 
-void ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
+void ReportTranslationFinished(PP_Instance instance,
+                               PP_Bool success,
+                               int32_t opt_level,
+                               int64_t pexe_size,
+                               int64_t compile_time_us,
+                               int64_t total_time_us) {
+  if (success == PP_TRUE) {
+    static const int32_t kUnknownOptLevel = 4;
+    if (opt_level < 0 || opt_level > 3)
+      opt_level = kUnknownOptLevel;
+    HistogramEnumerate("NaCl.Options.PNaCl.OptLevel",
+                       opt_level,
+                       kUnknownOptLevel + 1);
+    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
+                      pexe_size / 1024,
+                      compile_time_us);
+    HistogramSizeKB("NaCl.Perf.Size.Pexe", pexe_size / 1024);
+
+    HistogramTimeTranslation("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
+                             total_time_us / 1000);
+    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
+                      pexe_size / 1024,
+                      total_time_us);
+  }
+
   // If the resource host isn't initialized, don't try to do that here.
   // Just return because something is already very wrong.
   if (g_pnacl_resource_host.Get() == NULL)

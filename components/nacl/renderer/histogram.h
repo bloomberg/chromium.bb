@@ -32,6 +32,8 @@ void HistogramTimeSmall(const std::string& name, int64_t sample);
 void HistogramTimeMedium(const std::string& name, int64_t sample);
 // Records values up to 33 minutes.
 void HistogramTimeLarge(const std::string& name, int64_t sample);
+// Records values up to 12 minutes.
+void HistogramTimeTranslation(const std::string& name, int64_t sample_ms);
 
 void HistogramStartupTimeSmall(const std::string& name,
                                base::TimeDelta td,
@@ -42,5 +44,6 @@ void HistogramStartupTimeMedium(const std::string& name,
 void HistogramSizeKB(const std::string& name, int32_t sample);
 void HistogramHTTPStatusCode(const std::string& name, int32_t status);
 void HistogramEnumerateManifestIsDataURI(bool is_data_uri);
+void HistogramKBPerSec(const std::string& name, int64_t kb, int64_t us);
 
 }  // namespace nacl

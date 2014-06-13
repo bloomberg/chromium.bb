@@ -3363,9 +3363,9 @@ static int32_t Pnacl_M25_PPB_NaCl_Private_GetNexeFd(PP_Instance instance, const 
   return iface->GetNexeFd(instance, pexe_url, abi_version, opt_level, headers, extra_flags, is_hit, nexe_handle, *callback);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
+static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us, int64_t total_time_us) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportTranslationFinished(instance, success);
+  iface->ReportTranslationFinished(instance, success, opt_level, pexe_size, compile_time_us, total_time_us);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_DispatchEvent(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes) {
@@ -5269,7 +5269,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
     .IsNonSFIModeEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsNonSFIModeEnabled,
     .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* headers, const char* extra_flags, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_GetNexeFd,
-    .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
+    .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success, int32_t opt_level, int64_t pexe_size, int64_t compile_time_us, int64_t total_time_us))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .ReportLoadSuccess = (void (*)(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,

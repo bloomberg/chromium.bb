@@ -132,6 +132,20 @@ void HistogramTimeLarge(const std::string& name, int64_t sample) {
     counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
 }
 
+// Records values up to 12 minutes.
+void HistogramTimeTranslation(const std::string& name, int64_t sample_ms) {
+  if (sample_ms < 0)
+    sample_ms = 0;
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMilliseconds(720000),
+      100,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (counter)
+    counter->AddTime(base::TimeDelta::FromMilliseconds(sample_ms));
+}
+
 void HistogramStartupTimeSmall(const std::string& name,
                                base::TimeDelta td,
                                int64_t nexe_size) {
@@ -177,6 +191,17 @@ void HistogramHTTPStatusCode(const std::string& name,
 
 void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
   HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2);
+}
+
+void HistogramKBPerSec(const std::string& name, int64_t kb, int64_t us) {
+  if (kb < 0 || us <= 0) return;
+  static const double kMaxRate = 30 * 1000.0;  // max of 30MB/sec.
+  int32_t rate = std::min(kb / (us / 1000000.0), kMaxRate);
+  HistogramCustomCounts(name,
+                        rate,
+                        1,
+                        30 * 1000,  // max of 30 MB/sec.
+                        100);
 }
 
 }  // namespace nacl

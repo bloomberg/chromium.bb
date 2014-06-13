@@ -24,10 +24,6 @@
 
 namespace plugin {
 
-//////////////////////////////////////////////////////////////////////
-//  UMA stat helpers.
-//////////////////////////////////////////////////////////////////////
-
 namespace {
 
 // Assume translation time metrics *can be* large.
@@ -43,10 +39,6 @@ const uint32_t kSizeKBBuckets = 100;
 const int32_t kRatioMin = 10;
 const int32_t kRatioMax = 10*100;          // max of 10x difference.
 const uint32_t kRatioBuckets = 100;
-
-const int32_t kKBPSMin = 1;
-const int32_t kKBPSMax = 30*1000;          // max of 30 MB / sec.
-const uint32_t kKBPSBuckets = 100;
 
 void HistogramTime(pp::UMAPrivate& uma,
                    const nacl::string& name, int64_t ms) {
@@ -75,29 +67,9 @@ void HistogramRatio(pp::UMAPrivate& uma,
                             kRatioBuckets);
 }
 
-void HistogramKBPerSec(pp::UMAPrivate& uma,
-                       const nacl::string& name, double kb, double s) {
-  if (kb < 0.0 || s <= 0.0) return;
-  uma.HistogramCustomCounts(name,
-                            static_cast<int64_t>(kb / s),
-                            kKBPSMin, kKBPSMax,
-                            kKBPSBuckets);
-}
-
 void HistogramEnumerateTranslationCache(pp::UMAPrivate& uma, bool hit) {
   uma.HistogramEnumeration("NaCl.Perf.PNaClCache.IsHit",
                            hit, 2);
-}
-
-// Opt level is expected to be 0 to 3.  Treating 4 as unknown.
-const int8_t kOptUnknown = 4;
-
-void HistogramOptLevel(pp::UMAPrivate& uma, int8_t opt_level) {
-  if (opt_level < 0 || opt_level > 3) {
-    opt_level = kOptUnknown;
-  }
-  uma.HistogramEnumeration("NaCl.Options.PNaCl.OptLevel",
-                           opt_level, kOptUnknown+1);
 }
 
 nacl::string GetArchitectureAttributes(Plugin* plugin) {
@@ -107,11 +79,6 @@ nacl::string GetArchitectureAttributes(Plugin* plugin) {
 }
 
 }  // namespace
-
-
-//////////////////////////////////////////////////////////////////////
-//  The coordinator class.
-//////////////////////////////////////////////////////////////////////
 
 // Out-of-line destructor to keep it from getting put in every .o where
 // callback_source.h is included
@@ -182,7 +149,7 @@ PnaclCoordinator::~PnaclCoordinator() {
   if (!translation_finished_reported_) {
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(),
-        PP_FALSE);
+        PP_FALSE, 0, 0, 0, 0);
   }
   // Force deleting the translate_thread now. It must be deleted
   // before any scoped_* fields hanging off of PnaclCoordinator
@@ -233,7 +200,7 @@ void PnaclCoordinator::ExitWithError() {
     translation_finished_reported_ = true;
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(),
-        PP_FALSE);
+        PP_FALSE, 0, 0, 0, 0);
     translate_notify_callback_.Run(PP_ERROR_FAILED);
   } else {
     PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError an earlier error was "
@@ -252,9 +219,10 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     ExitWithError();
     return;
   }
+
   // Send out one last progress event, to finish up the progress events
   // that were delayed (see the delay inserted in BitcodeGotCompiled).
-  if (ExpectedProgressKnown()) {
+  if (expected_pexe_size_ != -1) {
     pexe_bytes_compiled_ = expected_pexe_size_;
     GetNaClInterface()->DispatchEvent(plugin_->pp_instance(),
                                       PP_NACL_EVENT_PROGRESS,
@@ -263,16 +231,6 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
                                       pexe_bytes_compiled_,
                                       expected_pexe_size_);
   }
-
-  // If there are no errors, report stats from this thread (the main thread).
-  HistogramOptLevel(plugin_->uma_interface(), pnacl_options_.opt_level);
-  HistogramKBPerSec(plugin_->uma_interface(),
-                    "NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
-                    pexe_size_ / 1024.0,
-                    translate_thread_->GetCompileTime() / 1000000.0);
-  HistogramSizeKB(plugin_->uma_interface(), "NaCl.Perf.Size.Pexe",
-                  static_cast<int64_t>(pexe_size_ / 1024));
-
   struct nacl_abi_stat stbuf;
   struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
   int stat_ret;
@@ -287,25 +245,17 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     HistogramRatio(plugin_->uma_interface(),
                    "NaCl.Perf.Size.PexeNexeSizePct", pexe_size_, nexe_size);
   }
-
-  int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
-  HistogramTime(plugin_->uma_interface(),
-                "NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
-                total_time / NACL_MICROS_PER_MILLI);
-  HistogramKBPerSec(plugin_->uma_interface(),
-                    "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
-                    pexe_size_ / 1024.0,
-                    total_time / 1000000.0);
-
   // The nexe is written to the temp_nexe_file_.  We must Reset() the file
   // pointer to be able to read it again from the beginning.
   temp_nexe_file_->Reset();
 
+  int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
   // Report to the browser that translation finished. The browser will take
   // care of storing the nexe in the cache.
   translation_finished_reported_ = true;
   plugin_->nacl_interface()->ReportTranslationFinished(
-      plugin_->pp_instance(), PP_TRUE);
+      plugin_->pp_instance(), PP_TRUE, pnacl_options_.opt_level,
+      pexe_size_, translate_thread_->GetCompileTime(), total_time);
 
   NexeReadDidOpen(PP_OK);
 }
@@ -547,7 +497,7 @@ void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
   DCHECK(pp_error == PP_OK);
   pexe_bytes_compiled_ += bytes_compiled;
   // If we don't know the expected total yet, ask.
-  if (!ExpectedProgressKnown()) {
+  if (expected_pexe_size_ == -1) {
     int64_t amount_downloaded;  // dummy variable.
     streaming_downloader_->GetDownloadProgress(&amount_downloaded,
                                                &expected_pexe_size_);
@@ -555,7 +505,7 @@ void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
   // Hold off reporting the last few bytes of progress, since we don't know
   // when they are actually completely compiled.  "bytes_compiled" only means
   // that bytes were sent to the compiler.
-  if (ExpectedProgressKnown()) {
+  if (expected_pexe_size_ != -1) {
     if (!ShouldDelayProgressEvent()) {
       GetNaClInterface()->DispatchEvent(plugin_->pp_instance(),
                                         PP_NACL_EVENT_PROGRESS,

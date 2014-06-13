@@ -87,9 +87,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Get the last known load progress.
   void GetCurrentProgress(int64_t* bytes_loaded, int64_t* bytes_total);
 
-  // Return true if the total progress to report (w/ progress events) is known.
-  bool ExpectedProgressKnown() { return expected_pexe_size_ != -1; }
-
   // Return true if we should delay the progress event reporting.
   // This delay approximates:
   // - the size of the buffer of bytes sent but not-yet-compiled by LLC.

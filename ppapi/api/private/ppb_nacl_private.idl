@@ -289,7 +289,11 @@ interface PPB_NaCl_Private {
    * the plugin.)
    */
   void ReportTranslationFinished([in] PP_Instance instance,
-                                 [in] PP_Bool success);
+                                 [in] PP_Bool success,
+                                 [in] int32_t opt_level,
+                                 [in] int64_t pexe_size,
+                                 [in] int64_t compile_time_us,
+                                 [in] int64_t total_time_us);
 
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
