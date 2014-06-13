@@ -6239,8 +6239,8 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN8feedback20FeedbackUploaderTestC1Ev
-   fun:_ZN8feedback*FeedbackUploaderTest*
+   fun:_ZN8feedback16FeedbackDataTestC1Ev
+   fun:_ZN8feedback*FeedbackDataTest*
    fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
 }
 {
