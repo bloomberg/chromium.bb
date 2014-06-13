@@ -567,7 +567,13 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
+#if defined(ADDERSS_SANITIZER)
+#define Maybe_DuplicatePageCapture DISABLED_DuplicatePageCapture
+#else
+#define Maybe_DuplicatePageCapture DuplicatePageCapture
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
+                       DISABLED_DuplicatePageCapture) {
   // Tests that a second PageCaptured notification causes classification to
   // be cancelled.
   MockScorer scorer;
