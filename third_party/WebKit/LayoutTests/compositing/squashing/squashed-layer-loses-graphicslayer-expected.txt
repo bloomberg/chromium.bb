@@ -42,6 +42,7 @@ CASE 2, The original composited layer is no longer composited, which then also r
         (rect 220.00 220.00 100.00 100.00)
         (rect 140.00 140.00 100.00 100.00)
         (rect 60.00 60.00 100.00 100.00)
+        (rect 60.00 60.00 100.00 100.00)
       )
     )
   )

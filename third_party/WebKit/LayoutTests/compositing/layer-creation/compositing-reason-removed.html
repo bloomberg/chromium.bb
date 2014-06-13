@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<style>
+  #square {
+    background-color: blue;
+    width: 30px;
+    height: 30px;
+    position: relative;
+    -webkit-backface-visibility: hidden;
+  }
+
+  #testResults {
+    display: none;
+  }
+</style>
+
+<script>
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+  }
+
+  onload = function() {
+    if (!window.internals)
+      return;
+
+    window.internals.startTrackingRepaints(document);
+
+    // Remove the div's only compositing reason. This should trigger a repaint.
+    document.getElementById("square").style.webkitBackfaceVisibility = "visible";
+    document.getElementById("layertree").textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+    window.internals.stopTrackingRepaints(document);
+
+    document.getElementById("testResults").style.display = "block";
+  }
+</script>
+
+<div id="square"></div>
+
+<div id="testResults">
+  <pre id="layertree"></pre>
+</div>
