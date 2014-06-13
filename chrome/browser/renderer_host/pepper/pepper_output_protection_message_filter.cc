@@ -91,6 +91,7 @@ class PepperOutputProtectionMessageFilter::Delegate
   // aura::WindowObserver overrides.
   virtual void OnWindowHierarchyChanged(
       const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   int32_t OnQueryStatus(uint32_t* link_mask, uint32_t* protection_mask);
   int32_t OnEnableProtection(uint32_t desired_method_mask);
@@ -102,9 +103,14 @@ class PepperOutputProtectionMessageFilter::Delegate
   int render_process_id_;
   int render_frame_id_;
 
+  // Native window being observed.
+  aura::Window* window_;
+
   ui::DisplayConfigurator::ContentProtectionClientId client_id_;
+
   // The display id which the renderer currently uses.
   int64 display_id_;
+
   // The last desired method mask. Will enable this mask on new display if
   // renderer changes display.
   uint32_t desired_method_mask_;
@@ -114,6 +120,7 @@ PepperOutputProtectionMessageFilter::Delegate::Delegate(int render_process_id,
                                                         int render_frame_id)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
+      window_(NULL),
       client_id_(ui::DisplayConfigurator::kInvalidClientId),
       display_id_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -126,13 +133,8 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
       ash::Shell::GetInstance()->display_configurator();
   configurator->UnregisterContentProtectionClient(client_id_);
 
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (rfh) {
-    gfx::NativeView native_view = rfh->GetNativeView();
-    if (native_view)
-      native_view->RemoveObserver(this);
-  }
+  if (window_)
+    window_->RemoveObserver(this);
 }
 
 ui::DisplayConfigurator::ContentProtectionClientId
@@ -143,10 +145,11 @@ PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
         content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!GetCurrentDisplayId(rfh, &display_id_))
       return ui::DisplayConfigurator::kInvalidClientId;
-    gfx::NativeView native_view = rfh->GetNativeView();
-    if (!native_view)
+
+    window_ = rfh->GetNativeView();
+    if (!window_)
       return ui::DisplayConfigurator::kInvalidClientId;
-    native_view->AddObserver(this);
+    window_->AddObserver(this);
 
     ui::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
@@ -226,7 +229,14 @@ void PepperOutputProtectionMessageFilter::Delegate::OnWindowHierarchyChanged(
   }
   display_id_ = new_display_id;
 }
-#endif
+
+void PepperOutputProtectionMessageFilter::Delegate::OnWindowDestroying(
+    aura::Window* window) {
+  DCHECK_EQ(window, window_);
+  window_->RemoveObserver(this);
+  window_ = NULL;
+}
+#endif  // defined(OS_CHROMEOS)
 
 PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
     content::BrowserPpapiHost* host,
