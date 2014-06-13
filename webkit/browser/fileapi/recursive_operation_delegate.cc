@@ -111,7 +111,6 @@ void RecursiveOperationDelegate::DidReadDirectory(
     base::File::Error error,
     const FileEntryList& entries,
     bool has_more) {
-  DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK_EQ(0, inflight_operations_);
 
