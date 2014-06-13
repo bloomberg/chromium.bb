@@ -331,7 +331,7 @@ bool ChromeBreakpadClient::IsRunningUnattended() {
 }
 
 bool ChromeBreakpadClient::GetCollectStatsConsent() {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
   bool is_official_chrome_build = true;
 #else
   bool is_official_chrome_build = false;
