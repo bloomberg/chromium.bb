@@ -35,7 +35,3 @@ Script execution resumed.
 
 Running: testBreakpointsUpdated
 
-Running: testNoCrashWhenLiveEditOnBreakpoint
-Script execution paused.
-Script execution resumed.
-
