@@ -5,6 +5,9 @@
 
 # pylint: disable=R0201,W0613
 
+import StringIO
+import __builtin__
+import contextlib
 import logging
 import math
 import os
@@ -322,6 +325,39 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.mock(net, 'url_open',
         lambda url, **_kwargs: timeouting_http_response(url))
     self.assertIsNone(net.url_read('https://fake_url.com/test'))
+
+  def test_url_retrieve(self):
+    # Successfully reads the data.
+    @contextlib.contextmanager
+    def fake_open(_filepath, _mode):
+      yield StringIO.StringIO()
+
+    self.mock(__builtin__, 'open', fake_open)
+    self.mock(net, 'url_open',
+        lambda url, **_kwargs: net.HttpResponse.get_fake_response('111', url))
+    self.assertEqual(
+        True, net.url_retrieve('filepath', 'https://localhost/test'))
+
+    # Respects url_open connection errors.
+    self.mock(net, 'url_open', lambda _url, **_kwargs: None)
+    self.assertEqual(
+        False, net.url_retrieve('filepath', 'https://localhost/test'))
+
+    # Respects read timeout errors.
+    def timeouting_http_response(url):
+      def read_mock(_size=None):
+        raise net.TimeoutError()
+      response = net.HttpResponse.get_fake_response('', url)
+      self.mock(response, 'read', read_mock)
+      return response
+
+    removed = []
+    self.mock(os, 'remove', removed.append)
+    self.mock(net, 'url_open',
+        lambda url, **_kwargs: timeouting_http_response(url))
+    self.assertEqual(
+        False, net.url_retrieve('filepath', 'https://localhost/test'))
+    self.assertEqual(['filepath'], removed)
 
 
 if __name__ == '__main__':

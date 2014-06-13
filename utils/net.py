@@ -202,6 +202,26 @@ def url_read(url, **kwargs):
     return None
 
 
+def url_retrieve(filepath, url, **kwargs):
+  """Downloads an URL to a file. Returns True on success."""
+  response = url_open(url, **kwargs)
+  if not response:
+    return False
+  try:
+    with open(filepath, 'wb') as f:
+      while True:
+        buf = response.read(65536)
+        if not buf:
+          return True
+        f.write(buf)
+  except (IOError, OSError, TimeoutError):
+    try:
+      os.remove(filepath)
+    except IOError:
+      pass
+    return False
+
+
 def split_server_request_url(url):
   """Splits the url into scheme+netloc and path+params+query+fragment."""
   url_parts = list(urlparse.urlparse(url))
