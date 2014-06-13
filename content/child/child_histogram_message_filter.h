@@ -24,7 +24,7 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   ChildHistogramMessageFilter();
 
   // IPC::MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -42,7 +42,7 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
   // Send only a delta to what we have already sent.
   void UploadAllHistograms(int sequence_number);
 
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 

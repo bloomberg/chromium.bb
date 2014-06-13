@@ -50,12 +50,12 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   virtual ~MidiMessageFilter();
 
  private:
-  // Sends an IPC message using |channel_|.
+  // Sends an IPC message using |sender_|.
   void Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on |io_message_loop|.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -94,8 +94,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   blink::WebMIDIAccessorClient* GetClientFromId(int client_id);
 
-  // IPC channel for Send(); must only be accessed on |io_message_loop_|.
-  IPC::Channel* channel_;
+  // IPC sender for Send(); must only be accessed on |io_message_loop_|.
+  IPC::Sender* sender_;
 
   // Message loop on which IPC calls are driven.
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;

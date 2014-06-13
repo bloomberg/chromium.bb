@@ -43,7 +43,7 @@ const int kPluginReleaseTimeMinutes = 5;
 // happen in a single process browser and avoid deadlock.
 class PluginChannel::MessageFilter : public IPC::MessageFilter {
  public:
-  MessageFilter() : channel_(NULL) { }
+  MessageFilter() : sender_(NULL) { }
 
   base::WaitableEvent* GetModalDialogEvent(int render_view_id) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
@@ -75,12 +75,12 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
 
   bool Send(IPC::Message* message) {
     // Need this function for the IPC_MESSAGE_HANDLER_DELAY_REPLY macro.
-    return channel_->Send(message);
+    return sender_->Send(message);
   }
 
   // IPC::MessageFilter:
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
-    channel_ = channel;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+    sender_ = sender;
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -138,7 +138,7 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
   ModalDialogEventMap modal_dialog_event_map_;
   base::Lock modal_dialog_event_map_lock_;
 
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
 };
 
 PluginChannel* PluginChannel::GetPluginChannel(

@@ -34,7 +34,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   virtual bool Send(Message* message) OVERRIDE;
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(Sender* sender) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const Message& message) OVERRIDE;
@@ -48,7 +48,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   void SignalAllEvents();
 
   // The channel to which this filter was added.
-  Channel* channel_;
+  Sender* sender_;
 
   // The process's main thread.
   scoped_refptr<base::MessageLoopProxy> listener_loop_;

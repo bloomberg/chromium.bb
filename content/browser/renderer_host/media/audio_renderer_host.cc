@@ -155,7 +155,7 @@ void AudioRendererHost::GetOutputControllers(
 }
 
 void AudioRendererHost::OnChannelClosing() {
-  // Since the IPC channel is gone, close all requested audio streams.
+  // Since the IPC sender is gone, close all requested audio streams.
   while (!audio_entries_.empty()) {
     // Note: OnCloseStream() removes the entries from audio_entries_.
     OnCloseStream(audio_entries_.begin()->first);

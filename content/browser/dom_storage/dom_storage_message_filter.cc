@@ -47,7 +47,7 @@ void DOMStorageMessageFilter::UninitializeInSequence() {
   host_.reset();
 }
 
-void DOMStorageMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+void DOMStorageMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,

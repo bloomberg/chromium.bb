@@ -117,7 +117,7 @@ bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
 void MediaStreamDispatcherHost::OnChannelClosing() {
   DVLOG(1) << "MediaStreamDispatcherHost::OnChannelClosing";
 
-  // Since the IPC channel is gone, close all requesting/requested streams.
+  // Since the IPC sender is gone, close all requesting/requested streams.
   media_stream_manager_->CancelAllRequests(render_process_id_);
 }
 

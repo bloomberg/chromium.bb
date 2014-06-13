@@ -76,12 +76,12 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   MessageFilter(GpuVideoDecodeAccelerator* owner, int32 host_route_id)
       : owner_(owner), host_route_id_(host_route_id) {}
 
-  virtual void OnChannelError() OVERRIDE { channel_ = NULL; }
+  virtual void OnChannelError() OVERRIDE { sender_ = NULL; }
 
-  virtual void OnChannelClosing() OVERRIDE { channel_ = NULL; }
+  virtual void OnChannelClosing() OVERRIDE { sender_ = NULL; }
 
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
-    channel_ = channel;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+    sender_ = sender;
   }
 
   virtual void OnFilterRemoved() OVERRIDE {
@@ -103,11 +103,11 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
   bool SendOnIOThread(IPC::Message* message) {
     DCHECK(!message->is_sync());
-    if (!channel_) {
+    if (!sender_) {
       delete message;
       return false;
     }
-    return channel_->Send(message);
+    return sender_->Send(message);
   }
 
  protected:
@@ -116,8 +116,8 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
  private:
   GpuVideoDecodeAccelerator* owner_;
   int32 host_route_id_;
-  // The channel to which this filter was added.
-  IPC::Channel* channel_;
+  // The sender to which this filter was added.
+  IPC::Sender* sender_;
 };
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(

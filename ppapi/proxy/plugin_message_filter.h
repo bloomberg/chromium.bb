@@ -41,7 +41,7 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
   virtual ~PluginMessageFilter();
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -72,9 +72,9 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
 
   scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
 
-  // The IPC channel to the renderer. May be NULL if we're not currently
+  // The IPC sender to the renderer. May be NULL if we're not currently
   // attached as a filter.
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
 };
 
 }  // namespace proxy

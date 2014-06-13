@@ -77,24 +77,24 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
                           scoped_refptr<base::MessageLoopProxy> message_loop)
       : preemption_state_(IDLE),
         gpu_channel_(gpu_channel),
-        channel_(NULL),
+        sender_(NULL),
         sync_point_manager_(sync_point_manager),
         message_loop_(message_loop),
         messages_forwarded_to_channel_(0),
         a_stub_is_descheduled_(false) {}
 
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
-    DCHECK(!channel_);
-    channel_ = channel;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+    DCHECK(!sender_);
+    sender_ = sender;
   }
 
   virtual void OnFilterRemoved() OVERRIDE {
-    DCHECK(channel_);
-    channel_ = NULL;
+    DCHECK(sender_);
+    sender_ = NULL;
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    DCHECK(channel_);
+    DCHECK(sender_);
 
     bool handled = false;
     if (message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) {
@@ -148,7 +148,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   }
 
   bool Send(IPC::Message* message) {
-    return channel_->Send(message);
+    return sender_->Send(message);
   }
 
  protected:
@@ -359,7 +359,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // NOTE: this weak pointer is never dereferenced on the IO thread, it's only
   // passed through - therefore the WeakPtr assumptions are respected.
   base::WeakPtr<GpuChannel> gpu_channel_;
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
   scoped_refptr<SyncPointManager> sync_point_manager_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;

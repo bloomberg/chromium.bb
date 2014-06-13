@@ -15,16 +15,16 @@ namespace tracing {
 
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::MessageLoopProxy* ipc_message_loop)
-    : channel_(NULL),
+    : sender_(NULL),
       ipc_message_loop_(ipc_message_loop) {}
 
-void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
-  channel_->Send(new TracingHostMsg_ChildSupportsTracing());
+void ChildTraceMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+  sender_ = sender;
+  sender_->Send(new TracingHostMsg_ChildSupportsTracing());
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
-  channel_ = NULL;
+  sender_ = NULL;
 }
 
 bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -105,7 +105,7 @@ void ChildTraceMessageFilter::OnCaptureMonitoringSnapshot() {
 void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
   float bpf = TraceLog::GetInstance()->GetBufferPercentFull();
 
-  channel_->Send(new TracingHostMsg_TraceBufferPercentFullReply(bpf));
+  sender_->Send(new TracingHostMsg_TraceBufferPercentFullReply(bpf));
 }
 
 void ChildTraceMessageFilter::OnSetWatchEvent(const std::string& category_name,
@@ -125,7 +125,7 @@ void ChildTraceMessageFilter::OnWatchEventMatched() {
         base::Bind(&ChildTraceMessageFilter::OnWatchEventMatched, this));
     return;
   }
-  channel_->Send(new TracingHostMsg_WatchEventMatched);
+  sender_->Send(new TracingHostMsg_WatchEventMatched);
 }
 
 void ChildTraceMessageFilter::OnTraceDataCollected(
@@ -138,13 +138,13 @@ void ChildTraceMessageFilter::OnTraceDataCollected(
     return;
   }
   if (events_str_ptr->data().size()) {
-    channel_->Send(new TracingHostMsg_TraceDataCollected(
+    sender_->Send(new TracingHostMsg_TraceDataCollected(
         events_str_ptr->data()));
   }
   if (!has_more_events) {
     std::vector<std::string> category_groups;
     TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-    channel_->Send(new TracingHostMsg_EndTracingAck(category_groups));
+    sender_->Send(new TracingHostMsg_EndTracingAck(category_groups));
   }
 }
 
@@ -160,11 +160,11 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
                    has_more_events));
     return;
   }
-  channel_->Send(new TracingHostMsg_MonitoringTraceDataCollected(
+  sender_->Send(new TracingHostMsg_MonitoringTraceDataCollected(
       events_str_ptr->data()));
 
   if (!has_more_events)
-    channel_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
+    sender_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
 }
 
 }  // namespace tracing

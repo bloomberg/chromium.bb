@@ -12,7 +12,7 @@
 
 namespace IPC {
 
-class Channel;
+class Sender;
 class Message;
 
 // A class that receives messages on the thread where the IPC channel is
@@ -25,7 +25,7 @@ class IPC_EXPORT MessageFilter
   // Called on the background thread to provide the filter with access to the
   // channel.  Called when the IPC channel is initialized or when AddFilter
   // is called if the channel is already initialized.
-  virtual void OnFilterAdded(Channel* channel);
+  virtual void OnFilterAdded(Sender* sender);
 
   // Called on the background thread when the filter has been removed from
   // the ChannelProxy and when the Channel is closing.  After a filter is

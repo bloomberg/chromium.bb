@@ -23,18 +23,18 @@ PluginMessageFilter::PluginMessageFilter(
     scoped_refptr<ResourceReplyThreadRegistrar> registrar)
     : seen_instance_ids_(seen_instance_ids),
       resource_reply_thread_registrar_(registrar),
-      channel_(NULL) {
+      sender_(NULL) {
 }
 
 PluginMessageFilter::~PluginMessageFilter() {
 }
 
-void PluginMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
+void PluginMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+  sender_ = sender;
 }
 
 void PluginMessageFilter::OnFilterRemoved() {
-  channel_ = NULL;
+  sender_ = NULL;
 }
 
 bool PluginMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -48,8 +48,8 @@ bool PluginMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool PluginMessageFilter::Send(IPC::Message* msg) {
-  if (channel_)
-    return channel_->Send(msg);
+  if (sender_)
+    return sender_->Send(msg);
   delete msg;
   return false;
 }

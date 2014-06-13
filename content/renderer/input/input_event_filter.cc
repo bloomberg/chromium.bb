@@ -16,8 +16,8 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
-#include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/vector2d_f.h"
 
 using blink::WebInputEvent;
@@ -89,9 +89,9 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
       scoped_ptr<IPC::Message>(new ViewHostMsg_DidStopFlinging(routing_id)));
 }
 
-void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
+void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
   io_loop_ = base::MessageLoopProxy::current();
-  sender_ = channel;
+  sender_ = sender;
 }
 
 void InputEventFilter::OnFilterRemoved() {

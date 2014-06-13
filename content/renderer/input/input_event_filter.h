@@ -60,7 +60,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   virtual void DidStopFlinging(int routing_id) OVERRIDE;
 
   // IPC::MessageFilter methods:
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

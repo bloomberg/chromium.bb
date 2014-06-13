@@ -12,10 +12,6 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
 
-namespace IPC {
-class Channel;
-}
-
 namespace content {
 
 // Dispatches messages used for font caching on Windows. This is needed because
@@ -31,7 +27,7 @@ class FontCacheDispatcher : public IPC::MessageFilter, public IPC::Sender {
 
  private:
   // IPC::MessageFilter implementation:
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -39,7 +35,7 @@ class FontCacheDispatcher : public IPC::MessageFilter, public IPC::Sender {
   void OnPreCacheFont(const LOGFONT& font);
   void OnReleaseCachedFonts();
 
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
 
   DISALLOW_COPY_AND_ASSIGN(FontCacheDispatcher);
 };

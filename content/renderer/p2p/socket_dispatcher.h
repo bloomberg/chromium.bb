@@ -74,7 +74,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter {
 
   // IPC::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -113,7 +113,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter {
   scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
       network_list_observers_;
 
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

@@ -30,9 +30,9 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   virtual ~Internal() {}
 
   // IPC::MessageFilter implementation:
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
-    filter_->channel_ = channel;
-    filter_->OnFilterAdded(channel);
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+    filter_->sender_ = sender;
+    filter_->OnFilterAdded(sender);
   }
 
   virtual void OnFilterRemoved() OVERRIDE {
@@ -40,7 +40,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   virtual void OnChannelClosing() OVERRIDE {
-    filter_->channel_ = NULL;
+    filter_->sender_ = NULL;
     filter_->OnChannelClosing();
   }
 
@@ -101,7 +101,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
 
 BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
     : internal_(NULL),
-      channel_(NULL),
+      sender_(NULL),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
@@ -112,7 +112,7 @@ BrowserMessageFilter::BrowserMessageFilter(
     const uint32* message_classes_to_filter,
     size_t num_message_classes_to_filter)
     : internal_(NULL),
-      channel_(NULL),
+      sender_(NULL),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
@@ -161,8 +161,8 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
     return true;
   }
 
-  if (channel_)
-    return channel_->Send(message);
+  if (sender_)
+    return sender_->Send(message);
 
   delete message;
   return false;

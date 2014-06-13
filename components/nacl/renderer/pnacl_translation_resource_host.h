@@ -56,7 +56,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   typedef std::map<PP_Instance, CacheRequestInfo> CacheRequestInfoMap;
   // IPC::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -76,7 +76,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // Should be accessed on the io thread.
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
   CacheRequestInfoMap pending_cache_requests_;
   DISALLOW_COPY_AND_ASSIGN(PnaclTranslationResourceHost);
 };

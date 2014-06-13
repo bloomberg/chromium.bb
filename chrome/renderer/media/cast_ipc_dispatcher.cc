@@ -12,7 +12,7 @@ CastIPCDispatcher* CastIPCDispatcher::global_instance_ = NULL;
 
 CastIPCDispatcher::CastIPCDispatcher(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : channel_(NULL),
+    : sender_(NULL),
       io_message_loop_(io_message_loop) {
   DCHECK(io_message_loop_);
   DCHECK(!global_instance_);
@@ -29,8 +29,8 @@ CastIPCDispatcher* CastIPCDispatcher::Get() {
 
 void CastIPCDispatcher::Send(IPC::Message* message) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  if (channel_) {
-    channel_->Send(message);
+  if (sender_) {
+    sender_->Send(message);
   } else {
     delete message;
   }
@@ -56,18 +56,18 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void CastIPCDispatcher::OnFilterAdded(IPC::Channel* channel) {
+void CastIPCDispatcher::OnFilterAdded(IPC::Sender* sender) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   DCHECK(!global_instance_);
   global_instance_ = this;
-  channel_ = channel;
+  sender_ = sender;
 }
 
 void CastIPCDispatcher::OnFilterRemoved() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(this, global_instance_);
   global_instance_ = NULL;
-  channel_ = NULL;
+  sender_ = NULL;
 }
 
 void CastIPCDispatcher::OnChannelClosing() {

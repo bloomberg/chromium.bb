@@ -54,7 +54,7 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
 
   // IPC::MessageFilter override. Called on |io_message_loop_|.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -80,8 +80,8 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   // A map of stream ids to delegates.
   IDMap<media::AudioInputIPCDelegate> delegates_;
 
-  // IPC channel for Send(), must only be accesed on |io_message_loop_|.
-  IPC::Channel* channel_;
+  // IPC sender for Send(), must only be accesed on |io_message_loop_|.
+  IPC::Sender* sender_;
 
   // Message loop on which IPC calls are driven.
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;

@@ -65,12 +65,12 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // stream_id and the source render_view_id.
   class AudioOutputIPCImpl;
 
-  // Sends an IPC message using |channel_|.
+  // Sends an IPC message using |sender_|.
   void Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on |io_message_loop|.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
@@ -92,8 +92,8 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   void OnOutputDeviceChanged(int stream_id, int new_buffer_size,
                              int new_sample_rate);
 
-  // IPC channel for Send(); must only be accesed on |io_message_loop_|.
-  IPC::Channel* channel_;
+  // IPC sender for Send(); must only be accesed on |io_message_loop_|.
+  IPC::Sender* sender_;
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_message_loop_|.

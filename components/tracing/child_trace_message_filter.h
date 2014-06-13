@@ -21,7 +21,7 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   explicit ChildTraceMessageFilter(base::MessageLoopProxy* ipc_message_loop);
 
   // IPC::MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -54,7 +54,7 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
-  IPC::Channel* channel_;
+  IPC::Sender* sender_;
   base::MessageLoopProxy* ipc_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);

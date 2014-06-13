@@ -105,7 +105,7 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
 }
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
-  // Since the IPC channel is gone, close pending connections.
+  // Since the IPC sender is gone, close pending connections.
   STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
   sockets_.clear();
 

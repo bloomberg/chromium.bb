@@ -70,7 +70,7 @@ AudioInputRendererHost::~AudioInputRendererHost() {
 }
 
 void AudioInputRendererHost::OnChannelClosing() {
-  // Since the IPC channel is gone, close all requested audio streams.
+  // Since the IPC sender is gone, close all requested audio streams.
   DeleteEntries();
 }
 

@@ -12,20 +12,20 @@
 #include "content/child/child_process.h"
 #include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_sender.h"
 
 namespace content {
 
 ChildHistogramMessageFilter::ChildHistogramMessageFilter()
-    : channel_(NULL),
+    : sender_(NULL),
       io_message_loop_(ChildProcess::current()->io_message_loop_proxy()) {
 }
 
 ChildHistogramMessageFilter::~ChildHistogramMessageFilter() {
 }
 
-void ChildHistogramMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
+void ChildHistogramMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+  sender_ = sender;
 }
 
 void ChildHistogramMessageFilter::OnFilterRemoved() {
@@ -60,7 +60,7 @@ void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
 
   std::vector<std::string> deltas;
   histogram_delta_serialization_->PrepareAndSerializeDeltas(&deltas);
-  channel_->Send(
+  sender_->Send(
       new ChildProcessHostMsg_ChildHistogramData(sequence_number, deltas));
 
   static int count = 0;

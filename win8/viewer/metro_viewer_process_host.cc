@@ -42,7 +42,7 @@ MetroViewerProcessHost::InternalMessageFilter::InternalMessageFilter(
 }
 
 void MetroViewerProcessHost::InternalMessageFilter::OnChannelConnected(
-    int32 /* peer_pid */) {
+    int32 peer_pid) {
   owner_->NotifyChannelConnected();
 }
 

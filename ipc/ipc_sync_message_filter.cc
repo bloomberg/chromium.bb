@@ -17,7 +17,7 @@ using base::MessageLoopProxy;
 namespace IPC {
 
 SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
-    : channel_(NULL),
+    : sender_(NULL),
       listener_loop_(MessageLoopProxy::current()),
       shutdown_event_(shutdown_event) {
 }
@@ -67,19 +67,19 @@ bool SyncMessageFilter::Send(Message* message) {
   return pending_message.send_result;
 }
 
-void SyncMessageFilter::OnFilterAdded(Channel* channel) {
-  channel_ = channel;
+void SyncMessageFilter::OnFilterAdded(Sender* sender) {
+  sender_ = sender;
   base::AutoLock auto_lock(lock_);
   io_loop_ = MessageLoopProxy::current();
 }
 
 void SyncMessageFilter::OnChannelError() {
-  channel_ = NULL;
+  sender_ = NULL;
   SignalAllEvents();
 }
 
 void SyncMessageFilter::OnChannelClosing() {
-  channel_ = NULL;
+  sender_ = NULL;
   SignalAllEvents();
 }
 
@@ -104,8 +104,8 @@ SyncMessageFilter::~SyncMessageFilter() {
 }
 
 void SyncMessageFilter::SendOnIOThread(Message* message) {
-  if (channel_) {
-    channel_->Send(message);
+  if (sender_) {
+    sender_->Send(message);
     return;
   }
 
