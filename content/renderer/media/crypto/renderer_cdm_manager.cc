@@ -21,7 +21,11 @@ RendererCdmManager::RendererCdmManager(RenderFrame* render_frame)
       next_cdm_id_(kInvalidCdmId + 1) {
 }
 
-RendererCdmManager::~RendererCdmManager() {}
+RendererCdmManager::~RendererCdmManager() {
+  DCHECK(proxy_media_keys_map_.empty())
+      << "RendererCdmManager is owned by RenderFrameImpl and is destroyed only "
+         "after all ProxyMediaKeys are destroyed and unregistered.";
+}
 
 bool RendererCdmManager::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;

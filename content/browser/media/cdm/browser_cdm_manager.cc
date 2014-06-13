@@ -41,6 +41,10 @@ BrowserCdmManager::BrowserCdmManager(RenderFrameHost* render_frame_host)
 }
 
 BrowserCdmManager::~BrowserCdmManager() {
+  // During the tear down process, OnDestroyCdm() may or may not be called
+  // (e.g. WebContents may be destroyed before the render process is killed). So
+  // we cannot DCHECK(cdm_map_.empty()) here. Instead, all CDMs in |cdm_map_|
+  // will be destroyed here because they are owned by BrowserCdmManager.
 }
 
 BrowserCdm* BrowserCdmManager::GetCdm(int cdm_id) {
