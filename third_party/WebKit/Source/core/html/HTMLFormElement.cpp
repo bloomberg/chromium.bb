@@ -55,8 +55,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/AtomicString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -30,8 +30,6 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/rendering/HitTestResult.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

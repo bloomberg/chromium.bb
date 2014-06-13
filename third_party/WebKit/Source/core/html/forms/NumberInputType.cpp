@@ -49,7 +49,6 @@ namespace WebCore {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
-using namespace std;
 
 static const int numberDefaultStep = 1;
 static const int numberDefaultStepBase = 0;
@@ -145,7 +144,7 @@ bool NumberInputType::typeMismatch() const
 StepRange NumberInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (numberDefaultStep, numberDefaultStepBase, numberStepScaleFactor));
-    const Decimal doubleMax = Decimal::fromDouble(numeric_limits<double>::max());
+    const Decimal doubleMax = Decimal::fromDouble(std::numeric_limits<double>::max());
     return InputType::createStepRange(anyStepHandling, numberDefaultStepBase, -doubleMax, doubleMax, stepDescription);
 }
 

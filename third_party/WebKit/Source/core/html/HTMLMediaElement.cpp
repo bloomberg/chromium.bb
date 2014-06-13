@@ -81,7 +81,6 @@
 #include "platform/audio/AudioSourceProviderClient.h"
 #endif
 
-using namespace std;
 using blink::WebInbandTextTrack;
 using blink::WebMediaPlayer;
 using blink::WebMimeRegistry;
@@ -120,7 +119,6 @@ static const char* boolString(bool val)
 static const char mediaSourceBlobProtocol[] = "blob";
 
 using namespace HTMLNames;
-using namespace std;
 
 typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > WeakMediaElementSet;
 typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet> DocumentElementSetMap;
@@ -244,10 +242,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_readyStateMaximum(HAVE_NOTHING)
     , m_volume(1.0f)
     , m_lastSeekTime(0)
-    , m_previousProgressTime(numeric_limits<double>::max())
-    , m_duration(numeric_limits<double>::quiet_NaN())
+    , m_previousProgressTime(std::numeric_limits<double>::max())
+    , m_duration(std::numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
-    , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
+    , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
     , m_webLayer(0)
     , m_preload(MediaPlayer::Auto)
@@ -729,7 +727,7 @@ void HTMLMediaElement::prepareForLoad()
     // FIXME: Investigate whether these can be moved into m_networkState != NETWORK_EMPTY block above
     // so they are closer to the relevant spec steps.
     m_lastSeekTime = 0;
-    m_duration = numeric_limits<double>::quiet_NaN();
+    m_duration = std::numeric_limits<double>::quiet_NaN();
 
     // The spec doesn't say to block the load event until we actually run the asynchronous section
     // algorithm, but do it now because we won't start that until after the timer fires and the
@@ -1043,7 +1041,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
             double cueEndTime = potentiallySkippedCues[i].high();
 
             // Consider cues that may have been missed since the last seek time.
-            if (cueStartTime > max(m_lastSeekTime, lastTime) && cueEndTime < movieTime)
+            if (cueStartTime > std::max(m_lastSeekTime, lastTime) && cueEndTime < movieTime)
                 missedCues.append(potentiallySkippedCues[i]);
         }
     }
@@ -1334,7 +1332,7 @@ void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtrWillBeRawPtr<
 
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
-    double endTime = max(cue->startTime(), cue->endTime());
+    double endTime = std::max(cue->startTime(), cue->endTime());
 
     CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
     if (!m_cueTree.contains(interval))
@@ -1346,7 +1344,7 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtrWillBeRawPtr<Tex
 {
     // Negative duration cues need to be treated in the interval tree as
     // zero-length cues.
-    double endTime = max(cue->startTime(), cue->endTime());
+    double endTime = std::max(cue->startTime(), cue->endTime());
 
     CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
     m_cueTree.remove(interval);
@@ -1788,10 +1786,10 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
     // 5 - If the new playback position is later than the end of the media resource, then let it be the end
     // of the media resource instead.
-    time = min(time, duration());
+    time = std::min(time, duration());
 
     // 6 - If the new playback position is less than the earliest possible position, let it be that position instead.
-    time = max(time, 0.0);
+    time = std::max(time, 0.0);
 
     // Ask the media engine for the time value in the movie's time scale before comparing with current time. This
     // is necessary because if the seek time is not equal to currentTime but the delta is less than the movie's
@@ -1940,7 +1938,7 @@ void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionStat
 double HTMLMediaElement::duration() const
 {
     if (!m_player || m_readyState < HAVE_METADATA)
-        return numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<double>::quiet_NaN();
 
     // FIXME: Refactor so m_duration is kept current (in both MSE and
     // non-MSE cases) once we have transitioned from HAVE_NOTHING ->

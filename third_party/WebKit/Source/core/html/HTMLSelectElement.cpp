@@ -52,7 +52,6 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/text/PlatformLocale.h"
 
-using namespace std;
 using namespace WTF::Unicode;
 
 namespace WebCore {
@@ -327,7 +326,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             if (Attribute* sizeAttribute = ensureUniqueElementData().findAttributeByName(sizeAttr))
                 sizeAttribute->setValue(attrSize);
         }
-        size = max(size, 1);
+        size = std::max(size, 1);
 
         // Ensure that we've determined selectedness of the items at least once prior to changing the size.
         if (oldSize != size)
@@ -635,8 +634,8 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions)
     ASSERT(renderer() && (renderer()->isListBox() || m_multiple));
     ASSERT(!listItems().size() || m_activeSelectionAnchorIndex >= 0);
 
-    unsigned start = min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
-    unsigned end = max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
+    unsigned start = std::min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
+    unsigned end = std::max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
 
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {

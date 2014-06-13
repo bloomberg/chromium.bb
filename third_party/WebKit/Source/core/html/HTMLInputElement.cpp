@@ -76,8 +76,6 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -33,7 +33,6 @@
 #include <math.h>
 
 using namespace WebCore;
-using namespace std;
 
 TimeRanges::TimeRanges(double start, double end)
 {

@@ -33,8 +33,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Logging.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

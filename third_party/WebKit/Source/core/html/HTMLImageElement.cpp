@@ -43,8 +43,6 @@
 #include "core/rendering/RenderImage.h"
 #include "platform/MIMETypeRegistry.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

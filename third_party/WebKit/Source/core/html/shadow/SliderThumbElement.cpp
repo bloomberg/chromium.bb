@@ -46,8 +46,6 @@
 #include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -285,7 +283,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
         position -= isLeftToRightDirection ? renderBox()->marginLeft() : renderBox()->marginRight();
         currentPosition = absoluteThumbOrigin.x() - absoluteSliderContentOrigin.x();
     }
-    position = max<LayoutUnit>(0, min(position, trackSize));
+    position = std::max<LayoutUnit>(0, std::min(position, trackSize));
     const Decimal ratio = Decimal::fromDouble(static_cast<double>(position) / trackSize);
     const Decimal fraction = isVertical || !isLeftToRightDirection ? Decimal(1) - ratio : ratio;
     StepRange stepRange(input->createStepRange(RejectAny));

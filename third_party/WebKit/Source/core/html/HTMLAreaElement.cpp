@@ -32,8 +32,6 @@
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -152,7 +150,7 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
         case Circle:
             if (m_coords.size() >= 3) {
                 Length radius = m_coords[2];
-                float r = min(minimumValueForLength(radius, width).toFloat(), minimumValueForLength(radius, height).toFloat());
+                float r = std::min(minimumValueForLength(radius, width).toFloat(), minimumValueForLength(radius, height).toFloat());
                 path.addEllipse(FloatRect(minimumValueForLength(m_coords[0], width).toFloat() - r, minimumValueForLength(m_coords[1], height).toFloat() - r, 2 * r, 2 * r));
             }
             break;

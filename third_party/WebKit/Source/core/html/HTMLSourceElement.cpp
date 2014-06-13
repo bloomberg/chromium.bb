@@ -32,8 +32,6 @@
 #include "core/html/HTMLPictureElement.h"
 #include "platform/Logging.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

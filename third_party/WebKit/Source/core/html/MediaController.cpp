@@ -38,8 +38,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 PassRefPtrWillBeRawPtr<MediaController> MediaController::create(ExecutionContext* context)
@@ -139,7 +137,7 @@ double MediaController::duration() const
         double duration = (*it)->duration();
         if (std::isnan(duration))
             continue;
-        maxDuration = max(maxDuration, duration);
+        maxDuration = std::max(maxDuration, duration);
     }
     return maxDuration;
 }
@@ -151,7 +149,7 @@ double MediaController::currentTime() const
 
     if (m_position == MediaPlayer::invalidTime()) {
         // Some clocks may return times outside the range of [0..duration].
-        m_position = max(0.0, min(duration(), m_clock->currentTime()));
+        m_position = std::max(0.0, std::min(duration(), m_clock->currentTime()));
         m_clearPositionTimer.startOneShot(0, FROM_HERE);
     }
 
@@ -163,11 +161,11 @@ void MediaController::setCurrentTime(double time, ExceptionState& exceptionState
     // When the user agent is to seek the media controller to a particular new playback position,
     // it must follow these steps:
     // If the new playback position is less than zero, then set it to zero.
-    time = max(0.0, time);
+    time = std::max(0.0, time);
 
     // If the new playback position is greater than the media controller duration, then set it
     // to the media controller duration.
-    time = min(time, duration());
+    time = std::min(time, duration());
 
     // Set the media controller position to the new playback position.
     m_position = time;
@@ -364,7 +362,7 @@ void MediaController::updateReadyState()
         MediaElementSequence::const_iterator it = m_mediaElements.begin();
         newReadyState = (*it)->readyState();
         for (++it; it != m_mediaElements.end(); ++it)
-            newReadyState = min(newReadyState, (*it)->readyState());
+            newReadyState = std::min(newReadyState, (*it)->readyState());
     }
 
     if (newReadyState == oldReadyState)

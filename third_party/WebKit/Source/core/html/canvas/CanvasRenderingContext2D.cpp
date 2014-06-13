@@ -69,8 +69,6 @@
 #include "wtf/Uint8ClampedArray.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace WebCore {
 
 static const int defaultFontSize = 10;
@@ -1415,10 +1413,10 @@ bool CanvasRenderingContext2D::shouldDrawShadows() const
 
 static inline FloatRect normalizeRect(const FloatRect& rect)
 {
-    return FloatRect(min(rect.x(), rect.maxX()),
-        min(rect.y(), rect.maxY()),
-        max(rect.width(), -rect.width()),
-        max(rect.height(), -rect.height()));
+    return FloatRect(std::min(rect.x(), rect.maxX()),
+        std::min(rect.y(), rect.maxY()),
+        std::max(rect.width(), -rect.width()),
+        std::max(rect.height(), -rect.height()));
 }
 
 static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* srcRect, FloatRect* dstRect)
