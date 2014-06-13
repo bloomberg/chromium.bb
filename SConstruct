@@ -2571,9 +2571,10 @@ def SetUpLinuxEnvArm(env):
                 LINKFLAGS=['-Wl,-rpath-link=' + jail +
                            '/lib/arm-linux-' + arm_abi]
                 )
-    env.Prepend(CCFLAGS=['-march=armv7-a',
-                         '-marm',   # force arm32
-                         ])
+    # Note we let the compiler choose whether it's -marm or -mthumb by
+    # default.  The hope is this will have the best chance of testing
+    # the prevailing compilation mode used for Chromium et al.
+    env.Prepend(CCFLAGS=['-march=armv7-a'])
     if not env.Bit('android'):
       env.Prepend(CCFLAGS=['-isystem', jail + '/usr/include'])
     # /usr/lib makes sense for most configuration except this one

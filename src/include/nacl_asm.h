@@ -47,7 +47,7 @@
  * OSX builds use llvm which does not support '.type', and neither does
  * the assembler under Windows.
  */
-#if !defined(__llvm__) && !defined(NACL_WINDOWS)
+#if !defined(__llvm__) && !NACL_WINDOWS
 
 #define DEFINE_GLOBAL_HIDDEN_DATA(n) \
   .globl IDENTIFIER(n); HIDDEN(n); .type IDENTIFIER(n), %object; IDENTIFIER(n)
