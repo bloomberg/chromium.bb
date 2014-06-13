@@ -569,6 +569,25 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies) {
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
   EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
+  EXPECT_FALSE(EndsWith(fetcher->upload_data(), "device_type=chrome", true));
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies_DeviceId) {
+  MockGaiaConsumer consumer;
+  net::TestURLFetcherFactory factory;
+  std::string expected_device_id("ABCDE-12345");
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
+  auth.StartCookieForOAuthLoginTokenExchangeWithDeviceId("0",
+                                                         expected_device_id);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_TRUE(NULL != fetcher);
+  EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
+  EXPECT_TRUE(EndsWith(fetcher->upload_data(), "device_type=chrome", true));
+  net::HttpRequestHeaders extra_request_headers;
+  fetcher->GetExtraRequestHeaders(&extra_request_headers);
+  std::string device_id;
+  EXPECT_TRUE(extra_request_headers.GetHeader("X-Device-ID", &device_id));
+  EXPECT_EQ(device_id, expected_device_id);
 }
 
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenClientLoginToOAuth2Failure) {
