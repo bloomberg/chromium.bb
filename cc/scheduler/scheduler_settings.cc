@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/scheduler_settings.h"
 
+#include "cc/trees/layer_tree_settings.h"
+
 namespace cc {
 
 SchedulerSettings::SchedulerSettings()
@@ -15,6 +17,21 @@ SchedulerSettings::SchedulerSettings()
       maximum_number_of_failed_draws_before_draw_is_forced_(3),
       using_synchronous_renderer_compositor(false),
       throttle_frame_production(true) {
+}
+
+SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
+    : begin_frame_scheduling_enabled(settings.begin_frame_scheduling_enabled),
+      main_frame_before_draw_enabled(settings.main_frame_before_draw_enabled),
+      main_frame_before_activation_enabled(
+          settings.main_frame_before_activation_enabled),
+      impl_side_painting(settings.impl_side_painting),
+      timeout_and_draw_when_animation_checkerboards(
+          settings.timeout_and_draw_when_animation_checkerboards),
+      maximum_number_of_failed_draws_before_draw_is_forced_(
+          settings.maximum_number_of_failed_draws_before_draw_is_forced_),
+      using_synchronous_renderer_compositor(
+          settings.using_synchronous_renderer_compositor),
+      throttle_frame_production(settings.throttle_frame_production) {
 }
 
 SchedulerSettings::~SchedulerSettings() {}

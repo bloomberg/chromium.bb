@@ -10,10 +10,12 @@
 #include "cc/base/cc_export.h"
 
 namespace cc {
+class LayerTreeSettings;
 
 class CC_EXPORT SchedulerSettings {
  public:
   SchedulerSettings();
+  explicit SchedulerSettings(const LayerTreeSettings& settings);
   ~SchedulerSettings();
 
   bool begin_frame_scheduling_enabled;

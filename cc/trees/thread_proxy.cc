@@ -1233,23 +1233,7 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   DCHECK(IsImplThread());
   impl().layer_tree_host_impl =
       layer_tree_host()->CreateLayerTreeHostImpl(this);
-  const LayerTreeSettings& settings = layer_tree_host()->settings();
-  SchedulerSettings scheduler_settings;
-  scheduler_settings.begin_frame_scheduling_enabled =
-      settings.begin_frame_scheduling_enabled;
-  scheduler_settings.main_frame_before_draw_enabled =
-      settings.main_frame_before_draw_enabled;
-  scheduler_settings.main_frame_before_activation_enabled =
-      settings.main_frame_before_activation_enabled;
-  scheduler_settings.impl_side_painting = settings.impl_side_painting;
-  scheduler_settings.timeout_and_draw_when_animation_checkerboards =
-      settings.timeout_and_draw_when_animation_checkerboards;
-  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
-      settings.maximum_number_of_failed_draws_before_draw_is_forced_;
-  scheduler_settings.using_synchronous_renderer_compositor =
-      settings.using_synchronous_renderer_compositor;
-  scheduler_settings.throttle_frame_production =
-      settings.throttle_frame_production;
+  SchedulerSettings scheduler_settings(layer_tree_host()->settings());
   impl().scheduler = Scheduler::Create(this,
                                        scheduler_settings,
                                        impl().layer_tree_host_id,
