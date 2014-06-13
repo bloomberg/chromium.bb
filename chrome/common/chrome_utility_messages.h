@@ -49,7 +49,9 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(printing::ColorModel, printing::PROCESSCOLORMODEL_RGB)
-IPC_ENUM_TRAITS_MAX_VALUE(printing::DuplexMode, printing::SHORT_EDGE)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::DuplexMode,
+                              printing::UNKNOWN_DUPLEX_MODE,
+                              printing::SHORT_EDGE)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
