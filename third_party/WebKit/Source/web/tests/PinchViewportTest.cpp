@@ -195,7 +195,7 @@ TEST_F(PinchViewportTest, TestResize)
     EXPECT_SIZE_EQ(newViewportSize, pinchViewport.size());
 }
 
-static void turnOffForceCompositingMode(WebSettings* settings)
+static void disableAcceleratedCompositing(WebSettings* settings)
 {
     PinchViewportTest::configureSettings(settings);
     // FIXME: This setting is being removed, so this test needs to be rewritten to
@@ -207,7 +207,7 @@ static void turnOffForceCompositingMode(WebSettings* settings)
 // prior to the PinchViewport being attached to the layer tree.
 TEST_F(PinchViewportTest, TestWebViewResizedBeforeAttachment)
 {
-    initializeWithDesktopSettings(turnOffForceCompositingMode);
+    initializeWithDesktopSettings(disableAcceleratedCompositing);
     webViewImpl()->resize(IntSize(320, 240));
 
     navigateTo("about:blank");
