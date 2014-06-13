@@ -25,6 +25,8 @@ class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollectedFin
 public:
     virtual ~ScreenOrientationController();
 
+    virtual void persistentHostHasBeenDestroyed() OVERRIDE;
+
     blink::WebScreenOrientationType orientation() const;
 
     static void provideTo(LocalFrame&, blink::WebScreenOrientationClient*);

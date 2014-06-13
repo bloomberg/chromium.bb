@@ -22,6 +22,12 @@ ScreenOrientationController::~ScreenOrientationController()
 {
 }
 
+void ScreenOrientationController::persistentHostHasBeenDestroyed()
+{
+    // Unregister lifecycle observation once page is being torn down.
+    observeContext(0);
+}
+
 void ScreenOrientationController::provideTo(LocalFrame& frame, blink::WebScreenOrientationClient* client)
 {
     ScreenOrientationController* controller = new ScreenOrientationController(frame, client);

@@ -509,6 +509,15 @@ WebRemoteFrame* WebLocalFrameImpl::toWebRemoteFrame()
 void WebLocalFrameImpl::close()
 {
     m_client = 0;
+
+    // FIXME: Oilpan: Signal to LocalFrame and its supplements that the frame is
+    // being torn down so it can do prompt clean-up. For example, this will
+    // clear the raw back pointer to m_geolocationClientProxy. Once
+    // GeolocationClientProxy is on-heap it looks like we can completely remove
+    // |willBeDestroyed| from supplements since tracing will ensure safety.
+    if (m_frame)
+        m_frame->willBeDestroyed();
+
     deref(); // Balances ref() acquired in WebFrame::create
 }
 

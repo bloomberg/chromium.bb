@@ -145,6 +145,9 @@ public:
 
     virtual void trace(Visitor*) { }
     virtual void willBeDestroyed() { }
+
+    // FIXME: Oilpan: Remove this callback once PersistentHeapSupplementable is removed again.
+    virtual void persistentHostHasBeenDestroyed() { }
 };
 
 template<typename T, bool>
@@ -194,8 +197,8 @@ public:
             it->value->willBeDestroyed();
     }
 
-private:
-    // FIXME: Oilpan: Remove this ignore once PersistentHeapSupplementable is removed again.
+    // FIXME: Oilpan: Make private and remove this ignore once PersistentHeapSupplementable is removed again.
+protected:
     GC_PLUGIN_IGNORE("")
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 
@@ -219,6 +222,12 @@ template<typename T>
 class PersistentHeapSupplementable : public SupplementableBase<T, true> {
 public:
     PersistentHeapSupplementable() : m_root(this) { }
+    virtual ~PersistentHeapSupplementable()
+    {
+        typedef typename SupplementableTraits<T, true>::SupplementMap::iterator SupplementIterator;
+        for (SupplementIterator it = this->m_supplements.begin(); it != this->m_supplements.end(); ++it)
+            it->value->persistentHostHasBeenDestroyed();
+    }
 private:
     class TraceDelegate : PersistentBase<ThreadLocalPersistents<AnyThread>, TraceDelegate> {
     public:

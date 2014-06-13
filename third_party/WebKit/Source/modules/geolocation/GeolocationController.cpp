@@ -90,10 +90,17 @@ GeolocationController::~GeolocationController()
         m_client->controllerForTestRemoved(this);
 }
 
+// FIXME: Oilpan: Once GeolocationClient is on-heap m_client should be a strong
+// pointer and |willBeDestroyed| can potentially be removed from Supplement.
 void GeolocationController::willBeDestroyed()
 {
     if (m_client)
         m_client->geolocationDestroyed();
+}
+
+void GeolocationController::persistentHostHasBeenDestroyed()
+{
+    observeContext(0);
 }
 
 PassOwnPtrWillBeRawPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
