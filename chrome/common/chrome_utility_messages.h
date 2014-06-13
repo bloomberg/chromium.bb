@@ -52,7 +52,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(printing::ColorModel, printing::PROCESSCOLORMODEL_RGB)
 IPC_ENUM_TRAITS_MAX_VALUE(printing::DuplexMode, printing::SHORT_EDGE)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
-  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+  IPC_STRUCT_TRAITS_MEMBER(vendor_id)
   IPC_STRUCT_TRAITS_MEMBER(size_um)
 IPC_STRUCT_TRAITS_END()
 

@@ -55,8 +55,8 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   color.SaveTo(&description);
 
   if (!semantic_info.papers.empty()) {
-    Media default_media(semantic_info.default_paper.name,
-                        "",
+    Media default_media(semantic_info.default_paper.display_name,
+                        semantic_info.default_paper.vendor_id,
                         semantic_info.default_paper.size_um.width(),
                         semantic_info.default_paper.size_um.height());
     default_media.MatchBySize();
@@ -67,8 +67,8 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
       gfx::Size paper_size = semantic_info.papers[i].size_um;
       if (paper_size.width() > paper_size.height())
         paper_size.SetSize(paper_size.height(), paper_size.width());
-      Media new_media(semantic_info.papers[i].name,
-                      "",
+      Media new_media(semantic_info.papers[i].display_name,
+                      semantic_info.papers[i].vendor_id,
                       paper_size.width(),
                       paper_size.height());
       new_media.MatchBySize();

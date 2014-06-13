@@ -93,7 +93,7 @@ void LoadPaper(const wchar_t* printer,
       base::string16 tmp_name(name_start, kMaxPaperName);
       // Trim trailing zeros.
       tmp_name = tmp_name.c_str();
-      paper.name = base::WideToUTF8(tmp_name);
+      paper.display_name = base::WideToUTF8(tmp_name);
     }
     caps->papers.push_back(paper);
   }
@@ -119,7 +119,7 @@ void LoadPaper(const wchar_t* printer,
             base::string16 tmp_name(name_start, kMaxPaperName);
             // Trim trailing zeros.
             tmp_name = tmp_name.c_str();
-            paper.name = base::WideToUTF8(tmp_name);
+            paper.display_name = base::WideToUTF8(tmp_name);
           }
           caps->default_paper = paper;
           break;

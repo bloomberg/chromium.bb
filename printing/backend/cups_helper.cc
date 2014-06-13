@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/units.h"
 #include "url/gurl.h"
 
 namespace printing {
@@ -33,6 +34,9 @@ const char kHighGray[] = "High.Gray";
 
 const char kDuplex[] = "Duplex";
 const char kDuplexNone[] = "None";
+const char kPageSize[] = "PageSize";
+
+const double kMicronsPerPoint = kHundrethsMMPerInch / kPointsPerInch * 10;
 
 #if !defined(OS_MACOSX)
 void ParseLpOptions(const base::FilePath& filepath,
@@ -358,8 +362,13 @@ bool ParsePpdCapabilities(
   }
 
   ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
-  if (!ppd)
+  if (!ppd) {
+    int line = 0;
+    ppd_status_t ppd_status = ppdLastError(&line);
+    LOG(ERROR) << "Failed to open PDD file: error " << ppd_status << " at line "
+               << line << ", " << ppdErrorString(ppd_status);
     return false;
+  }
 
   printing::PrinterSemanticCapsAndDefaults caps;
 #if !defined(OS_MACOSX)
@@ -396,6 +405,34 @@ bool ParsePpdCapabilities(
   caps.color_default = is_color;
   caps.color_model = cm_color;
   caps.bw_model = cm_black;
+
+  if (ppd->num_sizes > 0 && ppd->sizes) {
+    VLOG(1) << "Paper list size - " << ppd->num_sizes;
+    ppd_option_t* paper_option = ppdFindOption(ppd, kPageSize);
+    for (int i = 0; i < ppd->num_sizes; ++i) {
+      gfx::Size paper_size_microns(
+          static_cast<int>(ppd->sizes[i].width * kMicronsPerPoint + 0.5),
+          static_cast<int>(ppd->sizes[i].length * kMicronsPerPoint + 0.5));
+      if (paper_size_microns.width() > 0 && paper_size_microns.height() > 0) {
+        PrinterSemanticCapsAndDefaults::Paper paper;
+        paper.size_um = paper_size_microns;
+        paper.vendor_id = ppd->sizes[i].name;
+        if (paper_option) {
+          ppd_choice_t* paper_choice =
+              ppdFindChoice(paper_option, ppd->sizes[i].name);
+          // Human readable paper name should be UTF-8 encoded, but some PPDs
+          // do not follow this standard.
+          if (paper_choice && base::IsStringUTF8(paper_choice->text)) {
+            paper.display_name = paper_choice->text;
+          }
+        }
+        caps.papers.push_back(paper);
+        if (i == 0 || ppd->sizes[i].marked) {
+          caps.default_paper = paper;
+        }
+      }
+    }
+  }
 
   ppdClose(ppd);
   base::DeleteFile(ppd_file_path, false);

@@ -52,7 +52,8 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   ColorModel bw_model;
 
   struct Paper {
-    std::string name;
+    std::string display_name;
+    std::string vendor_id;
     gfx::Size size_um;
   };
   std::vector<Paper> papers;

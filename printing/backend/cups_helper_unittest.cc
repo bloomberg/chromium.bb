@@ -172,3 +172,36 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
+
+TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
+  std::string test_ppd_data;
+  test_ppd_data.append(
+      "*PPD-Adobe: \"4.3\"\n\n"
+      "*OpenUI *PageSize: PickOne\n"
+      "*OrderDependency: 30 AnySetup *PageSize\n"
+      "*DefaultPageSize: Letter\n"
+      "*PageSize Letter/US Letter: \""
+      "  <</DeferredMediaSelection true /PageSize [612 792] "
+      "  /ImagingBBox null /MediaClass null >> setpagedevice\"\n"
+      "*End\n"
+      "*PageSize Legal/US Legal: \""
+      "  <</DeferredMediaSelection true /PageSize [612 1008] "
+      "  /ImagingBBox null /MediaClass null >> setpagedevice\"\n"
+      "*End\n"
+      "*DefaultPaperDimension: Letter\n"
+      "*PaperDimension Letter/US Letter: \"612   792\"\n"
+      "*PaperDimension Legal/US Legal: \"612  1008\"\n\n"
+      "*CloseUI: *PageSize\n\n");
+
+  printing::PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  ASSERT_EQ(2UL, caps.papers.size());
+  EXPECT_EQ("Letter", caps.papers[0].vendor_id);
+  EXPECT_EQ("US Letter", caps.papers[0].display_name);
+  EXPECT_EQ(214200, caps.papers[0].size_um.width());
+  EXPECT_EQ(277200, caps.papers[0].size_um.height());
+  EXPECT_EQ("Legal", caps.papers[1].vendor_id);
+  EXPECT_EQ("US Legal", caps.papers[1].display_name);
+  EXPECT_EQ(214200, caps.papers[1].size_um.width());
+  EXPECT_EQ(352800, caps.papers[1].size_um.height());
+}

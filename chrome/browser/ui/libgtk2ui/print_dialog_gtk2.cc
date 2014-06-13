@@ -6,6 +6,8 @@
 
 #include <gtk/gtkunixprint.h>
 
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -35,6 +37,53 @@ const char kCUPSDuplex[] = "cups-Duplex";
 const char kDuplexNone[] = "None";
 const char kDuplexTumble[] = "DuplexTumble";
 const char kDuplexNoTumble[] = "DuplexNoTumble";
+
+int kPaperSizeTresholdMicrons = 100;
+int kMicronsInMm = 1000;
+
+// Checks whether gtk_paper_size can be used to represent user selected media.
+// In fuzzy match mode checks that paper sizes are "close enough" (less than
+// 1mm difference). In the exact mode, looks for the paper with the same PPD
+// name and "close enough" size.
+bool PaperSizeMatch(GtkPaperSize* gtk_paper_size,
+                    const PrintSettings::RequestedMedia& media,
+                    bool fuzzy_match) {
+  if (!gtk_paper_size) {
+    return false;
+  }
+  gfx::Size paper_size_microns(
+      static_cast<int>(gtk_paper_size_get_width(gtk_paper_size, GTK_UNIT_MM) *
+                       kMicronsInMm + 0.5),
+      static_cast<int>(gtk_paper_size_get_height(gtk_paper_size, GTK_UNIT_MM) *
+                       kMicronsInMm + 0.5));
+  int diff = std::max(
+      std::abs(paper_size_microns.width() - media.size_microns.width()),
+      std::abs(paper_size_microns.height() - media.size_microns.height()));
+  if (fuzzy_match) {
+    return diff <= kPaperSizeTresholdMicrons;
+  }
+  return !media.vendor_id.empty() &&
+         media.vendor_id == gtk_paper_size_get_ppd_name(gtk_paper_size) &&
+         diff <= kPaperSizeTresholdMicrons;
+}
+
+// Looks up a paper size matching (in terms of PaperSizeMatch) the user selected
+// media in the paper size list reported by GTK. Returns NULL if there's no
+// match found.
+GtkPaperSize* FindPaperSizeMatch(GList* gtk_paper_sizes,
+                                 const PrintSettings::RequestedMedia& media) {
+  GtkPaperSize* first_fuzzy_match = NULL;
+  for (GList* p = gtk_paper_sizes; p && p->data; p = g_list_next(p)) {
+    GtkPaperSize* gtk_paper_size = static_cast<GtkPaperSize*>(p->data);
+    if (PaperSizeMatch(gtk_paper_size, media, false)) {
+      return gtk_paper_size;
+    }
+    if (!first_fuzzy_match && PaperSizeMatch(gtk_paper_size, media, true)) {
+      first_fuzzy_match = gtk_paper_size;
+    }
+  }
+  return first_fuzzy_match;
+}
 
 class StickyPrintSettingGtk {
  public:
@@ -223,6 +272,40 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
 #endif
   if (!page_setup_)
     page_setup_ = gtk_page_setup_new();
+
+  if (page_setup_ && !settings->requested_media().IsDefault()) {
+    const PrintSettings::RequestedMedia& requested_media =
+        settings->requested_media();
+    GtkPaperSize* gtk_current_paper_size =
+        gtk_page_setup_get_paper_size(page_setup_);
+    if (!PaperSizeMatch(gtk_current_paper_size, requested_media,
+                        true /*fuzzy_match*/)) {
+      GList* gtk_paper_sizes =
+          gtk_paper_size_get_paper_sizes(false /*include_custom*/);
+      if (gtk_paper_sizes) {
+        GtkPaperSize* matching_gtk_paper_size =
+            FindPaperSizeMatch(gtk_paper_sizes, requested_media);
+        if (matching_gtk_paper_size) {
+          VLOG(1) << "Using listed paper size";
+          gtk_page_setup_set_paper_size(page_setup_, matching_gtk_paper_size);
+        } else {
+          VLOG(1) << "Using custom paper size";
+          GtkPaperSize* custom_size = gtk_paper_size_new_custom(
+              requested_media.vendor_id.c_str(),
+              requested_media.vendor_id.c_str(),
+              requested_media.size_microns.width() / kMicronsInMm,
+              requested_media.size_microns.height() / kMicronsInMm,
+              GTK_UNIT_MM);
+          gtk_page_setup_set_paper_size(page_setup_, custom_size);
+          gtk_paper_size_free(custom_size);
+        }
+        g_list_free_full(gtk_paper_sizes,
+                         reinterpret_cast<GDestroyNotify>(gtk_paper_size_free));
+      }
+    } else {
+      VLOG(1) << "Using default paper size";
+    }
+  }
 
   gtk_print_settings_set_orientation(
       gtk_settings_,
