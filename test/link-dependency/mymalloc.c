@@ -7,5 +7,6 @@ __declspec(dllexport) void foo() {}
 #endif
 
 void *malloc(size_t size) {
+  (void)size;
   return (void*)0xdeadbeef;
 }

@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
 #ifdef ABC
   printf("With define\n");
