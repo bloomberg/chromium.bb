@@ -110,6 +110,7 @@ HTMLCollection
 HTMLContentElement
 HTMLDListElement
 HTMLDataListElement
+HTMLDialogElement
 HTMLDirectoryElement
 HTMLDivElement
 HTMLDocument

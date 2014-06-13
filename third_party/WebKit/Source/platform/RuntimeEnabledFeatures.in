@@ -49,7 +49,7 @@ CSS3TextDecorations status=experimental
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DeviceLight status=test
-DialogElement status=experimental
+DialogElement status=stable
 EncodingAPI status=experimental
 EncryptedMedia status=test
 EncryptedMediaAnyVersion status=stable
