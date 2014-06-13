@@ -69,10 +69,13 @@ struct MockMotionEvent : public MotionEvent {
   void MovePoint(size_t index, float x, float y);
   void ReleasePoint();
   void CancelPoint();
+  void SetTouchMajor(float new_touch_major);
+
   MotionEvent::Action action;
   size_t pointer_count;
   gfx::PointF points[MAX_POINTERS];
   base::TimeTicks time;
+  float touch_major;
   int id;
 };
 

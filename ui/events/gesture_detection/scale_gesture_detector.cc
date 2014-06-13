@@ -83,6 +83,7 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       (config.gesture_detector_config.touch_slop + kSlopEpsilon) * 2;
   touch_min_major_ = config.min_scaling_touch_major;
   min_span_ = config.min_scaling_span + kSlopEpsilon;
+  ResetTouchHistory();
   SetQuickScaleEnabled(config.quick_scale_enabled);
 }
 
@@ -116,7 +117,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     }
 
     if (stream_complete) {
-      ClearTouchHistory();
+      ResetTouchHistory();
       return true;
     }
   }
@@ -206,7 +207,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
 
   const float min_span = InDoubleTapMode() ? span_slop_ : min_span_;
-  if (!in_progress_ && span >= min_span &&
+  if (!in_progress_ && span >= min_span && (InDoubleTapMode() || count > 1) &&
       (was_in_progress || std::abs(span - initial_span_) > span_slop_)) {
     prev_span_x_ = curr_span_x_ = span_x;
     prev_span_y_ = curr_span_y_ = span_y;
@@ -306,10 +307,12 @@ bool ScaleGestureDetector::OnDoubleTap(const MotionEvent& ev) {
 }
 
 void ScaleGestureDetector::AddTouchHistory(const MotionEvent& ev) {
-  const base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeTicks current_time = ev.GetEventTime();
+  DCHECK(!current_time.is_null());
   const int count = static_cast<int>(ev.GetPointerCount());
-  bool accept = (current_time - touch_history_last_accepted_time_)
-                    .InMilliseconds() >= kTouchStabilizeTimeMs;
+  bool accept = touch_history_last_accepted_time_.is_null() ||
+                (current_time - touch_history_last_accepted_time_) >=
+                    base::TimeDelta::FromMilliseconds(kTouchStabilizeTimeMs);
   float total = 0;
   int sample_count = 0;
   for (int i = 0; i < count; i++) {
@@ -363,7 +366,7 @@ void ScaleGestureDetector::AddTouchHistory(const MotionEvent& ev) {
   }
 }
 
-void ScaleGestureDetector::ClearTouchHistory() {
+void ScaleGestureDetector::ResetTouchHistory() {
   touch_upper_ = std::numeric_limits<float>::quiet_NaN();
   touch_lower_ = std::numeric_limits<float>::quiet_NaN();
   touch_history_last_accepted_ = std::numeric_limits<float>::quiet_NaN();

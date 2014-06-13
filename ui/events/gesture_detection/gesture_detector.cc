@@ -42,6 +42,7 @@ GestureDetector::Config::Config()
     : longpress_timeout(base::TimeDelta::FromMilliseconds(500)),
       showpress_timeout(base::TimeDelta::FromMilliseconds(180)),
       double_tap_timeout(base::TimeDelta::FromMilliseconds(300)),
+      double_tap_min_time(base::TimeDelta::FromMilliseconds(40)),
       touch_slop(8),
       double_tap_slop(100),
       minimum_fling_velocity(50),
@@ -461,6 +462,8 @@ void GestureDetector::Init(const Config& config) {
   double_tap_touch_slop_square_ = double_tap_touch_slop * double_tap_touch_slop;
   double_tap_slop_square_ = double_tap_slop * double_tap_slop;
   double_tap_timeout_ = config.double_tap_timeout;
+  double_tap_min_time_ = config.double_tap_min_time;
+  DCHECK(double_tap_min_time_ < double_tap_timeout_);
   min_fling_velocity_ = config.minimum_fling_velocity;
   max_fling_velocity_ = config.maximum_fling_velocity;
 
@@ -520,8 +523,9 @@ bool GestureDetector::IsConsideredDoubleTap(
   if (!always_in_bigger_tap_region_)
     return false;
 
-  if (second_down.GetEventTime() - first_up.GetEventTime() >
-      double_tap_timeout_)
+  const base::TimeDelta delta_time =
+      second_down.GetEventTime() - first_up.GetEventTime();
+  if (delta_time < double_tap_min_time_ || delta_time > double_tap_timeout_)
     return false;
 
   const float delta_x = first_down.GetX() - second_down.GetX();

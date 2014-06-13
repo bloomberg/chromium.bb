@@ -11,16 +11,22 @@ using base::TimeTicks;
 namespace ui {
 
 MockMotionEvent::MockMotionEvent()
-    : action(ACTION_CANCEL), pointer_count(1), id(0) {}
+    : action(ACTION_CANCEL), pointer_count(1), touch_major(TOUCH_MAJOR), id(0) {
+}
 
 MockMotionEvent::MockMotionEvent(Action action)
-    : action(action), pointer_count(1), id(0) {}
+    : action(action), pointer_count(1), touch_major(TOUCH_MAJOR), id(0) {
+}
 
 MockMotionEvent::MockMotionEvent(Action action,
                                  TimeTicks time,
                                  float x,
                                  float y)
-    : action(action), pointer_count(1), time(time), id(0) {
+    : action(action),
+      pointer_count(1),
+      time(time),
+      touch_major(TOUCH_MAJOR),
+      id(0) {
   points[0].SetPoint(x, y);
 }
 
@@ -30,7 +36,11 @@ MockMotionEvent::MockMotionEvent(Action action,
                                  float y0,
                                  float x1,
                                  float y1)
-    : action(action), pointer_count(2), time(time), id(0) {
+    : action(action),
+      pointer_count(2),
+      time(time),
+      touch_major(TOUCH_MAJOR),
+      id(0) {
   points[0].SetPoint(x0, y0);
   points[1].SetPoint(x1, y1);
 }
@@ -43,7 +53,11 @@ MockMotionEvent::MockMotionEvent(Action action,
                                  float y1,
                                  float x2,
                                  float y2)
-    : action(action), pointer_count(3), time(time), id(0) {
+    : action(action),
+      pointer_count(3),
+      time(time),
+      touch_major(TOUCH_MAJOR),
+      id(0) {
   points[0].SetPoint(x0, y0);
   points[1].SetPoint(x1, y1);
   points[2].SetPoint(x2, y2);
@@ -53,6 +67,7 @@ MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
     : action(other.action),
       pointer_count(other.pointer_count),
       time(other.time),
+      touch_major(other.touch_major),
       id(other.GetId()) {
   for (size_t i = 0; i < pointer_count; ++i)
     points[i] = other.points[i];
@@ -86,7 +101,7 @@ float MockMotionEvent::GetY(size_t pointer_index) const {
 }
 
 float MockMotionEvent::GetTouchMajor(size_t pointer_index) const {
-  return TOUCH_MAJOR;
+  return touch_major;
 }
 
 float MockMotionEvent::GetPressure(size_t pointer_index) const {
@@ -167,6 +182,10 @@ void MockMotionEvent::CancelPoint() {
   if (pointer_count > 1)
     --pointer_count;
   action = ACTION_CANCEL;
+}
+
+void MockMotionEvent::SetTouchMajor(float new_touch_major) {
+  touch_major = new_touch_major;
 }
 
 }  // namespace ui

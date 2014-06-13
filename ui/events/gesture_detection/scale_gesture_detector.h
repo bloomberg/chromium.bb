@@ -109,7 +109,7 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   // The TouchMajor/TouchMinor elements of a MotionEvent can flutter/jitter on
   // some hardware/driver combos. Smooth out to get kinder, gentler behavior.
   void AddTouchHistory(const MotionEvent& ev);
-  void ClearTouchHistory();
+  void ResetTouchHistory();
 
   void ResetScaleWithSpan(float span);
 
