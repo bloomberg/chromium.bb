@@ -25,6 +25,7 @@
 
 namespace sandbox {
 
+// This must match the kernel's seccomp_data structure.
 struct arch_seccomp_data {
   int nr;
   uint32_t arch;

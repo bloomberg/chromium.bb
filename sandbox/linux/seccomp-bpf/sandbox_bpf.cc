@@ -613,7 +613,7 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
     // and of course, we make sure to only ever enable this feature if it
     // is actually requested by the sandbox policy.
     if (has_unsafe_traps) {
-      if (SandboxSyscall(-1) == -1 && errno == ENOSYS) {
+      if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
         SANDBOX_DIE(
             "Support for UnsafeTrap() has not yet been ported to this "
             "architecture");
@@ -650,9 +650,8 @@ SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
       gen->Traverse(jumptable, RedirectToUserspace, this);
 
       // Allow system calls, if they originate from our magic return address
-      // (which we can query by calling SandboxSyscall(-1)).
-      uintptr_t syscall_entry_point =
-          static_cast<uintptr_t>(SandboxSyscall(-1));
+      // (which we can query by calling Syscall::Call(-1)).
+      uintptr_t syscall_entry_point = static_cast<uintptr_t>(Syscall::Call(-1));
       uint32_t low = static_cast<uint32_t>(syscall_entry_point);
 #if __SIZEOF_POINTER__ > 4
       uint32_t hi = static_cast<uint32_t>(syscall_entry_point >> 32);
@@ -1003,13 +1002,13 @@ ErrorCode SandboxBPF::UnsafeTrap(Trap::TrapFnc fnc, const void* aux) {
 }
 
 intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
-  return SandboxSyscall(args.nr,
-                        static_cast<intptr_t>(args.args[0]),
-                        static_cast<intptr_t>(args.args[1]),
-                        static_cast<intptr_t>(args.args[2]),
-                        static_cast<intptr_t>(args.args[3]),
-                        static_cast<intptr_t>(args.args[4]),
-                        static_cast<intptr_t>(args.args[5]));
+  return Syscall::Call(args.nr,
+                       static_cast<intptr_t>(args.args[0]),
+                       static_cast<intptr_t>(args.args[1]),
+                       static_cast<intptr_t>(args.args[2]),
+                       static_cast<intptr_t>(args.args[3]),
+                       static_cast<intptr_t>(args.args[4]),
+                       static_cast<intptr_t>(args.args[5]));
 }
 
 ErrorCode SandboxBPF::Cond(int argno,

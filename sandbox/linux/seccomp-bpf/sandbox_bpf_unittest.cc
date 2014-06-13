@@ -1204,7 +1204,7 @@ class EqualityStressTest {
     // based on the system call number and the parameters that we decided
     // to pass in. Verify that this condition holds true.
     BPF_ASSERT(
-        SandboxSyscall(
+        Syscall::Call(
             sysno, args[0], args[1], args[2], args[3], args[4], args[5]) ==
         -err);
   }
@@ -1279,18 +1279,18 @@ ErrorCode EqualityArgumentWidthPolicy::EvaluateSyscall(SandboxBPF* sandbox,
 }
 
 BPF_TEST_C(SandboxBPF, EqualityArgumentWidth, EqualityArgumentWidthPolicy) {
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 0, 0x55555555) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 0, 0xAAAAAAAA) == -2);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 0, 0x55555555) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 0, 0xAAAAAAAA) == -2);
 #if __SIZEOF_POINTER__ > 4
   // On 32bit machines, there is no way to pass a 64bit argument through the
   // syscall interface. So, we have to skip the part of the test that requires
   // 64bit arguments.
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x55555555AAAAAAAAULL) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555500000000ULL) == -2);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x5555555511111111ULL) == -2);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x11111111AAAAAAAAULL) == -2);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x55555555AAAAAAAAULL) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x5555555500000000ULL) == -2);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x5555555511111111ULL) == -2);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x11111111AAAAAAAAULL) == -2);
 #else
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 1, 0x55555555) == -2);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 1, 0x55555555) == -2);
 #endif
 }
 
@@ -1302,7 +1302,7 @@ BPF_DEATH_TEST_C(SandboxBPF,
                  EqualityArgumentUnallowed64bit,
                  DEATH_MESSAGE("Unexpected 64bit argument detected"),
                  EqualityArgumentWidthPolicy) {
-  SandboxSyscall(__NR_uname, 0, 0x5555555555555555ULL);
+  Syscall::Call(__NR_uname, 0, 0x5555555555555555ULL);
 }
 #endif
 
@@ -1330,9 +1330,9 @@ class EqualityWithNegativeArgumentsPolicy : public SandboxBPFPolicy {
 BPF_TEST_C(SandboxBPF,
            EqualityWithNegativeArguments,
            EqualityWithNegativeArgumentsPolicy) {
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, -1) == -1);
-  BPF_ASSERT(SandboxSyscall(__NR_uname, -1LL) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 0xFFFFFFFF) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, -1) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, -1LL) == -1);
 }
 
 #if __SIZEOF_POINTER__ > 4
@@ -1343,7 +1343,7 @@ BPF_DEATH_TEST_C(SandboxBPF,
   // When expecting a 32bit system call argument, we look at the MSB of the
   // 64bit value and allow both "0" and "-1". But the latter is allowed only
   // iff the LSB was negative. So, this death test should error out.
-  BPF_ASSERT(SandboxSyscall(__NR_uname, 0xFFFFFFFF00000000LL) == -1);
+  BPF_ASSERT(Syscall::Call(__NR_uname, 0xFFFFFFFF00000000LL) == -1);
 }
 #endif
 class AllBitTestPolicy : public SandboxBPFPolicy {
@@ -1433,10 +1433,10 @@ ErrorCode AllBitTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
 //       to make changes to these values, you will have to edit the
 //       test policy instead.
 #define BITMASK_TEST(testcase, arg, op, mask, expected_value) \
-  BPF_ASSERT(SandboxSyscall(__NR_uname, (testcase), (arg)) == (expected_value))
+  BPF_ASSERT(Syscall::Call(__NR_uname, (testcase), (arg)) == (expected_value))
 
 // Our uname() system call returns ErrorCode(1) for success and
-// ErrorCode(0) for failure. SandboxSyscall() turns this into an
+// ErrorCode(0) for failure. Syscall::Call() turns this into an
 // exit code of -1 or 0.
 #define EXPECT_FAILURE 0
 #define EXPECT_SUCCESS -1
@@ -1866,7 +1866,7 @@ ErrorCode PthreadPolicyBitMask::EvaluateSyscall(SandboxBPF* sandbox,
 
 static void* ThreadFnc(void* arg) {
   ++*reinterpret_cast<int*>(arg);
-  SandboxSyscall(__NR_futex, arg, FUTEX_WAKE, 1, 0, 0, 0);
+  Syscall::Call(__NR_futex, arg, FUTEX_WAKE, 1, 0, 0, 0);
   return NULL;
 }
 
@@ -1885,7 +1885,7 @@ static void PthreadTest() {
   BPF_ASSERT(!pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
   BPF_ASSERT(!pthread_create(&thread, &attr, ThreadFnc, &thread_ran));
   BPF_ASSERT(!pthread_attr_destroy(&attr));
-  while (SandboxSyscall(__NR_futex, &thread_ran, FUTEX_WAIT, 0, 0, 0, 0) ==
+  while (Syscall::Call(__NR_futex, &thread_ran, FUTEX_WAIT, 0, 0, 0, 0) ==
          -EINTR) {
   }
   BPF_ASSERT(thread_ran);
@@ -1896,11 +1896,11 @@ static void PthreadTest() {
   // run-time libraries other than glibc might call __NR_fork instead of
   // __NR_clone, and that would introduce a bogus test failure.
   int pid;
-  BPF_ASSERT(SandboxSyscall(__NR_clone,
-                            CLONE_CHILD_CLEARTID | CLONE_CHILD_SETTID | SIGCHLD,
-                            0,
-                            0,
-                            &pid) == -EPERM);
+  BPF_ASSERT(Syscall::Call(__NR_clone,
+                           CLONE_CHILD_CLEARTID | CLONE_CHILD_SETTID | SIGCHLD,
+                           0,
+                           0,
+                           &pid) == -EPERM);
 }
 
 BPF_TEST_C(SandboxBPF, PthreadEquality, PthreadPolicyEquality) {
