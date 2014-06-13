@@ -109,10 +109,8 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
     for (int x = 0; x < viewport_rect.width(); x += 256) {
       for (int y = 0; y < viewport_rect.height(); y += 256) {
         gfx::Rect query_content_rect(x, y, 256, 256);
-        gfx::Rect unoccluded =
-            tracker.UnoccludedContentRect(pos.target_render_surface_layer,
-                                          query_content_rect,
-                                          transform_to_target);
+        gfx::Rect unoccluded = tracker.UnoccludedContentRect(
+            query_content_rect, transform_to_target);
         // Sanity test that we're not hitting early outs.
         bool expect_empty =
             query_content_rect.right() <= viewport_rect.width() &&
@@ -186,10 +184,8 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
     for (int x = 0; x < viewport_rect.width(); x += 256) {
       for (int y = 0; y < viewport_rect.height(); y += 256) {
         gfx::Rect query_content_rect(x, y, 256, 256);
-        gfx::Rect unoccluded =
-            tracker.UnoccludedContentRect(pos.target_render_surface_layer,
-                                          query_content_rect,
-                                          transform_to_target);
+        gfx::Rect unoccluded = tracker.UnoccludedContentRect(
+            query_content_rect, transform_to_target);
       }
     }
 

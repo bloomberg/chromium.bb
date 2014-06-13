@@ -53,15 +53,13 @@ class CC_EXPORT OcclusionTracker {
   // layer. Used when considering occlusion for a layer that paints/draws
   // something. |render_target| is the contributing layer's render target, and
   // |draw_transform| and |impl_draw_transform_is_unknown| are relative to that.
-  gfx::Rect UnoccludedContentRect(const LayerType* render_target,
-                                  const gfx::Rect& content_rect,
+  gfx::Rect UnoccludedContentRect(const gfx::Rect& content_rect,
                                   const gfx::Transform& draw_transform) const;
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
   // render_target owned by the layer. Used when considering occlusion for a
   // contributing surface that is rendering into another target.
   gfx::Rect UnoccludedContributingSurfaceContentRect(
-      const LayerType* layer,
       const gfx::Rect& content_rect,
       const gfx::Transform& draw_transform) const;
 

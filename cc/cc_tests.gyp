@@ -194,6 +194,7 @@
       'test/layer_tree_pixel_test.h',
       'test/layer_tree_test.cc',
       'test/layer_tree_test.h',
+      'test/mock_occlusion_tracker.h',
       'test/mock_quad_culler.cc',
       'test/mock_quad_culler.h',
       'test/ordered_simple_task_runner.cc',

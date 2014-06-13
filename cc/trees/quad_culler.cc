@@ -33,15 +33,14 @@ SharedQuadState* QuadCuller::CreateSharedQuadState() {
 gfx::Rect QuadCuller::UnoccludedContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) {
-  return occlusion_tracker_.UnoccludedContentRect(
-      layer_->render_target(), content_rect, draw_transform);
+  return occlusion_tracker_.UnoccludedContentRect(content_rect, draw_transform);
 }
 
 gfx::Rect QuadCuller::UnoccludedContributingSurfaceContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) {
   return occlusion_tracker_.UnoccludedContributingSurfaceContentRect(
-      layer_, content_rect, draw_transform);
+      content_rect, draw_transform);
 }
 
 void QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {

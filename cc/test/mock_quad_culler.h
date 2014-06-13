@@ -9,15 +9,20 @@
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/test/mock_occlusion_tracker.h"
 
 namespace cc {
+class LayerImpl;
 
 class MockQuadCuller : public QuadSink {
  public:
-  MockQuadCuller();
   virtual ~MockQuadCuller();
 
   explicit MockQuadCuller(RenderPass* external_render_pass);
+  explicit MockQuadCuller(MockOcclusionTracker<LayerImpl>* occlusion_tracker);
+  MockQuadCuller(RenderPass* external_render_pass,
+                 MockOcclusionTracker<LayerImpl>* occlusion_tracker);
+  MockQuadCuller();
 
   // QuadSink interface.
   virtual SharedQuadState* CreateSharedQuadState() OVERRIDE;
@@ -35,12 +40,13 @@ class MockQuadCuller : public QuadSink {
   }
 
   void set_occluded_target_rect(const gfx::Rect& occluded) {
-    occluded_target_rect_ = occluded;
+    occlusion_tracker_->set_occluded_target_rect(occluded);
   }
 
   void set_occluded_target_rect_for_contributing_surface(
       const gfx::Rect& occluded) {
-    occluded_target_rect_for_contributing_surface_ = occluded;
+    occlusion_tracker_->set_occluded_target_rect_for_contributing_surface(
+        occluded);
   }
 
   void clear_lists() {
@@ -51,6 +57,9 @@ class MockQuadCuller : public QuadSink {
  private:
   scoped_ptr<RenderPass> render_pass_storage_;
   RenderPass* active_render_pass_;
+  scoped_ptr<MockOcclusionTracker<LayerImpl> > occlusion_tracker_storage_;
+  MockOcclusionTracker<LayerImpl>* occlusion_tracker_;
+
   gfx::Rect occluded_target_rect_;
   gfx::Rect occluded_target_rect_for_contributing_surface_;
 };

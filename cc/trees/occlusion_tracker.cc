@@ -335,10 +335,9 @@ void OcclusionTracker<LayerType>::LeaveToRenderTarget(
   gfx::Rect unoccluded_replica_rect;
   if (old_target->background_filters().HasFilterThatMovesPixels()) {
     unoccluded_surface_rect = UnoccludedContributingSurfaceContentRect(
-        old_target, old_surface->content_rect(), old_surface->draw_transform());
+        old_surface->content_rect(), old_surface->draw_transform());
     if (old_target->has_replica()) {
       unoccluded_replica_rect = UnoccludedContributingSurfaceContentRect(
-          old_target,
           old_surface->content_rect(),
           old_surface->replica_draw_transform());
     }
@@ -543,22 +542,12 @@ bool OcclusionTracker<LayerType>::Occluded(
 
 template <typename LayerType>
 gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
-    const LayerType* render_target,
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) const {
-  DCHECK(!stack_.empty());
   if (stack_.empty())
     return content_rect;
   if (content_rect.IsEmpty())
     return content_rect;
-
-  // For tests with no render target.
-  if (!render_target)
-    return content_rect;
-
-  DCHECK_EQ(render_target->render_target(), render_target);
-  DCHECK(render_target->render_surface());
-  DCHECK_EQ(render_target, stack_.back().target);
 
   if (stack_.back().occlusion_from_inside_target.IsEmpty() &&
       stack_.back().occlusion_from_outside_target.IsEmpty()) {
@@ -589,20 +578,8 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
 
 template <typename LayerType>
 gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
-    const LayerType* layer,
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) const {
-  DCHECK(!stack_.empty());
-  // The layer is a contributing render_target so it should have a surface.
-  DCHECK(layer->render_surface());
-  // The layer is a contributing render_target so its target should be itself.
-  DCHECK_EQ(layer->render_target(), layer);
-  // The layer should not be the root, else what is is contributing to?
-  DCHECK(layer->parent());
-  // This should be called while the layer is still considered the current
-  // target in the occlusion tracker.
-  DCHECK_EQ(layer, stack_.back().target);
-
   if (content_rect.IsEmpty())
     return content_rect;
 
