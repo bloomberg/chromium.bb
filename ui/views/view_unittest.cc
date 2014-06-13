@@ -1311,6 +1311,16 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
   result_view = NULL;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(v, result_view);
+
+  // When |v_grandchild| returns false when CanProcessEventsWithinSubtree()
+  // is called, then NULL should be returned as a target if we call
+  // GetTooltipHandlerForPoint() with |v_grandchild| as the root of the
+  // views tree. Note that the location must be in the coordinate space
+  // of the root view (|v_grandchild| in this case), so use (1, 1).
+
+  result_view = v_grandchild;
+  result_view = v_grandchild->GetTooltipHandlerForPoint(gfx::Point(1, 1));
+  EXPECT_EQ(NULL, result_view);
   result_view = NULL;
 
   // When |v_child| returns false when CanProcessEventsWithinSubtree()

@@ -913,7 +913,7 @@ bool View::CanProcessEventsWithinSubtree() const {
 }
 
 View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  if (!HitTestPoint(point))
+  if (!HitTestPoint(point) || !CanProcessEventsWithinSubtree())
     return NULL;
 
   // Walk the child Views recursively looking for the View that most
@@ -921,9 +921,6 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   for (int i = child_count() - 1; i >= 0; --i) {
     View* child = child_at(i);
     if (!child->visible())
-      continue;
-
-    if (!child->CanProcessEventsWithinSubtree())
       continue;
 
     gfx::Point point_in_child_coords(point);
