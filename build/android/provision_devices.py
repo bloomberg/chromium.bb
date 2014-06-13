@@ -126,17 +126,23 @@ def ProvisionDevices(options):
     devices = [options.device]
   else:
     devices = android_commands.GetAttachedDevices()
+
+  # Wipe devices (unless --skip-wipe was specified)
+  if not options.skip_wipe:
+    for device_serial in devices:
+      device = device_utils.DeviceUtils(device_serial)
+      device.old_interface.EnableAdbRoot()
+      WipeDeviceData(device)
+    try:
+      device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
+    except errors.DeviceUnresponsiveError:
+      pass
+    for device_serial in devices:
+      device.WaitUntilFullyBooted(timeout=90)
+
+  # Provision devices
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
-    device.old_interface.EnableAdbRoot()
-    WipeDeviceData(device)
-  try:
-    device_utils.DeviceUtils.parallel(devices).Reboot(True)
-  except errors.DeviceUnresponsiveError:
-    pass
-  for device_serial in devices:
-    device = device_utils.DeviceUtils(device_serial)
-    device.WaitUntilFullyBooted(timeout=90)
     device.old_interface.EnableAdbRoot()
     _ConfigureLocalProperties(device)
     device_settings.ConfigureContentSettingsDict(
@@ -165,8 +171,8 @@ def main(argv):
   logging.basicConfig(level=logging.INFO)
 
   parser = optparse.OptionParser()
-  parser.add_option('-w', '--wipe', action='store_true',
-                    help='Wipe device data from all attached devices.')
+  parser.add_option('--skip-wipe', action='store_true', default=False,
+                    help="Don't wipe device data during provisioning.")
   parser.add_option('-d', '--device',
                     help='The serial number of the device to be provisioned')
   parser.add_option('-t', '--target', default='Debug', help='The build target')
@@ -180,17 +186,7 @@ def main(argv):
     print >> sys.stderr, 'Unused args %s' % args
     return 1
 
-  if options.wipe:
-    devices = android_commands.GetAttachedDevices()
-    for device_serial in devices:
-      device = device_utils.DeviceUtils(device_serial)
-      WipeDeviceData(device)
-    try:
-      device_utils.DeviceUtils.parallel(devices).Reboot(True)
-    except errors.DeviceUnresponsiveError:
-      pass
-  else:
-    ProvisionDevices(options)
+  ProvisionDevices(options)
 
 
 if __name__ == '__main__':
