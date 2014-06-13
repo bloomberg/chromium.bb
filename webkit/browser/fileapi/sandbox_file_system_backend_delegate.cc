@@ -204,7 +204,8 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
   // Prepopulate database only if it can run asynchronously (i.e. the current
   // thread is not file_task_runner). Usually this is the case but may not
   // in test code.
-  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!file_system_options.is_incognito() &&
+      !file_task_runner_->RunsTasksOnCurrentThread()) {
     std::vector<std::string> types_to_prepopulate(
         &kPrepopulateTypes[0],
         &kPrepopulateTypes[arraysize(kPrepopulateTypes)]);
