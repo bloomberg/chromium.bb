@@ -151,7 +151,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
   void NotifyDemuxerReady();
-  bool CanNotifyDemuxerReady();
 
   void StopDemuxer();
   void InitializeDemuxer();
