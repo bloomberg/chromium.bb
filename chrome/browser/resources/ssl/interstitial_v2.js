@@ -12,9 +12,9 @@ function setupEvents() {
   var ssl = loadTimeData.getBoolean('ssl');
 
   if (ssl)
-    applySSLStyle();
+    $('body').classList.add('ssl');
   else
-    applySafeBrowsingStyle();
+    $('body').classList.add('safe-browsing');
 
   $('primary-button').addEventListener('click', function() {
     if (!ssl)
@@ -29,6 +29,8 @@ function setupEvents() {
     $('proceed-link').addEventListener('click', function(event) {
       sendCommand(ssl ? CMD_PROCEED : SB_CMD_PROCEED);
     });
+  } else if (!ssl) {
+    $('finalParagraph').classList.add('hidden');
   }
 
   if (ssl && overridable) {
@@ -39,11 +41,13 @@ function setupEvents() {
       if (ssl)
         sendCommand(CMD_HELP);
       else if (loadTimeData.getBoolean('phishing'))
-        sendCommand(SB_CMD_REPORT_ERROR);
+        sendCommand(SB_CMD_LEARN_MORE_2);
       else
         sendCommand(SB_CMD_SHOW_DIAGNOSTIC);
     });
+  }
 
+  if (ssl && !overridable) {
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove('hidden');
   }

@@ -9227,6 +9227,63 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Stop sharing
       </message>
 
+      <!-- Safe Browsing interstitials V3 (shared phishing & malware) -->
+      <message name="IDS_SAFEBROWSING_V3_TITLE" desc="The tab title for the Safe Browsing interstitials.">
+        Security error
+      </message>
+      <message name="IDS_SAFEBROWSING_V3_OPEN_DETAILS_BUTTON" desc="The text for the button that expands the details.">
+        Advanced
+      </message>
+      <message name="IDS_SAFEBROWSING_V3_CLOSE_DETAILS_BUTTON" desc="The text for the button that hides the details.">
+        Hide advanced
+      </message>
+      <message name="IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
+        Back to safety
+      </message>
+
+      <!-- Malware interstitial V3 -->
+      <message name="IDS_MALWARE_V3_HEADING" desc="The large heading at the top of the malware interstitial.">
+        The site ahead contains malware
+      </message>
+      <if expr="is_android or is_ios">
+        <message name="IDS_MALWARE_V3_PRIMARY_PARAGRAPH" desc="Mobile: The primary explanatory paragraph for the malware interstitial.">
+          Attackers might be trying to install dangerous programs on your device that steal or delete your information (for example, photos, passwords, messages, and credit cards).
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_MALWARE_V3_PRIMARY_PARAGRAPH" desc="Mac: The primary explanatory paragraph for the malware interstitial.">
+          Attackers might be trying to install dangerous programs on your Mac that steal or delete your information (for example, photos, passwords, messages, and credit cards).
+        </message>
+      </if>
+      <if expr="not is_android and not is_macosx and not is_ios">
+        <message name="IDS_MALWARE_V3_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
+          Attackers might be trying to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages, and credit cards).
+        </message>
+      </if>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
+        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
+      </message>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE" desc="The explanation of why Safe Browsing has blocked the page.">
+        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$1<ex>evil.com</ex></ph>, a known malware distributor.
+      </message>
+      <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
+        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
+      </message>
+
+      <!-- Phishing interstitial V3 -->
+      <message name="IDS_PHISHING_V3_HEADING" desc="The large heading at the top of the phishing interstitial.">
+        Phishing attack ahead
+      </message>
+      <message name="IDS_PHISHING_V3_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
+        Attackers on <ph name="SITE">$1<ex>example.com</ex></ph> might be trying to trick you to steal your information (for example, login passwords and credit cards).
+      </message>
+      <message name="IDS_PHISHING_V3_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
+      Google Safe Browsing recently detected phishing on <ph name="SITE">$1<ex>example.com</ex></ph>. <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>Phishing sites<ph name="END_LINK">&lt;/a&gt;</ph> pretend to be other websites to trick you.
+      </message>
+      <message name="IDS_PHISHING_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
+        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+
       <!-- SSL Interstitial V2 -->
       <message name="IDS_SSL_V2_TITLE" desc="The tab title for the SSL interstitial.">
         Privacy error

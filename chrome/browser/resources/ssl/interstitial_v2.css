@@ -103,7 +103,10 @@ h1 {
   font-size: .875em;
 }
 
-.safe-browsing a {
+.safe-browsing a,
+.safe-browsing #details,
+.safe-browsing #details-button,
+.safe-browsing h1 {
   color: rgb(255, 255, 255);
 }
 

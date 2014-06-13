@@ -1248,17 +1248,16 @@ std::string SafeBrowsingBlockingPageV3::GetHTMLContents() {
   webui::SetFontAndTextDirection(&load_time_data);
   load_time_data.SetBoolean("ssl", false);
   load_time_data.SetString(
+      "tabTitle", l10n_util::GetStringUTF16(IDS_SAFEBROWSING_V3_TITLE));
+  load_time_data.SetString(
       "openDetails",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE));
+      l10n_util::GetStringUTF16(IDS_SAFEBROWSING_V3_OPEN_DETAILS_BUTTON));
   load_time_data.SetString(
       "closeDetails",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE));
+      l10n_util::GetStringUTF16(IDS_SAFEBROWSING_V3_CLOSE_DETAILS_BUTTON));
   load_time_data.SetString(
       "primaryButtonText",
-      l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
-  load_time_data.SetString(
-      "proceedText",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK));
+      l10n_util::GetStringUTF16(IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON));
   load_time_data.SetBoolean(
       "overridable",
       !IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
@@ -1293,61 +1292,41 @@ void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetString(
-      "tabTitle",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_TITLE));
-  load_time_data->SetString(
-      "heading",
-      l10n_util::GetStringUTF16(is_main_frame_load_blocked_ ?
-          IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE :
-          IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE_SUBRESOURCE));
+      "heading", l10n_util::GetStringUTF16(IDS_MALWARE_V3_HEADING));
   load_time_data->SetString(
       "primaryParagraph",
-      l10n_util::GetStringFUTF16(
-          is_main_frame_load_blocked_ ?
-              IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1 :
-              IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          base::UTF8ToUTF16(is_main_frame_load_blocked_ ?
-                            url_.host() : web_contents_->GetURL().host())));
+      l10n_util::GetStringUTF16(IDS_MALWARE_V3_PRIMARY_PARAGRAPH));
   load_time_data->SetString(
-      "secondParagraph",
+      "explanationParagraph",
       is_main_frame_load_blocked_ ?
-          l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2) :
           l10n_util::GetStringFUTF16(
-              IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+              IDS_MALWARE_V3_EXPLANATION_PARAGRAPH,
+              base::UTF8ToUTF16(url_.host())) :
+          l10n_util::GetStringFUTF16(
+              IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE,
+              base::UTF8ToUTF16(web_contents_->GetURL().host()),
               base::UTF8ToUTF16(url_.host())));
   load_time_data->SetString(
-      "thirdParagraph",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3));
-  load_time_data->SetString(
-      "detailsText",
-      is_main_frame_load_blocked_ ?
-          l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_DETAILS) :
-          l10n_util::GetStringFUTF16(
-              IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE,
-              base::UTF8ToUTF16(url_.host())));
+      "finalParagraph",
+      l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
 }
 
 void SafeBrowsingBlockingPageV3::PopulatePhishingLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", true);
   load_time_data->SetString(
-      "tabTitle",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_TITLE));
-  load_time_data->SetString(
       "heading",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_HEADLINE));
+      l10n_util::GetStringUTF16(IDS_PHISHING_V3_HEADING));
   load_time_data->SetString(
       "primaryParagraph",
       l10n_util::GetStringFUTF16(
-          IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          IDS_PHISHING_V3_PRIMARY_PARAGRAPH,
           base::UTF8ToUTF16(url_.host())));
   load_time_data->SetString(
-      "secondParagraph",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2));
+      "explanationParagraph",
+      l10n_util::GetStringFUTF16(IDS_PHISHING_V3_EXPLANATION_PARAGRAPH,
+                                 base::UTF8ToUTF16(url_.host())));
   load_time_data->SetString(
-      "detailsText",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR));
+      "finalParagraph",
+      l10n_util::GetStringUTF16(IDS_PHISHING_V3_PROCEED_PARAGRAPH));
 }
