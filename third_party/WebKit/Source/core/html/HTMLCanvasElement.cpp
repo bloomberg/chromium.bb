@@ -437,7 +437,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 
     // Do not use acceleration for small canvases, unless GPU rasterization is available.
     // GPU raterization is a heuristic to avoid difficult content & whitelist targeted content.
-    if (!document().frame()->chromeClient().usesGpuRasterization() && size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
+    if (!(document().frame() && document().frame()->chromeClient().usesGpuRasterization()) && size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
         return false;
 
     if (!blink::Platform::current()->canAccelerate2dCanvas())
