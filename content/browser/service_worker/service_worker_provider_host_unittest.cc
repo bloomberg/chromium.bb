@@ -201,19 +201,45 @@ class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
 
 TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
        AssociateWaitingVersionToDocuments) {
-  const GURL scope("http://www.example.com/*");
-  const GURL script_url("http://www.example.com/service_worker.js");
-
-  scoped_refptr<ServiceWorkerRegistration> registration(
+  const GURL scope1("http://www.example.com/*");
+  const GURL script_url1("http://www.example.com/service_worker1.js");
+  scoped_refptr<ServiceWorkerRegistration> registration1(
       new ServiceWorkerRegistration(
-          scope, script_url, 1L, context_->AsWeakPtr()));
-  scoped_refptr<ServiceWorkerVersion> version(
-      new ServiceWorkerVersion(registration, 1L, context_->AsWeakPtr()));
+          scope1, script_url1, 1L, context_->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version1(
+      new ServiceWorkerVersion(registration1, 1L, context_->AsWeakPtr()));
 
   ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version.get());
-  EXPECT_EQ(version.get(), provider_host1_->waiting_version());
-  EXPECT_EQ(version.get(), provider_host2_->waiting_version());
+      context_->AsWeakPtr(), version1.get());
+  EXPECT_EQ(version1.get(), provider_host1_->waiting_version());
+  EXPECT_EQ(version1.get(), provider_host2_->waiting_version());
+  EXPECT_EQ(NULL, provider_host3_->waiting_version());
+
+  // Version2 is associated with the same registration as version1, so the
+  // waiting version of host1 and host2 should be replaced.
+  scoped_refptr<ServiceWorkerVersion> version2(
+      new ServiceWorkerVersion(registration1, 2L, context_->AsWeakPtr()));
+  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
+      context_->AsWeakPtr(), version2.get());
+  EXPECT_EQ(version2.get(), provider_host1_->waiting_version());
+  EXPECT_EQ(version2.get(), provider_host2_->waiting_version());
+  EXPECT_EQ(NULL, provider_host3_->waiting_version());
+
+  const GURL scope3(provider_host1_->document_url());
+  const GURL script_url3("http://www.example.com/service_worker3.js");
+  scoped_refptr<ServiceWorkerRegistration> registration3(
+      new ServiceWorkerRegistration(
+          scope3, script_url3, 3L, context_->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version3(
+      new ServiceWorkerVersion(registration3, 3L, context_->AsWeakPtr()));
+
+  // Although version3 can match longer than version2 for host1, it should be
+  // ignored because version3 is associated with a different registration from
+  // version2.
+  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
+      context_->AsWeakPtr(), version3.get());
+  EXPECT_EQ(version2.get(), provider_host1_->waiting_version());
+  EXPECT_EQ(version2.get(), provider_host2_->waiting_version());
   EXPECT_EQ(NULL, provider_host3_->waiting_version());
 }
 

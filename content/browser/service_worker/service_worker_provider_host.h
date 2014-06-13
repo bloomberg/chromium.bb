@@ -74,14 +74,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
-  // Associate |version| to this provider as its '.active' or '.waiting'
+  // Associates |version| to this provider as its '.active' or '.waiting'
   // version.
   // Giving NULL to this method will unset the corresponding field.
   void SetActiveVersion(ServiceWorkerVersion* version);
   void SetWaitingVersion(ServiceWorkerVersion* version);
 
   // Returns false if the version is not in the expected STARTING in our
-  // our process state. That would be indicative of a bad IPC message.
+  // process state. That would be indicative of a bad IPC message.
   bool SetHostedVersionId(int64 versions_id);
 
   // Returns a handler for a request, the handler may return NULL if
@@ -89,6 +89,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       ResourceType::Type resource_type,
       base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
+
+  // Returns true if |version| has the same registration as active and waiting
+  // versions.
+  bool ValidateVersionForAssociation(ServiceWorkerVersion* version);
 
   // Dispatches message event to the document.
   void PostMessage(const base::string16& message,

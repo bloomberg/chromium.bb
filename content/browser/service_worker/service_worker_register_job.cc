@@ -407,18 +407,26 @@ void ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
   DCHECK(context);
   DCHECK(version);
 
-  // TODO(michaeln): This needs to respect the longest prefix wins
-  // when it comes to finding a registration for a document url.
-  // This should utilize storage->FindRegistrationForDocument().
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context->GetProviderHostIterator();
        !it->IsAtEnd();
        it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (ServiceWorkerUtils::ScopeMatches(version->scope(),
-                                         host->document_url()))
+                                         host->document_url())) {
+      // The spec's _Update algorithm says, "upgrades active version to a new
+      // version for the same URL scope.", so skip if the scope (registration)
+      // of |version| is different from that of the current active/waiting
+      // version.
+      if (!host->ValidateVersionForAssociation(version))
+        continue;
+
+      // TODO(nhiroki): Keep |host->waiting_version()| to be replaced and set
+      // status of them to 'redandunt' after breaking the loop.
+
       host->SetWaitingVersion(version);
-      // TODO(nhiroki): Take care of 'installing' version when it's supported.
+      // TODO(nhiroki): Set |host|'s installing version to null.
+    }
   }
 }
 

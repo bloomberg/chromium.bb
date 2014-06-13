@@ -59,21 +59,9 @@ void ServiceWorkerProviderHost::SetActiveVersion(
       kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
 }
 
-ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
-    ServiceWorkerVersion* version) {
-  ServiceWorkerObjectInfo info;
-  if (context_ && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                    kDocumentMainThreadId, version);
-    info = handle->GetObjectInfo();
-    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
-  }
-  return info;
-}
-
 void ServiceWorkerProviderHost::SetWaitingVersion(
     ServiceWorkerVersion* version) {
+  DCHECK(ValidateVersionForAssociation(version));
   if (version == waiting_version_)
     return;
   scoped_refptr<ServiceWorkerVersion> previous_version = waiting_version_;
@@ -130,6 +118,28 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   return scoped_ptr<ServiceWorkerRequestHandler>();
 }
 
+bool ServiceWorkerProviderHost::ValidateVersionForAssociation(
+    ServiceWorkerVersion* version) {
+  if (running_hosted_version_)
+    return false;
+  if (!version)
+    return true;
+
+  // A version to be associated with this provider should have the same
+  // registration (scope) as current active/waiting versions.
+  if (active_version_) {
+    if (active_version_->registration_id() != version->registration_id())
+      return false;
+    DCHECK_EQ(active_version_->scope(), version->scope());
+  }
+  if (waiting_version_) {
+    if (waiting_version_->registration_id() != version->registration_id())
+      return false;
+    DCHECK_EQ(waiting_version_->scope(), version->scope());
+  }
+  return true;
+}
+
 void ServiceWorkerProviderHost::PostMessage(
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
@@ -147,6 +157,20 @@ void ServiceWorkerProviderHost::PostMessage(
           message,
           sent_message_port_ids,
           new_routing_ids));
+}
+
+ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
+    ServiceWorkerVersion* version) {
+  DCHECK(ValidateVersionForAssociation(version));
+  ServiceWorkerObjectInfo info;
+  if (context_ && version) {
+    scoped_ptr<ServiceWorkerHandle> handle =
+        ServiceWorkerHandle::Create(context_, dispatcher_host_,
+                                    kDocumentMainThreadId, version);
+    info = handle->GetObjectInfo();
+    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
+  }
+  return info;
 }
 
 }  // namespace content
