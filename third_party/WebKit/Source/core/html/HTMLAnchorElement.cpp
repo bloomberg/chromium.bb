@@ -384,7 +384,7 @@ void HTMLAnchorElement::handleClick(Event* event)
                 request.setHTTPReferrer(Referrer(referrer, document().referrerPolicy()));
         }
 
-        bool isSameOrigin = document().securityOrigin()->canRequest(completedURL);
+        bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);
         const AtomicString& suggestedName = (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName);
