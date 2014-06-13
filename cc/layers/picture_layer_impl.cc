@@ -1442,7 +1442,16 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
     bool prioritize_low_res)
     : layer_(layer), current_stage_(0) {
   DCHECK(layer_);
+
+  // Early out if the layer has no tilings.
   if (!layer_->tilings_ || !layer_->tilings_->num_tilings()) {
+    current_stage_ = arraysize(stages_);
+    return;
+  }
+
+  // Tiles without valid priority are treated as having lowest priority and
+  // never considered for raster.
+  if (!layer_->HasValidTilePriorities()) {
     current_stage_ = arraysize(stages_);
     return;
   }
@@ -1546,6 +1555,10 @@ PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
       iteration_stage_(TilePriority::EVENTUALLY),
       required_for_activation_(false),
       layer_(layer) {
+  // Early out if the layer has no tilings.
+  // TODO(vmpstr): Once tile priorities are determined by the iterators, ensure
+  // that layers that don't have valid tile priorities have lowest priorities so
+  // they evict their tiles first (crbug.com/381704)
   if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
     return;
 
