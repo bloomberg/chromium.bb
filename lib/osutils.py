@@ -5,12 +5,14 @@
 """Common file and os related utilities, including tempdir manipulation."""
 
 import collections
+import contextlib
 import cStringIO
 import ctypes
 import ctypes.util
 import datetime
 import errno
 import logging
+import operator
 import os
 import pwd
 import re
@@ -812,3 +814,182 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
   msg = '%s\n%s' % (msg,
                     '\n'.join([msg_format.format(x=x) for x in file_infos]))
   return msg
+
+
+def MountImagePartition(image_file, part_number, destination, gpt_table=None,
+                        sudo=True, makedirs=True, mount_opts=('ro', ),
+                        skip_mtab=False):
+  """Mount a |partition| from |image_file| to |destination|.
+
+  If there is a GPT table (GetImageDiskPartitionInfo), it will be used for
+  start offset and size of the selected partition. Otherwise, the GPT will
+  be read again from |image_file|. The GPT table MUST have unit of "B".
+
+  The mount option will be:
+
+    -o offset=XXX,sizelimit=YYY,(*mount_opts)
+
+  Args:
+    image_file: A path to the image file (chromiumos_base_image.bin).
+    part_number: A partition number.
+    destination: A path to the mount point.
+    gpt_table: A dictionary of PartitionInfo objects. See
+      cros_build_lib.GetImageDiskPartitionInfo.
+    sudo: Same as MountDir.
+    makedirs: Same as MountDir.
+    mount_opts: Same as MountDir.
+    skip_mtab: Same as MountDir.
+  """
+
+  if gpt_table is None:
+    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file, 'B',
+                                                         key_selector='number')
+
+  for _, part in gpt_table.items():
+    if part.number == part_number:
+      break
+  else:
+    part = None
+    raise ValueError('Partition number %d not found in the GPT %r.' %
+                     (part_number, gpt_table))
+
+  opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
+  opts += mount_opts
+  MountDir(image_file, destination, sudo=sudo, makedirs=makedirs,
+           mount_opts=opts, skip_mtab=skip_mtab)
+
+
+@contextlib.contextmanager
+def ChdirContext(target_dir):
+  """A context manager to chdir() into |target_dir| and back out on exit.
+
+  Args:
+    target_dir: A target directory to chdir into.
+  """
+
+  cwd = os.getcwd()
+  os.chdir(target_dir)
+  try:
+    yield
+  finally:
+    os.chdir(cwd)
+
+
+class MountImageContext(object):
+  """A context manager to mount an image."""
+
+  def __init__(self, image_file, destination, part_selects=(1, 3)):
+    """Construct a context manager object to actually do the job.
+
+    Specified partitions will be mounted under |destination| according to the
+    pattern:
+
+      partition ---mount--> dir-<partition number>
+
+    Symlinks with labels "dir-<label>" will also be created in |destination| to
+    point to the mounted partitions. If there is a conflict in symlinks, the
+    first one wins.
+
+    The image is unmounted when this context manager exits.
+
+      with MountImageContext('build/images/wolf/latest', 'root_mount_point'):
+        # "dir-1", and "dir-3" will be mounted in root_mount_point
+        ...
+
+    Args:
+      image_file: A path to the image file.
+      destination: A directory in which all mount points and symlinks will be
+        created. This parameter is relative to the CWD at the time __init__ is
+        called.
+      part_selects: A list of partition numbers or labels to be mounted. If an
+        element is an integer, it is matched as partition number, otherwise
+        a partition label.
+    """
+    self._image_file = image_file
+    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(
+        self._image_file, 'B', key_selector='number'
+    )
+    # Target dir is absolute path so that we do not have to worry about
+    # CWD being changed later.
+    self._target_dir = ExpandPath(destination)
+    self._part_selects = part_selects
+    self._mounted = set()
+    self._linked_labels = set()
+
+  def _GetMountPointAndSymlink(self, part):
+    """Given a PartitionInfo, return a tuple of mount point and symlink.
+
+    Args:
+      part: A PartitionInfo object.
+
+    Returns:
+      A tuple (mount_point, symlink).
+    """
+    dest_number = os.path.join(self._target_dir, 'dir-%d' % part.number)
+    dest_label = os.path.join(self._target_dir, 'dir-%s' % part.name)
+    return dest_number, dest_label
+
+  def _Mount(self, part):
+    """Mount the partition and create a symlink to the mount point.
+
+    The partition is mounted as "dir-partNumber", and the symlink "dir-label".
+    If "dir-label" already exists, no symlink is created.
+
+    Args:
+      part: A PartitionInfo object.
+
+    Raises:
+      ValueError if mount point already exists.
+    """
+    if part in self._mounted:
+      return
+
+    dest_number, dest_label = self._GetMountPointAndSymlink(part)
+    if os.path.exists(dest_number):
+      raise ValueError('Mount point %s already exists.' % dest_number)
+
+    MountImagePartition(self._image_file, part.number,
+                        dest_number, self._gpt_table)
+    self._mounted.add(part)
+
+    if not os.path.exists(dest_label):
+      os.symlink(os.path.basename(dest_number), dest_label)
+      self._linked_labels.add(dest_label)
+
+  def _Unmount(self, part):
+    """Unmount a partition that was mounted by _Mount."""
+    dest_number, dest_label = self._GetMountPointAndSymlink(part)
+    UmountDir(dest_number)
+    self._mounted.remove(part)
+
+    if dest_label in self._linked_labels:
+      SafeUnlink(dest_label)
+      self._linked_labels.remove(dest_label)
+
+  def _CleanUp(self):
+    """Unmount all mounted partitions."""
+    for part in list(self._mounted):
+      self._Unmount(part)
+
+  def __enter__(self):
+    for selector in self._part_selects:
+      matcher = operator.attrgetter('number')
+      if not isinstance(selector, int):
+        matcher = operator.attrgetter('name')
+      for _, part in self._gpt_table.items():
+        if matcher(part) == selector:
+          try:
+            self._Mount(part)
+          except:
+            self._CleanUp()
+            raise
+          break
+      else:
+        self._CleanUp()
+        raise ValueError('Partition %r not found in the GPT %r.' %
+                         (selector, self._gpt_table))
+
+    return self
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    self._CleanUp()

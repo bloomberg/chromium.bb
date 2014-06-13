@@ -403,5 +403,37 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
     self.assertCommandContains([commands._AUTOTEST_RPC_CLIENT, self.suite])
 
 
+class ImageTestStageTest(generic_stages_unittest.AbstractStageTest,
+                         cros_build_lib_unittest.RunCommandTestCase):
+  """Test image test stage."""
+
+  BOT_ID = 'x86-mario-release'
+  RELEASE_TAG = 'ToT.0.0'
+
+  def setUp(self):
+    self.PatchObject(commands, 'CreateTestRoot', autospec=True,
+                     return_value='/tmp/results_dir')
+    self.StartPatcher(BuilderRunMock())
+    self._Prepare()
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(ImageTestStageTest, self)._Prepare(bot_id, **kwargs)
+    self._run.GetArchive().SetupArchivePath()
+
+  def ConstructStage(self):
+    return test_stages.ImageTestStage(self._run, self._current_board)
+
+  def testPerformStage(self):
+    """Tests that we correctly run test-image script."""
+    stage = self.ConstructStage()
+    stage.PerformStage()
+    cmd = [
+        '--board', self._current_board,
+        '--test_results_root', '/tmp/results_dir/image_test_results',
+        stage.GetImageDirSymlink(),
+    ]
+    self.assertCommandContains(cmd)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

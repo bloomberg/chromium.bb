@@ -335,3 +335,26 @@ class QATestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
 
   def __init__(self, *args, **kwargs):
     super(QATestStage, self).__init__(*args, **kwargs)
+
+
+class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
+                     generic_stages.ForgivingBuilderStage,
+                     generic_stages.ArchivingStageMixin):
+  """Stage that launches tests on the produced disk image."""
+
+  # Give the tests 10 minutes to run. Image tests should be really quick.
+  IMAGE_TEST_TIMEOUT = 60 * 10
+
+  def __init__(self, *args, **kwargs):
+    super(ImageTestStage, self).__init__(*args, **kwargs)
+
+  def PerformStage(self):
+    test_results_dir = commands.CreateTestRoot(self._build_root)
+    with timeout_util.Timeout(self.IMAGE_TEST_TIMEOUT):
+      commands.RunTestImage(
+          self._build_root,
+          self._current_board,
+          self.GetImageDirSymlink(),
+          os.path.join(test_results_dir, 'image_test_results'),
+      )
+    # TODO(namnguyen): send perf values to chromeperf.appspot.com (386198)

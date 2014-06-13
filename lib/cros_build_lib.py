@@ -1713,19 +1713,34 @@ def Collection(classname, **kwargs):
   return new_class
 
 
-def GetImageDiskPartitionInfo(image_path, unit='MB'):
+PartitionInfo = collections.namedtuple(
+    'PartitionInfo',
+    ['number', 'start', 'end', 'size', 'file_system', 'name', 'flags']
+)
+
+
+def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
   """Returns the disk partition table of an image.
 
   Args:
     image_path: Path to the image file.
     unit: The unit to display (e.g., 'B', 'KiB', 'KB', 'MB').
       See `parted` documentation for more info.
+    key_selector: The value of the partition that will be used as the key for
+      that partition in this function's returned dictionary.
 
   Returns:
-    A dictionary of ParitionInfo items with parition names as keys.
+    A dictionary of ParitionInfo items keyed by |key_selector|.
   """
+
+  # Inside chroot, parted is in /usr/sbin. Outside, it is in /sbin.
+  parted_path = 'parted'
+  if IsInsideChroot():
+    # Inside chroot, parted is in /usr/sbin, but is not included in $PATH.
+    parted_path = '/usr/sbin/parted'
+
   lines = RunCommand(
-      ['parted', '-m', image_path, 'unit', unit, 'print'],
+      [parted_path, '-m', image_path, 'unit', unit, 'print'],
       capture_output=True).output.splitlines()
 
   # Sample output (partition #, start, end, size, file system, name, flags):
@@ -1742,19 +1757,19 @@ def GetImageDiskPartitionInfo(image_path, unit='MB'):
   #   5:145MB:2292MB:2147MB::ROOT-B:;
   #   3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
   #   1:4440MB:7661MB:3221MB:ext4:STATE:;
-  keys = ['number', 'start', 'end', 'size', 'file_system', 'name', 'flags']
-  PartitionInfo = collections.namedtuple('PartitionInfo', keys)
-
   table = {}
   for line in lines:
     match = re.match(r'(.*:.*:.*:.*:.*:.*:.*);', line)
     if match:
-      d = dict(zip(keys, match.group(1).split(':')))
+      # pylint: disable=W0212
+      d = dict(zip(PartitionInfo._fields, match.group(1).split(':')))
+      # pylint: enable=W0212
       # Disregard any non-numeric partition number (e.g. the file path).
       if d['number'].isdigit():
+        d['number'] = int(d['number'])
         for key in ['start', 'end', 'size']:
           d[key] = float(d[key][:-len(unit)])
 
-        table[d['name']] = PartitionInfo(**d)
+        table[d[key_selector]] = PartitionInfo(**d)
 
   return table

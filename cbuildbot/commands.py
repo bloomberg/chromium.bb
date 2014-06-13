@@ -461,6 +461,27 @@ def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
+def RunTestImage(buildroot, board, image_dir, results_dir):
+  """Executes test_image on the produced image in |image_dir|.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board the image was built for.
+    image_dir: The directory in which to find {,u}mount_image.sh and the image.
+    results_dir: The directory to store result files.
+
+  Raises:
+    failures_lib.BuildScriptFailure if the test script fails.
+  """
+  cmd = [
+      'test_image',
+      '--board', board,
+      '--test_results_root', results_dir,
+      image_dir,
+  ]
+  RunBuildScript(buildroot, cmd, chromite_cmd=True)
+
+
 def RunSignerTests(buildroot, board):
   cmd = ['./security_test_image', '--board=%s' % board]
   RunBuildScript(buildroot, cmd, enter_chroot=True)

@@ -538,6 +538,7 @@ class SimpleBuilder(Builder):
         [release_stages.SignerTestStage, board, archive_stage],
         [generic_stages.RetryStage, 1,
          release_stages.PaygenStage, board, archive_stage],
+        [test_stages.ImageTestStage, board],
         [test_stages.UnitTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],

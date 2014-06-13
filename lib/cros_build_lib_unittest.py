@@ -1320,5 +1320,56 @@ class CollectionTest(cros_test_lib.TestCase):
     self.assertEqual("Collection_O(a=0, b='string', c={})", str(o))
 
 
+class GetImageDiskPartitionInfoTests(RunCommandTestCase):
+  """Tests the GetImageDiskPartitionInfo function."""
+
+  SAMPLE_OUTPUT = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
+11:0.03MB:8.42MB:8.39MB::RWFW:;
+6:8.42MB:8.42MB:0.00MB::KERN-C:;
+7:8.42MB:8.42MB:0.00MB::ROOT-C:;
+9:8.42MB:8.42MB:0.00MB::reserved:;
+10:8.42MB:8.42MB:0.00MB::reserved:;
+2:10.5MB:27.3MB:16.8MB::KERN-A:;
+4:27.3MB:44.0MB:16.8MB::KERN-B:;
+8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
+12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
+5:145MB:2292MB:2147MB::ROOT-B:;
+3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
+1:4440MB:7661MB:3221MB:ext4:STATE:;
+"""
+
+  def setUp(self):
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_OUTPUT)
+
+  def testNormalPath(self):
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
+    # Because "reserved" is duplicated, we only have 11 key-value pairs.
+    self.assertEqual(11, len(partitions))
+    self.assertEqual(1, partitions['STATE'].number)
+    self.assertEqual(2147, partitions['ROOT-A'].size)
+
+  def testKeyedByNumber(self):
+    partitions = cros_build_lib.GetImageDiskPartitionInfo(
+        '_ignored', key_selector='number'
+    )
+    self.assertEqual(12, len(partitions))
+    self.assertEqual('STATE', partitions[1].name)
+    self.assertEqual(2147, partitions[3].size)
+    self.assertEqual('reserved', partitions[9].name)
+    self.assertEqual('reserved', partitions[10].name)
+
+  def testChangeUnit(self):
+
+    def changeUnit(unit):
+      cros_build_lib.GetImageDiskPartitionInfo('_ignored', unit)
+      self.assertCommandContains(
+          ['-m', '_ignored', 'unit', unit, 'print'],
+      )
+
+    # We must use 2-char units here because the mocked output is in 'MB'.
+    changeUnit('MB')
+    changeUnit('KB')
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

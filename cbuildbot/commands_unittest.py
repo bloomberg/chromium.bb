@@ -553,5 +553,27 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertExists(os.path.join(archive_dir, path[0]))
 
 
+class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Test commands related to ImageTest tests."""
+
+  def setUp(self):
+    self._build = 'test-build'
+    self._board = 'test-board'
+    self._image_dir = 'image-dir'
+    self._result_dir = 'result-dir'
+
+  def testRunTestImage(self):
+    """Verifies RunTestImage calls into test-image script properly."""
+    commands.RunTestImage(self._build, self._board, self._image_dir,
+                          self._result_dir)
+    self.assertCommandContains(
+        [
+          '--board', self._board,
+          '--test_results_root', self._result_dir,
+          self._image_dir,
+        ],
+    )
+
+
 if __name__ == '__main__':
   cros_test_lib.main()
