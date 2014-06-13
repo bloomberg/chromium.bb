@@ -41,6 +41,7 @@
         '../../ui/aura/aura.gyp:aura',
         '../../ui/compositor/compositor.gyp:compositor_test_support',
         '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/resources/ui_resources.gyp:ui_test_pak',
         '../athena.gyp:athena_lib',
         '../athena.gyp:athena_test_support',
       ],
