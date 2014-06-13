@@ -1597,7 +1597,7 @@ void BrowserOptionsHandler::HandleEnrollConsumerManagement(
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   PrefService* pref_service = g_browser_process->local_state();
   base::FundamentalValue virtual_keyboard_enabled(
-      pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
+      pref_service->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setVirtualKeyboardCheckboxState",
       virtual_keyboard_enabled);

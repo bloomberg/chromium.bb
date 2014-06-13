@@ -966,12 +966,12 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
       base::Bind(&SystemTrayDelegateChromeOS::UpdateLogoutDialogDuration,
                  base::Unretained(this)));
   user_pref_registrar_->Add(
-      prefs::kLargeCursorEnabled,
+      prefs::kAccessibilityLargeCursorEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
                  base::Unretained(this),
                  ash::A11Y_NOTIFICATION_NONE));
   user_pref_registrar_->Add(
-      prefs::kAutoclickEnabled,
+      prefs::kAccessibilityAutoclickEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
                  base::Unretained(this),
                  ash::A11Y_NOTIFICATION_NONE));

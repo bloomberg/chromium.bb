@@ -34,24 +34,30 @@ RecommendationRestorer::RecommendationRestorer(Profile* profile)
     return;
 
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kLargeCursorEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(prefs::kSpokenFeedbackEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(prefs::kHighContrastEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(prefs::kScreenMagnifierEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(prefs::kScreenMagnifierType,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(prefs::kVirtualKeyboardEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityLargeCursorEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilitySpokenFeedbackEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityHighContrastEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityScreenMagnifierEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityScreenMagnifierType,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityVirtualKeyboardEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -115,12 +121,12 @@ void RecommendationRestorer::Restore(bool allow_delay,
 }
 
 void RecommendationRestorer::RestoreAll() {
-  Restore(false, prefs::kLargeCursorEnabled);
-  Restore(false, prefs::kSpokenFeedbackEnabled);
-  Restore(false, prefs::kHighContrastEnabled);
-  Restore(false, prefs::kScreenMagnifierEnabled);
-  Restore(false, prefs::kScreenMagnifierType);
-  Restore(false, prefs::kVirtualKeyboardEnabled);
+  Restore(false, prefs::kAccessibilityLargeCursorEnabled);
+  Restore(false, prefs::kAccessibilitySpokenFeedbackEnabled);
+  Restore(false, prefs::kAccessibilityHighContrastEnabled);
+  Restore(false, prefs::kAccessibilityScreenMagnifierEnabled);
+  Restore(false, prefs::kAccessibilityScreenMagnifierType);
+  Restore(false, prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
 void RecommendationRestorer::StartTimer() {

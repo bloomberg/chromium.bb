@@ -647,31 +647,39 @@ const char kLanguageXkbAutoRepeatInterval[] =
 // preferences not user-configurable, not to sync them with cloud.
 
 // A boolean pref which determines whether the large cursor feature is enabled.
-const char kLargeCursorEnabled[] = "settings.a11y.large_cursor_enabled";
+const char kAccessibilityLargeCursorEnabled[] =
+    "settings.a11y.large_cursor_enabled";
 
 // A boolean pref which determines whether the sticky keys feature is enabled.
-const char kStickyKeysEnabled[] = "settings.a11y.sticky_keys_enabled";
+const char kAccessibilityStickyKeysEnabled[] =
+    "settings.a11y.sticky_keys_enabled";
 // A boolean pref which determines whether spoken feedback is enabled.
-const char kSpokenFeedbackEnabled[] = "settings.accessibility";
+const char kAccessibilitySpokenFeedbackEnabled[] = "settings.accessibility";
 // A boolean pref which determines whether high conrast is enabled.
-const char kHighContrastEnabled[] = "settings.a11y.high_contrast_enabled";
+const char kAccessibilityHighContrastEnabled[] =
+    "settings.a11y.high_contrast_enabled";
 // A boolean pref which determines whether screen magnifier is enabled.
-const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
+const char kAccessibilityScreenMagnifierEnabled[] =
+    "settings.a11y.screen_magnifier";
 // A integer pref which determines what type of screen magnifier is enabled.
 // Note that: 'screen_magnifier_type' had been used as string pref. Hence,
 // we are using another name pref here.
-const char kScreenMagnifierType[] = "settings.a11y.screen_magnifier_type2";
+const char kAccessibilityScreenMagnifierType[] =
+    "settings.a11y.screen_magnifier_type2";
 // A double pref which determines a zooming scale of the screen magnifier.
-const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
+const char kAccessibilityScreenMagnifierScale[] =
+    "settings.a11y.screen_magnifier_scale";
 // A boolean pref which determines whether the virtual keyboard is enabled for
 // accessibility.  This feature is separate from displaying an onscreen keyboard
 // due to lack of a physical keyboard.
-const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
+const char kAccessibilityVirtualKeyboardEnabled[] =
+    "settings.a11y.virtual_keyboard";
 // A boolean pref which determines whether autoclick is enabled.
-const char kAutoclickEnabled[] = "settings.a11y.autoclick";
+const char kAccessibilityAutoclickEnabled[] = "settings.a11y.autoclick";
 // An integer pref which determines time in ms between when the mouse cursor
 // stops and when an autoclick is triggered.
-const char kAutoclickDelayMs[] = "settings.a11y.autoclick_delay_ms";
+const char kAccessibilityAutoclickDelayMs[] =
+    "settings.a11y.autoclick_delay_ms";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";

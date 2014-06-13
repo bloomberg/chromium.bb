@@ -157,47 +157,47 @@ PrefService* GetPrefs() {
 }
 
 void SetLargeCursorEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kLargeCursorEnabled, enabled);
+  GetPrefs()->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
 }
 
 void SetHighContrastEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kHighContrastEnabled, enabled);
+  GetPrefs()->SetBoolean(prefs::kAccessibilityHighContrastEnabled, enabled);
 }
 
 void SetSpokenFeedbackEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kSpokenFeedbackEnabled, enabled);
+  GetPrefs()->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
 }
 
 void SetAutoclickEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAutoclickEnabled, enabled);
+  GetPrefs()->SetBoolean(prefs::kAccessibilityAutoclickEnabled, enabled);
 }
 
 void SetAutoclickDelayPref(int delay_ms) {
-  GetPrefs()->SetInteger(prefs::kAutoclickDelayMs, delay_ms);
+  GetPrefs()->SetInteger(prefs::kAccessibilityAutoclickDelayMs, delay_ms);
 }
 
 void SetVirtualKeyboardEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
+  GetPrefs()->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, enabled);
 }
 
 bool GetLargeCursorEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled);
+  return GetPrefs()->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
 }
 
 bool GetHighContrastEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kHighContrastEnabled);
+  return GetPrefs()->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
 }
 
 bool GetSpokenFeedbackEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kSpokenFeedbackEnabled);
+  return GetPrefs()->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled);
 }
 
 bool GetAutoclickEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAutoclickEnabled);
+  return GetPrefs()->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
 }
 
 int GetAutoclickDelayFromPref() {
-  return GetPrefs()->GetInteger(prefs::kAutoclickDelayMs);
+  return GetPrefs()->GetInteger(prefs::kAccessibilityAutoclickDelayMs);
 }
 
 bool IsBrailleImeActive() {

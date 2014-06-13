@@ -16,15 +16,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
                                      initial_timezone);
 
   // Check that accessability settings are set to default values.
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled));
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kStickyKeysEnabled));
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kSpokenFeedbackEnabled));
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kHighContrastEnabled));
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kScreenMagnifierEnabled));
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kAutoclickEnabled));
+  PrefService* prefs = profile()->GetPrefs();
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled));
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled));
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled));
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled));
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityAutoclickEnabled));
 
   ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kLanguageSendFunctionKeys));
@@ -32,15 +30,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
   ASSERT_TRUE(RunComponentExtensionTest("chromeos_info_private")) << message_;
 
   // Check that accessability settings have been all flipped by the test.
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled));
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kStickyKeysEnabled));
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kSpokenFeedbackEnabled));
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kHighContrastEnabled));
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kScreenMagnifierEnabled));
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kAutoclickEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityAutoclickEnabled));
 
-  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kLanguageSendFunctionKeys));
+  ASSERT_TRUE(prefs->GetBoolean(prefs::kLanguageSendFunctionKeys));
 }

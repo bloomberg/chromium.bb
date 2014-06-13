@@ -105,7 +105,7 @@ class ComponentLoaderTest : public testing::Test {
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
     local_state_.registry()->RegisterBooleanPref(
-        prefs::kSpokenFeedbackEnabled, false);
+        prefs::kAccessibilitySpokenFeedbackEnabled, false);
 #endif
   }
 

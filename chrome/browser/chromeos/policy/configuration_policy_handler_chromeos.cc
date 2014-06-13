@@ -346,9 +346,9 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
-    prefs->SetValue(prefs::kScreenMagnifierEnabled,
+    prefs->SetValue(prefs::kAccessibilityScreenMagnifierEnabled,
                     new base::FundamentalValue(value_in_range != 0));
-    prefs->SetValue(prefs::kScreenMagnifierType,
+    prefs->SetValue(prefs::kAccessibilityScreenMagnifierType,
                     new base::FundamentalValue(value_in_range));
   }
 }

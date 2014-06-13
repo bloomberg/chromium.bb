@@ -19,7 +19,8 @@ namespace accessibility {
 
 void EnableVirtualKeyboard(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
+  pref_service->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
+                           enabled);
   pref_service->CommitPendingWrite();
 }
 
@@ -28,8 +29,8 @@ bool IsVirtualKeyboardEnabled() {
     return false;
   }
   PrefService* prefs = g_browser_process->local_state();
-  bool virtual_keyboard_enabled = prefs &&
-      prefs->GetBoolean(prefs::kVirtualKeyboardEnabled);
+  bool virtual_keyboard_enabled =
+      prefs && prefs->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled);
   return virtual_keyboard_enabled;
 }
 

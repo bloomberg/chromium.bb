@@ -248,11 +248,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_large_cursor_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kLargeCursorEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityLargeCursorEnabled);
 
   // Verify that the pref which controls the large cursor in the login profile
   // has changed to the policy-supplied default.
-  VerifyPrefFollowsRecommendation(prefs::kLargeCursorEnabled,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
                                   base::FundamentalValue(true));
 
   // Verify that the large cursor is enabled.
@@ -272,11 +273,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_spoken_feedback_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kSpokenFeedbackEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
 
   // Verify that the pref which controls spoken feedback in the login profile
   // has changed to the policy-supplied default.
-  VerifyPrefFollowsRecommendation(prefs::kSpokenFeedbackEnabled,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
                                   base::FundamentalValue(true));
 
   // Verify that spoken feedback is enabled.
@@ -296,11 +298,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_high_contrast_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kHighContrastEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityHighContrastEnabled);
 
   // Verify that the pref which controls high contrast mode in the login profile
   // has changed to the policy-supplied default.
-  VerifyPrefFollowsRecommendation(prefs::kHighContrastEnabled,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
                                   base::FundamentalValue(true));
 
   // Verify that high contrast mode is enabled.
@@ -320,13 +323,14 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_screen_magnifier_type(kFullScreenMagnifier);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kScreenMagnifierType);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityScreenMagnifierType);
 
   // Verify that the prefs which control the screen magnifier type have changed
   // to the policy-supplied default.
-  VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierEnabled,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
                                   base::FundamentalValue(true));
-  VerifyPrefFollowsRecommendation(prefs::kScreenMagnifierType,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
                                   base::FundamentalValue(ash::MAGNIFIER_FULL));
 
   // Verify that the full-screen magnifier is enabled.
@@ -348,11 +352,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_large_cursor_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kLargeCursorEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityLargeCursorEnabled);
 
   // Verify that the pref which controls the large cursor in the session is
   // unchanged.
-  VerifyPrefFollowsDefault(prefs::kLargeCursorEnabled);
+  VerifyPrefFollowsDefault(prefs::kAccessibilityLargeCursorEnabled);
 
   // Verify that the large cursor is disabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -372,11 +377,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_spoken_feedback_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kSpokenFeedbackEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
 
   // Verify that the pref which controls the spoken feedback in the session is
   // unchanged.
-  VerifyPrefFollowsDefault(prefs::kSpokenFeedbackEnabled);
+  VerifyPrefFollowsDefault(prefs::kAccessibilitySpokenFeedbackEnabled);
 
   // Verify that spoken feedback is disabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -396,11 +402,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_high_contrast_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kHighContrastEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityHighContrastEnabled);
 
   // Verify that the pref which controls high contrast mode in the session is
   // unchanged.
-  VerifyPrefFollowsDefault(prefs::kHighContrastEnabled);
+  VerifyPrefFollowsDefault(prefs::kAccessibilityHighContrastEnabled);
 
   // Verify that high contrast mode is disabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -419,12 +426,13 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_screen_magnifier_type(kFullScreenMagnifier);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kScreenMagnifierType);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityScreenMagnifierType);
 
   // Verify that the prefs which control the screen magnifier in the session are
   // unchanged.
-  VerifyPrefFollowsDefault(prefs::kScreenMagnifierEnabled);
-  VerifyPrefFollowsDefault(prefs::kScreenMagnifierType);
+  VerifyPrefFollowsDefault(prefs::kAccessibilityScreenMagnifierEnabled);
+  VerifyPrefFollowsDefault(prefs::kAccessibilityScreenMagnifierType);
 
   // Verify that the screen magnifier is disabled.
   chromeos::MagnificationManager* magnification_manager =
@@ -445,11 +453,12 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_accessibility_settings()->
       set_login_screen_default_virtual_keyboard_enabled(true);
-  RefreshDevicePolicyAndWaitForPrefChange(prefs::kVirtualKeyboardEnabled);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      prefs::kAccessibilityVirtualKeyboardEnabled);
 
   // Verify that the pref which controls the on-screen keyboard in the login
   // profile has changed to the policy-supplied default.
-  VerifyPrefFollowsRecommendation(prefs::kVirtualKeyboardEnabled,
+  VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
                                   base::FundamentalValue(true));
 
   // Verify that the on-screen keyboard is enabled.

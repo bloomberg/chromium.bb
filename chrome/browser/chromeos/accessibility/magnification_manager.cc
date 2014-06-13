@@ -42,9 +42,11 @@ class MagnificationManagerImpl : public MagnificationManager,
   MagnificationManagerImpl()
       : first_time_update_(true),
         profile_(NULL),
-        magnifier_enabled_pref_handler_(prefs::kScreenMagnifierEnabled),
-        magnifier_type_pref_handler_(prefs::kScreenMagnifierType),
-        magnifier_scale_pref_handler_(prefs::kScreenMagnifierScale),
+        magnifier_enabled_pref_handler_(
+            prefs::kAccessibilityScreenMagnifierEnabled),
+        magnifier_type_pref_handler_(prefs::kAccessibilityScreenMagnifierType),
+        magnifier_scale_pref_handler_(
+            prefs::kAccessibilityScreenMagnifierScale),
         type_(ash::kDefaultMagnifierType),
         enabled_(false) {
     registrar_.Add(this,
@@ -76,7 +78,7 @@ class MagnificationManagerImpl : public MagnificationManager,
       return;
 
     PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
+    prefs->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, enabled);
     prefs->CommitPendingWrite();
   }
 
@@ -85,7 +87,7 @@ class MagnificationManagerImpl : public MagnificationManager,
       return;
 
     PrefService* prefs = profile_->GetPrefs();
-    prefs->SetInteger(prefs::kScreenMagnifierType, type);
+    prefs->SetInteger(prefs::kAccessibilityScreenMagnifierType, type);
     prefs->CommitPendingWrite();
   }
 
@@ -93,14 +95,16 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (!profile_)
       return;
 
-    profile_->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
+    profile_->GetPrefs()->SetDouble(prefs::kAccessibilityScreenMagnifierScale,
+                                    scale);
   }
 
   virtual double GetSavedScreenMagnifierScale() const OVERRIDE {
     if (!profile_)
       return std::numeric_limits<double>::min();
 
-    return profile_->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
+    return profile_->GetPrefs()->GetDouble(
+        prefs::kAccessibilityScreenMagnifierScale);
   }
 
   virtual void SetProfileForTest(Profile* profile) OVERRIDE {
@@ -121,11 +125,11 @@ class MagnificationManagerImpl : public MagnificationManager,
       pref_change_registrar_.reset(new PrefChangeRegistrar);
       pref_change_registrar_->Init(profile->GetPrefs());
       pref_change_registrar_->Add(
-          prefs::kScreenMagnifierEnabled,
+          prefs::kAccessibilityScreenMagnifierEnabled,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierFromPrefs,
                      base::Unretained(this)));
       pref_change_registrar_->Add(
-          prefs::kScreenMagnifierType,
+          prefs::kAccessibilityScreenMagnifierType,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierFromPrefs,
                      base::Unretained(this)));
     }
@@ -169,10 +173,10 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (!profile_)
       return;
 
-    const bool enabled =
-        profile_->GetPrefs()->GetBoolean(prefs::kScreenMagnifierEnabled);
-    const int type_integer =
-        profile_->GetPrefs()->GetInteger(prefs::kScreenMagnifierType);
+    const bool enabled = profile_->GetPrefs()->GetBoolean(
+        prefs::kAccessibilityScreenMagnifierEnabled);
+    const int type_integer = profile_->GetPrefs()->GetInteger(
+        prefs::kAccessibilityScreenMagnifierType);
 
     ash::MagnifierType type = ash::kDefaultMagnifierType;
     if (type_integer > 0 && type_integer <= ash::kMaxMagnifierType) {

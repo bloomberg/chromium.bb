@@ -1839,7 +1839,7 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // functionality.
   if (accelerator.key_code() == ui::VKEY_LWIN &&
       g_browser_process->local_state()->GetBoolean(
-          prefs::kSpokenFeedbackEnabled)) {
+          prefs::kAccessibilitySpokenFeedbackEnabled)) {
     TtsController::GetInstance()->Stop();
     return false;
   }

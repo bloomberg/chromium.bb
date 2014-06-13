@@ -90,13 +90,16 @@ const struct {
   const char* api_name;
   const char* preference_name;
 } kPreferencesMap[] = {
-      {kPropertyLargeCursorEnabled, prefs::kLargeCursorEnabled},
-      {kPropertyStickyKeysEnabled, prefs::kStickyKeysEnabled},
-      {kPropertySpokenFeedbackEnabled, prefs::kSpokenFeedbackEnabled},
-      {kPropertyHighContrastEnabled, prefs::kHighContrastEnabled},
-      {kPropertyScreenMagnifierEnabled, prefs::kScreenMagnifierEnabled},
-      {kPropertyAutoclickEnabled, prefs::kAutoclickEnabled},
-      {kPropertyVirtualKeyboardEnabled, prefs::kVirtualKeyboardEnabled},
+      {kPropertyLargeCursorEnabled, prefs::kAccessibilityLargeCursorEnabled},
+      {kPropertyStickyKeysEnabled, prefs::kAccessibilityStickyKeysEnabled},
+      {kPropertySpokenFeedbackEnabled,
+       prefs::kAccessibilitySpokenFeedbackEnabled},
+      {kPropertyHighContrastEnabled, prefs::kAccessibilityHighContrastEnabled},
+      {kPropertyScreenMagnifierEnabled,
+       prefs::kAccessibilityScreenMagnifierEnabled},
+      {kPropertyAutoclickEnabled, prefs::kAccessibilityAutoclickEnabled},
+      {kPropertyVirtualKeyboardEnabled,
+       prefs::kAccessibilityVirtualKeyboardEnabled},
       {kPropertySendFunctionsKeys, prefs::kLanguageSendFunctionKeys}};
 
 const char* GetBoolPrefNameForApiProperty(const char* api_name) {
