@@ -113,14 +113,21 @@ void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
 }
 
 void CursorWindowController::UpdateContainer() {
-  display_ = Shell::GetScreen()->GetPrimaryDisplay();
   if (is_cursor_compositing_enabled_) {
-    SetDisplay(display_);
+    gfx::Screen* screen = Shell::GetScreen();
+    gfx::Display display = screen->GetDisplayNearestPoint(
+        screen->GetCursorScreenPoint());
+    DCHECK(display.is_valid());
+    if (display.is_valid())
+      SetDisplay(display);
   } else {
-    SetContainer(Shell::GetInstance()->
-                 display_controller()->
-                 mirror_window_controller()->
-                 GetWindow());
+    aura::Window* mirror_window = Shell::GetInstance()->
+        display_controller()->
+        mirror_window_controller()->
+        GetWindow();
+    if (mirror_window)
+      display_ = Shell::GetScreen()->GetPrimaryDisplay();
+    SetContainer(mirror_window);
   }
 }
 
@@ -142,7 +149,6 @@ void CursorWindowController::SetDisplay(const gfx::Display& display) {
 void CursorWindowController::UpdateLocation() {
   if (!cursor_window_)
     return;
-
   gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
   if (!is_cursor_compositing_enabled_) {
     Shell::GetPrimaryRootWindow()->GetHost()->ConvertPointToHost(&point);
@@ -181,20 +187,20 @@ void CursorWindowController::SetVisibility(bool visible) {
 void CursorWindowController::SetContainer(aura::Window* container) {
   if (container_ == container)
     return;
-
   container_ = container;
   if (!container) {
     cursor_window_.reset();
     return;
   }
 
-  if (!cursor_window_) {
-    cursor_window_.reset(new aura::Window(delegate_.get()));
-    cursor_window_->SetTransparent(true);
-    cursor_window_->Init(aura::WINDOW_LAYER_TEXTURED);
-    cursor_window_->set_ignore_events(true);
-    cursor_window_->set_owned_by_parent(false);
-  }
+  // Reusing the window does not work when the display is disconnected.
+  // Just creates a new one instead. crbug.com/384218.
+  cursor_window_.reset(new aura::Window(delegate_.get()));
+  cursor_window_->SetTransparent(true);
+  cursor_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  cursor_window_->set_ignore_events(true);
+  cursor_window_->set_owned_by_parent(false);
+  UpdateCursorImage();
 
   container->AddChild(cursor_window_.get());
   cursor_window_->Show();
