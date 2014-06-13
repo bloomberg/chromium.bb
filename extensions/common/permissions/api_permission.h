@@ -100,6 +100,7 @@ class APIPermission {
     kHomepage,
     kHotwordPrivate,
     kIdentity,
+    kIdentityEmail,
     kIdentityPrivate,
     kIdltest,
     kIdle,
