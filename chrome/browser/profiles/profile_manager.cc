@@ -342,8 +342,16 @@ Profile* ProfileManager::GetActiveUserProfile() {
   if (user && user->is_profile_created())
     return manager->GetProfileByUser(user);
 #endif
-  return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
-      profile_manager->user_data_dir());
+  Profile* profile =
+      profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
+          profile_manager->user_data_dir());
+  // |profile| could be null if the user doesn't have a profile yet and the path
+  // is on a read-only volume (preventing Chrome from making a new one).
+  // However, most callers of this function immediately dereference the result
+  // which would lead to crashes in a variety of call sites. Assert here to
+  // figure out how common this is. http://crbug.com/383019
+  CHECK(profile) << profile_manager->user_data_dir().AsUTF8Unsafe();
+  return profile;
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
