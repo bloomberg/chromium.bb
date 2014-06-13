@@ -7,12 +7,15 @@
 
 import cStringIO
 import hashlib
+import errno
 import json
 import logging
 import optparse
 import os
 import re
 import shutil
+import stat
+import sys
 import subprocess
 import urllib2
 import zipfile
@@ -172,6 +175,27 @@ def _DirIsEmpty(path):
     return not dirs and not files
 
 
+def _RmTreeHandleReadOnly(func, path, exc):
+  """An error handling function for use with shutil.rmtree. This will
+  detect failures to remove read-only files, and will change their properties
+  prior to removing them. This is necessary on Windows as os.remove will return
+  an access error for read-only files, and git repos contain read-only
+  pack/index files.
+  """
+  excvalue = exc[1]
+  if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
+    _LOGGER.debug('Removing read-only path: %s', path)
+    os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    func(path)
+  else:
+    raise
+
+
+def _RmTree(path):
+  """A wrapper of shutil.rmtree that handles read-only files."""
+  shutil.rmtree(path, ignore_errors=False, onerror=_RmTreeHandleReadOnly)
+
+
 def _CleanState(output_dir, state, dry_run=False):
   """Cleans up files/directories in |output_dir| that are referenced by
   the given |state|. Raises an error if there are local changes. Returns a
@@ -216,7 +240,7 @@ def _CleanState(output_dir, state, dry_run=False):
     if os.path.exists(p) and _DirIsEmpty(p):
       _LOGGER.debug('Deleting empty directory "%s".', p)
       if not dry_run:
-        shutil.rmtree(p, False)
+        _RmTree(p)
 
   return deleted
 
@@ -328,6 +352,11 @@ def _ParseCommandLine():
 
 
 def main():
+  # We only care about Windows platforms, as the Syzygy binaries aren't used
+  # elsewhere.
+  if sys.platform != 'win32':
+    return
+
   options = _ParseCommandLine()
 
   if options.dry_run:
@@ -356,7 +385,7 @@ def main():
       # If overwrite was specified then take a heavy-handed approach.
       _LOGGER.debug('Deleting entire installation directory.')
       if not options.dry_run:
-        shutil.rmtree(options.output_dir, False)
+        _RmTree(options.output_dir)
   else:
     # Otherwise only delete things that the previous installation put in place,
     # and take care to preserve any local changes.
