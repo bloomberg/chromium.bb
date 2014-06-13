@@ -58,6 +58,13 @@
       <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/common/images/icon128.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_256" file="file_manager/common/images/icon256.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_ICON_64" file="file_manager/audio_player/icons/audio-player-64.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_16" file="gallery/images/icon16.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_32" file="gallery/images/icon32.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_48" file="gallery/images/icon48.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_64" file="gallery/images/icon64.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_96" file="gallery/images/icon96.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_128" file="gallery/images/icon128.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_GALLERY_ICON_256" file="gallery/images/icon256.png" type="BINDATA" />
 
       <!-- Resources used for non-flattened HTML files. -->
       <include name="IDR_FILE_MANAGER_DRIVE_WELCOME_STYLE" file="file_manager/foreground/css/drive_welcome.css" type="BINDATA" />
@@ -87,8 +94,6 @@
       <include name="IDR_GALLERY_METADATA_WORKER_JS" file="gallery/js/metadata_worker.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_TEST_UTIL_JS" file="gallery/js/test_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_GALLERY_ERROR_UTIL_JS" file="gallery/js/error_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_GALLERY_ICON_16" file="gallery/images/100/icon.png" type="BINDATA" />
-      <include name="IDR_GALLERY_ICON_32" file="gallery/images/200/icon.png" type="BINDATA" />
 
       <!-- Custom cursors (which grit cannot inline). -->
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="gallery/images/100/cursor_crop.png" type="BINDATA" />
