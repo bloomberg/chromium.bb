@@ -705,6 +705,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   if (0 != nap->user_entry_pt) {
     auxv_entries++;
   }
+  if (0 != nap->dynamic_text_start) {
+    auxv_entries++;
+  }
   ptr_tbl_size = (((NACL_STACK_GETS_ARG ? 1 : 0) +
                    (3 + argc + 1 + envc + 1 + auxv_entries * 2)) *
                   sizeof(uint32_t));
@@ -779,6 +782,10 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   if (0 != nap->user_entry_pt) {
     *p++ = AT_ENTRY;
     *p++ = (uint32_t) nap->user_entry_pt;
+  }
+  if (0 != nap->dynamic_text_start) {
+    *p++ = AT_BASE;
+    *p++ = (uint32_t) nap->dynamic_text_start;
   }
   *p++ = AT_NULL;
   *p++ = 0;

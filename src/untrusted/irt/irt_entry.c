@@ -18,6 +18,8 @@
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
+uintptr_t g_dynamic_text_start;
+
 void __libc_init_array(void);
 
 void nacl_irt_init(uint32_t *info) {
@@ -55,11 +57,18 @@ void nacl_irt_enter_user_code(uint32_t *info,
                               nacl_irt_query_func_t query_func) {
   Elf32_auxv_t *auxv = nacl_startup_auxv(info);
   Elf32_auxv_t *entry = NULL;
+  Elf32_auxv_t *base = NULL;
   for (Elf32_auxv_t *av = auxv; av->a_type != AT_NULL; ++av) {
-    if (av->a_type == AT_ENTRY) {
-      entry = av;
-      break;
+    switch (av->a_type) {
+      case AT_ENTRY:
+        entry = av;
+        break;
+      case AT_BASE:
+        base = av;
+        break;
     }
+    if (entry != NULL && base != NULL)
+      break;
   }
   if (entry == NULL) {
     static const char fatal_msg[] =
@@ -69,6 +78,29 @@ void nacl_irt_enter_user_code(uint32_t *info,
     _exit(-1);
   }
   void (*user_start)(uint32_t *) = (void (*)(uint32_t *)) entry->a_un.a_val;
+
+  if (base != NULL) {
+    /*
+     * The trusted code passed us the dynamic text start address in
+     * AT_BASE, but this is not the meaning that entry would have to
+     * the user application.  So hide it.
+     */
+    g_dynamic_text_start = base->a_un.a_val;
+    base->a_un.a_val = 0;
+    if (base[1].a_type == AT_NULL) {
+      /*
+       * This was the last entry before the terminator, so just make it the
+       * terminator.
+       */
+      base->a_type = AT_NULL;
+    } else {
+      /*
+       * Mark this as a useless entry so the user application isn't
+       * confused by it.
+       */
+      base->a_type = AT_IGNORE;
+    }
+  }
 
   /*
    * The user application does not need to see the AT_ENTRY item.

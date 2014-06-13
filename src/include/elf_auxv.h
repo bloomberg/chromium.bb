@@ -17,6 +17,9 @@
 
 /* Keys for auxiliary vector (auxv). */
 #define AT_NULL         0   /* Terminating item in auxv array */
+#define AT_IGNORE       1   /* Entry should be ignored */
+#define AT_BASE         7   /* Base address of interpreter
+                               (overloaded for dynamic text start) */
 #define AT_ENTRY        9   /* Entry point of the executable */
 #define AT_SYSINFO      32  /* System call entry point */
 
