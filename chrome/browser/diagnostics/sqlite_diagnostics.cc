@@ -200,13 +200,6 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 
 }  // namespace
 
-DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(
-      SqliteIntegrityTest::NO_FLAGS_SET,
-      DIAGNOSTICS_SQLITE_INTEGRITY_ARCHIVED_HISTORY_TEST,
-      base::FilePath(chrome::kArchivedHistoryFilename));
-}
-
 DiagnosticsTest* MakeSqliteCookiesDbTest() {
   return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_COOKIE_TEST,
