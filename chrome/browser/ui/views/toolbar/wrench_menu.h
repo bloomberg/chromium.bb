@@ -51,8 +51,6 @@ class WrenchMenu : public views::MenuDelegate,
   // Whether the menu is currently visible to the user.
   bool IsShowing();
 
-  const views::MenuConfig& GetMenuConfig() const;
-
   bool use_new_menu() const { return use_new_menu_; }
 
   void AddObserver(WrenchMenuObserver* observer);
@@ -111,8 +109,6 @@ class WrenchMenu : public views::MenuDelegate,
 
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> CommandIDToEntry;
-
-  const ui::NativeTheme* GetNativeTheme() const;
 
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu.
