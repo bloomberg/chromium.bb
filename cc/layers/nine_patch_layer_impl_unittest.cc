@@ -36,7 +36,9 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                               const gfx::Rect& border,
                               bool fill_center,
                               size_t expected_quad_size) {
-  MockQuadCuller quad_culler;
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
   gfx::Rect visible_content_rect(layer_size);
   gfx::Rect expected_remaining(border.x(),
                                border.y(),

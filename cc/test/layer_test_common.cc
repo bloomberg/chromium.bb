@@ -101,8 +101,10 @@ void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
     : host_(FakeLayerTreeHost::Create()),
-      root_layer_impl_(
-          LayerImpl::Create(host_->host_impl()->active_tree(), 1)) {
+      root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
+      render_pass_(RenderPass::Create()),
+      quad_culler_(make_scoped_ptr(
+          new MockQuadCuller(render_pass_.get(), &occlusion_tracker_))) {
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
   host_->host_impl()->InitializeRenderer(
       output_surface.PassAs<OutputSurface>());
@@ -123,10 +125,10 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
     const gfx::Rect& occluded) {
   AppendQuadsData data;
 
-  quad_culler_.clear_lists();
-  quad_culler_.set_occluded_target_rect(occluded);
+  quad_culler_->clear_lists();
+  quad_culler_->set_occluded_target_rect(occluded);
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(&quad_culler_, &data);
+  layer_impl->AppendQuads(quad_culler_.get(), &data);
   layer_impl->DidDraw(resource_provider());
 }
 
@@ -136,10 +138,10 @@ void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
     const gfx::Rect& occluded) {
   AppendQuadsData data(id);
 
-  quad_culler_.clear_lists();
-  quad_culler_.set_occluded_target_rect(occluded);
+  quad_culler_->clear_lists();
+  quad_culler_->set_occluded_target_rect(occluded);
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(&quad_culler_, &data);
+  layer_impl->AppendQuads(quad_culler_.get(), &data);
   layer_impl->DidDraw(resource_provider());
 }
 
@@ -148,11 +150,11 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
     const gfx::Rect& occluded) {
   AppendQuadsData data;
 
-  quad_culler_.clear_lists();
-  quad_culler_.set_occluded_target_rect_for_contributing_surface(occluded);
+  quad_culler_->clear_lists();
+  quad_culler_->set_occluded_target_rect_for_contributing_surface(occluded);
   bool for_replica = false;
   RenderPass::Id id(1, 1);
-  surface_impl->AppendQuads(&quad_culler_, &data, for_replica, id);
+  surface_impl->AppendQuads(quad_culler_.get(), &data, for_replica, id);
 }
 
 }  // namespace cc

@@ -294,7 +294,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   // Thickness should be overridden to 3.
   {
-    MockQuadCuller quad_culler;
+    MockOcclusionTracker<LayerImpl> occlusion_tracker;
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
@@ -308,7 +310,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->draw_properties().contents_scale_x = 2.f;
   scrollbar_layer_impl->draw_properties().contents_scale_y = 2.f;
   {
-    MockQuadCuller quad_culler;
+    MockOcclusionTracker<LayerImpl> occlusion_tracker;
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
@@ -324,7 +328,9 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   // current viewport state.
   scrollbar_layer_impl->SetVisibleToTotalLengthRatio(0.2f);
   {
-    MockQuadCuller quad_culler;
+    MockOcclusionTracker<LayerImpl> occlusion_tracker;
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 
@@ -381,7 +387,10 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   scrollbar_layer_impl->SetMaximum(8);
 
   {
-    MockQuadCuller quad_culler;
+    MockOcclusionTracker<LayerImpl> occlusion_tracker;
+    scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+    MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
+
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(&quad_culler, &data);
 

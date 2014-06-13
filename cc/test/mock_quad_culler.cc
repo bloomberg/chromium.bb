@@ -10,28 +10,6 @@
 
 namespace cc {
 
-MockQuadCuller::MockQuadCuller() {
-  render_pass_storage_ = RenderPass::Create();
-  active_render_pass_ = render_pass_storage_.get();
-  occlusion_tracker_storage_ = make_scoped_ptr(
-      new MockOcclusionTracker<LayerImpl>(gfx::Rect(0, 0, 1000, 1000)));
-  occlusion_tracker_ = occlusion_tracker_storage_.get();
-}
-
-MockQuadCuller::MockQuadCuller(RenderPass* external_render_pass)
-    : active_render_pass_(external_render_pass) {
-  occlusion_tracker_storage_ = make_scoped_ptr(
-      new MockOcclusionTracker<LayerImpl>(gfx::Rect(0, 0, 1000, 1000)));
-  occlusion_tracker_ = occlusion_tracker_storage_.get();
-}
-
-MockQuadCuller::MockQuadCuller(
-    MockOcclusionTracker<LayerImpl>* occlusion_tracker)
-    : occlusion_tracker_(occlusion_tracker) {
-  render_pass_storage_ = RenderPass::Create();
-  active_render_pass_ = render_pass_storage_.get();
-}
-
 MockQuadCuller::MockQuadCuller(
     RenderPass* external_render_pass,
     MockOcclusionTracker<LayerImpl>* occlusion_tracker)

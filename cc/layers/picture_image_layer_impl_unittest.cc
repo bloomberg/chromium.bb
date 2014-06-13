@@ -155,7 +155,9 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   // Draw.
   active_layer->draw_properties().visible_content_rect =
       gfx::Rect(active_layer->bounds());
-  MockQuadCuller quad_culler;
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
   AppendQuadsData data;
   active_layer->WillDraw(DRAW_MODE_SOFTWARE, NULL);
   active_layer->AppendQuads(&quad_culler, &data);

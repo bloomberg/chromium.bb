@@ -107,8 +107,9 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   render_surface->SetClipRect(clip_rect);
   render_surface->SetDrawOpacity(1.f);
 
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  MockQuadCuller mock_quad_culler(render_pass.get());
+  MockQuadCuller mock_quad_culler(render_pass.get(), &occlusion_tracker);
   AppendQuadsData append_quads_data;
 
   bool for_replica = false;

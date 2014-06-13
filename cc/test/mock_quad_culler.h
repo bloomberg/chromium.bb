@@ -18,12 +18,8 @@ class MockQuadCuller : public QuadSink {
  public:
   virtual ~MockQuadCuller();
 
-  explicit MockQuadCuller(RenderPass* external_render_pass);
-  explicit MockQuadCuller(MockOcclusionTracker<LayerImpl>* occlusion_tracker);
   MockQuadCuller(RenderPass* external_render_pass,
                  MockOcclusionTracker<LayerImpl>* occlusion_tracker);
-  MockQuadCuller();
-
   // QuadSink interface.
   virtual SharedQuadState* CreateSharedQuadState() OVERRIDE;
   virtual gfx::Rect UnoccludedContentRect(const gfx::Rect& content_rect,

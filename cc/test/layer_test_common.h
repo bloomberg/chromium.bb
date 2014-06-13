@@ -113,12 +113,14 @@ class LayerTestCommon {
     LayerImpl* root_layer() const { return root_layer_impl_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     Proxy* proxy() const { return host_->host_impl()->proxy(); }
-    const QuadList& quad_list() const { return quad_culler_.quad_list(); }
+    const QuadList& quad_list() const { return quad_culler_->quad_list(); }
 
    private:
     scoped_ptr<FakeLayerTreeHost> host_;
     scoped_ptr<LayerImpl> root_layer_impl_;
-    MockQuadCuller quad_culler_;
+    scoped_ptr<RenderPass> render_pass_;
+    MockOcclusionTracker<LayerImpl> occlusion_tracker_;
+    scoped_ptr<MockQuadCuller> quad_culler_;
   };
 };
 

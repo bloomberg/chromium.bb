@@ -1216,7 +1216,9 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 }
 
 TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
-  MockQuadCuller quad_culler;
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
@@ -2724,7 +2726,9 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
 }
 
 TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
-  MockQuadCuller quad_culler;
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1000, 2000);

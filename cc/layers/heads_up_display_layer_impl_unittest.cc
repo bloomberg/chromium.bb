@@ -17,7 +17,9 @@ namespace {
 void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
                     ResourceProvider* resource_provider,
                     DrawMode draw_mode) {
-  MockQuadCuller quad_culler;
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
   AppendQuadsData data;
   bool will_draw = layer->WillDraw(draw_mode, resource_provider);
   if (will_draw)

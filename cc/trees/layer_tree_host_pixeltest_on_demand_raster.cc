@@ -41,8 +41,9 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     PictureLayerImpl* picture_layer = static_cast<PictureLayerImpl*>(
         host_impl->active_tree()->root_layer()->child_at(0));
 
+    MockOcclusionTracker<LayerImpl> occlusion_tracker;
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-    MockQuadCuller quad_culler(render_pass.get());
+    MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
 
     AppendQuadsData data;
     picture_layer->AppendQuads(&quad_culler, &data);

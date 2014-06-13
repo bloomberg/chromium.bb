@@ -16,6 +16,13 @@ class MockOcclusionTracker : public OcclusionTracker<LayerType> {
   // content rect. It calls the helper function of occlusion tracker to avoid
   // DCHECKs since testing environment won't be set up properly to pass those.
  public:
+  MockOcclusionTracker()
+      : OcclusionTracker<LayerType>(gfx::Rect(0, 0, 1000, 1000)) {
+    typename OcclusionTracker<LayerType>::StackObject stack_obj;
+    OcclusionTracker<LayerType>::stack_.push_back(stack_obj);
+    OcclusionTracker<LayerType>::stack_.push_back(stack_obj);
+  }
+
   explicit MockOcclusionTracker(const gfx::Rect& screen_scissor_rect)
       : OcclusionTracker<LayerType>(screen_scissor_rect) {
     typename OcclusionTracker<LayerType>::StackObject stack_obj;
