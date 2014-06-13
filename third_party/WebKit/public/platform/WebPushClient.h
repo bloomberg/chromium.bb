@@ -17,6 +17,7 @@ typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallb
 
 class WebPushClient {
 public:
+    virtual ~WebPushClient() { }
     virtual void registerPushMessaging(const WebString& senderId, WebPushRegistrationCallbacks*) = 0;
 };
 
