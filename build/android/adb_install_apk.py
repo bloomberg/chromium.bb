@@ -37,6 +37,8 @@ def AddInstallAPKOption(option_parser):
                            dest='build_type',
                            help='If set, run test suites under out/Release. '
                            'Default is env var BUILDTYPE or Debug.')
+  option_parser.add_option('-d', '--device', dest='device',
+                           help='Target device for apk to install on.')
 
 
 def ValidateInstallAPKOption(option_parser, options, args):
@@ -70,6 +72,13 @@ def main(argv):
   ValidateInstallAPKOption(parser, options, args)
 
   devices = android_commands.GetAttachedDevices()
+
+  if options.device:
+    if options.device not in devices:
+      raise Exception('Error: %s not in attached devices %s' % (options.device,
+                      ','.join(devices)))
+    devices = [options.device]
+
   if not devices:
     raise Exception('Error: no connected devices')
 
