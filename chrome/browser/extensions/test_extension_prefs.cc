@@ -164,8 +164,6 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   prefs_->OnExtensionInstalled(extension.get(),
                                Extension::ENABLED,
-                               false,
-                               false,
                                syncer::StringOrdinal::CreateInitialOrdinal(),
                                std::string());
   return extension;

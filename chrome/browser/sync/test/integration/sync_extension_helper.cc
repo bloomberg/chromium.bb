@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/id_util.h"
@@ -73,10 +74,7 @@ std::string SyncExtensionHelper::InstallExtension(
       ->extension_service()
       ->OnExtensionInstalled(extension.get(),
                              syncer::StringOrdinal(),
-                             false /* no requirement errors */,
-                             extensions::NOT_BLACKLISTED,
-                             false /* not ephemeral */,
-                             false /* don't wait for idle to install */);
+                             extensions::kInstallFlagInstallImmediately);
   return extension->id();
 }
 

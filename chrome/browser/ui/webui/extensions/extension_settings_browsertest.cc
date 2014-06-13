@@ -92,7 +92,7 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
     installer->set_expected_id(std::string());
     installer->set_is_gallery_install(false);
     installer->set_install_source(extensions::Manifest::INTERNAL);
-    installer->set_install_wait_for_idle(false);
+    installer->set_install_immediately(true);
     installer->set_off_store_install_allow_reason(
         extensions::CrxInstaller::OffStoreInstallAllowedInTest);
 

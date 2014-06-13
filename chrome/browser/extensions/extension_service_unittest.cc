@@ -84,6 +84,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_management_policy.h"
@@ -6800,12 +6801,11 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
 
   // Installation should be allowed but the extension should never have been
   // loaded and it should be blacklisted in prefs.
-  service()->OnExtensionInstalled(extension.get(),
-                                  syncer::StringOrdinal(),
-                                  false /* has requirement errors */,
-                                  extensions::BLACKLISTED_MALWARE,
-                                  false /* is ephemeral */,
-                                  false /* wait for idle */);
+  service()->OnExtensionInstalled(
+      extension.get(),
+      syncer::StringOrdinal(),
+      (extensions::kInstallFlagIsBlacklistedForMalware |
+       extensions::kInstallFlagInstallImmediately));
   base::RunLoop().RunUntilIdle();
 
   // Extension was installed but not loaded.

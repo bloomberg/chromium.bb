@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -318,13 +319,9 @@ void UnpackedInstaller::ConfirmInstall() {
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.GrantActivePermissions(installer_.extension().get());
 
-  service_weak_->OnExtensionInstalled(
-      installer_.extension().get(),
-      syncer::StringOrdinal(),
-      false /* no requirement errors */,
-      NOT_BLACKLISTED,
-      false /* not ephemeral */,
-      false /* don't wait for idle */);
+  service_weak_->OnExtensionInstalled(installer_.extension().get(),
+                                      syncer::StringOrdinal(),
+                                      kInstallFlagInstallImmediately);
 }
 
 }  // namespace extensions

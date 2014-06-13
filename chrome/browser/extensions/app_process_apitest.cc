@@ -27,6 +27,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -310,10 +311,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
       &error));
   service->OnExtensionInstalled(extension.get(),
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
-                                false /* no requirement errors */,
-                                extensions::NOT_BLACKLISTED,
-                                false /* not ephemeral */,
-                                false /* don't wait for idle */);
+                                extensions::kInstallFlagInstallImmediately);
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->from_bookmark());
 

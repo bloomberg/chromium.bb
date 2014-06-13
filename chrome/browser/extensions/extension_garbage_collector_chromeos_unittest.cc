@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace {
@@ -171,8 +172,7 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
   GetExtensionPrefs()->SetDelayedInstallInfo(
       extension2.get(),
       Extension::ENABLED,
-      false,
-      false,
+      kInstallFlagNone,
       ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
       syncer::StringOrdinal(),
       std::string());

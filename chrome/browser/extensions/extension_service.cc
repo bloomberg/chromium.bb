@@ -61,6 +61,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/update_observer.h"
@@ -1577,8 +1578,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
 
     AddNewOrUpdatedExtension(extension,
                              Extension::ENABLED_COMPONENT,
-                             extensions::NOT_BLACKLISTED,
-                             false,
+                             extensions::kInstallFlagNone,
                              syncer::StringOrdinal(),
                              std::string());
     return;
@@ -1742,10 +1742,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
-    bool has_requirement_errors,
-    extensions::BlacklistState blacklist_state,
-    bool is_ephemeral,
-    bool wait_for_idle) {
+    int install_flags) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& id = extension->id();
@@ -1786,7 +1783,7 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   // Unsupported requirements overrides the management policy.
-  if (has_requirement_errors) {
+  if (install_flags & extensions::kInstallFlagHasRequirementErrors) {
     initial_enable = false;
     extension_prefs_->AddDisableReason(
         id, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
@@ -1799,7 +1796,7 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->ClearDisableReasons(id);
   }
 
-  if (blacklist_state == extensions::BLACKLISTED_MALWARE) {
+  if (install_flags & extensions::kInstallFlagIsBlacklistedForMalware) {
     // Installation of a blacklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
@@ -1832,14 +1829,13 @@ void ExtensionService::OnExtensionInstalled(
     AcknowledgeExternalExtension(extension->id());
   const Extension::State initial_state =
       initial_enable ? Extension::ENABLED : Extension::DISABLED;
-  const bool blacklisted_for_malware =
-      blacklist_state == extensions::BLACKLISTED_MALWARE;
-  if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
+  if (ShouldDelayExtensionUpdate(
+          id,
+          !!(install_flags & extensions::kInstallFlagInstallImmediately))) {
     extension_prefs_->SetDelayedInstallInfo(
         extension,
         initial_state,
-        blacklisted_for_malware,
-        is_ephemeral,
+        install_flags,
         extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
         page_ordinal,
         install_parameter);
@@ -1859,8 +1855,7 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->SetDelayedInstallInfo(
         extension,
         initial_state,
-        blacklisted_for_malware,
-        is_ephemeral,
+        install_flags,
         extensions::ExtensionPrefs::DELAY_REASON_GC,
         page_ordinal,
         install_parameter);
@@ -1870,8 +1865,7 @@ void ExtensionService::OnExtensionInstalled(
       extension_prefs_->SetDelayedInstallInfo(
           extension,
           initial_state,
-          blacklisted_for_malware,
-          is_ephemeral,
+          install_flags,
           extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
           page_ordinal,
           install_parameter);
@@ -1880,8 +1874,7 @@ void ExtensionService::OnExtensionInstalled(
   } else {
     AddNewOrUpdatedExtension(extension,
                              initial_state,
-                             blacklist_state,
-                             is_ephemeral,
+                             install_flags,
                              page_ordinal,
                              install_parameter);
   }
@@ -1890,20 +1883,13 @@ void ExtensionService::OnExtensionInstalled(
 void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
     Extension::State initial_state,
-    extensions::BlacklistState blacklist_state,
-    bool is_ephemeral,
+    int install_flags,
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const bool blacklisted_for_malware =
-      blacklist_state == extensions::BLACKLISTED_MALWARE;
   bool was_ephemeral = extension_prefs_->IsEphemeralApp(extension->id());
-  extension_prefs_->OnExtensionInstalled(extension,
-                                         initial_state,
-                                         blacklisted_for_malware,
-                                         is_ephemeral,
-                                         page_ordinal,
-                                         install_parameter);
+  extension_prefs_->OnExtensionInstalled(
+      extension, initial_state, page_ordinal, install_flags, install_parameter);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     system_->install_verifier()->VerifyExtension(extension->id());
@@ -2343,12 +2329,12 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
 
 bool ExtensionService::ShouldDelayExtensionUpdate(
     const std::string& extension_id,
-    bool wait_for_idle) const {
+    bool install_immediately) const {
   const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
 
   // If delayed updates are globally disabled, or just for this extension,
   // don't delay.
-  if (!install_updates_when_idle_ || !wait_for_idle)
+  if (!install_updates_when_idle_ || install_immediately)
     return false;
 
   const Extension* old = GetInstalledExtension(extension_id);

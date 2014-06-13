@@ -22,6 +22,7 @@
 #include "content/public/test/mock_notification_observer.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -484,8 +485,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_EQ(id, extension->id());
     prefs()->SetDelayedInstallInfo(extension.get(),
                                    Extension::ENABLED,
-                                   false,
-                                   false,
+                                   kInstallFlagNone,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal(),
                                    std::string());
@@ -610,8 +610,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_EQ(id_, new_extension->id());
     prefs()->SetDelayedInstallInfo(new_extension.get(),
                                    Extension::ENABLED,
-                                   false,
-                                   false,
+                                   kInstallFlagNone,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal(),
                                    "Param");
@@ -650,8 +649,6 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::DISABLED,
-                                  false,
-                                  false,
                                   syncer::StringOrdinal(),
                                   "Param");
   }
@@ -674,8 +671,6 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
-                                  false,
-                                  false,
                                   syncer::StringOrdinal(),
                                   std::string());
   }

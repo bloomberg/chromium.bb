@@ -107,7 +107,7 @@ void InstallExtensionHandler::HandleInstallMessage(
   crx_installer->set_error_on_unsupported_requirements(true);
   crx_installer->set_off_store_install_allow_reason(
       CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
-  crx_installer->set_install_wait_for_idle(false);
+  crx_installer->set_install_immediately(true);
 
   const bool kCaseSensitive = false;
 

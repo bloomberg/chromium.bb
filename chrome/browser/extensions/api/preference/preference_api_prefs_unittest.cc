@@ -168,8 +168,6 @@ void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
     if (extension == extensions[i] && !installed_[i]) {
       prefs()->OnExtensionInstalled(extension,
                                     Extension::ENABLED,
-                                    false,
-                                    false,
                                     syncer::StringOrdinal(),
                                     std::string());
       prefs()->SetIsIncognitoEnabled(extension->id(), true);

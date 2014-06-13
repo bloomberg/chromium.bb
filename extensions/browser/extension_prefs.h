@@ -20,6 +20,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_scoped_prefs.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
@@ -184,15 +185,24 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void SetKnownDisabled(const ExtensionIdSet& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
-  // |blacklisted_for_malware| should be set if the extension was included in a
-  // blacklist due to being malware. If |page_ordinal| is an invalid ordinal,
-  // then a page will be found for the App.
+  // If |page_ordinal| is invalid then a page will be found for the App.
+  // |install_flags| are a bitmask of extension::InstallFlags.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
-                            bool blacklisted_for_malware,
-                            bool is_ephemeral,
                             const syncer::StringOrdinal& page_ordinal,
+                            int install_flags,
                             const std::string& install_parameter);
+  // OnExtensionInstalled with no install flags.
+  void OnExtensionInstalled(const Extension* extension,
+                            Extension::State initial_state,
+                            const syncer::StringOrdinal& page_ordinal,
+                            const std::string& install_parameter) {
+    OnExtensionInstalled(extension,
+                         initial_state,
+                         page_ordinal,
+                         kInstallFlagNone,
+                         install_parameter);
+  }
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
@@ -444,10 +454,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // We've downloaded an updated .crx file for the extension, but are waiting
   // to install it.
+  //
+  // |install_flags| are a bitmask of extension::InstallFlags.
   void SetDelayedInstallInfo(const Extension* extension,
                              Extension::State initial_state,
-                             bool blacklisted_for_malware,
-                             bool is_ephemeral,
+                             int install_flags,
                              DelayReason delay_reason,
                              const syncer::StringOrdinal& page_ordinal,
                              const std::string& install_parameter);
@@ -676,11 +687,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // by a newly installed extension. Work is broken up between this
   // function and FinishExtensionInfoPrefs() to accomodate delayed
   // installations.
+  //
+  // |install_flags| are a bitmask of extension::InstallFlags.
   void PopulateExtensionInfoPrefs(const Extension* extension,
                                   const base::Time install_time,
                                   Extension::State initial_state,
-                                  bool blacklisted_for_malware,
-                                  bool is_ephemeral,
+                                  int install_flags,
                                   const std::string& install_parameter,
                                   base::DictionaryValue* extension_dict);
 

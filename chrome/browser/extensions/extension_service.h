@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -281,17 +282,18 @@ class ExtensionService
 
   // Informs the service that an extension's files are in place for loading.
   //
-  // |page_ordinal| is the location of the extension in the app launcher.
-  // |has_requirement_errors| is true if requirements of the extension weren't
-  // met (for example graphics capabilities).
-  // |blacklist_state| will be BLACKLISTED if the extension is blacklisted.
-  // |wait_for_idle| may be false to install the extension immediately.
+  // |extension|     the extension
+  // |page_ordinal|  the location of the extension in the app launcher
+  // |install_flags| a bitmask of extensions::InstallFlags
   void OnExtensionInstalled(const extensions::Extension* extension,
                             const syncer::StringOrdinal& page_ordinal,
-                            bool has_requirement_errors,
-                            extensions::BlacklistState blacklist_state,
-                            bool is_ephemeral,
-                            bool wait_for_idle);
+                            int install_flags);
+  void OnExtensionInstalled(const extensions::Extension* extension,
+                            const syncer::StringOrdinal& page_ordinal) {
+    OnExtensionInstalled(extension,
+                         page_ordinal,
+                         static_cast<int>(extensions::kInstallFlagNone));
+  }
 
   // Checks for delayed installation for all pending installs.
   void MaybeFinishDelayedInstallations();
@@ -483,10 +485,10 @@ class ExtensionService
   // the extension is installed, e.g., to update event handlers on background
   // pages; and perform other extension install tasks before calling
   // AddExtension.
+  // |install_flags| is a bitmask of extensions::InstallFlags.
   void AddNewOrUpdatedExtension(const extensions::Extension* extension,
                                 extensions::Extension::State initial_state,
-                                extensions::BlacklistState blacklist_state,
-                                bool is_ephemeral,
+                                int install_flags,
                                 const syncer::StringOrdinal& page_ordinal,
                                 const std::string& install_parameter);
 
@@ -523,7 +525,7 @@ class ExtensionService
   // Helper to determine if updating an extensions should proceed immediately,
   // or if we should delay the update until further notice.
   bool ShouldDelayExtensionUpdate(const std::string& extension_id,
-                                  bool wait_for_idle) const;
+                                  bool install_immediately) const;
 
   // Manages the blacklisted extensions, intended as callback from
   // Blacklist::GetBlacklistedIDs.

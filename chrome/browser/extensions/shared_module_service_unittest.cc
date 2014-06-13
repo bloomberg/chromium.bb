@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/value_builder.h"
@@ -72,12 +73,8 @@ testing::AssertionResult SharedModuleServiceUnitTest::InstallExtension(
 
   // Notify the service that the extension is installed. This adds it to the
   // registry, notifies interested parties, etc.
-  service_->OnExtensionInstalled(extension,
-                                 syncer::StringOrdinal(),
-                                 false,  // No requirement errors.
-                                 NOT_BLACKLISTED,
-                                 false,  // Not ephemeral.
-                                 false);  // Don't wait for idle.
+  service_->OnExtensionInstalled(
+      extension, syncer::StringOrdinal(), kInstallFlagInstallImmediately);
 
   // Verify that the extension is now installed.
   if (!registry()->GetExtensionById(extension->id(),

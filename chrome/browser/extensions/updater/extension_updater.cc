@@ -567,7 +567,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
           it != crx_file.request_ids.end(); ++it) {
         InProgressCheck& request = requests_in_progress_[*it];
         if (request.install_immediately) {
-          installer->set_install_wait_for_idle(false);
+          installer->set_install_immediately(true);
           break;
         }
       }

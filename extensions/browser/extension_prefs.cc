@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
@@ -1239,9 +1240,8 @@ void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
-    bool blacklisted_for_malware,
-    bool is_ephemeral,
     const syncer::StringOrdinal& page_ordinal,
+    int install_flags,
     const std::string& install_parameter) {
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   base::DictionaryValue* extension_dict = update.Get();
@@ -1249,8 +1249,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   PopulateExtensionInfoPrefs(extension,
                              install_time,
                              initial_state,
-                             blacklisted_for_malware,
-                             is_ephemeral,
+                             install_flags,
                              install_parameter,
                              extension_dict);
   FinishExtensionInfoPrefs(extension->id(), install_time,
@@ -1464,8 +1463,7 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
 void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,
-    bool blacklisted_for_malware,
-    bool is_ephemeral,
+    int install_flags,
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter) {
@@ -1473,8 +1471,7 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   PopulateExtensionInfoPrefs(extension,
                              time_provider_->GetCurrentTime(),
                              initial_state,
-                             blacklisted_for_malware,
-                             is_ephemeral,
+                             install_flags,
                              install_parameter,
                              extension_dict);
 
@@ -2086,8 +2083,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     const Extension* extension,
     const base::Time install_time,
     Extension::State initial_state,
-    bool blacklisted_for_malware,
-    bool is_ephemeral,
+    int install_flags,
     const std::string& install_parameter,
     base::DictionaryValue* extension_dict) {
   // Leave the state blank for component extensions so that old chrome versions
@@ -2113,9 +2109,11 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefInstallTime,
                       new base::StringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
-  if (blacklisted_for_malware)
+  if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->Set(kPrefBlacklist, new base::FundamentalValue(true));
 
+  // TODO(tmdiep): Delete the pref if false, don't write false.
+  bool is_ephemeral = (install_flags & kInstallFlagIsEphemeral) != 0;
   extension_dict->Set(kPrefEphemeralApp,
                       new base::FundamentalValue(is_ephemeral));
 
