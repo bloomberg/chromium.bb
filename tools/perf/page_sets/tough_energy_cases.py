@@ -38,6 +38,8 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughEnergyCasesPageSet, self).__init__(
+      archive_data_file='data/tough_energy_cases.json',
+      bucket=page_set_module.PUBLIC_BUCKET,
       credentials_path='data/credentials.json')
 
     # Why: Above the fold animated gif running in the background
