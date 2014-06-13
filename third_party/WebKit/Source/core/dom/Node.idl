@@ -51,12 +51,11 @@
 
     [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node insertBefore(Node newChild, Node refChild);
     [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node replaceChild(Node newChild, Node oldChild);
-    [Custom, CustomElementCallbacks, PerWorldBindings, RaisesException] Node removeChild(Node oldChild);
+    [Custom, CustomElementCallbacks, RaisesException] Node removeChild(Node oldChild);
     [Custom, CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node appendChild(Node newChild);
 
     [ImplementedAs=hasChildren] boolean hasChildNodes();
-    [CustomElementCallbacks, PerWorldBindings]
-    Node               cloneNode(optional boolean deep);
+    [CustomElementCallbacks] Node cloneNode(optional boolean deep);
     [CustomElementCallbacks] void normalize();
 
     // Introduced in DOM Level 2:

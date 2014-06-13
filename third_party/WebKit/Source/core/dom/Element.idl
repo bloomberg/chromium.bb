@@ -32,7 +32,7 @@
     [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode([Default=Undefined] optional DOMString name); // Removed from DOM4.
     [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode([Default=Undefined, TypeChecking=Nullable] optional Attr newAttr); // Removed from DOM4.
     [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode([Default=Undefined, TypeChecking=Nullable] optional Attr oldAttr); // Removed from DOM4.
-    [PerWorldBindings] HTMLCollection getElementsByTagName(DOMString name);
+    HTMLCollection getElementsByTagName(DOMString name);
 
     [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
     [MeasureAs=HasAttributes] boolean hasAttributes();
@@ -110,7 +110,7 @@
     // Shadow DOM API
     [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
-    [PerWorldBindings] NodeList getDestinationInsertionPoints();
+    NodeList getDestinationInsertionPoints();
 
     // CSSOM View Module API
     ClientRectList getClientRects();

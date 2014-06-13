@@ -33,12 +33,12 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElement(DOMString tagName);
     DocumentFragment createDocumentFragment();
-    [PerWorldBindings] Text createTextNode(DOMString data);
+    Text createTextNode(DOMString data);
     Comment createComment(DOMString data);
     [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection([Default=Undefined] optional DOMString data); // Removed from DOM4.
     [RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
     [RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute([Default=Undefined] optional DOMString name); // Removed from DOM4.
-    [PerWorldBindings] HTMLCollection getElementsByTagName(DOMString localName);
+    HTMLCollection getElementsByTagName(DOMString localName);
 
     // Introduced in DOM Level 2:
 

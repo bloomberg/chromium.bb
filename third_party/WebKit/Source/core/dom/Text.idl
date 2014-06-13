@@ -30,5 +30,5 @@
     [MeasureAs=TextReplaceWholeText] Text replaceWholeText(DOMString content); // Removed from DOM4.
 
     // Shadow DOM API
-    [PerWorldBindings] NodeList getDestinationInsertionPoints();
+    NodeList getDestinationInsertionPoints();
 };

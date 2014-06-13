@@ -139,7 +139,7 @@
     readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
-    [PerWorldBindings] CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
+    CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
                                                             [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString pseudoElement);
 
     // WebKit extensions
