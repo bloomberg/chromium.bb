@@ -674,8 +674,8 @@ void QuicClientSession::StartReading() {
   if (++num_packets_read_ > 32) {
     num_packets_read_ = 0;
     // Data was read, process it.
-    // Schedule the work through the message loop to avoid recursive
-    // callbacks.
+    // Schedule the work through the message loop to 1) prevent infinite
+    // recursion and 2) avoid blocking the thread for too long.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&QuicClientSession::OnReadComplete,
@@ -780,9 +780,7 @@ void QuicClientSession::OnReadComplete(int result) {
     return;
   }
 
-  scoped_refptr<IOBufferWithSize> buffer(read_buffer_);
-  read_buffer_ = new IOBufferWithSize(kMaxPacketSize);
-  QuicEncryptedPacket packet(buffer->data(), result);
+  QuicEncryptedPacket packet(read_buffer_->data(), result);
   IPEndPoint local_address;
   IPEndPoint peer_address;
   socket_->GetLocalAddress(&local_address);
