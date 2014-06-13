@@ -33,13 +33,13 @@ class Snippet {
   // with no overlapping elements.
   //
   // NOTE: the positions returned are in terms of UTF8 encoding. To convert the
-  // offsets to UTF-16, use ConvertMatchPositionsToWide
+  // offsets to wide, use ConvertMatchPositionsToWide.
   static void ExtractMatchPositions(const std::string& offsets_str,
                                     const std::string& column_num,
                                     MatchPositions* match_positions);
 
   // Converts match positions as returned from ExtractMatchPositions to be in
-  // terms of a UTF-16 2-byte code unit.
+  // terms of a wide string.
   static void ConvertMatchPositionsToWide(
       const std::string& utf8_string,
       Snippet::MatchPositions* match_positions);
