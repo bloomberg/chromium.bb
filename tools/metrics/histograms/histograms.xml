@@ -36422,6 +36422,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="NONE"/>
   <int value="1" label="BOOTSTRAP"/>
   <int value="2" label="ENFORCE"/>
+  <int value="3" label="ENFORCE_STRICT"/>
 </enum>
 
 <enum name="ExtensionLaunchType" type="int">

@@ -38,10 +38,11 @@ enum VerifyStatus {
   NONE = 0,   // Do not request install signatures, and do not enforce them.
   BOOTSTRAP,  // Request install signatures, but do not enforce them.
   ENFORCE,    // Request install signatures, and enforce them.
+  ENFORCE_STRICT,  // Same as ENFORCE, but hard fail if we can't fetch
+                   // signatures.
 
   // This is used in histograms - do not remove or reorder entries above! Also
   // the "MAX" item below should always be the last element.
-
   VERIFY_STATUS_MAX
 };
 
@@ -59,12 +60,14 @@ VerifyStatus GetExperimentStatus() {
   if (forced_trials.find(kExperimentName) != std::string::npos) {
     // We don't want to allow turning off enforcement by forcing the field
     // trial group to something other than enforcement.
-    return ENFORCE;
+    return ENFORCE_STRICT;
   }
 
   VerifyStatus default_status = NONE;
 
-  if (group == "Enforce")
+  if (group == "EnforceStrict")
+    return ENFORCE_STRICT;
+  else if (group == "Enforce")
     return ENFORCE;
   else if (group == "Bootstrap")
     return BOOTSTRAP;
@@ -87,6 +90,8 @@ VerifyStatus GetCommandLineStatus() {
         switches::kExtensionsInstallVerification);
     if (value == "bootstrap")
       return BOOTSTRAP;
+    else if (value == "enforce_strict")
+      return ENFORCE_STRICT;
     else
       return ENFORCE;
   }
@@ -99,12 +104,11 @@ VerifyStatus GetStatus() {
 }
 
 bool ShouldFetchSignature() {
-  VerifyStatus status = GetStatus();
-  return (status == BOOTSTRAP || status == ENFORCE);
+  return GetStatus() >= BOOTSTRAP;
 }
 
 bool ShouldEnforce() {
-  return GetStatus() == ENFORCE;
+  return GetStatus() >= ENFORCE;
 }
 
 enum InitResult {
@@ -182,7 +186,11 @@ void LogAddVerifiedSuccess(bool success) {
 
 InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
                                  content::BrowserContext* context)
-    : prefs_(prefs), context_(context), weak_factory_(this) {}
+    : prefs_(prefs),
+      context_(context),
+      bootstrap_check_complete_(false),
+      weak_factory_(this) {
+}
 
 InstallVerifier::~InstallVerifier() {}
 
@@ -367,14 +375,16 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   } else if (!FromStore(*extension)) {
     verified = false;
     outcome = NOT_FROM_STORE;
-  } else if (signature_.get() == NULL) {
+  } else if (signature_.get() == NULL &&
+             (!bootstrap_check_complete_ || GetStatus() < ENFORCE_STRICT)) {
     // If we don't have a signature yet, we'll temporarily consider every
     // extension from the webstore verified to avoid false positives on existing
     // profiles hitting this code for the first time. The InstallVerifier
     // will bootstrap itself once the ExtensionsSystem is ready.
     outcome = NO_SIGNATURE;
   } else if (!IsVerified(extension->id())) {
-    if (!ContainsKey(signature_->invalid_ids, extension->id())) {
+    if (signature_.get() &&
+        !ContainsKey(signature_->invalid_ids, extension->id())) {
       outcome = NOT_VERIFIED_BUT_UNKNOWN_ID;
     } else {
       verified = false;
@@ -436,10 +446,11 @@ void InstallVerifier::MaybeBootstrapSelf() {
 
   if (needs_bootstrap)
     AddMany(extension_ids, ADD_ALL_BOOTSTRAP);
+  else
+    bootstrap_check_complete_ = true;
 }
 
-void InstallVerifier::OnVerificationComplete(bool success,
-                                             OperationType type) const {
+void InstallVerifier::OnVerificationComplete(bool success, OperationType type) {
   switch (type) {
     case ADD_SINGLE:
       LogAddVerifiedSuccess(success);
@@ -447,6 +458,7 @@ void InstallVerifier::OnVerificationComplete(bool success,
     case ADD_ALL:
     case ADD_ALL_BOOTSTRAP:
       LogVerifyAllSuccessHistogram(type == ADD_ALL_BOOTSTRAP, success);
+      bootstrap_check_complete_ = true;
       if (success) {
         // Iterate through the extensions and, if any are newly-verified and
         // should have the DISABLE_NOT_VERIFIED reason lifted, do so.
@@ -462,7 +474,8 @@ void InstallVerifier::OnVerificationComplete(bool success,
                                         Extension::DISABLE_NOT_VERIFIED);
           }
         }
-
+      }
+      if (success || GetStatus() == ENFORCE_STRICT) {
         ExtensionSystem::Get(context_)
             ->extension_service()
             ->CheckManagementPolicy();

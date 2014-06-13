@@ -113,7 +113,7 @@ class InstallVerifier : public ManagementPolicy::Provider {
 
   // Record the result of the verification for the histograms, and notify the
   // ExtensionPrefs if we verified all extensions.
-  void OnVerificationComplete(bool success, OperationType type) const;
+  void OnVerificationComplete(bool success, OperationType type);
 
   // Removes any no-longer-installed ids, requesting a new signature if needed.
   void GarbageCollect();
@@ -143,6 +143,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
 
   // The context with which the InstallVerifier is associated.
   content::BrowserContext* context_;
+
+  // Have we finished our bootstrap check yet?
+  bool bootstrap_check_complete_;
 
   // This is the most up-to-date signature, read out of |prefs_| during
   // initialization and updated anytime we get new id's added.
