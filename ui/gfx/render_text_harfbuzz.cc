@@ -10,6 +10,7 @@
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
+#include "base/lazy_instance.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -185,32 +186,36 @@ hb_bool_t GetGlyphExtents(hb_font_t* font,
   return true;
 }
 
-// Returns a HarfBuzz font data provider that uses Skia.
-hb_font_funcs_t* GetFontFuncs() {
-  static hb_font_funcs_t* font_funcs = 0;
-
-  // We don't set callback functions which we can't support.
-  // HarfBuzz will use the fallback implementation if they aren't set.
-  if (!font_funcs) {
-    // The object created by |hb_font_funcs_create()| below lives indefinitely
-    // and is intentionally leaked.
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    font_funcs = hb_font_funcs_create();
-    hb_font_funcs_set_glyph_func(font_funcs, GetGlyph, 0, 0);
+class FontFuncs {
+ public:
+  FontFuncs() : font_funcs_(hb_font_funcs_create()) {
+    hb_font_funcs_set_glyph_func(font_funcs_, GetGlyph, 0, 0);
     hb_font_funcs_set_glyph_h_advance_func(
-        font_funcs, GetGlyphHorizontalAdvance, 0, 0);
+        font_funcs_, GetGlyphHorizontalAdvance, 0, 0);
     hb_font_funcs_set_glyph_h_kerning_func(
-        font_funcs, GetGlyphHorizontalKerning, 0, 0);
+        font_funcs_, GetGlyphHorizontalKerning, 0, 0);
     hb_font_funcs_set_glyph_h_origin_func(
-        font_funcs, GetGlyphHorizontalOrigin, 0, 0);
+        font_funcs_, GetGlyphHorizontalOrigin, 0, 0);
     hb_font_funcs_set_glyph_v_kerning_func(
-        font_funcs, GetGlyphVerticalKerning, 0, 0);
+        font_funcs_, GetGlyphVerticalKerning, 0, 0);
     hb_font_funcs_set_glyph_extents_func(
-        font_funcs, GetGlyphExtents, 0, 0);
-    hb_font_funcs_make_immutable(font_funcs);
+        font_funcs_, GetGlyphExtents, 0, 0);
+    hb_font_funcs_make_immutable(font_funcs_);
   }
-  return font_funcs;
-}
+
+  ~FontFuncs() {
+    hb_font_funcs_destroy(font_funcs_);
+  }
+
+  hb_font_funcs_t* get() { return font_funcs_; }
+
+ private:
+  hb_font_funcs_t* font_funcs_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontFuncs);
+};
+
+base::LazyInstance<FontFuncs>::Leaky g_font_funcs = LAZY_INSTANCE_INITIALIZER;
 
 // Returns the raw data of the font table |tag|.
 hb_blob_t* GetFontTable(hb_face_t* face, hb_tag_t tag, void* user_data) {
@@ -269,7 +274,7 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
   FontData* hb_font_data = new FontData(&face_cache->second);
   hb_font_data->paint_.setTypeface(skia_face);
   hb_font_data->paint_.setTextSize(text_size);
-  hb_font_set_funcs(harfbuzz_font, GetFontFuncs(), hb_font_data,
+  hb_font_set_funcs(harfbuzz_font, g_font_funcs.Get().get(), hb_font_data,
                     DeleteByType<FontData>);
   hb_font_make_immutable(harfbuzz_font);
   return harfbuzz_font;
