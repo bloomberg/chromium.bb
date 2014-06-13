@@ -409,6 +409,7 @@ Tab::Tab(TabController* controller)
   title_->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
+  title_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_);
 
   // Add the Close Button.
@@ -1030,10 +1031,9 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
   const SkColor title_color = GetThemeProvider()->GetColor(IsSelected() ?
       ThemeProperties::COLOR_TAB_TEXT :
       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth) {
-    title_->SetEnabledColor(title_color);
-    title_->Paint(canvas, views::CullSet());
-  }
+  title_->SetVisible(!data().mini ||
+                     width() > kMiniTabRendererAsNormalTabWidth);
+  title_->SetEnabledColor(title_color);
 
   if (show_icon)
     PaintIcon(canvas);
