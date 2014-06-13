@@ -56,12 +56,12 @@ function nextTest()
     switch (counter) {
     case 1:
         rect.onclick = function(evt) { eventHandler(evt, 1); };
-        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
+        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGRectElement] (id: rect) currentTarget: [object SVGRectElement] (id: rect)";
         testListeners();
         break;
     case 2:
         rectContainer.addEventListener("click", function(evt) { eventHandler(evt, 2) }, false);
-        expected[1] = "[EventHandler 2] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
+        expected[1] = "[EventHandler 2] type: click phase: BUBBLING target: [object SVGRectElement] (id: rect) currentTarget: [object SVGGElement] (id: rectParent)";
         testListeners();
         break;
     case 3:
@@ -103,7 +103,7 @@ defs.appendChild(rectContainer);
 
 var rect = document.createElementNS(svgNS, "rect");
 rect.id = "rect";
-rect.style.fill = "red";
+rect.style.fill = "blue";
 rect.width.baseVal.value = 100;
 rect.height.baseVal.value = 100;
 rectContainer.appendChild(rect);

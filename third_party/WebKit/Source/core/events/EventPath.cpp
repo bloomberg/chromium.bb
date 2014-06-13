@@ -43,14 +43,6 @@
 
 namespace WebCore {
 
-// SVG1.1 specified that the <use> instance tree would expose the target
-// element for events. This has been deprecated and will be removed.
-// See: crbug.com/313438
-static bool usesDeprecatedSVGUseTreeEventRules(Node* node)
-{
-    return node->isSVGElement() && toSVGElement(node)->inUseShadowTree();
-}
-
 EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 {
     ASSERT(referenceNode);
@@ -108,8 +100,7 @@ void EventPath::resetWith(Node* node)
     m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
-    if (!usesDeprecatedSVGUseTreeEventRules(node))
-        calculateTreeScopePrePostOrderNumbers();
+    calculateTreeScopePrePostOrderNumbers();
 }
 
 void EventPath::addNodeEventContext(Node* node)
@@ -211,7 +202,6 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
 void EventPath::calculateAdjustedTargets()
 {
     const TreeScope* lastTreeScope = 0;
-    bool useDeprecatedSVGUseTreeEventRules = usesDeprecatedSVGUseTreeEventRules(at(0).node());
 
     TreeScopeEventContextMap treeScopeEventContextMap;
     TreeScopeEventContext* lastTreeScopeEventContext = 0;
@@ -220,16 +210,7 @@ void EventPath::calculateAdjustedTargets()
         Node* currentNode = at(i).node();
         TreeScope& currentTreeScope = currentNode->treeScope();
         if (lastTreeScope != &currentTreeScope) {
-            if (!useDeprecatedSVGUseTreeEventRules) {
-                lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
-            } else {
-                TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
-                lastTreeScopeEventContext = addResult.storedValue->value.get();
-                if (addResult.isNewEntry) {
-                    // Don't adjust an event target for SVG.
-                    lastTreeScopeEventContext->setTarget(eventTargetRespectingTargetRules(at(0).node()));
-                }
-            }
+            lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
         }
         ASSERT(lastTreeScopeEventContext);
         at(i).setTreeScopeEventContext(lastTreeScopeEventContext);
