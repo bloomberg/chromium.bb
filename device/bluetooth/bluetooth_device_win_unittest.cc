@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/bluetooth_device_win.h"
-#include "device/bluetooth/bluetooth_service_record.h"
+#include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
