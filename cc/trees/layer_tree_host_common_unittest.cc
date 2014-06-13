@@ -156,6 +156,52 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
                                   grand_child->screen_space_transform());
 }
 
+TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> grand_child = Layer::Create();
+  parent->AddChild(child);
+  child->AddChild(grand_child);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(parent);
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(parent.get(),
+                               identity_matrix,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_matrix,
+                               gfx::Point3F(),
+                               gfx::PointF(10, 10),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+  // This would have previously caused us to skip our subtree, but this would be
+  // wrong; we need up-to-date draw properties to do hit testing on the layers
+  // with handlers.
+  child->SetOpacity(0.f);
+  SetLayerPropertiesForTesting(grand_child.get(),
+                               identity_matrix,
+                               gfx::Point3F(),
+                               gfx::PointF(10, 10),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+  grand_child->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
+
+  ExecuteCalculateDrawProperties(parent.get());
+
+  // Check that we've computed draw properties for the subtree rooted at
+  // |child|.
+  EXPECT_FALSE(child->draw_transform().IsIdentity());
+  EXPECT_FALSE(grand_child->draw_transform().IsIdentity());
+}
+
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   gfx::Transform identity_matrix;
   scoped_refptr<Layer> layer = Layer::Create();

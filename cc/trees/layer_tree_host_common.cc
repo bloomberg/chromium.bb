@@ -487,6 +487,11 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
     return false;
 
+  // We cannot skip the the subtree if a descendant has a wheel or touch handler
+  // or the hit testing code will break (it requires fresh transforms, etc).
+  if (layer->draw_properties().layer_or_descendant_has_input_handler)
+    return false;
+
   // If the layer is not drawn, then skip it and its subtree.
   if (!layer_is_drawn)
     return true;
@@ -511,6 +516,11 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
+    return false;
+
+  // We cannot skip the the subtree if a descendant has a wheel or touch handler
+  // or the hit testing code will break (it requires fresh transforms, etc).
+  if (layer->draw_properties().layer_or_descendant_has_input_handler)
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.
@@ -1184,15 +1194,19 @@ static inline void RemoveSurfaceForEarlyExit(
 
 struct PreCalculateMetaInformationRecursiveData {
   bool layer_or_descendant_has_copy_request;
+  bool layer_or_descendant_has_input_handler;
   int num_unclipped_descendants;
 
   PreCalculateMetaInformationRecursiveData()
       : layer_or_descendant_has_copy_request(false),
+        layer_or_descendant_has_input_handler(false),
         num_unclipped_descendants(0) {}
 
   void Merge(const PreCalculateMetaInformationRecursiveData& data) {
     layer_or_descendant_has_copy_request |=
         data.layer_or_descendant_has_copy_request;
+    layer_or_descendant_has_input_handler |=
+        data.layer_or_descendant_has_input_handler;
     num_unclipped_descendants +=
         data.num_unclipped_descendants;
   }
@@ -1252,12 +1266,18 @@ static void PreCalculateMetaInformation(
   if (layer->HasCopyRequest())
     recursive_data->layer_or_descendant_has_copy_request = true;
 
+  if (!layer->touch_event_handler_region().IsEmpty() ||
+      layer->have_wheel_event_handlers())
+    recursive_data->layer_or_descendant_has_input_handler = true;
+
   layer->draw_properties().num_descendants_that_draw_content =
       num_descendants_that_draw_content;
   layer->draw_properties().num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
   layer->draw_properties().layer_or_descendant_has_copy_request =
       recursive_data->layer_or_descendant_has_copy_request;
+  layer->draw_properties().layer_or_descendant_has_input_handler =
+      recursive_data->layer_or_descendant_has_input_handler;
 }
 
 static void RoundTranslationComponents(gfx::Transform* transform) {
