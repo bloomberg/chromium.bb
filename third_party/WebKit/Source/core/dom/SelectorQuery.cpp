@@ -465,9 +465,14 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
     findTraverseRootsAndExecute<SelectorQueryTrait>(rootNode, output);
 }
 
-SelectorQuery::SelectorQuery(const CSSSelectorList& selectorList)
-    : m_selectorList(selectorList)
+PassOwnPtr<SelectorQuery> SelectorQuery::adopt(CSSSelectorList& selectorList)
 {
+    return adoptPtr(new SelectorQuery(selectorList));
+}
+
+SelectorQuery::SelectorQuery(CSSSelectorList& selectorList)
+{
+    m_selectorList.adopt(selectorList);
     m_selectors.initialize(m_selectorList);
 }
 
@@ -511,10 +516,7 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     if (m_entries.size() == maximumSelectorQueryCacheSize)
         m_entries.remove(m_entries.begin());
 
-    OwnPtr<SelectorQuery> selectorQuery = adoptPtr(new SelectorQuery(selectorList));
-    SelectorQuery* rawSelectorQuery = selectorQuery.get();
-    m_entries.add(selectors, selectorQuery.release());
-    return rawSelectorQuery;
+    return m_entries.add(selectors, SelectorQuery::adopt(selectorList)).storedValue->value.get();
 }
 
 void SelectorQueryCache::invalidate()

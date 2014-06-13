@@ -88,11 +88,14 @@ class SelectorQuery {
     WTF_MAKE_NONCOPYABLE(SelectorQuery);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit SelectorQuery(const CSSSelectorList&);
+    static PassOwnPtr<SelectorQuery> adopt(CSSSelectorList&);
+
     bool matches(Element&) const;
     PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
     PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
+    explicit SelectorQuery(CSSSelectorList&);
+
     SelectorDataList m_selectors;
     CSSSelectorList m_selectorList;
 };
