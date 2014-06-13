@@ -1662,8 +1662,10 @@ surface_free_unused_subsurface_views(struct weston_surface *surface)
 		if (sub->surface == surface)
 			continue;
 
-		wl_list_for_each_safe(view, nv, &sub->unused_views, surface_link)
+		wl_list_for_each_safe(view, nv, &sub->unused_views, surface_link) {
+			weston_view_unmap (view);
 			weston_view_destroy(view);
+		}
 
 		surface_free_unused_subsurface_views(sub->surface);
 	}
@@ -2764,8 +2766,10 @@ weston_subsurface_destroy(struct weston_subsurface *sub)
 		assert(sub->parent_destroy_listener.notify ==
 		       subsurface_handle_parent_destroy);
 
-		wl_list_for_each_safe(view, next, &sub->surface->views, surface_link)
+		wl_list_for_each_safe(view, next, &sub->surface->views, surface_link) {
+			weston_view_unmap(view);
 			weston_view_destroy(view);
+		}
 
 		if (sub->parent)
 			weston_subsurface_unlink_parent(sub);
