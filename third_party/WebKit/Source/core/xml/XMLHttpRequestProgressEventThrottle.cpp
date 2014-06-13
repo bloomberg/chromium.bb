@@ -217,6 +217,7 @@ void XMLHttpRequestProgressEventThrottle::resume()
 
 void XMLHttpRequestProgressEventThrottle::trace(Visitor* visitor)
 {
+    visitor->trace(m_target);
     visitor->trace(m_deferredProgressEvent);
     visitor->trace(m_deferredEvents);
 }

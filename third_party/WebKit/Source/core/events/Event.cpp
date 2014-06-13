@@ -47,7 +47,7 @@ Event::Event()
     , m_defaultHandled(false)
     , m_cancelBubble(false)
     , m_eventPhase(0)
-    , m_currentTarget(0)
+    , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
     ScriptWrappable::init(this);
@@ -63,7 +63,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_defaultHandled(false)
     , m_cancelBubble(false)
     , m_eventPhase(0)
-    , m_currentTarget(0)
+    , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
     ScriptWrappable::init(this);
@@ -79,7 +79,7 @@ Event::Event(const AtomicString& eventType, const EventInit& initializer)
     , m_defaultHandled(false)
     , m_cancelBubble(false)
     , m_eventPhase(0)
-    , m_currentTarget(0)
+    , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
     ScriptWrappable::init(this);
@@ -248,6 +248,7 @@ EventTarget* Event::currentTarget() const
 
 void Event::trace(Visitor* visitor)
 {
+    visitor->trace(m_currentTarget);
     visitor->trace(m_target);
     visitor->trace(m_underlyingEvent);
     visitor->trace(m_eventPath);

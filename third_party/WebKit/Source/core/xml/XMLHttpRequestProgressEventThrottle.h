@@ -81,8 +81,11 @@ private:
 
     bool hasEventToDispatch() const;
 
-    // Weak pointer to our XMLHttpRequest object as it is the one holding us.
-    EventTarget* m_target;
+    // Non-Oilpan, keep a weak pointer to our XMLHttpRequest object as it is
+    // the one holding us. With Oilpan, a simple strong Member can be used -
+    // this XMLHttpRequestProgressEventThrottle (part) object dies together
+    // with the XMLHttpRequest object.
+    RawPtrWillBeMember<EventTarget> m_target;
 
     bool m_lengthComputable;
     unsigned long long m_loaded;
