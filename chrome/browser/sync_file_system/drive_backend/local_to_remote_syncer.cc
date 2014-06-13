@@ -208,16 +208,12 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
           "Detected conflicting dirty tracker:%" PRId64,
            remote_file_tracker_->tracker_id()));
       // Both local and remote file has pending modification.
-      HandleConflict(base::Bind(
-          &LocalToRemoteSyncer::SyncCompleted,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+      HandleConflict(token.Pass());
       return;
     }
 
     // Non-conflicting file/folder update case.
-    HandleExistingRemoteFile(base::Bind(
-        &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-        base::Passed(&token)));
+    HandleExistingRemoteFile(token.Pass());
     return;
   }
 
@@ -261,19 +257,21 @@ void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
   SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
-void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
+void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
   DCHECK(remote_file_tracker_->active());
   DCHECK(remote_file_tracker_->dirty());
 
   if (local_is_missing_) {
-    callback.Run(SYNC_STATUS_OK);
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
   if (local_change_.IsFile()) {
-    UploadNewFile(callback);
+    UploadNewFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(&token)));
     return;
   }
 
@@ -283,7 +281,9 @@ void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
   if (!metadata_database()->FindFileByFileID(
           remote_file_tracker_->file_id(), &remote_file_metadata)) {
     NOTREACHED();
-    CreateRemoteFolder(callback);
+    CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  base::Passed(&token)));
     return;
   }
 
@@ -295,16 +295,21 @@ void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
       HasFileAsParent(remote_details,
                       remote_parent_folder_tracker_->file_id())) {
     metadata_database()->UpdateTracker(
-        remote_file_tracker_->tracker_id(), remote_details, callback);
+        remote_file_tracker_->tracker_id(), remote_details,
+        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&token)));
     return;
   }
 
   // Create new remote folder.
-  CreateRemoteFolder(callback);
+  CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::HandleExistingRemoteFile(
-    const SyncStatusCallback& callback) {
+    scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(!remote_file_tracker_->dirty());
   DCHECK(remote_file_tracker_->active());
@@ -312,7 +317,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
 
   if (local_is_missing_) {
     // Local file deletion for existing remote file.
-    DeleteRemoteFile(callback);
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(&token)));
     return;
   }
 
@@ -325,7 +332,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   if (local_change_.IsFile()) {
     if (synced_details.file_kind() == FILE_KIND_FILE) {
       // Non-conflicting local file update to existing remote regular file.
-      UploadExistingFile(callback);
+      UploadExistingFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Passed(&token)));
       return;
     }
 
@@ -335,7 +344,9 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // the remote folder and upload the file.
     DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForUploadNewFile,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                callback));
+                                base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           base::Passed(&token))));
     return;
   }
 
@@ -345,13 +356,16 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Assuming this case as local file deletion + local folder creation, delete
     // the remote file and create a remote folder.
     DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
-                                weak_ptr_factory_.GetWeakPtr(), callback));
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           base::Passed(&token))));
     return;
   }
 
   // Non-conflicting local folder creation to existing remote folder.
   DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
-  callback.Run(SYNC_STATUS_OK);
+  SyncCompleted(token.Pass(), SYNC_STATUS_OK);
 }
 
 void LocalToRemoteSyncer::DeleteRemoteFile(

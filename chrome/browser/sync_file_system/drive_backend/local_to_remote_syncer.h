@@ -60,8 +60,8 @@ class LocalToRemoteSyncer : public SyncTask {
   void SyncCompleted(scoped_ptr<SyncTaskToken> token,
                      SyncStatusCode status);
 
-  void HandleConflict(const SyncStatusCallback& callback);
-  void HandleExistingRemoteFile(const SyncStatusCallback& callback);
+  void HandleConflict(scoped_ptr<SyncTaskToken> token);
+  void HandleExistingRemoteFile(scoped_ptr<SyncTaskToken> token);
 
   void DeleteRemoteFile(const SyncStatusCallback& callback);
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,
