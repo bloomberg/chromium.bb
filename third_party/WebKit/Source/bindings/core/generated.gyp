@@ -54,40 +54,18 @@
 ################################################################################
   {
     'target_name': 'interfaces_info_individual_core',
-    'type': 'none',
     'dependencies': [
       '../../core/core_generated.gyp:generated_testing_idls',
       'core_global_constructors_idls',
     ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info_individual_core',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        '<(core_static_idl_files_list)',
-        '<@(core_static_idl_files)',
-        '<@(core_generated_idl_files)',
-      ],
-      'outputs': [
+    'variables': {
+      'static_idl_files': '<(core_static_idl_files)',
+      'generated_idl_files': '<(core_generated_idl_files)',
+      'component_dir': 'core',
+      'output_file':
         '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '--component-dir',
-        'core',
-        '--idl-files-list',
-        '<(core_static_idl_files_list)',
-        '--interfaces-info-file',
-        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        # Generated files must be passed at command line
-        '<@(core_generated_idl_files)',
-      ],
-      'message': 'Computing global information about individual IDL files',
-      }]
+    },
+    'includes': ['../../bindings/scripts/interfaces_info_individual.gypi'],
   },
 ################################################################################
   ],  # targets

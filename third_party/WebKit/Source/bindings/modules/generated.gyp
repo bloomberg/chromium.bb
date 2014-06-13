@@ -206,72 +206,36 @@
 ################################################################################
   {
     'target_name': 'interfaces_info_individual_modules',
-    'type': 'none',
     'dependencies': [
       'modules_core_global_constructors_idls',
       'modules_global_constructors_idls',
     ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info_individual_modules',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '<(bindings_scripts_dir)/utilities.py',
-        '<(modules_static_idl_files_list)',
-        '<@(modules_static_idl_files)',
-        '<@(modules_generated_idl_files)',
-      ],
-      'outputs': [
+    'variables': {
+      'static_idl_files': '<(modules_static_idl_files)',
+      'generated_idl_files': '<(modules_generated_idl_files)',
+      'component_dir': 'modules',
+      'output_file':
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
-        '--component-dir',
-        'modules',
-        '--idl-files-list',
-        '<(modules_static_idl_files_list)',
-        '--interfaces-info-file',
-        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        # Generated files must be passed at command line
-        '<@(modules_generated_idl_files)',
-      ],
-      'message': 'Computing global information about individual IDL files',
-      }]
+    },
+    'includes': ['../../bindings/scripts/interfaces_info_individual.gypi'],
   },
 ################################################################################
   {
     # GN version: //third_party/WebKit/Source/bindings/modules:interfaces_info
     'target_name': 'interfaces_info',
-    'type': 'none',
     'dependencies': [
         '../core/generated.gyp:interfaces_info_individual_core',
         'interfaces_info_individual_modules',
     ],
-    'actions': [{
-      'action_name': 'compute_interfaces_info_overall',
-      'inputs': [
-        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
+    'variables': {
+      'input_files': [
         '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
       ],
-      'outputs': [
+      'output_file':
         '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
-      ],
-      'action': [
-        'python',
-        '<(bindings_scripts_dir)/compute_interfaces_info_overall.py',
-        '--write-file-only-if-changed',
-        '<(write_file_only_if_changed)',
-        '--',
-        '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
-        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
-        '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
-      ],
-      'message': 'Computing overall global information about IDL files',
-      }]
+    },
+    'includes': ['../../bindings/scripts/interfaces_info_overall.gypi'],
   },
 ################################################################################
   ],  # targets
