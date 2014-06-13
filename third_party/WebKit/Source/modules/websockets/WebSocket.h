@@ -116,7 +116,7 @@ public:
     virtual void stop() OVERRIDE;
 
     // WebSocketChannelClient functions.
-    virtual void didConnect() OVERRIDE;
+    virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
     virtual void didReceiveMessage(const String& message) OVERRIDE;
     virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) OVERRIDE;
     virtual void didReceiveMessageError() OVERRIDE;

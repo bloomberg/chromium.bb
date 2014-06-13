@@ -78,8 +78,6 @@ public:
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual String subprotocol() OVERRIDE;
-    virtual String extensions() OVERRIDE;
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
@@ -170,8 +168,6 @@ private:
     int64_t m_receivedDataSizeForFlowControl;
     unsigned long m_bufferedAmount;
     size_t m_sentSizeOfTopMessage;
-    String m_subprotocol;
-    String m_extensions;
 
     String m_sourceURLAtConstruction;
     unsigned m_lineNumberAtConstruction;

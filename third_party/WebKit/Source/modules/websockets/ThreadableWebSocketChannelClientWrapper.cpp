@@ -54,40 +54,14 @@ PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> ThreadableWebSoc
     return adoptRefWillBeNoop(new ThreadableWebSocketChannelClientWrapper(client));
 }
 
-String ThreadableWebSocketChannelClientWrapper::subprotocol() const
-{
-    if (m_subprotocol.isEmpty())
-        return emptyString();
-    return String(m_subprotocol);
-}
-
-void ThreadableWebSocketChannelClientWrapper::setSubprotocol(const String& subprotocol)
-{
-    m_subprotocol.clear();
-    append(m_subprotocol, subprotocol);
-}
-
-String ThreadableWebSocketChannelClientWrapper::extensions() const
-{
-    if (m_extensions.isEmpty())
-        return emptyString();
-    return String(m_extensions);
-}
-
-void ThreadableWebSocketChannelClientWrapper::setExtensions(const String& extensions)
-{
-    m_extensions.clear();
-    append(m_extensions, extensions);
-}
-
 void ThreadableWebSocketChannelClientWrapper::clearClient()
 {
     m_client = 0;
 }
 
-void ThreadableWebSocketChannelClientWrapper::didConnect()
+void ThreadableWebSocketChannelClientWrapper::didConnect(const String& subprotocol, const String& extensions)
 {
-    m_pendingTasks.append(createCallbackTask(&didConnectCallback, this));
+    m_pendingTasks.append(createCallbackTask(&didConnectCallback, this, subprotocol, extensions));
     if (!m_suspended)
         processPendingTasks();
 }
@@ -155,11 +129,11 @@ void ThreadableWebSocketChannelClientWrapper::processPendingTasks()
         (*iter)->performTask(0);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didConnectCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
+void ThreadableWebSocketChannelClientWrapper::didConnectCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, const String& subprotocol, const String& extensions)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
-        wrapper->m_client->didConnect();
+        wrapper->m_client->didConnect(subprotocol, extensions);
 }
 
 void ThreadableWebSocketChannelClientWrapper::didReceiveMessageCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, const String& message)

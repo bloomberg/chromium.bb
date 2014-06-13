@@ -124,28 +124,6 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     return true;
 }
 
-String MainThreadWebSocketChannel::subprotocol()
-{
-    WTF_LOG(Network, "MainThreadWebSocketChannel %p subprotocol()", this);
-    if (!m_handshake || m_handshake->mode() != WebSocketHandshake::Connected)
-        return "";
-    String serverProtocol = m_handshake->serverWebSocketProtocol();
-    if (serverProtocol.isNull())
-        return "";
-    return serverProtocol;
-}
-
-String MainThreadWebSocketChannel::extensions()
-{
-    WTF_LOG(Network, "MainThreadWebSocketChannel %p extensions()", this);
-    if (!m_handshake || m_handshake->mode() != WebSocketHandshake::Connected)
-        return "";
-    String extensions = m_handshake->acceptedExtensions();
-    if (extensions.isNull())
-        return "";
-    return extensions;
-}
-
 WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& message)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending String '%s'", this, message.utf8().data());
@@ -484,7 +462,9 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
 
             WTF_LOG(Network, "MainThreadWebSocketChannel %p Connected", this);
             skipBuffer(headerLength);
-            m_client->didConnect();
+            String subprotocol = m_handshake->serverWebSocketProtocol();
+            String extensions = m_handshake->acceptedExtensions();
+            m_client->didConnect(subprotocol.isNull() ? "" : subprotocol, extensions.isNull() ? "" : extensions);
             WTF_LOG(Network, "MainThreadWebSocketChannel %p %lu bytes remaining in m_buffer", this, static_cast<unsigned long>(m_buffer.size()));
             return !m_buffer.isEmpty();
         }

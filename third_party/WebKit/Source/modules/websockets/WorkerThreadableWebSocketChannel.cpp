@@ -143,16 +143,6 @@ bool WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& pr
     return false;
 }
 
-String WorkerThreadableWebSocketChannel::subprotocol()
-{
-    return m_workerClientWrapper->subprotocol();
-}
-
-String WorkerThreadableWebSocketChannel::extensions()
-{
-    return m_workerClientWrapper->extensions();
-}
-
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::send(const String& message)
 {
     if (!m_bridge)
@@ -377,15 +367,13 @@ void WorkerThreadableWebSocketChannel::Peer::resume()
 static void workerGlobalScopeDidConnect(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, const String& subprotocol, const String& extensions)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->setSubprotocol(subprotocol);
-    workerClientWrapper->setExtensions(extensions);
-    workerClientWrapper->didConnect();
+    workerClientWrapper->didConnect(subprotocol, extensions);
 }
 
-void WorkerThreadableWebSocketChannel::Peer::didConnect()
+void WorkerThreadableWebSocketChannel::Peer::didConnect(const String& subprotocol, const String& extensions)
 {
     ASSERT(isMainThread());
-    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidConnect, m_workerClientWrapper.get(), m_mainWebSocketChannel->subprotocol(), m_mainWebSocketChannel->extensions()));
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidConnect, m_workerClientWrapper.get(), subprotocol, extensions));
 }
 
 static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, const String& message)

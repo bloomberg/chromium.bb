@@ -34,6 +34,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 #include "public/web/WebSocket.h"
 #include "public/web/WebSocketClient.h"
 #include "wtf/OwnPtr.h"
@@ -44,7 +45,6 @@ namespace WebCore { class WebSocketChannel; }
 namespace blink {
 
 class WebDocument;
-class WebString;
 class WebURL;
 
 class WebSocketImpl FINAL : public WebSocket, public WebCore::WebSocketChannelClient {
@@ -67,7 +67,7 @@ public:
     virtual void disconnect() OVERRIDE;
 
     // WebSocketChannelClient
-    virtual void didConnect() OVERRIDE;
+    virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
     virtual void didReceiveMessage(const String& message) OVERRIDE;
     virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData) OVERRIDE;
     virtual void didReceiveMessageError() OVERRIDE;
@@ -79,6 +79,8 @@ private:
     RefPtrWillBePersistent<WebCore::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
+    WebString m_subprotocol;
+    WebString m_extensions;
 };
 
 } // namespace blink

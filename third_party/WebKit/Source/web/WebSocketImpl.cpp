@@ -85,12 +85,12 @@ void WebSocketImpl::connect(const WebURL& url, const WebString& protocol)
 
 WebString WebSocketImpl::subprotocol()
 {
-    return m_private->subprotocol();
+    return m_subprotocol;
 }
 
 WebString WebSocketImpl::extensions()
 {
-    return m_private->extensions();
+    return m_extensions;
 }
 
 bool WebSocketImpl::sendText(const WebString& message)
@@ -124,8 +124,10 @@ void WebSocketImpl::disconnect()
     m_client = 0;
 }
 
-void WebSocketImpl::didConnect()
+void WebSocketImpl::didConnect(const String& subprotocol, const String& extensions)
 {
+    m_subprotocol = subprotocol;
+    m_extensions = extensions;
     m_client->didConnect();
 }
 

@@ -585,14 +585,14 @@ void WebSocket::stop()
     m_state = CLOSED;
 }
 
-void WebSocket::didConnect()
+void WebSocket::didConnect(const String& subprotocol, const String& extensions)
 {
     WTF_LOG(Network, "WebSocket %p didConnect()", this);
     if (m_state != CONNECTING)
         return;
     m_state = OPEN;
-    m_subprotocol = m_channel->subprotocol();
-    m_extensions = m_channel->extensions();
+    m_subprotocol = subprotocol;
+    m_extensions = extensions;
     m_eventQueue->dispatch(Event::create(EventTypeNames::open));
 }
 

@@ -50,15 +50,9 @@ public:
     static PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> create(WebSocketChannelClient*);
     ~ThreadableWebSocketChannelClientWrapper();
 
-    // Subprotocol and extensions will be available when didConnect() callback is invoked.
-    String subprotocol() const;
-    void setSubprotocol(const String&);
-    String extensions() const;
-    void setExtensions(const String&);
-
     void clearClient();
 
-    void didConnect();
+    void didConnect(const String& subprotocol, const String& extensions);
     void didReceiveMessage(const String& message);
     void didReceiveBinaryData(PassOwnPtr<Vector<char> >);
     void didUpdateBufferedAmount(unsigned long bufferedAmount);
@@ -76,7 +70,7 @@ private:
 
     void processPendingTasks();
 
-    static void didConnectCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
+    static void didConnectCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, const String& subprotocol, const String& extensions);
     static void didReceiveMessageCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, const String& message);
     static void didReceiveBinaryDataCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, PassOwnPtr<Vector<char> >);
     static void didUpdateBufferedAmountCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long bufferedAmount);
@@ -85,9 +79,6 @@ private:
     static void didReceiveMessageErrorCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
 
     WebSocketChannelClient* m_client;
-    // ThreadSafeRefCounted must not have String member variables.
-    Vector<UChar> m_subprotocol;
-    Vector<UChar> m_extensions;
     bool m_suspended;
     Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
 };

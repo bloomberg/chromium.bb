@@ -40,7 +40,7 @@ namespace WebCore {
     class WebSocketChannelClient {
     public:
         virtual ~WebSocketChannelClient() { }
-        virtual void didConnect() { }
+        virtual void didConnect(const String& subprotocol, const String& extensions) { }
         virtual void didReceiveMessage(const String&) { }
         virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) { }
         virtual void didReceiveMessageError() { }

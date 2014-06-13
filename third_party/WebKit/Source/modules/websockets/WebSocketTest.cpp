@@ -46,8 +46,6 @@ public:
     }
 
     MOCK_METHOD2(connect, bool(const KURL&, const String&));
-    MOCK_METHOD0(subprotocol, String());
-    MOCK_METHOD0(extensions, String());
     MOCK_METHOD1(send, SendResult(const String&));
     MOCK_METHOD3(send, SendResult(const ArrayBuffer&, unsigned, unsigned));
     MOCK_METHOD1(send, SendResult(PassRefPtr<BlobDataHandle>));
@@ -271,15 +269,13 @@ TEST_F(WebSocketTest, connectSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String("aa, bb"))).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String("bb")));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String("cc")));
     }
     m_websocket->connect("ws://example.com/", subprotocols, m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("bb", "cc");
 
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     EXPECT_EQ("bb", m_websocket->protocol());
@@ -369,8 +365,6 @@ TEST_F(WebSocketTest, close)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), close(3005, String("bye")));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
@@ -378,7 +372,7 @@ TEST_F(WebSocketTest, close)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     m_websocket->close(3005, "bye", m_exceptionState);
 
@@ -391,8 +385,6 @@ TEST_F(WebSocketTest, closeWithoutReason)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), close(3005, String()));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
@@ -400,7 +392,7 @@ TEST_F(WebSocketTest, closeWithoutReason)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     m_websocket->close(3005, m_exceptionState);
 
@@ -413,8 +405,6 @@ TEST_F(WebSocketTest, closeWithoutCodeAndReason)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), close(-1, String()));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
@@ -422,7 +412,7 @@ TEST_F(WebSocketTest, closeWithoutCodeAndReason)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     m_websocket->close(m_exceptionState);
 
@@ -435,8 +425,6 @@ TEST_F(WebSocketTest, closeWhenClosing)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), close(-1, String()));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
@@ -444,7 +432,7 @@ TEST_F(WebSocketTest, closeWhenClosing)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     m_websocket->close(m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -461,8 +449,6 @@ TEST_F(WebSocketTest, closeWhenClosed)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), close(-1, String()));
         EXPECT_CALL(channel(), disconnect());
     }
@@ -471,7 +457,7 @@ TEST_F(WebSocketTest, closeWhenClosed)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     EXPECT_EQ(WebSocket::OPEN, m_websocket->readyState());
     m_websocket->close(m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -551,15 +537,13 @@ TEST_F(WebSocketTest, sendStringSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::SendSuccess));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send("hello", m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -571,15 +555,13 @@ TEST_F(WebSocketTest, sendStringFail)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::SendFail));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send("hello", m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -591,15 +573,13 @@ TEST_F(WebSocketTest, sendStringInvalidMessage)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::InvalidMessage));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send("hello", m_exceptionState);
 
     EXPECT_TRUE(m_exceptionState.hadException());
@@ -677,15 +657,13 @@ TEST_F(WebSocketTest, sendArrayBufferSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::SendSuccess));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send(view->buffer().get(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -698,15 +676,13 @@ TEST_F(WebSocketTest, sendArrayBufferFail)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::SendFail));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send(view->buffer().get(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -719,15 +695,13 @@ TEST_F(WebSocketTest, sendArrayBufferInvalidMessage)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), subprotocol()).WillOnce(Return(String()));
-        EXPECT_CALL(channel(), extensions()).WillOnce(Return(String()));
         EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::InvalidMessage));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didConnect();
+    m_websocket->didConnect("", "");
     m_websocket->send(view->buffer().get(), m_exceptionState);
 
     EXPECT_TRUE(m_exceptionState.hadException());

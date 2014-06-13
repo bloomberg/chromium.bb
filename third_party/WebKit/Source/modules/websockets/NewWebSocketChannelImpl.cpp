@@ -170,18 +170,6 @@ bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     return true;
 }
 
-String NewWebSocketChannelImpl::subprotocol()
-{
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p subprotocol()", this);
-    return m_subprotocol;
-}
-
-String NewWebSocketChannelImpl::extensions()
-{
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p extensions()", this);
-    return m_extensions;
-}
-
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
@@ -418,9 +406,7 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
         // failAsError may delete this object.
         return;
     }
-    m_subprotocol = selectedProtocol;
-    m_extensions = extensions;
-    m_client->didConnect();
+    m_client->didConnect(selectedProtocol, extensions);
 }
 
 void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeRequestInfo& request)
