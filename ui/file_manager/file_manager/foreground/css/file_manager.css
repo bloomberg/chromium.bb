@@ -96,7 +96,8 @@ a:focus {
   width: 8px;
 }
 
-:hover > .scrollbar-vertical > .scrollbar-button {
+:hover > .scrollbar-vertical > .scrollbar-button,
+.scrollbar-vertical > .scrollbar-button.scrolling {
   opacity: 0.3;
 }
 

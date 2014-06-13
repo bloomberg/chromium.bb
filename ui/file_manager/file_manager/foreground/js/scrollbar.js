@@ -49,6 +49,7 @@ ScrollBar.prototype.decorate = function() {
   this.classList.add('scrollbar');
   this.button_ = util.createChild(this, 'scrollbar-button', 'div');
   this.mode = ScrollBar.Mode.VERTICAL;
+  this.idleTimerId_ = 0;
 
   this.button_.addEventListener('mousedown',
                                 this.onButtonPressed_.bind(this));
@@ -91,6 +92,17 @@ ScrollBar.prototype.attachToView = function(view) {
 ScrollBar.prototype.onScroll_ = function() {
   this.scrollTop_ = this.view_.scrollTop;
   this.redraw_();
+
+  // Add class 'scrolling' to scrollbar to make it visible while scrolling.
+  this.button_.classList.add('scrolling');
+
+  // Set timer to remove class 'scrolling' after scrolling becomes idle.
+  if (this.idleTimerId_)
+    clearTimeout(this.idleTimerId_);
+  this.idleTimerId_ = setTimeout(function() {
+    this.idleTimerId_ = 0;
+    this.button_.classList.remove('scrolling');
+  }.bind(this), 1000);
 };
 
 /**
