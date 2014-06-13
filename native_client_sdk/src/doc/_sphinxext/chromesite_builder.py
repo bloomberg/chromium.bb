@@ -177,6 +177,8 @@ class ChromesiteBuilder(StandaloneHTMLBuilder):
   add_permalinks = False
 
   def init(self):
+    self.config.html_translator_class = \
+        'chromesite_builder.ChromesiteHTMLTranslator'
     self.chromesite_kill_internal_links = \
         int(self.config.chromesite_kill_internal_links) == 1
     self.info("----> Chromesite builder")

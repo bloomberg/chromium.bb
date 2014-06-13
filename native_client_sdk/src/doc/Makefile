@@ -21,6 +21,7 @@ all: chromesite
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  html            to make standalone HTML files"
 	@echo "  chromesite      build docs for developer.chrome.com"
 	@echo "  chromesite_rst  only build .rst docs; no doxygen"
 	@echo "  serve           start python web server for chromesite docs"
@@ -30,6 +31,11 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+
+html:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 linkcheck:
 	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
