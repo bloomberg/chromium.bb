@@ -116,11 +116,15 @@ class GenerateStubModuleFunctionsUnittest(unittest.TestCase):
     my_sigs.append(SIMPLE_SIGNATURES[0][0])
     my_sigs.append('# a third comment')
     my_sigs.append(SIMPLE_SIGNATURES[0][0])
+    my_sigs.append('// a fourth comment')
+    my_sigs.append(SIMPLE_SIGNATURES[0][0])
+    my_sigs.append('//')
+    my_sigs.append(SIMPLE_SIGNATURES[0][0])
 
     file_contents = '\n'.join(my_sigs)
     infile = StringIO.StringIO(file_contents)
     signatures = gs.ParseSignatures(infile)
-    self.assertEqual(3, len(signatures))
+    self.assertEqual(5, len(signatures))
 
 
 class WindowsLibUnittest(unittest.TestCase):

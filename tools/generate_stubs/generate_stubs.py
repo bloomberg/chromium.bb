@@ -390,7 +390,7 @@ def ParseSignatures(infile):
 
   The format of the input file is one C-style function signature per line, no
   trailing semicolon.  Empty lines are allowed.  An empty line is a line that
-  consists purely of whitespace.  Lines that begin with a # are considered
+  consists purely of whitespace.  Lines that begin with a # or // are considered
   comment lines and are ignored.
 
   We assume that "int foo(void)" is the same as "int foo()", which is not
@@ -411,7 +411,7 @@ def ParseSignatures(infile):
   signatures = []
   for line in infile:
     line = line.strip()
-    if line and line[0] != '#':
+    if line and line[0] != '#' and line[0:2] != '//':
       m = SIGNATURE_REGEX.match(line)
       if m is None:
         raise BadSignatureError('Unparsable line: %s' % line)
