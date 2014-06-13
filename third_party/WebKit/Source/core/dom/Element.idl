@@ -108,7 +108,7 @@
     [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors);
 
     // Shadow DOM API
-    [RaisesException] ShadowRoot createShadowRoot();
+    [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
     [PerWorldBindings] NodeList getDestinationInsertionPoints();
 
