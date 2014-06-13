@@ -409,7 +409,7 @@ class Rietveld(object):
         old_error_exit(msg)
       upload.ErrorExit = trap_http_500
 
-      maxtries = 5
+      maxtries = 40
       for retry in xrange(maxtries):
         try:
           logging.debug('%s' % request_path)
@@ -435,7 +435,7 @@ class Rietveld(object):
           if not 'timed out' in str(e):
             raise
         # If reaching this line, loop again. Uses a small backoff.
-        time.sleep(1+maxtries*2)
+        time.sleep(min(10, 1+retry*2))
     finally:
       upload.ErrorExit = old_error_exit
 
