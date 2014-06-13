@@ -23,6 +23,10 @@ def _StopTracing(controllers):
 def _PullTraces(controllers, output, compress, write_json):
   ui.PrintMessage('Downloading...', eol='')
   trace_files = [controller.PullTrace() for controller in controllers]
+  trace_files = [trace for trace in trace_files if trace]
+  if not trace_files:
+    ui.PrintMessage('No results')
+    return []
   result = trace_packager.PackageTraces(trace_files,
                                         output=output,
                                         compress=compress,

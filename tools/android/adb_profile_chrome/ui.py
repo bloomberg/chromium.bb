@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import select
 import sys
 
@@ -23,3 +24,4 @@ def EnableTestMode():
   global WaitForEnter
   PrintMessage = NoOp
   WaitForEnter = NoOp
+  logging.getLogger().disabled = True

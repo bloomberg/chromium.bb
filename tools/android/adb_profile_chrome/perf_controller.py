@@ -182,5 +182,10 @@ class PerfProfilerController(controllers.BaseController):
         open(json_file_name, 'w') as json_file:
       cmd = [perfhost_path, 'script', '-s', perf_script_path, '-i',
              perf_profile, '--symfs', symfs_dir, '--kallsyms', kallsyms]
-      subprocess.call(cmd, stdout=json_file, stderr=dev_null)
+      if subprocess.call(cmd, stdout=json_file, stderr=dev_null):
+        logging.warning('Perf data to JSON conversion failed. The result will '
+                        'not contain any perf samples. You can still view the '
+                        'perf data manually as shown above.')
+        return None
+
     return json_file_name

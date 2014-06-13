@@ -7,6 +7,9 @@ import json
 
 from adb_profile_chrome import controllers_unittest
 from adb_profile_chrome import perf_controller
+from adb_profile_chrome import ui
+
+from pylib import constants
 
 
 class PerfProfilerControllerTest(controllers_unittest.BaseControllerTest):
@@ -20,6 +23,7 @@ class PerfProfilerControllerTest(controllers_unittest.BaseControllerTest):
   def testTracing(self):
     if not perf_controller.PerfProfilerController.IsSupported():
       return
+    ui.EnableTestMode()
     categories = ['cycles']
     controller = perf_controller.PerfProfilerController(self.device,
                                                         categories)
@@ -31,6 +35,14 @@ class PerfProfilerControllerTest(controllers_unittest.BaseControllerTest):
       controller.StopTracing()
 
     result = controller.PullTrace()
+    # Perf-to-JSON conversion can fail if dependencies are missing.
+    if not result:
+      perf_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
+          'tools', 'telemetry', 'telemetry', 'core', 'platform', 'profiler',
+          'perf_vis', 'perf_to_tracing.py')
+      assert not os.path.exists(perf_script_path)
+      return
+
     try:
       with open(result) as f:
         json.loads(f.read())
