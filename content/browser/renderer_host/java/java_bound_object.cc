@@ -149,6 +149,7 @@ bool JavaNPObject::Enumerate(NPObject* np_object, NPIdentifier** values,
 // return value is simply converted to the corresponding NPAPI type.
 bool CallJNIMethod(
     jobject object,
+    jclass clazz,
     const JavaType& return_type,
     jmethodID id,
     jvalue* parameters,
@@ -156,39 +157,62 @@ bool CallJNIMethod(
     const JavaRef<jclass>& safe_annotation_clazz,
     const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
     bool can_enumerate_methods) {
+  DCHECK(object || clazz);
   JNIEnv* env = AttachCurrentThread();
   switch (return_type.type) {
     case JavaType::TypeBoolean:
-      BOOLEAN_TO_NPVARIANT(env->CallBooleanMethodA(object, id, parameters),
-                           *result);
+      BOOLEAN_TO_NPVARIANT(
+          object ? env->CallBooleanMethodA(object, id, parameters)
+                 : env->CallStaticBooleanMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeByte:
-      INT32_TO_NPVARIANT(env->CallByteMethodA(object, id, parameters), *result);
+      INT32_TO_NPVARIANT(
+          object ? env->CallByteMethodA(object, id, parameters)
+                 : env->CallStaticByteMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeChar:
-      INT32_TO_NPVARIANT(env->CallCharMethodA(object, id, parameters), *result);
+      INT32_TO_NPVARIANT(
+          object ? env->CallCharMethodA(object, id, parameters)
+                 : env->CallStaticCharMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeShort:
-      INT32_TO_NPVARIANT(env->CallShortMethodA(object, id, parameters),
-                         *result);
+      INT32_TO_NPVARIANT(
+          object ? env->CallShortMethodA(object, id, parameters)
+                 : env->CallStaticShortMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeInt:
-      INT32_TO_NPVARIANT(env->CallIntMethodA(object, id, parameters), *result);
+      INT32_TO_NPVARIANT(object
+                             ? env->CallIntMethodA(object, id, parameters)
+                             : env->CallStaticIntMethodA(clazz, id, parameters),
+                         *result);
       break;
     case JavaType::TypeLong:
-      DOUBLE_TO_NPVARIANT(env->CallLongMethodA(object, id, parameters),
-                          *result);
+      DOUBLE_TO_NPVARIANT(
+          object ? env->CallLongMethodA(object, id, parameters)
+                 : env->CallStaticLongMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeFloat:
-      DOUBLE_TO_NPVARIANT(env->CallFloatMethodA(object, id, parameters),
-                          *result);
+      DOUBLE_TO_NPVARIANT(
+          object ? env->CallFloatMethodA(object, id, parameters)
+                 : env->CallStaticFloatMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeDouble:
-      DOUBLE_TO_NPVARIANT(env->CallDoubleMethodA(object, id, parameters),
-                          *result);
+      DOUBLE_TO_NPVARIANT(
+          object ? env->CallDoubleMethodA(object, id, parameters)
+                 : env->CallStaticDoubleMethodA(clazz, id, parameters),
+          *result);
       break;
     case JavaType::TypeVoid:
-      env->CallVoidMethodA(object, id, parameters);
+      if (object)
+        env->CallVoidMethodA(object, id, parameters);
+      else
+        env->CallStaticVoidMethodA(clazz, id, parameters);
       VOID_TO_NPVARIANT(*result);
       break;
     case JavaType::TypeArray:
@@ -199,7 +223,8 @@ bool CallJNIMethod(
       break;
     case JavaType::TypeString: {
       jstring java_string = static_cast<jstring>(
-          env->CallObjectMethodA(object, id, parameters));
+          object ? env->CallObjectMethodA(object, id, parameters)
+                 : env->CallStaticObjectMethodA(clazz, id, parameters));
       // If an exception was raised, we must clear it before calling most JNI
       // methods. ScopedJavaLocalRef is liable to make such calls, so we test
       // first.
@@ -227,7 +252,9 @@ bool CallJNIMethod(
       // If an exception was raised, we must clear it before calling most JNI
       // methods. ScopedJavaLocalRef is liable to make such calls, so we test
       // first.
-      jobject java_object = env->CallObjectMethodA(object, id, parameters);
+      jobject java_object =
+          object ? env->CallObjectMethodA(object, id, parameters)
+                 : env->CallStaticObjectMethodA(clazz, id, parameters);
       if (base::android::ClearException(env)) {
         return false;
       }
@@ -893,17 +920,6 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
     return false;
   }
 
-  // Coerce
-  std::vector<jvalue> parameters(arg_count);
-  for (size_t i = 0; i < arg_count; ++i) {
-    parameters[i] = CoerceJavaScriptValueToJavaValue(args[i],
-                                                     method->parameter_type(i),
-                                                     true);
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
-
   // Block access to java.lang.Object.getClass.
   // As it is declared to be final, it is sufficient to compare methodIDs.
   if (method->id() == object_get_class_method_id_) {
@@ -914,10 +930,27 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
     return false;
   }
 
+  // Coerce
+  std::vector<jvalue> parameters(arg_count);
+  for (size_t i = 0; i < arg_count; ++i) {
+    parameters[i] = CoerceJavaScriptValueToJavaValue(args[i],
+                                                     method->parameter_type(i),
+                                                     true);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj;
+  ScopedJavaLocalRef<jclass> cls;
   bool ok = false;
-  if (!obj.is_null()) {
+  if (method->is_static()) {
+    cls = GetLocalClassRef(env);
+  } else {
+    obj = java_object_.get(env);
+  }
+  if (!obj.is_null() || !cls.is_null()) {
     // Call
-    ok = CallJNIMethod(obj.obj(), method->return_type(),
+    ok = CallJNIMethod(obj.obj(), cls.obj(), method->return_type(),
                        method->id(), &parameters[0], result,
                        safe_annotation_clazz_,
                        manager_,
@@ -933,6 +966,22 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
   return ok;
 }
 
+ScopedJavaLocalRef<jclass> JavaBoundObject::GetLocalClassRef(
+    JNIEnv* env) const {
+  if (!object_get_class_method_id_) {
+    object_get_class_method_id_ = GetMethodIDFromClassName(
+        env, kJavaLangObject, kGetClass, kReturningJavaLangClass);
+  }
+
+  ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
+  if (!obj.is_null()) {
+    return ScopedJavaLocalRef<jclass>(env, static_cast<jclass>(
+        env->CallObjectMethod(obj.obj(), object_get_class_method_id_)));
+  } else {
+    return ScopedJavaLocalRef<jclass>();
+  }
+}
+
 void JavaBoundObject::EnsureMethodsAreSetUp() const {
   if (are_methods_set_up_)
     return;
@@ -940,20 +989,10 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
 
   JNIEnv* env = AttachCurrentThread();
 
-  object_get_class_method_id_ = GetMethodIDFromClassName(
-      env,
-      kJavaLangObject,
-      kGetClass,
-      kReturningJavaLangClass);
-
-  ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
-
-  if (obj.is_null()) {
+  ScopedJavaLocalRef<jclass> clazz = GetLocalClassRef(env);
+  if (clazz.is_null()) {
     return;
   }
-
-  ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(obj.obj(), object_get_class_method_id_)));
 
   ScopedJavaLocalRef<jobjectArray> methods(env, static_cast<jobjectArray>(
       env->CallObjectMethod(clazz.obj(), GetMethodIDFromClassName(

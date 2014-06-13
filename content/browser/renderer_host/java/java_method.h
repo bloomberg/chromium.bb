@@ -23,6 +23,7 @@ class JavaMethod {
 
   const std::string& name() const { return name_; }
   size_t num_parameters() const;
+  bool is_static() const;
   const JavaType& parameter_type(size_t index) const;
   const JavaType& return_type() const;
   jmethodID id() const;
@@ -37,6 +38,7 @@ class JavaMethod {
   mutable size_t num_parameters_;
   mutable std::vector<JavaType> parameter_types_;
   mutable JavaType return_type_;
+  mutable bool is_static_;
   mutable jmethodID id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JavaMethod);

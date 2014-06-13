@@ -115,6 +115,11 @@ size_t JavaMethod::num_parameters() const {
   return num_parameters_;
 }
 
+bool JavaMethod::is_static() const {
+  EnsureTypesAndIDAreSetUp();
+  return is_static_;
+}
+
 const JavaType& JavaMethod::parameter_type(size_t index) const {
   EnsureTypesAndIDAreSetUp();
   return parameter_types_[index];
@@ -212,7 +217,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
                                                    kJavaLangReflectMethod,
                                                    kGetModifiers,
                                                    kReturningInteger));
-  bool is_static = env->CallStaticBooleanMethod(
+  is_static_ = env->CallStaticBooleanMethod(
       g_java_lang_reflect_modifier_class.Get().obj(),
       MethodID::Get<MethodID::TYPE_STATIC>(
           env, g_java_lang_reflect_modifier_class.Get().obj(), kIsStatic,
@@ -226,7 +231,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kJavaLangReflectMethod,
           kGetDeclaringClass,
           kReturningJavaLangClass))));
-  id_ = is_static ?
+  id_ = is_static_ ?
       MethodID::Get<MethodID::TYPE_STATIC>(
           env, declaring_class.obj(), name_.c_str(), signature.c_str()) :
       MethodID::Get<MethodID::TYPE_INSTANCE>(

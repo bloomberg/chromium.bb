@@ -63,6 +63,7 @@ class JavaBoundObject {
       bool can_enumerate_methods);
 
   void EnsureMethodsAreSetUp() const;
+  base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(JNIEnv* env) const;
 
   static void ThrowSecurityException(const char* message);
 
