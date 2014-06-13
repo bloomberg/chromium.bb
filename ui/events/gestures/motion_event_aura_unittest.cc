@@ -17,17 +17,21 @@ ui::TouchEvent TouchWithPosition(ui::EventType type,
                                  int id,
                                  float x,
                                  float y,
+                                 float raw_x,
+                                 float raw_y,
                                  float radius,
                                  float pressure) {
-  return ui::TouchEvent(type,
-                        gfx::PointF(x, y),
-                        0,
-                        id,
-                        base::TimeDelta::FromMilliseconds(0),
-                        radius,
-                        radius,
-                        0,
-                        pressure);
+  ui::TouchEvent event(type,
+                       gfx::PointF(x, y),
+                       0,
+                       id,
+                       base::TimeDelta::FromMilliseconds(0),
+                       radius,
+                       radius,
+                       0,
+                       pressure);
+  event.set_root_location(gfx::PointF(raw_x, raw_y));
+  return event;
 }
 
 ui::TouchEvent TouchWithTime(ui::EventType type, int id, int ms) {
@@ -137,35 +141,50 @@ TEST(MotionEventAuraTest, PointerLocations) {
   // Test that location information is stored correctly.
   MotionEventAura event;
 
+  const float kRawOffsetX = 11.1f;
+  const float kRawOffsetY = 13.3f;
+
   int ids[] = {15, 13};
   float x;
   float y;
+  float raw_x;
+  float raw_y;
   float r;
   float p;
 
   x = 14.4f;
   y = 17.3f;
+  raw_x = x + kRawOffsetX;
+  raw_y = y + kRawOffsetY;
   r = 25.7f;
   p = 48.2f;
-  TouchEvent press0 = TouchWithPosition(ET_TOUCH_PRESSED, ids[0], x, y, r, p);
+  TouchEvent press0 =
+      TouchWithPosition(ET_TOUCH_PRESSED, ids[0], x, y, raw_x, raw_y, r, p);
   event.OnTouch(press0);
 
   EXPECT_EQ(1U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(x, event.GetX(0));
   EXPECT_FLOAT_EQ(y, event.GetY(0));
+  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(0));
+  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(0));
   EXPECT_FLOAT_EQ(r, event.GetTouchMajor(0) / 2);
   EXPECT_FLOAT_EQ(p, event.GetPressure(0));
 
   x = 17.8f;
   y = 12.1f;
+  raw_x = x + kRawOffsetX;
+  raw_y = y + kRawOffsetY;
   r = 21.2f;
   p = 18.4f;
-  TouchEvent press1 = TouchWithPosition(ET_TOUCH_PRESSED, ids[1], x, y, r, p);
+  TouchEvent press1 =
+      TouchWithPosition(ET_TOUCH_PRESSED, ids[1], x, y, raw_x, raw_y, r, p);
   event.OnTouch(press1);
 
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(x, event.GetX(1));
   EXPECT_FLOAT_EQ(y, event.GetY(1));
+  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
+  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
   EXPECT_FLOAT_EQ(r, event.GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(p, event.GetPressure(1));
 
@@ -174,31 +193,42 @@ TEST(MotionEventAuraTest, PointerLocations) {
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_FLOAT_EQ(x, clone->GetX(1));
   EXPECT_FLOAT_EQ(y, clone->GetY(1));
+  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
+  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
   EXPECT_FLOAT_EQ(r, clone->GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(p, clone->GetPressure(1));
 
   x = 27.9f;
   y = 22.3f;
+  raw_x = x + kRawOffsetX;
+  raw_y = y + kRawOffsetY;
   r = 7.6f;
   p = 82.1f;
-  TouchEvent move1 = TouchWithPosition(ET_TOUCH_MOVED, ids[1], x, y, r, p);
+  TouchEvent move1 =
+      TouchWithPosition(ET_TOUCH_MOVED, ids[1], x, y, raw_x, raw_y, r, p);
   event.OnTouch(move1);
 
   EXPECT_FLOAT_EQ(x, event.GetX(1));
   EXPECT_FLOAT_EQ(y, event.GetY(1));
+  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
+  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
   EXPECT_FLOAT_EQ(r, event.GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(p, event.GetPressure(1));
 
-
   x = 34.6f;
   y = 23.8f;
+  raw_x = x + kRawOffsetX;
+  raw_y = y + kRawOffsetY;
   r = 12.9f;
   p = 14.2f;
-  TouchEvent move0 = TouchWithPosition(ET_TOUCH_MOVED, ids[0], x, y, r, p);
+  TouchEvent move0 =
+      TouchWithPosition(ET_TOUCH_MOVED, ids[0], x, y, raw_x, raw_y, r, p);
   event.OnTouch(move0);
 
   EXPECT_FLOAT_EQ(x, event.GetX(0));
   EXPECT_FLOAT_EQ(y, event.GetY(0));
+  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(0));
+  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(0));
   EXPECT_FLOAT_EQ(r, event.GetTouchMajor(0) / 2);
   EXPECT_FLOAT_EQ(p, event.GetPressure(0));
 }

@@ -38,6 +38,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual int GetPointerId(size_t pointer_index) const = 0;
   virtual float GetX(size_t pointer_index) const = 0;
   virtual float GetY(size_t pointer_index) const = 0;
+  virtual float GetRawX(size_t pointer_index) const = 0;
+  virtual float GetRawY(size_t pointer_index) const = 0;
   virtual float GetTouchMajor(size_t pointer_index) const = 0;
   virtual float GetPressure(size_t pointer_index) const = 0;
   virtual base::TimeTicks GetEventTime() const = 0;
@@ -58,8 +60,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   // Utility accessor methods for convenience.
   float GetX() const { return GetX(0); }
   float GetY() const { return GetY(0); }
-  float GetRawX() const { return GetX(); }
-  float GetRawY() const { return GetY(); }
+  float GetRawX() const { return GetRawX(0); }
+  float GetRawY() const { return GetRawY(0); }
   float GetTouchMajor() const { return GetTouchMajor(0); }
   float GetPressure() const { return GetPressure(0); }
 };

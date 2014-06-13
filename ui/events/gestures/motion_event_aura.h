@@ -33,6 +33,8 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   virtual int GetPointerId(size_t pointer_index) const OVERRIDE;
   virtual float GetX(size_t pointer_index) const OVERRIDE;
   virtual float GetY(size_t pointer_index) const OVERRIDE;
+  virtual float GetRawX(size_t pointer_index) const OVERRIDE;
+  virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
@@ -64,6 +66,8 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
     PointData();
     float x;
     float y;
+    float raw_x;
+    float raw_y;
     int touch_id;
     float pressure;
     int source_device_id;

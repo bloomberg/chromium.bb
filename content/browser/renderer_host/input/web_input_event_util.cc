@@ -186,8 +186,8 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
       static_cast<int>(pointer_index) == event.GetActionIndex());
   touch.position.x = event.GetX(pointer_index);
   touch.position.y = event.GetY(pointer_index);
-  // TODO(joth): Raw event co-ordinates.
-  touch.screenPosition = touch.position;
+  touch.screenPosition.x = event.GetRawX(pointer_index);
+  touch.screenPosition.y = event.GetRawY(pointer_index);
   touch.radiusX = touch.radiusY = event.GetTouchMajor(pointer_index) * 0.5f;
   touch.force = event.GetPressure(pointer_index);
 

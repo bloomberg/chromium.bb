@@ -944,7 +944,9 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                            jint pointer_id_0,
                                            jint pointer_id_1,
                                            jfloat touch_major_0,
-                                           jfloat touch_major_1) {
+                                           jfloat touch_major_1,
+                                           jfloat raw_pos_x,
+                                           jfloat raw_pos_y) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   // Avoid synthesizing a touch event if it cannot be forwarded.
   if (!rwhv)
@@ -965,7 +967,9 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                            pointer_id_0,
                            pointer_id_1,
                            touch_major_0,
-                           touch_major_1);
+                           touch_major_1,
+                           raw_pos_x,
+                           raw_pos_y);
 
   return rwhv->OnTouchEvent(event);
 }

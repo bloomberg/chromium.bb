@@ -37,7 +37,9 @@ class MotionEventAndroid : public ui::MotionEvent {
                      jint pointer_id_0,
                      jint pointer_id_1,
                      jfloat touch_major_0_pixels,
-                     jfloat touch_major_1_pixels);
+                     jfloat touch_major_1_pixels,
+                     jfloat raw_pos_x_pixels,
+                     jfloat raw_pos_y_pixels);
   virtual ~MotionEventAndroid();
 
   // ui::MotionEvent methods.
@@ -48,21 +50,20 @@ class MotionEventAndroid : public ui::MotionEvent {
   virtual int GetPointerId(size_t pointer_index) const OVERRIDE;
   virtual float GetX(size_t pointer_index) const OVERRIDE;
   virtual float GetY(size_t pointer_index) const OVERRIDE;
+  virtual float GetRawX(size_t pointer_index) const OVERRIDE;
+  virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
   virtual size_t GetHistorySize() const OVERRIDE;
   virtual base::TimeTicks GetHistoricalEventTime(
       size_t historical_index) const OVERRIDE;
-  virtual float GetHistoricalTouchMajor(
-      size_t pointer_index,
-      size_t historical_index) const OVERRIDE;
-  virtual float GetHistoricalX(
-      size_t pointer_index,
-      size_t historical_index) const OVERRIDE;
-  virtual float GetHistoricalY(
-      size_t pointer_index,
-      size_t historical_index) const OVERRIDE;
+  virtual float GetHistoricalTouchMajor(size_t pointer_index,
+                                        size_t historical_index) const OVERRIDE;
+  virtual float GetHistoricalX(size_t pointer_index,
+                               size_t historical_index) const OVERRIDE;
+  virtual float GetHistoricalY(size_t pointer_index,
+                               size_t historical_index) const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
@@ -108,6 +109,7 @@ class MotionEventAndroid : public ui::MotionEvent {
   gfx::PointF cached_positions_[MAX_POINTERS_TO_CACHE];
   int cached_pointer_ids_[MAX_POINTERS_TO_CACHE];
   float cached_touch_majors_[MAX_POINTERS_TO_CACHE];
+  gfx::Vector2dF cached_raw_position_offset_;
 
   // Used to convert pixel coordinates from the Java-backed MotionEvent to
   // DIP coordinates cached/returned by the MotionEventAndroid.

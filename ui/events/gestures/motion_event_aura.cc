@@ -35,6 +35,8 @@ MotionEventAura::PointData MotionEventAura::GetPointDataFromTouchEvent(
   PointData point_data;
   point_data.x = touch.x();
   point_data.y = touch.y();
+  point_data.raw_x = touch.root_location_f().x();
+  point_data.raw_y = touch.root_location_f().y();
   point_data.touch_id = touch.touch_id();
   point_data.pressure = touch.force();
   point_data.source_device_id = touch.source_device_id();
@@ -104,6 +106,16 @@ float MotionEventAura::GetY(size_t pointer_index) const {
   return active_touches_[pointer_index].y;
 }
 
+float MotionEventAura::GetRawX(size_t pointer_index) const {
+  DCHECK_LE(pointer_index, pointer_count_);
+  return active_touches_[pointer_index].raw_x;
+}
+
+float MotionEventAura::GetRawY(size_t pointer_index) const {
+  DCHECK_LE(pointer_index, pointer_count_);
+  return active_touches_[pointer_index].raw_y;
+}
+
 float MotionEventAura::GetTouchMajor(size_t pointer_index) const {
   DCHECK_LE(pointer_index, pointer_count_);
   return active_touches_[pointer_index].major_radius * 2;
@@ -170,6 +182,8 @@ void MotionEventAura::CleanupRemovedTouchPoints(const TouchEvent& event) {
 MotionEventAura::PointData::PointData()
     : x(0),
       y(0),
+      raw_x(0),
+      raw_y(0),
       touch_id(0),
       pressure(0),
       source_device_id(0),

@@ -100,6 +100,14 @@ float MockMotionEvent::GetY(size_t pointer_index) const {
   return points[pointer_index].y();
 }
 
+float MockMotionEvent::GetRawX(size_t pointer_index) const {
+  return GetX(pointer_index);
+}
+
+float MockMotionEvent::GetRawY(size_t pointer_index) const {
+  return GetY(pointer_index);
+}
+
 float MockMotionEvent::GetTouchMajor(size_t pointer_index) const {
   return touch_major;
 }
