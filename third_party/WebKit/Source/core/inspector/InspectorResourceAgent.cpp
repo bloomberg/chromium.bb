@@ -312,7 +312,6 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
         }
     }
 
-    request.setReportLoadTiming(true);
     request.setReportRawHeaders(true);
 
     if (m_state->getBoolean(ResourceAgentState::cacheDisabled))

@@ -359,7 +359,6 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_httpMethod = "GET";
     m_allowStoredCredentials = true;
     m_reportUploadProgress = false;
-    m_reportLoadTiming = false;
     m_reportRawHeaders = false;
     m_hasUserGesture = false;
     m_downloadToFile = false;
