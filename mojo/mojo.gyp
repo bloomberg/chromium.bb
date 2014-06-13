@@ -35,6 +35,7 @@
         'mojo_cpp_bindings',
         'mojo_geometry_lib',
         'mojo_html_viewer',
+        'mojo_image_viewer',
         'mojo_js',
         'mojo_js_bindings',
         'mojo_js_unittests',

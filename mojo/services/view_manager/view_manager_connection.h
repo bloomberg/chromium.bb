@@ -121,6 +121,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   bool CanDeleteNode(const NodeId& node_id) const;
   bool CanDeleteView(const ViewId& view_id) const;
   bool CanSetView(const Node* node, const ViewId& view_id) const;
+  bool CanSetFocus(const Node* node) const;
   bool CanGetNodeTree(const Node* node) const;
   bool CanEmbed(const mojo::Array<uint32_t>& node_ids) const;
 
@@ -197,6 +198,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                ScopedSharedBufferHandle buffer,
                                uint32_t buffer_size,
                                const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void SetFocus(Id node_id,
+                        const Callback<void(bool)> & callback) OVERRIDE;
   virtual void SetNodeBounds(Id node_id,
                              RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;

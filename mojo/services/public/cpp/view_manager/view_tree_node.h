@@ -65,6 +65,9 @@ class ViewTreeNode {
   void SetActiveView(View* view);
   View* active_view() { return active_view_; }
 
+  // Focus.
+  void SetFocus();
+
   // Embedding.
   void Embed(const String& url);
 

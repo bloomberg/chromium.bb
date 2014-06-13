@@ -331,6 +331,11 @@ bool ViewManagerConnection::CanSetView(const Node* node,
   return (view && view_id.connection_id == id_) || view_id == ViewId();
 }
 
+bool ViewManagerConnection::CanSetFocus(const Node* node) const {
+  // TODO(beng): security.
+  return true;
+}
+
 bool ViewManagerConnection::CanGetNodeTree(const Node* node) const {
   return node &&
       (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
@@ -693,6 +698,17 @@ void ViewManagerConnection::SetViewContents(
   view->SetBitmap(bitmap);
   UnmapBuffer(handle_data);
   callback.Run(true);
+}
+
+void ViewManagerConnection::SetFocus(Id node_id,
+                                     const Callback<void(bool)> & callback) {
+  bool success = false;
+  Node* node = GetNode(NodeIdFromTransportId(node_id));
+  if (CanSetFocus(node)) {
+    success = true;
+    node->window()->Focus();
+  }
+  callback.Run(success);
 }
 
 void ViewManagerConnection::SetNodeBounds(

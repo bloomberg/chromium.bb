@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
@@ -29,10 +30,12 @@ class LauncherConnection : public InterfaceImpl<Launcher> {
   DISALLOW_COPY_AND_ASSIGN(LauncherConnection);
 };
 
-class Launch : public URLLoaderClient {
+class LaunchInstance : public URLLoaderClient {
  public:
-  Launch(LauncherApp* app, const String& url);
-  virtual ~Launch() {}
+  LaunchInstance(LauncherApp* app,
+                 LauncherClient* client,
+                 const String& url);
+  virtual ~LaunchInstance() {}
 
  private:
   // Overridden from URLLoaderClient:
@@ -72,11 +75,11 @@ class Launch : public URLLoaderClient {
 
   LauncherApp* app_;
   bool destroy_scheduled_;
+  LauncherClient* client_;
   URLLoaderPtr url_loader_;
   ScopedDataPipeConsumerHandle response_body_stream_;
-  LaunchablePtr launchable_;
 
-  DISALLOW_COPY_AND_ASSIGN(Launch);
+  DISALLOW_COPY_AND_ASSIGN(LaunchInstance);
 };
 
 class LauncherApp : public Application {
@@ -86,10 +89,6 @@ class LauncherApp : public Application {
     handler_map_["image/png"] = "mojo:mojo_image_viewer";
   }
   virtual ~LauncherApp() {}
-
-  void LaunchURL(const String& url) {
-    new Launch(this, url);
-  }
 
   URLLoaderPtr CreateURLLoader() {
     URLLoaderPtr loader;
@@ -119,12 +118,15 @@ class LauncherApp : public Application {
 };
 
 void LauncherConnection::Launch(const String& url) {
-  app_->LaunchURL(url);
+  new LaunchInstance(app_, client(), url);
 }
 
-Launch::Launch(LauncherApp* app, const String& url)
+LaunchInstance::LaunchInstance(LauncherApp* app,
+                               LauncherClient* client,
+                               const String& url)
     : app_(app),
-      destroy_scheduled_(false) {
+      destroy_scheduled_(false),
+      client_(client) {
   url_loader_ = app_->CreateURLLoader();
   url_loader_.set_client(this);
 
@@ -139,14 +141,14 @@ Launch::Launch(LauncherApp* app, const String& url)
   url_loader_->Start(request.Pass(), data_pipe.producer_handle.Pass());
 }
 
-void Launch::OnReceivedResponse(URLResponsePtr response) {
+void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
   std::string content_type = GetContentType(response->headers);
   std::string handler_url = app_->GetHandlerForContentType(content_type);
   if (!handler_url.empty()) {
-    app_->ConnectTo(handler_url, &launchable_);
-    launchable_->OnLaunch(response.Pass(), response_body_stream_.Pass());
+    client_->OnLaunch(handler_url,
+                      response.Pass(),
+                      response_body_stream_.Pass());
   }
-  ScheduleDestroy();
 }
 
 }  // namespace launcher

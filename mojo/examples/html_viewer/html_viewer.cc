@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 
 namespace mojo {
@@ -12,14 +17,15 @@ class HTMLViewer;
 
 class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
  public:
-  LaunchableConnection() {}
+  explicit LaunchableConnection(HTMLViewer* viewer) : viewer_(viewer) {}
   virtual ~LaunchableConnection() {}
 
  private:
   // Overridden from launcher::Launchable:
   virtual void OnLaunch(
       URLResponsePtr response,
-      ScopedDataPipeConsumerHandle response_body_stream) MOJO_OVERRIDE {
+      ScopedDataPipeConsumerHandle response_body_stream,
+      view_manager::Id node_id) MOJO_OVERRIDE {
     printf("In HTMLViewer, rendering url: %s\n", response->url.data());
     printf("HTML: \n");
     for (;;) {
@@ -41,20 +47,48 @@ class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
       }
     }
     printf("\n>>>> EOF <<<<\n\n");
+
+    UpdateView();
   }
+
+  void UpdateView();
+
+  HTMLViewer* viewer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LaunchableConnection);
 };
 
-class HTMLViewer : public Application {
+class HTMLViewer : public Application,
+                   public view_manager::ViewManagerDelegate  {
  public:
-  HTMLViewer() {}
+  HTMLViewer() : content_view_(NULL) {}
   virtual ~HTMLViewer() {}
 
  private:
+  friend class LaunchableConnection;
+
   // Overridden from Application:
-  virtual void Initialize() MOJO_OVERRIDE {
-    AddService<LaunchableConnection>();
+  virtual void Initialize() OVERRIDE {
+    AddService<LaunchableConnection>(this);
+    view_manager::ViewManager::Create(this, this);
   }
+
+  // Overridden from view_manager::ViewManagerDelegate:
+  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
+                           view_manager::ViewTreeNode* root) OVERRIDE {
+    content_view_ = view_manager::View::Create(view_manager);
+    root->SetActiveView(content_view_);
+    content_view_->SetColor(SK_ColorRED);
+  }
+
+  view_manager::View* content_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
+
+void LaunchableConnection::UpdateView() {
+  viewer_->content_view_->SetColor(SK_ColorGREEN);
+}
 
 }
 

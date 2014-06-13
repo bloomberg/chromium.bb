@@ -58,7 +58,8 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
       break;
     default:
       // TODO: support other types.
-      NOTIMPLEMENTED();
+      // NOTIMPLEMENTED();
+      ;
   }
   // TODO: need to support time_stamp.
   return ui_event.Pass();

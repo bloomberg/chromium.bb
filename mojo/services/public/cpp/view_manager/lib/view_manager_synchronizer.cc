@@ -477,6 +477,27 @@ class EmbedTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(EmbedTransaction);
 };
 
+class SetFocusTransaction : public ViewManagerTransaction {
+ public:
+  SetFocusTransaction(Id node_id, ViewManagerSynchronizer* synchronizer)
+      : ViewManagerTransaction(synchronizer),
+        node_id_(node_id) {}
+  virtual ~SetFocusTransaction() {}
+
+ private:
+  // Overridden from ViewManagerTransaction:
+  virtual void DoCommit() OVERRIDE {
+    service()->SetFocus(node_id_, ActionCompletedCallback());
+  }
+  virtual void DoActionCompleted(bool success) OVERRIDE {
+    // TODO(beng): recovery?
+  }
+
+  const Id node_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetFocusTransaction);
+};
+
 ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManagerDelegate* delegate)
     : connected_(false),
       connection_id_(0),
@@ -582,6 +603,12 @@ void ViewManagerSynchronizer::SetViewContents(Id view_id,
   DCHECK(connected_);
   pending_transactions_.push_back(
       new SetViewContentsTransaction(view_id, contents, this));
+  Sync();
+}
+
+void ViewManagerSynchronizer::SetFocus(Id node_id) {
+  DCHECK(connected_);
+  pending_transactions_.push_back(new SetFocusTransaction(node_id, this));
   Sync();
 }
 

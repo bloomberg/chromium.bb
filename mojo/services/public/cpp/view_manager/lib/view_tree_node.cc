@@ -357,6 +357,11 @@ void ViewTreeNode::SetActiveView(View* view) {
   }
 }
 
+void ViewTreeNode::SetFocus() {
+  if (manager_)
+    static_cast<ViewManagerSynchronizer*>(manager_)->SetFocus(id_);
+}
+
 void ViewTreeNode::Embed(const String& url) {
   static_cast<ViewManagerSynchronizer*>(manager_)->Embed(url, id_);
 }

@@ -56,6 +56,7 @@ class ViewManagerSynchronizer : public ViewManager,
   void SetActiveView(Id node_id, Id view_id);
   void SetBounds(Id node_id, const gfx::Rect& bounds);
   void SetViewContents(Id view_id, const SkBitmap& contents);
+  void SetFocus(Id node_id);
 
   void Embed(const String& url, Id node_id);
 

@@ -6,13 +6,22 @@ import "../network/url_loader.mojom"
 
 module mojo.launcher {
 
+[Client=LauncherClient]
 interface Launcher {
   Launch(string url);
 };
 
+[Client=Launcher]
+interface LauncherClient {
+  OnLaunch(string handler_url,
+           mojo.URLResponse response,
+           handle<data_pipe_consumer> response_body_stream);
+};
+
 interface Launchable {
   OnLaunch(mojo.URLResponse response,
-           handle<data_pipe_consumer> response_body_stream);
+           handle<data_pipe_consumer> response_body_stream,
+           uint32 node_id);
 };
 
 }

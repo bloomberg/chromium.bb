@@ -106,6 +106,9 @@ interface IViewManager {
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
+  // Sets focus to the specified node.
+  SetFocus(uint32 node_id) => (bool success);
+
   // Embeds the app at |url| in the specified nodes. More specifically this
   // creates a new connection to the specified url, expecting to get an
   // IViewManagerClient and configures it with the root nodes |nodes|. Fails

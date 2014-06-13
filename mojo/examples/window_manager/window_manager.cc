@@ -112,7 +112,7 @@ class WindowManager : public Application,
   void CreateWindow(const std::string& url) {
     ViewTreeNode* node = view_manager_->GetNodeById(parent_node_id_);
 
-    gfx::Rect bounds(50, 50, 200, 200);
+    gfx::Rect bounds(50, 50, 400, 400);
     if (!node->children().empty()) {
       gfx::Point position = node->children().back()->bounds().origin();
       position.Offset(50, 50);
