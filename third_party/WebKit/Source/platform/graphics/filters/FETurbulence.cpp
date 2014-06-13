@@ -401,9 +401,9 @@ void FETurbulence::applySoftware()
     fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height(), m_baseFrequencyX, m_baseFrequencyY);
 }
 
-SkShader* FETurbulence::createShader(const IntRect& filterRegion)
+SkShader* FETurbulence::createShader()
 {
-    const SkISize size = SkISize::Make(filterRegion.width(), filterRegion.height());
+    const SkISize size = SkISize::Make(effectBoundaries().width(), effectBoundaries().height());
     // Frequency should be scaled by page zoom, but not by primitiveUnits.
     // So we apply only the transform scale (as Filter::apply*Scale() do)
     // and not the target bounding box scale (as SVGFilter::apply*Scale()
@@ -423,7 +423,7 @@ SkShader* FETurbulence::createShader(const IntRect& filterRegion)
 
 PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkShader> shader(createShader(IntRect()));
+    SkAutoTUnref<SkShader> shader(createShader());
     SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     return adoptRef(SkRectShaderImageFilter::Create(shader, &rect));
 }

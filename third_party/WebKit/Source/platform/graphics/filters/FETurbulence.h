@@ -117,7 +117,7 @@ private:
 
     virtual void applySoftware() OVERRIDE;
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
-    SkShader* createShader(const IntRect& filterRegion);
+    SkShader* createShader();
 
     inline void initPaint(PaintingData&);
     float noise2D(int channel, PaintingData&, StitchData&, const FloatPoint&);
