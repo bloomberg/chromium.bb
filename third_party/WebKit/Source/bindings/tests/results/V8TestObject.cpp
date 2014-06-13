@@ -9652,6 +9652,13 @@ void V8TestObject::installPerContextEnabledMethods(v8::Handle<v8::Object> protot
         prototypeTemplate->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
 }
 
+v8::Handle<v8::Object> wrap(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl, isolate));
+    return V8TestObject::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObject> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

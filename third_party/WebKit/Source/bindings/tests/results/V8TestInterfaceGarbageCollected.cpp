@@ -184,6 +184,13 @@ EventTarget* V8TestInterfaceGarbageCollected::toEventTarget(v8::Handle<v8::Objec
     return toNative(object);
 }
 
+v8::Handle<v8::Object> wrap(TestInterfaceGarbageCollected* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceGarbageCollected>(impl, isolate));
+    return V8TestInterfaceGarbageCollected::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::createWrapper(RawPtr<TestInterfaceGarbageCollected> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

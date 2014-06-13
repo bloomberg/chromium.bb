@@ -45,12 +45,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSpecialOperationsNotEnumerable>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestSpecialOperationsNotEnumerable>(impl, isolate));
-    return V8TestSpecialOperationsNotEnumerable::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

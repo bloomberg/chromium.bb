@@ -64,12 +64,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestObject>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl, isolate));
-    return V8TestObject::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

@@ -46,12 +46,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestTypedefs>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestTypedefs>(impl, isolate));
-    return V8TestTypedefs::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

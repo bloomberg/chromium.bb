@@ -47,12 +47,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfaceCustomConstructor>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestInterfaceCustomConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceCustomConstructor>(impl, isolate));
-    return V8TestInterfaceCustomConstructor::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestInterfaceCustomConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestInterfaceCustomConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

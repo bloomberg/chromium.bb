@@ -391,6 +391,13 @@ TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toNativeWithType
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
+v8::Handle<v8::Object> wrap(TestInterfaceEventConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceEventConstructor>(impl, isolate));
+    return V8TestInterfaceEventConstructor::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceEventConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

@@ -100,6 +100,13 @@ TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::toNativeWithTy
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
+v8::Handle<v8::Object> wrap(TestInterfaceCustomConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceCustomConstructor>(impl, isolate));
+    return V8TestInterfaceCustomConstructor::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestInterfaceCustomConstructor::createWrapper(PassRefPtr<TestInterfaceCustomConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

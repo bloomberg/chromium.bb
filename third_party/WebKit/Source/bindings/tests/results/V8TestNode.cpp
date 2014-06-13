@@ -210,6 +210,13 @@ EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
     return toNative(object);
 }
 
+v8::Handle<v8::Object> wrap(TestNode* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestNode>(impl, isolate));
+    return V8TestNode::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestNode::createWrapper(PassRefPtrWillBeRawPtr<TestNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

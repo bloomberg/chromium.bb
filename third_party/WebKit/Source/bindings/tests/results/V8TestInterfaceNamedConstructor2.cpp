@@ -137,6 +137,13 @@ TestInterfaceNamedConstructor2* V8TestInterfaceNamedConstructor2::toNativeWithTy
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
+v8::Handle<v8::Object> wrap(TestInterfaceNamedConstructor2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceNamedConstructor2>(impl, isolate));
+    return V8TestInterfaceNamedConstructor2::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestInterfaceNamedConstructor2::createWrapper(PassRefPtr<TestInterfaceNamedConstructor2> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

@@ -59,12 +59,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceEventTarget>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestInterfaceEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceEventTarget>(impl, isolate));
-    return V8TestInterfaceEventTarget::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestInterfaceEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestInterfaceEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

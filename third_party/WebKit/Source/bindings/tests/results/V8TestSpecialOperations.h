@@ -45,12 +45,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSpecialOperations>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestSpecialOperations>(impl, isolate));
-    return V8TestSpecialOperations::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

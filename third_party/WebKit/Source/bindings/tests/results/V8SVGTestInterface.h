@@ -45,12 +45,7 @@ private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<SVGTestInterface>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(SVGTestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8SVGTestInterface>(impl, isolate));
-    return V8SVGTestInterface::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(SVGTestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(SVGTestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

@@ -212,6 +212,13 @@ TestSpecialOperations* V8TestSpecialOperations::toNativeWithTypeCheck(v8::Isolat
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
+v8::Handle<v8::Object> wrap(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestSpecialOperations>(impl, isolate));
+    return V8TestSpecialOperations::createWrapper(impl, creationContext, isolate);
+}
+
 v8::Handle<v8::Object> V8TestSpecialOperations::createWrapper(PassRefPtr<TestSpecialOperations> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

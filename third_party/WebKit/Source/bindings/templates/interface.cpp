@@ -1261,6 +1261,14 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
     return wrapper;
 }
 
+{% elif not has_custom_to_v8 and not has_custom_wrap %}
+v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl, isolate));
+    return {{v8_class}}::createWrapper(impl, creationContext, isolate);
+}
+
 {% endif %}
 {% endblock %}
 
