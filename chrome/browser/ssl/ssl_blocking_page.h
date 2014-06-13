@@ -35,6 +35,17 @@ class WebContents;
 class SSLBlockingPage : public content::InterstitialPageDelegate,
                         public content::NotificationObserver {
  public:
+  // These represent the commands sent from the interstitial JavaScript. They
+  // are defined in chrome/browser/resources/ssl/ssl_errors_common.js.
+  // DO NOT reorder or change these without also changing the JavaScript!
+  enum SSLBlockingPageCommands {
+   CMD_DONT_PROCEED = 0,
+   CMD_PROCEED = 1,
+   CMD_MORE = 2,
+   CMD_RELOAD = 3,
+   CMD_HELP = 4
+  };
+
   SSLBlockingPage(
       content::WebContents* web_contents,
       int cert_error,

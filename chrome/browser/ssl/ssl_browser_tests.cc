@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -1726,9 +1727,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 
-// Verifies that if JavaScript is disabled interstitials aren't affected.
+// Verifies that the interstitial can proceed, even if JavaScript is disabled.
 // http://crbug.com/322948
-IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByContentSettings) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
 
@@ -1739,16 +1740,54 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByContentSettings) {
   CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&tab->GetController()));
   InterstitialPage* interstitial_page = tab->GetInterstitialPage();
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetRenderViewHostForTesting();
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-              interstitial_rvh,
-              "window.domAutomationController.send(true);",
-              &result));
+  int result = -1;
+  std::string javascript = base::StringPrintf(
+      "window.domAutomationController.send(%d);",
+      SSLBlockingPage::CMD_PROCEED);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+              interstitial_rvh, javascript, &result));
   // The above will hang without the fix.
-  ASSERT_TRUE(result);
+  EXPECT_EQ(1, result);
+  observer.Wait();
+  CheckAuthenticationBrokenState(
+      tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
+}
+
+// Verifies that the interstitial can go back, even if JavaScript is disabled.
+// http://crbug.com/322948
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+      https_server_expired_.GetURL("files/ssl/google.html"));
+  CheckAuthenticationBrokenState(
+      tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      content::NotificationService::AllSources());
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  content::RenderViewHost* interstitial_rvh =
+      interstitial_page->GetRenderViewHostForTesting();
+  int result = -1;
+  std::string javascript = base::StringPrintf(
+      "window.domAutomationController.send(%d);",
+      SSLBlockingPage::CMD_DONT_PROCEED);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      interstitial_rvh, javascript, &result));
+  // The above will hang without the fix.
+  EXPECT_EQ(0, result);
+  observer.Wait();
+  EXPECT_EQ("about:blank", tab->GetVisibleURL().spec());
 }
 
 // Verifies that switching tabs, while showing interstitial page, will not

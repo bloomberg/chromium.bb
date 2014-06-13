@@ -57,16 +57,7 @@ using content::NavigationEntry;
 
 namespace {
 
-// These represent the commands sent by ssl_roadblock.html.
-enum SSLBlockingPageCommands {
-  CMD_DONT_PROCEED,
-  CMD_PROCEED,
-  CMD_MORE,
-  CMD_RELOAD,
-  CMD_HELP
-};
-
-// Events for UMA.
+// Events for UMA. Do not reorder or change!
 enum SSLBlockingPageEvent {
   SHOW_ALL,
   SHOW_OVERRIDABLE,
@@ -507,12 +498,13 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info_.security_bits;
 }
 
-// Matches events defined in ssl_error.html and ssl_roadblock.html.
+// This handles the commands sent from the interstitial JavaScript. They are
+// defined in chrome/browser/resources/ssl/ssl_errors_common.js.
+// DO NOT reorder or change this logic without also changing the JavaScript!
 void SSLBlockingPage::CommandReceived(const std::string& command) {
-  int cmd = atoi(command.c_str());
-  // TODO(felt): Fix crbug.com/380829 and reinstate this code!
-  /*bool retval = base::StringToInt(command, &cmd);
-  DCHECK(retval);*/
+  int cmd = 0;
+  bool retval = base::StringToInt(command, &cmd);
+  DCHECK(retval);
   switch (cmd) {
     case CMD_DONT_PROCEED: {
       interstitial_page_->DontProceed();
