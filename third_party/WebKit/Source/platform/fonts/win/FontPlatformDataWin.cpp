@@ -91,14 +91,22 @@ static uint32_t getSystemTextFlags()
     if (!gInited) {
         BOOL enabled;
         gFlags = 0;
-        if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) && enabled) {
-            gFlags |= SkPaint::kAntiAlias_Flag;
+        if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0)) {
+            if (enabled) {
+                gFlags |= SkPaint::kAntiAlias_Flag;
 
-            UINT smoothType;
-            if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smoothType, 0)) {
-                if (FE_FONTSMOOTHINGCLEARTYPE == smoothType)
-                    gFlags |= SkPaint::kLCDRenderText_Flag;
+                UINT smoothType;
+                if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smoothType, 0)) {
+                    if (FE_FONTSMOOTHINGCLEARTYPE == smoothType)
+                        gFlags |= SkPaint::kLCDRenderText_Flag;
+                }
             }
+        } else {
+            // SystemParametersInfo will fail only under full sandbox lockdown on Win8+.
+            // So, we default to settings we know are supported and look good.
+            // FIXME(eae): We should be querying the DirectWrite settings directly
+            // so we can respect the settings for users who turn off smoothing.
+            gFlags = SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag;
         }
         gInited = true;
     }
