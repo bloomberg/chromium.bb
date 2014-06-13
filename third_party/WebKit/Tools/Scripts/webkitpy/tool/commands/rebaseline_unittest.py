@@ -1207,31 +1207,46 @@ class TestRebaselineOMatic(_BaseTestCase):
         self._logs.append({'log': log, 'newentry': is_new_entry})
 
     def test_run_logged_command(self):
+        self.command._verbose = False
         self.command._log_to_server = self._mock_log_to_server
         self.command._run_logged_command(['echo', 'foo'])
         self.assertEqual(self.tool.executive.calls, [['echo', 'foo']])
-        self.assertEqual(self._logs, [{'log': 'MOCK STDOUT\n', 'newentry': False}])
+        self.assertEqual(self._logs, [{'log': 'MOCK STDOUT', 'newentry': False}])
 
     def test_do_one_rebaseline(self):
+        self.command._verbose = False
         self.command._log_to_server = self._mock_log_to_server
-        self.command._do_one_rebaseline(verbose=False)
+
+        oc = OutputCapture()
+        oc.capture_output()
+        self.command._do_one_rebaseline()
+        out, _, _ = oc.restore_output()
+
+        self.assertEqual(out, '')
         self.assertEqual(self.tool.executive.calls, [
             ['git', 'pull'],
             ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline'],
         ])
         self.assertEqual(self._logs, [
             {'log': '', 'newentry': True},
-            {'log': 'MOCK STDOUT\n', 'newentry': False},
+            {'log': 'MOCK STDOUT', 'newentry': False},
         ])
 
     def test_do_one_rebaseline_verbose(self):
+        self.command._verbose = True
         self.command._log_to_server = self._mock_log_to_server
-        self.command._do_one_rebaseline(verbose=True)
+
+        oc = OutputCapture()
+        oc.capture_output()
+        self.command._do_one_rebaseline()
+        out, _, _ = oc.restore_output()
+
+        self.assertEqual(out, 'MOCK STDOUT\n')
         self.assertEqual(self.tool.executive.calls, [
             ['git', 'pull'],
             ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline', '--verbose'],
         ])
         self.assertEqual(self._logs, [
             {'log': '', 'newentry': True},
-            {'log': 'MOCK STDOUT\n', 'newentry': False},
+            {'log': 'MOCK STDOUT', 'newentry': False},
         ])

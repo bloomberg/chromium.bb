@@ -877,25 +877,36 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             query['newentry'] = 'on'
         urllib2.urlopen("http://" + self.LOG_SERVER + "/updatelog", data=urllib.urlencode(query))
 
+    def _log_line(self, handle):
+        out = handle.readline().rstrip('\n')
+        if out:
+            if self._verbose:
+                print out
+            self._log_to_server(out)
+        return out
+
+    def _log_remaining_lines(self, handle):
+        out = self._log_line(handle)
+        while out:
+            out = self._log_line(handle)
+
     def _run_logged_command(self, command):
         process = self._tool.executive.popen(command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.PIPE)
         while process.poll() == None:
             # FIXME: This should probably batch up lines if they're available and log to the server once.
-            out = process.stdout.readline()
-            if out:
-                self._log_to_server(out)
+            self._log_line(process.stdout)
+            self._log_line(process.stderr)
 
-            err = process.stderr.readline()
-            if err:
-                self._log_to_server(err)
+        self._log_remaining_lines(process.stdout)
+        self._log_remaining_lines(process.stderr)
 
-    def _do_one_rebaseline(self, verbose):
+    def _do_one_rebaseline(self):
         try:
             old_branch_name = self._tool.scm().current_branch()
             self._log_to_server(is_new_entry=True)
             self._run_logged_command(['git', 'pull'])
             rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
-            if verbose:
+            if self._verbose:
                 rebaseline_command.append('--verbose')
             self._run_logged_command(rebaseline_command)
         except:
@@ -904,6 +915,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             self._tool.scm().checkout_branch(old_branch_name)
 
     def execute(self, options, args, tool):
+        self._verbose = options.verbose
         while True:
-            self._do_one_rebaseline(options.verbose)
+            self._do_one_rebaseline()
             time.sleep(self.SLEEP_TIME_IN_SECONDS)
