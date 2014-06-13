@@ -156,9 +156,7 @@ def generate_content(component_dir, files_meta_data_this_partition):
     prev_conditional = None
     files_meta_data_this_partition.sort(key=lambda e: e['conditional'])
     for meta_data in files_meta_data_this_partition:
-        # FIXME: linking fails (in SVG) if conditionals occur
-        # conditional = meta_data['conditional']
-        conditional = None
+        conditional = meta_data['conditional']
         if prev_conditional != conditional:
             if prev_conditional:
                 output.append('#endif\n')
