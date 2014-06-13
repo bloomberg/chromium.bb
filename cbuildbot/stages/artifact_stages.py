@@ -451,8 +451,9 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
       for subpath in [os.path.join('bin'),
                       os.path.join('usr', 'bin'),
                       os.path.join('usr', 'sbin')]:
-        logging.warning(osutils.StatFilesInDirectory(debug_root, subpath),
-                        recursive=True, to_string=True)
+        logging.warning(osutils.StatFilesInDirectory(
+            os.path.join(debug_root, subpath),
+            recursive=True, to_string=True))
       raise
 
     self.UploadArtifact(filename, archive=False)
