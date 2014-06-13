@@ -11,6 +11,7 @@
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
+#include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 
 namespace net {
@@ -50,7 +51,8 @@ QuicConnectionVisitorInterface* QuicConnectionPeer::GetVisitor(
 // static
 QuicPacketCreator* QuicConnectionPeer::GetPacketCreator(
     QuicConnection* connection) {
-  return &connection->packet_creator_;
+  return QuicPacketGeneratorPeer::GetPacketCreator(
+      &connection->packet_generator_);
 }
 
 // static

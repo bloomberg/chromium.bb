@@ -294,7 +294,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 MockSession::MockSession(QuicConnection* connection)
     : QuicSession(connection, kInitialFlowControlWindowForTest,
                   DefaultQuicConfig()) {
-  ON_CALL(*this, WritevData(_, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 

@@ -373,6 +373,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
+  bool is_server() const { return is_server_; }
+
  private:
   friend class test::QuicFramerPeer;
 

@@ -10,6 +10,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
@@ -68,7 +69,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
         sequence_number_(0),
         connection_id_(2),
         data_("foo"),
-        creator_(connection_id_, &client_framer_, &mock_random_, false) {
+        creator_(connection_id_, &client_framer_, &mock_random_) {
     client_framer_.set_visitor(&framer_visitor_);
     client_framer_.set_received_entropy_calculator(&entropy_calculator_);
     server_framer_.set_visitor(&framer_visitor_);
@@ -727,7 +728,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
-  QuicPacketCreatorPeer::SetIsServer(&creator_, true);
+  QuicFramerPeer::SetIsServer(&client_framer_, true);
   QuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
   scoped_ptr<QuicEncryptedPacket> encrypted(
@@ -739,6 +740,7 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnVersionNegotiationPacket(_));
   }
+  QuicFramerPeer::SetIsServer(&client_framer_, false);
   client_framer_.ProcessPacket(*encrypted);
 }
 

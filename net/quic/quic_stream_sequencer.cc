@@ -11,6 +11,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "net/quic/reliable_quic_stream.h"
 
+using std::make_pair;
 using std::min;
 using std::numeric_limits;
 
@@ -35,6 +36,12 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     ++num_duplicate_frames_received_;
     // Silently ignore duplicates.
     return true;
+  }
+
+  if (FrameOverlapsBufferedData(frame)) {
+    stream_->CloseConnectionWithDetails(
+        QUIC_INVALID_STREAM_FRAME, "Stream frame overlaps with buffered data.");
+    return false;
   }
 
   QuicStreamOffset byte_offset = frame.offset;
@@ -182,8 +189,8 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   }
   // We've finished copying.  If we have a partial frame, update it.
   if (frame_offset != 0) {
-    buffered_frames_.insert(make_pair(it->first + frame_offset,
-                             it->second.substr(frame_offset)));
+    buffered_frames_.insert(
+        make_pair(it->first + frame_offset, it->second.substr(frame_offset)));
     buffered_frames_.erase(buffered_frames_.begin());
     RecordBytesConsumed(frame_offset);
   }
@@ -198,6 +205,42 @@ bool QuicStreamSequencer::HasBytesToRead() const {
 
 bool QuicStreamSequencer::IsClosed() const {
   return num_bytes_consumed_ >= close_offset_;
+}
+
+bool QuicStreamSequencer::FrameOverlapsBufferedData(
+    const QuicStreamFrame& frame) const {
+  if (buffered_frames_.empty()) {
+    return false;
+  }
+
+  FrameMap::const_iterator next_frame =
+      buffered_frames_.lower_bound(frame.offset);
+  // Duplicate frames should have been dropped in IsDuplicate.
+  DCHECK(next_frame == buffered_frames_.end() ||
+         next_frame->first != frame.offset);
+
+  // If there is a buffered frame with a higher starting offset, then we check
+  // to see if the new frame runs into the higher frame.
+  if (next_frame != buffered_frames_.end() &&
+      (frame.offset + frame.data.TotalBufferSize()) > next_frame->first) {
+    DVLOG(1) << "New frame overlaps next frame: " << frame.offset << " + "
+             << frame.data.TotalBufferSize() << " > " << next_frame->first;
+    return true;
+  }
+
+  // If there is a buffered frame with a lower starting offset, then we check
+  // to see if the buffered frame runs into the new frame.
+  if (next_frame != buffered_frames_.begin()) {
+    FrameMap::const_iterator preceeding_frame = --next_frame;
+    QuicStreamOffset offset = preceeding_frame->first;
+    uint64 data_length = preceeding_frame->second.length();
+    if ((offset + data_length) > frame.offset) {
+      DVLOG(1) << "Preceeding frame overlaps new frame: " << offset << " + "
+               << data_length << " > " << frame.offset;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {

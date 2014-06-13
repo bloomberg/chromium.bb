@@ -32,8 +32,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
-                    QuicRandom* random_generator,
-                    bool is_server);
+                    QuicRandom* random_generator);
 
   virtual ~QuicPacketCreator();
 
@@ -111,7 +110,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
   SerializedPacket ReserializeAllFrames(
-      const QuicFrames& frames, QuicSequenceNumberLength original_length);
+      const QuicFrames& frames,
+      QuicSequenceNumberLength original_length);
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
@@ -264,8 +264,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   bool should_fec_protect_;
   QuicFecGroupNumber fec_group_number_;
   scoped_ptr<QuicFecGroup> fec_group_;
-  // bool to keep track if this packet creator is being used the server.
-  bool is_server_;
   // Controls whether protocol version should be included while serializing the
   // packet.
   bool send_version_in_packet_;

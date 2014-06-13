@@ -23,7 +23,7 @@ class DefaultRandom : public QuicRandom {
                       size_t entropy_len) OVERRIDE;
 
  private:
-  DefaultRandom();
+  DefaultRandom() {};
   virtual ~DefaultRandom() {}
 
   friend struct DefaultSingletonTraits<DefaultRandom>;
@@ -46,9 +46,6 @@ uint64 DefaultRandom::RandUint64() {
 
 void DefaultRandom::Reseed(const void* additional_entropy, size_t entropy_len) {
   // No such function exists in crypto/random.h.
-}
-
-DefaultRandom::DefaultRandom() {
 }
 
 }  // namespace

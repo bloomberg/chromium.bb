@@ -33,11 +33,5 @@ QuicSequenceNumberLength QuicPacketCreatorPeer::GetSequenceNumberLength(
   return creator->sequence_number_length_;
 }
 
-// static
-void QuicPacketCreatorPeer::SetIsServer(QuicPacketCreator* creator,
-                                        bool is_server) {
-  creator->is_server_ = is_server;
-}
-
 }  // namespace test
 }  // namespace net

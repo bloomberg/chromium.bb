@@ -9,21 +9,14 @@
 
 namespace net {
 
+class QuicPacketCreator;
 class QuicPacketGenerator;
 
 namespace test {
 
 class QuicPacketGeneratorPeer {
  public:
-  static void MaybeStartFecProtection(QuicPacketGenerator* generator);
-
-  static void MaybeStopFecProtection(QuicPacketGenerator* generator,
-                                     bool force);
-
-  // Convenience method for connection and above. Enables and turns on FEC
-  // protection in the generator.
-  static void SwitchFecProtectionOn(QuicPacketGenerator* generator,
-                                    size_t max_packets_per_fec_group);
+  static QuicPacketCreator* GetPacketCreator(QuicPacketGenerator* generator);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGeneratorPeer);

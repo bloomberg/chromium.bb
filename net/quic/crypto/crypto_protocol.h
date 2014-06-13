@@ -25,90 +25,90 @@ namespace net {
 
 typedef std::string ServerConfigID;
 
-const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');  // Client hello
-const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');  // Server hello
-const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');  // Server config
-const QuicTag kREJ  = TAG('R', 'E', 'J', '\0'); // Reject
-const QuicTag kCETV = TAG('C', 'E', 'T', 'V');  // Client encrypted tag-value
-                                                // pairs
-const QuicTag kPRST = TAG('P', 'R', 'S', 'T');  // Public reset
+const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello
+const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');   // Server hello
+const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');   // Server config
+const QuicTag kREJ  = TAG('R', 'E', 'J', '\0');  // Reject
+const QuicTag kCETV = TAG('C', 'E', 'T', 'V');   // Client encrypted tag-value
+                                                 // pairs
+const QuicTag kPRST = TAG('P', 'R', 'S', 'T');   // Public reset
 
 // Key exchange methods
-const QuicTag kP256 = TAG('P', '2', '5', '6');  // ECDH, Curve P-256
-const QuicTag kC255 = TAG('C', '2', '5', '5');  // ECDH, Curve25519
+const QuicTag kP256 = TAG('P', '2', '5', '6');   // ECDH, Curve P-256
+const QuicTag kC255 = TAG('C', '2', '5', '5');   // ECDH, Curve25519
 
 // AEAD algorithms
-const QuicTag kNULL = TAG('N', 'U', 'L', 'N');  // null algorithm
-const QuicTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM-12
-const QuicTag kCC12 = TAG('C', 'C', '1', '2');  // ChaCha20 + Poly1305
+const QuicTag kNULL = TAG('N', 'U', 'L', 'N');   // null algorithm
+const QuicTag kAESG = TAG('A', 'E', 'S', 'G');   // AES128 + GCM-12
+const QuicTag kCC12 = TAG('C', 'C', '1', '2');   // ChaCha20 + Poly1305
 
 // Congestion control feedback types
-const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
-const QuicTag kPACE = TAG('P', 'A', 'C', 'E');  // Paced TCP cubic
-const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
+const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
+const QuicTag kPACE = TAG('P', 'A', 'C', 'E');   // Paced TCP cubic
+const QuicTag kINAR = TAG('I', 'N', 'A', 'R');   // Inter arrival
 
 // Congestion control options
-const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');  // Reduced Buffer Bloat TCP
+const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 
 // Loss detection algorithm types
-const QuicTag kNACK = TAG('N', 'A', 'C', 'K');  // TCP style nack counting
-const QuicTag kTIME = TAG('T', 'I', 'M', 'E');  // Time based
+const QuicTag kNACK = TAG('N', 'A', 'C', 'K');   // TCP style nack counting
+const QuicTag kTIME = TAG('T', 'I', 'M', 'E');   // Time based
 
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.
-const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate, all key
-                                                // types
-const QuicTag kX59R = TAG('X', '5', '9', 'R');  // X.509 certificate, RSA keys
-                                                // only
-const QuicTag kCHID = TAG('C', 'H', 'I', 'D');  // Channel ID.
+const QuicTag kX509 = TAG('X', '5', '0', '9');   // X.509 certificate, all key
+                                                 // types
+const QuicTag kX59R = TAG('X', '5', '9', 'R');   // X.509 certificate, RSA keys
+                                                 // only
+const QuicTag kCHID = TAG('C', 'H', 'I', 'D');   // Channel ID.
 
 // Client hello tags
-const QuicTag kVER  = TAG('V', 'E', 'R', '\0'); // Version (new)
-const QuicTag kNONC = TAG('N', 'O', 'N', 'C');  // The client's nonce
-const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');  // Key exchange methods
-const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');  // Authenticated
-                                                // encryption algorithms
-const QuicTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
-                                                // feedback types
-const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');  // Congestion control options
+const QuicTag kVER  = TAG('V', 'E', 'R', '\0');  // Version (new)
+const QuicTag kNONC = TAG('N', 'O', 'N', 'C');   // The client's nonce
+const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');   // Key exchange methods
+const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');   // Authenticated
+                                                 // encryption algorithms
+const QuicTag kCGST = TAG('C', 'G', 'S', 'T');   // Congestion control
+                                                 // feedback types
+const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Congestion control options
 // kLOSS was 'L', 'O', 'S', 'S', but was changed from a tag vector to a tag.
-const QuicTag kLOSS = TAG('L', 'O', 'S', 'A');  // Loss detection algorithms
-const QuicTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
-                                                // lifetime
-const QuicTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout
-const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');  // Max streams per connection.
-const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');  // Estimated initial RTT in us.
-const QuicTag kSWND = TAG('S', 'W', 'N', 'D');  // Server's Initial congestion
-                                                // window.
-const QuicTag kSNI  = TAG('S', 'N', 'I', '\0'); // Server name
-                                                // indication
-const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');  // Public key values
-const QuicTag kSCID = TAG('S', 'C', 'I', 'D');  // Server config id
-const QuicTag kORBT = TAG('O', 'B', 'I', 'T');  // Server orbit.
-const QuicTag kPDMD = TAG('P', 'D', 'M', 'D');  // Proof demand.
-const QuicTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
-const QuicTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
-const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
-const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
-const QuicTag kIFCW = TAG('I', 'F', 'C', 'W');  // Initial flow control receive
-                                                // window.
-const QuicTag kUAID = TAG('U', 'A', 'I', 'D');  // Client's User Agent ID.
+const QuicTag kLOSS = TAG('L', 'O', 'S', 'A');   // Loss detection algorithms
+const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle connection state
+                                                 // lifetime
+const QuicTag kKATO = TAG('K', 'A', 'T', 'O');   // Keepalive timeout
+const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');   // Max streams per connection.
+const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
+const QuicTag kSWND = TAG('S', 'W', 'N', 'D');   // Server's Initial congestion
+                                                 // window.
+const QuicTag kSNI  = TAG('S', 'N', 'I', '\0');  // Server name
+                                                 // indication
+const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');   // Public key values
+const QuicTag kSCID = TAG('S', 'C', 'I', 'D');   // Server config id
+const QuicTag kORBT = TAG('O', 'B', 'I', 'T');   // Server orbit.
+const QuicTag kPDMD = TAG('P', 'D', 'M', 'D');   // Proof demand.
+const QuicTag kPROF = TAG('P', 'R', 'O', 'F');   // Proof (signature).
+const QuicTag kCCS  = TAG('C', 'C', 'S', 0);     // Common certificate set
+const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');   // Cached certificate
+const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');   // Expiry
+const QuicTag kIFCW = TAG('I', 'F', 'C', 'W');   // Initial flow control receive
+                                                 // window.
+const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
 
 
 // Server hello tags
-const QuicTag kCADR = TAG('C', 'A', 'D', 'R');  // Client IP address and port
+const QuicTag kCADR = TAG('C', 'A', 'D', 'R');   // Client IP address and port
 
 // CETV tags
-const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');  // ChannelID key
-const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');  // ChannelID signature
+const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');   // ChannelID key
+const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');   // ChannelID signature
 
 // Public reset tags
-const QuicTag kRNON = TAG('R', 'N', 'O', 'N');  // Public reset nonce proof
-const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');  // Rejected sequence number
+const QuicTag kRNON = TAG('R', 'N', 'O', 'N');   // Public reset nonce proof
+const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected sequence number
 
 // Universal tags
-const QuicTag kPAD  = TAG('P', 'A', 'D', '\0'); // Padding
+const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding
 
 // These tags have a special form so that they appear either at the beginning
 // or the end of a handshake message. Since handshake messages are sorted by

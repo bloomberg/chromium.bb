@@ -24,8 +24,6 @@ class QuicPacketCreatorPeer {
   static QuicSequenceNumberLength GetSequenceNumberLength(
       QuicPacketCreator* creator);
 
-  static void SetIsServer(QuicPacketCreator* creator, bool is_server);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);
 };

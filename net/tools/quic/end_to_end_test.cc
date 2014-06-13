@@ -24,7 +24,6 @@
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -51,7 +50,6 @@ using base::WaitableEvent;
 using net::EpollServer;
 using net::test::GenerateBody;
 using net::test::QuicConnectionPeer;
-using net::test::QuicPacketGeneratorPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using net::test::kClientDataStreamId1;
@@ -639,6 +637,9 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
 }
 
 TEST_P(EndToEndTest, LargePostFEC) {
+  // TODO(jri): Set FecPolicy to always protect on client_->stream_.
+  // This test currently does not do any FEC protection.
+
   // Connect without packet loss to avoid issues with losing handshake packets,
   // and then up the packet loss rate (b/10126687).
   ASSERT_TRUE(Initialize());
@@ -647,10 +648,10 @@ TEST_P(EndToEndTest, LargePostFEC) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   SetPacketLossPercentage(30);
 
-  // Turn on FEC protection.
-  QuicPacketGeneratorPeer::SwitchFecProtectionOn(
-      QuicConnectionPeer::GetPacketGenerator(
-          client_->client()->session()->connection()), 6);
+  // Enable FEC protection.
+  QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
+      client_->client()->session()->connection());
+  creator->set_max_packets_per_fec_group(6);
 
   string body;
   GenerateBody(&body, 10240);
@@ -658,7 +659,6 @@ TEST_P(EndToEndTest, LargePostFEC) {
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");
   request.AddBody(body, true);
-
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   VerifyCleanConnection(true);
 }

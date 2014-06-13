@@ -57,8 +57,7 @@ class QuicRandomBoolSource {
 
 QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicFramer* framer,
-                                     QuicRandom* random_generator,
-                                     bool is_server)
+                                     QuicRandom* random_generator)
     : connection_id_(connection_id),
       encryption_level_(ENCRYPTION_NONE),
       framer_(framer),
@@ -66,8 +65,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       sequence_number_(0),
       should_fec_protect_(false),
       fec_group_number_(0),
-      is_server_(is_server),
-      send_version_in_packet_(!is_server),
+      send_version_in_packet_(!framer->is_server()),
       max_packet_length_(kDefaultMaxPacketSize),
       max_packets_per_fec_group_(0),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
@@ -416,7 +414,7 @@ SerializedPacket QuicPacketCreator::SerializeConnectionClose(
 
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
-  DCHECK(is_server_);
+  DCHECK(framer_->is_server());
   QuicPacketPublicHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;

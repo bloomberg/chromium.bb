@@ -230,7 +230,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
-  // if the socket was unexpectedly blocked.
+  // if the socket was unexpectedly blocked. |fec_protection| indicates if
+  // data is to be FEC protected. Note that data that is sent immediately
+  // following MUST_FEC_PROTECT data may get protected by falling within the
+  // same FEC group.
   // If |delegate| is provided, then it will be informed once ACKs have been
   // received for all the packets written in this call.
   // The |delegate| is not owned by the QuicConnection and must outlive it.
@@ -238,6 +241,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                   const IOVector& data,
                                   QuicStreamOffset offset,
                                   bool fin,
+                                  FecProtection fec_protection,
                                   QuicAckNotifier::DelegateInterface* delegate);
 
   // Send a RST_STREAM frame to the peer.
@@ -356,12 +360,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnectionId connection_id() const { return connection_id_; }
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
-  size_t max_packet_length() const {
-    return packet_creator_.max_packet_length();
-  }
-  void set_max_packet_length(size_t length) {
-    return packet_creator_.set_max_packet_length(length);
-  }
+  size_t max_packet_length() const;
+  void set_max_packet_length(size_t length);
 
   bool connected() const { return connected_; }
 
@@ -702,7 +702,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitor* debug_visitor_;
-  QuicPacketCreator packet_creator_;
   QuicPacketGenerator packet_generator_;
 
   // Network idle time before we kill of this connection.

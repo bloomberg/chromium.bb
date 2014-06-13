@@ -150,12 +150,13 @@ class TestSession : public QuicSession {
       const IOVector& data,
       QuicStreamOffset offset,
       bool fin,
+      FecProtection fec_protection,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate) OVERRIDE {
     // Always consumes everything.
     if (writev_consumes_all_data_) {
       return QuicConsumedData(data.TotalBufferSize(), fin);
     } else {
-      return QuicSession::WritevData(id, data, offset, fin,
+      return QuicSession::WritevData(id, data, offset, fin, fec_protection,
                                      ack_notifier_delegate);
     }
   }
@@ -165,7 +166,7 @@ class TestSession : public QuicSession {
   }
 
   QuicConsumedData SendStreamData(QuicStreamId id) {
-    return WritevData(id, IOVector(), 0, true, NULL);
+    return WritevData(id, IOVector(), 0, true, MAY_FEC_PROTECT, NULL);
   }
 
   using QuicSession::PostProcessAfterData;
@@ -575,15 +576,14 @@ TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
 }
 
 TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
-  QuicStreamId stream_id1 = kClientDataStreamId1;
   // Send two bytes of payload.
-  QuicStreamFrame data1(stream_id1, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   session_.OnStreamFrames(frames);
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
-  QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
+  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
   // Connection should remain alive.
@@ -668,7 +668,10 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   session_.OnConfigNegotiated();
 }
 
+
 TEST_P(QuicSessionTest, InvalidFlowControlWindow) {
+  // Test that an attempt to create a QuicSession with an invalid (< default)
+  // flow control window results in a QuicSession using the default.
   QuicConnection* connection =
       new MockConnection(true, SupportedVersions(GetParam()));
 
@@ -823,6 +826,34 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
             session_.flow_controller()->bytes_consumed());
   EXPECT_EQ(kInitialConnectionHighestReceivedOffset + kByteOffset,
             session_.flow_controller()->highest_received_byte_offset());
+}
+
+TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
+  // Test that if we receive a stream RST with a highest byte offset that
+  // violates flow control, that we close the connection.
+  if (version() < QUIC_VERSION_17) {
+    return;
+  }
+  FLAGS_enable_quic_stream_flow_control_2 = true;
+  FLAGS_enable_quic_connection_flow_control = true;
+
+  const uint64 kLargeOffset = kInitialFlowControlWindowForTest + 1;
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA))
+      .Times(2);
+
+  // Check that stream frame + FIN results in connection close.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+  stream->Reset(QUIC_STREAM_CANCELLED);
+  QuicStreamFrame frame(stream->id(), true, kLargeOffset, IOVector());
+  vector<QuicStreamFrame> frames;
+  frames.push_back(frame);
+  session_.OnStreamFrames(frames);
+
+  // Check that RST results in connection close.
+  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
+                               kLargeOffset);
+  session_.OnRstStream(rst_frame);
 }
 
 TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {

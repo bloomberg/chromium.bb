@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using std::map;
 using std::min;
 using std::pair;
 using std::vector;
@@ -377,6 +378,66 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
 
     list_.erase(list_.begin() + index);
   }
+}
+
+TEST_F(QuicStreamSequencerTest, FrameOverlapsBufferedData) {
+  // Ensure that FrameOverlapsBufferedData returns appropriate responses when
+  // there is existing data buffered.
+
+  map<QuicStreamOffset, string>* buffered_frames =
+      QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get());
+
+  const int kBufferedOffset = 10;
+  const int kBufferedDataLength = 3;
+  const int kNewDataLength = 3;
+  IOVector data = MakeIOVector(string(kNewDataLength, '.'));
+
+  // No overlap if no buffered frames.
+  EXPECT_TRUE(buffered_frames_->empty());
+  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset - 1, data)));
+
+  // Add a buffered frame.
+  buffered_frames->insert(
+      make_pair(kBufferedOffset, string(kBufferedDataLength, '.')));
+
+  // New byte range partially overlaps with buffered frame, start offset
+  // preceeding buffered frame.
+  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset - 1, data)));
+  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength + 1, data)));
+
+  // New byte range partially overlaps with buffered frame, start offset
+  // inside existing buffered frame.
+  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset + 1, data)));
+  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(QuicStreamFrame(
+      1, false, kBufferedOffset + kBufferedDataLength - 1, data)));
+
+  // New byte range entirely outside of buffered frames, start offset preceeding
+  // buffered frame.
+  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(
+      QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength, data)));
+
+  // New byte range entirely outside of buffered frames, start offset later than
+  // buffered frame.
+  EXPECT_FALSE(sequencer_->FrameOverlapsBufferedData(QuicStreamFrame(
+      1, false, kBufferedOffset + kBufferedDataLength, data)));
+}
+
+TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
+  // The peer should never send us non-identical stream frames which contain
+  // overlapping byte ranges - if they do, we close the connection.
+
+  QuicStreamFrame frame1(kClientDataStreamId1, false, 1, MakeIOVector("hello"));
+  sequencer_->OnStreamFrame(frame1);
+
+  QuicStreamFrame frame2(kClientDataStreamId1, false, 2, MakeIOVector("hello"));
+  EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(frame2));
+  EXPECT_CALL(stream_, CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _))
+      .Times(1);
+  sequencer_->OnStreamFrame(frame2);
 }
 
 }  // namespace

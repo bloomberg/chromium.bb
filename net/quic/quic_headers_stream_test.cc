@@ -126,7 +126,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
                                 QuicPriority priority,
                                 SpdyFrameType type) {
     // Write the headers and capture the outgoing data
-    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, NULL))
+    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, _, NULL))
         .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     headers_stream_->WriteHeaders(stream_id, headers_, fin, NULL);
 

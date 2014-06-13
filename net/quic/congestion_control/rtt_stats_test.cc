@@ -31,14 +31,32 @@ TEST_F(RttStatsTest, MinRtt) {
                        QuicTime::Delta::Zero(),
                        QuicTime::Zero());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
+            rtt_stats_.recent_min_rtt());
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(10),
                        QuicTime::Delta::Zero(),
-                       QuicTime::Zero());
+                       QuicTime::Zero().Add(
+                           QuicTime::Delta::FromMilliseconds(10)));
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.recent_min_rtt());
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(50),
                        QuicTime::Delta::Zero(),
-                       QuicTime::Zero());
+                       QuicTime::Zero().Add(
+                           QuicTime::Delta::FromMilliseconds(20)));
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.recent_min_rtt());
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(50),
+                       QuicTime::Delta::Zero(),
+                       QuicTime::Zero().Add(
+                           QuicTime::Delta::FromMilliseconds(30)));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.recent_min_rtt());
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(50),
+                       QuicTime::Delta::Zero(),
+                       QuicTime::Zero().Add(
+                           QuicTime::Delta::FromMilliseconds(40)));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.recent_min_rtt());
 }
 
 TEST_F(RttStatsTest, RecentMinRtt) {

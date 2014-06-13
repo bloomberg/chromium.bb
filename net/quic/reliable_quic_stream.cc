@@ -360,8 +360,10 @@ QuicConsumedData ReliableQuicStream::WritevData(
   IOVector data;
   data.AppendIovecAtMostBytes(iov, iov_count, write_length);
 
+  // TODO(jri): Use the correct FecProtection based on FecPolicy on stream.
   QuicConsumedData consumed_data = session()->WritevData(
-      id(), data, stream_bytes_written_, fin, ack_notifier_delegate);
+      id(), data, stream_bytes_written_, fin, MAY_FEC_PROTECT,
+      ack_notifier_delegate);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
   AddBytesSent(consumed_data.bytes_consumed);

@@ -365,8 +365,9 @@ QuicConsumedData QuicSession::WritevData(
     const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
+    FecProtection fec_protection,
     QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
-  return connection_->SendStreamData(id, data, offset, fin,
+  return connection_->SendStreamData(id, data, offset, fin, fec_protection,
                                      ack_notifier_delegate);
 }
 
@@ -451,7 +452,8 @@ void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
       flow_controller_->highest_received_byte_offset() + offset_diff)) {
     // If the final offset violates flow control, close the connection now.
     if (flow_controller_->FlowControlViolation()) {
-      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA);
+      connection_->SendConnectionClose(
+          QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA);
       return;
     }
   }

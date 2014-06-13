@@ -326,11 +326,12 @@ class MockSession : public QuicSession {
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
-  MOCK_METHOD5(WritevData,
+  MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
                                 const IOVector& data,
                                 QuicStreamOffset offset,
                                 bool fin,
+                                FecProtection fec_protection,
                                 QuicAckNotifier::DelegateInterface*));
   MOCK_METHOD2(OnStreamHeaders, void(QuicStreamId stream_id,
                                      base::StringPiece headers_data));

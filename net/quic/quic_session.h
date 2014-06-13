@@ -96,7 +96,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
-  // if the socket was unexpectedly blocked.
+  // if the socket was unexpectedly blocked.  |fec_protection| indicates if
+  // data is to be FEC protected. Note that data that is sent immediately
+  // following MUST_FEC_PROTECT data may get protected by falling within the
+  // same FEC group.
   // If provided, |ack_notifier_delegate| will be registered to be notified when
   // we have seen ACKs for all packets resulting from this call.
   virtual QuicConsumedData WritevData(
@@ -104,6 +107,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       const IOVector& data,
       QuicStreamOffset offset,
       bool fin,
+      FecProtection fec_protection,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.

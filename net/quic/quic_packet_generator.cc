@@ -15,12 +15,13 @@ namespace net {
 
 class QuicAckNotifier;
 
-QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
-                                         DebugDelegate* debug_delegate,
-                                         QuicPacketCreator* creator)
+QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
+                                         QuicFramer* framer,
+                                         QuicRandom* random_generator,
+                                         DelegateInterface* delegate)
     : delegate_(delegate),
-      debug_delegate_(debug_delegate),
-      packet_creator_(creator),
+      debug_delegate_(NULL),
+      packet_creator_(connection_id, framer, random_generator),
       batch_mode_(false),
       should_fec_protect_(false),
       should_send_ack_(false),
@@ -93,6 +94,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   const IOVector& data_to_write,
                                                   QuicStreamOffset offset,
                                                   bool fin,
+                                                  FecProtection fec_protection,
                                                   QuicAckNotifier* notifier) {
   IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
   SendQueuedFrames(false);
@@ -100,8 +102,12 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
-  if (!packet_creator_->HasRoomForStreamFrame(id, offset)) {
+  if (!packet_creator_.HasRoomForStreamFrame(id, offset)) {
     SerializeAndSendPacket();
+  }
+
+  if (fec_protection == MUST_FEC_PROTECT) {
+    MaybeStartFecProtection();
   }
 
   IOVector data = data_to_write;
@@ -112,10 +118,10 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     size_t bytes_consumed;
     if (notifier != NULL) {
       // We want to track which packet this stream frame ends up in.
-      bytes_consumed = packet_creator_->CreateStreamFrameWithNotifier(
+      bytes_consumed = packet_creator_.CreateStreamFrameWithNotifier(
           id, data, offset + total_bytes_consumed, fin, notifier, &frame);
     } else {
-      bytes_consumed = packet_creator_->CreateStreamFrame(
+      bytes_consumed = packet_creator_.CreateStreamFrame(
           id, data, offset + total_bytes_consumed, fin, &frame);
     }
     if (!AddFrame(frame)) {
@@ -129,10 +135,10 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && total_bytes_consumed == data_size;
     data.Consume(bytes_consumed);
-    DCHECK(data.Empty() || packet_creator_->BytesFree() == 0u);
+    DCHECK(data.Empty() || packet_creator_.BytesFree() == 0u);
 
     // TODO(ianswett): Restore packet reordering.
-    if (!InBatchMode() || !packet_creator_->HasRoomForStreamFrame(id, offset)) {
+    if (!InBatchMode() || !packet_creator_.HasRoomForStreamFrame(id, offset)) {
       SerializeAndSendPacket();
     }
 
@@ -140,6 +146,11 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.
+      if (fec_protection == MUST_FEC_PROTECT) {
+        // Turn off FEC protection when we're done writing protected data.
+        DVLOG(1) << "Turning FEC protection OFF";
+        should_fec_protect_ = false;
+      }
       break;
     }
   }
@@ -148,7 +159,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   // blocked. If not in batch mode, force close the group.
   MaybeSendFecPacketAndCloseGroup(!InBatchMode());
 
-  DCHECK(InBatchMode() || !packet_creator_->HasPendingFrames());
+  DCHECK(InBatchMode() || !packet_creator_.HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
@@ -175,7 +186,7 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
   }
 
   if (!InBatchMode() || flush) {
-    if (packet_creator_->HasPendingFrames()) {
+    if (packet_creator_.HasPendingFrames()) {
       SerializeAndSendPacket();
     }
     // Ensure the FEC group is closed at the end of this method unless other
@@ -185,12 +196,12 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
 }
 
 void QuicPacketGenerator::MaybeStartFecProtection() {
-  if (!packet_creator_->IsFecEnabled()) {
+  if (!packet_creator_.IsFecEnabled()) {
     return;
   }
   DVLOG(1) << "Turning FEC protection ON";
   should_fec_protect_ = true;
-  if (packet_creator_->IsFecProtected()) {
+  if (packet_creator_.IsFecProtected()) {
     // Only start creator's FEC protection if not already on.
     return;
   }
@@ -202,28 +213,21 @@ void QuicPacketGenerator::MaybeStartFecProtection() {
     // frame to be added to the packet.
     SendQueuedFrames(true);
   }
-  packet_creator_->StartFecProtectingPackets();
-  DCHECK(packet_creator_->IsFecProtected());
-}
-
-void QuicPacketGenerator::MaybeStopFecProtection(bool force) {
-  DVLOG(1) << "Turning FEC protection OFF";
-  // FEC protection will stop after the next FEC packet is transmitted.
-  should_fec_protect_ = false;
-  MaybeSendFecPacketAndCloseGroup(force);
+  packet_creator_.StartFecProtectingPackets();
+  DCHECK(packet_creator_.IsFecProtected());
 }
 
 void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force) {
-  if (!packet_creator_->IsFecProtected() ||
-      packet_creator_->HasPendingFrames()) {
+  if (!packet_creator_.IsFecProtected() ||
+      packet_creator_.HasPendingFrames()) {
     return;
   }
 
-  if (packet_creator_->ShouldSendFec(force)) {
+  if (packet_creator_.ShouldSendFec(force)) {
     // TODO(jri): SerializeFec can return a NULL packet, and this should
     // cause an early return, with a call to
     // delegate_->OnPacketGenerationError.
-    SerializedPacket serialized_fec = packet_creator_->SerializeFec();
+    SerializedPacket serialized_fec = packet_creator_.SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);
   }
@@ -231,9 +235,9 @@ void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force) {
   // Turn FEC protection off if the creator does not have an FEC group open.
   // Note: We only wait until the frames queued in the creator are flushed;
   // pending frames in the generator will not keep us from turning FEC off.
-  if (!should_fec_protect_ && !packet_creator_->IsFecGroupOpen()) {
-    packet_creator_->StopFecProtectingPackets();
-    DCHECK(!packet_creator_->IsFecProtected());
+  if (!should_fec_protect_ && !packet_creator_.IsFecGroupOpen()) {
+    packet_creator_.StopFecProtectingPackets();
+    DCHECK(!packet_creator_.IsFecProtected());
   }
 }
 
@@ -255,7 +259,7 @@ void QuicPacketGenerator::FlushAllQueuedFrames() {
 }
 
 bool QuicPacketGenerator::HasQueuedFrames() const {
-  return packet_creator_->HasPendingFrames() || HasPendingFrames();
+  return packet_creator_.HasPendingFrames() || HasPendingFrames();
 }
 
 bool QuicPacketGenerator::HasPendingFrames() const {
@@ -303,7 +307,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 }
 
 bool QuicPacketGenerator::AddFrame(const QuicFrame& frame) {
-  bool success = packet_creator_->AddSavedFrame(frame);
+  bool success = packet_creator_.AddSavedFrame(frame);
   if (success && debug_delegate_) {
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
@@ -311,10 +315,48 @@ bool QuicPacketGenerator::AddFrame(const QuicFrame& frame) {
 }
 
 void QuicPacketGenerator::SerializeAndSendPacket() {
-  SerializedPacket serialized_packet = packet_creator_->SerializePacket();
+  SerializedPacket serialized_packet = packet_creator_.SerializePacket();
   DCHECK(serialized_packet.packet);
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(false);
+}
+
+void QuicPacketGenerator::StopSendingVersion() {
+  packet_creator_.StopSendingVersion();
+}
+
+QuicPacketSequenceNumber QuicPacketGenerator::sequence_number() const {
+  return packet_creator_.sequence_number();
+}
+
+size_t QuicPacketGenerator::max_packet_length() const {
+  return packet_creator_.max_packet_length();
+}
+
+void QuicPacketGenerator::set_max_packet_length(size_t length) {
+  packet_creator_.set_max_packet_length(length);
+}
+
+QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
+    const QuicVersionVector& supported_versions) {
+  return packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
+}
+
+SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
+    const QuicFrames& frames,
+    QuicSequenceNumberLength original_length) {
+  return packet_creator_.ReserializeAllFrames(frames, original_length);
+}
+
+void QuicPacketGenerator::UpdateSequenceNumberLength(
+      QuicPacketSequenceNumber least_packet_awaited_by_peer,
+      QuicByteCount congestion_window) {
+  return packet_creator_.UpdateSequenceNumberLength(
+      least_packet_awaited_by_peer, congestion_window);
+}
+
+void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
+  packet_creator_.set_encryption_level(level);
 }
 
 }  // namespace net

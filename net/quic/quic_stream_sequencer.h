@@ -58,6 +58,10 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequencer has received this frame before.
   bool IsDuplicate(const QuicStreamFrame& frame) const;
 
+  // Returns true if |frame| contains data which overlaps buffered data
+  // (indicating an invalid stream frame has been received).
+  bool FrameOverlapsBufferedData(const QuicStreamFrame& frame) const;
+
   // Calls |ProcessRawData| on |stream_| for each buffered frame that may
   // be processed.
   void FlushBufferedFrames();
@@ -95,6 +99,10 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   QuicStreamOffset num_bytes_consumed_;
 
   // TODO(alyssar) use something better than strings.
+  // TODO(rjshade): In future we may support retransmission of partial stream
+  // frames, in which case we will have to allow receipt of overlapping frames.
+  // Maybe write new frames into a ring buffer, and keep track of consumed
+  // bytes, and gaps.
   typedef map<QuicStreamOffset, string> FrameMap;
 
   // Stores buffered frames (maps from sequence number -> frame data as string).

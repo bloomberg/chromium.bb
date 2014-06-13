@@ -303,7 +303,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
   GenerateBody(&body, kWindow + kOverflow);
 
   EXPECT_CALL(*connection_, SendBlocked(kClientDataStreamId1));
-  EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow, true)));
   stream_->WriteOrBufferData(body, false, NULL);
 
@@ -560,7 +560,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
   bool fin = true;
 
   EXPECT_CALL(*connection_, SendBlocked(kClientDataStreamId1)).Times(0);
-  EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(kClientDataStreamId1, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, fin)));
 
   stream_->WriteOrBufferData(body, fin, NULL);

@@ -26,7 +26,7 @@ RttStats::RttStats()
       mean_deviation_(QuicTime::Delta::Zero()),
       initial_rtt_us_(kInitialRttMs * base::Time::kMicrosecondsPerMillisecond),
       num_min_rtt_samples_remaining_(0),
-      recent_min_rtt_window_(QuicTime::Delta::Zero()) { }
+      recent_min_rtt_window_(QuicTime::Delta::Infinite()) {}
 
 bool RttStats::HasUpdates() const {
   return !smoothed_rtt_.IsZero();

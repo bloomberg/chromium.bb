@@ -109,8 +109,8 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     return error;
   }
   if (hello_type == SERVER && value > max_value_) {
-    *error_details = "Invalid value received for " +
-        QuicUtils::TagToString(tag_);
+    *error_details =
+        "Invalid value received for " + QuicUtils::TagToString(tag_);
     return QUIC_INVALID_NEGOTIATED_VALUE;
   }
 
@@ -228,7 +228,8 @@ bool QuicFixedUint32::HasSendValue() const {
 }
 
 uint32 QuicFixedUint32::GetSendValue() const {
-  LOG_IF(DFATAL, !has_send_value_) << "No send value to get for tag:" << tag_;
+  LOG_IF(DFATAL, !has_send_value_)
+      << "No send value to get for tag:" << QuicUtils::TagToString(tag_);
   return send_value_;
 }
 
@@ -243,7 +244,7 @@ bool QuicFixedUint32::HasReceivedValue() const {
 
 uint32 QuicFixedUint32::GetReceivedValue() const {
   LOG_IF(DFATAL, !has_receive_value_)
-      << "No receive value to get for tag:" << tag_;
+      << "No receive value to get for tag:" << QuicUtils::TagToString(tag_);
   return receive_value_;
 }
 
@@ -295,7 +296,8 @@ bool QuicFixedTag::HasSendValue() const {
 }
 
 uint32 QuicFixedTag::GetSendValue() const {
-  LOG_IF(DFATAL, !has_send_value_) << "No send value to get for tag:" << tag_;
+  LOG_IF(DFATAL, !has_send_value_)
+      << "No send value to get for tag:" << QuicUtils::TagToString(tag_);
   return send_value_;
 }
 
@@ -310,7 +312,7 @@ bool QuicFixedTag::HasReceivedValue() const {
 
 uint32 QuicFixedTag::GetReceivedValue() const {
   LOG_IF(DFATAL, !has_receive_value_)
-      << "No receive value to get for tag:" << tag_;
+      << "No receive value to get for tag:" << QuicUtils::TagToString(tag_);
   return receive_value_;
 }
 
@@ -362,7 +364,8 @@ bool QuicFixedTagVector::HasSendValues() const {
 }
 
 QuicTagVector QuicFixedTagVector::GetSendValues() const {
-  LOG_IF(DFATAL, !has_send_values_) << "No send values to get for tag:" << tag_;
+  LOG_IF(DFATAL, !has_send_values_)
+      << "No send values to get for tag:" << QuicUtils::TagToString(tag_);
   return send_values_;
 }
 
@@ -377,7 +380,7 @@ bool QuicFixedTagVector::HasReceivedValues() const {
 
 QuicTagVector QuicFixedTagVector::GetReceivedValues() const {
   LOG_IF(DFATAL, !has_receive_values_)
-      << "No receive value to get for tag:" << tag_;
+      << "No receive value to get for tag:" << QuicUtils::TagToString(tag_);
   return receive_values_;
 }
 

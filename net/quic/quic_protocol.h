@@ -155,6 +155,12 @@ enum IsHandshake {
   IS_HANDSHAKE
 };
 
+// Indicates FEC protection level for data being written.
+enum FecProtection {
+  MUST_FEC_PROTECT,  // Callee must FEC protect this data.
+  MAY_FEC_PROTECT  // Callee does not have to but may FEC protect this data.
+};
+
 enum QuicFrameType {
   // Regular frame types. The values set here cannot change without the
   // introduction of a new QUIC version.

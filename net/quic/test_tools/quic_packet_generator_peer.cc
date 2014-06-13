@@ -11,23 +11,9 @@ namespace net {
 namespace test {
 
 // static
-void QuicPacketGeneratorPeer::MaybeStartFecProtection(
+QuicPacketCreator* QuicPacketGeneratorPeer::GetPacketCreator(
     QuicPacketGenerator* generator) {
-  generator->MaybeStartFecProtection();
-}
-
-// static
-void QuicPacketGeneratorPeer::MaybeStopFecProtection(
-    QuicPacketGenerator* generator, bool force) {
-  generator->MaybeStopFecProtection(force);
-}
-
-// static
-void QuicPacketGeneratorPeer::SwitchFecProtectionOn(
-  QuicPacketGenerator* generator, size_t max_packets_per_fec_group) {
-  generator->packet_creator_->set_max_packets_per_fec_group(
-      max_packets_per_fec_group);
-  generator->MaybeStartFecProtection();
+  return &generator->packet_creator_;
 }
 
 }  // namespace test
