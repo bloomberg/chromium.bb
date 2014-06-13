@@ -610,7 +610,7 @@ def main(argv):
   ld_args = env.get('LD_ARGS')
   ld_flags = env.get('LD_FLAGS')
 
-  RunDriver('ld', ld_flags + ld_args + ['-o', output])
+  RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
 
 def IsFlag(f):
@@ -641,12 +641,13 @@ def RunLLVMAS(infile, output):
     infile = '-'
   # This is a bitcode only step - so get rid of "-arch xxx" which
   # might be inherited from the current invocation
-  RunDriver('as', [infile, '-o', output], suppress_inherited_arch_args=True)
+  RunDriver('pnacl-as', [infile, '-o', output],
+            suppress_inherited_arch_args=True)
 
 def RunNativeAS(infile, output):
   if IsStdinInput(infile):
     infile = '-'
-  RunDriver('as', [infile, '-o', output])
+  RunDriver('pnacl-as', [infile, '-o', output])
 
 def RunTranslate(infile, output, mode):
   if not env.getbool('ALLOW_TRANSLATE'):
@@ -658,13 +659,13 @@ def RunTranslate(infile, output, mode):
                                        infile, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']
-  RunDriver('translate', args)
+  RunDriver('pnacl-translate', args)
 
 
 def RunOpt(infile, outfile, pass_list):
   filtered_list = [pass_option for pass_option in pass_list
                    if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
-  RunDriver('opt', filtered_list + [infile, '-o', outfile])
+  RunDriver('pnacl-opt', filtered_list + [infile, '-o', outfile])
 
 
 def SetupChain(chain, input_type, output_type):

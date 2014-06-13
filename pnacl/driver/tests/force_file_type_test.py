@@ -62,7 +62,7 @@ class TestForceFileType(unittest.TestCase):
       return
     temp_out = pathtools.normalize(tempfile.NamedTemporaryFile().name)
     driver_temps.TempFiles.add(temp_out)
-    driver_tools.RunDriver('clang', flags + ['-o', temp_out])
+    driver_tools.RunDriver('pnacl-clang', flags + ['-o', temp_out])
     output = open(temp_out, 'r').read()
     for e in expected:
       self.assertTrue(re.search(e, output),
@@ -102,7 +102,7 @@ class TestForceFileType(unittest.TestCase):
     sys.exit = driver_test_utils.FakeExit
     self.assertRaises(driver_test_utils.DriverExitException,
                       driver_tools.RunDriver,
-                      'clang',
+                      'pnacl-clang',
                       ['-E', '-x', 'c', '-x', 'none', os.devnull, '-dM'])
     driver_log.Log.ResetStreams()
     out = capture_out.getvalue()

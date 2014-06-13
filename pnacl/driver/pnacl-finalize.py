@@ -58,10 +58,10 @@ def main(argv):
   opt_flags = ['-disable-opt', '-strip', '-strip-metadata',
                '--bitcode-format=pnacl', f_input, '-o', f_output]
   # Transform the file, and convert it to a PNaCl bitcode file.
-  driver_tools.RunDriver('opt', opt_flags)
+  driver_tools.RunDriver('pnacl-opt', opt_flags)
   # Compress the result if requested.
   if env.getbool('COMPRESS'):
-    driver_tools.RunDriver('compress', [f_output])
+    driver_tools.RunDriver('pnacl-compress', [f_output])
   return 0
 
 

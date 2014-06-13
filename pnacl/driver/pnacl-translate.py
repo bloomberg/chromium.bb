@@ -366,7 +366,7 @@ def main(argv):
   return 0
 
 def RunAS(infile, outfile):
-  driver_tools.RunDriver('as', [infile, '-o', outfile])
+  driver_tools.RunDriver('pnacl-as', [infile, '-o', outfile])
 
 def ListReplace(items, old, new):
   ret = []
@@ -391,7 +391,7 @@ def RunLD(infile, outfile):
   if env.getbool('USE_STDLIB'):
     args += env.get('LD_ARGS_ENTRY')
   args += env.get('LD_FLAGS')
-  driver_tools.RunDriver('nativeld', args)
+  driver_tools.RunDriver('pnacl-nativeld', args)
 
 def RunHostLD(infile, outfile):
   if env.getone('TARGET_OS') == 'linux':

@@ -40,7 +40,7 @@ class TestDiagnosticFlags(unittest.TestCase):
     """
     capture_out = cStringIO.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
-    driver_tools.RunDriver('clang', flags + [pnacl_flag])
+    driver_tools.RunDriver('pnacl-clang', flags + [pnacl_flag])
     driver_log.Log.ResetStreams()
     out = capture_out.getvalue()
     lines = out.splitlines()

@@ -44,7 +44,7 @@ void foo%d(void) {
     args = ['-c', '-g', src.name, '-o', obj.name]
     if is_native:
       args += ['-arch', 'x86-32', '--pnacl-allow-translate']
-    driver_tools.RunDriver('clang', args)
+    driver_tools.RunDriver('pnacl-clang', args)
     return obj
 
   def generateArchive(self, objs):
@@ -54,7 +54,7 @@ void foo%d(void) {
     os.remove(a.name)
     obj_names = [ obj.name for obj in objs]
     args = ['rcs', a.name] + obj_names
-    driver_tools.RunDriver('ar', args)
+    driver_tools.RunDriver('pnacl-ar', args)
     return a
 
   def getFileSize(self, f):
@@ -63,11 +63,11 @@ void foo%d(void) {
 
   def stripFileAndCheck(self, f):
     f_stripped = self.getTemp()
-    driver_tools.RunDriver('strip',
+    driver_tools.RunDriver('pnacl-strip',
         ['--strip-all', f.name, '-o', f_stripped.name])
     self.assertTrue(self.getFileSize(f_stripped.name) <
                     self.getFileSize(f.name))
-    driver_tools.RunDriver('strip',
+    driver_tools.RunDriver('pnacl-strip',
         ['--strip-debug', f.name, '-o', f_stripped.name])
     self.assertTrue(self.getFileSize(f_stripped.name) <
                     self.getFileSize(f.name))

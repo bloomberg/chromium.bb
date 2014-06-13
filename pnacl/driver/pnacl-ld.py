@@ -563,16 +563,16 @@ def DoLLVMPasses(pass_list):
   def Func(infile, outfile):
     filtered_list = [pass_option for pass_option in pass_list
                      if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
-    RunDriver('opt', filtered_list + [infile, '-o', outfile])
+    RunDriver('pnacl-opt', filtered_list + [infile, '-o', outfile])
   return Func
 
 def DoLTO(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')
-  RunDriver('opt', opt_flags + [ infile, '-o', outfile ])
+  RunDriver('pnacl-opt', opt_flags + [ infile, '-o', outfile ])
 
 def DoStrip(infile, outfile):
   strip_flags = env.get('STRIP_FLAGS')
-  RunDriver('strip', strip_flags + [ infile, '-o', outfile ])
+  RunDriver('pnacl-strip', strip_flags + [ infile, '-o', outfile ])
 
 def DoTranslate(infile, outfile):
   args = env.get('TRANSLATE_FLAGS')
@@ -582,7 +582,7 @@ def DoTranslate(infile, outfile):
   args += ['-Wl,'+s if ldtools.IsFlag(s) else s
            for s in env.get('NATIVE_OBJECTS')]
   args += ['-o', outfile]
-  RunDriver('translate', args)
+  RunDriver('pnacl-translate', args)
 
 def LinkBC(inputs, output):
   '''Input: a bunch of bc/o/lib input files

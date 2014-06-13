@@ -66,15 +66,15 @@ define i32 @main() {
 }
 ''')
         t.close()
-        driver_tools.RunDriver('as', [t.name, '-o', p.name])
-        driver_tools.RunDriver('finalize', [p.name])
+        driver_tools.RunDriver('pnacl-as', [t.name, '-o', p.name])
+        driver_tools.RunDriver('pnacl-finalize', [p.name])
         return p
 
   def test_multiple_compresses(self):
     pexe = self.getFakePexe()
     init_size = pathtools.getsize(pexe.name)
-    driver_tools.RunDriver('compress', [pexe.name])
+    driver_tools.RunDriver('pnacl-compress', [pexe.name])
     shrunk_size = pathtools.getsize(pexe.name)
     self.assertTrue(init_size >= shrunk_size)
-    driver_tools.RunDriver('compress', [pexe.name])
+    driver_tools.RunDriver('pnacl-compress', [pexe.name])
     self.assertTrue(pathtools.getsize(pexe.name) == shrunk_size)

@@ -25,7 +25,7 @@ define i32 @main() {
 ''')
       t.close()
       with self.getTemp(suffix='.bc') as b:
-        driver_tools.RunDriver('as', [t.name, '-o', b.name])
+        driver_tools.RunDriver('pnacl-as', [t.name, '-o', b.name])
         return t, b
 
   def test_ll_bc_filetypes(self):
@@ -44,7 +44,7 @@ define i32 @main() {
     self.assertTrue(filetype.FileType(bc.name) == 'po')
     self.assertTrue(filetype.IsLLVMBitcode(bc.name))
     self.assertFalse(filetype.IsPNaClBitcode(bc.name))
-    driver_tools.RunDriver('finalize', [bc.name])
+    driver_tools.RunDriver('pnacl-finalize', [bc.name])
     self.assertFalse(filetype.IsLLVMBitcode(bc.name))
     self.assertTrue(filetype.IsPNaClBitcode(bc.name))
     self.assertTrue(filetype.FileType(bc.name) == 'pexe')

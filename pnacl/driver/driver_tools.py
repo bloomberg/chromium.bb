@@ -109,7 +109,7 @@ def GetArchNameShort():
   Log.Fatal('Architecture: %s not supported.' % machine)
   return 'unknown'
 
-def RunDriver(invocation, args, suppress_inherited_arch_args=False):
+def RunDriver(module_name, args, suppress_inherited_arch_args=False):
   """
   RunDriver() is used to invoke "driver" tools, e.g.
   those prefixed  with "pnacl-"
@@ -122,7 +122,6 @@ def RunDriver(invocation, args, suppress_inherited_arch_args=False):
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
-  module_name = 'pnacl-%s' % invocation
   script = env.eval('${DRIVER_BIN}/%s' % module_name)
   script = shell.unescape(script)
 
