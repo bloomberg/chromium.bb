@@ -8,6 +8,7 @@
     }
   },
   "bluetooth": {
-    "low_energy": true
+    "low_energy": true,
+    "uuids": ["5678"]
   }
 }

@@ -14,7 +14,7 @@ function testGetService() {
   chrome.test.succeed();
 }
 
-var deviceAddress = '11:22:33:44:55:66'
+var deviceAddress = '11:22:33:44:55:66';
 var serviceId = 'service_id0';
 var badServiceId = 'service_id1';
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
@@ -180,7 +181,7 @@ class BluetoothLowEnergyReadCharacteristicValueFunction
   // Success and error callbacks, called by
   // BluetoothLowEnergyEventRouter::ReadCharacteristicValue.
   void SuccessCallback();
-  void ErrorCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 
   // The instance ID of the requested characteristic.
   std::string instance_id_;
@@ -202,7 +203,7 @@ class BluetoothLowEnergyWriteCharacteristicValueFunction
   // Success and error callbacks, called by
   // BluetoothLowEnergyEventRouter::WriteCharacteristicValue.
   void SuccessCallback();
-  void ErrorCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 
   // The instance ID of the requested characteristic.
   std::string instance_id_;
@@ -224,7 +225,7 @@ class BluetoothLowEnergyReadDescriptorValueFunction
   // Success and error callbacks, called by
   // BluetoothLowEnergyEventRouter::ReadDescriptorValue.
   void SuccessCallback();
-  void ErrorCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 
   // The instance ID of the requested descriptor.
   std::string instance_id_;
@@ -246,7 +247,7 @@ class BluetoothLowEnergyWriteDescriptorValueFunction
   // Success and error callbacks, called by
   // BluetoothLowEnergyEventRouter::WriteDescriptorValue.
   void SuccessCallback();
-  void ErrorCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
 
   // The instance ID of the requested descriptor.
   std::string instance_id_;

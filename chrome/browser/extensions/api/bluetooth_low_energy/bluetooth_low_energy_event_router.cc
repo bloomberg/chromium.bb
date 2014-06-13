@@ -8,11 +8,13 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
+#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 
 using content::BrowserThread;
 
@@ -226,39 +228,41 @@ bool BluetoothLowEnergyEventRouter::GetServices(
   return true;
 }
 
-bool BluetoothLowEnergyEventRouter::GetService(
+BluetoothLowEnergyEventRouter::Status BluetoothLowEnergyEventRouter::GetService(
     const std::string& instance_id,
-    apibtle::Service* service) const {
+    apibtle::Service* out_service) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(out_service);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattService* gatt_service = FindServiceById(instance_id);
   if (!gatt_service) {
     VLOG(1) << "Service not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
   }
 
-  PopulateService(gatt_service, service);
-  return true;
+  PopulateService(gatt_service, out_service);
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::GetIncludedServices(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::GetIncludedServices(
     const std::string& instance_id,
     ServiceList* out_services) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(out_services);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattService* service = FindServiceById(instance_id);
   if (!service) {
     VLOG(1) << "Service not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
   }
 
   out_services->clear();
@@ -277,23 +281,33 @@ bool BluetoothLowEnergyEventRouter::GetIncludedServices(
     out_services->push_back(api_service);
   }
 
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::GetCharacteristics(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::GetCharacteristics(
+    const Extension* extension,
     const std::string& instance_id,
     CharacteristicList* out_characteristics) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   DCHECK(out_characteristics);
   if (!adapter_) {
     VLOG(1) << "BlutoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattService* service = FindServiceById(instance_id);
   if (!service) {
     VLOG(1) << "Service not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(service->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access the characteristics of this "
+            << "service: " << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   out_characteristics->clear();
@@ -313,45 +327,67 @@ bool BluetoothLowEnergyEventRouter::GetCharacteristics(
     out_characteristics->push_back(api_characteristic);
   }
 
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::GetCharacteristic(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::GetCharacteristic(
+    const Extension* extension,
     const std::string& instance_id,
     apibtle::Characteristic* out_characteristic) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   DCHECK(out_characteristic);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(
+      characteristic->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this characteristic: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   PopulateCharacteristic(characteristic, out_characteristic);
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::GetDescriptors(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::GetDescriptors(
+    const Extension* extension,
     const std::string& instance_id,
     DescriptorList* out_descriptors) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   DCHECK(out_descriptors);
   if (!adapter_) {
     VLOG(1) << "BlutoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(
+      characteristic->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access the descriptors of this "
+            << "characteristic: " << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   out_descriptors->clear();
@@ -370,120 +406,189 @@ bool BluetoothLowEnergyEventRouter::GetDescriptors(
     out_descriptors->push_back(api_descriptor);
   }
 
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::GetDescriptor(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::GetDescriptor(
+    const Extension* extension,
     const std::string& instance_id,
     api::bluetooth_low_energy::Descriptor* out_descriptor) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   DCHECK(out_descriptor);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
   if (!descriptor) {
     VLOG(1) << "Descriptor not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(
+      descriptor->GetCharacteristic()->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this descriptor: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   PopulateDescriptor(descriptor, out_descriptor);
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
+    const Extension* extension,
     const std::string& instance_id,
     const base::Closure& callback,
-    const base::Closure& error_callback) {
+    const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(
+      characteristic->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this characteristic: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   characteristic->ReadRemoteCharacteristic(
-      base::Bind(&BluetoothLowEnergyEventRouter::ValueCallback,
+      base::Bind(&BluetoothLowEnergyEventRouter::OnValueSuccess,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback),
-      error_callback);
+      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
 
-  return true;
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
+    const Extension* extension,
     const std::string& instance_id,
     const std::vector<uint8>& value,
     const base::Closure& callback,
-    const base::Closure& error_callback) {
+    const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
   }
 
-  characteristic->WriteRemoteCharacteristic(value, callback, error_callback);
-  return true;
+  BluetoothPermissionRequest request(
+      characteristic->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this characteristic: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
+  }
+
+  characteristic->WriteRemoteCharacteristic(
+      value,
+      callback,
+      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::ReadDescriptorValue(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::ReadDescriptorValue(
+    const Extension* extension,
     const std::string& instance_id,
     const base::Closure& callback,
-    const base::Closure& error_callback) {
+    const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
   if (!descriptor) {
     VLOG(1) << "Descriptor not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
+  }
+
+  BluetoothPermissionRequest request(
+      descriptor->GetCharacteristic()->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this descriptor: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
   }
 
   descriptor->ReadRemoteDescriptor(
-      base::Bind(&BluetoothLowEnergyEventRouter::ValueCallback,
+      base::Bind(&BluetoothLowEnergyEventRouter::OnValueSuccess,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback),
-      error_callback);
-  return true;
+      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+  return kStatusSuccess;
 }
 
-bool BluetoothLowEnergyEventRouter::WriteDescriptorValue(
+BluetoothLowEnergyEventRouter::Status
+BluetoothLowEnergyEventRouter::WriteDescriptorValue(
+    const Extension* extension,
     const std::string& instance_id,
     const std::vector<uint8>& value,
     const base::Closure& callback,
-    const base::Closure& error_callback) {
+    const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return false;
+    return kStatusErrorFailed;
   }
 
   BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
   if (!descriptor) {
     VLOG(1) << "Descriptor not found: " << instance_id;
-    return false;
+    return kStatusErrorNotFound;
   }
 
-  descriptor->WriteRemoteDescriptor(value, callback, error_callback);
-  return true;
+  BluetoothPermissionRequest request(
+      descriptor->GetCharacteristic()->GetService()->GetUUID().value());
+  if (!BluetoothManifestData::CheckRequest(extension, request)) {
+    VLOG(1) << "App has no permission to access this descriptor: "
+            << instance_id;
+    return kStatusErrorPermissionDenied;
+  }
+
+  descriptor->WriteRemoteDescriptor(
+      value,
+      callback,
+      base::Bind(&BluetoothLowEnergyEventRouter::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+  return kStatusSuccess;
 }
 
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
@@ -581,11 +686,10 @@ void BluetoothLowEnergyEventRouter::GattServiceChanged(
   apibtle::Service api_service;
   PopulateService(service, &api_service);
 
-  scoped_ptr<base::ListValue> args =
-      apibtle::OnServiceChanged::Create(api_service);
-  scoped_ptr<Event> event(
-      new Event(apibtle::OnServiceChanged::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  DispatchEventToExtensionsWithPermission(
+      apibtle::OnServiceChanged::kEventName,
+      service->GetUUID(),
+      apibtle::OnServiceChanged::Create(api_service));
 }
 
 void BluetoothLowEnergyEventRouter::GattCharacteristicAdded(
@@ -663,18 +767,18 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
   DCHECK(chrc_id_to_service_id_[characteristic->GetIdentifier()] ==
          service->GetIdentifier());
 
-  // Signal API event.
+  // Send the event; manually construct the arguments, instead of using
+  // apibtle::OnCharacteristicValueChanged::Create, as it doesn't convert
+  // lists of enums correctly.
   apibtle::Characteristic api_characteristic;
   PopulateCharacteristic(characteristic, &api_characteristic);
-
-  // Manually construct the arguments, instead of using
-  // apibtle::OnCharacteristicValueChanged::Create, as it doesn't convert lists
-  // of enums correctly.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(apibtle::CharacteristicToValue(&api_characteristic).release());
-  scoped_ptr<Event> event(new Event(
-      apibtle::OnCharacteristicValueChanged::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+
+  DispatchEventToExtensionsWithPermission(
+      apibtle::OnCharacteristicValueChanged::kEventName,
+      service->GetUUID(),
+      args.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
@@ -689,18 +793,18 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
   DCHECK(characteristic->GetIdentifier() ==
          desc_id_to_chrc_id_[descriptor->GetIdentifier()]);
 
-  // Signal API event.
+  // Send the event; manually construct the arguments, instead of using
+  // apibtle::OnDescriptorValueChanged::Create, as it doesn't convert
+  // lists of enums correctly.
   apibtle::Descriptor api_descriptor;
   PopulateDescriptor(descriptor, &api_descriptor);
-
-  // Manually construct the arguments, instead of using
-  // apibtle::OnDescriptorValueChanged::Create, as it doesn't convert lists of
-  // enums correctly.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(apibtle::DescriptorToValue(&api_descriptor).release());
-  scoped_ptr<Event> event(
-      new Event(apibtle::OnDescriptorValueChanged::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+
+  DispatchEventToExtensionsWithPermission(
+      apibtle::OnDescriptorValueChanged::kEventName,
+      characteristic->GetService()->GetUUID(),
+      args.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(
@@ -770,6 +874,48 @@ void BluetoothLowEnergyEventRouter::InitializeIdentifierMappings() {
         }
       }
     }
+  }
+}
+
+void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
+      const std::string& event_name,
+      const device::BluetoothUUID& uuid,
+      scoped_ptr<base::ListValue> args) {
+  // Obtain the listeners of |event_name|. The list can contain multiple
+  // entries for the same extension, so we keep track of the extensions that we
+  // already sent the event to, since we want the send an event to an extension
+  // only once.
+  BluetoothPermissionRequest request(uuid.value());
+  std::set<std::string> handled_extensions;
+  const EventListenerMap::ListenerList listeners =
+      EventRouter::Get(browser_context_)->listeners().GetEventListenersByName(
+          event_name);
+
+  for (EventListenerMap::ListenerList::const_iterator iter = listeners.begin();
+       iter != listeners.end();
+       ++iter) {
+    const std::string extension_id = (*iter)->extension_id();
+    if (handled_extensions.find(extension_id) != handled_extensions.end())
+      continue;
+
+    handled_extensions.insert(extension_id);
+
+    const Extension* extension =
+        ExtensionRegistry::Get(browser_context_)
+            ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+
+    // For all API methods, the "low_energy" permission check is handled by
+    // BluetoothLowEnergyExtensionFunction but for events we have to do the
+    // check here.
+    if (!BluetoothManifestData::CheckRequest(extension, request) ||
+        !BluetoothManifestData::CheckLowEnergyPermitted(extension))
+      continue;
+
+    // Send the event.
+    scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
+    scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+    EventRouter::Get(browser_context_)->DispatchEventToExtension(
+        extension_id, event.Pass());
   }
 }
 
@@ -854,11 +1000,17 @@ BluetoothGattDescriptor* BluetoothLowEnergyEventRouter::FindDescriptorById(
   return descriptor;
 }
 
-void BluetoothLowEnergyEventRouter::ValueCallback(
+void BluetoothLowEnergyEventRouter::OnValueSuccess(
     const base::Closure& callback,
     const std::vector<uint8>& value) {
   VLOG(2) << "Remote characteristic/descriptor value read successful.";
   callback.Run();
+}
+
+void BluetoothLowEnergyEventRouter::OnError(
+    const ErrorCallback& error_callback) {
+  VLOG(2) << "Remote characteristic/descriptor value read/write failed.";
+  error_callback.Run(kStatusErrorFailed);
 }
 
 }  // namespace extensions

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
@@ -20,28 +19,35 @@ using content::BrowserThread;
 
 namespace apibtle = extensions::api::bluetooth_low_energy;
 
+namespace extensions {
+
 namespace {
 
 const char kErrorAdapterNotInitialized[] =
-    "Could not initialize Bluetooth adapter.";
-const char kErrorCharacteristicNotFoundFormat[] =
-    "Characteristic with ID \"%s\" not found.";
-const char kErrorDescriptorNotFoundFormat[] =
-    "Descriptor with ID \"%s\" not found.";
-const char kErrorDeviceNotFoundFormat[] =
-    "Device with address \"%s\" not found.";
-const char kErrorReadCharacteristicValueFailedFormat[] =
-    "Failed to read value of characteristic with ID \"%s\".";
-const char kErrorReadDescriptorValueFailedFormat[] =
-    "Failed to read value of descriptor with ID \"%s\".";
-const char kErrorServiceNotFoundFormat[] = "Service with ID \"%s\" not found.";
+    "Could not initialize Bluetooth adapter";
+const char kErrorNotFound[] = "Instance not found";
+const char kErrorOperationFailed[] = "Operation failed";
+const char kErrorPermissionDenied[] = "Permission denied";
 const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
-const char kErrorWriteCharacteristicValueFailedFormat[] =
-    "Failed to write value of characteristic with ID \"%s\".";
-const char kErrorWriteDescriptorValueFailedFormat[] =
-    "Failed to write value of descriptor with ID \"%s\".";
-const char kErrorPermissionDenied[] = "Permission denied";
+
+// Returns the correct error string based on error status |status|. This is used
+// to set the value of |chrome.runtime.lastError.message| and should not be
+// passed |BluetoothLowEnergyEventRouter::kStatusSuccess|.
+std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
+  switch (status) {
+    case BluetoothLowEnergyEventRouter::kStatusErrorPermissionDenied:
+      return kErrorPermissionDenied;
+    case BluetoothLowEnergyEventRouter::kStatusErrorNotFound:
+      return kErrorNotFound;
+    case BluetoothLowEnergyEventRouter::kStatusSuccess:
+      NOTREACHED();
+      break;
+    default:
+      return kErrorOperationFailed;
+  }
+  return "";
+}
 
 extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
     BrowserContext* context) {
@@ -56,7 +62,6 @@ void DoWorkCallback(const base::Callback<bool()>& callback) {
 
 }  // namespace
 
-namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -138,12 +143,11 @@ bool BluetoothLowEnergyGetServiceFunction::DoWork() {
       apibtle::GetService::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string service_id = params->service_id;
-
   apibtle::Service service;
-  if (!event_router->GetService(service_id, &service)) {
-    SetError(
-        base::StringPrintf(kErrorServiceNotFoundFormat, service_id.c_str()));
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->GetService(params->service_id, &service);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -172,12 +176,9 @@ bool BluetoothLowEnergyGetServicesFunction::DoWork() {
       apibtle::GetServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string device_address = params->device_address;
-
   BluetoothLowEnergyEventRouter::ServiceList service_list;
-  if (!event_router->GetServices(device_address, &service_list)) {
-    SetError(
-        base::StringPrintf(kErrorDeviceNotFoundFormat, device_address.c_str()));
+  if (!event_router->GetServices(params->device_address, &service_list)) {
+    SetError(kErrorNotFound);
     SendResponse(false);
     return false;
   }
@@ -206,12 +207,12 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
       apibtle::GetCharacteristic::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string characteristic_id = params->characteristic_id;
-
   apibtle::Characteristic characteristic;
-  if (!event_router->GetCharacteristic(characteristic_id, &characteristic)) {
-    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
-                                characteristic_id.c_str()));
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->GetCharacteristic(
+          GetExtension(), params->characteristic_id, &characteristic);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -243,13 +244,12 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
       apibtle::GetCharacteristics::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string service_id = params->service_id;
-
   BluetoothLowEnergyEventRouter::CharacteristicList characteristic_list;
-  if (!event_router->GetCharacteristics(service_id, &characteristic_list)) {
-    SetError(
-        base::StringPrintf(kErrorServiceNotFoundFormat, service_id.c_str()));
-
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->GetCharacteristics(
+          GetExtension(), params->service_id, &characteristic_list);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -288,12 +288,11 @@ bool BluetoothLowEnergyGetIncludedServicesFunction::DoWork() {
       apibtle::GetIncludedServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string service_id = params->service_id;
-
   BluetoothLowEnergyEventRouter::ServiceList service_list;
-  if (!event_router->GetIncludedServices(service_id, &service_list)) {
-    SetError(
-        base::StringPrintf(kErrorServiceNotFoundFormat, service_id.c_str()));
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->GetIncludedServices(params->service_id, &service_list);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -322,12 +321,11 @@ bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
       apibtle::GetDescriptor::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string descriptor_id = params->descriptor_id;
-
   apibtle::Descriptor descriptor;
-  if (!event_router->GetDescriptor(descriptor_id, &descriptor)) {
-    SetError(base::StringPrintf(kErrorDescriptorNotFoundFormat,
-                                descriptor_id.c_str()));
+  BluetoothLowEnergyEventRouter::Status status = event_router->GetDescriptor(
+      GetExtension(), params->descriptor_id, &descriptor);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -359,12 +357,11 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
       apibtle::GetDescriptors::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  std::string chrc_id = params->characteristic_id;
-
   BluetoothLowEnergyEventRouter::DescriptorList descriptor_list;
-  if (!event_router->GetDescriptors(chrc_id, &descriptor_list)) {
-    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
-                                chrc_id.c_str()));
+  BluetoothLowEnergyEventRouter::Status status = event_router->GetDescriptors(
+      GetExtension(), params->characteristic_id, &descriptor_list);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -404,17 +401,18 @@ bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   instance_id_ = params->characteristic_id;
-
-  if (!event_router->ReadCharacteristicValue(
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->ReadCharacteristicValue(
+          GetExtension(),
           instance_id_,
           base::Bind(&BluetoothLowEnergyReadCharacteristicValueFunction::
                          SuccessCallback,
                      this),
           base::Bind(
               &BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback,
-              this))) {
-    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
-                                instance_id_.c_str()));
+              this));
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -426,10 +424,11 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback() {
   // Obtain info on the characteristic and see whether or not the characteristic
   // is still around.
   apibtle::Characteristic characteristic;
-  if (!GetEventRouter(browser_context())
-           ->GetCharacteristic(instance_id_, &characteristic)) {
-    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
-                                instance_id_.c_str()));
+  BluetoothLowEnergyEventRouter::Status status =
+      GetEventRouter(browser_context())
+          ->GetCharacteristic(GetExtension(), instance_id_, &characteristic);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return;
   }
@@ -441,9 +440,9 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback() {
   SendResponse(true);
 }
 
-void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback() {
-  SetError(base::StringPrintf(kErrorReadCharacteristicValueFailedFormat,
-                              instance_id_.c_str()));
+void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
   SendResponse(false);
 }
 
@@ -465,20 +464,21 @@ bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {
       apibtle::WriteCharacteristicValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  instance_id_ = params->characteristic_id;
   std::vector<uint8> value(params->value.begin(), params->value.end());
 
-  if (!event_router->WriteCharacteristicValue(
-          instance_id_,
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->WriteCharacteristicValue(
+          GetExtension(),
+          params->characteristic_id,
           value,
           base::Bind(&BluetoothLowEnergyWriteCharacteristicValueFunction::
                          SuccessCallback,
                      this),
           base::Bind(&BluetoothLowEnergyWriteCharacteristicValueFunction::
                          ErrorCallback,
-                     this))) {
-    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
-                                instance_id_.c_str()));
+                     this));
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -491,9 +491,9 @@ void BluetoothLowEnergyWriteCharacteristicValueFunction::SuccessCallback() {
   SendResponse(true);
 }
 
-void BluetoothLowEnergyWriteCharacteristicValueFunction::ErrorCallback() {
-  SetError(base::StringPrintf(kErrorWriteCharacteristicValueFailedFormat,
-                              instance_id_.c_str()));
+void BluetoothLowEnergyWriteCharacteristicValueFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
   SendResponse(false);
 }
 
@@ -516,17 +516,18 @@ bool BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   instance_id_ = params->descriptor_id;
-
-  if (!event_router->ReadDescriptorValue(
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->ReadDescriptorValue(
+          GetExtension(),
           instance_id_,
           base::Bind(
               &BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback,
               this),
           base::Bind(
               &BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback,
-              this))) {
-    SetError(base::StringPrintf(kErrorDescriptorNotFoundFormat,
-                                instance_id_.c_str()));
+              this));
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -538,10 +539,11 @@ void BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback() {
   // Obtain info on the descriptor and see whether or not the descriptor is
   // still around.
   apibtle::Descriptor descriptor;
-  if (!GetEventRouter(browser_context())
-           ->GetDescriptor(instance_id_, &descriptor)) {
-    SetError(base::StringPrintf(kErrorDescriptorNotFoundFormat,
-                                instance_id_.c_str()));
+  BluetoothLowEnergyEventRouter::Status status =
+      GetEventRouter(browser_context())
+          ->GetDescriptor(GetExtension(), instance_id_, &descriptor);
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return;
   }
@@ -553,9 +555,9 @@ void BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback() {
   SendResponse(true);
 }
 
-void BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback() {
-  SetError(base::StringPrintf(kErrorReadDescriptorValueFailedFormat,
-                              instance_id_.c_str()));
+void BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
   SendResponse(false);
 }
 
@@ -577,20 +579,21 @@ bool BluetoothLowEnergyWriteDescriptorValueFunction::DoWork() {
       apibtle::WriteDescriptorValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  instance_id_ = params->descriptor_id;
   std::vector<uint8> value(params->value.begin(), params->value.end());
 
-  if (!event_router->WriteDescriptorValue(
-          instance_id_,
+  BluetoothLowEnergyEventRouter::Status status =
+      event_router->WriteDescriptorValue(
+          GetExtension(),
+          params->descriptor_id,
           value,
           base::Bind(
               &BluetoothLowEnergyWriteDescriptorValueFunction::SuccessCallback,
               this),
           base::Bind(
               &BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback,
-              this))) {
-    SetError(base::StringPrintf(kErrorDescriptorNotFoundFormat,
-                                instance_id_.c_str()));
+              this));
+  if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
+    SetError(StatusToString(status));
     SendResponse(false);
     return false;
   }
@@ -603,9 +606,9 @@ void BluetoothLowEnergyWriteDescriptorValueFunction::SuccessCallback() {
   SendResponse(true);
 }
 
-void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback() {
-  SetError(base::StringPrintf(kErrorWriteDescriptorValueFailedFormat,
-                              instance_id_.c_str()));
+void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback(
+    BluetoothLowEnergyEventRouter::Status status) {
+  SetError(StatusToString(status));
   SendResponse(false);
 }
 
