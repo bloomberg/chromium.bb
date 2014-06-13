@@ -6,18 +6,14 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
@@ -32,7 +28,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -421,19 +416,19 @@ void VolumeManager::Shutdown() {
 }
 
 void VolumeManager::AddObserver(VolumeManagerObserver* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   observers_.AddObserver(observer);
 }
 
 void VolumeManager::RemoveObserver(VolumeManagerObserver* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
 std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::vector<VolumeInfo> result;
   for (std::map<std::string, VolumeInfo>::const_iterator iter =
@@ -447,7 +442,7 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
 
 bool VolumeManager::FindVolumeInfoById(const std::string& volume_id,
                                        VolumeInfo* result) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(result);
 
   std::map<std::string, VolumeInfo>::const_iterator iter =
@@ -460,7 +455,7 @@ bool VolumeManager::FindVolumeInfoById(const std::string& volume_id,
 
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(
     const base::FilePath& path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::FilePath old_path;
   if (FindDownloadsMountPointPath(profile_, &old_path)) {
@@ -479,14 +474,14 @@ bool VolumeManager::RegisterDownloadsDirectoryForTesting(
 void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path,
                                             VolumeType volume_type,
                                             chromeos::DeviceType device_type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                CreateTestingVolumeInfo(path, volume_type, device_type),
                kNotRemounting);
 }
 
 void VolumeManager::OnFileSystemMounted() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Raise mount event.
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
@@ -496,7 +491,7 @@ void VolumeManager::OnFileSystemMounted() {
 }
 
 void VolumeManager::OnFileSystemBeingUnmounted() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
   DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, volume_info);
@@ -505,7 +500,7 @@ void VolumeManager::OnFileSystemBeingUnmounted() {
 void VolumeManager::OnDiskEvent(
     chromeos::disks::DiskMountManager::DiskEvent event,
     const chromeos::disks::DiskMountManager::Disk* disk) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Disregard hidden devices.
   if (disk->is_hidden())
@@ -559,7 +554,7 @@ void VolumeManager::OnDiskEvent(
 void VolumeManager::OnDeviceEvent(
     chromeos::disks::DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << device_path;
 
   switch (event) {
@@ -587,7 +582,7 @@ void VolumeManager::OnMountEvent(
     chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(chromeos::MOUNT_TYPE_INVALID, mount_info.mount_type);
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
@@ -632,7 +627,7 @@ void VolumeManager::OnFormatEvent(
     chromeos::disks::DiskMountManager::FormatEvent event,
     chromeos::FormatError error_code,
     const std::string& device_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code
            << ", " << device_path;
 

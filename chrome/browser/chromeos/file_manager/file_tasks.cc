@@ -46,10 +46,6 @@ namespace {
 
 // The values "file" and "app" are confusing, but cannot be changed easily as
 // these are used in default task IDs stored in preferences.
-//
-// TODO(satorux): We should rename them to "file_browser_handler" and
-// "file_handler" respectively when switching from preferences to
-// chrome.storage crbug.com/267359
 const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kDriveAppTaskType[] = "drive";
@@ -283,7 +279,6 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
   // Parse a legacy task ID that only contain two parts. Drive tasks are
   // identified by a prefix "drive-app:" on the extension ID. The legacy task
   // IDs can be stored in preferences.
-  // TODO(satorux): We should get rid of this code: crbug.com/267359.
   if (count == 2) {
     if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
       task->task_type = TASK_TYPE_DRIVE_APP;

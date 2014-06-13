@@ -100,7 +100,7 @@ FileDefinitionListConverter::FileDefinitionListConverter(
       file_definition_list_(file_definition_list),
       callback_(callback),
       result_(new EntryDefinitionList) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // File browser APIs are meant to be used only from extension context, so
   // the extension's site is the one in whose file system context the virtual
@@ -158,7 +158,7 @@ void FileDefinitionListConverter::OnResolvedURL(
     const fileapi::FileSystemInfo& info,
     const base::FilePath& file_path,
     fileapi::FileSystemContext::ResolvedEntryType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != base::File::FILE_OK) {
     OnIteratorConverted(self_deleter.Pass(),
@@ -319,7 +319,7 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
     const EntryDefinitionListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The converter object destroys itself.
   new FileDefinitionListConverter(
@@ -331,7 +331,7 @@ void ConvertFileDefinitionToEntryDefinition(
     const std::string& extension_id,
     const FileDefinition& file_definition,
     const EntryDefinitionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileDefinitionList file_definition_list;
   file_definition_list.push_back(file_definition);

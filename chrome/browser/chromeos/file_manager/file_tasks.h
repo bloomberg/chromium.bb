@@ -210,8 +210,6 @@ std::string MakeTaskID(const std::string& app_id,
                        const std::string& action_id);
 
 // Returns a task id for the Drive app with |app_id|.
-// TODO(gspencer): For now, the action id is always "open-with", but we
-// could add any actions that the drive app supports.
 std::string MakeDriveAppTaskId(const std::string& app_id);
 
 // Converts |task_descriptor| to a task ID.

@@ -90,8 +90,6 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
 // Opens the file specified by |url| by finding and executing a file
 // task for the file. Returns false if failed to open the file (i.e. no file
 // task is found).
-// TODO(fukino): curbug.com/352250. Currently |path| is used only for retrieving
-// file extension, but we might want to sniff file contents and infer mime type.
 bool OpenFile(Profile* profile, const base::FilePath& path, const GURL& url) {
   // The file is opened per the file extension, hence extension-less files
   // cannot be opened properly.
@@ -129,7 +127,7 @@ void ContinueOpenItem(Profile* profile,
                       const base::FilePath& file_path,
                       const GURL& url,
                       base::File::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == base::File::FILE_OK) {
     // A directory exists at |url|. Open it with the file manager.
@@ -170,7 +168,7 @@ bool ConvertPath(Profile* profile,
 }  // namespace
 
 void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath converted_path;
   GURL url;
@@ -181,7 +179,7 @@ void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
 }
 
 void OpenItem(Profile* profile, const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath converted_path;
   GURL url;
@@ -195,7 +193,7 @@ void OpenItem(Profile* profile, const base::FilePath& file_path) {
 }
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath converted_path;
   GURL url;

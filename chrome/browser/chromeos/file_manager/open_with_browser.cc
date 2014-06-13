@@ -97,7 +97,7 @@ bool IsFlashPluginEnabled(Profile* profile) {
 }
 
 void OpenNewTab(Profile* profile, const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check the validity of the pointer so that the closure from
   // base::Bind(&OpenNewTab, profile) can be passed between threads.
@@ -128,7 +128,7 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
 }  // namespace
 
 bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
 
   // For things supported natively by the browser, we should open it

@@ -13,10 +13,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -24,10 +21,8 @@
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -43,13 +38,11 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -189,7 +182,6 @@ struct AddEntriesMessage {
   static void RegisterJSONConverter(
       base::JSONValueConverter<AddEntriesMessage>* converter);
 };
-
 
 // static
 void AddEntriesMessage::RegisterJSONConverter(

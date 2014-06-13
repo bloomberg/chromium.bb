@@ -200,7 +200,7 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
     const scoped_refptr<const Extension>& handler_extension,
     const std::vector<FileSystemURL>& file_urls) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(handler_extension.get());
 
   fileapi::ExternalFileSystemBackend* backend =
@@ -298,7 +298,7 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
 }
 
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!done_.is_null())
     done_.Run(
         success
@@ -310,7 +310,7 @@ void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
 void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
     scoped_ptr<FileDefinitionList> file_definition_list,
     scoped_ptr<EntryDefinitionList> entry_definition_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (file_definition_list->empty() || entry_definition_list->empty()) {
     ExecuteDoneOnUIThread(false);
@@ -471,11 +471,8 @@ bool ExecuteFileBrowserHandler(
   // files to be directly opened with the browser.
   if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
     const bool result = OpenFilesWithBrowser(profile, file_urls);
-    if (!done.is_null()) {
-      done.Run(result
-                   ? extensions::api::file_browser_private::TASK_RESULT_OPENED
-                   : extensions::api::file_browser_private::TASK_RESULT_FAILED);
-    }
+    if (result && !done.is_null())
+      done.Run(extensions::api::file_browser_private::TASK_RESULT_OPENED);
     return result;
   }
 

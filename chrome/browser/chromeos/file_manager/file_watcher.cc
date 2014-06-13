@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 
@@ -19,7 +18,7 @@ namespace {
 base::FilePathWatcher* CreateAndStartFilePathWatcher(
     const base::FilePath& watch_path,
     const base::FilePathWatcher::Callback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!callback.is_null());
 
   scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
@@ -35,11 +34,11 @@ FileWatcher::FileWatcher(const base::FilePath& virtual_path)
     : local_file_watcher_(NULL),
       virtual_path_(virtual_path),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 FileWatcher::~FileWatcher() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::DeleteSoon(BrowserThread::FILE,
                             FROM_HERE,
@@ -47,13 +46,13 @@ FileWatcher::~FileWatcher() {
 }
 
 void FileWatcher::AddExtension(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   extensions_[extension_id]++;
 }
 
 void FileWatcher::RemoveExtension(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionCountMap::iterator it = extensions_.find(extension_id);
   if (it == extensions_.end()) {
@@ -83,7 +82,7 @@ void FileWatcher::WatchLocalFile(
     const base::FilePath& local_path,
     const base::FilePathWatcher::Callback& file_watcher_callback,
     const BoolCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
 
@@ -101,7 +100,7 @@ void FileWatcher::WatchLocalFile(
 void FileWatcher::OnWatcherStarted(
     const BoolCallback& callback,
     base::FilePathWatcher* file_watcher) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
 

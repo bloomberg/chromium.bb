@@ -155,7 +155,7 @@ bool IsRecoveryToolRunning(Profile* profile) {
     return false;
 
   const std::string kRecoveryToolIds[] = {
-      "kkebgepbbgbcmghedmmdfcbdcodlkngh",  // Recovert tool staging
+      "kkebgepbbgbcmghedmmdfcbdcodlkngh",  // Recovery tool staging
       "jndclpdbaamdhonoechobihbbiimdgai"   // Recovery tool prod
   };
 

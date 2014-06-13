@@ -27,6 +27,7 @@ namespace extensions {
 namespace {
 
 // Error messages.
+const char kInvalidTask[] = "Invalid task: ";
 const char kInvalidFileUrl[] = "Invalid file URL";
 
 // Make a set of unique filename suffixes out of the list of file URLs.
@@ -95,7 +96,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
 
   file_manager::file_tasks::TaskDescriptor task;
   if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
-    LOG(WARNING) << "Invalid task " << params->task_id;
+    SetError(kInvalidTask + params->task_id);
     results_ =
         Create(extensions::api::file_browser_private::TASK_RESULT_FAILED);
     return false;
