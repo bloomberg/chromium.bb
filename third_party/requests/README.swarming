@@ -9,4 +9,6 @@ Description:
 Python HTTP for Humans.
 
 Local Modifications:
-Packaging code stripped.
+- Packaging code stripped.
+- Removed charade.
+- Applied SWARMING.diff

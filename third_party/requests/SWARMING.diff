@@ -1,0 +1,29 @@
+diff --git a/third_party/requests/compat.py b/third_party/requests/compat.py
+index 0d61a57..62e98be 100644
+--- a/third_party/requests/compat.py
++++ b/third_party/requests/compat.py
+@@ -4,7 +4,7 @@
+ pythoncompat
+ """
+ 
+-from .packages import charade as chardet
++chardet = None
+ 
+ import sys
+ 
+diff --git a/third_party/requests/models.py b/third_party/requests/models.py
+index 8fd9735..2354532 100644
+--- a/third_party/requests/models.py
++++ b/third_party/requests/models.py
+@@ -549,9 +549,8 @@ class Response(object):
+ 
+     @property
+     def apparent_encoding(self):
+-        """The apparent encoding, provided by the lovely Charade library
+-        (Thanks, Ian!)."""
+-        return chardet.detect(self.content)['encoding']
++        # TODO(maruel): charade is really large, so it is trimmed off.
++        return 'utf-8'
+ 
+     def iter_content(self, chunk_size=1, decode_unicode=False):
+         """Iterates over the response data.  When stream=True is set on the

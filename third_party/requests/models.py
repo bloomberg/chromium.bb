@@ -549,9 +549,8 @@ class Response(object):
 
     @property
     def apparent_encoding(self):
-        """The apparent encoding, provided by the lovely Charade library
-        (Thanks, Ian!)."""
-        return chardet.detect(self.content)['encoding']
+        # TODO(maruel): charade is really large, so it is trimmed off.
+        return 'utf-8'
 
     def iter_content(self, chunk_size=1, decode_unicode=False):
         """Iterates over the response data.  When stream=True is set on the
