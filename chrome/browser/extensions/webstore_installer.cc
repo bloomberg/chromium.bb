@@ -489,7 +489,9 @@ void WebstoreInstaller::OnDownloadStarted(
 }
 
 void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
-  CHECK_EQ(download_item_, download);
+  // DownloadItemImpl calls the observer for a completed item, ignore it.
+  if (download_item_ != download)
+    return;
 
   switch (download->GetState()) {
     case DownloadItem::CANCELLED:
