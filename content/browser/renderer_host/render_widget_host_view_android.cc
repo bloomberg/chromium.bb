@@ -683,9 +683,6 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   delegated_layer->SetHideLayerAndSubtree(true);
   delegated_layer->SetIsDrawable(true);
   delegated_layer->SetContentsOpaque(true);
-  gfx::Transform layer_scale(
-      device_scale_factor, 0.f, 0.f, device_scale_factor, 0.f, 0.f);
-  delegated_layer->SetTransform(layer_scale);
   compositor->AttachLayerForReadback(delegated_layer);
 
   readback_layer = delegated_layer;
@@ -785,6 +782,14 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     last_output_surface_id_ = output_surface_id;
   }
 
+  // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
+  // renderer frame, assuming that the browser compositor will scale
+  // it back up to device scale.  But on Android we put our browser layers in
+  // physical pixels and set our browser CC device_scale_factor to 1, so this
+  // suppresses the transform.  This line may need to be removed when fixing
+  // http://crbug.com/384134 or http://crbug.com/310763
+  frame_data->device_scale_factor = 1.0f;
+
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
@@ -809,19 +814,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     layer_->SetContentsOpaque(true);
     layer_->SetBounds(content_size_in_layer_);
     layer_->SetNeedsDisplay();
-    // DelegatedRendererLayer scales the frame data from physical space to DIPs
-    // by inverting the frame's device scale factor, assuming that the browser
-    // compositor will map from DIPs back to physical pixels using its own
-    // device scale factor. However, the Android browser compositor always uses
-    // a device scale factor of 1.0, so we have to transform the delegated
-    // layer by the device scale to get it into the same physical pixel space as
-    // the rest of the UI.
-    const gfx::Display& display =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-    float device_scale_factor = display.device_scale_factor();
-    gfx::Transform layer_scale(
-        device_scale_factor, 0.f, 0.f, device_scale_factor, 0.f, 0.f);
-    layer_->SetTransform(layer_scale);
   }
 
   base::Closure ack_callback =

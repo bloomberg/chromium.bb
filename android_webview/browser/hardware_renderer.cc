@@ -154,6 +154,13 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
     DCHECK(!input->frame.gl_frame_data);
     DCHECK(!input->frame.software_frame_data);
 
+    // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
+    // renderer frame, assuming that the browser compositor will scale
+    // it back up to device scale.  But on Android we put our browser layers in
+    // physical pixels and set our browser CC device_scale_factor to 1, so this
+    // suppresses the transform.
+    input->frame.delegated_frame_data->device_scale_factor = 1.0f;
+
     bool size_changed =
         input->width != view_width_ || input->height != view_height_;
     view_width_ = input->width;
