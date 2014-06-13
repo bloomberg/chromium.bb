@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/slider.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -45,7 +47,7 @@ enum BorderElements {
   CENTER_RIGHT,
   RIGHT,
 };
-}
+}  // namespace
 
 namespace views {
 
@@ -81,7 +83,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
 
   value_is_valid_ = true;
   if (value < 0.0)
-   value = 0.0;
+    value = 0.0;
   else if (value > 1.0)
     value = 1.0;
   if (value_ == value)
@@ -267,8 +269,7 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
 bool Slider::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
-  if (listener_)
-    listener_->SliderDragStarted(this);
+  OnSliderDragStarted();
   PrepareForMove(event.location());
   MoveButtonTo(event.location());
   return true;
@@ -280,8 +281,7 @@ bool Slider::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void Slider::OnMouseReleased(const ui::MouseEvent& event) {
-  if (listener_)
-    listener_->SliderDragEnded(this);
+  OnSliderDragEnded();
 }
 
 bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
@@ -316,15 +316,26 @@ void Slider::OnBlur() {
 }
 
 void Slider::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    PrepareForMove(event->location());
-    MoveButtonTo(event->location());
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-             event->type() == ui::ET_GESTURE_SCROLL_END) {
-    MoveButtonTo(event->location());
-    event->SetHandled();
+  switch (event->type()) {
+    // In a multi point gesture only the touch point will generate
+    // an ET_GESTURE_TAP_DOWN event.
+    case ui::ET_GESTURE_TAP_DOWN:
+      OnSliderDragStarted();
+      PrepareForMove(event->location());
+      // Intentional fall through to next case.
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      MoveButtonTo(event->location());
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_END:
+      MoveButtonTo(event->location());
+      event->SetHandled();
+      if (event->details().touch_points() <= 1)
+        OnSliderDragEnded();
+      break;
+    default:
+      break;
   }
 }
 
@@ -337,7 +348,17 @@ void Slider::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_SLIDER;
   state->name = accessible_name_;
   state->value = base::UTF8ToUTF16(
-      base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));
+      base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5)));
+}
+
+void Slider::OnSliderDragStarted() {
+  if (listener_)
+    listener_->SliderDragStarted(this);
+}
+
+void Slider::OnSliderDragEnded() {
+  if (listener_)
+    listener_->SliderDragEnded(this);
 }
 
 }  // namespace views
