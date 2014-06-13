@@ -739,6 +739,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_windowHandle(HWND* window_handle) {
     return E_INVALIDARG;
 
   *window_handle = manager()->ToBrowserAccessibilityManagerWin()->parent_hwnd();
+  if (!*window_handle)
+    return E_FAIL;
+
   return S_OK;
 }
 
@@ -992,6 +995,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     HWND parent_hwnd =
         manager()->ToBrowserAccessibilityManagerWin()->parent_hwnd();
+    if (!parent_hwnd)
+      return E_FAIL;
     POINT top_left = {0, 0};
     ::ClientToScreen(parent_hwnd, &top_left);
     *x = GetLocation().x() + top_left.x;

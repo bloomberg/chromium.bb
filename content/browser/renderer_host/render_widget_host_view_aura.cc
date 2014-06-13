@@ -999,6 +999,11 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
     if (!legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(
           reinterpret_cast<HWND>(GetNativeViewId()));
+      BrowserAccessibilityManagerWin* manager =
+          static_cast<BrowserAccessibilityManagerWin*>(
+              GetBrowserAccessibilityManager());
+      if (manager)
+        manager->SetAccessibleHWND(legacy_render_widget_host_HWND_.get());
     }
     if (legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_->SetBounds(
@@ -1226,33 +1231,23 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
 }
 
 void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
-  if (GetBrowserAccessibilityManager())
-    return;
-
-  BrowserAccessibilityManager* manager = NULL;
 #if defined(OS_WIN)
-  aura::WindowTreeHost* host = window_->GetHost();
-  if (!host)
-    return;
-  HWND hwnd = host->GetAcceleratedWidget();
-
-  // The accessible_parent may be NULL at this point. The WebContents will pass
-  // it down to this instance (by way of the RenderViewHost and
-  // RenderWidgetHost) when it is known. This instance will then set it on its
-  // BrowserAccessibilityManager.
-  gfx::NativeViewAccessible accessible_parent =
-      host_->GetParentNativeViewAccessible();
-
-  if (legacy_render_widget_host_HWND_) {
-    manager = new BrowserAccessibilityManagerWin(
+  if (!GetBrowserAccessibilityManager()) {
+    gfx::NativeViewAccessible accessible_parent =
+        host_->GetParentNativeViewAccessible();
+    LegacyRenderWidgetHostHWND* parent_hwnd =
+        legacy_render_widget_host_HWND_.get();
+    SetBrowserAccessibilityManager(new BrowserAccessibilityManagerWin(
         legacy_render_widget_host_HWND_.get(), accessible_parent,
-        BrowserAccessibilityManagerWin::GetEmptyDocument(), host_);
+        BrowserAccessibilityManagerWin::GetEmptyDocument(), host_));
   }
 #else
-  manager = BrowserAccessibilityManager::Create(
-      BrowserAccessibilityManager::GetEmptyDocument(), host_);
+  if (!GetBrowserAccessibilityManager()) {
+    SetBrowserAccessibilityManager(
+        BrowserAccessibilityManager::Create(
+            BrowserAccessibilityManager::GetEmptyDocument(), host_));
+  }
 #endif
-  SetBrowserAccessibilityManager(manager);
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
