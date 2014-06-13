@@ -81,6 +81,8 @@ toc:
     section:
     - title "ARM 32-bit Sandbox"
       path: /native-client/dev/reference/sandbox_internals/arm-32-bit-sandbox
+    - title "x86-64 Sandbox"
+      path: /native-client/dev/reference/sandbox_internals/x86-64-sandbox
 - title: "Help"
   section:
   - title: "FAQ"

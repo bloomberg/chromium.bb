@@ -26,10 +26,7 @@ Native Client has sandboxes for:
   for Portable, Untrusted x86 Native Code
   <http://research.google.com/pubs/archive/34913.pdf>`_, the current
   design has changed slightly since then.
-* x86-64: the original design is described in `Adapting Software Fault
-  Isolation to Contemporary CPU Architectures
-  <http://research.google.com/pubs/archive/35649.pdf>`_, the current
-  design has changed slightly since then.
+* :ref:`x86-64 <x86-64-sandbox>`.
 * MIPS32, described in the `overview of Native Client for MIPS
   <https://code.google.com/p/nativeclient/issues/attachmentText?id=2275&aid=22750018000&name=native-client-mips-0.4.txt>`_,
   and `bug 2275

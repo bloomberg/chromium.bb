@@ -57,6 +57,7 @@ Contents:
    reference/nacl-manifest-format.rst
    reference/sandbox_internals/index.rst
    reference/sandbox_internals/arm-32-bit-sandbox.rst
+   reference/sandbox_internals/x86-64-sandbox.rst
    publications-and-presentations.rst
    faq.rst
    help.rst
