@@ -136,13 +136,27 @@ function launchWithEntries(entries) {
           });
       });
   });
-  return Promise.all([taskExecutedPromise, launchDataPromise]).then(
-      function(args) {
-        chrome.test.assertEq(entries.length, args[1].items.length);
-        chrome.test.assertEq(
-            entries.map(function(entry) { return entry.name; }),
-            args[1].items.map(function(item) { return item.entry.name; }));
-      });
+  var resolvedEntriesPromise = launchDataPromise.then(function(launchData) {
+    var entries = launchData.items.map(function(item) { return item.entry; });
+    return new Promise(function(fulfill) {
+      chrome.fileBrowserPrivate.resolveIsolatedEntries(entries, fulfill);
+    });
+  });
+  return Promise.all([
+    taskExecutedPromise,
+    launchDataPromise,
+    resolvedEntriesPromise
+  ]).then(function(args) {
+    chrome.test.assertEq(entries.length, args[1].items.length);
+    chrome.test.assertEq(
+        entries.map(function(entry) { return entry.name; }),
+        args[1].items.map(function(item) { return item.entry.name; }),
+        'Wrong entries are passed to the application handler.');
+    chrome.test.assertEq(
+        entries.map(function(entry) { return entry.toURL(); }),
+        args[2].map(function(entry) { return entry.toURL(); }),
+        'Entries passed to the application handler cannot be resolved.');
+  });
 }
 
 /**
