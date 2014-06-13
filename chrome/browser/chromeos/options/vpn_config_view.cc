@@ -709,6 +709,7 @@ void VPNConfigView::InitFromProperties(
 
   std::string provider_type, server_hostname, username, group_name;
   bool psk_passphrase_required = false;
+  bool user_passphrase_required = true;
   const base::DictionaryValue* provider_properties;
   if (service_properties.GetDictionaryWithoutPathExpansion(
           shill::kProviderProperty, &provider_properties)) {
@@ -716,25 +717,27 @@ void VPNConfigView::InitFromProperties(
         shill::kTypeProperty, &provider_type);
     provider_properties->GetStringWithoutPathExpansion(
         shill::kHostProperty, &server_hostname);
-  }
-  if (provider_type == shill::kProviderL2tpIpsec) {
-    provider_properties->GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecClientCertIdProperty, &client_cert_id_);
-    ca_cert_pem_ = GetPemFromDictionary(
-        provider_properties, shill::kL2tpIpsecCaCertPemProperty);
-    provider_properties->GetBooleanWithoutPathExpansion(
-        shill::kL2tpIpsecPskRequiredProperty, &psk_passphrase_required);
-    provider_properties->GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecUserProperty, &username);
-    provider_properties->GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecTunnelGroupProperty, &group_name);
-  } else if (provider_type == shill::kProviderOpenVpn) {
-    provider_properties->GetStringWithoutPathExpansion(
-        shill::kOpenVPNClientCertIdProperty, &client_cert_id_);
-    ca_cert_pem_ = GetPemFromDictionary(
-        provider_properties, shill::kOpenVPNCaCertPemProperty);
-    provider_properties->GetStringWithoutPathExpansion(
-        shill::kOpenVPNUserProperty, &username);
+    if (provider_type == shill::kProviderL2tpIpsec) {
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, &client_cert_id_);
+      ca_cert_pem_ = GetPemFromDictionary(
+          provider_properties, shill::kL2tpIpsecCaCertPemProperty);
+      provider_properties->GetBooleanWithoutPathExpansion(
+          shill::kL2tpIpsecPskRequiredProperty, &psk_passphrase_required);
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecUserProperty, &username);
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecTunnelGroupProperty, &group_name);
+    } else if (provider_type == shill::kProviderOpenVpn) {
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kOpenVPNClientCertIdProperty, &client_cert_id_);
+      ca_cert_pem_ = GetPemFromDictionary(
+          provider_properties, shill::kOpenVPNCaCertPemProperty);
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kOpenVPNUserProperty, &username);
+      provider_properties->GetBooleanWithoutPathExpansion(
+          shill::kPassphraseRequiredProperty, &user_passphrase_required);
+    }
   }
   bool save_credentials = false;
   service_properties.GetBooleanWithoutPathExpansion(
@@ -756,10 +759,13 @@ void VPNConfigView::InitFromProperties(
     group_name_textfield_->SetText(base::UTF8ToUTF16(group_name));
   if (psk_passphrase_textfield_)
     psk_passphrase_textfield_->SetShowFake(!psk_passphrase_required);
+  if (user_passphrase_textfield_)
+    user_passphrase_textfield_->SetShowFake(!user_passphrase_required);
   if (save_credentials_checkbox_)
     save_credentials_checkbox_->SetChecked(save_credentials);
 
   Refresh();
+  UpdateCanLogin();
 }
 
 void VPNConfigView::ParseUIProperties(const NetworkState* vpn) {
