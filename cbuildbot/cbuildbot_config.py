@@ -1762,6 +1762,12 @@ internal_paladin.add_config('x86-zgb-paladin',
   paladin_builder_name='x86-zgb paladin',
 )
 
+internal_paladin.add_config('link_freon-paladin',
+  boards=['link_freon'],
+  important=False,
+  paladin_builder_name='link_freon paladin',
+)
+
 internal_paladin.add_config('stumpy_moblab-paladin',
   brillo_non_testable,
   boards=['stumpy_moblab'],
@@ -2015,6 +2021,11 @@ _release.add_config('link-release',
   useflags=_release['useflags'] + ['highdpi'],
 )
 
+_release.add_config('link_freon-release',
+  boards=['link_freon'],
+  useflags=_release['useflags'] + ['highdpi'],
+)
+
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   critical_for_chrome=True,
@@ -2051,7 +2062,7 @@ _brillo_release = _release.derive(brillo,
 _brillo_release.add_config('duck-release',
    boards=['duck'],
 
-   # Hw Lab can't test duck, yet.
+   # Hw Lab can't test, yet.
    paygen_skip_testing=True,
 )
 
