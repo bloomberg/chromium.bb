@@ -40,11 +40,13 @@ bool KeyUsageAllows(const blink::WebCryptoKey& key,
 }
 
 bool IsValidAesKeyLengthBits(unsigned int length_bits) {
-  return length_bits == 128 || length_bits == 192 || length_bits == 256;
+  // 192-bit AES is disallowed.
+  return length_bits == 128 || length_bits == 256;
 }
 
 bool IsValidAesKeyLengthBytes(unsigned int length_bytes) {
-  return length_bytes == 16 || length_bytes == 24 || length_bytes == 32;
+  // 192-bit AES is disallowed.
+  return length_bytes == 16 || length_bytes == 32;
 }
 
 const size_t kAesBlockSizeBytes = 16;
@@ -217,8 +219,11 @@ Status ImportKeyRaw(const CryptoData& key_data,
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesGcm:
     case blink::WebCryptoAlgorithmIdAesKw:
-      if (!IsValidAesKeyLengthBytes(key_data.byte_length()))
-        return Status::ErrorImportAesKeyLength();
+      if (!IsValidAesKeyLengthBytes(key_data.byte_length())) {
+        return key_data.byte_length() == 24
+                   ? Status::ErrorAes192BitUnsupported()
+                   : Status::ErrorImportAesKeyLength();
+      }
     // Fallthrough intentional!
     case blink::WebCryptoAlgorithmIdHmac:
       return platform::ImportKeyRaw(
@@ -628,8 +633,11 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesGcm:
     case blink::WebCryptoAlgorithmIdAesKw: {
-      if (!IsValidAesKeyLengthBits(algorithm.aesKeyGenParams()->lengthBits()))
-        return Status::ErrorGenerateKeyLength();
+      if (!IsValidAesKeyLengthBits(algorithm.aesKeyGenParams()->lengthBits())) {
+        return algorithm.aesKeyGenParams()->lengthBits() == 192
+                   ? Status::ErrorAes192BitUnsupported()
+                   : Status::ErrorGenerateKeyLength();
+      }
       keylen_bytes = algorithm.aesKeyGenParams()->lengthBits() / 8;
       break;
     }

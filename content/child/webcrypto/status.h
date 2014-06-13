@@ -124,6 +124,9 @@ class CONTENT_EXPORT Status {
   // AES.
   static Status ErrorImportAesKeyLength();
 
+  // 192-bit AES keys are valid, however unsupported.
+  static Status ErrorAes192BitUnsupported();
+
   // The wrong key was used for the operation. For instance, a public key was
   // used to verify a RsaSsaPkcs1v1_5 signature, or tried exporting a private
   // key using spki format.
