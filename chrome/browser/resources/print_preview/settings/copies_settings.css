@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #copies-settings input.copies {
-  height: 28px;
+  height: 29px;
   position: relative;
   width: 2.75em;
 }
@@ -33,7 +33,7 @@
   -webkit-padding-end: 0;
   -webkit-padding-start: 0;
   font-weight: 600;
-  height: 28px;
+  height: 29px;
   margin: 0;
   min-width: 0;
   position: relative;
