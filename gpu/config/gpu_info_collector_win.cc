@@ -363,13 +363,14 @@ void CollectD3D11Support() {
 }  // namespace anonymous
 
 #if !defined(GOOGLE_CHROME_BUILD)
-AMDVideoCardType GetAMDVideocardType() {
-  return STANDALONE;
+void GetAMDVideocardInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+  return;
 }
 #else
 // This function has a real implementation for official builds that can
 // be found in src/third_party/amd.
-AMDVideoCardType GetAMDVideocardType();
+void GetAMDVideocardInfo(GPUInfo* gpu_info);
 #endif
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
@@ -433,9 +434,14 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
             // signal the videocard is assumed to be switchable. Additionally,
             // some switchable systems with Intel GPUs aren't correctly
             // detected, so always count them.
-            AMDVideoCardType amd_card_type = GetAMDVideocardType();
-            gpu_info->amd_switchable = (gpu_info->gpu.vendor_id == 0x8086) ||
-                                       (amd_card_type != STANDALONE);
+            GetAMDVideocardInfo(gpu_info);
+            if (!gpu_info->amd_switchable &&
+                gpu_info->gpu.vendor_id == 0x8086) {
+              gpu_info->amd_switchable = true;
+              gpu_info->secondary_gpus.push_back(gpu_info->gpu);
+              gpu_info->gpu.vendor_id = 0x1002;
+              gpu_info->gpu.device_id = 0;  // Unknown discrete AMD GPU.
+            }
           }
         }
 
