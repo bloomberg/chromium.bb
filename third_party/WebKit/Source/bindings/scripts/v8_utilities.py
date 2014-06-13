@@ -33,8 +33,6 @@ Extends IdlType and IdlUnion type with |enum_validation_expression| property.
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
-# FIXME: eliminate this file if possible
-
 import re
 
 from idl_types import IdlType, IdlUnionType
@@ -42,7 +40,18 @@ import idl_types
 from v8_globals import includes
 import v8_types
 
-ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
+ACRONYMS = [
+    'CSSOM',  # must come *before* CSS to match full acronym
+    'CSS',
+    'HTML',
+    'IME',
+    'JS',
+    'SVG',
+    'URL',
+    'WOFF',
+    'XML',
+    'XSLT',
+]
 
 
 ################################################################################

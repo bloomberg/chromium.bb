@@ -1386,12 +1386,8 @@ static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, Scr
     return false;
 }
 
-void DOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
+void DOMWindow::scrollBy(int x, int y) const
 {
-    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && !scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
-        return;
-
     if (!isCurrentlyDisplayedInFrame())
         return;
 
@@ -1406,12 +1402,16 @@ void DOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, Exceptio
     view->scrollBy(scaledOffset);
 }
 
-void DOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
+void DOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
 {
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && !scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
+    if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
         return;
+    scrollBy(x, y);
+}
 
+void DOMWindow::scrollTo(int x, int y) const
+{
     if (!isCurrentlyDisplayedInFrame())
         return;
 
@@ -1424,6 +1424,14 @@ void DOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, Exceptio
     IntPoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
     view->setScrollPosition(layoutPos);
+}
+
+void DOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
+{
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
+        return;
+    scrollTo(x, y);
 }
 
 void DOMWindow::moveBy(float x, float y) const

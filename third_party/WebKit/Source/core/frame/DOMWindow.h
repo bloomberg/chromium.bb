@@ -233,8 +233,11 @@ enum PageshowEventPersistence {
         void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
         void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
+        void scrollBy(int x, int y) const;
         void scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
+        void scrollTo(int x, int y) const;
         void scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
+        void scroll(int x, int y) const { scrollTo(x, y); }
         void scroll(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
 
         void moveBy(float x, float y) const;
