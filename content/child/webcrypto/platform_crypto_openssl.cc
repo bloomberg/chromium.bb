@@ -494,26 +494,10 @@ Status ExportRsaPrivateKey(PrivateKey* key,
   return Status::ErrorUnsupported();
 }
 
-Status WrapSymKeyAesKw(SymKey* key,
-                       SymKey* wrapping_key,
-                       std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
-                         SymKey* wrapping_key,
-                         const blink::WebCryptoAlgorithm& algorithm,
-                         bool extractable,
-                         blink::WebCryptoKeyUsageMask usage_mask,
-                         blink::WebCryptoKey* key) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-Status DecryptAesKw(SymKey* key,
-                    const CryptoData& data,
-                    std::vector<uint8>* buffer) {
+Status EncryptDecryptAesKw(EncryptOrDecrypt mode,
+                           SymKey* key,
+                           const CryptoData& data,
+                           std::vector<uint8>* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }

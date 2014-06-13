@@ -308,82 +308,26 @@ bool ValidateDeserializedKey(const blink::WebCryptoKey& key,
   return true;
 }
 
-// Validates the size of data input to AES-KW. AES-KW requires the input data
-// size to be at least 24 bytes and a multiple of 8 bytes.
-Status CheckAesKwInputSize(const CryptoData& aeskw_input_data) {
-  if (aeskw_input_data.byte_length() < 24)
-    return Status::ErrorDataTooSmall();
-  if (aeskw_input_data.byte_length() % 8)
-    return Status::ErrorInvalidAesKwDataLength();
-  return Status::Success();
-}
-
-Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
-                    const blink::WebCryptoKey& wrapping_key,
-                    const blink::WebCryptoAlgorithm& wrapping_algorithm,
-                    const blink::WebCryptoAlgorithm& algorithm,
-                    bool extractable,
-                    blink::WebCryptoKeyUsageMask usage_mask,
-                    blink::WebCryptoKey* key) {
-  // TODO(padolph): Handle other wrapping algorithms
-  switch (wrapping_algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesKw: {
-      platform::SymKey* platform_wrapping_key;
-      Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
-      if (status.IsError())
-        return status;
-      status = CheckAesKwInputSize(wrapped_key_data);
-      if (status.IsError())
-        return status;
-      return platform::UnwrapSymKeyAesKw(wrapped_key_data,
-                                         platform_wrapping_key,
-                                         algorithm,
-                                         extractable,
-                                         usage_mask,
-                                         key);
-    }
-    default:
-      return Status::ErrorUnsupported();
-  }
-}
-
-Status WrapKeyRaw(const blink::WebCryptoKey& key_to_wrap,
-                  const blink::WebCryptoKey& wrapping_key,
-                  const blink::WebCryptoAlgorithm& wrapping_algorithm,
-                  std::vector<uint8>* buffer) {
-  // A raw key is always a symmetric key.
-  platform::SymKey* platform_key;
-  Status status = ToPlatformSymKey(key_to_wrap, &platform_key);
-  if (status.IsError())
-    return status;
-
-  // TODO(padolph): Handle other wrapping algorithms
-  switch (wrapping_algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesKw: {
-      platform::SymKey* platform_wrapping_key;
-      status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
-      if (status.IsError())
-        return status;
-      return platform::WrapSymKeyAesKw(
-          platform_key, platform_wrapping_key, buffer);
-    }
-    default:
-      return Status::ErrorUnsupported();
-  }
-}
-
-Status DecryptAesKw(const blink::WebCryptoAlgorithm& algorithm,
-                    const blink::WebCryptoKey& key,
-                    const CryptoData& data,
-                    std::vector<uint8>* buffer) {
+Status EncryptDecryptAesKw(EncryptOrDecrypt mode,
+                           const blink::WebCryptoAlgorithm& algorithm,
+                           const blink::WebCryptoKey& key,
+                           const CryptoData& data,
+                           std::vector<uint8>* buffer) {
   platform::SymKey* sym_key;
   Status status = ToPlatformSymKey(key, &sym_key);
   if (status.IsError())
     return status;
-  status = CheckAesKwInputSize(data);
+
+  unsigned int min_length = mode == ENCRYPT ? 16 : 24;
+
+  if (data.byte_length() < min_length)
+    return Status::ErrorDataTooSmall();
+  if (data.byte_length() % 8)
+    return Status::ErrorInvalidAesKwDataLength();
+
   if (status.IsError())
     return status;
-  return platform::DecryptAesKw(sym_key, data, buffer);
+  return platform::EncryptDecryptAesKw(mode, sym_key, data, buffer);
 }
 
 Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
@@ -400,7 +344,7 @@ Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
     case blink::WebCryptoAlgorithmIdRsaOaep:
       return DecryptRsaOaep(algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdAesKw:
-      return DecryptAesKw(algorithm, key, data, buffer);
+      return EncryptDecryptAesKw(DECRYPT, algorithm, key, data, buffer);
     default:
       return Status::ErrorUnsupported();
   }
@@ -417,6 +361,8 @@ Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
       return EncryptDecryptAesCbc(ENCRYPT, algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdAesGcm:
       return EncryptDecryptAesGcm(ENCRYPT, algorithm, key, data, buffer);
+    case blink::WebCryptoAlgorithmIdAesKw:
+      return EncryptDecryptAesKw(ENCRYPT, algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdRsaOaep:
       return EncryptRsaOaep(algorithm, key, data, buffer);
     default:
@@ -892,13 +838,6 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
 
-  if (format == blink::WebCryptoKeyFormatRaw &&
-      wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
-    // AES-KW is a special case, due to NSS's implementation only
-    // supporting C_Wrap/C_Unwrap with AES-KW
-    return WrapKeyRaw(key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
-  }
-
   return WrapKeyExportAndEncrypt(
       format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
 }
@@ -923,19 +862,6 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
       BestEffortCheckKeyUsagesForImport(algorithm.id(), format, usage_mask);
   if (status.IsError())
     return status;
-
-  if (format == blink::WebCryptoKeyFormatRaw &&
-      wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
-    // AES-KW is a special case, due to NSS's implementation only
-    // supporting C_Wrap/C_Unwrap with AES-KW
-    return UnwrapKeyRaw(wrapped_key_data,
-                        wrapping_key,
-                        wrapping_algorithm,
-                        algorithm,
-                        extractable,
-                        usage_mask,
-                        key);
-  }
 
   return UnwrapKeyDecryptAndImport(format,
                                    wrapped_key_data,

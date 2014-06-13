@@ -272,40 +272,16 @@ Status ExportKeyPkcs8(PrivateKey* key,
                       const blink::WebCryptoKeyAlgorithm& key_algorithm,
                       std::vector<uint8>* buffer);
 
+// Performs AES-KW encryption/decryption on the input |data|.
 // Preconditions:
 //  * |key| is non-null
-//  * |wrapping_key| is non-null
-Status WrapSymKeyAesKw(SymKey* key,
-                       SymKey* wrapping_key,
-                       std::vector<uint8>* buffer);
-
-// Unwraps (decrypts) |wrapped_key_data| using AES-KW and places the results in
-// a WebCryptoKey. Raw key data remains inside NSS. This function should be used
-// when the input |wrapped_key_data| is known to result in symmetric raw key
-// data after AES-KW decryption.
-// Preconditions:
-//  * |wrapping_key| is non-null
-//  * |key| is non-null
-//  * |wrapped_key_data| is at least 24 bytes and a multiple of 8 bytes
-//  * |algorithm.id()| is for a symmetric key algorithm.
-//  * usage_mask makes sense for the algorithm.
-Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
-                         SymKey* wrapping_key,
-                         const blink::WebCryptoAlgorithm& algorithm,
-                         bool extractable,
-                         blink::WebCryptoKeyUsageMask usage_mask,
-                         blink::WebCryptoKey* key);
-
-// Performs AES-KW decryption on the input |data|. This function should be used
-// when the input |data| does not directly represent a key and should instead be
-// interpreted as generic bytes.
-// Preconditions:
-//  * |key| is non-null
-//  * |data| is at least 24 bytes and a multiple of 8 bytes
+//  * |data| is multiple of 8 bytes. If encrypting it is at least 16 bytes, and
+//    if decrypting at least 24 bytes.
 //  * |buffer| is non-null.
-Status DecryptAesKw(SymKey* key,
-                    const CryptoData& data,
-                    std::vector<uint8>* buffer);
+Status EncryptDecryptAesKw(EncryptOrDecrypt mode,
+                           SymKey* key,
+                           const CryptoData& data,
+                           std::vector<uint8>* buffer);
 
 }  // namespace platform
 
