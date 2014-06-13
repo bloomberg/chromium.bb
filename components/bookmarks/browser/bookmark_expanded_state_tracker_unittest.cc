@@ -18,6 +18,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace bookmarks {
+
 scoped_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
@@ -110,3 +112,5 @@ TEST_F(BookmarkExpandedStateTrackerTest, RemoveAllUserBookmarks) {
   // Verify node is not present.
   EXPECT_TRUE(tracker->GetExpandedNodes().empty());
 }
+
+}  // namespace bookmarks

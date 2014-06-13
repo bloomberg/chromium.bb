@@ -97,10 +97,11 @@ class BookmarkModel;
 - (const BookmarkNode*)selectedNode;
 
 // Expands the set of BookmarkNodes in |nodes|.
-- (void)expandNodes:(const BookmarkExpandedStateTracker::Nodes&)nodes;
+- (void)expandNodes:(
+    const bookmarks::BookmarkExpandedStateTracker::Nodes&)nodes;
 
 // Returns the set of expanded BookmarkNodes.
-- (BookmarkExpandedStateTracker::Nodes)getExpandedNodes;
+- (bookmarks::BookmarkExpandedStateTracker::Nodes)getExpandedNodes;
 
 // Select/highlight the given node within the browser tree view.  If the
 // node is nil then select the bookmark bar node.  Exposed for unit test.

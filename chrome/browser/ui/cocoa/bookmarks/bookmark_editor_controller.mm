@@ -15,6 +15,8 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using bookmarks::BookmarkExpandedStateTracker;
+
 @interface BookmarkEditorController (Private)
 
 // Grab the url from the text field and convert.

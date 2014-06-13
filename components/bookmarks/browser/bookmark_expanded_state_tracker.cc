@@ -11,6 +11,8 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 
+namespace bookmarks {
+
 BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
     BookmarkModel* bookmark_model,
     PrefService* pref_service)
@@ -108,3 +110,5 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
 
   pref_service_->Set(prefs::kBookmarkEditorExpandedNodes, values);
 }
+
+}  // namespace bookmarks

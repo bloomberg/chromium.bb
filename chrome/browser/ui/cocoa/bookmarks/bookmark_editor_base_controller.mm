@@ -24,6 +24,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using bookmarks::BookmarkExpandedStateTracker;
+
 @interface BookmarkEditorBaseController ()
 
 // Return the folder tree object for the given path.

@@ -22,7 +22,6 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class BookmarkExpandedStateTracker;
 class BookmarkModelObserver;
 class PrefService;
 
@@ -32,6 +31,7 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
+class BookmarkExpandedStateTracker;
 class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkStorage;
@@ -257,7 +257,7 @@ class BookmarkModel {
 
   // Returns the object responsible for tracking the set of expanded nodes in
   // the bookmark editor.
-  BookmarkExpandedStateTracker* expanded_state_tracker() {
+  bookmarks::BookmarkExpandedStateTracker* expanded_state_tracker() {
     return expanded_state_tracker_.get();
   }
 
@@ -427,7 +427,7 @@ class BookmarkModel {
   // See description of IsDoingExtensiveChanges above.
   int extensive_changes_;
 
-  scoped_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
+  scoped_ptr<bookmarks::BookmarkExpandedStateTracker> expanded_state_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };

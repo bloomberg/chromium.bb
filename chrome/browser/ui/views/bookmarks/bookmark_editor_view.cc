@@ -39,6 +39,7 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
+using bookmarks::BookmarkExpandedStateTracker;
 using views::GridLayout;
 
 namespace {
