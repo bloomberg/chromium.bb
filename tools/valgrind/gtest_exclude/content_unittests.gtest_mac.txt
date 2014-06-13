@@ -51,6 +51,4 @@ GamepadProviderTest.PollingAccess
 GamepadProviderTest.UserGesture
 
 # Flaky. http://crbug.com/365715
-AppCacheRequestHandlerTest.MainResource_Hit
-AppCacheRequestHandlerTest.MainResource_Miss
-AppCacheRequestHandlerTest.WorkerRequest
+AppCacheRequestHandlerTest.*
