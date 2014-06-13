@@ -1,0 +1,14 @@
+
+This tests whether scrolling still works correctly when an overlay scrollbar is over a plugin. The plugin should still receive mouse down/up events when clicking an overlay scrollbar. Scrolling should still work correctly too. However mouse capture should not be started on the plugin as this would interfere with events going to the scrollbar.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+FAIL eventHistory.length should be 2. Was 0.
+FAIL eventHistory[0] should be plugin.mousedown (of type string). Was undefined (of type undefined).
+FAIL eventHistory[1] should be plugin.mouseup (of type string). Was undefined (of type undefined).
+PASS window.scrollY is not 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
