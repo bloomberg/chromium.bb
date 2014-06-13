@@ -303,6 +303,12 @@ void test_catching_various_exception_types(void) {
   int rc = NACL_SYSCALL(exception_handler)(simple_exception_handler, NULL);
   assert(rc == 0);
 
+  printf("Testing __builtin_trap()...\n");
+  if (!setjmp(g_jmp_buf)) {
+    __builtin_trap();
+    exit(1);
+  }
+
 #if defined(__i386__) || defined(__x86_64__)
   printf("Testing hlt...\n");
   if (!setjmp(g_jmp_buf)) {
