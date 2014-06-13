@@ -76,9 +76,8 @@ void FileHandlers::Init(base::RefCountedMemory* data) {
   // Reopen in read only mode.
   pdf_file_.Initialize(GetPdfPath(),
                        base::File::FLAG_OPEN | base::File::FLAG_READ);
-  pwg_file_.Initialize(
-      GetPwgPath(),
-      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_APPEND);
+  pwg_file_.Initialize(GetPwgPath(),
+                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 }
 
 bool FileHandlers::IsValid() {
