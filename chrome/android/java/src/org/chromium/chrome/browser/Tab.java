@@ -1064,7 +1064,6 @@ public class Tab implements NavigationClient {
         mContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
-        for (TabObserver observer : mObservers) observer.onContentChanged(this);
         destroyNativePageInternal(previousNativePage);
         for (TabObserver observer : mObservers) {
             observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
