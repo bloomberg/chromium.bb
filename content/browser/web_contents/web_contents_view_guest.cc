@@ -169,7 +169,7 @@ RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return platform_view_->CreateViewForWidget(render_widget_host);
+  return platform_view_->CreateViewForPopupWidget(render_widget_host);
 }
 
 void WebContentsViewGuest::SetPageTitle(const base::string16& title) {

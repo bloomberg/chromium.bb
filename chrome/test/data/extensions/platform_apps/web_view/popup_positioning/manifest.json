@@ -9,5 +9,13 @@
     "background": {
       "scripts": ["test.js"]
     }
+  },
+  "webview": {
+    "partitions": [
+      {
+        "name": "popup-partition",
+        "accessible_resources": [ "guest.html" ]
+      }
+    ]
   }
 }

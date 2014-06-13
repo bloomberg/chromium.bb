@@ -6,52 +6,40 @@
 -->
 <html>
 <head>
-  <title>WAITING</title>
   <style type="text/css">
     body { margin: 0; padding: 0; }
   </style>
 </head>
 <body>
   <div>
-    <input type="text" list="items" style="height: 20px;"/>
-    <datalist id="items">
-      <option value="Chromium"></option>
-      <option value="ChromiumB"></option>
-      <option value="ChromiumC"></option>
-      <option value="Molybdenum"></option>
-      <option value="Seaborgium"></option>
-      <option value="Tungsten"></option>
-    </datalist>
+    <input type="datetime-local" id="date-widget"/>
   </div>
 
   <script>
-    // TODO(lazyboy): Apps do not support <input> + datalist with id attribute.
+    var LOG = function(var_args) {
+      window.console.log.apply(window.console, arguments);
+    };
     var inputElement = document.querySelector('input');
-    var step = 1;
-
-    var onInput = function(e) {
-      var value = inputElement.value;
-      window.console.log('onInput, value: ' + value);
-      if (step == 1) {
-        document.title = 'PASSED1';
-      } else if (step == 2) {
-        if (value == 'Chromium') {
-          inputElement.value = '';
-          document.title = 'PASSED3';
-          step = 0;
-        } else {
-          document.title = 'FAILED';
-        }
+    window.addEventListener('message', function(e) {
+      LOG('message');
+      var data = JSON.parse(e.data);
+      LOG('data: ' + data);
+      if (data[0] != 'request-connect') {
+        return;
       }
-      ++step;
-    };
+      var input = document.getElementById('date-widget');
+      // Keep the input focused cause we'll be sending alt+down to open its
+      // popup.
+      input.focus();
 
-    inputElement.oninput = onInput;
-    inputElement.focus();
+      var msgArray = ['response-connect'];
+      e.source.postMessage(JSON.stringify(msgArray), '*');
+    });
 
-    window['changeTitle'] = function() {
-      window.setTimeout(function() { document.title = 'PASSED2'; }, 0);
-    };
+    document.body.addEventListener('click', function(e) {
+      LOG('document.click');
+      LOG('e.x/y: ', e.x + ', ' + e.y);
+    });
   </script>
 </body>
 </html>
