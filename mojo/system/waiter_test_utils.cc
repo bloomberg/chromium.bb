@@ -8,11 +8,13 @@ namespace mojo {
 namespace system {
 namespace test {
 
-SimpleWaiterThread::SimpleWaiterThread(MojoResult* result)
+SimpleWaiterThread::SimpleWaiterThread(MojoResult* result, uint32_t* context)
     : base::SimpleThread("waiter_thread"),
-      result_(result) {
+      result_(result),
+      context_(context) {
   waiter_.Init();
   *result_ = -5420734;  // Totally invalid result.
+  *context_ = 23489023;  // "Random".
 }
 
 SimpleWaiterThread::~SimpleWaiterThread() {
@@ -20,7 +22,7 @@ SimpleWaiterThread::~SimpleWaiterThread() {
 }
 
 void SimpleWaiterThread::Run() {
-  *result_ = waiter_.Wait(MOJO_DEADLINE_INDEFINITE);
+  *result_ = waiter_.Wait(MOJO_DEADLINE_INDEFINITE, context_);
 }
 
 WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
@@ -28,16 +30,19 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                            MojoDeadline deadline,
                            uint32_t context,
                            bool* did_wait_out,
-                           MojoResult* result_out)
+                           MojoResult* result_out,
+                           uint32_t* context_out)
     : base::SimpleThread("waiter_thread"),
       dispatcher_(dispatcher),
       wait_flags_(wait_flags),
       deadline_(deadline),
       context_(context),
       did_wait_out_(did_wait_out),
-      result_out_(result_out) {
+      result_out_(result_out),
+      context_out_(context_out) {
   *did_wait_out_ = false;
   *result_out_ = -8542346;  // Totally invalid result.
+  *context_out_ = 89023444;  // "Random".
 }
 
 WaiterThread::~WaiterThread() {
@@ -52,7 +57,7 @@ void WaiterThread::Run() {
     return;
 
   *did_wait_out_ = true;
-  *result_out_ = waiter_.Wait(deadline_);
+  *result_out_ = waiter_.Wait(deadline_, context_out_);
   dispatcher_->RemoveWaiter(&waiter_);
 }
 

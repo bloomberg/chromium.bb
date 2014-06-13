@@ -18,8 +18,8 @@ Waiter::Waiter()
       initialized_(false),
 #endif
       awoken_(false),
-      awake_context_(static_cast<uint32_t>(-1)),
-      awake_result_(MOJO_RESULT_INTERNAL) {
+      awake_result_(MOJO_RESULT_INTERNAL),
+      awake_context_(static_cast<uint32_t>(-1)) {
 }
 
 Waiter::~Waiter() {
@@ -36,7 +36,7 @@ void Waiter::Init() {
 }
 
 // TODO(vtl): Fast-path the |deadline == 0| case?
-MojoResult Waiter::Wait(MojoDeadline deadline) {
+MojoResult Waiter::Wait(MojoDeadline deadline, uint32_t* context) {
   base::AutoLock locker(lock_);
 
 #ifndef NDEBUG
@@ -48,10 +48,9 @@ MojoResult Waiter::Wait(MojoDeadline deadline) {
   // Fast-path the already-awoken case:
   if (awoken_) {
     DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
-    // TODO(vtl): This is a temporary hack until I add a |context| out parameter
-    // and update all the call sites.
-    return (awake_result_ == MOJO_RESULT_OK) ?
-      static_cast<MojoResult>(awake_context_) : awake_result_;
+    if (context)
+      *context = awake_context_;
+    return awake_result_;
   }
 
   // |MojoDeadline| is actually a |uint64_t|, but we need a signed quantity.
@@ -69,30 +68,28 @@ MojoResult Waiter::Wait(MojoDeadline deadline) {
         base::TimeDelta::FromMicroseconds(static_cast<int64_t>(deadline));
     do {
       base::TimeTicks now_time = base::TimeTicks::HighResNow();
-      if (now_time >= end_time) {
+      if (now_time >= end_time)
         return MOJO_RESULT_DEADLINE_EXCEEDED;
-      }
 
       cv_.TimedWait(end_time - now_time);
     } while (!awoken_);
   }
 
   DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
-  // TODO(vtl): This is a temporary hack until I add a |context| out parameter
-  // and update all the call sites.
-  return (awake_result_ == MOJO_RESULT_OK) ?
-      static_cast<MojoResult>(awake_context_) : awake_result_;
+  if (context)
+    *context = awake_context_;
+  return awake_result_;
 }
 
-void Waiter::Awake(uint32_t context, MojoResult result) {
+void Waiter::Awake(MojoResult result, uint32_t context) {
   base::AutoLock locker(lock_);
 
   if (awoken_)
     return;
 
   awoken_ = true;
-  awake_context_ = context;
   awake_result_ = result;
+  awake_context_ = context;
   cv_.Signal();
   // |cv_.Wait()|/|cv_.TimedWait()| will return after |lock_| is released.
 }

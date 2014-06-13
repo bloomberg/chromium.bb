@@ -177,6 +177,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   char buffer[100] = { 0 };
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  uint32_t context = 0;
 
   // Connect message pipes. MP 0, port 1 will be attached to channel 0 and
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
@@ -206,7 +207,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Read from MP 1, port 1.
@@ -230,7 +232,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
                               NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(456, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(456u, context);
   mp0->RemoveWaiter(0, &waiter);
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -252,7 +255,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   MojoResult result = mp1->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 789);
   if (result == MOJO_RESULT_OK) {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+              waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+    EXPECT_EQ(789u, context);
     mp1->RemoveWaiter(1, &waiter);
   } else {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
@@ -268,6 +272,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   char buffer[100] = { 0 };
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  uint32_t context = 0;
 
   // Connect message pipes as in the |Basic| test.
 
@@ -301,7 +306,8 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
                               NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(789, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(789u, context);
   mp3->RemoveWaiter(1, &waiter);
 
   // Make sure there's nothing on MP 0, port 0 or MP 1, port 1 or MP 2, port 0.
@@ -346,7 +352,8 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
                               NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Make sure there's nothing on the other ports.
@@ -389,6 +396,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   char buffer[100] = { 0 };
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  uint32_t context = 0;
 
   // Connect message pipes. MP 0, port 1 will be attached to channel 0 and
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
@@ -424,7 +432,8 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   BootstrapMessagePipeNoWait(1, mp1);
 
   // Wait.
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Read from MP 1, port 1.
@@ -443,6 +452,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 TEST_F(RemoteMessagePipeTest, HandlePassing) {
   static const char kHello[] = "hello";
   Waiter waiter;
+  uint32_t context = 0;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -484,7 +494,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   }
 
   // Wait.
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Read from MP 1, port 1.
@@ -518,7 +529,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->AddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 456));
-  EXPECT_EQ(456, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(456u, context);
   dispatcher->RemoveWaiter(&waiter);
 
   // Read from the dispatcher.
@@ -541,7 +553,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
                                      MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
-  EXPECT_EQ(789, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(789u, context);
   local_mp->RemoveWaiter(1, &waiter);
 
   // Read from "local_mp", port 1.
@@ -573,6 +586,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   static const char kHello[] = "hello";
   Waiter waiter;
+  uint32_t context = 0;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -628,7 +642,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   }
 
   // Wait.
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Read from MP 1, port 1.
@@ -693,6 +708,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   static const char kHello[] = "hello";
   static const char kWorld[] = "world";
   Waiter waiter;
+  uint32_t context = 0;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -737,7 +753,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   }
 
   // Wait.
-  EXPECT_EQ(123, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
   mp1->RemoveWaiter(1, &waiter);
 
   // Read from MP 1, port 1.

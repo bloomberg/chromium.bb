@@ -135,7 +135,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
                                                         add_result;
   }
 
-  MojoResult wait_result = waiter.Wait(MOJO_DEADLINE_INDEFINITE);
+  MojoResult wait_result = waiter.Wait(MOJO_DEADLINE_INDEFINITE, NULL);
   mp->RemoveWaiter(0, &waiter);
   return wait_result;
 }

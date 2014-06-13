@@ -47,7 +47,7 @@ class SimpleWaiterThread : public base::SimpleThread {
  public:
   // For the duration of the lifetime of this object, |*result| belongs to it
   // (in the sense that it will write to it whenever it wants).
-  explicit SimpleWaiterThread(MojoResult* result);
+  SimpleWaiterThread(MojoResult* result, uint32_t* context);
   virtual ~SimpleWaiterThread();  // Joins the thread.
 
   Waiter* waiter() { return &waiter_; }
@@ -56,6 +56,7 @@ class SimpleWaiterThread : public base::SimpleThread {
   virtual void Run() OVERRIDE;
 
   MojoResult* const result_;
+  uint32_t* const context_;
   Waiter waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleWaiterThread);
@@ -66,13 +67,15 @@ class SimpleWaiterThread : public base::SimpleThread {
 // |SimpleWaiterThread|, it requires the machinery of |Dispatcher|.
 class WaiterThread : public base::SimpleThread {
  public:
-  // Note: |*did_wait_out| and |*result| belong to this object while it's alive.
+  // Note: |*did_wait_out|, |*result_out|, and |*context_out| "belong" to this
+  // object (i.e., may be modified by, on some other thread) while it's alive.
   WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                MojoWaitFlags wait_flags,
                MojoDeadline deadline,
                uint32_t context,
                bool* did_wait_out,
-               MojoResult* result_out);
+               MojoResult* result_out,
+               uint32_t* context_out);
   virtual ~WaiterThread();
 
  private:
@@ -84,6 +87,7 @@ class WaiterThread : public base::SimpleThread {
   const uint32_t context_;
   bool* const did_wait_out_;
   MojoResult* const result_out_;
+  uint32_t* const context_out_;
 
   Waiter waiter_;
 

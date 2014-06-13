@@ -23,61 +23,67 @@ namespace {
 
 TEST(WaiterListTest, BasicCancel) {
   MojoResult result;
+  uint32_t context;
 
   // Cancel immediately after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 1);
     thread.Start();
     waiter_list.CancelAllWaiters();
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
+  EXPECT_EQ(1u, context);
 
   // Cancel before after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 1);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 2);
     waiter_list.CancelAllWaiters();
     thread.Start();
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
+  EXPECT_EQ(2u, context);
 
   // Cancel some time after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 3);
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.CancelAllWaiters();
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
+  EXPECT_EQ(3u, context);
 }
 
 TEST(WaiterListTest, BasicAwakeSatisfied) {
   MojoResult result;
+  uint32_t context;
 
   // Awake immediately after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 1);
     thread.Start();
     waiter_list.AwakeWaitersForStateChange(
         WaitFlagsState(MOJO_WAIT_FLAG_READABLE,
                        MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
-  EXPECT_EQ(0, result);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(1u, context);
 
   // Awake before after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 1);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 2);
     waiter_list.AwakeWaitersForStateChange(
         WaitFlagsState(MOJO_WAIT_FLAG_WRITABLE,
                        MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE));
@@ -85,13 +91,14 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
     thread.Start();
   }  // Join |thread|.
-  EXPECT_EQ(1, result);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(2u, context);
 
   // Awake some time after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 3);
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
@@ -99,41 +106,45 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
                        MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
-  EXPECT_EQ(2, result);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(3u, context);
 }
 
 TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
   MojoResult result;
+  uint32_t context;
 
   // Awake (for unsatisfiability) immediately after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 1);
     thread.Start();
     waiter_list.AwakeWaitersForStateChange(
         WaitFlagsState(MOJO_WAIT_FLAG_NONE, MOJO_WAIT_FLAG_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+  EXPECT_EQ(1u, context);
 
   // Awake (for unsatisfiability) before after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 1);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_WRITABLE, 2);
     waiter_list.AwakeWaitersForStateChange(
         WaitFlagsState(MOJO_WAIT_FLAG_READABLE, MOJO_WAIT_FLAG_READABLE));
     waiter_list.RemoveWaiter(thread.waiter());
     thread.Start();
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+  EXPECT_EQ(2u, context);
 
   // Awake (for unsatisfiability) some time after thread start.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread(&result);
-    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
+    test::SimpleWaiterThread thread(&result, &context);
+    waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 3);
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
@@ -142,6 +153,7 @@ TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+  EXPECT_EQ(3u, context);
 }
 
 TEST(WaiterListTest, MultipleWaiters) {
@@ -149,30 +161,36 @@ TEST(WaiterListTest, MultipleWaiters) {
   MojoResult result2;
   MojoResult result3;
   MojoResult result4;
+  uint32_t context1;
+  uint32_t context2;
+  uint32_t context3;
+  uint32_t context4;
 
   // Cancel two waiters.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread1(&result1);
-    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 0);
+    test::SimpleWaiterThread thread1(&result1, &context1);
+    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 1);
     thread1.Start();
-    test::SimpleWaiterThread thread2(&result2);
-    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 1);
+    test::SimpleWaiterThread thread2(&result2, &context2);
+    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 2);
     thread2.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.CancelAllWaiters();
   }  // Join threads.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result1);
+  EXPECT_EQ(1u, context1);
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result2);
+  EXPECT_EQ(2u, context2);
 
   // Awake one waiter, cancel other.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread1(&result1);
-    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
+    test::SimpleWaiterThread thread1(&result1, &context1);
+    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 3);
     thread1.Start();
-    test::SimpleWaiterThread thread2(&result2);
-    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 3);
+    test::SimpleWaiterThread thread2(&result2, &context2);
+    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 4);
     thread2.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
@@ -181,17 +199,19 @@ TEST(WaiterListTest, MultipleWaiters) {
     waiter_list.RemoveWaiter(thread1.waiter());
     waiter_list.CancelAllWaiters();
   }  // Join threads.
-  EXPECT_EQ(2, result1);
+  EXPECT_EQ(MOJO_RESULT_OK, result1);
+  EXPECT_EQ(3u, context1);
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result2);
+  EXPECT_EQ(4u, context2);
 
   // Cancel one waiter, awake other for unsatisfiability.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread1(&result1);
-    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 4);
+    test::SimpleWaiterThread thread1(&result1, &context1);
+    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 5);
     thread1.Start();
-    test::SimpleWaiterThread thread2(&result2);
-    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 5);
+    test::SimpleWaiterThread thread2(&result2, &context2);
+    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 6);
     thread2.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
@@ -200,13 +220,15 @@ TEST(WaiterListTest, MultipleWaiters) {
     waiter_list.CancelAllWaiters();
   }  // Join threads.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result1);
+  EXPECT_EQ(5u, context1);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result2);
+  EXPECT_EQ(6u, context2);
 
   // Cancel one waiter, awake other for unsatisfiability.
   {
     WaiterList waiter_list;
-    test::SimpleWaiterThread thread1(&result1);
-    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 6);
+    test::SimpleWaiterThread thread1(&result1, &context1);
+    waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 7);
     thread1.Start();
 
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
@@ -216,8 +238,8 @@ TEST(WaiterListTest, MultipleWaiters) {
         WaitFlagsState(MOJO_WAIT_FLAG_NONE,
                        MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE));
 
-    test::SimpleWaiterThread thread2(&result2);
-    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 7);
+    test::SimpleWaiterThread thread2(&result2, &context2);
+    waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 8);
     thread2.Start();
 
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
@@ -230,12 +252,12 @@ TEST(WaiterListTest, MultipleWaiters) {
 
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
 
-    test::SimpleWaiterThread thread3(&result3);
-    waiter_list.AddWaiter(thread3.waiter(), MOJO_WAIT_FLAG_WRITABLE, 8);
+    test::SimpleWaiterThread thread3(&result3, &context3);
+    waiter_list.AddWaiter(thread3.waiter(), MOJO_WAIT_FLAG_WRITABLE, 9);
     thread3.Start();
 
-    test::SimpleWaiterThread thread4(&result4);
-    waiter_list.AddWaiter(thread4.waiter(), MOJO_WAIT_FLAG_READABLE, 9);
+    test::SimpleWaiterThread thread4(&result4, &context4);
+    waiter_list.AddWaiter(thread4.waiter(), MOJO_WAIT_FLAG_READABLE, 10);
     thread4.Start();
 
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
@@ -249,10 +271,14 @@ TEST(WaiterListTest, MultipleWaiters) {
     // Cancel #4.
     waiter_list.CancelAllWaiters();
   }  // Join threads.
-  EXPECT_EQ(6, result1);
+  EXPECT_EQ(MOJO_RESULT_OK, result1);
+  EXPECT_EQ(7u, context1);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result2);
+  EXPECT_EQ(8u, context2);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result3);
+  EXPECT_EQ(9u, context3);
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result4);
+  EXPECT_EQ(10u, context4);
 }
 
 }  // namespace

@@ -29,23 +29,35 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter {
   // each time it's used.
   void Init();
 
-  // TODO(vtl): FIXME -- Replace this with a version that has a |context| out
-  // parameter (which also doesn't turn the context into a result on success).
-  // Waits until a suitable |Awake()| is called.
+  // Waits until a suitable |Awake()| is called. (|context| may be null, in
+  // which case, obviously no context is ever returned.)
   // Returns:
-  //  - The |context| passed to |Dispatcher::AddWaiter()| if it was woken up
-  //    by that dispatcher for the reason specified by |flags| (in the call to
-  //    |AddWaiter()|).
-  //  - |MOJO_RESULT_CANCELLED| if a handle (on which |MojoWait()| was called)
-  //    was closed; and
-  //  - |MOJO_RESULT_FAILED_PRECONDITION| if the reasons for being awoken given
-  //    by |flags| cannot (or can no longer) be satisfied (e.g., if the other
-  //    end of a pipe is closed).
-  MojoResult Wait(MojoDeadline deadline);
+  //   - The result given to the first call to |Awake()| (possibly before this
+  //     call to |Wait()|); in this case, |*context| is set to the value passed
+  //     to that call to |Awake()|.
+  //   - |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline was exceeded; in this
+  //     case |*context| is not modified.
+  //
+  // Usually, the context passed to |Awake()| will be the value passed to
+  // |Dispatcher::AddWaiter()|, which is usually the index to the array of
+  // handles passed to |MojoWaitMany()| (or 0 for |MojoWait()|).
+  //
+  // Typical |Awake()| results are:
+  //   - |MOJO_RESULT_OK| if one of the flags passed to
+  //     |MojoWait()|/|MojoWaitMany()| (hence |Dispatcher::AddWaiter()|) was
+  //     satisfied;
+  //   - |MOJO_RESULT_CANCELLED| if a handle (on which
+  //     |MojoWait()|/|MojoWaitMany()| was called) was closed (hence the
+  //     dispatcher closed); and
+  //   - |MOJO_RESULT_FAILED_PRECONDITION| if one of the set of flags passed to
+  //     |MojoWait()|/|MojoWaitMany()| cannot or can no longer be satisfied by
+  //     the corresponding handle (e.g., if the other end of a message or data
+  //     pipe is closed).
+  MojoResult Wait(MojoDeadline deadline, uint32_t* context);
 
-  // Wake the waiter up with the given result (or no-op if it's been woken up
-  // already).
-  void Awake(uint32_t context, MojoResult result);
+  // Wake the waiter up with the given result and context (or no-op if it's been
+  // woken up already).
+  void Awake(MojoResult result, uint32_t context);
 
  private:
   base::ConditionVariable cv_;  // Associated to |lock_|.
@@ -54,11 +66,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter {
   bool initialized_;
 #endif
   bool awoken_;
+  MojoResult awake_result_;
   // This is a |uint32_t| because we really only need to store an index (for
   // |MojoWaitMany()|). But in tests, it's convenient to use this for other
   // purposes (e.g., to distinguish between different wake-up reasons).
   uint32_t awake_context_;
-  MojoResult awake_result_;
 
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };

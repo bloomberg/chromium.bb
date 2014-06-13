@@ -48,6 +48,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
     Waiter w;
+    uint32_t context = 0;
 
     // Try adding a writable waiter when already writable.
     w.Init();
@@ -66,7 +67,8 @@ TEST(MessagePipeDispatcherTest, Basic) {
                                NULL,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
-    EXPECT_EQ(1, w.Wait(MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+    EXPECT_EQ(1u, context);
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     d0->RemoveWaiter(&w);
 
@@ -91,7 +93,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK,
               d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
-    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0));
+    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     d0->RemoveWaiter(&w);
 
@@ -101,7 +103,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-              w.Wait(2 * test::EpsilonTimeout().InMicroseconds()));
+              w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), NULL));
     base::TimeDelta elapsed = stopwatch.Elapsed();
     EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
@@ -264,6 +266,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
   base::TimeDelta elapsed;
   bool did_wait;
   MojoResult result;
+  uint32_t context;
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
@@ -282,8 +285,8 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       test::WaiterThread thread(d1,
                                MOJO_WAIT_FLAG_READABLE,
                                MOJO_DEADLINE_INDEFINITE,
-                               0,
-                               &did_wait, &result);
+                               1,
+                               &did_wait, &result, &context);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -298,15 +301,16 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
-    EXPECT_EQ(0, result);
+    EXPECT_EQ(MOJO_RESULT_OK, result);
+    EXPECT_EQ(1u, context);
 
     // Now |d1| is already readable. Try waiting for it again.
     {
       test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
-                                1,
-                                &did_wait, &result);
+                                2,
+                                &did_wait, &result, &context);
       stopwatch.Start();
       thread.Start();
     }  // Joins the thread.
@@ -330,8 +334,8 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
-                                0,
-                                &did_wait, &result);
+                                3,
+                                &did_wait, &result, &context);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -342,6 +346,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+    EXPECT_EQ(3u, context);
 
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
   }
@@ -363,8 +368,8 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
-                                0,
-                                &did_wait, &result);
+                                4,
+                                &did_wait, &result, &context);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -375,6 +380,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
+    EXPECT_EQ(4u, context);
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }
@@ -469,7 +475,7 @@ class ReaderThread : public base::SimpleThread {
                   result == MOJO_RESULT_ALREADY_EXISTS) << "result: " << result;
       if (result == MOJO_RESULT_OK) {
         // Actually need to wait.
-        EXPECT_EQ(0, w.Wait(MOJO_DEADLINE_INDEFINITE));
+        EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
         read_dispatcher_->RemoveWaiter(&w);
       }
 

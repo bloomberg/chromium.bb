@@ -273,7 +273,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   // ... since this |Wait()| should fail once the channel is shut down.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+            waiter.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
   mp->RemoveWaiter(0, &waiter);
 
   mp->Close(0);

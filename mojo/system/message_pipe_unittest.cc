@@ -378,7 +378,7 @@ TEST(MessagePipeTest, BasicWaiting) {
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_OK,
             mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 1));
-  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0, NULL));
   mp->RemoveWaiter(0, &waiter);
 
   // Write from port 0 (to port 1), to make port 1 readable.
@@ -440,15 +440,16 @@ TEST(MessagePipeTest, ThreadedWaiting) {
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
 
   MojoResult result;
+  uint32_t context;
 
   // Write to wake up waiter waiting for read.
   {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
-    test::SimpleWaiterThread thread(&result);
+    test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
+              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 1));
     thread.Start();
 
     buffer[0] = 123456789;
@@ -465,16 +466,17 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     mp->Close(1);
   }  // Joins |thread|.
   // The waiter should have woken up successfully.
-  EXPECT_EQ(0, result);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(1u, context);
 
   // Close to cancel waiter.
   {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
-    test::SimpleWaiterThread thread(&result);
+    test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
+              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2));
     thread.Start();
 
     // Close port 1 first -- this should result in the waiter being cancelled.
@@ -487,15 +489,16 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     mp->Close(0);
   }  // Joins |thread|.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
+  EXPECT_EQ(2u, context);
 
   // Close to make waiter un-wake-up-able.
   {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
-    test::SimpleWaiterThread thread(&result);
+    test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
+              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 3));
     thread.Start();
 
     // Close port 0 first -- this should wake the waiter up, since port 1 will
@@ -509,6 +512,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     mp->Close(1);
   }  // Joins |thread|.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+  EXPECT_EQ(3u, context);
 }
 
 }  // namespace
