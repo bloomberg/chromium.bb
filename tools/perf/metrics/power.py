@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from metrics import Metric
-
+from telemetry.value import scalar
 
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
@@ -67,25 +67,33 @@ class PowerMetric(Metric):
 
     energy_consumption_mwh = self._results.get('energy_consumption_mwh')
     if energy_consumption_mwh is not None:
-      results.Add('energy_consumption_mwh', 'mWh', energy_consumption_mwh)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'energy_consumption_mwh', 'mWh',
+          energy_consumption_mwh))
 
     component_utilization = self._results.get('component_utilization', {})
     # GPU Frequency.
     gpu_power = component_utilization.get('gpu', {})
     gpu_freq_hz = gpu_power.get('average_frequency_hz')
     if gpu_freq_hz is not None:
-      results.Add('gpu_average_frequency_hz', 'hz', gpu_freq_hz)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'gpu_average_frequency_hz', 'hz', gpu_freq_hz,
+          important=False))
 
     # Add idle wakeup numbers for all processes.
     for (process_type, stats) in self._results.get('cpu_stats', {}).items():
       trace_name_for_process = 'idle_wakeups_%s' % (process_type.lower())
-      results.Add(trace_name_for_process, 'count', stats)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, trace_name_for_process, 'count', stats,
+          important=False))
 
     # Add temperature measurements.
     whole_package_utilization = component_utilization.get('whole_package', {})
     board_temperature_c = whole_package_utilization.get('average_temperature_c')
     if board_temperature_c is not None:
-      results.Add('board_temperature', 'celsius', board_temperature_c)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'board_temperature', 'celsius',
+          board_temperature_c, important=False))
 
     self._results = None
 
