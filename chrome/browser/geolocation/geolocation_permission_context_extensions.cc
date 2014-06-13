@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_extensions.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_extensions.h"
 
 #include "base/callback.h"
 
@@ -20,16 +20,16 @@ using extensions::APIPermission;
 using extensions::ExtensionRegistry;
 #endif
 
-ChromeGeolocationPermissionContextExtensions::
-ChromeGeolocationPermissionContextExtensions(Profile* profile)
+GeolocationPermissionContextExtensions::
+GeolocationPermissionContextExtensions(Profile* profile)
     : profile_(profile) {
 }
 
-ChromeGeolocationPermissionContextExtensions::
-~ChromeGeolocationPermissionContextExtensions() {
+GeolocationPermissionContextExtensions::
+~GeolocationPermissionContextExtensions() {
 }
 
-bool ChromeGeolocationPermissionContextExtensions::RequestPermission(
+bool GeolocationPermissionContextExtensions::RequestPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& request_id,
     int bridge_id,
@@ -87,7 +87,7 @@ bool ChromeGeolocationPermissionContextExtensions::RequestPermission(
   return false;
 }
 
-bool ChromeGeolocationPermissionContextExtensions::CancelPermissionRequest(
+bool GeolocationPermissionContextExtensions::CancelPermissionRequest(
     content::WebContents* web_contents,
     int bridge_id) {
 #if defined(ENABLE_EXTENSIONS)

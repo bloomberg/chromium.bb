@@ -52,8 +52,6 @@
         'aw_dev_tools_server.h',
         'aw_form_database.cc',
         'aw_form_database.h',
-        'aw_geolocation_permission_context.cc',
-        'aw_geolocation_permission_context.h',
         'aw_http_auth_handler.cc',
         'aw_http_auth_handler.h',
         'aw_pdf_exporter.cc',

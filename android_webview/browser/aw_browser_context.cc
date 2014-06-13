@@ -300,15 +300,6 @@ AwBrowserContext::GetDownloadManagerDelegate() {
   return &download_manager_delegate_;
 }
 
-content::GeolocationPermissionContext*
-AwBrowserContext::GetGeolocationPermissionContext() {
-  if (!geolocation_permission_context_.get()) {
-    geolocation_permission_context_ =
-        native_factory_->CreateGeolocationPermission(this);
-  }
-  return geolocation_permission_context_.get();
-}
-
 content::BrowserPluginGuestManager* AwBrowserContext::GetGuestManager() {
   return NULL;
 }

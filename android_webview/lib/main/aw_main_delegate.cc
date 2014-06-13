@@ -10,7 +10,6 @@
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
-#include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
@@ -146,12 +145,6 @@ content::ContentRendererClient*
 scoped_refptr<AwQuotaManagerBridge> AwMainDelegate::CreateAwQuotaManagerBridge(
     AwBrowserContext* browser_context) {
   return AwQuotaManagerBridgeImpl::Create(browser_context);
-}
-
-content::GeolocationPermissionContext*
-    AwMainDelegate::CreateGeolocationPermission(
-        AwBrowserContext* browser_context) {
-  return AwGeolocationPermissionContext::Create(browser_context);
 }
 
 content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(

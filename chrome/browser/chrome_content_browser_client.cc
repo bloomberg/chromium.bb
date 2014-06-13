@@ -41,6 +41,8 @@
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -2142,6 +2144,20 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
 #endif
 }
 
+void ChromeContentBrowserClient::RequestGeolocationPermission(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  GeolocationPermissionContextFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
+          RequestGeolocationPermission(web_contents, bridge_id,
+                                       requesting_frame, user_gesture,
+                                       result_callback, cancel_callback);
+}
+
 bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
@@ -2709,6 +2725,11 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
 }
 #endif
 
+content::DevToolsManagerDelegate*
+ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new ChromeDevToolsManagerDelegate();
+}
+
 bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     content::BrowserContext* browser_context,
     const GURL& url) {
@@ -2746,11 +2767,6 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
 #else
   return false;
 #endif
-}
-
-content::DevToolsManagerDelegate*
-ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new ChromeDevToolsManagerDelegate();
 }
 
 net::CookieStore*

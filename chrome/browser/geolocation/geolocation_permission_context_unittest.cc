@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 
 #include <set>
 #include <string>
@@ -17,7 +17,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -115,9 +115,10 @@ class GeolocationPermissionContextTests
   void RequestGeolocationPermission(content::WebContents* web_contents,
                                     const PermissionRequestID& id,
                                     const GURL& requesting_frame);
-  void CancelGeolocationPermissionRequest(content::WebContents* web_contents,
-                                          const PermissionRequestID& id,
-                                          const GURL& requesting_frame);
+  void RequestGeolocationPermission(content::WebContents* web_contents,
+                                    const PermissionRequestID& id,
+                                    const GURL& requesting_frame,
+                                    base::Closure* cancel_callback);
   void PermissionResponse(const PermissionRequestID& id,
                           bool allowed);
   void CheckPermissionMessageSent(int bridge_id, bool allowed);
@@ -129,8 +130,7 @@ class GeolocationPermissionContextTests
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting);
 
-  scoped_refptr<ChromeGeolocationPermissionContext>
-      geolocation_permission_context_;
+  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   ClosedInfoBarTracker closed_infobar_tracker_;
   ScopedVector<content::WebContents> extra_tabs_;
 
@@ -162,20 +162,21 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame) {
+  RequestGeolocationPermission(web_contents, id, requesting_frame, NULL);
+}
+
+void GeolocationPermissionContextTests::RequestGeolocationPermission(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id,
+    const GURL& requesting_frame,
+    base::Closure* cancel_callback) {
   geolocation_permission_context_->RequestGeolocationPermission(
       web_contents, id.bridge_id(), requesting_frame, false,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
-                 base::Unretained(this), id));
+                 base::Unretained(this), id),
+      cancel_callback);
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
-}
-
-void GeolocationPermissionContextTests::CancelGeolocationPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_frame) {
-  geolocation_permission_context_->CancelGeolocationPermissionRequest(
-      web_contents, id.bridge_id(), requesting_frame);
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(
@@ -251,7 +252,7 @@ void GeolocationPermissionContextTests::SetUp() {
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
 #endif
   geolocation_permission_context_ =
-      ChromeGeolocationPermissionContextFactory::GetForProfile(profile());
+      GeolocationPermissionContextFactory::GetForProfile(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
@@ -477,8 +478,9 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   // Request permission for two frames.
+  base::Closure cancel_callback;
   RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0);
+      web_contents(), RequestID(0), requesting_frame_0, &cancel_callback);
   RequestGeolocationPermission(
       web_contents(), RequestID(1), requesting_frame_1);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
@@ -491,8 +493,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 
   // Simulate the frame going away, ensure the infobar for this frame
   // is removed and the next pending infobar is created.
-  CancelGeolocationPermissionRequest(
-      web_contents(), RequestID(0), requesting_frame_0);
+  cancel_callback.Run();
   EXPECT_EQ(1U, closed_infobar_tracker_.size());
   EXPECT_TRUE(closed_infobar_tracker_.Contains(infobar_0));
   closed_infobar_tracker_.Clear();

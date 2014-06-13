@@ -20,7 +20,6 @@ class URLRequestContextGetter;
 
 namespace content {
 class DownloadManagerDelegate;
-class GeolocationPermissionContext;
 class ResourceContext;
 }
 
@@ -67,8 +66,6 @@ class FakeProfile : public Profile {
       int render_view_id,
       const GURL& origin) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-  virtual content::GeolocationPermissionContext*
-      GetGeolocationPermissionContext() OVERRIDE;
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;

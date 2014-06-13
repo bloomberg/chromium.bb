@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -10,9 +10,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #if defined(OS_ANDROID)
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_android.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #else
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #endif
 
 namespace {
@@ -21,13 +21,13 @@ class Service : public KeyedService {
  public:
   explicit Service(Profile* profile) {
 #if defined(OS_ANDROID)
-    context_ = new ChromeGeolocationPermissionContextAndroid(profile);
+    context_ = new GeolocationPermissionContextAndroid(profile);
 #else
-    context_ = new ChromeGeolocationPermissionContext(profile);
+    context_ = new GeolocationPermissionContext(profile);
 #endif
   }
 
-  ChromeGeolocationPermissionContext* context() {
+  GeolocationPermissionContext* context() {
     return context_.get();
   }
 
@@ -36,7 +36,7 @@ class Service : public KeyedService {
   }
 
  private:
-  scoped_refptr<ChromeGeolocationPermissionContext> context_;
+  scoped_refptr<GeolocationPermissionContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
@@ -44,36 +44,34 @@ class Service : public KeyedService {
 }  // namespace
 
 // static
-ChromeGeolocationPermissionContext*
-ChromeGeolocationPermissionContextFactory::GetForProfile(Profile* profile) {
+GeolocationPermissionContext*
+GeolocationPermissionContextFactory::GetForProfile(Profile* profile) {
   return static_cast<Service*>(
       GetInstance()->GetServiceForBrowserContext(profile, true))->context();
 }
 
 // static
-ChromeGeolocationPermissionContextFactory*
-ChromeGeolocationPermissionContextFactory::GetInstance() {
-  return Singleton<ChromeGeolocationPermissionContextFactory>::get();
+GeolocationPermissionContextFactory*
+GeolocationPermissionContextFactory::GetInstance() {
+  return Singleton<GeolocationPermissionContextFactory>::get();
 }
 
-ChromeGeolocationPermissionContextFactory::
-ChromeGeolocationPermissionContextFactory()
+GeolocationPermissionContextFactory::GeolocationPermissionContextFactory()
     : BrowserContextKeyedServiceFactory(
-          "ChromeGeolocationPermissionContext",
+          "GeolocationPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
 
-ChromeGeolocationPermissionContextFactory::
-~ChromeGeolocationPermissionContextFactory() {
+GeolocationPermissionContextFactory::~GeolocationPermissionContextFactory() {
 }
 
 KeyedService*
-ChromeGeolocationPermissionContextFactory::BuildServiceInstanceFor(
+GeolocationPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new Service(static_cast<Profile*>(profile));
 }
 
-void ChromeGeolocationPermissionContextFactory::RegisterProfilePrefs(
+void GeolocationPermissionContextFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(
@@ -84,7 +82,7 @@ void ChromeGeolocationPermissionContextFactory::RegisterProfilePrefs(
 }
 
 content::BrowserContext*
-ChromeGeolocationPermissionContextFactory::GetBrowserContextToUse(
+GeolocationPermissionContextFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

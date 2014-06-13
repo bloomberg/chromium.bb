@@ -386,6 +386,25 @@ void AwContentBrowserClient::ShowDesktopNotification(
   NOTREACHED() << "Android WebView does not support desktop notifications.";
 }
 
+void AwContentBrowserClient::RequestGeolocationPermission(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  if (client) {
+    client->RequestGeolocationPermission(
+        web_contents, requesting_frame, result_callback, cancel_callback);
+  } else {
+    LOG(WARNING) << "Failed to find the associated bridge for geolocation "
+                 << "permission request.";
+    result_callback.Run(false);
+  }
+}
+
 bool AwContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

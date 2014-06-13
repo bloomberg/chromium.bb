@@ -16,6 +16,8 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
@@ -26,7 +28,6 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
@@ -756,20 +757,19 @@ void WebViewGuest::OnWebViewGeolocationPermissionResponse(
     return;
   }
 
-  content::GeolocationPermissionContext* geolocation_context =
-      browser_context()->GetGeolocationPermissionContext();
-
-  DCHECK(geolocation_context);
-  geolocation_context->RequestGeolocationPermission(
-      embedder_web_contents(),
-      // The geolocation permission request here is not initiated
-      // through WebGeolocationPermissionRequest. We are only interested
-      // in the fact whether the embedder/app has geolocation
-      // permission. Therefore we use an invalid |bridge_id|.
-      -1 /* bridge_id */,
-      embedder_web_contents()->GetLastCommittedURL(),
-      user_gesture,
-      callback);
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  GeolocationPermissionContextFactory::GetForProfile(profile)->
+      RequestGeolocationPermission(
+          embedder_web_contents(),
+          // The geolocation permission request here is not initiated
+          // through WebGeolocationPermissionRequest. We are only interested
+          // in the fact whether the embedder/app has geolocation
+          // permission. Therefore we use an invalid |bridge_id|.
+          -1,
+          embedder_web_contents()->GetLastCommittedURL(),
+          user_gesture,
+          callback,
+          NULL);
 }
 
 void WebViewGuest::CancelGeolocationPermissionRequest(int bridge_id) {

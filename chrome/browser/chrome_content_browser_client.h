@@ -209,6 +209,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       content::DesktopNotificationDelegate* delegate,
       base::Closure* cancel_callback) OVERRIDE;
+  virtual void RequestGeolocationPermission(
+      content::WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame,
+      bool user_gesture,
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback) OVERRIDE;
   virtual bool CanCreateWindow(const GURL& opener_url,
                                const GURL& opener_top_level_frame_url,
                                const GURL& source_origin,
@@ -264,6 +271,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       ScopedVector<fileapi::FileSystemBackend>* additional_backends) OVERRIDE;
   virtual content::DevToolsManagerDelegate*
       GetDevToolsManagerDelegate() OVERRIDE;
+  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
+      content::BrowserContext* browser_context,
+      const GURL& url) OVERRIDE;
+  virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
+  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
+      int render_process_id) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
@@ -276,15 +289,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                 bool* success) OVERRIDE;
 #endif
-
-  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      content::BrowserContext* browser_context,
-      const GURL& url) OVERRIDE;
-
-  virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
-
-  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id) OVERRIDE;
 
  private:
 #if defined(ENABLE_WEBRTC)

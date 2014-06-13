@@ -16,7 +16,6 @@
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/geolocation_permission_context.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class GURL;
@@ -125,8 +124,6 @@ class AwBrowserContext : public content::BrowserContext,
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
-  virtual content::GeolocationPermissionContext*
-      GetGeolocationPermissionContext() OVERRIDE;
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
@@ -144,8 +141,6 @@ class AwBrowserContext : public content::BrowserContext,
   JniDependencyFactory* native_factory_;
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<content::GeolocationPermissionContext>
-      geolocation_permission_context_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   scoped_ptr<AwFormDatabaseService> form_database_service_;
 

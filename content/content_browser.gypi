@@ -119,7 +119,6 @@
       'public/browser/favicon_status.h',
       'public/browser/file_descriptor_info.h',
       'public/browser/font_list_async.h',
-      'public/browser/geolocation_permission_context.h',
       'public/browser/geolocation_provider.h',
       'public/browser/global_request_id.h',
       'public/browser/gpu_data_manager.h',

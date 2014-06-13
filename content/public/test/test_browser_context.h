@@ -62,8 +62,6 @@ class TestBrowserContext : public BrowserContext {
       int render_view_id,
       const GURL& origin) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
-  virtual GeolocationPermissionContext*
-      GetGeolocationPermissionContext() OVERRIDE;
   virtual BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual PushMessagingService* GetPushMessagingService() OVERRIDE;

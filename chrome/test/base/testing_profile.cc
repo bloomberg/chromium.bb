@@ -26,8 +26,6 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_backend.h"
@@ -832,11 +830,6 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
 #endif
   }
   return host_content_settings_map_.get();
-}
-
-content::GeolocationPermissionContext*
-TestingProfile::GetGeolocationPermissionContext() {
-  return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {

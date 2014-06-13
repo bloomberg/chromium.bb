@@ -9,7 +9,6 @@
 
 namespace content {
 class ExternalVideoSurfaceContainer;
-class GeolocationPermissionContext;
 class WebContents;
 class WebContentsViewDelegate;
 }  // namespace content
@@ -26,8 +25,6 @@ class JniDependencyFactory {
   virtual ~JniDependencyFactory() {}
 
   virtual scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
-      AwBrowserContext* browser_context) = 0;
-  virtual content::GeolocationPermissionContext* CreateGeolocationPermission(
       AwBrowserContext* browser_context) = 0;
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) = 0;

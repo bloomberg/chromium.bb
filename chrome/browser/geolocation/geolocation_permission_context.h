@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
-#define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_H_
 
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_extensions.h"
-#include "content/public/browser/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_extensions.h"
 
 namespace content {
 class WebContents;
@@ -22,25 +23,21 @@ class GeolocationPermissionRequest;
 class PermissionRequestID;
 class Profile;
 
-// Chrome specific implementation of GeolocationPermissionContext; manages
-// Geolocation permissions flow, and delegates UI handling via
+// This manages Geolocation permissions flow, and delegates UI handling via
 // PermissionQueueController.
-class ChromeGeolocationPermissionContext
-    : public content::GeolocationPermissionContext {
+class GeolocationPermissionContext
+    : public base::RefCountedThreadSafe<GeolocationPermissionContext> {
  public:
-  explicit ChromeGeolocationPermissionContext(Profile* profile);
+  explicit GeolocationPermissionContext(Profile* profile);
 
-  // GeolocationPermissionContext:
-  virtual void RequestGeolocationPermission(
+  // See ContentBrowserClient method of the same name.
+  void RequestGeolocationPermission(
       content::WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
-      base::Callback<void(bool)> callback) OVERRIDE;
-  virtual void CancelGeolocationPermissionRequest(
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame) OVERRIDE;
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback);
 
   // Called on the UI thread when the profile is about to be destroyed.
   void ShutdownOnUIThread();
@@ -55,7 +52,7 @@ class ChromeGeolocationPermissionContext
                            bool allowed);
 
  protected:
-  virtual ~ChromeGeolocationPermissionContext();
+  virtual ~GeolocationPermissionContext();
 
   Profile* profile() const { return profile_; }
 
@@ -63,7 +60,12 @@ class ChromeGeolocationPermissionContext
   // if necessary.
   PermissionQueueController* QueueController();
 
-  // ChromeGeolocationPermissionContext implementation:
+  void CancelGeolocationPermissionRequest(
+      int render_process_id,
+      int render_view_id,
+      int bridge_id);
+
+  // GeolocationPermissionContext implementation:
   // Decide whether the geolocation permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an
@@ -91,6 +93,7 @@ class ChromeGeolocationPermissionContext
   virtual PermissionQueueController* CreateQueueController();
 
  private:
+  friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
   friend class GeolocationPermissionRequest;
 
   // Removes any pending InfoBar request.
@@ -110,12 +113,12 @@ class ChromeGeolocationPermissionContext
   Profile* const profile_;
   bool shutting_down_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
-  ChromeGeolocationPermissionContextExtensions extensions_context_;
+  GeolocationPermissionContextExtensions extensions_context_;
 
   base::ScopedPtrHashMap<std::string, GeolocationPermissionRequest>
       pending_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContext);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_H_

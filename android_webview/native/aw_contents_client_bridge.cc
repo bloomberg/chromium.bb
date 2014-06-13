@@ -5,11 +5,15 @@
 #include "android_webview/native/aw_contents_client_bridge.h"
 
 #include "android_webview/common/devtools_instrumentation.h"
+#include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/AwContentsClientBridge_jni.h"
 #include "net/android/keystore_openssl.h"
 #include "net/cert/x509_certificate.h"
@@ -40,6 +44,15 @@ void RecordClientCertificateKey(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::OpenSSLClientKeyStore::GetInstance()->RecordClientCertPrivateKey(
       client_cert.get(), private_key.get());
+}
+
+void CancelGeolocationPermission(int render_process_id,
+                                 int render_view_id,
+                                 const GURL& requesting_frame) {
+  AwContents* aw_contents = AwContents::FromID(
+      render_process_id, render_view_id);
+  if (aw_contents)
+    aw_contents->HideGeolocationPrompt(requesting_frame);
 }
 
 }  // namespace
@@ -334,6 +347,28 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
   return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
       env, obj.obj(),
       jurl.obj());
+}
+
+void AwContentsClientBridge::RequestGeolocationPermission(
+    content::WebContents* web_contents,
+    const GURL& requesting_frame,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
+  if (!aw_contents) {
+    result_callback.Run(false);
+    return;
+  }
+
+  if (cancel_callback) {
+    *cancel_callback = base::Bind(
+        CancelGeolocationPermission,
+        web_contents->GetRenderProcessHost()->GetID(),
+        web_contents->GetRenderViewHost()->GetRoutingID(),
+        requesting_frame);
+  }
+
+  aw_contents->ShowGeolocationPrompt(requesting_frame, result_callback);
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,

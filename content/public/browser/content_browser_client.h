@@ -468,6 +468,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       DesktopNotificationDelegate* delegate,
       base::Closure* cancel_callback) {}
 
+  // The renderer is requesting permission to use Geolocation. When the answer
+  // to a permission request has been determined, |result_callback| should be
+  // called with the result. If |cancel_callback| is non-null, it's set to a
+  // callback which can be used to cancel the permission request.
+  virtual void RequestGeolocationPermission(
+      WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame,
+      bool user_gesture,
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback);
+
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
@@ -601,6 +613,21 @@ class CONTENT_EXPORT ContentBrowserClient {
   // It's valid to return NULL.
   virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
 
+  // Returns true if plugin referred to by the url can use
+  // pp::FileIO::RequestOSFileHandle.
+  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
+      BrowserContext* browser_context,
+      const GURL& url);
+
+  // Returns true if dev channel APIs are available for plugins.
+  virtual bool IsPluginAllowedToUseDevChannelAPIs();
+
+  // Returns a special cookie store to use for a given render process, or NULL
+  // if the default cookie store should be used
+  // This is called on the IO thread.
+  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
+      int render_process_id);
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
@@ -620,21 +647,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                 bool* success) {}
 #endif
-
-  // Returns true if plugin referred to by the url can use
-  // pp::FileIO::RequestOSFileHandle.
-  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      BrowserContext* browser_context,
-      const GURL& url);
-
-  // Returns true if dev channel APIs are available for plugins.
-  virtual bool IsPluginAllowedToUseDevChannelAPIs();
-
-  // Returns a special cookie store to use for a given render process, or NULL
-  // if the default cookie store should be used
-  // This is called on the IO thread.
-  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id);
 
 #if defined(VIDEO_HOLE)
   // Allows an embedder to provide its own ExternalVideoSurfaceContainer

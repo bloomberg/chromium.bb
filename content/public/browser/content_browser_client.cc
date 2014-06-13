@@ -211,6 +211,16 @@ blink::WebNotificationPresenter::Permission
   return blink::WebNotificationPresenter::PermissionAllowed;
 }
 
+void ContentBrowserClient::RequestGeolocationPermission(
+    WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  result_callback.Run(true);
+}
+
 bool ContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
@@ -290,12 +300,6 @@ DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
   return NULL;
 }
 
-#if defined(OS_WIN)
-const wchar_t* ContentBrowserClient::GetResourceDllName() {
-  return NULL;
-}
-#endif
-
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     BrowserContext* browser_context,
     const GURL& url) {
@@ -310,6 +314,12 @@ net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
     int render_process_id) {
   return NULL;
 }
+
+#if defined(OS_WIN)
+const wchar_t* ContentBrowserClient::GetResourceDllName() {
+  return NULL;
+}
+#endif
 
 #if defined(VIDEO_HOLE)
 ExternalVideoSurfaceContainer*

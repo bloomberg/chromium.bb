@@ -45,8 +45,6 @@ class AwMainDelegate : public content::ContentMainDelegate,
   // JniDependencyFactory implementation.
   virtual scoped_refptr<AwQuotaManagerBridge> CreateAwQuotaManagerBridge(
       AwBrowserContext* browser_context) OVERRIDE;
-  virtual content::GeolocationPermissionContext* CreateGeolocationPermission(
-      AwBrowserContext* browser_context) OVERRIDE;
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() OVERRIDE;

@@ -35,7 +35,6 @@ class BlobHandle;
 class BrowserPluginGuestManager;
 class DownloadManager;
 class DownloadManagerDelegate;
-class GeolocationPermissionContext;
 class IndexedDBContext;
 class PushMessagingService;
 class ResourceContext;
@@ -174,10 +173,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // once per context. The embedder owns the delegate and is responsible for
   // ensuring that it outlives DownloadManager. It's valid to return NULL.
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
-
-  // Returns the geolocation permission context for this context. It's valid to
-  // return NULL, in which case geolocation requests will always be allowed.
-  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
   // Returns the guest manager for this context.
   virtual BrowserPluginGuestManager* GetGuestManager() = 0;

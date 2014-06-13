@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
-#define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class ChromeGeolocationPermissionContext;
+class GeolocationPermissionContext;
 class PrefRegistrySyncable;
 class Profile;
 
-class ChromeGeolocationPermissionContextFactory
+class GeolocationPermissionContextFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static ChromeGeolocationPermissionContext* GetForProfile(Profile* profile);
+  static GeolocationPermissionContext* GetForProfile(Profile* profile);
 
-  static ChromeGeolocationPermissionContextFactory* GetInstance();
+  static GeolocationPermissionContextFactory* GetInstance();
 
  private:
   friend struct
-      DefaultSingletonTraits<ChromeGeolocationPermissionContextFactory>;
+      DefaultSingletonTraits<GeolocationPermissionContextFactory>;
 
-  ChromeGeolocationPermissionContextFactory();
-  virtual ~ChromeGeolocationPermissionContextFactory();
+  GeolocationPermissionContextFactory();
+  virtual ~GeolocationPermissionContextFactory();
 
   // BrowserContextKeyedBaseFactory methods:
   virtual KeyedService* BuildServiceInstanceFor(
@@ -36,7 +36,7 @@ class ChromeGeolocationPermissionContextFactory
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContextFactory);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextFactory);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_

@@ -230,11 +230,6 @@ ResourceContext* ShellBrowserContext::GetResourceContext()  {
   return resource_context_.get();
 }
 
-GeolocationPermissionContext*
-    ShellBrowserContext::GetGeolocationPermissionContext()  {
-  return NULL;
-}
-
 BrowserPluginGuestManager* ShellBrowserContext::GetGuestManager() {
   return guest_manager_;
 }

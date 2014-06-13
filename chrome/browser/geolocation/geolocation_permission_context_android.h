@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_
-#define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_
 
 #include "chrome/browser/content_settings/permission_request_id.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -17,10 +17,10 @@ class GoogleLocationSettingsHelper;
 
 // Android-specific geolocation permission flow, taking into account the
 // Google Location Settings, if available.
-class ChromeGeolocationPermissionContextAndroid
-    : public ChromeGeolocationPermissionContext {
+class GeolocationPermissionContextAndroid
+    : public GeolocationPermissionContext {
  public:
-  explicit ChromeGeolocationPermissionContextAndroid(Profile* profile);
+  explicit GeolocationPermissionContextAndroid(Profile* profile);
 
  private:
   struct PermissionRequestInfo {
@@ -32,11 +32,11 @@ class ChromeGeolocationPermissionContextAndroid
     GURL embedder;
   };
 
-  friend class ChromeGeolocationPermissionContext;
+  friend class GeolocationPermissionContext;
 
-  virtual ~ChromeGeolocationPermissionContextAndroid();
+  virtual ~GeolocationPermissionContextAndroid();
 
-  // ChromeGeolocationPermissionContext implementation:
+  // GeolocationPermissionContext implementation:
   virtual void DecidePermission(content::WebContents* web_contents,
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
@@ -63,7 +63,7 @@ class ChromeGeolocationPermissionContextAndroid
                            const PermissionRequestInfo& info,
                            base::Callback<void(bool)> callback);
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContextAndroid);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextAndroid);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_ANDROID_H_

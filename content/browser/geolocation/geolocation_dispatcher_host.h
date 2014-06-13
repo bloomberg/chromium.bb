@@ -6,15 +6,16 @@
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_DISPATCHER_HOST_H_
 
 #include <map>
+#include <vector>
 
+#include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 
 namespace content {
-
-class GeolocationPermissionContext;
 
 // GeolocationDispatcherHost is an observer for Geolocation messages.
 // It's the complement of GeolocationDispatcher (owned by RenderView).
@@ -56,14 +57,31 @@ class GeolocationDispatcherHost : public WebContentsObserver {
 
   void OnLocationUpdate(const Geoposition& position);
 
-  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  void SendGeolocationPermissionResponse(int render_process_id,
+                                         int render_frame_id,
+                                         int bridge_id,
+                                         bool allowed);
 
   // A map from the RenderFrameHosts that have requested geolocation updates to
   // the type of accuracy they requested (true = high accuracy).
   std::map<RenderFrameHost*, bool> updating_frames_;
   bool paused_;
 
+  struct PendingPermission {
+    PendingPermission(int render_frame_id,
+                      int render_process_id,
+                      int bridge_id);
+    ~PendingPermission();
+    int render_frame_id;
+    int render_process_id;
+    int bridge_id;
+    base::Closure cancel;
+  };
+  std::vector<PendingPermission> pending_permissions_;
+
   scoped_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
+
+  base::WeakPtrFactory<GeolocationDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherHost);
 };

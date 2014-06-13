@@ -138,11 +138,6 @@ ResourceContext* TestBrowserContext::GetResourceContext() {
   return resource_context_.get();
 }
 
-GeolocationPermissionContext*
-    TestBrowserContext::GetGeolocationPermissionContext() {
-  return NULL;
-}
-
 BrowserPluginGuestManager* TestBrowserContext::GetGuestManager() {
   return NULL;
 }

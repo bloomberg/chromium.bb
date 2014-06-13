@@ -89,11 +89,6 @@ content::ResourceContext* FakeProfile::GetResourceContext() {
   return NULL;
 }
 
-content::GeolocationPermissionContext*
-FakeProfile::GetGeolocationPermissionContext() {
-  return NULL;
-}
-
 content::BrowserPluginGuestManager* FakeProfile::GetGuestManager() {
   return NULL;
 }

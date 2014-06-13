@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_android.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
@@ -11,35 +11,34 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-ChromeGeolocationPermissionContextAndroid::
+GeolocationPermissionContextAndroid::
 PermissionRequestInfo::PermissionRequestInfo()
     : id(0, 0, 0, GURL()),
       user_gesture(false) {}
 
-ChromeGeolocationPermissionContextAndroid::
-    ChromeGeolocationPermissionContextAndroid(Profile* profile)
-    : ChromeGeolocationPermissionContext(profile),
+GeolocationPermissionContextAndroid::
+    GeolocationPermissionContextAndroid(Profile* profile)
+    : GeolocationPermissionContext(profile),
       google_location_settings_helper_(
           GoogleLocationSettingsHelper::Create()) {
 }
 
-ChromeGeolocationPermissionContextAndroid::
-    ~ChromeGeolocationPermissionContextAndroid() {
+GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
 }
 
-void ChromeGeolocationPermissionContextAndroid::ProceedDecidePermission(
+void GeolocationPermissionContextAndroid::ProceedDecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestInfo& info,
     const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
   // Super class implementation expects everything in UI thread instead.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  ChromeGeolocationPermissionContext::DecidePermission(
+  GeolocationPermissionContext::DecidePermission(
       web_contents, info.id, info.requesting_frame, info.user_gesture,
       info.embedder, accept_button_label, callback);
 }
 
-void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
+void GeolocationPermissionContextAndroid::CheckMasterLocation(
     content::WebContents* web_contents,
     const PermissionRequestInfo& info,
     base::Callback<void(bool)> callback) {
@@ -50,16 +49,16 @@ void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
       google_location_settings_helper_->IsMasterLocationSettingEnabled();
 
   // The flow for geolocation permission on android is:
-  // - ChromeGeolocationPermissionContextAndroid::DecidePermission
+  // - GeolocationPermissionContextAndroid::DecidePermission
   // intercepts the flow in the UI thread, and posts task
   // to the blocking pool to CheckMasterLocation (in order to
   // avoid strict-mode violation).
   // - At this point the master location permission is either:
   // -- enabled, in which we case it proceeds the normal flow
-  // via ChromeGeolocationPermissionContext (which may create infobars, etc.).
+  // via GeolocationPermissionContext (which may create infobars, etc.).
   // -- disabled, in which case the permission is already decided.
   //
-  // In either case, ChromeGeolocationPermissionContext expects these
+  // In either case, GeolocationPermissionContext expects these
   // in the UI thread.
   base::Closure ui_closure;
   if (enabled) {
@@ -67,11 +66,11 @@ void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
     std::string accept_button_label =
         google_location_settings_helper_->GetAcceptButtonLabel(allow_label);
     ui_closure = base::Bind(
-        &ChromeGeolocationPermissionContextAndroid::ProceedDecidePermission,
+        &GeolocationPermissionContextAndroid::ProceedDecidePermission,
         this, web_contents, info, accept_button_label, callback);
   } else {
     ui_closure = base::Bind(
-        &ChromeGeolocationPermissionContextAndroid::PermissionDecided,
+        &GeolocationPermissionContextAndroid::PermissionDecided,
         this, info.id, info.requesting_frame, info.embedder, callback, false);
   }
 
@@ -81,7 +80,7 @@ void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
       content::BrowserThread::UI, FROM_HERE, ui_closure);
 }
 
-void ChromeGeolocationPermissionContextAndroid::DecidePermission(
+void GeolocationPermissionContextAndroid::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
@@ -101,11 +100,11 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(
-          &ChromeGeolocationPermissionContextAndroid::CheckMasterLocation,
+          &GeolocationPermissionContextAndroid::CheckMasterLocation,
           this, web_contents, info, callback));
 }
 
-void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
+void GeolocationPermissionContextAndroid::PermissionDecided(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
@@ -121,6 +120,6 @@ void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
     return;
   }
 
-  ChromeGeolocationPermissionContext::PermissionDecided(
+  GeolocationPermissionContext::PermissionDecided(
       id, requesting_frame, embedder, callback, allowed);
 }

@@ -41,8 +41,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/media/chrome_midi_permission_context.h"
 #include "chrome/browser/media/chrome_midi_permission_context_factory.h"
@@ -1067,11 +1065,6 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
   }
   return host_content_settings_map_.get();
-}
-
-content::GeolocationPermissionContext*
-    ProfileImpl::GetGeolocationPermissionContext() {
-  return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {
