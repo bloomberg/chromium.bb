@@ -627,6 +627,8 @@
         'test/views_test_helper_aura.h',
         'test/widget_test.cc',
         'test/widget_test.h',
+        'test/x11_property_change_waiter.cc',
+        'test/x11_property_change_waiter.h',
       ],
       'conditions': [
         ['chromeos==1', {
@@ -731,6 +733,7 @@
         'widget/desktop_aura/desktop_screen_x11_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc',
+        'widget/desktop_aura/x11_topmost_window_finder_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/root_view_unittest.cc',
@@ -784,6 +787,7 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xext',
+            '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
         ['use_ozone==1', {

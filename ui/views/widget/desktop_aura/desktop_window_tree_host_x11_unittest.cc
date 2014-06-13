@@ -12,20 +12,17 @@
 #undef None
 
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
@@ -35,80 +32,38 @@ namespace views {
 namespace {
 
 // Blocks till |window| becomes maximized.
-class MaximizeWaiter : public ui::PlatformEventDispatcher {
-  public:
-   explicit MaximizeWaiter(XID window)
-       : xwindow_(window),
-         wait_(true) {
-     const char* kAtomsToCache[] = {
-         "_NET_WM_STATE",
-         "_NET_WM_STATE_MAXIMIZED_VERT",
-         NULL
-     };
-     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
+class MaximizeWaiter : public X11PropertyChangeWaiter {
+ public:
+  explicit MaximizeWaiter(XID window)
+      : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {
 
-     // Override the dispatcher so that we get events before
-     // DesktopWindowTreeHostX11 does. We must do this because
-     // DesktopWindowTreeHostX11 stops propagation.
-     dispatcher_ = ui::PlatformEventSource::GetInstance()->
-         OverrideDispatcher(this).Pass();
-   }
+    const char* kAtomsToCache[] = {
+        "_NET_WM_STATE_MAXIMIZED_VERT",
+        NULL
+    };
+    atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
+  }
 
-   virtual ~MaximizeWaiter() {
-   }
+  virtual ~MaximizeWaiter() {
+  }
 
-   void Wait() {
-     if (wait_) {
-       base::RunLoop run_loop;
-       quit_closure_ = run_loop.QuitClosure();
-       run_loop.Run();
-     }
-     dispatcher_.reset();
-   }
+ private:
+  // X11PropertyChangeWaiter:
+  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
+    std::vector<Atom> wm_states;
+    if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
+      std::vector<Atom>::iterator it = std::find(
+          wm_states.begin(),
+          wm_states.end(),
+          atom_cache_->GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"));
+      return it == wm_states.end();
+    }
+    return true;
+  }
 
-   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
-     NOTREACHED();
-     return true;
-   }
+  scoped_ptr<ui::X11AtomCache> atom_cache_;
 
-   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
-     if (event->type != PropertyNotify ||
-         event->xproperty.window != xwindow_ ||
-         event->xproperty.atom != atom_cache_->GetAtom("_NET_WM_STATE")) {
-       return ui::POST_DISPATCH_PERFORM_DEFAULT;
-     }
-
-     std::vector<Atom> wm_states;
-     if (!ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &wm_states))
-       return ui::POST_DISPATCH_PERFORM_DEFAULT;
-
-     std::vector<Atom>::iterator it = std::find(
-         wm_states.begin(),
-         wm_states.end(),
-         atom_cache_->GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"));
-     if (it == wm_states.end())
-       return ui::POST_DISPATCH_PERFORM_DEFAULT;
-
-     wait_ = false;
-     if (!quit_closure_.is_null())
-       quit_closure_.Run();
-     return ui::POST_DISPATCH_PERFORM_DEFAULT;
-   }
-
-   // The window we are waiting to get maximized.
-   XID xwindow_;
-
-   // Whether Wait() should block.
-   bool wait_;
-
-   // Ends the run loop.
-   base::Closure quit_closure_;
-
-   scoped_ptr<ui::ScopedEventDispatcher> dispatcher_;
-
-   scoped_ptr<ui::X11AtomCache> atom_cache_;
-
-   DISALLOW_COPY_AND_ASSIGN(MaximizeWaiter);
+  DISALLOW_COPY_AND_ASSIGN(MaximizeWaiter);
 };
 
 // A NonClientFrameView with a window mask with the bottom right corner cut out.

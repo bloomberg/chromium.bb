@@ -172,6 +172,10 @@ UI_BASE_EXPORT bool SetIntArrayProperty(XID window,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::vector<int>& value);
+UI_BASE_EXPORT bool SetAtomProperty(XID window,
+                                    const std::string& name,
+                                    const std::string& type,
+                                    Atom value);
 UI_BASE_EXPORT bool SetAtomArrayProperty(XID window,
                                          const std::string& name,
                                          const std::string& type,

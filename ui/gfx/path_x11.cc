@@ -4,6 +4,8 @@
 
 #include "ui/gfx/path_x11.h"
 
+#include <X11/Xlib.h>
+#include <X11/Xregion.h>
 #include <X11/Xutil.h>
 
 #include "base/memory/scoped_ptr.h"

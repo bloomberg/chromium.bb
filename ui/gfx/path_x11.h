@@ -5,13 +5,12 @@
 #ifndef UI_GFX_PATH_X11_H_
 #define UI_GFX_PATH_X11_H_
 
-#include <X11/Xlib.h>
-#include <X11/Xregion.h>
-
 #include "ui/gfx/gfx_export.h"
 
 class SkPath;
 class SkRegion;
+
+typedef struct _XRegion REGION;
 
 namespace gfx {
 

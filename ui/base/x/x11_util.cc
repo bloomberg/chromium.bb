@@ -886,6 +886,14 @@ bool SetIntArrayProperty(XID window,
   return !err_tracker.FoundNewError();
 }
 
+bool SetAtomProperty(XID window,
+                     const std::string& name,
+                     const std::string& type,
+                     Atom value) {
+  std::vector<Atom> values(1, value);
+  return SetAtomArrayProperty(window, name, type, values);
+}
+
 bool SetAtomArrayProperty(XID window,
                           const std::string& name,
                           const std::string& type,
