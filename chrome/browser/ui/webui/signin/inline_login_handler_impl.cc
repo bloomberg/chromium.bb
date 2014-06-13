@@ -186,11 +186,26 @@ InlineLoginHandlerImpl::InlineLoginHandlerImpl()
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
+bool InlineLoginHandlerImpl::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+#ifndef NDEBUG
+  return false;
+#else
+  return true;
+#endif
+}
+
 void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("service", "chromiumsync");
 
-  signin::Source source =
-      signin::GetSourceForPromoURL(web_ui()->GetWebContents()->GetURL());
+  content::WebContents* contents = web_ui()->GetWebContents();
+  const GURL& current_url = contents->GetURL();
+  std::string is_constrained;
+  net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
+  if (is_constrained == "1")
+    contents->SetDelegate(this);
+
+  signin::Source source = signin::GetSourceForPromoURL(current_url);
   OneClickSigninHelper::LogHistogramValue(
       source, one_click_signin::HISTOGRAM_SHOWN);
 }
