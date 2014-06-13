@@ -374,7 +374,7 @@ HTMLMediaElement::~HTMLMediaElement()
 
     // The m_audioSourceNode is either dead already or it is dying together with
     // this HTMLMediaElement which it strongly keeps alive.
-#if !ENABLE(OILPAN)
+#if ENABLE(WEB_AUDIO) && !ENABLE(OILPAN)
     ASSERT(!m_audioSourceNode);
 #endif
     clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
