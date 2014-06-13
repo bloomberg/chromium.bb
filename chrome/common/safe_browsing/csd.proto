@@ -348,7 +348,7 @@ message ClientIncidentReport {
 
       optional string path = 1;
       optional string atomic_value = 2;
-      optional string split_key = 3;
+      repeated string split_key = 3;
       optional ValueState value_state = 4;
     }
     optional int64 incident_time_msec = 1;
@@ -379,14 +379,24 @@ message ClientIncidentReport {
     }
     optional Machine machine = 2;
     message Process {
-      repeated string dlls = 1;
+      optional string version = 1;
+      repeated string dlls = 2;
       message Patch {
         optional string function = 1;
         optional string target_dll = 2;
       }
-      repeated Patch patches = 2;
+      repeated Patch patches = 3;
       message NetworkProvider {}
-      repeated NetworkProvider network_providers = 3;
+      repeated NetworkProvider network_providers = 4;
+      enum Channel {
+        CHANNEL_UNKNOWN = 0;
+        CHANNEL_CANARY = 1;
+        CHANNEL_DEV = 2;
+        CHANNEL_BETA = 3;
+        CHANNEL_STABLE = 4;
+      }
+      optional Channel chrome_update_channel = 5;
+      optional int64 uptime_msec = 6;
     }
     optional Process process = 3;
   }

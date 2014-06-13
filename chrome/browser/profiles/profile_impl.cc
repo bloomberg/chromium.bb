@@ -66,6 +66,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -464,7 +465,13 @@ ProfileImpl::ProfileImpl(
       path_, sequenced_task_runner, create_mode == CREATE_MODE_SYNCHRONOUS);
 #endif
 
-  // TODO(grt): construct pref_validation_delegate_.
+  scoped_refptr<SafeBrowsingService> safe_browsing_service(
+      g_browser_process->safe_browsing_service());
+  if (safe_browsing_service) {
+    pref_validation_delegate_ =
+        safe_browsing_service->CreatePreferenceValidationDelegate().Pass();
+  }
+
   {
     // On startup, preference loading is always synchronous so a scoped timer
     // will work here.
