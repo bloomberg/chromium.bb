@@ -43,8 +43,7 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
       if (!too_many_pending_clients_exist) {
         // Call StartInitialization() only for the first request.
         session_needs_initialization = pending_clients_.empty();
-        pending_clients_.insert(
-            std::pair<int, MidiManagerClient*>(client_id, client));
+        pending_clients_.insert(std::make_pair(client, client_id));
       }
     }
   }
@@ -81,9 +80,8 @@ void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
 
 void MidiManager::EndSession(MidiManagerClient* client) {
   base::AutoLock auto_lock(lock_);
-  ClientList::iterator i = clients_.find(client);
-  if (i != clients_.end())
-    clients_.erase(i);
+  clients_.erase(client);
+  pending_clients_.erase(client);
 }
 
 void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
@@ -132,7 +130,6 @@ void MidiManager::CompleteInitializationInternal(MidiResult result) {
 
   base::AutoLock auto_lock(lock_);
   DCHECK(clients_.empty());
-  DCHECK(!pending_clients_.empty());
   DCHECK(!initialized_);
   initialized_ = true;
   result_ = result;
@@ -141,8 +138,8 @@ void MidiManager::CompleteInitializationInternal(MidiResult result) {
        it != pending_clients_.end();
        ++it) {
     if (result_ == MIDI_OK)
-      clients_.insert(it->second);
-    it->second->CompleteStartSession(it->first, result_);
+      clients_.insert(it->first);
+    it->first->CompleteStartSession(it->second, result_);
   }
   pending_clients_.clear();
 }

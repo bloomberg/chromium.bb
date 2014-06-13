@@ -171,17 +171,25 @@ TEST_F(MidiManagerTest, StartAndEndSessionWithError) {
 TEST_F(MidiManagerTest, StartMultipleSessions) {
   scoped_ptr<FakeMidiManagerClient> client1;
   scoped_ptr<FakeMidiManagerClient> client2;
+  scoped_ptr<FakeMidiManagerClient> client3;
   client1.reset(new FakeMidiManagerClient(0));
   client2.reset(new FakeMidiManagerClient(1));
+  client3.reset(new FakeMidiManagerClient(1));
 
   StartTheFirstSession(client1.get());
   StartTheNthSession(client2.get(), 2);
+  StartTheNthSession(client3.get(), 3);
   CompleteInitialization(MIDI_OK);
   EXPECT_EQ(MIDI_OK, client1->WaitForResult());
   EXPECT_EQ(MIDI_OK, client2->WaitForResult());
-  EndSession(client1.get(), 2U, 1U);
-  EndSession(client2.get(), 1U, 0U);
+  EXPECT_EQ(MIDI_OK, client3->WaitForResult());
+  EndSession(client1.get(), 3U, 2U);
+  EndSession(client2.get(), 2U, 1U);
+  EndSession(client3.get(), 1U, 0U);
 }
+
+// TODO(toyoshim): Add a test for a MidiManagerClient that has multiple
+// sessions with multiple client_id.
 
 TEST_F(MidiManagerTest, TooManyPendingSessions) {
   // Push as many client requests for starting session as possible.
@@ -215,6 +223,22 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
   size_t sessions = many_existing_clients.size();
   for (size_t i = 0; i < many_existing_clients.size(); ++i, --sessions)
     EndSession(many_existing_clients[i], sessions, sessions - 1);
+}
+
+TEST_F(MidiManagerTest, AbortSession) {
+  // A client starting a session can be destructed while an asynchronous
+  // initialization is performed.
+  scoped_ptr<FakeMidiManagerClient> client;
+  client.reset(new FakeMidiManagerClient(0));
+
+  StartTheFirstSession(client.get());
+  EndSession(client.get(), 0, 0);
+  client.reset();
+
+  // Following function should not call the destructed |client| function.
+  CompleteInitialization(MIDI_OK);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 TEST_F(MidiManagerTest, CreateMidiManager) {

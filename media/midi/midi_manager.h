@@ -152,7 +152,7 @@ class MEDIA_EXPORT MidiManager {
   ClientList clients_;
 
   // Keeps track of all clients who are waiting for CompleteStartSession().
-  typedef std::map<int, MidiManagerClient*> PendingClientMap;
+  typedef std::multimap<MidiManagerClient*, int> PendingClientMap;
   PendingClientMap pending_clients_;
 
   // Keeps a SingleThreadTaskRunner of the thread that calls StartSession in
