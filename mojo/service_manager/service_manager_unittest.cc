@@ -150,19 +150,15 @@ class TestApp : public Application, public ServiceLoader {
     BindServiceProvider(service_provider_handle.Pass());
   }
 
-  virtual void ConnectToService(const mojo::String& service_url,
-                                const mojo::String& service_name,
-                                ScopedMessagePipeHandle client_handle,
-                                const mojo::String& requestor_url)
+  virtual bool AllowIncomingConnection(const mojo::String& service_name,
+                                       const mojo::String& requestor_url)
       MOJO_OVERRIDE {
     if (requestor_url_.empty() || requestor_url_ == requestor_url) {
       ++num_connects_;
-      Application::ConnectToService(service_url,
-                                    service_name,
-                                    client_handle.Pass(),
-                                    requestor_url);
+      return true;
     } else {
       base::MessageLoop::current()->Quit();
+      return false;
     }
   }
 

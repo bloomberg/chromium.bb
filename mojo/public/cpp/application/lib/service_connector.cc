@@ -7,15 +7,10 @@
 namespace mojo {
 namespace internal {
 
-ServiceConnectorBase::Owner::Owner() {}
-
-ServiceConnectorBase::Owner::Owner(
-    ScopedMessagePipeHandle service_provider_handle) {
-  service_provider_.Bind(service_provider_handle.Pass());
-  service_provider_.set_client(this);
+ServiceConnectorBase::ServiceConnectorBase(const std::string& name)
+    : name_(name),
+      registry_(NULL) {
 }
-
-ServiceConnectorBase::Owner::~Owner() {}
 
 ServiceConnectorBase::~ServiceConnectorBase() {}
 

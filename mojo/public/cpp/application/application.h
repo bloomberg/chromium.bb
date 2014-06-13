@@ -64,47 +64,46 @@ namespace mojo {
 // app.AddService<BarImpl>(&context);
 //
 //
-class Application : public internal::ServiceConnectorBase::Owner {
+class Application {
  public:
   Application();
   explicit Application(ScopedMessagePipeHandle service_provider_handle);
   explicit Application(MojoHandle service_provider_handle);
   virtual ~Application();
 
-  // Override this to do any necessary initialization. There's no need to call
-  // Application's implementation.
-  // The service_provider will be bound to its pipe before this is called.
-  virtual void Initialize();
+  // Override this method to control what urls are allowed to connect to a
+  // service.
+  virtual bool AllowIncomingConnection(const mojo::String& service_name,
+                                       const mojo::String& requestor_url);
 
   template <typename Impl, typename Context>
   void AddService(Context* context) {
-    AddServiceConnector(
+    service_registry_.AddServiceConnector(
         new internal::ServiceConnector<Impl, Context>(Impl::Name_, context));
   }
 
   template <typename Impl>
   void AddService() {
-    AddServiceConnector(
+    service_registry_.AddServiceConnector(
         new internal::ServiceConnector<Impl, void>(Impl::Name_, NULL));
   }
 
   template <typename Interface>
-  void ConnectTo(const std::string& url,
-                 InterfacePtr<Interface>* ptr) {
+  void ConnectTo(const std::string& url, InterfacePtr<Interface>* ptr) {
     mojo::ConnectToService(service_provider(), url, ptr);
   }
 
-  ServiceProvider* service_provider() { return service_provider_.get(); }
+  ServiceProvider* service_provider() {
+    return service_registry_.remote_service_provider();
+  }
+
   void BindServiceProvider(ScopedMessagePipeHandle service_provider_handle);
 
  protected:
-  // ServiceProvider methods.
-  // Override this to dispatch to correct service when there's more than one.
-  virtual void ConnectToService(const mojo::String& service_url,
-                                const mojo::String& service_name,
-                                ScopedMessagePipeHandle client_handle,
-                                const mojo::String& requestor_url)
-      MOJO_OVERRIDE;
+  // Override this to do any necessary initialization. There's no need to call
+  // Application's implementation.
+  // The service_provider will be bound to its pipe before this is called.
+  virtual void Initialize();
 
  private:
   friend MojoResult (::MojoMain)(MojoHandle);
@@ -112,16 +111,9 @@ class Application : public internal::ServiceConnectorBase::Owner {
   // Implement this method to create the specific subclass of Application.
   static Application* Create();
 
-  // internal::ServiceConnectorBase::Owner methods.
-  // Takes ownership of |service_connector|.
-  virtual void AddServiceConnector(
-      internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
-  virtual void RemoveServiceConnector(
-      internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
+  internal::ServiceRegistry service_registry_;
 
-  typedef std::map<std::string, internal::ServiceConnectorBase*>
-      NameToServiceConnectorMap;
-  NameToServiceConnectorMap name_to_service_connector_;
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Application);
 };
 
 }  // namespace mojo

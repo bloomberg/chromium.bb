@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/application/lib/service_registry.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
@@ -41,6 +42,8 @@ private:
   }
 
   ServiceConnector<ServiceImpl, Context>* service_connector_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceConnection);
 };
 
 template <typename ServiceImpl, typename Context>
@@ -60,33 +63,19 @@ struct ServiceConstructor<ServiceImpl, void> {
 
 class ServiceConnectorBase {
  public:
-  class Owner : public ServiceProvider {
-   public:
-    Owner();
-    Owner(ScopedMessagePipeHandle service_provider_handle);
-    virtual ~Owner();
-    virtual void AddServiceConnector(
-        internal::ServiceConnectorBase* service_connector) = 0;
-    virtual void RemoveServiceConnector(
-        internal::ServiceConnectorBase* service_connector) = 0;
-
-   protected:
-    void set_service_connector_owner(ServiceConnectorBase* service_connector,
-                                     Owner* owner) {
-      service_connector->owner_ = owner;
-    }
-    ServiceProviderPtr service_provider_;
-  };
-  ServiceConnectorBase(const std::string& name) : name_(name), owner_(NULL) {}
+  ServiceConnectorBase(const std::string& name);
   virtual ~ServiceConnectorBase();
   virtual void ConnectToService(const std::string& url,
                                 const std::string& name,
                                 ScopedMessagePipeHandle client_handle) = 0;
   std::string name() const { return name_; }
+  void set_registry(ServiceRegistry* registry) { registry_ = registry; }
 
  protected:
   std::string name_;
-  Owner* owner_;
+  ServiceRegistry* registry_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceConnectorBase);
 };
 
 template <class ServiceImpl, typename Context=void>
@@ -134,6 +123,8 @@ class ServiceConnector : public internal::ServiceConnectorBase {
   typedef std::vector<ServiceImpl*> ConnectionList;
   ConnectionList connections_;
   Context* context_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceConnector);
 };
 
 }  // namespace internal

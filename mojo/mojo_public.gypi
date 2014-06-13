@@ -394,6 +394,8 @@
         'public/cpp/application/lib/application.cc',
         'public/cpp/application/lib/service_connector.cc',
         'public/cpp/application/lib/service_connector.h',
+        'public/cpp/application/lib/service_registry.cc',
+        'public/cpp/application/lib/service_registry.h',
       ],
       'dependencies': [
         'mojo_service_provider_bindings',
