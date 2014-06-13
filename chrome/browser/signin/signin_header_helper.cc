@@ -97,13 +97,22 @@ void ProcessMirrorHeaderUIThread(
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
-    if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
-      chrome::NewIncognitoWindow(browser);
-    } else {
-      browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
-          service_type);
+    BrowserWindow::AvatarBubbleMode bubble_mode;
+    switch (service_type) {
+      case signin::GAIA_SERVICE_TYPE_INCOGNITO:
+        chrome::NewIncognitoWindow(browser);
+        return;
+      case signin::GAIA_SERVICE_TYPE_ADDSESSION:
+        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN;
+        break;
+      case signin::GAIA_SERVICE_TYPE_REAUTH:
+        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
+        break;
+      default:
+        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
     }
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        bubble_mode, service_type);
   }
 #else  // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
