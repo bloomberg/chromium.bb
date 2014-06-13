@@ -39,7 +39,6 @@ SVGPathSeg::SVGPathSeg(SVGPathElement* contextElement)
     : m_ownerList(0)
     , m_contextElement(contextElement)
 {
-    ScriptWrappable::init(this);
 }
 
 void SVGPathSeg::commitChange()

@@ -78,8 +78,6 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
     , m_textLengthIsSpecifiedByUser(false)
     , m_lengthAdjust(SVGAnimatedEnumeration<SVGLengthAdjustType>::create(this, SVGNames::lengthAdjustAttr, SVGLengthAdjustSpacing))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_textLength);
     addToPropertyMap(m_lengthAdjust);
 }

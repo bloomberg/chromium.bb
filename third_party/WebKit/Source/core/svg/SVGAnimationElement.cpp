@@ -50,8 +50,6 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     , m_calcMode(CalcModeLinear)
     , m_animationMode(NoAnimation)
 {
-    ScriptWrappable::init(this);
-
     UseCounter::count(document, UseCounter::SVGAnimationElement);
 }
 
