@@ -176,11 +176,13 @@ class BuildPackagesStageTest(generic_stages_unittest.AbstractStageTest):
     return build_stages.BuildPackagesStage(self._run, self._current_board)
 
   @contextlib.contextmanager
-  def RunStageWithConfig(self):
+  def RunStageWithConfig(self, mock_configurator=None):
     """Run the given config"""
     try:
       with cros_build_lib_unittest.RunCommandMock() as rc:
         rc.SetDefaultCmdResult()
+        if mock_configurator:
+          mock_configurator(rc)
         with cros_test_lib.OutputCapturer():
           with cros_test_lib.LoggingCapturer():
             self.RunStage()
