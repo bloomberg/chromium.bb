@@ -1962,7 +1962,12 @@ void UserManagerImpl::UpdateLoginState() {
   else
     login_user_type = LoginState::LOGGED_IN_USER_REGULAR;
 
-  LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
+  if (primary_user_) {
+    LoginState::Get()->SetLoggedInStateAndPrimaryUser(
+        logged_in_state, login_user_type, primary_user_->username_hash());
+  } else {
+    LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
+  }
 }
 
 void UserManagerImpl::SetLRUUser(User* user) {

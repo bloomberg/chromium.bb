@@ -9,6 +9,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+const char kTestUserHash[] = "testuserhash";
+}  // namespace
+
 namespace chromeos {
 
 class LoginStateTest : public testing::Test,
@@ -122,6 +126,28 @@ TEST_F(LoginStateTest, TestLoggedInStateChangedObserverOnUserTypeChange) {
   EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER, logged_in_user_type_);
   EXPECT_EQ(LoginState::LOGGED_IN_USER_OWNER,
             LoginState::Get()->GetLoggedInUserType());
+}
+
+TEST_F(LoginStateTest, TestPrimaryUser) {
+  EXPECT_FALSE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE, logged_in_user_type_);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_NONE,
+            LoginState::Get()->GetLoggedInUserType());
+
+  // Setting login state to ACTIVE and setting the primary user.
+  LoginState::Get()->SetLoggedInStateAndPrimaryUser(
+      LoginState::LOGGED_IN_ACTIVE,
+      LoginState::LOGGED_IN_USER_REGULAR,
+      kTestUserHash);
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR,
+            LoginState::Get()->GetLoggedInUserType());
+  EXPECT_TRUE(LoginState::Get()->IsUserLoggedIn());
+  EXPECT_FALSE(LoginState::Get()->IsInSafeMode());
+  EXPECT_EQ(kTestUserHash, LoginState::Get()->primary_user_hash());
+
+  EXPECT_EQ(1U, GetNewLoginStateChangesCount());
+  EXPECT_EQ(LoginState::LOGGED_IN_USER_REGULAR, logged_in_user_type_);
 }
 
 }  // namespace chromeos

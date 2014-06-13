@@ -57,6 +57,16 @@ void LoginState::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void LoginState::SetLoggedInStateAndPrimaryUser(
+    LoggedInState state,
+    LoggedInUserType type,
+    const std::string& primary_user_hash) {
+  DCHECK(type != LOGGED_IN_USER_NONE);
+  primary_user_hash_ = primary_user_hash;
+  VLOG(1) << "LoggedInStateUser: " << primary_user_hash;
+  SetLoggedInState(state, type);
+}
+
 void LoginState::SetLoggedInState(LoggedInState state,
                                   LoggedInUserType type) {
   if (state == logged_in_state_ && type == logged_in_user_type_)
