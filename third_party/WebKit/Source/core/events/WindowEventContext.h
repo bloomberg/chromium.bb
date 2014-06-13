@@ -39,6 +39,7 @@ class Node;
 class NodeEventContext;
 
 class WindowEventContext {
+    STACK_ALLOCATED();
 public:
     WindowEventContext(Event*, PassRefPtrWillBeRawPtr<Node>, const NodeEventContext*);
 
@@ -47,8 +48,8 @@ public:
     bool handleLocalEvents(Event* event);
 
 private:
-    RefPtrWillBePersistent<DOMWindow> m_window;
-    RefPtrWillBePersistent<EventTarget> m_target;
+    RefPtrWillBeMember<DOMWindow> m_window;
+    RefPtrWillBeMember<EventTarget> m_target;
 };
 
 inline DOMWindow* WindowEventContext::window() const

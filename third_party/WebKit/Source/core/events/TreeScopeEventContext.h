@@ -43,12 +43,13 @@ class Node;
 class TouchEventContext;
 class TreeScope;
 
-class TreeScopeEventContext : public RefCounted<TreeScopeEventContext> {
+class TreeScopeEventContext FINAL : public RefCountedWillBeGarbageCollected<TreeScopeEventContext> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext);
 public:
-    static PassRefPtr<TreeScopeEventContext> create(TreeScope&);
-    ~TreeScopeEventContext();
+    static PassRefPtrWillBeRawPtr<TreeScopeEventContext> create(TreeScope&);
+    void trace(Visitor*);
 
-    TreeScope& treeScope() const { return m_treeScope; }
+    TreeScope& treeScope() const { return *m_treeScope; }
 
     EventTarget* target() const { return m_target.get(); }
     void setTarget(PassRefPtrWillBeRawPtr<EventTarget>);
@@ -75,13 +76,13 @@ private:
     bool isUnreachableNode(EventTarget&);
 #endif
 
-    TreeScope& m_treeScope;
-    RefPtrWillBePersistent<EventTarget> m_target;
-    RefPtrWillBePersistent<EventTarget> m_relatedTarget;
-    RefPtrWillBePersistent<NodeList> m_eventPath;
-    RefPtrWillBePersistent<TouchEventContext> m_touchEventContext;
+    RawPtrWillBeMember<TreeScope> m_treeScope;
+    RefPtrWillBeMember<EventTarget> m_target;
+    RefPtrWillBeMember<EventTarget> m_relatedTarget;
+    RefPtrWillBeMember<NodeList> m_eventPath;
+    RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
 
-    Vector<TreeScopeEventContext*> m_children;
+    WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext> > m_children;
     int m_preOrder;
     int m_postOrder;
 };
@@ -90,7 +91,7 @@ private:
 inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
 {
     // FIXME: Checks also for SVG elements.
-    return target.toNode() && !target.toNode()->isSVGElement() && !target.toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(m_treeScope);
+    return target.toNode() && !target.toNode()->isSVGElement() && !target.toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope());
 }
 #endif
 

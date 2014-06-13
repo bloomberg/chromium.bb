@@ -80,7 +80,7 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
 }
 
 EventPath::EventPath(Event* event)
-    : m_node(0)
+    : m_node(nullptr)
     , m_event(event)
 {
 }
@@ -112,7 +112,7 @@ void EventPath::calculatePath()
 {
     ASSERT(m_node);
     ASSERT(m_nodeEventContexts.isEmpty());
-    m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node));
+    m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node.get()));
 
     Node* current = m_node;
     addNodeEventContext(current);
@@ -153,7 +153,7 @@ void EventPath::calculateTreeScopePrePostOrderNumbers()
     // Precondition:
     //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same tree of trees.
     //   - The root tree must be included.
-    HashMap<const TreeScope*, TreeScopeEventContext*> treeScopeEventContextMap;
+    WillBeHeapHashMap<RawPtrWillBeMember<const TreeScope>, RawPtrWillBeMember<TreeScopeEventContext> > treeScopeEventContextMap;
     for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i)
         treeScopeEventContextMap.add(&m_treeScopeEventContexts[i]->treeScope(), m_treeScopeEventContexts[i].get());
     TreeScopeEventContext* rootTree = 0;
@@ -230,7 +230,7 @@ void EventPath::buildRelatedNodeMap(const Node* relatedNode, RelatedTargetMap& r
 
 EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& relatedTargetMap)
 {
-    Vector<TreeScope*, 32> parentTreeScopes;
+    WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 32> parentTreeScopes;
     EventTarget* relatedNode = 0;
     while (scope) {
         parentTreeScopes.append(scope);
@@ -242,7 +242,7 @@ EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& rela
         scope = scope->olderShadowRootOrParentTreeScope();
     }
     ASSERT(relatedNode);
-    for (Vector<TreeScope*, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
+    for (WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
         relatedTargetMap.add(*iter, relatedNode);
     return relatedNode;
 }
@@ -298,7 +298,7 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouches;
     WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTargetTouches;
     WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedChangedTouches;
-    Vector<TreeScope*> treeScopes;
+    WillBeHeapVector<RawPtrWillBeMember<TreeScope> > treeScopes;
 
     for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
         TouchEventContext* touchEventContext = m_treeScopeEventContexts[i]->ensureTouchEventContext();
@@ -323,7 +323,7 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
 #endif
 }
 
-void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouchList, const Vector<TreeScope*>& treeScopes)
+void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope> >& treeScopes)
 {
     if (!touchList)
         return;
@@ -348,7 +348,9 @@ void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
 void EventPath::trace(Visitor* visitor)
 {
     visitor->trace(m_nodeEventContexts);
+    visitor->trace(m_node);
     visitor->trace(m_event);
+    visitor->trace(m_treeScopeEventContexts);
 }
 
 } // namespace

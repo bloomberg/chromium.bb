@@ -48,7 +48,7 @@ public:
 
     Node* node() const { return m_node.get(); }
 
-    void setTreeScopeEventContext(PassRefPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
+    void setTreeScopeEventContext(PassRefPtrWillBeRawPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
     TreeScopeEventContext& treeScopeEventContext() { ASSERT(m_treeScopeEventContext); return *m_treeScopeEventContext; }
 
     EventTarget* target() const { return m_treeScopeEventContext->target(); }
@@ -61,7 +61,7 @@ public:
 private:
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<EventTarget> m_currentTarget;
-    RefPtr<TreeScopeEventContext> m_treeScopeEventContext;
+    RefPtrWillBeMember<TreeScopeEventContext> m_treeScopeEventContext;
 };
 
 }

@@ -59,9 +59,9 @@ TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
     return m_touchEventContext.get();
 }
 
-PassRefPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
+PassRefPtrWillBeRawPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
 {
-    return adoptRef(new TreeScopeEventContext(treeScope));
+    return adoptRefWillBeNoop(new TreeScopeEventContext(treeScope));
 }
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
@@ -71,8 +71,18 @@ TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
 {
 }
 
-TreeScopeEventContext::~TreeScopeEventContext()
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext)
+
+void TreeScopeEventContext::trace(Visitor* visitor)
 {
+    visitor->trace(m_treeScope);
+    visitor->trace(m_target);
+    visitor->trace(m_relatedTarget);
+    visitor->trace(m_eventPath);
+    visitor->trace(m_touchEventContext);
+#if ENABLE(OILPAN)
+    visitor->trace(m_children);
+#endif
 }
 
 int TreeScopeEventContext::calculatePrePostOrderNumber(int orderNumber)
