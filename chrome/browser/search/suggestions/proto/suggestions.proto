@@ -8,6 +8,14 @@ option optimize_for = LITE_RUNTIME;
 
 package suggestions;
 
+// Providers are identified with an ID.
+enum ProviderId {
+  SERVER0 = 0;
+  SERVER1 = 1;
+  SERVER2 = 2;
+  SERVER3 = 3;
+}
+
 // The SuggestionsProfile is a protobuf response from the server that contains
 // the list of suggestions to be presented to the user.
 //
@@ -18,7 +26,7 @@ message SuggestionsProfile {
 
 // The suggestions for this user, ordered from best to worst.
 //
-// Next tag: 3
+// Next tag: 6
 message ChromeSuggestion {
   // The URL of the suggestion.
   optional string url = 1;
@@ -31,4 +39,7 @@ message ChromeSuggestion {
 
   // The URL of the thumbnail associated with this page.
   optional string thumbnail = 4;
+
+  // The provider(s) responsible for this suggestion.
+  repeated ProviderId providers = 5;
 }

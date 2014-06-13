@@ -12,6 +12,9 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -45,6 +48,11 @@ using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
 namespace {
+
+// Name of histograms keeping track of Most Visited statistics.
+const char kNumTilesHistogramName[] = "NewTabPage.NumberOfTiles";
+const char kProviderImpressionsHistogramFormat[] =
+    "NewTabPage.SuggestionsImpression.%s";
 
 void ExtractMostVisitedTitlesAndURLs(
     const history::MostVisitedURLList& visited_list,
@@ -159,6 +167,20 @@ void GetSuggestionsThumbnailOnUIThread(
       GURL(url_string),
       base::Bind(&OnSuggestionsThumbnailAvailable,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))));
+}
+
+void LogImpressionForProvider(const std::string& provider, int position,
+                              int num_sites) {
+  const std::string histogram_name =
+      base::StringPrintf(kProviderImpressionsHistogramFormat,
+                         provider.c_str());
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      histogram_name,
+      1,
+      num_sites,
+      num_sites + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(position);
 }
 
 }  // namespace
@@ -313,6 +335,13 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
 
   mv_source_ = TOP_SITES;
 
+  int num_tiles = urls.size();
+  UMA_HISTOGRAM_CUSTOM_COUNTS(kNumTilesHistogramName, num_tiles, 0, num_sites_,
+                              num_sites_ + 1);
+  for (int i = 0; i < num_tiles; ++i) {
+    LogImpressionForProvider("client", i, num_sites_);
+  }
+
   JNIEnv* env = AttachCurrentThread();
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env,
@@ -324,7 +353,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
 void MostVisitedSites::OnSuggestionsProfileAvailable(
     ScopedJavaGlobalRef<jobject>* j_observer,
     const SuggestionsProfile& suggestions_profile) {
-  size_t size = suggestions_profile.suggestions_size();
+  int size = suggestions_profile.suggestions_size();
   if (size == 0) {
     // No suggestions data available, initiate Top Sites query.
     InitiateTopSitesQuery();
@@ -333,10 +362,18 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
-  for (size_t i = 0; i < size; ++i) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(kNumTilesHistogramName, size, 0, num_sites_,
+                              num_sites_ + 1);
+  for (int i = 0; i < size && i < num_sites_; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     titles.push_back(base::UTF8ToUTF16(suggestion.title()));
     urls.push_back(suggestion.url());
+    if (suggestion.providers_size()) {
+      LogImpressionForProvider(
+          "server" + base::IntToString(suggestion.providers(0)), i, num_sites_);
+    } else {
+      LogImpressionForProvider("server", i, num_sites_);
+    }
   }
 
   mv_source_ = SUGGESTIONS_SERVICE;
