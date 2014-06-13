@@ -23,6 +23,12 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace blacklist{
 
+// The DLLs listed here are known (or under strong suspicion) of causing crashes
+// when they are loaded in the browser. DLLs should only be added to this list
+// if there is nothing else Chrome can do to prevent those crashes.
+// For more information about how this list is generated, and how to get off
+// of it, see:
+// https://sites.google.com/a/chromium.org/dev/Home/third-party-developers
 const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"datamngr.dll",                      // Unknown (suspected adware).
   L"hk.dll",                            // Unknown (keystroke logger).
