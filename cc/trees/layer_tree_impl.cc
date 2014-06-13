@@ -14,6 +14,7 @@
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -188,7 +189,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
   if (next_activation_forces_redraw_) {
-    layer_tree_host_impl_->SetFullRootLayerDamage();
+    target_tree->ForceRedrawNextActivation();
     next_activation_forces_redraw_ = false;
   }
 
@@ -559,12 +560,19 @@ void LayerTreeImpl::DidBecomeActive() {
   if (!root_layer())
     return;
 
+  if (next_activation_forces_redraw_) {
+    layer_tree_host_impl_->SetFullRootLayerDamage();
+    next_activation_forces_redraw_ = false;
+  }
+
   if (scrolling_layer_id_from_previous_tree_) {
     currently_scrolling_layer_ = LayerTreeHostCommon::FindLayerInSubtree(
         root_layer_.get(), scrolling_layer_id_from_previous_tree_);
   }
 
   DidBecomeActiveRecursive(root_layer());
+  devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
+                                                 source_frame_number_);
 }
 
 bool LayerTreeImpl::ContentsTexturesPurged() const {

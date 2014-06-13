@@ -315,7 +315,12 @@ void LayerTreeHostImpl::BeginMainFrameAborted(bool did_handle) {
   }
 }
 
-void LayerTreeHostImpl::BeginCommit() {}
+void LayerTreeHostImpl::BeginCommit() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
+
+  if (settings_.impl_side_painting)
+    CreatePendingTree();
+}
 
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
@@ -333,6 +338,13 @@ void LayerTreeHostImpl::CommitComplete() {
     else
       ManageTiles();
   } else {
+    // If we're not in impl-side painting, the tree is immediately considered
+    // active.
+    active_tree_->ProcessUIResourceRequestQueue();
+    active_tree_->DidBecomeActive();
+
+    ActivateAnimations();
+
     active_tree_->set_needs_update_draw_properties();
     if (time_source_client_adapter_ && time_source_client_adapter_->Active())
       DCHECK(active_tree_->root_layer());
@@ -1686,6 +1698,13 @@ void LayerTreeHostImpl::CreatePendingTree() {
     recycle_tree_.swap(pending_tree_);
   else
     pending_tree_ = LayerTreeImpl::create(this);
+
+  // Update the delta from the active tree, which may have
+  // adjusted its delta prior to the pending tree being created.
+  DCHECK_EQ(1.f, pending_tree_->sent_page_scale_delta());
+  pending_tree_->SetPageScaleDelta(active_tree_->page_scale_delta() /
+                                   active_tree_->sent_page_scale_delta());
+
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
 }
@@ -1750,8 +1769,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
 
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())
     DCHECK(active_tree_->root_layer());
-  devtools_instrumentation::DidActivateLayerTree(
-      id_, active_tree_->source_frame_number());
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

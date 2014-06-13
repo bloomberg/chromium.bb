@@ -271,28 +271,15 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
     contents_texture_manager_->UpdateBackingsState(
         host_impl->resource_provider());
-  }
-
-  // In impl-side painting, synchronize to the pending tree so that it has
-  // time to raster before being displayed.  If no pending tree is needed,
-  // synchronization can happen directly to the active tree and
-  // unlinked contents resources can be reclaimed immediately.
-  LayerTreeImpl* sync_tree;
-  if (settings_.impl_side_painting) {
-    // Commits should not occur while there is already a pending tree.
-    DCHECK(!host_impl->pending_tree());
-    host_impl->CreatePendingTree();
-    sync_tree = host_impl->pending_tree();
-    if (next_commit_forces_redraw_)
-      sync_tree->ForceRedrawNextActivation();
-  } else {
-    if (next_commit_forces_redraw_)
-      host_impl->SetFullRootLayerDamage();
     contents_texture_manager_->ReduceMemory(host_impl->resource_provider());
-    sync_tree = host_impl->active_tree();
   }
 
-  next_commit_forces_redraw_ = false;
+  LayerTreeImpl* sync_tree = host_impl->sync_tree();
+
+  if (next_commit_forces_redraw_) {
+    sync_tree->ForceRedrawNextActivation();
+    next_commit_forces_redraw_ = false;
+  }
 
   sync_tree->set_source_frame_number(source_frame_number());
 
@@ -328,25 +315,13 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->ClearViewportLayers();
   }
 
-  float page_scale_delta, sent_page_scale_delta;
-  if (settings_.impl_side_painting) {
-    // Update the delta from the active tree, which may have
-    // adjusted its delta prior to the pending tree being created.
-    // This code is equivalent to that in LayerTreeImpl::SetPageScaleDelta.
-    DCHECK_EQ(1.f, sync_tree->sent_page_scale_delta());
-    page_scale_delta = host_impl->active_tree()->page_scale_delta();
-    sent_page_scale_delta = host_impl->active_tree()->sent_page_scale_delta();
-  } else {
-    page_scale_delta = sync_tree->page_scale_delta();
-    sent_page_scale_delta = sync_tree->sent_page_scale_delta();
-    sync_tree->set_sent_page_scale_delta(1.f);
-  }
-
-  sync_tree->SetPageScaleValues(
-      page_scale_factor_,
-      min_page_scale_factor_,
-      max_page_scale_factor_,
-      page_scale_delta / sent_page_scale_delta);
+  float page_scale_delta =
+      sync_tree->page_scale_delta() / sync_tree->sent_page_scale_delta();
+  sync_tree->SetPageScaleValues(page_scale_factor_,
+                                min_page_scale_factor_,
+                                max_page_scale_factor_,
+                                page_scale_delta);
+  sync_tree->set_sent_page_scale_delta(1.f);
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
@@ -369,10 +344,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   if (!ui_resource_request_queue_.empty()) {
     sync_tree->set_ui_resource_request_queue(ui_resource_request_queue_);
     ui_resource_request_queue_.clear();
-    // Process any ui resource requests in the queue.  For impl-side-painting,
-    // the queue is processed in LayerTreeHostImpl::ActivatePendingTree.
-    if (!settings_.impl_side_painting)
-      sync_tree->ProcessUIResourceRequestQueue();
   }
   if (overhang_ui_resource_) {
     host_impl->SetOverhangUIResource(
@@ -385,14 +356,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   if (new_impl_tree_has_no_evicted_resources) {
     if (sync_tree->ContentsTexturesPurged())
       sync_tree->ResetContentsTexturesPurged();
-  }
-
-  if (!settings_.impl_side_painting) {
-    // If we're not in impl-side painting, the tree is immediately
-    // considered active.
-    sync_tree->DidBecomeActive();
-    host_impl->ActivateAnimations();
-    devtools_instrumentation::DidActivateLayerTree(id_, source_frame_number_);
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);

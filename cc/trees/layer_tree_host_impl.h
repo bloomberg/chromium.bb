@@ -265,6 +265,7 @@ class CC_EXPORT LayerTreeHostImpl
   void OnCanDrawStateChangedForTree();
 
   // Implementation.
+  int id() const { return id_; }
   bool CanDraw() const;
   OutputSurface* output_surface() const { return output_surface_.get(); }
 
@@ -295,6 +296,13 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeImpl* pending_tree() { return pending_tree_.get(); }
   const LayerTreeImpl* pending_tree() const { return pending_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
+  // Returns the tree LTH synchronizes with.
+  LayerTreeImpl* sync_tree() {
+    // In impl-side painting, synchronize to the pending tree so that it has
+    // time to raster before being displayed.
+    return settings_.impl_side_painting ? pending_tree_.get()
+                                        : active_tree_.get();
+  }
   virtual void CreatePendingTree();
   virtual void UpdateVisibleTiles();
   virtual void ActivatePendingTree();
