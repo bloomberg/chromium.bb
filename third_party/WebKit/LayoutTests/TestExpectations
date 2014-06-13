@@ -394,7 +394,6 @@ crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
 # Reftests that needs investigation.
-crbug.com/378610 compositing/gestures/gesture-tapHighlight-pixel-transparent.html [ NeedsRebaseline ]
 crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/selectors/selection-window-inactive.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/selectors/shadow-host-div-with-span.html [ ImageOnlyFailure ]
