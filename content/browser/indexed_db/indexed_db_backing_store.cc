@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -353,7 +354,7 @@ WARN_UNUSED_RESULT bool IndexedDBBackingStore::SetUpMetadata() {
   const std::string data_version_key = DataVersionKey::Encode();
 
   scoped_refptr<LevelDBTransaction> transaction =
-      new LevelDBTransaction(db_.get());
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
 
   int64 db_schema_version = 0;
   int64 db_data_version = 0;
@@ -1276,7 +1277,7 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
     int64 int_version,
     int64* row_id) {
   scoped_refptr<LevelDBTransaction> transaction =
-      new LevelDBTransaction(db_.get());
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
 
   leveldb::Status s = GetNewDatabaseId(transaction.get(), row_id);
   if (!s.ok())
@@ -2356,7 +2357,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64 database_id,
   bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
   DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobKey(blob_key));
   scoped_refptr<LevelDBTransaction> transaction =
-      new LevelDBTransaction(db_.get());
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
 
   std::string live_blob_key = LiveBlobJournalKey::Encode();
   BlobJournalType live_blob_journal;
@@ -2563,7 +2564,7 @@ bool IndexedDBBackingStore::RemoveBlobDirectory(int64 database_id) {
 leveldb::Status IndexedDBBackingStore::CleanUpBlobJournal(
     const std::string& level_db_key) {
   scoped_refptr<LevelDBTransaction> journal_transaction =
-      new LevelDBTransaction(db_.get());
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
   BlobJournalType journal;
   leveldb::Status s =
       GetBlobJournal(level_db_key, journal_transaction.get(), &journal);
@@ -3828,7 +3829,8 @@ IndexedDBBackingStore::Transaction::~Transaction() {
 void IndexedDBBackingStore::Transaction::Begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(!transaction_.get());
-  transaction_ = new LevelDBTransaction(backing_store_->db_.get());
+  transaction_ = IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+      backing_store_->db_.get());
 
   // If incognito, this snapshots blobs just as the above transaction_
   // constructor snapshots the leveldb.
@@ -3855,7 +3857,8 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
   if (iter != blob_change_map_.end()) {
     // Create LevelDBTransaction for the name generator seed and add-journal.
     scoped_refptr<LevelDBTransaction> pre_transaction =
-        new LevelDBTransaction(backing_store_->db_.get());
+        IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+            backing_store_->db_.get());
     BlobJournalType journal;
     for (; iter != blob_change_map_.end(); ++iter) {
       std::vector<IndexedDBBlobInfo>::iterator info_iter;

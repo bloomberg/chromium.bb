@@ -33,6 +33,8 @@ class SimpleComparator : public LevelDBComparator {
   virtual const char* Name() const OVERRIDE { return "temp_comparator"; }
 };
 
+}  // namespace
+
 TEST(LevelDBDatabaseTest, CorruptionTest) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -261,7 +263,5 @@ TEST(LevelDB, Locking) {
   status = env->UnlockFile(lock);
   EXPECT_TRUE(status.ok());
 }
-
-}  // namespace
 
 }  // namespace content

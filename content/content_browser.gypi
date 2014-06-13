@@ -659,6 +659,8 @@
       'browser/indexed_db/indexed_db_blob_info.h',
       'browser/indexed_db/indexed_db_callbacks.cc',
       'browser/indexed_db/indexed_db_callbacks.h',
+      'browser/indexed_db/indexed_db_class_factory.cc',
+      'browser/indexed_db/indexed_db_class_factory.h',
       'browser/indexed_db/indexed_db_connection.cc',
       'browser/indexed_db/indexed_db_connection.h',
       'browser/indexed_db/indexed_db_context_impl.cc',
