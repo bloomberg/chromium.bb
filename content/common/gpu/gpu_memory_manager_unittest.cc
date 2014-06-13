@@ -190,13 +190,11 @@ class GpuMemoryManagerTest : public testing::Test {
   }
   bool IsAllocationForegroundForSurfaceNo(
       const MemoryAllocation& alloc) {
-    return alloc.bytes_limit_when_visible ==
-               GetMinimumClientAllocation();
+    return alloc.bytes_limit_when_visible == 1;
   }
   bool IsAllocationBackgroundForSurfaceNo(
       const MemoryAllocation& alloc) {
-    return alloc.bytes_limit_when_visible ==
-               GetMinimumClientAllocation();
+    return alloc.bytes_limit_when_visible == 1;
   }
   bool IsAllocationHibernatedForSurfaceNo(
       const MemoryAllocation& alloc) {
@@ -206,28 +204,6 @@ class GpuMemoryManagerTest : public testing::Test {
   void Manage() {
     ClientAssignmentCollector::ClearAllStats();
     memmgr_.Manage();
-  }
-
-  uint64 CalcAvailableFromGpuTotal(uint64 bytes) {
-    return GpuMemoryManager::CalcAvailableFromGpuTotal(bytes);
-  }
-
-  uint64 CalcAvailableClamped(uint64 bytes) {
-    bytes = std::max(bytes, memmgr_.GetDefaultAvailableGpuMemory());
-    bytes = std::min(bytes, memmgr_.GetMaximumTotalGpuMemory());
-    return bytes;
-  }
-
-  uint64 GetAvailableGpuMemory() {
-    return memmgr_.GetAvailableGpuMemory();
-  }
-
-  uint64 GetMaximumClientAllocation() {
-    return memmgr_.GetMaximumClientAllocation();
-  }
-
-  uint64 GetMinimumClientAllocation() {
-    return memmgr_.GetMinimumClientAllocation();
   }
 
   void SetClientStats(
@@ -451,162 +427,6 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceYes(stub2.allocation_));
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub3.allocation_));
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub4.allocation_));
-}
-
-// Test GpuMemoryManager::UpdateAvailableGpuMemory functionality
-TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
-  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true),
-             stub2(&memmgr_, GenerateUniqueSurfaceId(), false),
-             stub3(&memmgr_, GenerateUniqueSurfaceId(), true),
-             stub4(&memmgr_, GenerateUniqueSurfaceId(), false);
-  // We take the lowest GPU's total memory as the limit
-  uint64 expected = 400 * 1024 * 1024;
-  stub1.SetTotalGpuMemory(expected); // GPU Memory
-  stub2.SetTotalGpuMemory(expected - 1024 * 1024); // Smaller but not visible.
-  stub3.SetTotalGpuMemory(expected + 1024 * 1024); // Visible but larger.
-  stub4.SetTotalGpuMemory(expected + 1024 * 1024); // Not visible and larger.
-  Manage();
-  uint64 bytes_expected = CalcAvailableFromGpuTotal(expected);
-  EXPECT_EQ(GetAvailableGpuMemory(), CalcAvailableClamped(bytes_expected));
-}
-
-// Test GpuMemoryManager Stub Memory Stats functionality:
-// Creates various surface/non-surface stubs and switches stub visibility and
-// tests to see that stats data structure values are correct.
-TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
-  ClientAssignmentCollector::ClientMemoryStatMap stats;
-
-  Manage();
-  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
-  EXPECT_EQ(stats.size(), 0ul);
-
-  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
-  Manage();
-  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
-  uint64 stub1allocation1 =
-      stats[&stub1].allocation.bytes_limit_when_visible;
-
-  EXPECT_EQ(stats.size(), 1ul);
-  EXPECT_GT(stub1allocation1, 0ul);
-
-  FakeClient stub2(&memmgr_, &stub1);
-  Manage();
-  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
-  EXPECT_EQ(stats.count(&stub1), 1ul);
-  uint64 stub1allocation2 =
-      stats[&stub1].allocation.bytes_limit_when_visible;
-  EXPECT_EQ(stats.count(&stub2), 1ul);
-  uint64 stub2allocation2 =
-      stats[&stub2].allocation.bytes_limit_when_visible;
-
-  EXPECT_EQ(stats.size(), 2ul);
-  EXPECT_GT(stub1allocation2, 0ul);
-  EXPECT_GT(stub2allocation2, 0ul);
-  if (stub1allocation2 != GetMaximumClientAllocation())
-    EXPECT_LT(stub1allocation2, stub1allocation1);
-
-  FakeClient stub3(&memmgr_, GenerateUniqueSurfaceId(), true);
-  Manage();
-  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
-  uint64 stub1allocation3 =
-      stats[&stub1].allocation.bytes_limit_when_visible;
-  uint64 stub2allocation3 =
-      stats[&stub2].allocation.bytes_limit_when_visible;
-  uint64 stub3allocation3 =
-      stats[&stub3].allocation.bytes_limit_when_visible;
-
-  EXPECT_EQ(stats.size(), 3ul);
-  EXPECT_GT(stub1allocation3, 0ul);
-  EXPECT_GT(stub2allocation3, 0ul);
-  EXPECT_GT(stub3allocation3, 0ul);
-  if (stub1allocation3 != GetMaximumClientAllocation())
-    EXPECT_LT(stub1allocation3, stub1allocation2);
-
-  stub1.SetVisible(false);
-
-  Manage();
-  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
-  uint64 stub1allocation4 =
-      stats[&stub1].allocation.bytes_limit_when_visible;
-  uint64 stub2allocation4 =
-      stats[&stub2].allocation.bytes_limit_when_visible;
-  uint64 stub3allocation4 =
-      stats[&stub3].allocation.bytes_limit_when_visible;
-
-  EXPECT_EQ(stats.size(), 3ul);
-  EXPECT_GT(stub1allocation4, 0ul);
-  EXPECT_GE(stub2allocation4, 0ul);
-  EXPECT_GT(stub3allocation4, 0ul);
-  if (stub3allocation3 != GetMaximumClientAllocation())
-    EXPECT_GT(stub3allocation4, stub3allocation3);
-}
-
-// Test tracking of unmanaged (e.g, WebGL) memory.
-TEST_F(GpuMemoryManagerTest, UnmanagedTracking) {
-  // Set memory manager constants for this test
-  memmgr_.TestingSetAvailableGpuMemory(64);
-  memmgr_.TestingSetMinimumClientAllocation(8);
-  memmgr_.TestingSetUnmanagedLimitStep(16);
-
-  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
-
-  // Expect that the one stub get its nicetohave level.
-  SetClientStats(&stub1, 16, 32);
-  Manage();
-  EXPECT_GE(stub1.BytesWhenVisible(), 32u);
-
-  // Now allocate some unmanaged memory and make sure the amount
-  // goes down.
-  memmgr_.TrackMemoryAllocatedChange(
-      stub1.tracking_group_.get(),
-      0,
-      48,
-      gpu::gles2::MemoryTracker::kUnmanaged);
-  Manage();
-  EXPECT_LT(stub1.BytesWhenVisible(), 24u);
-
-  // Now allocate the entire FB worth of unmanaged memory, and
-  // make sure that we stay stuck at the minimum tab allocation.
-  memmgr_.TrackMemoryAllocatedChange(
-      stub1.tracking_group_.get(),
-      48,
-      64,
-      gpu::gles2::MemoryTracker::kUnmanaged);
-  Manage();
-  EXPECT_EQ(stub1.BytesWhenVisible(), 8u);
-
-  // Far-oversubscribe the entire FB, and make sure we stay at
-  // the minimum allocation, and don't blow up.
-  memmgr_.TrackMemoryAllocatedChange(
-      stub1.tracking_group_.get(),
-      64,
-      999,
-      gpu::gles2::MemoryTracker::kUnmanaged);
-  Manage();
-  EXPECT_EQ(stub1.BytesWhenVisible(), 8u);
-
-  // Delete all tracked memory so we don't hit leak checks.
-  memmgr_.TrackMemoryAllocatedChange(
-      stub1.tracking_group_.get(),
-      999,
-      0,
-      gpu::gles2::MemoryTracker::kUnmanaged);
-}
-
-// Test the default allocation levels are used.
-TEST_F(GpuMemoryManagerTest, DefaultAllocation) {
-  // Set memory manager constants for this test
-  memmgr_.TestingSetAvailableGpuMemory(64);
-  memmgr_.TestingSetMinimumClientAllocation(8);
-  memmgr_.TestingSetDefaultClientAllocation(16);
-
-  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
-
-  // Expect that a client which has not sent stats receive at
-  // least the default allocation.
-  Manage();
-  EXPECT_GE(stub1.BytesWhenVisible(),
-            memmgr_.GetDefaultClientAllocation());
 }
 
 }  // namespace content
