@@ -147,9 +147,6 @@ void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
 
 void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
 {
-#ifndef ASSERT_DISABLED
-    MutexLocker lock(m_terminationRequestedMutex);
-#endif
     ASSERT(isDatabaseThread());
     ASSERT(database);
     ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));

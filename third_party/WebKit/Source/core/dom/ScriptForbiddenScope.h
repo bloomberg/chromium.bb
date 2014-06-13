@@ -5,23 +5,12 @@
 #ifndef ScriptForbiddenScope_h
 #define ScriptForbiddenScope_h
 
+#include "wtf/Assertions.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-#if ASSERT_DISABLED
-
-class ScriptForbiddenScope {
-public:
-    ScriptForbiddenScope() { }
-    class AllowUserAgentScript {
-    public:
-        AllowUserAgentScript() { }
-    };
-    static bool isScriptForbidden() { return false; }
-};
-
-#else
+#if ASSERT_ENABLED
 
 class ScriptForbiddenScope {
 public:
@@ -37,6 +26,18 @@ public:
     };
 
     static bool isScriptForbidden();
+};
+
+#else
+
+class ScriptForbiddenScope {
+public:
+    ScriptForbiddenScope() { }
+    class AllowUserAgentScript {
+    public:
+        AllowUserAgentScript() { }
+    };
+    static bool isScriptForbidden() { return false; }
 };
 
 #endif

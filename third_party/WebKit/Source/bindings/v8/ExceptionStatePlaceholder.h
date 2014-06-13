@@ -53,11 +53,7 @@ public:
 
 #define IGNORE_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
 
-#if ASSERT_DISABLED
-
-#define ASSERT_NO_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
-
-#else
+#if ASSERT_ENABLED
 
 class NoExceptionStateAssertionChecker FINAL : public ExceptionState {
 public:
@@ -73,6 +69,10 @@ private:
 };
 
 #define ASSERT_NO_EXCEPTION (::WebCore::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
+
+#else
+
+#define ASSERT_NO_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
 
 #endif
 

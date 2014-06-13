@@ -227,10 +227,10 @@ protected:
 private:
     void initGroup();
 
-#if ASSERT_DISABLED
-    void checkSubframeCountConsistency() const { }
-#else
+#if ASSERT_ENABLED
     void checkSubframeCountConsistency() const;
+#else
+    void checkSubframeCountConsistency() const { }
 #endif
 
     void setTimerAlignmentInterval(double);

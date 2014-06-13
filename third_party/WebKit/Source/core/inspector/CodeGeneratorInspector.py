@@ -156,7 +156,7 @@ class Capitalizer:
 
     ABBREVIATION = frozenset(["XHR", "DOM", "CSS"])
 
-VALIDATOR_IFDEF_NAME = "!ASSERT_DISABLED"
+VALIDATOR_IFDEF_NAME = "ASSERT_ENABLED"
 
 
 class DomainNameFixes:
