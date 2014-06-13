@@ -59,6 +59,7 @@
 #include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "core/frame/Settings.h"
+#include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -578,6 +579,13 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url, cspReporting))
             return false;
         break;
+    }
+
+    // SVG Images have unique security rules that prevent all subresource requests
+    // except for data urls.
+    if (type != Resource::MainResource) {
+        if (frame() && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
+            return false;
     }
 
     // Last of all, check for insecure content. We do this last so that when
