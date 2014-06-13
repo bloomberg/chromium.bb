@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "cc/resources/ui_resource_bitmap.h"
-#include "cc/resources/ui_resource_client.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/android/ui_resource_provider.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -25,6 +25,7 @@ class JavaBitmap;
 
 namespace content {
 class CompositorClient;
+class UIResourceProvider;
 
 // An interface to the browser-side compositor.
 class CONTENT_EXPORT Compositor {
@@ -68,20 +69,8 @@ class CONTENT_EXPORT Compositor {
   // Composite *without* having modified the layer tree.
   virtual void SetNeedsComposite() = 0;
 
-  // Generates a UIResource and returns a UIResourceId.  |is_transient|
-  // indicates whether or not to release the resource once the bitmap
-  // has been uploaded. May return 0.
-  virtual cc::UIResourceId GenerateUIResource(const SkBitmap& bitmap,
-                                              bool is_transient) = 0;
-
-  // Generates an ETC1 compressed UIResource.  See above for |is_transient|.
-  // May return 0.
-  virtual cc::UIResourceId GenerateCompressedUIResource(const gfx::Size& size,
-                                                        void* pixels,
-                                                        bool is_transient) = 0;
-
-  // Deletes a UIResource.
-  virtual void DeleteUIResource(cc::UIResourceId resource_id) = 0;
+  // Returns the UI resource provider associated with the compositor.
+  virtual UIResourceProvider& GetUIResourceProvider() = 0;
 
  protected:
   Compositor() {}

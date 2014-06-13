@@ -14,6 +14,7 @@
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "content/browser/android/ui_resource_provider_impl.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
@@ -32,6 +33,7 @@ class LayerTreeHost;
 namespace content {
 class CompositorClient;
 class GraphicsContext;
+class UIResourceProvider;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -65,13 +67,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
   virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual void SetNeedsComposite() OVERRIDE;
-  virtual cc::UIResourceId GenerateUIResource(const SkBitmap& bitmap,
-                                              bool is_transient) OVERRIDE;
-  virtual cc::UIResourceId GenerateCompressedUIResource(const gfx::Size& size,
-                                                        void* pixels,
-                                                        bool is_transient)
-      OVERRIDE;
-  virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
+  virtual UIResourceProvider& GetUIResourceProvider() OVERRIDE;
 
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
@@ -140,6 +136,7 @@ class CONTENT_EXPORT CompositorImpl
 
   scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
+  content::UIResourceProviderImpl ui_resource_provider_;
 
   gfx::Size size_;
   bool has_transparent_background_;
@@ -149,10 +146,6 @@ class CONTENT_EXPORT CompositorImpl
   int surface_id_;
 
   CompositorClient* client_;
-
-  typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::UIResourceClient>
-      UIResourceMap;
-  UIResourceMap ui_resource_map_;
 
   gfx::NativeWindow root_window_;
 

@@ -24,8 +24,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
-#include "cc/resources/scoped_ui_resource.h"
-#include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -44,16 +42,11 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/base/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
-#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/android/surface_texture_tracker.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-
-namespace gfx {
-class JavaBitmap;
-}
 
 namespace {
 
@@ -79,46 +72,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
     OutputSurface::SwapBuffers(frame);
   }
-};
-
-class TransientUIResource : public cc::ScopedUIResource {
- public:
-  static scoped_ptr<TransientUIResource> Create(
-      cc::LayerTreeHost* host,
-      const cc::UIResourceBitmap& bitmap) {
-    return make_scoped_ptr(new TransientUIResource(host, bitmap));
-  }
-
-  virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
-                                         bool resource_lost) OVERRIDE {
-    if (!retrieved_) {
-      cc::UIResourceBitmap old_bitmap(bitmap_);
-
-      // Return a place holder for all following calls to GetBitmap.
-      SkBitmap tiny_bitmap;
-      SkCanvas canvas(tiny_bitmap);
-      tiny_bitmap.setConfig(
-          SkBitmap::kARGB_8888_Config, 1, 1, 0, kOpaque_SkAlphaType);
-      tiny_bitmap.allocPixels();
-      canvas.drawColor(SK_ColorWHITE);
-      tiny_bitmap.setImmutable();
-
-      // Release our reference of the true bitmap.
-      bitmap_ = cc::UIResourceBitmap(tiny_bitmap);
-
-      retrieved_ = true;
-      return old_bitmap;
-    }
-    return bitmap_;
-  }
-
- protected:
-  TransientUIResource(cc::LayerTreeHost* host,
-                      const cc::UIResourceBitmap& bitmap)
-      : cc::ScopedUIResource(host, bitmap), retrieved_(false) {}
-
- private:
-  bool retrieved_;
 };
 
 class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
@@ -383,6 +336,10 @@ void CompositorImpl::OnGpuChannelEstablished() {
   ScheduleComposite();
 }
 
+UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
+  return ui_resource_provider_;
+}
+
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   root_layer_->RemoveAllChildren();
   if (root_layer)
@@ -440,9 +397,8 @@ void CompositorImpl::SetVisible(bool visible) {
   if (!visible) {
     if (WillComposite())
       CancelComposite();
-    ui_resource_map_.clear();
+    ui_resource_provider_.SetLayerTreeHost(NULL);
     host_.reset();
-    client_->UIResourcesAreInvalid();
   } else if (!host_) {
     DCHECK(!WillComposite());
     needs_composite_ = false;
@@ -471,9 +427,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->SetViewportSize(size_);
     host_->set_has_transparent_background(has_transparent_background_);
     host_->SetDeviceScaleFactor(device_scale_factor_);
-    // Need to recreate the UI resources because a new LayerTreeHost has been
-    // created.
-    client_->DidLoseUIResources();
+    ui_resource_provider_.SetLayerTreeHost(host_.get());
   }
 }
 
@@ -506,62 +460,6 @@ void CompositorImpl::SetNeedsComposite() {
 
   needs_composite_ = true;
   PostComposite(COMPOSITE_IMMEDIATELY);
-}
-
-cc::UIResourceId CompositorImpl::GenerateUIResourceFromUIResourceBitmap(
-    const cc::UIResourceBitmap& bitmap,
-    bool is_transient) {
-  if (!host_)
-    return 0;
-
-  cc::UIResourceId id = 0;
-  scoped_ptr<cc::UIResourceClient> resource;
-  if (is_transient) {
-    scoped_ptr<TransientUIResource> transient_resource =
-        TransientUIResource::Create(host_.get(), bitmap);
-    id = transient_resource->id();
-    resource = transient_resource.Pass();
-  } else {
-    scoped_ptr<cc::ScopedUIResource> scoped_resource =
-        cc::ScopedUIResource::Create(host_.get(), bitmap);
-    id = scoped_resource->id();
-    resource = scoped_resource.Pass();
-  }
-
-  ui_resource_map_.set(id, resource.Pass());
-  return id;
-}
-
-cc::UIResourceId CompositorImpl::GenerateUIResource(const SkBitmap& bitmap,
-                                                    bool is_transient) {
-  return GenerateUIResourceFromUIResourceBitmap(cc::UIResourceBitmap(bitmap),
-                                                is_transient);
-}
-
-cc::UIResourceId CompositorImpl::GenerateCompressedUIResource(
-    const gfx::Size& size,
-    void* pixels,
-    bool is_transient) {
-  DCHECK_LT(0, size.width());
-  DCHECK_LT(0, size.height());
-  DCHECK_EQ(0, size.width() % 4);
-  DCHECK_EQ(0, size.height() % 4);
-
-  size_t data_size = size.width() * size.height() / 2;
-  SkImageInfo info = {size.width(), size.height() / 2, kAlpha_8_SkColorType,
-                      kPremul_SkAlphaType};
-  skia::RefPtr<SkMallocPixelRef> etc1_pixel_ref =
-      skia::AdoptRef(SkMallocPixelRef::NewAllocate(info, 0, 0));
-  memcpy(etc1_pixel_ref->getAddr(), pixels, data_size);
-  etc1_pixel_ref->setImmutable();
-  return GenerateUIResourceFromUIResourceBitmap(
-      cc::UIResourceBitmap(etc1_pixel_ref, size), is_transient);
-}
-
-void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
-  UIResourceMap::iterator it = ui_resource_map_.find(resource_id);
-  if (it != ui_resource_map_.end())
-    ui_resource_map_.erase(it);
 }
 
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -633,6 +531,7 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
 
 void CompositorImpl::OnLostResources() {
   client_->DidLoseResources();
+  ui_resource_provider_.UIResourcesAreInvalid();
 }
 
 void CompositorImpl::ScheduleComposite() {
