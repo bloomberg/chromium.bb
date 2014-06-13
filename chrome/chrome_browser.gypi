@@ -1987,6 +1987,8 @@
         'browser/search/suggestions/suggestions_service_factory.h',
         'browser/search/suggestions/suggestions_source.cc',
         'browser/search/suggestions/suggestions_source.h',
+        'browser/search/suggestions/suggestions_store.cc',
+        'browser/search/suggestions/suggestions_store.h',
         'browser/search/suggestions/thumbnail_manager.cc',
         'browser/search/suggestions/thumbnail_manager.h',
         'browser/search_engines/default_search_manager.cc',

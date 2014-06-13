@@ -1277,6 +1277,7 @@
         'browser/search/search_unittest.cc',
         'browser/search/search_android_unittest.cc',
         'browser/search/suggestions/suggestions_service_unittest.cc',
+        'browser/search/suggestions/suggestions_store_unittest.cc',
         'browser/search/suggestions/thumbnail_manager_unittest.cc',
         'browser/search_engines/default_search_manager_unittest.cc',
         'browser/search_engines/default_search_pref_migration_unittest.cc',

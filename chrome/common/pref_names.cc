@@ -1295,6 +1295,10 @@ extern const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
+// A cache of suggestions represented as a serialized SuggestionsProfile
+// protobuf.
+const char kSuggestionsData[] = "suggestions.data";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

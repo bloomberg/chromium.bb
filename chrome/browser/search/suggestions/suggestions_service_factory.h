@@ -34,6 +34,8 @@ class SuggestionsServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const OVERRIDE;
   virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsServiceFactory);
 };

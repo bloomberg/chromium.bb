@@ -9,10 +9,13 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/suggestions_store.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -24,6 +27,9 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
+
+using base::CancelableClosure;
+using content::BrowserThread;
 
 namespace suggestions {
 
@@ -61,6 +67,11 @@ void DispatchRequestsAndClear(
   std::vector<SuggestionsService::ResponseCallback>().swap(*requestors);
 }
 
+// Timeout before serving requestors after a fetch suggestions request has been
+// issued.
+// TODO(manzagop): make this a Variations parameter to enable tweaking.
+const unsigned int kRequestTimeoutMs = 200;
+
 }  // namespace
 
 const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
@@ -71,30 +82,47 @@ const char kSuggestionsFieldTrialBlacklistSuffixParam[] = "blacklist_suffix";
 const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 
-SuggestionsService::SuggestionsService(Profile* profile)
-    : thumbnail_manager_(new ThumbnailManager(profile)),
-      profile_(profile) {
+SuggestionsService::SuggestionsService(
+    Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store)
+    : suggestions_store_(suggestions_store.Pass()),
+      thumbnail_manager_(new ThumbnailManager(profile)),
+      profile_(profile),
+      weak_ptr_factory_(this) {
   // Obtain the URL to use to fetch suggestions data from the Variations param.
-  suggestions_url_ = GURL(
+  suggestions_url_ =
+      GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) +
+           GetExperimentParam(kSuggestionsFieldTrialSuggestionsSuffixParam));
+  blacklist_url_prefix_ =
       GetExperimentParam(kSuggestionsFieldTrialURLParam) +
-      GetExperimentParam(kSuggestionsFieldTrialSuggestionsSuffixParam));
-  blacklist_url_prefix_ = GetExperimentParam(kSuggestionsFieldTrialURLParam) +
       GetExperimentParam(kSuggestionsFieldTrialBlacklistSuffixParam);
 }
 
-SuggestionsService::~SuggestionsService() {
-}
+SuggestionsService::~SuggestionsService() {}
 
 // static
 bool SuggestionsService::IsEnabled() {
   return GetExperimentParam(kSuggestionsFieldTrialStateParam) ==
-      kSuggestionsFieldTrialStateEnabled;
+         kSuggestionsFieldTrialStateEnabled;
 }
 
 void SuggestionsService::FetchSuggestionsData(
     SuggestionsService::ResponseCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  FetchSuggestionsDataNoTimeout(callback);
+
+  // Post a task to serve the cached suggestions if the request hasn't completed
+  // after some time. Cancels the previous such task, if one existed.
+  pending_timeout_closure_.reset(new CancelableClosure(base::Bind(
+      &SuggestionsService::OnRequestTimeout, weak_ptr_factory_.GetWeakPtr())));
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE, pending_timeout_closure_->callback(),
+      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs));
+}
+
+void SuggestionsService::FetchSuggestionsDataNoTimeout(
+    SuggestionsService::ResponseCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (pending_request_.get()) {
     // Request already exists, so just add requestor to queue.
     waiting_requestors_.push_back(callback);
@@ -107,19 +135,17 @@ void SuggestionsService::FetchSuggestionsData(
 
   pending_request_.reset(CreateSuggestionsRequest(suggestions_url_));
   pending_request_->Start();
-
   last_request_started_time_ = base::TimeTicks::Now();
 }
 
 void SuggestionsService::GetPageThumbnail(
-      const GURL& url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    const GURL& url,
+    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
   thumbnail_manager_->GetPageThumbnail(url, callback);
 }
 
 void SuggestionsService::BlacklistURL(
-    const GURL& candidate_url,
-    SuggestionsService::ResponseCallback callback) {
+    const GURL& candidate_url, SuggestionsService::ResponseCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   waiting_requestors_.push_back(callback);
 
@@ -130,8 +156,11 @@ void SuggestionsService::BlacklistURL(
       return;
     } else {
       // Pending request is not a blacklist request - cancel it and go on to
-      // issuing a blacklist request.
-      pending_request_.reset();
+      // issuing a blacklist request. Also ensure the timeout closure does not
+      // run; instead we'll wait for the updated suggestions before servicing
+      // requestors.
+      pending_request_.reset(NULL);
+      pending_timeout_closure_.reset(NULL);
     }
   }
 
@@ -144,9 +173,24 @@ void SuggestionsService::BlacklistURL(
   last_request_started_time_ = base::TimeTicks::Now();
 }
 
+// static
+void SuggestionsService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  SuggestionsStore::RegisterProfilePrefs(registry);
+}
+
+void SuggestionsService::OnRequestTimeout() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ServeFromCache();
+}
+
 void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(pending_request_.get(), source);
+
+  // We no longer need the timeout closure. Delete it whether or not it has run
+  // (if it hasn't, this cancels it).
+  pending_timeout_closure_.reset();
 
   // The fetcher will be deleted when the request is handled.
   scoped_ptr<const net::URLFetcher> request(pending_request_.release());
@@ -157,17 +201,17 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Suggestions server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
-    // Dispatch an empty profile on error.
-    DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+    // Dispatch the cached profile on error.
+    ServeFromCache();
     return;
   }
 
   // Log the response code.
   const int response_code = request->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FetchResponseCode",
-                              response_code);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FetchResponseCode", response_code);
   if (response_code != net::HTTP_OK) {
-    // Dispatch an empty profile on error.
+    // Aggressively clear the store.
+    suggestions_store_->ClearSuggestions();
     DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
     return;
   }
@@ -185,43 +229,50 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   SuggestionsProfile suggestions;
   if (suggestions_data.empty()) {
     LogResponseState(RESPONSE_EMPTY);
+    suggestions_store_->ClearSuggestions();
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
     thumbnail_manager_->InitializeThumbnailMap(suggestions);
+    suggestions_store_->StoreSuggestions(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);
+    suggestions_store_->LoadSuggestions(&suggestions);
   }
 
   DispatchRequestsAndClear(suggestions, &waiting_requestors_);
 }
 
 void SuggestionsService::Shutdown() {
-  // Cancel pending request.
+  // Cancel pending request and timeout closure, then serve existing requestors
+  // from cache.
   pending_request_.reset(NULL);
-
-  // Dispatch empty suggestions to requestors.
-  DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+  pending_timeout_closure_.reset(NULL);
+  ServeFromCache();
 }
 
 bool SuggestionsService::IsBlacklistRequest(net::URLFetcher* request) const {
   DCHECK(request);
   return StartsWithASCII(request->GetOriginalURL().spec(),
-                         blacklist_url_prefix_,
-                         true);
+                         blacklist_url_prefix_, true);
 }
 
 net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
-  net::URLFetcher* request = net::URLFetcher::Create(
-      0, url, net::URLFetcher::GET, this);
+  net::URLFetcher* request =
+      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request->SetRequestContext(profile_->GetRequestContext());
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
-      AppendHeaders(request->GetOriginalURL(), profile_->IsOffTheRecord(),
-                    false, &headers);
+  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+      request->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
   request->SetExtraRequestHeaders(headers.ToString());
   return request;
+}
+
+void SuggestionsService::ServeFromCache() {
+  SuggestionsProfile suggestions;
+  suggestions_store_->LoadSuggestions(&suggestions);
+  DispatchRequestsAndClear(suggestions, &waiting_requestors_);
 }
 
 }  // namespace suggestions

@@ -10,8 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/thumbnail_manager.h"
@@ -22,7 +24,13 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace suggestions {
+
+class SuggestionsStore;
 
 extern const char kSuggestionsFieldTrialName[];
 extern const char kSuggestionsFieldTrialURLParam[];
@@ -36,7 +44,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
-  explicit SuggestionsService(Profile* profile);
+  SuggestionsService(Profile* profile,
+                     scoped_ptr<SuggestionsStore> suggestions_store);
   virtual ~SuggestionsService();
 
   // Whether this service is enabled.
@@ -45,8 +54,13 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Request suggestions data, which will be passed to |callback|. Initiates a
   // fetch request unless a pending one exists. To prevent multiple requests,
   // we place all |callback|s in a queue and update them simultaneously when
-  // fetch request completes.
+  // fetch request completes. Also posts a task to execute OnRequestTimeout
+  // if the request hasn't completed in a given amount of time.
   void FetchSuggestionsData(ResponseCallback callback);
+
+  // Similar to FetchSuggestionsData but doesn't post a task to execute
+  // OnDelaySinceFetch.
+  void FetchSuggestionsDataNoTimeout(ResponseCallback callback);
 
   // Retrieves stored thumbnail for website |url| asynchronously. Calls
   // |callback| with Bitmap pointer if found, and NULL otherwise.
@@ -56,11 +70,17 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Issue a blacklist request. If there is already a blacklist request
   // in flight, the new blacklist request is ignored.
-  void BlacklistURL(const GURL& candidate_url,
-                         ResponseCallback callback);
+  void BlacklistURL(const GURL& candidate_url, ResponseCallback callback);
+
+  // Register SuggestionsService related prefs in the Profile prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
+
+  // Called to service the requestors if the issued suggestions request has
+  // not completed in a given amount of time.
+  virtual void OnRequestTimeout();
 
   // net::URLFetcherDelegate implementation.
   // Called when fetch request completes. Parses the received suggestions data,
@@ -76,9 +96,19 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Creates a request to the suggestions service, properly setting headers.
   net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
 
+  // Load the cached suggestions and service the requestors with them.
+  void ServeFromCache();
+
+  // The cache for the suggestions.
+  scoped_ptr<SuggestionsStore> suggestions_store_;
+
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_request_;
+
+  // A closure that is run on a timeout from issuing the suggestions fetch
+  // request, if the request hasn't completed.
+  scoped_ptr<base::CancelableClosure> pending_timeout_closure_;
 
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.
@@ -97,6 +127,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   scoped_ptr<ThumbnailManager> thumbnail_manager_;
 
   Profile* profile_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsService);
 };
