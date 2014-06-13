@@ -20225,6 +20225,51 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Platform.ZramCompressedSize" units="MB">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    Compressed swap size in megabytes.  This is the actual amount of RAM used by
+    the system to compress memory (i.e. after compression).  Snapshot every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.ZramCompressionRatioPercent" units="%">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    The ratio of compressed memory (zram) before and after compression when the
+    denominator at least 1 MB. Ratios of interest are between 1 and 6 (typically
+    between 2 and 3), and we express them as a percentage (between 100% and
+    600%). The size of memory before compression includes zero-filled pages.
+    Values close to 100% indicate low compression effectiveness. Snapshot every
+    30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.ZramSavings" units="MB">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    RAM savings in megabytes from using memory compression.  This is the
+    difference between the RAM size before and after compression.  Snapshot
+    every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.ZramZeroPages" units="pages">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    Number of zero-filled pages that the OS is compressing.  A large number
+    suggests wasteful allocation.  Snapshot every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.ZramZeroRatioPercent" units="%">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    The fraction of compressed memory that consists of zero-filled pages.
+    Snapshot every 30s.
+  </summary>
+</histogram>
+
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
   <obsolete>
     Deprecated as of 2013-05, replaced by
