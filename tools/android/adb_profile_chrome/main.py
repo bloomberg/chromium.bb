@@ -10,11 +10,11 @@ import os
 import sys
 import webbrowser
 
-from chrome_profiler import chrome_controller
-from chrome_profiler import perf_controller
-from chrome_profiler import profiler
-from chrome_profiler import systrace_controller
-from chrome_profiler import ui
+from adb_profile_chrome import chrome_controller
+from adb_profile_chrome import perf_controller
+from adb_profile_chrome import profiler
+from adb_profile_chrome import systrace_controller
+from adb_profile_chrome import ui
 
 from pylib import android_commands
 from pylib.device import device_utils

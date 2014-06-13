@@ -5,8 +5,8 @@
 import threading
 import zlib
 
-from chrome_profiler import controllers
-from chrome_profiler import util
+from adb_profile_chrome import controllers
+from adb_profile_chrome import util
 
 from pylib import cmd_helper
 

@@ -4,8 +4,8 @@
 
 import os
 
-from chrome_profiler import controllers_unittest
-from chrome_profiler import systrace_controller
+from adb_profile_chrome import controllers_unittest
+from adb_profile_chrome import systrace_controller
 
 
 class SystraceControllerTest(controllers_unittest.BaseControllerTest):
