@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
@@ -436,9 +437,11 @@ uint16 GetCharacterFromXEvent(XEvent* xev) {
   int bytes_written = XLookupString(&xev->xkey, buf, 6, NULL, NULL);
   DCHECK_LE(bytes_written, 6);
 
-  base::string16 result;
-  return (bytes_written > 0 && base::UTF8ToUTF16(buf, bytes_written, &result) &&
-          result.length() == 1) ? result[0] : 0;
+  if (bytes_written <= 0)
+    return 0;
+  const base::string16& result = base::WideToUTF16(
+      base::SysNativeMBToWide(base::StringPiece(buf, bytes_written)));
+  return result.length() == 1 ? result[0] : 0;
 }
 
 unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int hardware_code) {
