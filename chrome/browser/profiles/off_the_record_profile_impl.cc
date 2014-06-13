@@ -440,6 +440,12 @@ quota::SpecialStoragePolicy*
   return GetExtensionSpecialStoragePolicy();
 }
 
+content::PushMessagingService*
+OffTheRecordProfileImpl::GetPushMessagingService() {
+  // TODO(johnme): Support push messaging in incognito if possible.
+  return NULL;
+}
+
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }

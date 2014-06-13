@@ -440,6 +440,7 @@ class MockBrowserContext : public BrowserContext {
                GeolocationPermissionContext* ());
   MOCK_METHOD0(GetGuestManager, BrowserPluginGuestManager* ());
   MOCK_METHOD0(GetSpecialStoragePolicy, quota::SpecialStoragePolicy*());
+  MOCK_METHOD0(GetPushMessagingService, PushMessagingService*());
 };
 
 class MockDownloadManagerObserver : public DownloadManager::Observer {

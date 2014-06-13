@@ -7,14 +7,17 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "url/gurl.h"
 
 namespace content {
 
+class PushMessagingService;
+
 class PushMessagingMessageFilter : public BrowserMessageFilter {
  public:
-  PushMessagingMessageFilter();
+  explicit PushMessagingMessageFilter(int render_process_id);
 
  private:
   virtual ~PushMessagingMessageFilter();
@@ -26,11 +29,22 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                   int callbacks_id,
                   const std::string& sender_id);
 
+  void DoRegister(int routing_id,
+                  int callbacks_id,
+                  const std::string& sender_id);
+
   void DidRegister(int routing_id,
                    int callbacks_id,
                    const GURL& endpoint,
                    const std::string& registration_id,
-                   bool error);
+                   bool success);
+
+  PushMessagingService* service();
+
+  int render_process_id_;
+  PushMessagingService* service_; // Not owned.
+
+  base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingMessageFilter);
 };
