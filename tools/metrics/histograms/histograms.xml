@@ -32237,6 +32237,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebFont.CORSSuccess" enum="BooleanSuccess">
+  <obsolete>
+    Removed from code as of 2014/06/10.
+  </obsolete>
   <owner>bashi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <summary>The success or failure of web fonts CORS-enabled fetching.</summary>
