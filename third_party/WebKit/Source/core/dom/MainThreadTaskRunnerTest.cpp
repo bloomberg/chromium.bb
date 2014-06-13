@@ -50,7 +50,19 @@ public:
 class NullExecutionContext : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public ExecutionContext {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 public:
-    void trace(Visitor* visitor) { ExecutionContext::trace(visitor); }
+    NullExecutionContext();
+
+    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
+    virtual bool tasksNeedSuspension() { return m_tasksNeedSuspension; }
+
+    void setTasksNeedSuspention(bool flag) { m_tasksNeedSuspension = flag; }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_queue);
+        ExecutionContext::trace(visitor);
+    }
+
 #if !ENABLE(OILPAN)
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
@@ -58,21 +70,15 @@ public:
     virtual void refExecutionContext() OVERRIDE { ref(); }
     virtual void derefExecutionContext() OVERRIDE { deref(); }
 #endif
-    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
-    virtual bool tasksNeedSuspension() { return m_tasksNeedSuspension; }
-
-    void setTasksNeedSuspention(bool flag) { m_tasksNeedSuspension = flag; }
-
-    NullExecutionContext();
 
 private:
     bool m_tasksNeedSuspension;
-    OwnPtr<EventQueue> m_queue;
+    OwnPtrWillBeMember<EventQueue> m_queue;
 };
 
 NullExecutionContext::NullExecutionContext()
     : m_tasksNeedSuspension(false)
-    , m_queue(adoptPtr(new NullEventQueue()))
+    , m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
 {
 }
 
