@@ -86,9 +86,7 @@ class DispatcherDelegate {
 
   // Allows the delegate to respond to reports from the browser about WebRequest
   // API usage from within this process.
-  virtual void HandleWebRequestAPIUsage(bool adblock,
-                                        bool adblock_plus,
-                                        bool other_webrequest) {}
+  virtual void HandleWebRequestAPIUsage(bool webrequest_used) {}
 };
 
 }  // namespace extensions

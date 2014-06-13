@@ -80,7 +80,6 @@ TEST_F(RuntimeDataTest, IsBeingUpgraded) {
   EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension));
 }
 
-// TODO(mpcomplete): Remove. http://crbug.com/100411
 TEST_F(RuntimeDataTest, HasUsedWebRequest) {
   scoped_refptr<Extension> extension = CreateExtension();
 

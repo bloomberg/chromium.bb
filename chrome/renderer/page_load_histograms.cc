@@ -724,163 +724,31 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                   begin_to_finish_all_loads);
   }
 
-  // TODO(mpcomplete): remove the extension-related histograms after we collect
-  // enough data. http://crbug.com/100411
-  const bool use_adblock_histogram =
-      ChromeContentRendererClient::IsAdblockInstalled();
-  if (use_adblock_histogram) {
+  const bool use_webrequest_histogram =
+      ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions();
+  if (use_webrequest_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionAdblock",
+        "PLT.Abandoned_ExtensionWebRequest",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
-            "PLT.BeginToFinish_NormalLoad_ExtensionAdblock",
+            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequest",
             begin_to_finish_all_loads);
         break;
       case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblock",
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequest",
             begin_to_finish_all_loads);
         break;
       case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblock",
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequest",
             begin_to_finish_all_loads);
         break;
       case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblock",
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
-  const bool use_adblockplus_histogram =
-      ChromeContentRendererClient::IsAdblockPlusInstalled();
-  if (use_adblockplus_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionAdblockPlus",
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_NormalLoad_ExtensionAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
-  const bool use_webrequest_adblock_histogram =
-      ChromeContentRendererClient::IsAdblockWithWebRequestInstalled();
-  if (use_webrequest_adblock_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionWebRequestAdblock",
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblock",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblock",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblock",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblock",
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
-  const bool use_webrequest_adblockplus_histogram =
-      ChromeContentRendererClient::
-          IsAdblockPlusWithWebRequestInstalled();
-  if (use_webrequest_adblockplus_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionWebRequestAdblockPlus",
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblockPlus",
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
-  const bool use_webrequest_other_histogram =
-      ChromeContentRendererClient::
-          IsOtherExtensionWithWebRequestInstalled();
-  if (use_webrequest_other_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionWebRequestOther",
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestOther",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestOther",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestOther",
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(
-            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestOther",
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequest",
             begin_to_finish_all_loads);
         break;
       default:

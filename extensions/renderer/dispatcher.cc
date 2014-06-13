@@ -787,10 +787,8 @@ void Dispatcher::OnUpdateUserScripts(
   UpdateActiveExtensions();
 }
 
-void Dispatcher::OnUsingWebRequestAPI(bool adblock,
-                                      bool adblock_plus,
-                                      bool other_webrequest) {
-  delegate_->HandleWebRequestAPIUsage(adblock, adblock_plus, other_webrequest);
+void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
+  delegate_->HandleWebRequestAPIUsage(webrequest_used);
 }
 
 void Dispatcher::UpdateActiveExtensions() {

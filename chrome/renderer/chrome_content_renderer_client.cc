@@ -1332,29 +1332,10 @@ void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
 }
 #endif
 
-bool ChromeContentRendererClient::IsAdblockInstalled() {
-  return g_current_client->extension_dispatcher_->extensions()->Contains(
-      "gighmmpiobklfepjocnamgkkbiglidom");
-}
-
-bool ChromeContentRendererClient::IsAdblockPlusInstalled() {
-  return g_current_client->extension_dispatcher_->extensions()->Contains(
-      "cfhdojbkjhnklbpkdaibdccddilifddb");
-}
-
-bool ChromeContentRendererClient::IsAdblockWithWebRequestInstalled() {
+// static
+bool ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions() {
   return g_current_client->extension_dispatcher_delegate_
-      ->IsAdblockWithWebRequestInstalled();
-}
-
-bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
-  return g_current_client->extension_dispatcher_delegate_
-      ->IsAdblockPlusWithWebRequestInstalled();
-}
-
-bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
-  return g_current_client->extension_dispatcher_delegate_
-      ->IsOtherExtensionWithWebRequestInstalled();
+      ->WasWebRequestUsedBySomeExtensions();
 }
 
 const void* ChromeContentRendererClient::CreatePPAPIInterface(

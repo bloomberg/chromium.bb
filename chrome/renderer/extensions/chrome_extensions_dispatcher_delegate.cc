@@ -50,9 +50,7 @@
 using extensions::NativeHandler;
 
 ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate()
-    : webrequest_adblock_(false),
-      webrequest_adblock_plus_(false),
-      webrequest_other_(false) {
+    : webrequest_used_(false) {
 }
 
 ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
@@ -354,10 +352,6 @@ void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
 }
 
 void ChromeExtensionsDispatcherDelegate::HandleWebRequestAPIUsage(
-    bool adblock,
-    bool adblock_plus,
-    bool other) {
-  webrequest_adblock_ = adblock;
-  webrequest_adblock_plus_ = adblock_plus;
-  webrequest_other_ = other;
+    bool webrequest_used) {
+  webrequest_used_ = webrequest_used;
 }

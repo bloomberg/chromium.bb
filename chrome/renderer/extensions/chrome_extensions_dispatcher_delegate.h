@@ -13,16 +13,7 @@ class ChromeExtensionsDispatcherDelegate
   ChromeExtensionsDispatcherDelegate();
   virtual ~ChromeExtensionsDispatcherDelegate();
 
-  // TODO(mpcomplete): remove. http://crbug.com/100411
-  bool IsAdblockWithWebRequestInstalled() const { return webrequest_adblock_; }
-
-  bool IsAdblockPlusWithWebRequestInstalled() const {
-    return webrequest_adblock_plus_;
-  }
-
-  bool IsOtherExtensionWithWebRequestInstalled() const {
-    return webrequest_other_;
-  }
+  bool WasWebRequestUsedBySomeExtensions() const { return webrequest_used_; }
 
  private:
   // extensions::DispatcherDelegate implementation.
@@ -57,15 +48,10 @@ class ChromeExtensionsDispatcherDelegate
       int tab_id,
       const std::string& extension_id,
       const extensions::URLPatternSet& origin_set) OVERRIDE;
-  virtual void HandleWebRequestAPIUsage(bool adblock,
-                                        bool adblock_plus,
-                                        bool other_webrequest) OVERRIDE;
+  virtual void HandleWebRequestAPIUsage(bool webrequest_used) OVERRIDE;
 
-  // Status of webrequest usage for known extensions.
-  // TODO(mpcomplete): remove. http://crbug.com/100411
-  bool webrequest_adblock_;
-  bool webrequest_adblock_plus_;
-  bool webrequest_other_;
+  // Status of webrequest usage.
+  bool webrequest_used_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsDispatcherDelegate);
 };

@@ -182,9 +182,7 @@ class Dispatcher : public content::RenderProcessObserver {
                                       const URLPatternSet& origin_set);
   void OnUpdateUserScripts(base::SharedMemoryHandle scripts,
                            const std::set<std::string>& extension_ids);
-  void OnUsingWebRequestAPI(bool adblock,
-                            bool adblock_plus,
-                            bool other_webrequest);
+  void OnUsingWebRequestAPI(bool webrequest_used);
 
   void UpdateActiveExtensions();
 

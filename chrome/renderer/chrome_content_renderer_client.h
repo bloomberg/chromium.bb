@@ -152,13 +152,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   static bool IsExtensionOrSharedModuleWhitelisted(
       const GURL& url, const std::set<std::string>& whitelist);
 
-  // TODO(mpcomplete): remove after we collect histogram data.
-  // http://crbug.com/100411
-  static bool IsAdblockInstalled();
-  static bool IsAdblockPlusInstalled();
-  static bool IsAdblockWithWebRequestInstalled();
-  static bool IsAdblockPlusWithWebRequestInstalled();
-  static bool IsOtherExtensionWithWebRequestInstalled();
+  static bool WasWebRequestUsedBySomeExtensions();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);

@@ -394,10 +394,8 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
                     extensions::ViewType /* view_type */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,
-                     bool /* adblock */,
-                     bool /* adblock_plus */,
-                     bool /* other_webrequest */)
+IPC_MESSAGE_CONTROL1(ExtensionMsg_UsingWebRequestAPI,
+                     bool /* webrequest_used */)
 
 // Ask the lazy background page if it is ready to be suspended. This is sent
 // when the page is considered idle. The renderer will reply with the same

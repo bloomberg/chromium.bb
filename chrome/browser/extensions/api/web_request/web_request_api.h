@@ -524,7 +524,6 @@ class WebRequestHandlerBehaviorChangedFunction
 
 // Send updates to |host| with information about what webRequest-related
 // extensions are installed.
-// TODO(mpcomplete): remove. http://crbug.com/100411
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_H_

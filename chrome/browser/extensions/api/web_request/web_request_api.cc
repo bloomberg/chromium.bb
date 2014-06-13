@@ -2470,25 +2470,16 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
   if (!profile)
     return;
 
-  bool adblock = false;
-  bool adblock_plus = false;
-  bool other = false;
+  bool webrequest_used = false;
   const extensions::ExtensionSet& extensions =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   extensions::RuntimeData* runtime_data =
       extensions::ExtensionSystem::Get(profile)->runtime_data();
   for (extensions::ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (runtime_data->HasUsedWebRequest(it->get())) {
-      if ((*it)->name().find("Adblock Plus") != std::string::npos) {
-        adblock_plus = true;
-      } else if ((*it)->name().find("AdBlock") != std::string::npos) {
-        adblock = true;
-      } else {
-        other = true;
-      }
-    }
+       !webrequest_used && it != extensions.end();
+       ++it) {
+    webrequest_used |= runtime_data->HasUsedWebRequest(it->get());
   }
 
-  host->Send(new ExtensionMsg_UsingWebRequestAPI(adblock, adblock_plus, other));
+  host->Send(new ExtensionMsg_UsingWebRequestAPI(webrequest_used));
 }
