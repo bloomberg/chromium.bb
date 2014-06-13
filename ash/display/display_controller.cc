@@ -137,6 +137,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
 }
 
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
+  CHECK(ash_host->AsWindowTreeHost());
   return ash_host->AsWindowTreeHost()->window();
 }
 
@@ -283,6 +284,7 @@ void DisplayController::CreatePrimaryHost(
   const gfx::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate.id();
+  CHECK_NE(gfx::Display::kInvalidDisplayID, primary_display_id);
   AddWindowTreeHostForDisplay(primary_candidate, init_params);
 }
 
@@ -314,6 +316,7 @@ void DisplayController::RemoveObserver(Observer* observer) {
 
 // static
 int64 DisplayController::GetPrimaryDisplayId() {
+  CHECK_NE(gfx::Display::kInvalidDisplayID, primary_display_id);
   return primary_display_id;
 }
 
@@ -323,7 +326,9 @@ aura::Window* DisplayController::GetPrimaryRootWindow() {
 
 aura::Window* DisplayController::GetRootWindowForDisplayId(int64 id) {
   DCHECK_EQ(1u, window_tree_hosts_.count(id));
-  return GetWindow(window_tree_hosts_[id]);
+  AshWindowTreeHost* host = window_tree_hosts_[id];
+  CHECK(host);
+  return GetWindow(host);
 }
 
 void DisplayController::CloseChildWindows() {
@@ -463,8 +468,8 @@ void DisplayController::SetPrimaryDisplay(
 
   // Swap root windows between current and new primary display.
   AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
-  DCHECK(primary_host);
-  DCHECK_NE(primary_host, non_primary_host);
+  CHECK(primary_host);
+  CHECK_NE(primary_host, non_primary_host);
 
   window_tree_hosts_[new_primary_display.id()] = primary_host;
   GetRootWindowSettings(GetWindow(primary_host))->display_id =
@@ -576,7 +581,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   AshWindowTreeHost* host_to_delete = window_tree_hosts_[display.id()];
-  DCHECK(host_to_delete) << display.ToString();
+  CHECK(host_to_delete) << display.ToString();
 
   // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
