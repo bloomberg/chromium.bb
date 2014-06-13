@@ -64,30 +64,30 @@ layer at (0,0) size 785x1478
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,98) size 124x124 [border: (1px solid #000000)] [r=3 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,0) size 10.55x10.55: down
-                    RenderText {#text} at (0,10) size 18x59
-                      text run at (0,10) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,0) size 10.55x10.55: right
-                    RenderText {#text} at (0,10) size 18x59
-                      text run at (0,10) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,98) size 124x124 [border: (1px solid #000000)] [r=3 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,0) size 10.55x10.55: down
-                    RenderText {#text} at (2,10) size 18x59
-                      text run at (2,10) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,0) size 10.55x10.55: left
-                    RenderText {#text} at (2,10) size 18x59
-                      text run at (2,10) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,0) size 10.55x10.55: down
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,0) size 10.55x10.55: left
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
           RenderTableRow {TR} at (0,224) size 610x124
             RenderTableCell {TH} at (76,271) size 28x30 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (6,6) size 16x18
@@ -109,41 +109,41 @@ layer at (0,0) size 785x1478
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (103.06,3.45) size 10.55x10.55: left
+                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
                     RenderText {#text} at (45,0) size 59x18
                       text run at (45,0) width 59: "summary"
                 RenderBlock {DETAILS} at (0,18) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (103.06,3.45) size 10.55x10.55: up
+                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
                     RenderText {#text} at (45,0) size 59x18
                       text run at (45,0) width 59: "summary"
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,224) size 124x124 [border: (1px solid #000000)] [r=4 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,109.45) size 10.55x10.55: up
-                    RenderText {#text} at (0,51) size 18x59
-                      text run at (0,51) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,109.45) size 10.55x10.55: right
-                    RenderText {#text} at (0,51) size 18x59
-                      text run at (0,51) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,224) size 124x124 [border: (1px solid #000000)] [r=4 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,109.45) size 10.55x10.55: up
-                    RenderText {#text} at (2,51) size 18x59
-                      text run at (2,51) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,109.45) size 10.55x10.55: left
-                    RenderText {#text} at (2,51) size 18x59
-                      text run at (2,51) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: up
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: left
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
       RenderBlock (anonymous) at (0,352) size 769x18
         RenderBR {BR} at (0,0) size 0x18
       RenderTable {TABLE} at (0,370) size 612x352 [border: (1px outset #808080)]
@@ -207,30 +207,30 @@ layer at (0,0) size 785x1478
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,98) size 124x124 [border: (1px solid #000000)] [r=3 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,0) size 10.55x10.55: down
-                    RenderText {#text} at (0,10) size 18x59
-                      text run at (0,10) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,0) size 10.55x10.55: right
-                    RenderText {#text} at (0,10) size 18x59
-                      text run at (0,10) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,98) size 124x124 [border: (1px solid #000000)] [r=3 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,0) size 10.55x10.55: down
-                    RenderText {#text} at (2,10) size 18x59
-                      text run at (2,10) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,0) size 10.55x10.55: left
-                    RenderText {#text} at (2,10) size 18x59
-                      text run at (2,10) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,0) size 10.55x10.55: down
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,0) size 10.55x10.55: left
+                    RenderText {#text} at (0,16) size 18x59
+                      text run at (0,16) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
           RenderTableRow {TR} at (0,224) size 610x124
             RenderTableCell {TH} at (76,271) size 28x30 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (6,6) size 16x18
@@ -252,41 +252,41 @@ layer at (0,0) size 785x1478
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (58,3.45) size 10.55x10.55: left
+                    RenderDetailsMarker {DIV} at (64.39,3.45) size 10.55x10.55: left
                     RenderText {#text} at (0,0) size 58x18
                       text run at (0,0) width 58: "summary"
                 RenderBlock {DETAILS} at (0,18) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (58,3.45) size 10.55x10.55: up
+                    RenderDetailsMarker {DIV} at (64.39,3.45) size 10.55x10.55: up
                     RenderText {#text} at (0,0) size 58x18
                       text run at (0,0) width 58: "summary"
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,224) size 124x124 [border: (1px solid #000000)] [r=4 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,58) size 10.55x10.55: up
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,64.39) size 10.55x10.55: up
                     RenderText {#text} at (0,0) size 18x58
                       text run at (0,0) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,58) size 10.55x10.55: right
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,64.39) size 10.55x10.55: right
                     RenderText {#text} at (0,0) size 18x58
                       text run at (0,0) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,224) size 124x124 [border: (1px solid #000000)] [r=4 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,58) size 10.55x10.55: up
-                    RenderText {#text} at (2,0) size 18x58
-                      text run at (2,0) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,58) size 10.55x10.55: left
-                    RenderText {#text} at (2,0) size 18x58
-                      text run at (2,0) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,64.39) size 10.55x10.55: up
+                    RenderText {#text} at (0,0) size 18x58
+                      text run at (0,0) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,64.39) size 10.55x10.55: left
+                    RenderText {#text} at (0,0) size 18x58
+                      text run at (0,0) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
       RenderBlock (anonymous) at (0,722) size 769x18
         RenderBR {BR} at (0,0) size 0x18
       RenderTable {TABLE} at (0,740) size 612x352 [border: (1px outset #808080)]
@@ -350,30 +350,30 @@ layer at (0,0) size 785x1478
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,98) size 124x124 [border: (1px solid #000000)] [r=3 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,25.72) size 10.55x10.55: down
-                    RenderText {#text} at (0,36) size 18x59
-                      text run at (0,36) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,25.72) size 10.55x10.55: right
-                    RenderText {#text} at (0,36) size 18x59
-                      text run at (0,36) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,22.53) size 10.55x10.55: down
+                    RenderText {#text} at (0,39) size 18x59
+                      text run at (0,39) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,22.53) size 10.55x10.55: right
+                    RenderText {#text} at (0,39) size 18x59
+                      text run at (0,39) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,98) size 124x124 [border: (1px solid #000000)] [r=3 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,25.72) size 10.55x10.55: down
-                    RenderText {#text} at (2,36) size 18x59
-                      text run at (2,36) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,25.72) size 10.55x10.55: left
-                    RenderText {#text} at (2,36) size 18x59
-                      text run at (2,36) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,22.53) size 10.55x10.55: down
+                    RenderText {#text} at (0,39) size 18x59
+                      text run at (0,39) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,22.53) size 10.55x10.55: left
+                    RenderText {#text} at (0,39) size 18x59
+                      text run at (0,39) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
           RenderTableRow {TR} at (0,224) size 610x124
             RenderTableCell {TH} at (76,271) size 28x30 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (6,6) size 16x18
@@ -395,41 +395,41 @@ layer at (0,0) size 785x1478
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (80.53,3.45) size 10.55x10.55: left
+                    RenderDetailsMarker {DIV} at (86.92,3.45) size 10.55x10.55: left
                     RenderText {#text} at (22,0) size 59x18
                       text run at (22,0) width 59: "summary"
                 RenderBlock {DETAILS} at (0,18) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (80.53,3.45) size 10.55x10.55: up
+                    RenderDetailsMarker {DIV} at (86.92,3.45) size 10.55x10.55: up
                     RenderText {#text} at (22,0) size 59x18
                       text run at (22,0) width 59: "summary"
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,224) size 124x124 [border: (1px solid #000000)] [r=4 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,83.72) size 10.55x10.55: up
-                    RenderText {#text} at (0,25) size 18x59
-                      text run at (0,25) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,83.72) size 10.55x10.55: right
-                    RenderText {#text} at (0,25) size 18x59
-                      text run at (0,25) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,86.92) size 10.55x10.55: up
+                    RenderText {#text} at (0,22) size 18x59
+                      text run at (0,22) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,86.92) size 10.55x10.55: right
+                    RenderText {#text} at (0,22) size 18x59
+                      text run at (0,22) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,224) size 124x124 [border: (1px solid #000000)] [r=4 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,83.72) size 10.55x10.55: up
-                    RenderText {#text} at (2,25) size 18x59
-                      text run at (2,25) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,83.72) size 10.55x10.55: left
-                    RenderText {#text} at (2,25) size 18x59
-                      text run at (2,25) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,86.92) size 10.55x10.55: up
+                    RenderText {#text} at (0,22) size 18x59
+                      text run at (0,22) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,86.92) size 10.55x10.55: left
+                    RenderText {#text} at (0,22) size 18x59
+                      text run at (0,22) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
       RenderBlock (anonymous) at (0,1092) size 769x18
         RenderBR {BR} at (0,0) size 0x18
       RenderTable {TABLE} at (0,1110) size 612x352 [border: (1px outset #808080)]
@@ -493,30 +493,30 @@ layer at (0,0) size 785x1478
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,98) size 124x124 [border: (1px solid #000000)] [r=3 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,51.45) size 10.55x10.55: down
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,45.06) size 10.55x10.55: down
                     RenderText {#text} at (0,62) size 18x58
                       text run at (0,62) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,51.45) size 10.55x10.55: right
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,45.06) size 10.55x10.55: right
                     RenderText {#text} at (0,62) size 18x58
                       text run at (0,62) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,98) size 124x124 [border: (1px solid #000000)] [r=3 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,51.45) size 10.55x10.55: down
-                    RenderText {#text} at (2,62) size 18x58
-                      text run at (2,62) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,51.45) size 10.55x10.55: left
-                    RenderText {#text} at (2,62) size 18x58
-                      text run at (2,62) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,45.06) size 10.55x10.55: down
+                    RenderText {#text} at (0,62) size 18x58
+                      text run at (0,62) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,45.06) size 10.55x10.55: left
+                    RenderText {#text} at (0,62) size 18x58
+                      text run at (0,62) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
           RenderTableRow {TR} at (0,224) size 610x124
             RenderTableCell {TH} at (76,271) size 28x30 [border: (1px inset #808080)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (6,6) size 16x18
@@ -538,38 +538,38 @@ layer at (0,0) size 785x1478
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (103.06,3.45) size 10.55x10.55: left
+                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
                     RenderText {#text} at (45,0) size 59x18
                       text run at (45,0) width 59: "summary"
                 RenderBlock {DETAILS} at (0,18) size 120x18
                   RenderBlock {SUMMARY} at (0,0) size 120x18
-                    RenderDetailsMarker {DIV} at (103.06,3.45) size 10.55x10.55: up
+                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
                     RenderText {#text} at (45,0) size 59x18
                       text run at (45,0) width 59: "summary"
                   RenderBlock {DIV} at (0,18) size 120x0
             RenderTableCell {TD} at (358,224) size 124x124 [border: (1px solid #000000)] [r=4 c=4 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,109.45) size 10.55x10.55: up
-                    RenderText {#text} at (0,51) size 18x59
-                      text run at (0,51) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.06,109.45) size 10.55x10.55: right
-                    RenderText {#text} at (0,51) size 18x59
-                      text run at (0,51) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
             RenderTableCell {TD} at (484,224) size 124x124 [border: (1px solid #000000)] [r=4 c=5 rs=1 cs=1]
               RenderBlock {DIV} at (2,2) size 120x120
-                RenderBlock {DETAILS} at (0,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,109.45) size 10.55x10.55: up
-                    RenderText {#text} at (2,51) size 18x59
-                      text run at (2,51) width 58: "summary"
-                RenderBlock {DETAILS} at (20,0) size 20x120
-                  RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (6.39,109.45) size 10.55x10.55: left
-                    RenderText {#text} at (2,51) size 18x59
-                      text run at (2,51) width 58: "summary"
-                  RenderBlock {DIV} at (20,0) size 0x120
+                RenderBlock {DETAILS} at (0,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: up
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                RenderBlock {DETAILS} at (18,0) size 18x120
+                  RenderBlock {SUMMARY} at (0,0) size 18x120
+                    RenderDetailsMarker {DIV} at (4,109.45) size 10.55x10.55: left
+                    RenderText {#text} at (0,45) size 18x59
+                      text run at (0,45) width 58: "summary"
+                  RenderBlock {DIV} at (18,0) size 0x120
