@@ -131,7 +131,7 @@ void IndexedDBTransaction::Abort() {
 }
 
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
-  IDB_TRACE("IndexedDBTransaction::Abort");
+  IDB_TRACE1("IndexedDBTransaction::Abort", "txn.id", id());
   if (state_ == FINISHED)
     return;
 
@@ -236,7 +236,7 @@ void IndexedDBTransaction::BlobWriteComplete(bool success) {
 }
 
 void IndexedDBTransaction::Commit() {
-  IDB_TRACE("IndexedDBTransaction::Commit");
+  IDB_TRACE1("IndexedDBTransaction::Commit", "txn.id", id());
 
   // In multiprocess ports, front-end may have requested a commit but
   // an abort has already been initiated asynchronously by the
@@ -319,7 +319,7 @@ void IndexedDBTransaction::CommitPhaseTwo() {
 }
 
 void IndexedDBTransaction::ProcessTaskQueue() {
-  IDB_TRACE("IndexedDBTransaction::ProcessTaskQueue");
+  IDB_TRACE1("IndexedDBTransaction::ProcessTaskQueue", "txn.id", id());
 
   // May have been aborted.
   if (!should_process_queue_)

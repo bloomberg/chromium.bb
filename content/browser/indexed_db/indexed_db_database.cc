@@ -267,7 +267,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
                                           const base::string16& name,
                                           const IndexedDBKeyPath& key_path,
                                           bool auto_increment) {
-  IDB_TRACE("IndexedDBDatabase::CreateObjectStore");
+  IDB_TRACE1("IndexedDBDatabase::CreateObjectStore", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -316,7 +316,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
 
 void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
                                           int64 object_store_id) {
-  IDB_TRACE("IndexedDBDatabase::DeleteObjectStore");
+  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStore", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -338,7 +338,7 @@ void IndexedDBDatabase::CreateIndex(int64 transaction_id,
                                     const IndexedDBKeyPath& key_path,
                                     bool unique,
                                     bool multi_entry) {
-  IDB_TRACE("IndexedDBDatabase::CreateIndex");
+  IDB_TRACE1("IndexedDBDatabase::CreateIndex", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -380,7 +380,9 @@ void IndexedDBDatabase::CreateIndexAbortOperation(
     int64 object_store_id,
     int64 index_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::CreateIndexAbortOperation");
+  IDB_TRACE1("IndexedDBDatabase::CreateIndexAbortOperation",
+             "txn.id",
+             transaction->id());
   DCHECK(!transaction);
   RemoveIndex(object_store_id, index_id);
 }
@@ -388,7 +390,7 @@ void IndexedDBDatabase::CreateIndexAbortOperation(
 void IndexedDBDatabase::DeleteIndex(int64 transaction_id,
                                     int64 object_store_id,
                                     int64 index_id) {
-  IDB_TRACE("IndexedDBDatabase::DeleteIndex");
+  IDB_TRACE1("IndexedDBDatabase::DeleteIndex", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -408,7 +410,8 @@ void IndexedDBDatabase::DeleteIndexOperation(
     int64 object_store_id,
     int64 index_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::DeleteIndexOperation");
+  IDB_TRACE1(
+      "IndexedDBDatabase::DeleteIndexOperation", "txn.id", transaction->id());
 
   const IndexedDBIndexMetadata index_metadata =
       metadata_.object_stores[object_store_id].indexes[index_id];
@@ -443,8 +446,10 @@ void IndexedDBDatabase::DeleteIndexAbortOperation(
     int64 object_store_id,
     const IndexedDBIndexMetadata& index_metadata,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::DeleteIndexAbortOperation");
   DCHECK(!transaction);
+  IDB_TRACE1("IndexedDBDatabase::DeleteIndexAbortOperation",
+             "txn.id",
+             transaction->id());
   AddIndex(object_store_id, index_metadata, IndexedDBIndexMetadata::kInvalidId);
 }
 
@@ -461,7 +466,7 @@ void IndexedDBDatabase::Commit(int64 transaction_id) {
 void IndexedDBDatabase::Abort(int64 transaction_id) {
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
-  IDB_TRACE("IndexedDBDatabase::Abort");
+  IDB_TRACE1("IndexedDBDatabase::Abort", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (transaction)
     transaction->Abort();
@@ -469,7 +474,7 @@ void IndexedDBDatabase::Abort(int64 transaction_id) {
 
 void IndexedDBDatabase::Abort(int64 transaction_id,
                               const IndexedDBDatabaseError& error) {
-  IDB_TRACE("IndexedDBDatabase::Abort");
+  IDB_TRACE1("IndexedDBDatabase::Abort(error)", "txn.id", transaction_id);
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
@@ -483,7 +488,7 @@ void IndexedDBDatabase::Get(int64 transaction_id,
                             scoped_ptr<IndexedDBKeyRange> key_range,
                             bool key_only,
                             scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::Get");
+  IDB_TRACE1("IndexedDBDatabase::Get", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -508,7 +513,7 @@ void IndexedDBDatabase::GetOperation(
     indexed_db::CursorType cursor_type,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::GetOperation");
+  IDB_TRACE1("IndexedDBDatabase::GetOperation", "txn.id", transaction->id());
 
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
@@ -723,7 +728,7 @@ void IndexedDBDatabase::Put(int64 transaction_id,
                             PutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
                             const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabase::Put");
+  IDB_TRACE1("IndexedDBDatabase::Put", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -748,7 +753,7 @@ void IndexedDBDatabase::Put(int64 transaction_id,
 
 void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                      IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::PutOperation");
+  IDB_TRACE1("IndexedDBDatabase::PutOperation", "txn.id", transaction->id());
   DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
   bool key_was_generated = false;
 
@@ -886,7 +891,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
                                      int64 object_store_id,
                                      scoped_ptr<IndexedDBKey> primary_key,
                                      const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabase::SetIndexKeys");
+  IDB_TRACE1("IndexedDBDatabase::SetIndexKeys", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -961,7 +966,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
 void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
                                         int64,
                                         const std::vector<int64>& index_ids) {
-  IDB_TRACE("IndexedDBDatabase::SetIndexesReady");
+  IDB_TRACE1("IndexedDBDatabase::SetIndexesReady", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -977,7 +982,9 @@ void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
 void IndexedDBDatabase::SetIndexesReadyOperation(
     size_t index_count,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::SetIndexesReadyOperation");
+  IDB_TRACE1("IndexedDBDatabase::SetIndexesReadyOperation",
+             "txn.id",
+             transaction->id());
   for (size_t i = 0; i < index_count; ++i)
     transaction->DidCompletePreemptiveEvent();
 }
@@ -1005,7 +1012,7 @@ void IndexedDBDatabase::OpenCursor(
     bool key_only,
     TaskType task_type,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::OpenCursor");
+  IDB_TRACE1("IndexedDBDatabase::OpenCursor", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -1029,7 +1036,8 @@ void IndexedDBDatabase::OpenCursor(
 void IndexedDBDatabase::OpenCursorOperation(
     scoped_ptr<OpenCursorOperationParams> params,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::OpenCursorOperation");
+  IDB_TRACE1(
+      "IndexedDBDatabase::OpenCursorOperation", "txn.id", transaction->id());
 
   // The frontend has begun indexing, so this pauses the transaction
   // until the indexing is complete. This can't happen any earlier
@@ -1112,7 +1120,7 @@ void IndexedDBDatabase::Count(int64 transaction_id,
                               int64 index_id,
                               scoped_ptr<IndexedDBKeyRange> key_range,
                               scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::Count");
+  IDB_TRACE1("IndexedDBDatabase::Count", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -1134,7 +1142,7 @@ void IndexedDBDatabase::CountOperation(
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::CountOperation");
+  IDB_TRACE1("IndexedDBDatabase::CountOperation", "txn.id", transaction->id());
   uint32 count = 0;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
 
@@ -1185,7 +1193,7 @@ void IndexedDBDatabase::DeleteRange(
     int64 object_store_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::DeleteRange");
+  IDB_TRACE1("IndexedDBDatabase::DeleteRange", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -1206,7 +1214,8 @@ void IndexedDBDatabase::DeleteRangeOperation(
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::DeleteRangeOperation");
+  IDB_TRACE1(
+      "IndexedDBDatabase::DeleteRangeOperation", "txn.id", transaction->id());
   leveldb::Status s =
       backing_store_->DeleteRange(transaction->BackingStoreTransaction(),
                                   id(),
@@ -1230,7 +1239,7 @@ void IndexedDBDatabase::DeleteRangeOperation(
 void IndexedDBDatabase::Clear(int64 transaction_id,
                               int64 object_store_id,
                               scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::Clear");
+  IDB_TRACE1("IndexedDBDatabase::Clear", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -1247,7 +1256,7 @@ void IndexedDBDatabase::ClearOperation(
     int64 object_store_id,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::ObjectStoreClearOperation");
+  IDB_TRACE1("IndexedDBDatabase::ClearOperation", "txn.id", transaction->id());
   leveldb::Status s = backing_store_->ClearObjectStore(
       transaction->BackingStoreTransaction(), id(), object_store_id);
   if (!s.ok()) {
@@ -1266,7 +1275,9 @@ void IndexedDBDatabase::ClearOperation(
 void IndexedDBDatabase::DeleteObjectStoreOperation(
     int64 object_store_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::DeleteObjectStoreOperation");
+  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStoreOperation",
+             "txn.id",
+             transaction->id());
 
   const IndexedDBObjectStoreMetadata object_store_metadata =
       metadata_.object_stores[object_store_id];
@@ -1299,7 +1310,8 @@ void IndexedDBDatabase::VersionChangeOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_ptr<IndexedDBConnection> connection,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::VersionChangeOperation");
+  IDB_TRACE1(
+      "IndexedDBDatabase::VersionChangeOperation", "txn.id", transaction->id());
   int64 old_version = metadata_.int_version;
   DCHECK_GT(version, old_version);
 
@@ -1437,8 +1449,7 @@ void IndexedDBDatabase::CreateTransaction(
     IndexedDBConnection* connection,
     const std::vector<int64>& object_store_ids,
     uint16 mode) {
-
-  IDB_TRACE("IndexedDBDatabase::CreateTransaction");
+  IDB_TRACE1("IndexedDBDatabase::CreateTransaction", "txn.id", transaction_id);
   DCHECK(connections_.count(connection));
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
   if (transactions_.find(transaction_id) != transactions_.end())
@@ -1725,16 +1736,20 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
 void IndexedDBDatabase::CreateObjectStoreAbortOperation(
     int64 object_store_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::CreateObjectStoreAbortOperation");
   DCHECK(!transaction);
+  IDB_TRACE1("IndexedDBDatabase::CreateObjectStoreAbortOperation",
+             "txn.id",
+             transaction->id());
   RemoveObjectStore(object_store_id);
 }
 
 void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
     const IndexedDBObjectStoreMetadata& object_store_metadata,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::DeleteObjectStoreAbortOperation");
   DCHECK(!transaction);
+  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStoreAbortOperation",
+             "txn.id",
+             transaction->id());
   AddObjectStore(object_store_metadata,
                  IndexedDBObjectStoreMetadata::kInvalidId);
 }
@@ -1743,8 +1758,10 @@ void IndexedDBDatabase::VersionChangeAbortOperation(
     const base::string16& previous_version,
     int64 previous_int_version,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");
   DCHECK(!transaction);
+  IDB_TRACE1("IndexedDBDatabase::VersionChangeAbortOperation",
+             "txn.id",
+             transaction->id());
   metadata_.version = previous_version;
   metadata_.int_version = previous_int_version;
 }

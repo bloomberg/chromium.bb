@@ -7,5 +7,7 @@
 
 #include "base/debug/trace_event.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
+#define IDB_TRACE1(a, arg1_name, arg1_val) \
+  TRACE_EVENT1("IndexedDB", (a), (arg1_name), (arg1_val));
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRACING_H_
