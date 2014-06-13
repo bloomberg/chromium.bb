@@ -122,6 +122,7 @@ class TestCLActionLogic(unittest.TestCase):
           'good_patch_rejection_breakdown': [(0, 1), (1, 1)],
           'good_patch_rejection_count': 1,
           'good_patches_rejected': 1,
+          'false_rejection_ratio': 0.3333333333333333,
           'submitted_patches': 2,
           'submit_fails': 0,
           'unique_cls': 2,

@@ -4,6 +4,7 @@
 
 """Script for gathering stats from builder runs."""
 
+from __future__ import division
 import datetime
 import logging
 import numpy
@@ -46,6 +47,13 @@ NICE_DATETIME_FORMAT = metadata_lib.NICE_DATETIME_FORMAT
 # CQ master and slaves both use the same spreadsheet
 CQ_SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
 PFQ_SS_KEY = '0AhFPeDq6pmwxdDdrYXk3cnJJV05jN3Zja0s5VjFfNlE'
+
+
+# These are the preferred base URLs we use to canonicalize bugs/CLs.
+BUGANIZER_BASE_URL = 'b/'
+CROS_BUG_BASE_URL = 'crbug.com/'
+INTERNAL_CL_BASE_URL = 'crosreview.com/i/'
+EXTERNAL_CL_BASE_URL = 'crosreview.com/'
 
 
 class GatherStatsError(Exception):
@@ -927,10 +935,10 @@ class CLStats(StatsManager):
                 internal_review,
                 external_review,
                 buganizer]
-    url_patterns = ['crbug.com/',
-                    'crosreview.com/i/',
-                    'crosreview.com/',
-                    'b/']
+    url_patterns = [CROS_BUG_BASE_URL,
+                    INTERNAL_CL_BASE_URL,
+                    EXTERNAL_CL_BASE_URL,
+                    BUGANIZER_BASE_URL]
 
     for t in tokens:
       for p, u in zip(patterns, url_patterns):
@@ -1084,6 +1092,8 @@ class CLStats(StatsManager):
 
     submit_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_SUBMITTED]
+    pickup_actions = [a for a in self.actions
+                      if a.action == constants.CL_ACTION_PICKED_UP]
     reject_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_KICKED_OUT]
     sbfail_actions = [a for a in self.actions
@@ -1105,7 +1115,7 @@ class CLStats(StatsManager):
       unique_blames.update(blames)
 
     unique_cl_blames = {blame for blame in unique_blames if
-                        'crosreview.com' in blame}
+                        EXTERNAL_CL_BASE_URL in blame}
 
     patch_reason_counts = {}
     patch_blame_counts = {}
@@ -1152,6 +1162,13 @@ class CLStats(StatsManager):
         d = submitted_after_new_patch.setdefault(a.bot_type, {})
         d[change] = actions
 
+    # Calculate the number of times bad CLs were picked up. This
+    # relies on the annotated bad CLs in the spreadsheet and may be
+    # inaccurate (e.g. does not take into account a stack of CLs).
+    bad_cl_pickup_count = len([x for x in self.blames.itervalues()
+                               if EXTERNAL_CL_BASE_URL in x])
+    good_cl_pickup_count = len(pickup_actions) - bad_cl_pickup_count
+
     # Sort the candidate bad CLs in order of submit time.
     bad_cl_candidates = {}
     for bot_type, patch_actions in submitted_after_new_patch.items():
@@ -1172,6 +1189,9 @@ class CLStats(StatsManager):
                    good_patch_rejection_breakdown,
                'good_patch_rejection_count' :
                    good_patch_rejection_count,
+               'false_rejection_ratio' :
+                   (0.0 if good_cl_pickup_count == 0 else
+                    good_patch_rejection_count / good_cl_pickup_count),
                'median_handling_time' : numpy.median(patch_handle_times),
                self.PATCH_HANDLING_TIME_SUMMARY_KEY : patch_handle_times,
                'bad_cl_candidates' : bad_cl_candidates,
@@ -1199,6 +1219,8 @@ class CLStats(StatsManager):
     logging.info('   Mean rejections per')
     logging.info('            good patch: %.2f',
                  summary['mean_good_patch_rejections'])
+    logging.info(' False rejection ratio: %.3f.',
+                 summary['false_rejection_ratio'])
 
     for x, p in summary['good_patch_rejection_breakdown']:
       logging.info('%d good patches were rejected %d times.', p, x)
