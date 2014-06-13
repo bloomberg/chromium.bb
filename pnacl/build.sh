@@ -2731,7 +2731,7 @@ driver-install-python() {
 
   # Copy python scripts
   cp $@ driver_log.py driver_env.py driver_temps.py \
-    *tools.py filetype.py loader.py "${pydir}"
+    *tools.py filetype.py loader.py nativeld.py "${pydir}"
 
   # Install redirector shell/batch scripts
   for name in $@; do
@@ -2808,7 +2808,7 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
 driver-install-translator() {
   local destdir="${INSTALL_TRANSLATOR}/bin"
 
-  driver-install-python "${destdir}" pnacl-translate.py pnacl-nativeld.py
+  driver-install-python "${destdir}" pnacl-translate.py
 
   echo """HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 

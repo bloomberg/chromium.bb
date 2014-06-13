@@ -23,14 +23,14 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 # User-facing tools
 DRIVER_TOOLS = ['pnacl-' + tool + '.py' for tool in
-                    ('abicheck', 'ar', 'as', 'clang', 'clang++', 'compress', 'dis',
-                     'driver', 'finalize', 'ld', 'nativeld', 'nm', 'opt',
+                    ('abicheck', 'ar', 'as', 'clang', 'clang++', 'compress',
+                     'dis', 'driver', 'finalize', 'ld', 'nm', 'opt',
                      'ranlib', 'readelf', 'strip', 'translate')]
 # Utilities used by the driver
 DRIVER_UTILS = [name + '.py' for name in
                     ('artools', 'driver_env', 'driver_log', 'driver_temps',
                      'driver_tools', 'elftools', 'filetype', 'ldtools',
-                     'loader', 'pathtools', 'shelltools')]
+                     'loader', 'nativeld', 'pathtools', 'shelltools')]
 
 def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
                          host_64bit=False, extra_config=[]):

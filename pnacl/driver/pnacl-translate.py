@@ -41,7 +41,7 @@ EXTRA_ENV = {
   # explicitly to override this.
   'ALLOW_LLVM_BITCODE_INPUT': '0',
 
-  # Flags for pnacl-nativeld
+  # Flags for nativeld
   'LD_FLAGS': '-static',
 
   'USE_STDLIB'     : '1',
@@ -59,7 +59,7 @@ EXTRA_ENV = {
   # anything useful.
   # libpnacl_irt_shim.a is generated during the SDK packaging not
   # during the toolchain build and there are hacks in pnacl/driver/ldtools.py
-  # and pnacl/driver/pnacl-nativeld.py that will fall back to
+  # and pnacl/driver/nativeld.py that will fall back to
   # libpnacl_irt_shim_dummy.a if libpnacl_irt_shim.a does not exist.
   'LD_ARGS_IRT_SHIM': '-l:libpnacl_irt_shim.a',
   'LD_ARGS_IRT_SHIM_DUMMY': '-l:libpnacl_irt_shim_dummy.a',
@@ -182,7 +182,6 @@ TranslatorPatterns = [
   ( '--noirt',         "env.set('USE_IRT', '0')\n"
                        "env.append('LD_FLAGS', '--noirt')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
-  ( '(--pnacl-nativeld=.+)', "env.append('LD_FLAGS', $0)"),
 
   # Allowing zero-cost C++ exception handling causes a specific set of
   # native objects to get linked into the nexe.

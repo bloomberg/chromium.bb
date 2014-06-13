@@ -45,7 +45,7 @@ void apply_relocations(void) {
    * Handle the case where the executable is linked as "-static", where
    * there is no PT_DYNAMIC segment and no relocations to apply.  Note that
    * the linker doesn't allow _DYNAMIC to be both weak and undefined when
-   * it's also hidden, so we use -defsym in pnacl-nativeld.py to define it
+   * it's also hidden, so we use -defsym in nativeld.py to define it
    * instead.  Also note that we can't check "_DYNAMIC == NULL" here: the
    * compiler may assume that is always false (for a non-weak symbol) and
    * optimise the check away.
