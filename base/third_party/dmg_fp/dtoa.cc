@@ -179,12 +179,6 @@
  *	used for input more than STRTOD_DIGLIM digits long (default 40).
  */
 
-#if defined _MSC_VER && _MSC_VER == 1800
-// TODO(scottmg): VS2013 RC ICEs on a bunch of functions in this file.
-// This should be removed after RTM. See http://crbug.com/288948.
-#pragma optimize("", off)
-#endif
-
 #define IEEE_8087
 #define NO_HEX_FP
 
