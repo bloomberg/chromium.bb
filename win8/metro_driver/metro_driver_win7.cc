@@ -4,13 +4,21 @@
 
 #include "stdafx.h"
 #include <corewindow.h>
+#include <shobjidl.h>
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/win/msg_util.h"
 
+#pragma comment(lib, "shell32.lib")
+
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+// Even though we only create a single window, we need to keep this
+// count because of the hidden window used by the UI message loop of
+// the metro viewer.
 int g_window_count = 0;
+
+const wchar_t kAshWin7AppId[] = L"Google.Chrome.AshWin7.1";
 
 extern float GetModernUIScale();
 
@@ -43,7 +51,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
   return 0;
 }
 
-HWND CreateMetroTopLevelWindow() {
+HWND CreateMetroTopLevelWindow(const RECT& work_area) {
   HINSTANCE hInst = reinterpret_cast<HINSTANCE>(&__ImageBase);
   WNDCLASSEXW wcex;
   wcex.cbSize = sizeof(wcex);
@@ -52,18 +60,21 @@ HWND CreateMetroTopLevelWindow() {
   wcex.cbClsExtra         = 0;
   wcex.cbWndExtra         = 0;
   wcex.hInstance          = hInst;
-  wcex.hIcon              = 0;
+  wcex.hIcon              = LoadIcon(::GetModuleHandle(NULL), L"IDR_MAINFRAME");
   wcex.hCursor            = LoadCursor(NULL, IDC_ARROW);
   wcex.hbrBackground      = (HBRUSH)(COLOR_INACTIVECAPTION+1);
   wcex.lpszMenuName       = 0;
   wcex.lpszClassName      = L"Windows.UI.Core.CoreWindow";
-  wcex.hIconSm            = 0;
+  wcex.hIconSm            = LoadIcon(::GetModuleHandle(NULL), L"IDR_MAINFRAME");
+
+
 
   HWND hwnd = ::CreateWindowExW(0,
                                 MAKEINTATOM(::RegisterClassExW(&wcex)),
                                 L"metro_win7",
-                                WS_POPUP | WS_VISIBLE,
-                                0, 0, 1600, 900,
+                                WS_POPUP | WS_VISIBLE | WS_MINIMIZEBOX,
+                                work_area.top, work_area.left,
+                                work_area.right, work_area.bottom,
                                 NULL, NULL, hInst, NULL);
   return hwnd;
 }
@@ -566,7 +577,21 @@ class CoreWindowEmulation
         key_up_handler_(NULL),
         character_received_handler_(NULL) {
     dispatcher_ = mswr::Make<CoreDispatcherEmulation>(this);
-    core_hwnd_ = CreateMetroTopLevelWindow();
+
+    // Unless we select our own AppUserModelID the shell might confuse us
+    // with the app launcher one and we get the wrong taskbar button and icon.
+    ::SetCurrentProcessExplicitAppUserModelID(kAshWin7AppId);
+
+    RECT work_area = {0};
+    ::SystemParametersInfo(SPI_GETWORKAREA, 0, &work_area, 0);
+    if (::IsDebuggerPresent()) {
+      work_area.top = 0;
+      work_area.left = 0;
+      work_area.right = 1600;
+      work_area.bottom = 900;
+    }
+
+    core_hwnd_ = CreateMetroTopLevelWindow(work_area);
   }
 
   ~CoreWindowEmulation() {
