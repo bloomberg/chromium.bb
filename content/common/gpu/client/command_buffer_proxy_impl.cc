@@ -459,12 +459,16 @@ bool CommandBufferProxyImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
 
 scoped_ptr<media::VideoDecodeAccelerator>
 CommandBufferProxyImpl::CreateVideoDecoder() {
+  if (!channel_)
+    return scoped_ptr<media::VideoDecodeAccelerator>();
   return scoped_ptr<media::VideoDecodeAccelerator>(
       new GpuVideoDecodeAcceleratorHost(channel_, this));
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>
 CommandBufferProxyImpl::CreateVideoEncoder() {
+  if (!channel_)
+    return scoped_ptr<media::VideoEncodeAccelerator>();
   return scoped_ptr<media::VideoEncodeAccelerator>(
       new GpuVideoEncodeAcceleratorHost(channel_, this));
 }
