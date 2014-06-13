@@ -27,9 +27,8 @@
 #include "config.h"
 #include "core/events/EventPath.h"
 
-#include "EventNames.h"
-#include "RuntimeEnabledFeatures.h"
-#include "SVGNames.h"
+#include "core/EventNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
@@ -40,6 +39,7 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
 #include "core/svg/SVGUseElement.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

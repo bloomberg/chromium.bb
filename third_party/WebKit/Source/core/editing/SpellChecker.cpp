@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/editing/SpellChecker.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"

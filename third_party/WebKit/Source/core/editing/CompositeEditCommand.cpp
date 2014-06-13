@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/CompositeEditCommand.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"

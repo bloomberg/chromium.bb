@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/NodeRenderingTraversal.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/rendering/RenderObject.h"

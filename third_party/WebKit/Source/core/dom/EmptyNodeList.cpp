@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "EmptyNodeList.h"
+#include "core/dom/EmptyNodeList.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeRareData.h"

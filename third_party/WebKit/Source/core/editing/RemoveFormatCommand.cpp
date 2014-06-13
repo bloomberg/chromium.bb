@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/editing/RemoveFormatCommand.h"
 
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
 #include "core/editing/ApplyStyleCommand.h"

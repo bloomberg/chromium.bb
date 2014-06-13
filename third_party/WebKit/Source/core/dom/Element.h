@@ -25,8 +25,8 @@
 #ifndef Element_h
 #define Element_h
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"

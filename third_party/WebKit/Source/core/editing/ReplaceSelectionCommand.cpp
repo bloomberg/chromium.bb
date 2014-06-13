@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/editing/ReplaceSelectionCommand.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"

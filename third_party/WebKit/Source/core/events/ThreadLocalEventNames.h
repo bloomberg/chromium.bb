@@ -22,11 +22,11 @@
 #ifndef ThreadLocalEventNames_h
 #define ThreadLocalEventNames_h
 
-#include "EventInterfaces.h"
-#include "EventNames.h"
-#include "EventTargetInterfaces.h"
-#include "EventTargetNames.h"
-#include "EventTypeNames.h"
+#include "core/EventInterfaces.h"
+#include "core/EventNames.h"
+#include "core/EventTargetInterfaces.h"
+#include "core/EventTargetNames.h"
+#include "core/EventTypeNames.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

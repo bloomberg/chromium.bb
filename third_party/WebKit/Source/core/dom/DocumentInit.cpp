@@ -28,12 +28,12 @@
 #include "config.h"
 #include "core/dom/DocumentInit.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

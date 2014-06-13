@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/dom/FullscreenElementStack.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"

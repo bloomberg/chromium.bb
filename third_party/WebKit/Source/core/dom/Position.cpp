@@ -26,8 +26,7 @@
 #include "config.h"
 #include "core/dom/Position.h"
 
-#include <stdio.h>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/PositionIterator.h"
 #include "core/dom/Text.h"
@@ -46,6 +45,7 @@
 #include "platform/Logging.h"
 #include "wtf/text/CString.h"
 #include "wtf/unicode/CharacterNames.h"
+#include <stdio.h>
 
 namespace WebCore {
 

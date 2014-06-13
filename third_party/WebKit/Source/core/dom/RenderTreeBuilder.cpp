@@ -26,9 +26,8 @@
 #include "config.h"
 #include "core/dom/RenderTreeBuilder.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
-#include "SVGNames.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
@@ -38,6 +37,7 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

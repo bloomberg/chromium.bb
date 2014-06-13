@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/editing/VisiblePosition.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"

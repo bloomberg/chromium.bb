@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "XMLDocument.h"
+#include "core/dom/XMLDocument.h"
 
 namespace WebCore {
 

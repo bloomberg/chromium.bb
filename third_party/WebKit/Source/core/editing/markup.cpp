@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/editing/markup.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"

@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/InsertListCommand.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/TextIterator.h"

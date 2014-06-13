@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/events/EventTarget.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NoEventDispatchAssertion.h"
@@ -40,6 +39,7 @@
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 

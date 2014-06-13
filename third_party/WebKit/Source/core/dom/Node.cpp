@@ -25,10 +25,10 @@
 #include "config.h"
 #include "core/dom/Node.h"
 
-#include "HTMLNames.h"
-#include "XMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
+#include "core/HTMLNames.h"
+#include "core/XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"

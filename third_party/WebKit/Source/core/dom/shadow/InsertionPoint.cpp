@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/shadow/InsertionPoint.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"

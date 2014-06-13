@@ -27,8 +27,8 @@
 #include "core/editing/FrameSelection.h"
 
 #include <stdio.h>
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"

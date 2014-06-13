@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/dom/Text.h"
 
-#include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderStyle.h"

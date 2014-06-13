@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/TreeScope.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

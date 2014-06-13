@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/editing/ReplaceNodeWithSpanCommand.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/Assertions.h"

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/ShadowTreeStyleSheetCollection.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"

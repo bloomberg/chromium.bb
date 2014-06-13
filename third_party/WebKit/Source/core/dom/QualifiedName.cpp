@@ -25,12 +25,13 @@
 #define QNAME_DEFAULT_CONSTRUCTOR
 #endif
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#include "XMLNSNames.h"
-#include "XMLNames.h"
 #include "core/dom/QualifiedName.h"
+
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
+#include "core/XLinkNames.h"
+#include "core/XMLNSNames.h"
+#include "core/XMLNames.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
 #include "wtf/MainThread.h"

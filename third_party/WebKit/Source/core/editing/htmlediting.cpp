@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/editing/htmlediting.h"
 
-#include "HTMLElementFactory.h"
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLElementFactory.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/PositionIterator.h"

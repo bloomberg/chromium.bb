@@ -28,8 +28,8 @@
 #include "config.h"
 #include "core/dom/StyleEngine.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"

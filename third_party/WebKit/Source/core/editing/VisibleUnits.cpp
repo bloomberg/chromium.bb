@@ -26,10 +26,9 @@
 #include "config.h"
 #include "core/editing/VisibleUnits.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
@@ -43,6 +42,7 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
 

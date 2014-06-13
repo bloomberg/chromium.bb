@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/DocumentOrderedMap.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TreeScope.h"

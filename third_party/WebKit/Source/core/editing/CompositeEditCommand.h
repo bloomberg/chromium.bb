@@ -26,7 +26,7 @@
 #ifndef CompositeEditCommand_h
 #define CompositeEditCommand_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/editing/EditCommand.h"
 #include "core/editing/UndoStep.h"
 #include "wtf/Vector.h"

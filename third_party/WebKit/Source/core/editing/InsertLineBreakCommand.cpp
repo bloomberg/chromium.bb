@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/InsertLineBreakCommand.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"

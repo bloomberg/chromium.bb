@@ -32,8 +32,8 @@
 #ifndef EditingStyle_h
 #define EditingStyle_h
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/editing/WritingDirection.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/dom/ProcessingInstruction.h"
 
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"

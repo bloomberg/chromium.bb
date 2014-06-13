@@ -24,10 +24,10 @@
 #include "config.h"
 #include "core/dom/ScriptLoader.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"

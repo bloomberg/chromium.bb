@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/dom/DOMImplementation.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"

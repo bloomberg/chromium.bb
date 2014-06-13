@@ -27,13 +27,13 @@
 #include "config.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/StyleSheetCandidate.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

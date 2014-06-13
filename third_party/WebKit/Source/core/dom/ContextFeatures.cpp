@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/dom/ContextFeatures.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 
