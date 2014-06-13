@@ -549,6 +549,10 @@ EVENT_TYPE(SSL_SOCKET_BYTES_RECEIVED)
 EVENT_TYPE(SOCKET_READ_ERROR)
 EVENT_TYPE(SOCKET_WRITE_ERROR)
 
+// The socket was closed locally (The socket may or may not have been closed
+// by the remote side already)
+EVENT_TYPE(SOCKET_CLOSED)
+
 // Certificates were received from the SSL server (during a handshake or
 // renegotiation). This event is only present when logging at LOG_ALL.
 // The following parameters are attached to the event:

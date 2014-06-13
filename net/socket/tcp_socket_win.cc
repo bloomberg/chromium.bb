@@ -641,6 +641,9 @@ void TCPSocketWin::Close() {
   DCHECK(CalledOnValidThread());
 
   if (socket_ != INVALID_SOCKET) {
+    // Only log the close event if there's actually a socket to close.
+    net_log_.AddEvent(NetLog::EventType::TYPE_SOCKET_CLOSED);
+
     // Note: don't use CancelIo to cancel pending IO because it doesn't work
     // when there is a Winsock layered service provider.
 
