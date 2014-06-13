@@ -427,7 +427,17 @@ class BuildData(object):
       if bd.build_number is None:
         cros_build_lib.Warning('Metadata at %s was missing build number.',
                                url)
-      elif not (sheets_version is None and carbon_version is None):
+        # metadata.json can be missing a build number if the build died before
+        # ReportBuildStartStage. See crbug.com/369748. As a workaround so that
+        # gather_builder_stats can still record these builds in the spreadsheet
+        # try to infer the build number from the file's url.
+        m = re.match(r'.*-b([0-9]*)/.*', url)
+        if m:
+          inferred_number = int(m.groups()[0])
+          cros_build_lib.Warning('Inferred build number %d from metadata url.',
+                                 inferred_number)
+          bd.metadata_dict['build-number'] = inferred_number
+      if not (sheets_version is None and carbon_version is None):
         cros_build_lib.Debug('Read %s:\n'
                              '  build_number=%d, sheets v%d, carbon v%d', url,
                              bd.build_number, sheets_version, carbon_version)
@@ -533,7 +543,10 @@ class BuildData(object):
 
   @property
   def chromeos_version(self):
-    return self['version']['full']
+    try:
+      return self['version']['full']
+    except KeyError:
+      return None
 
   @property
   def chrome_version(self):
