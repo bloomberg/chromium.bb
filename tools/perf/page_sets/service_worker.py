@@ -22,6 +22,7 @@ class ServiceWorkerPageSet(page_set.PageSet):
   def __init__(self):
     super(ServiceWorkerPageSet, self).__init__(
         archive_data_file=archive_data_file_path,
-        make_javascript_deterministic=False)
+        make_javascript_deterministic=False,
+        bucket=page_set.PUBLIC_BUCKET)
 
     self.AddPage(ServiceWorkerPage('http://localhost:8091/index.html', self))

@@ -90,7 +90,8 @@ class Top10PageSet(page_set_module.PageSet):
     super(Top10PageSet, self).__init__(
       archive_data_file='data/top_10.json',
       credentials_path='data/credentials.json',
-      user_agent_type='desktop')
+      user_agent_type='desktop',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     # top google property; a google tab is often open
     self.AddPage(Google(self))

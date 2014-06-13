@@ -41,7 +41,8 @@ class ToughCanvasCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughCanvasCasesPageSet, self).__init__(
-      archive_data_file='data/tough_canvas_cases.json')
+      archive_data_file='data/tough_canvas_cases.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(MicrosofFirefliesPage(self))
 

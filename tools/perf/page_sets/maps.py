@@ -30,6 +30,7 @@ class MapsPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(MapsPageSet, self).__init__(
-        archive_data_file='data/maps.json')
+        archive_data_file='data/maps.json',
+        bucket=page_set_module.INTERNAL_BUCKET)
 
     self.AddPage(MapsPage(self))

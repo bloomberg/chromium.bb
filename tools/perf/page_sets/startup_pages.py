@@ -27,7 +27,8 @@ class StartupPagesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(StartupPagesPageSet, self).__init__(
-        archive_data_file='data/startup_pages.json')
+        archive_data_file='data/startup_pages.json',
+        bucket=page_set_module.PARTNER_BUCKET)
 
     # Typical page.
     self.AddPage(StartedPage('about:blank', 'about:blank', self))

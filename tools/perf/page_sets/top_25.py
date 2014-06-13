@@ -488,7 +488,8 @@ class Top25PageSet(page_set_module.PageSet):
     super(Top25PageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='desktop',
-      archive_data_file='data/top_25.json')
+      archive_data_file='data/top_25.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(GoogleWebSearchPage(self))
     self.AddPage(GmailPage(self))

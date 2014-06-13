@@ -254,7 +254,8 @@ class ToughPinchZoomCasesPageSet(page_set_module.PageSet):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='desktop',
-      archive_data_file='data/tough_pinch_zoom_cases.json')
+      archive_data_file='data/tough_pinch_zoom_cases.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(GoogleSearchPage(self))
     self.AddPage(GmailPage(self))

@@ -106,7 +106,8 @@ class PolymerPageSet(page_set_module.PageSet):
   def __init__(self):
     super(PolymerPageSet, self).__init__(
       user_agent_type='mobile',
-      archive_data_file='data/polymer.json')
+      archive_data_file='data/polymer.json',
+      bucket=page_set_module.INTERNAL_BUCKET)
 
     self.AddPage(PolymerCalculatorPage(self))
     self.AddPage(PolymerShadowPage(self))

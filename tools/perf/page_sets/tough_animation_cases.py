@@ -30,7 +30,8 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughAnimationCasesPageSet, self).__init__(
-      archive_data_file='data/tough_animation_cases.json')
+      archive_data_file='data/tough_animation_cases.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list_one = [
       # Why: Tests the balls animation implemented with SVG animations.

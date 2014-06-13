@@ -19,7 +19,8 @@ class MozPageSet(page_set_module.PageSet):
   def __init__(self):
     super(MozPageSet, self).__init__(
       # pylint: disable=C0301
-      serving_dirs=set(['../../../../data/page_cycler/moz']))
+      serving_dirs=set(['../../../../data/page_cycler/moz']),
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       'file://../../../../data/page_cycler/moz/bugzilla.mozilla.org/',

@@ -25,7 +25,8 @@ class Typical25PageSet(page_set_module.PageSet):
   def __init__(self):
     super(Typical25PageSet, self).__init__(
       user_agent_type='desktop',
-      archive_data_file='data/typical_25.json')
+      archive_data_file='data/typical_25.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       # Why: Alexa games #48

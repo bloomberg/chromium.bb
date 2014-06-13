@@ -461,7 +461,8 @@ class ToughVideoCasesPageSet(page_set_module.PageSet):
   Description: Video Stack Perf benchmark
   """
   def __init__(self):
-    super(ToughVideoCasesPageSet, self).__init__()
+    super(ToughVideoCasesPageSet, self).__init__(
+            bucket=page_set_module.INTERNAL_BUCKET)
 
     self.AddPage(Page1(self))
     self.AddPage(Page2(self))

@@ -27,7 +27,8 @@ class Top10MobilePageSet(page_set_module.PageSet):
     super(Top10MobilePageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='mobile',
-      archive_data_file='data/top_10_mobile.json')
+      archive_data_file='data/top_10_mobile.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       # Why: #1 (Alexa) most visited page worldwide, picked a reasonable

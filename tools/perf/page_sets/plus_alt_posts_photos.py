@@ -46,6 +46,7 @@ class PlusAltPostsPhotosPageSet(page_set_module.PageSet):
     super(PlusAltPostsPhotosPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='desktop',
-      archive_data_file='data/plus_alt_posts_photos.json')
+      archive_data_file='data/plus_alt_posts_photos.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(PlusAltPostsPhotosPage(self))

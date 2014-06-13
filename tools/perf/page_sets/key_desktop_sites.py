@@ -110,7 +110,8 @@ class KeyDesktopSitesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(KeyDesktopSitesPageSet, self).__init__(
       credentials_path='data/credentials.json',
-      archive_data_file='data/key_desktop_sites.json')
+      archive_data_file='data/key_desktop_sites.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(FacebookPage(self))
     self.AddPage(GmailPage(self))

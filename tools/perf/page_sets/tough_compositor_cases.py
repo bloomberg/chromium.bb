@@ -50,7 +50,8 @@ class ToughCompositorCasesPageSet(page_set_module.PageSet):
     super(ToughCompositorCasesPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='mobile',
-      archive_data_file='data/tough_compositor_cases.json')
+      archive_data_file='data/tough_compositor_cases.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     scroll_urls_list = [
       # Why: Baseline CC scrolling page. A long page with only text. """

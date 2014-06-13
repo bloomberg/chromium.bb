@@ -27,7 +27,8 @@ class KeySearchMobilePageSet(page_set_module.PageSet):
     super(KeySearchMobilePageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='mobile',
-      archive_data_file='data/key_search_mobile.json')
+      archive_data_file='data/key_search_mobile.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     urls_list = [
       # Why: An empty page should be as snappy as possible

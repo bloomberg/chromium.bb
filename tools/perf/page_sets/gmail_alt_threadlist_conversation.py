@@ -70,6 +70,7 @@ class GmailAltThreadlistConversationPageSet(page_set_module.PageSet):
     super(GmailAltThreadlistConversationPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='desktop',
-      archive_data_file='data/gmail_alt_threadlist_conversation.json')
+      archive_data_file='data/gmail_alt_threadlist_conversation.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(GmailAltThreadlistConversationPage(self))

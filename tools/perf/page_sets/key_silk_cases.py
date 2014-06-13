@@ -610,7 +610,8 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     super(KeySilkCasesPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='mobile',
-      archive_data_file='data/key_silk_cases.json')
+      archive_data_file='data/key_silk_cases.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(Page1(self))
     self.AddPage(Page2(self))

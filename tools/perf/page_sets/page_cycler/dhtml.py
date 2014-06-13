@@ -20,7 +20,8 @@ class DhtmlPageSet(page_set_module.PageSet):
   def __init__(self):
     super(DhtmlPageSet, self).__init__(
       # pylint: disable=C0301
-      serving_dirs=set(['../../../../data/page_cycler/dhtml']))
+      serving_dirs=set(['../../../../data/page_cycler/dhtml']),
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       'file://../../../../data/page_cycler/dhtml/colorfade/',

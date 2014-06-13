@@ -19,7 +19,8 @@ class MorejsnpPageSet(page_set_module.PageSet):
   def __init__(self):
     super(MorejsnpPageSet, self).__init__(
       # pylint: disable=C0301
-      serving_dirs=set(['../../../../data/page_cycler/morejsnp']))
+      serving_dirs=set(['../../../../data/page_cycler/morejsnp']),
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       'file://../../../../data/page_cycler/morejsnp/blog.chromium.org/',

@@ -476,7 +476,8 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
     super(KeyMobileSitesPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='mobile',
-      archive_data_file='data/key_mobile_sites.json')
+      archive_data_file='data/key_mobile_sites.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(Page1(self))
     self.AddPage(Page2(self))

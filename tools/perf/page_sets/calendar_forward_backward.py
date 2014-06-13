@@ -68,6 +68,7 @@ class CalendarForwardBackwardPageSet(page_set_module.PageSet):
     super(CalendarForwardBackwardPageSet, self).__init__(
       credentials_path='data/credentials.json',
       user_agent_type='desktop',
-      archive_data_file='data/calendar_forward_backward.json')
+      archive_data_file='data/calendar_forward_backward.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(CalendarForwardBackwardPage(self))

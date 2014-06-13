@@ -77,7 +77,8 @@ class MobileMemoryPageSet(page_set_module.PageSet):
     super(MobileMemoryPageSet, self).__init__(
         credentials_path='data/credentials.json',
         user_agent_type='mobile',
-        archive_data_file='data/mobile_memory.json')
+        archive_data_file='data/mobile_memory.json',
+        bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddPage(GmailPage(self))
     self.AddPage(GoogleSearchPage(self))

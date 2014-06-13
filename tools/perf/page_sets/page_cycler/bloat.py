@@ -20,7 +20,8 @@ class BloatPageSet(page_set_module.PageSet):
   def __init__(self):
     super(BloatPageSet, self).__init__(
       # pylint: disable=C0301
-      serving_dirs=set(['../../../../data/page_cycler/bloat']))
+      serving_dirs=set(['../../../../data/page_cycler/bloat']),
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(BloatPage(
       'file://../../../../data/page_cycler/bloat/gmail_load_cleardot/',

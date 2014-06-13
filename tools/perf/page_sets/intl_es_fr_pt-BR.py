@@ -27,7 +27,8 @@ class IntlEsFrPtBrPageSet(page_set_module.PageSet):
   def __init__(self):
     super(IntlEsFrPtBrPageSet, self).__init__(
       user_agent_type='desktop',
-      archive_data_file='data/intl_es_fr_pt-BR.json')
+      archive_data_file='data/intl_es_fr_pt-BR.json',
+      bucket=page_set_module.PARTNER_BUCKET)
 
     urls_list = [
       'http://elmundo.es/',
