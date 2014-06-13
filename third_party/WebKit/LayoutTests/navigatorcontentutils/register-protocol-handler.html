@@ -1,9 +1,9 @@
 <html>
 <head>
-<script src="../../../resources/js-test.js"></script>
+<script src="../resources/js-test.js"></script>
 </head>
 <body>
-<p>This test makes sure that navigator.unregisterProtocolHandler throws the proper exceptions and has no-op default implementation.</p>
+<p>This test makes sure that navigator.registerProtocolHandler throws the proper exceptions and has no-op default implementation.</p>
 <pre id="console"></pre>
 <script>
 if (window.testRunner)
@@ -12,24 +12,25 @@ if (window.testRunner)
 if (window.internals)
     internals.setNavigatorContentUtilsClientMock(document);
 
-if (window.navigator.unregisterProtocolHandler)
-    debug('PASS window.navigator.unregisterProtocolHandler is defined.');
+if (window.navigator.registerProtocolHandler)
+    debug('PASS window.navigator.registerProtocolHandler is defined.');
 else
-    debug('FAIL window.navigator.unregisterProtocolHandler is not defined.');
+    debug('FAIL window.navigator.registerProtocolHandler is not defined.');
 
 var invalid_protocols = ['http', 'https', 'file', 'web+'];
 invalid_protocols.forEach(function (protocol) {
     var succeeded = false;
+    var errorMessage;
     try {
-        window.navigator.unregisterProtocolHandler(protocol, "invalid protocol %s", "title");
+        window.navigator.registerProtocolHandler(protocol, "invalid protocol %s", "title");
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
         errorMessage = e.message;
     }
 
-    if (succeeded)
+    if (succeeded) {
         debug('PASS Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
-    else
+    }else
         debug('FAIL Invalid protocol "' + protocol + '" allowed.');
 });
 
@@ -37,7 +38,7 @@ var valid_protocols = ['bitcoin', 'BitcoIn', 'geo', 'im', 'irc', 'Irc', 'ircs', 
 valid_protocols.forEach(function (protocol) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(protocol, "valid protocol %s", "title");
+        window.navigator.registerProtocolHandler(protocol, "valid protocol %s", "title");
         succeeded = true;
     } catch (e) {
         succeeded = false;
@@ -53,7 +54,7 @@ var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
 invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
+        window.navigator.registerProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
     } catch (e) {
         succeeded = 'SyntaxError' == e.name;
         errorMessage = e.message;
@@ -67,16 +68,16 @@ invalid_schemes.forEach(function (scheme) {
 
 var invalid_urls = ["", "%S"];
 invalid_urls.forEach(function (url) {
-   var succeeded = false;
-   try {
-        window.navigator.unregisterProtocolHandler('web+myprotocol', url, 'title');
+    var succeeded = false;
+    try {
+        window.navigator.registerProtocolHandler('web+myprotocol', url, 'title');
     } catch (e) {
         succeeded = 'SyntaxError' == e.name;
         errorMessage = e.message;
     }
 
     if (succeeded)
-        debug('PASS Invalid url "' + url + '" threw SyntaxError exception.' + errorMessage + '".');
+        debug('PASS Invalid url "' + url + '" threw SyntaxError exception: "' + errorMessage + '".');
     else
         debug('FAIL Invalid url "' + url + '" allowed.');
 });
@@ -84,7 +85,7 @@ invalid_urls.forEach(function (url) {
 // Test that the API has default no-op implementation.
 var succeeded = true;
 try {
-    window.navigator.unregisterProtocolHandler('web+myprotocol', "%s", "title");
+    window.navigator.registerProtocolHandler('web+myprotocol', "%s", "title");
 } catch (e) {
     succeeded = false;
 }
@@ -94,28 +95,20 @@ if (succeeded)
 else
     debug('FAIL Invalid call did not succeed.');
 
-// Check if unregisterProtocolHandler can unregister protocol.
-debug("\nCheck if unregisterProtocolHandler can unregister protocol correctly. If isProtocolHandlerRegistered() returns 'new' state, unregisterProtoclHandler() works well.");
-debug("'bitcoin' protocol will be registered and unregistered for testing.\n");
+// Check if registerProtocolHandler can register protocol.
+debug("\nCheck if registerProtocolHandler can register protocol correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.");
+debug("'bitcoin' protocol will be registered for testing.\n");
 try {
     // Register 'bitcoin' protocol for testing.
     window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
+
     var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid protocol %s');
     if (state == "registered")
         debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.");
     else if (state == "new")
         debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state. Fail to register 'bitcoin' protocol.");
     else if (state == "declined")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' protocol.");
-
-    window.navigator.unregisterProtocolHandler('bitcoin', 'invalid scheme uri=%s');
-    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid protocol %s');
-    if (state == "new")
-        debug("PASS window.navigator.isProtocolHandlerRegistered returns 'new' state. 'bitcoin' is unregistered successfully.");
-    else if (state == "registered")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'registered' state. Fail to unregister 'bitcoin' protocol.");
-    else if (state == "declined")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to unregister 'bitcoin' protocol.");
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' protocol");
 } catch (e) {
     debug('FAIL window.navigator.isProtocolHandlerRegistered call is failed: "' + e.message + '".');
 }
