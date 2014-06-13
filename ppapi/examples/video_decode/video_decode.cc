@@ -20,12 +20,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/video_decoder.h"
-
-// VP8 is more likely to work on different versions of Chrome. Undefine this
-// to decode H264.
-#define USE_VP8_TESTDATA_INSTEAD_OF_H264
 #include "ppapi/examples/video_decode/testdata.h"
-
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/lib/gl/include/GLES2/gl2ext.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -61,7 +56,6 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   // pp::Instance implementation.
   virtual void DidChangeView(const pp::Rect& position,
                              const pp::Rect& clip_ignored);
-  virtual bool HandleInputEvent(const pp::InputEvent& event);
 
   // pp::Graphics3DClient implementation.
   virtual void Graphics3DContextLost() {
@@ -145,12 +139,12 @@ class Decoder {
   int id() const { return id_; }
   bool decoding() const { return !flushing_ && !resetting_; }
 
-  void Reset();
+  void Seek(int frame);
   void RecyclePicture(const PP_VideoPicture& picture);
 
  private:
   void InitializeDone(int32_t result);
-  void Start();
+  void Start(int frame);
   void DecodeNextFrame();
   void DecodeDone(int32_t result);
   void PictureReady(int32_t result, PP_VideoPicture picture);
@@ -165,28 +159,10 @@ class Decoder {
 
   size_t encoded_data_next_pos_to_decode_;
   int next_picture_id_;
+  int seek_frame_;
   bool flushing_;
   bool resetting_;
 };
-
-#if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
-
-// VP8 is stored in an IVF container.
-// Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
-
-static void GetNextFrame(size_t* start_pos, size_t* end_pos) {
-  size_t current_pos = *start_pos;
-  if (current_pos == 0)
-    current_pos = 32;  // Skip stream header.
-  uint32_t frame_size = kData[current_pos] + (kData[current_pos + 1] << 8) +
-                        (kData[current_pos + 2] << 16) +
-                        (kData[current_pos + 3] << 24);
-  current_pos += 12;  // Skip frame header.
-  *start_pos = current_pos;
-  *end_pos = current_pos + frame_size;
-}
-
-#else  // !USE_VP8_TESTDATA_INSTEAD_OF_H264
 
 // Returns true if the current position is at the start of a NAL unit.
 static bool LookingAtNAL(const unsigned char* encoded, size_t pos) {
@@ -195,6 +171,7 @@ static bool LookingAtNAL(const unsigned char* encoded, size_t pos) {
          encoded[pos + 2] == 0 && encoded[pos + 3] == 1;
 }
 
+// Find the start and end of the next frame.
 static void GetNextFrame(size_t* start_pos, size_t* end_pos) {
   assert(LookingAtNAL(kData, *start_pos));
   *end_pos = *start_pos;
@@ -203,8 +180,6 @@ static void GetNextFrame(size_t* start_pos, size_t* end_pos) {
     ++*end_pos;
   }
 }
-
-#endif  // USE_VP8_TESTDATA_INSTEAD_OF_H264
 
 Decoder::Decoder(MyInstance* instance,
                  int id,
@@ -215,19 +190,14 @@ Decoder::Decoder(MyInstance* instance,
       callback_factory_(this),
       encoded_data_next_pos_to_decode_(0),
       next_picture_id_(0),
+      seek_frame_(0),
       flushing_(false),
       resetting_(false) {
-// TODO(bbudge) Remove this for final patch.
-#if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
-  const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
-#else
-  const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_H264MAIN;
-#endif
-
   assert(!decoder_->is_null());
+  const PP_VideoProfile profile = PP_VIDEOPROFILE_H264MAIN;
   decoder_->Initialize(graphics_3d,
-                       kBitstreamProfile,
-                       PP_TRUE /* allow_software_fallback */,
+                       profile,
+                       PP_FALSE /* allow_software_fallback */,
                        callback_factory_.NewCallback(&Decoder::InitializeDone));
 }
 
@@ -239,13 +209,18 @@ void Decoder::InitializeDone(int32_t result) {
   assert(decoder_);
   assert(result == PP_OK);
   assert(decoding());
-  Start();
+  Start(0);
 }
 
-void Decoder::Start() {
+void Decoder::Start(int frame) {
   assert(decoder_);
 
-  encoded_data_next_pos_to_decode_ = 0;
+  // Skip to |frame|.
+  size_t start_pos = 0;
+  size_t end_pos = 0;
+  for (int i = 0; i < frame; i++)
+    GetNextFrame(&start_pos, &end_pos);
+  encoded_data_next_pos_to_decode_ = end_pos;
 
   // Register callback to get the first picture. We call GetPicture again in
   // PictureReady to continuously receive pictures as they're decoded.
@@ -256,8 +231,9 @@ void Decoder::Start() {
   DecodeNextFrame();
 }
 
-void Decoder::Reset() {
+void Decoder::Seek(int frame) {
   assert(decoder_);
+  seek_frame_ = frame;
   resetting_ = true;
   decoder_->Reset(callback_factory_.NewCallback(&Decoder::ResetDone));
 }
@@ -323,8 +299,6 @@ void Decoder::ResetDone(int32_t result) {
   assert(decoder_);
   assert(result == PP_OK);
   resetting_ = false;
-
-  Start();
 }
 
 MyInstance::MyInstance(PP_Instance instance, pp::Module* module)
@@ -377,25 +351,6 @@ void MyInstance::DidChangeView(const pp::Rect& position,
   // Initialize graphics.
   InitGL();
   InitializeDecoders();
-}
-
-bool MyInstance::HandleInputEvent(const pp::InputEvent& event) {
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-      pp::MouseInputEvent mouse_event(event);
-      // Reset all decoders on mouse down.
-      if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-        for (size_t i = 0; i < video_decoders_.size(); i++) {
-          if (video_decoders_[i]->decoding())
-            video_decoders_[i]->Reset();
-        }
-      }
-      return true;
-    }
-
-    default:
-      return false;
-  }
 }
 
 void MyInstance::InitializeDecoders() {

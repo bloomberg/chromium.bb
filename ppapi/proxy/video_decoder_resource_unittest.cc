@@ -236,10 +236,7 @@ class VideoDecoderResourceTest : public PluginProxyTest {
     SendReply(params,
               PP_OK,
               PpapiPluginMsg_VideoDecoder_RequestTextures(
-                  kNumRequestedTextures,
-                  PP_MakeSize(320, 240),
-                  GL_TEXTURE_2D,
-                  std::vector<gpu::Mailbox>()));
+                  kNumRequestedTextures, PP_MakeSize(320, 240), GL_TEXTURE_2D));
   }
 
   void SendNotifyError(const ResourceMessageCallParams& params, int32_t error) {

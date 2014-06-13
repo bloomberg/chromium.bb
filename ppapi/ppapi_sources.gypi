@@ -508,8 +508,6 @@
       'tests/test_var.h',
       'tests/test_var_resource.cc',
       'tests/test_var_resource.h',
-      'tests/test_video_decoder.cc',
-      'tests/test_video_decoder.h',
       'tests/test_video_destination.cc',
       'tests/test_video_destination.h',
       'tests/test_video_source.cc',

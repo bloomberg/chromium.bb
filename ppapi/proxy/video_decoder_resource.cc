@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
@@ -113,7 +112,7 @@ int32_t VideoDecoderResource::Initialize(
                          enter_create.functions()->CreateGraphics3D(
                              pp_instance(), graphics_context, attrib_list));
     EnterResourceNoLock<PPB_Graphics3D_API> enter_graphics(graphics3d_.get(),
-                                                           false);
+                                                           true);
     if (enter_graphics.failed())
       return PP_ERROR_BADRESOURCE;
 
@@ -333,10 +332,8 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
     const ResourceMessageReplyParams& params,
     uint32_t num_textures,
     const PP_Size& size,
-    uint32_t texture_target,
-    const std::vector<gpu::Mailbox>& mailboxes) {
+    uint32_t texture_target) {
   DCHECK(num_textures);
-  DCHECK(mailboxes.empty() || mailboxes.size() == num_textures);
   std::vector<uint32_t> texture_ids(num_textures);
   if (gles2_impl_) {
     gles2_impl_->GenTextures(num_textures, &texture_ids.front());
@@ -362,10 +359,6 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
                                 GL_RGBA,
                                 GL_UNSIGNED_BYTE,
                                 NULL);
-      }
-      if (!mailboxes.empty()) {
-        gles2_impl_->ProduceTextureCHROMIUM(
-            GL_TEXTURE_2D, reinterpret_cast<const GLbyte*>(mailboxes[i].name));
       }
 
       textures_.insert(
