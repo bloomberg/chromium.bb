@@ -261,7 +261,7 @@ std::string DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(
   } while (res == ERROR_MORE_DATA && retry_count <= 3);
 
   if (res != NO_ERROR) {
-    LOG(WARNING) << "Error fetching PAC URL from DHCP: " << res;
+    VLOG(1) << "Error fetching PAC URL from DHCP: " << res;
     UMA_HISTOGRAM_COUNTS("Net.DhcpWpadUnhandledDhcpError", 1);
   } else if (wpad_params.nBytesData) {
     return SanitizeDhcpApiString(
