@@ -48,6 +48,8 @@ class ActivityWidget : public views::LayoutManager {
     params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
     widget_->Init(params);
     widget_->SetContentsView(container_);
+
+    activity_->GetActivityViewModel()->Init();
   }
 
   virtual ~ActivityWidget() {}

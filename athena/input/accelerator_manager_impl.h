@@ -17,10 +17,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class AcceleratorManager;
-}
-
 namespace wm {
 class AcceleratorFilter;
 class NestedAcceleratorController;
@@ -35,18 +31,34 @@ namespace athena {
 class AcceleratorManagerImpl : public AcceleratorManager,
                                public ui::AcceleratorTarget {
  public:
-  AcceleratorManagerImpl();
+  class AcceleratorWrapper;
+
+  // Creates an AcceleratorManager for global accelerators.
+  // This is the one returned by AcceleratorManager::Get()
+  static AcceleratorManagerImpl* CreateGlobalAcceleratorManager();
+
+  // Creates an AcceleratorManager for focus manager.
+  static scoped_ptr<AcceleratorManager> CreateForFocusManager(
+      views::FocusManager* focus_manager);
+
   virtual ~AcceleratorManagerImpl();
 
   void Init();
 
   void OnRootWindowCreated(aura::Window* root_window);
 
-  bool IsRegistered(const ui::Accelerator& accelerator) const;
-  bool IsReserved(const ui::Accelerator& accelerator) const;
   bool Process(const ui::Accelerator& accelerator);
 
+  // AcceleratorManager:
+  // This is made public so that implementation classes can use this.
+  virtual bool IsRegistered(const ui::Accelerator& accelerator,
+                            int flags) const OVERRIDE;
+
  private:
+  class InternalData;
+
+  explicit AcceleratorManagerImpl(AcceleratorWrapper* wrapper);
+
   // AcceleratorManager:
   virtual void RegisterAccelerators(const AcceleratorData accelerators[],
                                     size_t num_accelerators,
@@ -57,17 +69,13 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
-  class InternalData;
-
   void RegisterAccelerator(const AcceleratorData& accelerator,
                            AcceleratorHandler* handler);
 
   std::map<ui::Accelerator, InternalData> accelerators_;
-  scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
-
+  scoped_ptr<AcceleratorWrapper> accelerator_wrapper_;
   scoped_ptr<wm::AcceleratorFilter> accelerator_filter_;
   scoped_ptr<wm::NestedAcceleratorController> nested_accelerator_controller_;
-
   bool debug_accelerators_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorManagerImpl);

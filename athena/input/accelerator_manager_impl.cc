@@ -22,6 +22,18 @@
 
 namespace athena {
 
+// This wrapper interface provides a common interface that handles global
+// accelerators as well as local accelerators.
+class AcceleratorManagerImpl::AcceleratorWrapper {
+ public:
+  virtual ~AcceleratorWrapper() {}
+  virtual void Register(const ui::Accelerator& accelerator,
+                        ui::AcceleratorTarget* target) = 0;
+  virtual bool Process(const ui::Accelerator& accelerator) = 0;
+  virtual ui::AcceleratorTarget* GetCurrentTarget(
+      const ui::Accelerator& accelertor) const = 0;
+};
+
 namespace {
 
 // Accelerators inside nested message loop are handled by
@@ -63,7 +75,7 @@ class AcceleratorDelegate : public wm::AcceleratorDelegate {
                                   KeyType key_type) OVERRIDE {
     aura::Window* target = static_cast<aura::Window*>(event.target());
     if (!target->IsRootWindow() &&
-        !accelerator_manager_->IsReserved(accelerator)) {
+        !accelerator_manager_->IsRegistered(accelerator, AF_RESERVED)) {
       // TODO(oshima): do the same when the active window is in fullscreen.
       return false;
     }
@@ -86,7 +98,7 @@ class FocusManagerDelegate : public views::FocusManagerDelegate {
 
   virtual ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
       const ui::Accelerator& accelerator) const OVERRIDE {
-    return accelerator_manager_->IsRegistered(accelerator)
+    return accelerator_manager_->IsRegistered(accelerator, AF_NONE)
                ? accelerator_manager_
                : NULL;
   }
@@ -121,6 +133,62 @@ class FocusManagerFactory : public views::FocusManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(FocusManagerFactory);
 };
 
+class UIAcceleratorManagerWrapper
+    : public AcceleratorManagerImpl::AcceleratorWrapper {
+ public:
+  UIAcceleratorManagerWrapper()
+      : ui_accelerator_manager_(new ui::AcceleratorManager) {}
+  virtual ~UIAcceleratorManagerWrapper() {}
+
+  virtual void Register(const ui::Accelerator& accelerator,
+                        ui::AcceleratorTarget* target) OVERRIDE {
+    return ui_accelerator_manager_->Register(
+        accelerator, ui::AcceleratorManager::kNormalPriority, target);
+  }
+
+  virtual bool Process(const ui::Accelerator& accelerator) OVERRIDE {
+    return ui_accelerator_manager_->Process(accelerator);
+  }
+
+  virtual ui::AcceleratorTarget* GetCurrentTarget(
+      const ui::Accelerator& accelerator) const OVERRIDE {
+    return ui_accelerator_manager_->GetCurrentTarget(accelerator);
+  }
+
+ private:
+  scoped_ptr<ui::AcceleratorManager> ui_accelerator_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(UIAcceleratorManagerWrapper);
+};
+
+class FocusManagerWrapper : public AcceleratorManagerImpl::AcceleratorWrapper {
+ public:
+  explicit FocusManagerWrapper(views::FocusManager* focus_manager)
+      : focus_manager_(focus_manager) {}
+  virtual ~FocusManagerWrapper() {}
+
+  virtual void Register(const ui::Accelerator& accelerator,
+                        ui::AcceleratorTarget* target) OVERRIDE {
+    return focus_manager_->RegisterAccelerator(
+        accelerator, ui::AcceleratorManager::kNormalPriority, target);
+  }
+
+  virtual bool Process(const ui::Accelerator& accelerator) OVERRIDE {
+    NOTREACHED();
+    return true;
+  }
+
+  virtual ui::AcceleratorTarget* GetCurrentTarget(
+      const ui::Accelerator& accelerator) const OVERRIDE {
+    return focus_manager_->GetCurrentTargetForAccelerator(accelerator);
+  }
+
+ private:
+  views::FocusManager* focus_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerWrapper);
+};
+
 }  // namespace
 
 class AcceleratorManagerImpl::InternalData {
@@ -130,7 +198,7 @@ class AcceleratorManagerImpl::InternalData {
 
   bool IsNonAutoRepeatable() const { return flags_ & AF_NON_AUTO_REPEATABLE; }
   bool IsDebug() const { return flags_ & AF_DEBUG; }
-  bool IsReserved() const { return flags_ & AF_RESERVED; }
+  int flags() const { return flags_; }
 
   bool IsCommandEnabled() const {
     return handler_->IsCommandEnabled(command_id_);
@@ -148,9 +216,17 @@ class AcceleratorManagerImpl::InternalData {
   // This class is copyable by design.
 };
 
-AcceleratorManagerImpl::AcceleratorManagerImpl()
-    : accelerator_manager_(new ui::AcceleratorManager),
-      debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()) {
+// static
+AcceleratorManagerImpl*
+AcceleratorManagerImpl::CreateGlobalAcceleratorManager() {
+  return new AcceleratorManagerImpl(new UIAcceleratorManagerWrapper());
+}
+
+scoped_ptr<AcceleratorManager> AcceleratorManagerImpl::CreateForFocusManager(
+    views::FocusManager* focus_manager) {
+  return scoped_ptr<AcceleratorManager>(
+             new AcceleratorManagerImpl(new FocusManagerWrapper(focus_manager)))
+      .Pass();
 }
 
 AcceleratorManagerImpl::~AcceleratorManagerImpl() {
@@ -181,22 +257,24 @@ void AcceleratorManagerImpl::OnRootWindowCreated(aura::Window* root_window) {
                                     nested_accelerator_controller_.get());
 }
 
-bool AcceleratorManagerImpl::IsRegistered(
-    const ui::Accelerator& accelerator) const {
-  return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
+bool AcceleratorManagerImpl::Process(const ui::Accelerator& accelerator) {
+  return accelerator_wrapper_->Process(accelerator);
 }
 
-bool AcceleratorManagerImpl::IsReserved(
-    const ui::Accelerator& accelerator) const {
+bool AcceleratorManagerImpl::IsRegistered(const ui::Accelerator& accelerator,
+                                          int flags) const {
   std::map<ui::Accelerator, InternalData>::const_iterator iter =
       accelerators_.find(accelerator);
   if (iter == accelerators_.end())
     return false;
-  return iter->second.IsReserved();
+  DCHECK(accelerator_wrapper_->GetCurrentTarget(accelerator));
+  return flags == AF_NONE || iter->second.flags() & flags;
 }
 
-bool AcceleratorManagerImpl::Process(const ui::Accelerator& accelerator) {
-  return accelerator_manager_->Process(accelerator);
+AcceleratorManagerImpl::AcceleratorManagerImpl(
+    AcceleratorWrapper* accelerator_wrapper)
+    : accelerator_wrapper_(accelerator_wrapper),
+      debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()) {
 }
 
 void AcceleratorManagerImpl::RegisterAccelerators(
@@ -238,8 +316,7 @@ void AcceleratorManagerImpl::RegisterAccelerator(
   accelerator.set_type(accelerator_data.trigger_event == TRIGGER_ON_PRESS
                            ? ui::ET_KEY_PRESSED
                            : ui::ET_KEY_RELEASED);
-  accelerator_manager_->Register(
-      accelerator, ui::AcceleratorManager::kNormalPriority, this);
+  accelerator_wrapper_->Register(accelerator, this);
   accelerators_.insert(
       std::make_pair(accelerator,
                      InternalData(accelerator_data.command_id,
@@ -250,6 +327,12 @@ void AcceleratorManagerImpl::RegisterAccelerator(
 // static
 AcceleratorManager* AcceleratorManager::Get() {
   return InputManager::Get()->GetAcceleratorManager();
+}
+
+// static
+scoped_ptr<AcceleratorManager> AcceleratorManager::CreateForFocusManager(
+    views::FocusManager* focus_manager) {
+  return AcceleratorManagerImpl::CreateForFocusManager(focus_manager).Pass();
 }
 
 }  // namespace athena

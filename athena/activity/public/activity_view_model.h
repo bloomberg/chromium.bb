@@ -20,6 +20,9 @@ class ATHENA_EXPORT ActivityViewModel {
  public:
   virtual ~ActivityViewModel() {}
 
+  // Called after the view model is attaced to the widget/window tree.
+  virtual void Init() = 0;
+
   // Returns a color most representative of this activity.
   virtual SkColor GetRepresentativeColor() = 0;
 

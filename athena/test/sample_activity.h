@@ -25,6 +25,7 @@ class SampleActivity : public Activity,
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
 
   // athena::ActivityViewModel:
+  virtual void Init() OVERRIDE;
   virtual SkColor GetRepresentativeColor() OVERRIDE;
   virtual base::string16 GetTitle() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

@@ -54,7 +54,8 @@ class InputManagerImpl : public InputManager,
 };
 
 InputManagerImpl::InputManagerImpl()
-    : accelerator_manager_(new AcceleratorManagerImpl) {
+    : accelerator_manager_(
+          AcceleratorManagerImpl::CreateGlobalAcceleratorManager()) {
   DCHECK(!instance);
   instance = this;
 }

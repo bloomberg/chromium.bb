@@ -26,6 +26,9 @@ athena::ActivityViewModel* SampleActivity::GetActivityViewModel() {
   return this;
 }
 
+void SampleActivity::Init() {
+}
+
 SkColor SampleActivity::GetRepresentativeColor() {
   return color_;
 }
