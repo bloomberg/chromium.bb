@@ -73,7 +73,7 @@ private:
 
     // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
     // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
-    void serializeCSSStyleSheet(CSSStyleSheet*, const KURL&);
+    void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
 
     bool shouldAddURL(const KURL&);
 
