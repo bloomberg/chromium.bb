@@ -11,7 +11,9 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client_delegate.h"
 #include "content/renderer/p2p/socket_client_impl.h"
@@ -310,7 +312,14 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
                          TRACE_EVENT_SCOPE_THREAD,
                          "id",
                          client_->GetSocketID());
-    writable_signal_expected_ = true;
+    if (!writable_signal_expected_) {
+      WebRtcLogMessage(base::StringPrintf(
+          "IpcPacketSocket: sending is blocked. %d packets_in_flight.",
+          static_cast<int>(in_flight_packet_sizes_.size())));
+
+      writable_signal_expected_ = true;
+    }
+
     error_ = EWOULDBLOCK;
     return -1;
   }
@@ -462,11 +471,17 @@ void IpcPacketSocket::OnSendComplete() {
 
   CHECK(!in_flight_packet_sizes_.empty());
   send_bytes_available_ += in_flight_packet_sizes_.front();
+
   DCHECK_LE(send_bytes_available_, kMaximumInFlightBytes);
+
   in_flight_packet_sizes_.pop_front();
   TraceSendThrottlingState();
 
   if (writable_signal_expected_ && send_bytes_available_ > 0) {
+    WebRtcLogMessage(base::StringPrintf(
+        "IpcPacketSocket: sending is unblocked. %d packets in flight.",
+        static_cast<int>(in_flight_packet_sizes_.size())));
+
     SignalReadyToSend(this);
     writable_signal_expected_ = false;
   }
