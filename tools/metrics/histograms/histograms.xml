@@ -1800,6 +1800,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="BatteryStatus.StartAndroid" enum="BooleanSuccess">
+  <owner>timvolodine@chromium.org</owner>
+  <summary>
+    Whether the Battery Status API was successfully started up on Android.
+  </summary>
+</histogram>
+
 <histogram name="Blacklist.Blocked" enum="DllHash">
   <owner>csharp@chromium.org</owner>
   <summary>

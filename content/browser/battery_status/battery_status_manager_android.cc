@@ -5,6 +5,7 @@
 #include "content/browser/battery_status/battery_status_manager.h"
 
 #include "base/android/jni_android.h"
+#include "base/metrics/histogram.h"
 #include "jni/BatteryStatusManager_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -41,9 +42,10 @@ void BatteryStatusManager::GotBatteryStatus(JNIEnv*, jobject,
 }
 
 bool BatteryStatusManager::StartListeningBatteryChange() {
-  return Java_BatteryStatusManager_start(
-      AttachCurrentThread(), j_manager_.obj(),
-      reinterpret_cast<intptr_t>(this));
+  bool result = Java_BatteryStatusManager_start(AttachCurrentThread(),
+      j_manager_.obj(), reinterpret_cast<intptr_t>(this));
+  UMA_HISTOGRAM_BOOLEAN("BatteryStatus.StartAndroid", result);
+  return result;
 }
 
 void BatteryStatusManager::StopListeningBatteryChange() {
