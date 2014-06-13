@@ -138,6 +138,10 @@
       "test": "athena_unittests",
       "platforms": ["linux"],
       "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+    },
+    {
+      "test": "display_unittests",
+      "platforms": ["linux"]
     }
   ]
 }
