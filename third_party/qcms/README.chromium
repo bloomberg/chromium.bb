@@ -34,5 +34,7 @@ google.patch contains the following modifications. Apply with
    - https://bugzilla.mozilla.org/show_bug.cgi?id=853169
  - Apply upstream fix for qcms_profile_from_memory from
    - https://bugzilla.mozilla.org/show_bug.cgi?id=969226
+ - Apply upstream simplification of qcmstypes.h
+   - https://hg.mozilla.org/mozilla-central/rev/b5be94737a83
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

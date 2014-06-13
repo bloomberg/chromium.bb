@@ -22,37 +22,6 @@
 #ifndef QCMS_TYPES_H
 #define QCMS_TYPES_H
 
-#ifdef MOZ_QCMS
-
-#include "prtypes.h"
-
-/* prtypes.h defines IS_LITTLE_ENDIAN and IS_BIG ENDIAN */
-
-#if defined (__SVR4) && defined (__sun)
-/* int_types.h gets included somehow, so avoid redefining the types differently */
-#include <sys/int_types.h>
-#elif defined (_AIX)
-#include <sys/types.h>
-#elif !defined(ANDROID) && !defined(__OpenBSD__)
-typedef PRInt8 int8_t;
-typedef PRUint8 uint8_t;
-typedef PRInt16 int16_t;
-typedef PRUint16 uint16_t;
-typedef PRInt32 int32_t;
-typedef PRUint32 uint32_t;
-typedef PRInt64 int64_t;
-typedef PRUint64 uint64_t;
-
-#ifdef __OS2__
-/* OS/2's stdlib typdefs uintptr_t. So we'll just include that so we don't collide */
-#include <stdlib.h>
-#elif !defined(__intptr_t_defined) && !defined(_UINTPTR_T_DEFINED)
-typedef PRUptrdiff uintptr_t;
-#endif
-#endif
-
-#else // MOZ_QCMS
-
 #if BYTE_ORDER == LITTLE_ENDIAN
 #define IS_LITTLE_ENDIAN
 #elif BYTE_ORDER == BIG_ENDIAN
@@ -75,7 +44,7 @@ typedef PRUptrdiff uintptr_t;
 
 #if defined (_SVR4) || defined (SVR4) || defined (__OpenBSD__) || defined (_sgi) || defined (__sun) || defined (sun) || defined (__digital__)
 #  include <inttypes.h>
-#elif defined (_MSC_VER)
+#elif defined (_MSC_VER) && _MSC_VER < 1600
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
 typedef __int16 int16_t;
@@ -99,8 +68,6 @@ typedef unsigned long uintptr_t;
 #  include <sys/inttypes.h>
 #else
 #  include <stdint.h>
-#endif
-
 #endif
 
 typedef qcms_bool bool;
