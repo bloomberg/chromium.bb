@@ -178,6 +178,9 @@ void MediaGalleriesDialogViews::InitChildViews() {
 void MediaGalleriesDialogViews::UpdateGalleries() {
   InitChildViews();
   contents_->Layout();
+
+  if (ControllerHasWebContents())
+    GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
 }
 
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
