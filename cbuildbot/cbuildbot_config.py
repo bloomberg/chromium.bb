@@ -1762,6 +1762,13 @@ internal_paladin.add_config('x86-zgb-paladin',
   paladin_builder_name='x86-zgb paladin',
 )
 
+internal_paladin.add_config('storm-paladin',
+  brillo_non_testable,
+  boards=['storm'],
+  important=False,
+  paladin_builder_name='storm paladin',
+)
+
 internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
   important=False,
