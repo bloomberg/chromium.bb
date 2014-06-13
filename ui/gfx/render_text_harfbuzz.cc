@@ -478,20 +478,16 @@ bool TextRunHarfBuzz::HasMissingGlyphs() const {
 }
 
 int TextRunHarfBuzz::GetGlyphXBoundary(size_t text_index, bool trailing) const {
-  int x = preceding_run_widths;
-  Range glyph_range;
   if (text_index == range.end()) {
     trailing = true;
-    glyph_range = is_rtl ? Range(0, 1) : Range(glyph_count - 1, glyph_count);
-  } else {
-    glyph_range = CharRangeToGlyphRange(Range(text_index, text_index + 1));
+    --text_index;
   }
-  const int trailing_step = trailing ? 1 : 0;
-  const size_t glyph_pos =
-      glyph_range.start() + (is_rtl ? (1 - trailing_step) : trailing_step);
-  x += glyph_pos < glyph_count ?
+  Range glyph_range = CharRangeToGlyphRange(Range(text_index, text_index + 1));
+  const size_t glyph_pos = (is_rtl == trailing) ?
+      glyph_range.start() : glyph_range.end();
+  const int x = glyph_pos < glyph_count ?
       SkScalarRoundToInt(positions[glyph_pos].x()) : width;
-  return x;
+  return preceding_run_widths + x;
 }
 
 }  // namespace internal
