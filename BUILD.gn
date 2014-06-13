@@ -35,12 +35,7 @@ group("root") {
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
     "//components/url_matcher",
-    "//content/public/browser",
-    "//content/public/child",
-    "//content/public/common",
-    "//content/public/renderer",
-    "//content/browser/service_worker:database_proto",
-    "//content/browser/speech/proto",
+    "//content",
     "//crypto",
     "//extensions/common/api:extensions_api",
     "//dbus",
@@ -75,6 +70,7 @@ group("root") {
     "//third_party/libwebp",
     "//third_party/libxslt",
     "//third_party/libyuv",
+    "//third_party/lzma_sdk",
     "//third_party/mesa",
     "//third_party/ots",
     "//third_party/protobuf:protobuf_lite",
@@ -134,9 +130,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//cc",
-      "//content/public/browser",
-      "//content/public/common",
-      "//content/public/renderer",
+      "//content",
       "//dbus",
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
