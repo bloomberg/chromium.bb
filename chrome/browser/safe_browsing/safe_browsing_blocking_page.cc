@@ -453,7 +453,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
         base::StringPrintf(kSbDiagnosticUrl,
             net::EscapeQueryParamValue(bad_url_spec, true).c_str());
     GURL diagnostic_url(diagnostic);
-    diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
+    diagnostic_url = google_util::AppendGoogleLocaleParam(
+        diagnostic_url, g_browser_process->GetApplicationLocale());
     DCHECK(unsafe_resources_[element_index].threat_type ==
            SB_THREAT_TYPE_URL_MALWARE ||
            unsafe_resources_[element_index].threat_type ==

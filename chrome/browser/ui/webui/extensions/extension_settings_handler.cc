@@ -426,15 +426,21 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEVELOPER_MODE_LINK));
   source->AddString("extensionSettingsNoExtensions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_NONE_INSTALLED));
-  source->AddString("extensionSettingsSuggestGallery",
-      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
-          base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::GetExtensionGalleryURL())).spec())));
+  source->AddString(
+      "extensionSettingsSuggestGallery",
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
+          base::ASCIIToUTF16(
+              google_util::AppendGoogleLocaleParam(
+                  GURL(extension_urls::GetExtensionGalleryURL()),
+                  g_browser_process->GetApplicationLocale()).spec())));
   source->AddString("extensionSettingsGetMoreExtensions",
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS));
   source->AddString("extensionSettingsGetMoreExtensionsUrl",
-      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::GetExtensionGalleryURL())).spec()));
+                    base::ASCIIToUTF16(
+                        google_util::AppendGoogleLocaleParam(
+                            GURL(extension_urls::GetExtensionGalleryURL()),
+                            g_browser_process->GetApplicationLocale()).spec()));
   source->AddString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
   source->AddString("extensionSettingsExtensionPath",
@@ -493,11 +499,15 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("extensionSettingsLearnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   source->AddString("extensionSettingsCorruptInstallHelpUrl",
-      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kCorruptExtensionURL)).spec()));
+                    base::ASCIIToUTF16(
+                        google_util::AppendGoogleLocaleParam(
+                            GURL(chrome::kCorruptExtensionURL),
+                            g_browser_process->GetApplicationLocale()).spec()));
   source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
-      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kRemoveNonCWSExtensionURL)).spec()));
+                    base::ASCIIToUTF16(
+                        google_util::AppendGoogleLocaleParam(
+                            GURL(chrome::kRemoveNonCWSExtensionURL),
+                            g_browser_process->GetApplicationLocale()).spec()));
   source->AddString("extensionSettingsShowButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
   source->AddString("extensionSettingsLoadUnpackedButton",
@@ -512,9 +522,11 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       "extensionSettingsAppsDevToolsPromoHTML",
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_APPS_DEV_TOOLS_PROMO_HTML,
-          base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                       kAppsDeveloperToolsExtensionId)).spec())));
+          base::ASCIIToUTF16(
+              google_util::AppendGoogleLocaleParam(
+                  GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
+                       kAppsDeveloperToolsExtensionId),
+                  g_browser_process->GetApplicationLocale()).spec())));
   source->AddString(
       "extensionSettingsAppDevToolsPromoClose",
       l10n_util::GetStringUTF16(IDS_CLOSE));

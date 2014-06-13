@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -221,16 +222,21 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       GetStringFUTF16(IDS_SYNC_ENCRYPTION_SECTION_MESSAGE, product_name));
   localized_strings->SetString(
       "passphraseRecover",
-      GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
-                      base::ASCIIToUTF16(
-                          google_util::StringAppendGoogleLocaleParam(
-                              chrome::kSyncGoogleDashboardURL))));
-  localized_strings->SetString("stopSyncingExplanation",
+      GetStringFUTF16(
+          IDS_SYNC_PASSPHRASE_RECOVER,
+          base::ASCIIToUTF16(
+              google_util::AppendGoogleLocaleParam(
+                  GURL(chrome::kSyncGoogleDashboardURL),
+                  g_browser_process->GetApplicationLocale()).spec())));
+  localized_strings->SetString(
+      "stopSyncingExplanation",
       l10n_util::GetStringFUTF16(
           IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          base::ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
-              chrome::kSyncGoogleDashboardURL))));
+          base::ASCIIToUTF16(
+              google_util::AppendGoogleLocaleParam(
+                  GURL(chrome::kSyncGoogleDashboardURL),
+                  g_browser_process->GetApplicationLocale()).spec())));
   localized_strings->SetString("deleteProfileLabel",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_DELETE_PROFILE_LABEL));
   localized_strings->SetString("stopSyncingTitle",

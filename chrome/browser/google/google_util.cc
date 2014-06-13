@@ -13,7 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/url_fixer/url_fixer.h"
@@ -72,16 +71,10 @@ std::string GetGoogleLocale(const std::string& application_locale) {
   return (application_locale == "nb") ? "no" : application_locale;
 }
 
-GURL AppendGoogleLocaleParam(const GURL& url) {
+GURL AppendGoogleLocaleParam(const GURL& url,
+                             const std::string& application_locale) {
   return net::AppendQueryParameter(
-      url, "hl", GetGoogleLocale(g_browser_process->GetApplicationLocale()));
-}
-
-std::string StringAppendGoogleLocaleParam(const std::string& url) {
-  GURL original_url(url);
-  DCHECK(original_url.is_valid());
-  GURL localized_url = AppendGoogleLocaleParam(original_url);
-  return localized_url.spec();
+      url, "hl", GetGoogleLocale(application_locale));
 }
 
 std::string GetGoogleCountryCode(GURL google_homepage_url) {

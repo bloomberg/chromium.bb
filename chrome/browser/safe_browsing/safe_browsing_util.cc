@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "crypto/sha2.h"
@@ -508,7 +509,8 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   GURL report_url(report_page + base::StringPrintf(kReportParams,
                                                    client_name.c_str(),
                                                    current_esc.c_str()));
-  return google_util::AppendGoogleLocaleParam(report_url);
+  return google_util::AppendGoogleLocaleParam(
+      report_url, g_browser_process->GetApplicationLocale());
 }
 
 SBFullHash StringToSBFullHash(const std::string& hash_in) {

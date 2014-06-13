@@ -34,10 +34,8 @@ std::string GetGoogleLocale(const std::string& application_locale);
 
 // Adds the Google locale string to the URL (e.g., hl=en-US).  This does not
 // check to see if the param already exists.
-GURL AppendGoogleLocaleParam(const GURL& url);
-
-// String version of AppendGoogleLocaleParam.
-std::string StringAppendGoogleLocaleParam(const std::string& url);
+GURL AppendGoogleLocaleParam(const GURL& url,
+                             const std::string& application_locale);
 
 // Returns the Google country code string for the given Google homepage URL.
 std::string GetGoogleCountryCode(GURL google_homepage_url);

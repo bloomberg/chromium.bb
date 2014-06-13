@@ -14,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -336,7 +337,8 @@ void CloudPrintFlowHandler::RegisterMessages() {
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     pending_entry->SetURL(google_util::AppendGoogleLocaleParam(
-        cloud_devices::GetCloudPrintRelativeURL("client/dialog.html")));
+        cloud_devices::GetCloudPrintRelativeURL("client/dialog.html"),
+        g_browser_process->GetApplicationLocale()));
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
@@ -711,12 +713,13 @@ void CreateCloudPrintSigninTab(Browser* browser,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL url = add_account ? cloud_devices::GetCloudPrintAddAccountURL()
                          : cloud_devices::GetCloudPrintSigninURL();
-  content::WebContents* web_contents = browser->OpenURL(
-      content::OpenURLParams(google_util::AppendGoogleLocaleParam(url),
-                             content::Referrer(),
-                             NEW_FOREGROUND_TAB,
-                             content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                             false));
+  content::WebContents* web_contents = browser->OpenURL(content::OpenURLParams(
+      google_util::AppendGoogleLocaleParam(
+          url, g_browser_process->GetApplicationLocale()),
+      content::Referrer(),
+      NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      false));
   new SignInObserver(web_contents, cloud_devices::GetCloudPrintURL(), callback);
 }
 

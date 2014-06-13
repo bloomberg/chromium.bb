@@ -119,9 +119,11 @@ void WebResourceService::StartFetch() {
   // Balanced in OnURLFetchComplete.
   AddRef();
 
-  GURL web_resource_server = apply_locale_to_url_ ?
-      google_util::AppendGoogleLocaleParam(web_resource_server_) :
-      web_resource_server_;
+  GURL web_resource_server =
+      apply_locale_to_url_
+          ? google_util::AppendGoogleLocaleParam(
+                web_resource_server_, g_browser_process->GetApplicationLocale())
+          : web_resource_server_;
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
   url_fetcher_.reset(net::URLFetcher::Create(

@@ -310,7 +310,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   localized_strings.SetString("learnMore",
       l10n_util::GetStringUTF16(new_tab_link_ids));
-  localized_strings.SetString("learnMoreLink", GURL(new_tab_link).spec());
+  localized_strings.SetString("learnMoreLink", new_tab_link);
 
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
@@ -356,7 +356,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
     localized_strings.SetString("enterpriseLearnMore",
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     localized_strings.SetString("enterpriseInfoHintLink",
-        GURL(chrome::kLearnMoreEnterpriseURL).spec());
+                                chrome::kLearnMoreEnterpriseURL);
   } else {
     localized_strings.SetString("enterpriseInfoVisible", "false");
   }
@@ -368,8 +368,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       l10n_util::GetStringUTF16(guest_tab_heading_ids));
   localized_strings.SetString("learnMore",
       l10n_util::GetStringUTF16(guest_tab_link_ids));
-  localized_strings.SetString("learnMoreLink",
-      GURL(guest_tab_link).spec());
+  localized_strings.SetString("learnMoreLink", guest_tab_link);
 
   webui::SetFontAndTextDirection(&localized_strings);
 
@@ -459,7 +458,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   load_time_data.SetString("webStoreLink",
       google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::GetWebstoreLaunchURL())).spec());
+          GURL(extension_urls::GetWebstoreLaunchURL()),
+          g_browser_process->GetApplicationLocale()).spec());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   load_time_data.SetBoolean("isDiscoveryInNTPEnabled",
