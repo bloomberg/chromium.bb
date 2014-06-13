@@ -59,6 +59,7 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
 
 void GraphicsContextState::copy(const GraphicsContextState& source)
 {
+    this->~GraphicsContextState();
     new (this) GraphicsContextState(source);
 }
 
