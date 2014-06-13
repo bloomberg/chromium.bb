@@ -686,6 +686,8 @@ struct weston_buffer_viewport {
 		 */
 		int32_t width, height;
 	} surface;
+
+	int changed;
 };
 
 struct weston_region {
