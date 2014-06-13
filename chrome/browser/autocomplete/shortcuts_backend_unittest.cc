@@ -199,6 +199,8 @@ TEST_F(ShortcutsBackendTest, SanitizeMatchCore) {
       "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
     { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_PROFILE,
       "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
+    { "0,1",     "0,0",      AutocompleteMatchType::SEARCH_SUGGEST_ANSWER,
+      "",        "",         AutocompleteMatchType::SEARCH_HISTORY },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {

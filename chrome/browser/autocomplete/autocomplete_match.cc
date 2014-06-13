@@ -157,6 +157,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_HTTP,
     IDR_OMNIBOX_HTTP,
+    IDR_OMNIBOX_SEARCH,
   };
   COMPILE_ASSERT(arraysize(icons) == AutocompleteMatchType::NUM_TYPES,
                  icons_array_must_match_type_enum);
@@ -339,7 +340,8 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
   return type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
 }
 
 void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {

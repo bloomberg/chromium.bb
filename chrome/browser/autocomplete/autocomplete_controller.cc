@@ -80,6 +80,10 @@ void AutocompleteMatchToAssistedQuery(
       *subtype = 44;
       return;
     }
+    case AutocompleteMatchType::SEARCH_SUGGEST_ANSWER: {
+      *subtype = 70;
+      return;
+    }
     case AutocompleteMatchType::NAVSUGGEST: {
       // Do not set subtype here; subtype may have been set above.
       *type = 5;

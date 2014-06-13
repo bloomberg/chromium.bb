@@ -915,6 +915,7 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
           // Extract Answers, if provided.
           const base::DictionaryValue* answer_json = NULL;
           if (suggestion_detail->GetDictionary("ansa", &answer_json)) {
+            match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
             std::string contents;
             base::JSONWriter::Write(answer_json, &contents);
             answer_contents = base::UTF8ToUTF16(contents);

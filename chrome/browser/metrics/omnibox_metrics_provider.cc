@@ -54,6 +54,8 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PERSONALIZED;
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
       return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PROFILE;
+    case AutocompleteMatchType::SEARCH_SUGGEST_ANSWER:
+      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_ANSWER;
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
       return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
     case AutocompleteMatchType::EXTENSION_APP:
