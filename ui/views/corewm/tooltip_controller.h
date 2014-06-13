@@ -61,7 +61,7 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   void TooltipShownTimerFired();
 
   // Updates the tooltip if required (if there is any change in the tooltip
-  // text or the aura::Window.
+  // text, tooltip id or the aura::Window).
   void UpdateIfRequired();
 
   // Only used in tests.
@@ -81,6 +81,7 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
 
   aura::Window* tooltip_window_;
   base::string16 tooltip_text_;
+  const void* tooltip_id_;
 
   // These fields are for tracking state when the user presses a mouse button.
   aura::Window* tooltip_window_at_mouse_press_;

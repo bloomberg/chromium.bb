@@ -133,6 +133,9 @@ void TooltipManagerAura::UpdateTooltipForTarget(View* target,
   } else {
     tooltip_text_.clear();
   }
+
+  aura::client::SetTooltipId(GetWindow(), target);
+
   aura::client::GetTooltipClient(root_window)->UpdateTooltip(GetWindow());
 }
 
