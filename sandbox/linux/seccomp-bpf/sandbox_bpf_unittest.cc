@@ -1927,6 +1927,33 @@ BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
 #define IS_SECCOMP_EVENT(status) ((status >> 16) == 7 || (status >> 16) == 8)
 #endif
 
+#if defined(__arm__)
+#ifndef PTRACE_SET_SYSCALL
+#define PTRACE_SET_SYSCALL 23
+#endif
+#endif
+
+// Changes the syscall to run for a child being sandboxed using seccomp-bpf with
+// PTRACE_O_TRACESECCOMP.  Should only be called when the child is stopped on
+// PTRACE_EVENT_SECCOMP.
+//
+// regs should contain the current set of registers of the child, obtained using
+// PTRACE_GETREGS.
+//
+// Depending on the architecture, this may modify regs, so the caller is
+// responsible for committing these changes using PTRACE_SETREGS.
+long SetSyscall(pid_t pid, regs_struct* regs, int syscall_number) {
+#if defined(__arm__)
+  // On ARM, the syscall is changed using PTRACE_SET_SYSCALL.  We cannot use the
+  // libc ptrace call as the request parameter is an enum, and
+  // PTRACE_SET_SYSCALL may not be in the enum.
+  return syscall(__NR_ptrace, PTRACE_SET_SYSCALL, pid, NULL, syscall_number);
+#endif
+
+  SECCOMP_PT_SYSCALL(*regs) = syscall_number;
+  return 0;
+}
+
 const uint16_t kTraceData = 0xcc;
 
 class TraceAllPolicy : public SandboxBPFPolicy {
@@ -1948,6 +1975,11 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
     return;
   }
+
+#if defined(__arm__)
+  printf("This test is currently disabled on ARM due to a kernel bug.");
+  return;
+#endif
 
   pid_t pid = fork();
   BPF_ASSERT_NE(-1, pid);
@@ -2005,7 +2037,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
         // Skip writes to stdout, make it return kExpectedReturnValue.  Allow
         // writes to stderr so that BPF_ASSERT messages show up.
         if (SECCOMP_PT_PARM1(regs) == STDOUT_FILENO) {
-          SECCOMP_PT_SYSCALL(regs) = -1;
+          BPF_ASSERT_NE(-1, SetSyscall(pid, &regs, -1));
           SECCOMP_PT_RESULT(regs) = kExpectedReturnValue;
           BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
         }
@@ -2013,7 +2045,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
 
       case __NR_kill:
         // Rewrite to exit(kExpectedReturnValue).
-        SECCOMP_PT_SYSCALL(regs) = __NR_exit;
+        BPF_ASSERT_NE(-1, SetSyscall(pid, &regs, __NR_exit));
         SECCOMP_PT_PARM1(regs) = kExpectedReturnValue;
         BPF_ASSERT_NE(-1, ptrace(PTRACE_SETREGS, pid, NULL, &regs));
         break;
