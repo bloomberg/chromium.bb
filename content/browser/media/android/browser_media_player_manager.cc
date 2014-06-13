@@ -323,6 +323,8 @@ void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
     OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
     return;
   }
+
+  Send(new MediaPlayerMsg_RequestFullscreen(RoutingID(), player_id));
 }
 
 #if defined(VIDEO_HOLE)
