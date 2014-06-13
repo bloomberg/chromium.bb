@@ -93,7 +93,7 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, con
             layer.compositor()->updateRootLayerPosition();
 
         if (mapping->hasUnpositionedOverflowControlsLayers())
-            layer.scrollableArea()->positionOverflowControls();
+            layer.scrollableArea()->positionOverflowControls(IntSize());
     }
 
     UpdateContext childContext(context, layer);

@@ -650,7 +650,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     updateChildClippingMaskLayerGeometry();
 
     if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
-        m_owningLayer.scrollableArea()->positionOverflowControls();
+        m_owningLayer.scrollableArea()->positionOverflowControls(IntSize());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(renderer()->style());

@@ -965,17 +965,6 @@ int RenderLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRel
     return m_hBar->height();
 }
 
-void RenderLayerScrollableArea::positionOverflowControls()
-{
-    RenderGeometryMap geometryMap(UseTransforms);
-    RenderView* view = box().view();
-    if (box().layer() != view->layer() && box().layer()->parent())
-        geometryMap.pushMappingsToAncestor(box().layer()->parent(), 0);
-
-    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
-    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
-}
-
 void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFromRoot)
 {
     if (!hasScrollbar() && !box().canResize())

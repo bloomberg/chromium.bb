@@ -257,33 +257,22 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
-    RenderGeometryMap geometryMap(UseTransforms);
-    if (this != rootLayer)
-        geometryMap.pushMappingsToAncestor(parent(), 0);
-    updateLayerPositionRecursive(&geometryMap, flags);
+    updateLayerPositionRecursive(flags);
 }
 
-void RenderLayer::updateLayerPositionRecursive(RenderGeometryMap* geometryMap, UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
 {
     updateLayerPosition();
-
-    if (geometryMap)
-        geometryMap->pushMappingsToAncestor(this, parent());
 
     // Clear our cached clip rect information.
     m_clipper.clearClipRects();
 
     if (hasOverflowControls()) {
-        LayoutPoint offsetFromRoot;
-        if (geometryMap)
-            offsetFromRoot = LayoutPoint(geometryMap->absolutePoint(FloatPoint()));
-        else {
-            // FIXME: It looks suspicious to call convertToLayerCoords here
-            // as canUseConvertToLayerCoords may be true for an ancestor layer.
-            convertToLayerCoords(root(), offsetFromRoot);
-        }
-        scrollableArea()->positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+        // FIXME: We should figure out the right time to position the overflow controls.
+        // This call appears to be necessary to pass some layout test that use EventSender,
+        // presumably because the normal time to position the controls is during paint. We
+        // probably shouldn't position the overflow controls during paint either...
+        scrollableArea()->positionOverflowControls(IntSize());
     }
 
     updateDescendantDependentFlags();
@@ -310,13 +299,10 @@ void RenderLayer::updateLayerPositionRecursive(RenderGeometryMap* geometryMap, U
         flags |= UpdatePagination;
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositionRecursive(geometryMap, flags);
+        child->updateLayerPositionRecursive(flags);
 
     if ((flags & NeedsFullRepaintInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor())
         compositedLayerMapping()->setContentsNeedDisplay();
-
-    if (geometryMap)
-        geometryMap->popMappingsToAncestor(parent());
 }
 
 void RenderLayer::setAncestorChainHasSelfPaintingLayerDescendant()
@@ -1447,7 +1433,7 @@ void RenderLayer::removeOnlyThisLayer()
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;
 
-        current->updateLayerPositionRecursive(0);
+        current->updateLayerPositionRecursive();
         current = next;
     }
 

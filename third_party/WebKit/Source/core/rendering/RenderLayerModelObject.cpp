@@ -139,10 +139,9 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 else
                     layer()->repainter().setRepaintStatus(NeedsFullRepaint);
                 // Hit in animations/interpolation/perspective-interpolation.html
+                // FIXME: I suspect we can remove this assert disabler now.
                 DisableCompositingQueryAsserts disabler;
-                // There is only one layer to update, it is not worth using |cachedOffset| since
-                // we are not sure the value will be used.
-                layer()->updateLayerPositionRecursive(0);
+                layer()->updateLayerPositionRecursive();
             }
         }
     } else if (layer() && layer()->parent()) {
