@@ -101,16 +101,12 @@ void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
   memcpy(&gamepads, &read_into, sizeof(gamepads));
 
   if (!ever_interacted_with_) {
-    if (GamepadsHaveUserGesture(gamepads)) {
-      ever_interacted_with_ = true;
-    } else {
-      // Clear the connected flag if the user hasn't interacted with any of the
-      // gamepads to prevent fingerprinting. The actual data is not cleared.
-      // WebKit will only copy out data into the JS buffers for connected
-      // gamepads so this is sufficient.
-      for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; i++)
-        gamepads.items[i].connected = false;
-    }
+    // Clear the connected flag if the user hasn't interacted with any of the
+    // gamepads to prevent fingerprinting. The actual data is not cleared.
+    // WebKit will only copy out data into the JS buffers for connected
+    // gamepads so this is sufficient.
+    for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; i++)
+      gamepads.items[i].connected = false;
   }
 }
 
@@ -144,6 +140,9 @@ bool GamepadSharedMemoryReader::OnControlMessageReceived(
 void GamepadSharedMemoryReader::OnGamepadConnected(
     int index,
     const blink::WebGamepad& gamepad) {
+  // The browser already checks if the user actually interacted with a device.
+  ever_interacted_with_ = true;
+
   if (gamepad_listener_)
     gamepad_listener_->didConnectGamepad(index, gamepad);
 }
