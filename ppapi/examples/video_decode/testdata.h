@@ -11,7 +11,6 @@ namespace {
 // loading was not working right on ARM.
 // TODO(bbudge): Load data from file.
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
-const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
 // VP8 data from test-25fps.vp8 generated using hexdump.
 const unsigned int kDataLen = 244426;
 const unsigned char kData[] = {
@@ -20385,7 +20384,6 @@ const unsigned char kData[] = {
     0x55, 0xa9, 0x53, 0x5e, 0xee, 0x89, 0xf8, 0x47, 0xc6, 0x7c, 0x73, 0x4b,
     0xfe, 0x08, 0x0d, 0xa0, 0x89, 0xf9, 0x70, 0x6e, 0xb5, 0x80};
 #else   // !USE_VP8_TESTDATA_INSTEAD_OF_H264
-const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_H264MAIN;
 // H264 data from test-25fps.h264 generated using xxd -i.
 const unsigned int kDataLen = 150148;
 const unsigned char kData[] = {
