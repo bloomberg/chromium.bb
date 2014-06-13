@@ -503,6 +503,7 @@ void GCMClientImpl::UpdateRegistrationCallback(bool success) {
 }
 
 void GCMClientImpl::Stop() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
   device_checkin_info_.Reset();
   connection_factory_.reset();
   mcs_client_.reset();

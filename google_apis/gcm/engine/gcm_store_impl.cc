@@ -727,6 +727,8 @@ void GCMStoreImpl::Load(const LoadCallback& callback) {
 }
 
 void GCMStoreImpl::Close() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  app_message_counts_.clear();
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMStoreImpl::Backend::Close, backend_));

@@ -219,6 +219,7 @@ class GCMClientImplTest : public testing::Test,
 
   void BuildGCMClient(base::TimeDelta clock_step);
   void InitializeGCMClient();
+  void StartGCMClient();
   void ReceiveMessageFromMCS(const MCSMessage& message);
   void CompleteCheckin(uint64 android_id,
                        uint64 security_token,
@@ -333,6 +334,7 @@ void GCMClientImplTest::SetUp() {
   InitializeLoop();
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
+  StartGCMClient();
   CompleteCheckin(kDeviceAndroidId,
                   kDeviceSecurityToken,
                   std::string(),
@@ -452,7 +454,9 @@ void GCMClientImplTest::InitializeGCMClient() {
                           url_request_context_getter_,
                           make_scoped_ptr<Encryptor>(new FakeEncryptor),
                           this);
+}
 
+void GCMClientImplTest::StartGCMClient() {
   // Start loading and check-in.
   gcm_client_->Start();
 
@@ -556,6 +560,7 @@ TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
   // Recreate GCMClient in order to load from the persistent store.
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
+  StartGCMClient();
 
   EXPECT_TRUE(ExistsRegistration(kAppId));
 }
@@ -704,6 +709,7 @@ void GCMClientImplCheckinTest::SetUp() {
   // Time will be advancing one hour every time it is checked.
   BuildGCMClient(base::TimeDelta::FromSeconds(kSettingsCheckinInterval));
   InitializeGCMClient();
+  StartGCMClient();
 }
 
 TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
@@ -764,6 +770,7 @@ TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
 
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
+  StartGCMClient();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(kSettingsCheckinInterval),
             gservices_settings().GetCheckinInterval());
@@ -775,6 +782,59 @@ TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
             gservices_settings().GetMCSMainEndpoint());
   EXPECT_EQ(GURL("https://alternative.gcm.host:443"),
             gservices_settings().GetMCSFallbackEndpoint());
+}
+
+class GCMClientImplStartAndStopTest : public GCMClientImplTest {
+public:
+  GCMClientImplStartAndStopTest();
+  virtual ~GCMClientImplStartAndStopTest();
+
+  virtual void SetUp() OVERRIDE;
+};
+
+GCMClientImplStartAndStopTest::GCMClientImplStartAndStopTest() {
+}
+
+GCMClientImplStartAndStopTest::~GCMClientImplStartAndStopTest() {
+}
+
+void GCMClientImplStartAndStopTest::SetUp() {
+  testing::Test::SetUp();
+  ASSERT_TRUE(CreateUniqueTempDir());
+  InitializeLoop();
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+}
+
+TEST_F(GCMClientImplStartAndStopTest, StartStopAndRestart) {
+  // Start the GCM and wait until it is ready.
+  gcm_client()->Start();
+  PumpLoopUntilIdle();
+
+  // Stop the GCM.
+  gcm_client()->Stop();
+  PumpLoopUntilIdle();
+
+  // Restart the GCM.
+  gcm_client()->Start();
+  PumpLoopUntilIdle();
+}
+
+TEST_F(GCMClientImplStartAndStopTest, StartAndStopImmediately) {
+  // Start the GCM and then stop it immediately.
+  gcm_client()->Start();
+  gcm_client()->Stop();
+
+  PumpLoopUntilIdle();
+}
+
+TEST_F(GCMClientImplStartAndStopTest, StartStopAndRestartImmediately) {
+  // Start the GCM and then stop and restart it immediately.
+  gcm_client()->Start();
+  gcm_client()->Stop();
+  gcm_client()->Start();
+
+  PumpLoopUntilIdle();
 }
 
 }  // namespace gcm
