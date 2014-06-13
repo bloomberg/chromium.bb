@@ -71,22 +71,18 @@ cr.define('options', function() {
 
   /**
    * Shows the default page.
-   * @param {Object=} opt_propertyBag An optional bag of properties including
-   *     replaceState (if history state should be replaced instead of pushed).
    */
-  OptionsPage.showDefaultPage = function(opt_propertyBag) {
-    this.navigateToPage(this.getDefaultPage().name, opt_propertyBag);
+  OptionsPage.showDefaultPage = function() {
+    this.navigateToPage(this.getDefaultPage().name);
   };
 
   /**
    * "Navigates" to a page, meaning that the page will be shown and the
    * appropriate entry is placed in the history.
    * @param {string} pageName Page name.
-   * @param {Object=} opt_propertyBag An optional bag of properties including
-   *     replaceState (if history state should be replaced instead of pushed).
    */
-  OptionsPage.navigateToPage = function(pageName, opt_propertyBag) {
-    this.showPageByName(pageName, true, opt_propertyBag);
+  OptionsPage.navigateToPage = function(pageName) {
+    this.showPageByName(pageName, true);
   };
 
   /**
@@ -234,15 +230,15 @@ cr.define('options', function() {
     if (path)
       path = path.slice(1).replace(/\/(?:#|$)/, '');  // Remove trailing slash.
 
-    // The page is already in history (the user may have clicked the same link
-    // twice). Do nothing.
+    // If the page is already in history (the user may have clicked the same
+    // link twice, or this is the initial load), do nothing.
     var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
     var newPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
-    if (path == newPath && !OptionsPage.isLoading())
+    if (path == newPath)
       return;
 
     var historyFunction = replace ? uber.replaceState : uber.pushState;
-    historyFunction.call(uber, {pageName: page.name}, newPath);
+    historyFunction.call(uber, {}, newPath);
   };
 
   /**
@@ -576,22 +572,33 @@ cr.define('options', function() {
   };
 
   /**
+   * Returns the name of the page from the current path.
+   */
+  OptionsPage.getPageNameFromPath = function() {
+    var path = location.pathname;
+    if (path.length <= 1)
+      return this.getDefaultPage().name;
+
+    // Skip starting slash and remove trailing slash (if any).
+    return path.slice(1).replace(/\/$/, '');
+  };
+
+  /**
    * Callback for window.onpopstate to handle back/forward navigations.
+   * @param {string} pageName The current page name.
    * @param {Object} data State data pushed into history.
    */
-  OptionsPage.setState = function(data) {
-    if (data && data.pageName) {
-      var currentOverlay = this.getVisibleOverlay_();
-      var lowercaseName = data.pageName.toLowerCase();
-      var newPage = this.registeredPages[lowercaseName] ||
-                    this.registeredOverlayPages[lowercaseName] ||
-                    this.getDefaultPage();
-      if (currentOverlay && !currentOverlay.isAncestorOfPage(newPage)) {
-        currentOverlay.visible = false;
-        if (currentOverlay.didClosePage) currentOverlay.didClosePage();
-      }
-      this.showPageByName(data.pageName, false);
+  OptionsPage.setState = function(pageName, data) {
+    var currentOverlay = this.getVisibleOverlay_();
+    var lowercaseName = pageName.toLowerCase();
+    var newPage = this.registeredPages[lowercaseName] ||
+                  this.registeredOverlayPages[lowercaseName] ||
+                  this.getDefaultPage();
+    if (currentOverlay && !currentOverlay.isAncestorOfPage(newPage)) {
+      currentOverlay.visible = false;
+      if (currentOverlay.didClosePage) currentOverlay.didClosePage();
     }
+    this.showPageByName(pageName, false);
   };
 
   /**

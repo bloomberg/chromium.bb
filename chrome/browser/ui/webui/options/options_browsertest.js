@@ -778,3 +778,24 @@ TEST_F('OptionsWebUIExtendedTest', 'SupervisingUsers', function() {
     });
   });
 });
+
+/**
+ * TestFixture that loads the options page at a bogus URL.
+ * @extends {OptionsWebUIExtendedTest}
+ * @constructor
+ */
+function OptionsWebUIRedirectTest() {
+  OptionsWebUIExtendedTest.call(this);
+}
+
+OptionsWebUIRedirectTest.prototype = {
+  __proto__: OptionsWebUIExtendedTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings-frame/nonexistantPage',
+};
+
+TEST_F('OptionsWebUIRedirectTest', 'TestURL', function() {
+  assertEquals('chrome://settings-frame/', document.location.href);
+  this.verifyHistory_([''], testDone);
+});

@@ -116,7 +116,7 @@ cr.define('uber', function() {
     // under this origin are compatible. All of the downstream pages which
     // navigate use pushState and replaceState.
     invokeMethodOnPage(params.id, 'popState',
-                       {state: e.state, path: params.path});
+                       {state: e.state, path: '/' + params.path});
   }
 
   /**
