@@ -22,6 +22,12 @@ if env.Bit('nacl_glibc'):
 # TODO(dschuff): either re-enable this test after we have fully transitioned
 # to new-style layout and ironed out any potential gold issues, or remove
 # all pnacl-specific stuff below and in the asm files.
+#
+# It is unlikely that we will re-enable these tests under the PNaCl
+# toolchain, because they depend on invoking "ld" directly, which is not
+# really a supported use of the PNaCl toolchain.  These tests are too
+# dependent on the layout that the linker happens to produce, so the tests
+# are likely to break or become ineffective if the linker is changed.
 if env.Bit('bitcode'):
   Return()
 
@@ -41,17 +47,9 @@ else:
   raise Exception('unknown architecture')
 
 def NewAsmEnv(env, defines, rodata_address, rwdata_address):
-
   asm_env = env.Clone()
   # NOTE(robertm): convert this to pure C code so that most of this
   # special handling can be eliminated
-  if asm_env.Bit('bitcode'):
-    asm_env.PNaClForceNative()
-    asm_env.Append(ASPPFLAGS=['-DPNACL_AS=1'])
-    # On Windows, assembly pre-preprocessing uses $CCCOM instead of $ASPPCOM,
-    # so we need to set PNACL_AS=1 in CCFLAGS as well.
-    asm_env.Append(CCFLAGS=['-DPNACL_AS=1'])
-
   link_cmd = ('${LD} -static -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
@@ -191,6 +189,5 @@ for text_end, variant in test_specs:
                                      exit_status=expected_exit_status)
 
     env.AddNodeToTestSuite(node,
-                           ['small_tests', 'sel_ldr_sled_tests',
-                            'nonpexe_tests'],
+                           ['small_tests', 'sel_ldr_sled_tests'],
                            'run_' + base_name)

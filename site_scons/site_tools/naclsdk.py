@@ -198,7 +198,6 @@ def _SetEnvForPnacl(env, root):
   pnacl_cxx = binprefix + 'clang++' + binext
 
   pnacl_ld = binprefix + 'ld' + binext
-  pnacl_nativeld = binprefix + 'nativeld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_finalize = binprefix + 'finalize' + binext
   pnacl_strip = binprefix + 'strip' + binext
@@ -252,7 +251,6 @@ def _SetEnvForPnacl(env, root):
               # with shared libraries except use them with the toolchain.
               SHLINK=pnacl_cxx + ld_arch_flag + pnacl_ld_flags,
               LD=pnacl_ld,
-              NATIVELD=pnacl_nativeld,
               AR=pnacl_ar,
               AS=pnacl_as + ld_arch_flag,
               RANLIB=pnacl_ranlib,
@@ -288,7 +286,7 @@ def PNaClForceNative(env):
              CXX=arch_flag + cc_flags,
              ASPP=arch_flag + cc_flags,
              LINK=cc_flags) # Already has -arch
-  env['LD'] = '${NATIVELD}' + arch_flag
+  env['LD'] = 'NO-NATIVE-LD-INVOCATION-ALLOWED'
   env['SHLINK'] = '${LINK}'
   if env.Bit('built_elsewhere'):
     _StubOutEnvToolsForBuiltElsewhere(env)
