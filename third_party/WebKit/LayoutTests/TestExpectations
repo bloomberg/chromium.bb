@@ -723,8 +723,6 @@ crbug.com/322782 fast/text-autosizing/clusters-insufficient-text.html [ ImageOnl
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
-crbug.com/371611 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
-
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 

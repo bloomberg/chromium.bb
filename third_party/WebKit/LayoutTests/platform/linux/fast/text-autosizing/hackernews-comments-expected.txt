@@ -1,11 +1,11 @@
-layer at (0,0) size 785x939
+layer at (0,0) size 785x944
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x939
-  RenderBlock {HTML} at (0,0) size 785x939
-    RenderBody {BODY} at (8,8) size 769x923
-      RenderBlock {CENTER} at (0,0) size 769x923
-        RenderTable {TABLE} at (58,0) size 653x923 [bgcolor=#F6F6EF]
-          RenderTableSection {TBODY} at (0,0) size 653x923
+layer at (0,0) size 785x944
+  RenderBlock {HTML} at (0,0) size 785x944
+    RenderBody {BODY} at (8,8) size 769x928
+      RenderBlock {CENTER} at (0,0) size 769x928
+        RenderTable {TABLE} at (58,0) size 653x928 [bgcolor=#F6F6EF]
+          RenderTableSection {TBODY} at (0,0) size 653x928
             RenderTableRow {TR} at (0,0) size 653x20
               RenderTableCell {TD} at (0,0) size 653x20 [bgcolor=#FF6600] [r=0 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 653x20
@@ -33,8 +33,8 @@ layer at (0,0) size 785x939
                             text run at (15,0) width 30: "login"
                         RenderText {#text} at (0,0) size 0x0
             RenderTableRow {TR} at (0,20) size 653x10
-            RenderTableRow {TR} at (0,30) size 653x875
-              RenderTableCell {TD} at (0,30) size 653x875 [r=2 c=0 rs=1 cs=1]
+            RenderTableRow {TR} at (0,30) size 653x880
+              RenderTableCell {TD} at (0,30) size 653x880 [r=2 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 402x58
                   RenderTableSection {TBODY} at (0,0) size 402x58
                     RenderTableRow {TR} at (0,2) size 402x18
@@ -73,119 +73,117 @@ layer at (0,0) size 785x939
                 RenderBlock (anonymous) at (0,58) size 653x32
                   RenderBR {BR} at (0,0) size 0x16
                   RenderBR {BR} at (0,16) size 0x16
-                RenderTable {TABLE} at (0,90) size 653x753
-                  RenderTableSection {TBODY} at (0,0) size 653x753
-                    RenderTableRow {TR} at (0,2) size 653x345
-                      RenderTableCell {TD} at (2,2) size 649x345 [r=0 c=0 rs=1 cs=1]
-                        RenderTable {TABLE} at (1,1) size 647x343
-                          RenderTableSection {TBODY} at (0,0) size 647x343
-                            RenderTableRow {TR} at (0,2) size 647x339
-                              RenderTableCell {TD} at (2,170) size 2x2 [r=0 c=0 rs=1 cs=1]
+                RenderTable {TABLE} at (0,90) size 653x758
+                  RenderTableSection {TBODY} at (0,0) size 653x758
+                    RenderTableRow {TR} at (0,2) size 653x410
+                      RenderTableCell {TD} at (2,2) size 649x410 [r=0 c=0 rs=1 cs=1]
+                        RenderTable {TABLE} at (1,1) size 647x408
+                          RenderTableSection {TBODY} at (0,0) size 647x408
+                            RenderTableRow {TR} at (0,2) size 647x404
+                              RenderTableCell {TD} at (2,203) size 2x2 [r=0 c=0 rs=1 cs=1]
                               RenderTableCell {TD} at (6,2) size 52x18 [r=0 c=1 rs=1 cs=1]
                                 RenderBlock {CENTER} at (1,1) size 50x16
                                   RenderText {#text} at (0,0) size 50x16
                                     text run at (0,0) width 50: "[image]"
-                              RenderTableCell {TD} at (60,2) size 585x339 [r=0 c=2 rs=1 cs=1]
-                                RenderBlock {DIV} at (1,3) size 583x29
-                                  RenderInline {SPAN} at (0,0) size 382x29
-                                    RenderText {#text} at (0,0) size 382x29
-                                      text run at (0,0) width 322: "longcomment 3 hours ago "
-                                      text run at (322,0) width 60: "| link"
+                              RenderTableCell {TD} at (60,2) size 585x404 [r=0 c=2 rs=1 cs=1]
+                                RenderBlock {DIV} at (1,3) size 583x32
+                                  RenderInline {SPAN} at (0,0) size 434x32
+                                    RenderText {#text} at (0,0) size 434x32
+                                      text run at (0,0) width 365: "longcomment 3 hours ago "
+                                      text run at (365,0) width 69: "| link"
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock (anonymous) at (1,22) size 583x261
-                                  RenderBR {BR} at (0,0) size 0x29
-                                  RenderInline {SPAN} at (0,0) size 572x232
+                                RenderBlock (anonymous) at (1,25) size 583x320
+                                  RenderBR {BR} at (0,0) size 0x32
+                                  RenderInline {SPAN} at (0,0) size 562x288
                                     RenderText {#text} at (0,0) size 0x0
-                                    RenderInline {FONT} at (0,0) size 572x232
-                                      RenderText {#text} at (0,29) size 572x232
-                                        text run at (0,29) width 546: "Contrary to popular belief, blah blah blah blah"
-                                        text run at (0,58) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,87) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,116) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,145) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,174) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,203) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,232) width 108: "blah blah"
+                                    RenderInline {FONT} at (0,0) size 562x288
+                                      RenderText {#text} at (0,32) size 562x288
+                                        text run at (0,32) width 562: "Contrary to popular belief, blah blah blah"
+                                        text run at (0,64) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,96) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,128) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,160) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,192) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,224) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,256) width 526: "blah blah blah blah blah blah blah blah"
+                                        text run at (0,288) width 459: "blah blah blah blah blah blah blah"
                                     RenderText {#text} at (0,0) size 0x0
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock {P} at (1,296) size 583x29
-                                  RenderInline {FONT} at (0,0) size 59x29
-                                    RenderText {#text} at (0,0) size 59x29
-                                      text run at (0,0) width 59: "reply"
+                                RenderBlock {P} at (1,358) size 583x32
+                                  RenderInline {FONT} at (0,0) size 68x32
+                                    RenderText {#text} at (0,0) size 68x32
+                                      text run at (0,0) width 68: "reply"
                                   RenderText {#text} at (0,0) size 0x0
-                    RenderTableRow {TR} at (0,349) size 653x200
-                      RenderTableCell {TD} at (2,349) size 649x200 [r=1 c=0 rs=1 cs=1]
-                        RenderTable {TABLE} at (1,1) size 605x198
-                          RenderTableSection {TBODY} at (0,0) size 605x198
-                            RenderTableRow {TR} at (0,2) size 605x194
-                              RenderTableCell {TD} at (2,98) size 322x2 [r=0 c=0 rs=1 cs=1]
+                    RenderTableRow {TR} at (0,414) size 653x186
+                      RenderTableCell {TD} at (2,414) size 649x186 [r=1 c=0 rs=1 cs=1]
+                        RenderTable {TABLE} at (1,1) size 647x184
+                          RenderTableSection {TBODY} at (0,0) size 647x184
+                            RenderTableRow {TR} at (0,2) size 647x180
+                              RenderTableCell {TD} at (2,91) size 322x2 [r=0 c=0 rs=1 cs=1]
                                 RenderBlock {DIV} at (1,1) size 320x0
                               RenderTableCell {TD} at (326,2) size 52x18 [r=0 c=1 rs=1 cs=1]
                                 RenderBlock {CENTER} at (1,1) size 50x16
                                   RenderText {#text} at (0,0) size 50x16
                                     text run at (0,0) width 50: "[image]"
-                              RenderTableCell {TD} at (380,2) size 223x194 [r=0 c=2 rs=1 cs=1]
-                                RenderBlock {DIV} at (1,3) size 221x58
-                                  RenderInline {SPAN} at (0,0) size 215x58
-                                    RenderText {#text} at (0,0) size 215x58
-                                      text run at (0,0) width 176: "deepnested 37"
-                                      text run at (0,29) width 155: "minutes ago "
-                                      text run at (155,29) width 60: "| link"
+                              RenderTableCell {TD} at (380,2) size 265x180 [r=0 c=2 rs=1 cs=1]
+                                RenderBlock {DIV} at (1,3) size 263x64
+                                  RenderInline {SPAN} at (0,0) size 246x64
+                                    RenderText {#text} at (0,0) size 246x64
+                                      text run at (0,0) width 201: "deepnested 37"
+                                      text run at (0,32) width 177: "minutes ago "
+                                      text run at (177,32) width 69: "| link"
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock (anonymous) at (1,51) size 221x87
-                                  RenderBR {BR} at (0,0) size 0x29
-                                  RenderInline {SPAN} at (0,0) size 158x58
+                                RenderBlock (anonymous) at (1,57) size 263x64
+                                  RenderBR {BR} at (0,0) size 0x32
+                                  RenderInline {SPAN} at (0,0) size 259x32
                                     RenderText {#text} at (0,0) size 0x0
-                                    RenderInline {FONT} at (0,0) size 158x58
-                                      RenderText {#text} at (0,29) size 158x58
-                                        text run at (0,29) width 158: "Haskell is the"
-                                        text run at (0,58) width 60: "best."
+                                    RenderInline {FONT} at (0,0) size 259x32
+                                      RenderText {#text} at (0,32) size 259x32
+                                        text run at (0,32) width 259: "Haskell is the best."
                                     RenderText {#text} at (0,0) size 0x0
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock {P} at (1,151) size 221x29
-                                  RenderInline {FONT} at (0,0) size 59x29
-                                    RenderText {#text} at (0,0) size 59x29
-                                      text run at (0,0) width 59: "reply"
+                                RenderBlock {P} at (1,134) size 263x32
+                                  RenderInline {FONT} at (0,0) size 68x32
+                                    RenderText {#text} at (0,0) size 68x32
+                                      text run at (0,0) width 68: "reply"
                                   RenderText {#text} at (0,0) size 0x0
-                    RenderTableRow {TR} at (0,551) size 653x200
-                      RenderTableCell {TD} at (2,551) size 649x200 [r=2 c=0 rs=1 cs=1]
-                        RenderTable {TABLE} at (1,1) size 319x198
-                          RenderTableSection {TBODY} at (0,0) size 319x198
-                            RenderTableRow {TR} at (0,2) size 319x194
-                              RenderTableCell {TD} at (2,98) size 42x2 [r=0 c=0 rs=1 cs=1]
+                    RenderTableRow {TR} at (0,602) size 653x154
+                      RenderTableCell {TD} at (2,602) size 649x154 [r=2 c=0 rs=1 cs=1]
+                        RenderTable {TABLE} at (1,1) size 551x152
+                          RenderTableSection {TBODY} at (0,0) size 551x152
+                            RenderTableRow {TR} at (0,2) size 551x148
+                              RenderTableCell {TD} at (2,75) size 42x2 [r=0 c=0 rs=1 cs=1]
                                 RenderBlock {DIV} at (1,1) size 40x0
                               RenderTableCell {TD} at (46,2) size 52x18 [r=0 c=1 rs=1 cs=1]
                                 RenderBlock {CENTER} at (1,1) size 50x16
                                   RenderText {#text} at (0,0) size 50x16
                                     text run at (0,0) width 50: "[image]"
-                              RenderTableCell {TD} at (100,2) size 217x194 [r=0 c=2 rs=1 cs=1]
-                                RenderBlock {DIV} at (1,3) size 215x58
-                                  RenderInline {SPAN} at (0,0) size 197x58
-                                    RenderText {#text} at (0,0) size 197x58
-                                      text run at (0,0) width 197: "shortcomment 4"
-                                      text run at (0,29) width 128: "hours ago "
-                                      text run at (128,29) width 60: "| link"
+                              RenderTableCell {TD} at (100,2) size 449x148 [r=0 c=2 rs=1 cs=1]
+                                RenderBlock {DIV} at (1,3) size 447x32
+                                  RenderInline {SPAN} at (0,0) size 447x32
+                                    RenderText {#text} at (0,0) size 447x32
+                                      text run at (0,0) width 378: "shortcomment 4 hours ago "
+                                      text run at (378,0) width 69: "| link"
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock (anonymous) at (1,51) size 215x87
-                                  RenderBR {BR} at (0,0) size 0x29
-                                  RenderInline {SPAN} at (0,0) size 189x58
+                                RenderBlock (anonymous) at (1,25) size 447x64
+                                  RenderBR {BR} at (0,0) size 0x32
+                                  RenderInline {SPAN} at (0,0) size 280x32
                                     RenderText {#text} at (0,0) size 0x0
-                                    RenderInline {FONT} at (0,0) size 189x58
-                                      RenderText {#text} at (0,29) size 189x58
-                                        text run at (0,29) width 189: "PHP can do that"
-                                        text run at (0,58) width 48: "too."
+                                    RenderInline {FONT} at (0,0) size 280x32
+                                      RenderText {#text} at (0,32) size 280x32
+                                        text run at (0,32) width 280: "PHP can do that too."
                                     RenderText {#text} at (0,0) size 0x0
                                   RenderText {#text} at (0,0) size 0x0
-                                RenderBlock {P} at (1,151) size 215x29
-                                  RenderInline {FONT} at (0,0) size 59x29
-                                    RenderText {#text} at (0,0) size 59x29
-                                      text run at (0,0) width 59: "reply"
+                                RenderBlock {P} at (1,102) size 447x32
+                                  RenderInline {FONT} at (0,0) size 68x32
+                                    RenderText {#text} at (0,0) size 68x32
+                                      text run at (0,0) width 68: "reply"
                                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock (anonymous) at (0,843) size 653x32
+                RenderBlock (anonymous) at (0,848) size 653x32
                   RenderBR {BR} at (0,0) size 0x16
                   RenderBR {BR} at (0,16) size 0x16
-            RenderTableRow {TR} at (0,905) size 653x18
-              RenderTableCell {TD} at (0,905) size 653x18 [r=3 c=0 rs=1 cs=1]
+            RenderTableRow {TR} at (0,910) size 653x18
+              RenderTableCell {TD} at (0,910) size 653x18 [r=3 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 653x2
                   RenderTableSection {TBODY} at (0,0) size 653x2
                     RenderTableRow {TR} at (0,0) size 653x2
