@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 
+#include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -27,9 +28,7 @@ const SkColor kDeemphasizedTextColor = SkColorSetRGB(159, 159, 159);
 }  // namespace
 
 MediaGalleryCheckboxView::MediaGalleryCheckboxView(
-    const base::string16& label,
-    const base::string16& tooltip_text,
-    const base::string16& details,
+    const MediaGalleryPrefInfo& pref_info,
     bool show_folder_button,
     int trailing_vertical_space,
     views::ButtonListener* button_listener,
@@ -43,11 +42,12 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   if (menu_controller)
     set_context_menu_controller(menu_controller);
 
-  checkbox_ = new views::Checkbox(label);
+  checkbox_ = new views::Checkbox(pref_info.GetGalleryDisplayName());
   checkbox_->set_listener(button_listener);
   if (menu_controller)
     checkbox_->set_context_menu_controller(menu_controller);
   checkbox_->SetElideBehavior(gfx::ELIDE_MIDDLE);
+  base::string16 tooltip_text = pref_info.GetGalleryTooltip();
   checkbox_->SetTooltipText(tooltip_text);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -65,6 +65,7 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   folder_viewer_button_->SetBorder(views::Border::CreateEmptyBorder(
       0, views::kRelatedControlSmallHorizontalSpacing, 0, 0));
 
+  base::string16 details = pref_info.GetGalleryAdditionalDetails();
   secondary_text_ = new views::Label(details);
   if (menu_controller)
     secondary_text_->set_context_menu_controller(menu_controller);

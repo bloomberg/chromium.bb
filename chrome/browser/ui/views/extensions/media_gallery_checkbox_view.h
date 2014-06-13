@@ -10,6 +10,8 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
+struct MediaGalleryPrefInfo;
+
 namespace views {
 class ButtonListener;
 class Checkbox;
@@ -23,9 +25,7 @@ class Label;
 // and MediaGalleriesScanResultDialogViews.
 class MediaGalleryCheckboxView : public views::View {
  public:
-  MediaGalleryCheckboxView(const base::string16& label,
-                           const base::string16& tooltip_text,
-                           const base::string16& details,
+  MediaGalleryCheckboxView(const MediaGalleryPrefInfo& pref_info,
                            bool show_button,
                            int trailing_vertical_space,
                            views::ButtonListener* button_listener,

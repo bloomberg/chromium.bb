@@ -184,17 +184,15 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     const MediaGalleriesDialogController::Entry& gallery,
     views::View* container,
     int trailing_vertical_space) {
-  base::string16 label = gallery.pref_info.GetGalleryDisplayName();
-  base::string16 tooltip_text = gallery.pref_info.GetGalleryTooltip();
-  base::string16 details = gallery.pref_info.GetGalleryAdditionalDetails();
   bool show_folder_viewer = controller_->ShouldShowFolderViewer(gallery);
 
   CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_info.pref_id);
   if (iter != checkbox_map_.end()) {
     views::Checkbox* checkbox = iter->second->checkbox();
     checkbox->SetChecked(gallery.selected);
-    checkbox->SetText(label);
-    checkbox->SetTooltipText(tooltip_text);
+    checkbox->SetText(gallery.pref_info.GetGalleryDisplayName());
+    checkbox->SetTooltipText(gallery.pref_info.GetGalleryTooltip());
+    base::string16 details = gallery.pref_info.GetGalleryAdditionalDetails();
     iter->second->secondary_text()->SetText(details);
     iter->second->secondary_text()->SetVisible(details.length() > 0);
     iter->second->folder_viewer_button()->SetVisible(show_folder_viewer);
@@ -202,9 +200,8 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   }
 
   MediaGalleryCheckboxView* gallery_view =
-      new MediaGalleryCheckboxView(label, tooltip_text, details,
-                                   show_folder_viewer, trailing_vertical_space,
-                                   this, this);
+      new MediaGalleryCheckboxView(gallery.pref_info, show_folder_viewer,
+                                   trailing_vertical_space, this, this);
   gallery_view->checkbox()->SetChecked(gallery.selected);
   container->AddChildView(gallery_view);
   checkbox_map_[gallery.pref_info.pref_id] = gallery_view;

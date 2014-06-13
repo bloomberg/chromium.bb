@@ -62,16 +62,14 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
 
 - (id)initWithFrame:(NSRect)frameRect
          controller:(MediaGalleryListEntryController*)controller
-             prefId:(MediaGalleryPrefId)prefId
-        galleryName:(base::string16)galleryName
-          subscript:(base::string16)subscript
-            tooltip:(base::string16)tooltip
+           prefInfo:(const MediaGalleryPrefInfo&)prefInfo
    showFolderViewer:(bool)showFolderViewer {
   if ((self = [super initWithFrame:frameRect])) {
     controller_ = controller;
-    prefId_ = prefId;
+    prefId_ = prefInfo.pref_id;
 
-    NSString* nsTooltip = base::SysUTF16ToNSString(tooltip);
+    NSString* nsTooltip =
+        base::SysUTF16ToNSString(prefInfo.GetGalleryTooltip());
 
     // Set a auto resize mask so that -resizeWithOldSuperviewSize: is called.
     // It is overridden so the particular mask doesn't matter.
@@ -84,7 +82,8 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
     [checkbox_ setTarget:self];
     [checkbox_ setAction:@selector(onCheckboxToggled:)];
 
-    [checkbox_ setTitle:base::SysUTF16ToNSString(galleryName)];
+    [checkbox_ setTitle:
+        base::SysUTF16ToNSString(prefInfo.GetGalleryDisplayName())];
     [checkbox_ setToolTip:nsTooltip];
     [self addSubview:checkbox_];
 
@@ -107,6 +106,7 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
     }
 
     // Additional details text.
+    base::string16 subscript = prefInfo.GetGalleryAdditionalDetails();
     if (!subscript.empty()) {
       details_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
       [[details_ cell] setLineBreakMode:NSLineBreakByTruncatingHead];

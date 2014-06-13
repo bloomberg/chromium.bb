@@ -186,11 +186,8 @@ CGFloat MediaGalleriesDialogCocoa::CreateCheckboxes(
         [[MediaGalleryListEntry alloc]
             initWithFrame:NSZeroRect
                controller:this
-                  prefId:entry.pref_info.pref_id
-             galleryName:entry.pref_info.GetGalleryDisplayName()
-               subscript:entry.pref_info.GetGalleryAdditionalDetails()
-                 tooltip:entry.pref_info.GetGalleryTooltip()
-        showFolderViewer:controller_->ShouldShowFolderViewer(entry)]);
+                 prefInfo:entry.pref_info
+         showFolderViewer:controller_->ShouldShowFolderViewer(entry)]);
 
     [checkbox_entry setState:entry.selected];
 

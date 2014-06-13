@@ -36,10 +36,7 @@ class MediaGalleryListEntryController {
 // Does size to fit if frameRect is empty.
 - (id)initWithFrame:(NSRect)frameRect
          controller:(MediaGalleryListEntryController*)controller_
-             prefId:(MediaGalleryPrefId)prefId
-        galleryName:(base::string16)galleryName
-          subscript:(base::string16)subscript
-            tooltip:(base::string16)tooltip
+           prefInfo:(const MediaGalleryPrefInfo&)prefInfo
    showFolderViewer:(bool)showFolderViewer;
 
 - (void)setState:(bool)selected;
