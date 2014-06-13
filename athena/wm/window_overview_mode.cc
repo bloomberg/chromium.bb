@@ -143,7 +143,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       top_transform.Scale(kMinScale, kMinScale);
 
       gfx::Transform bottom_transform;
-      int bottom = container_size.height() - (index * kGapBetweenWindowsBottom);
+      int bottom = GetScrollableHeight() - (index * kGapBetweenWindowsBottom);
       x_translate = container_size.width() * (1 - kMaxScale) / 2.;
       bottom_transform.Translate(x_translate, bottom - window->bounds().y());
       bottom_transform.Scale(kMaxScale, kMaxScale);
@@ -218,24 +218,78 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     return target;
   }
 
-  // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
-    if (mouse->type() != ui::ET_MOUSE_PRESSED)
-      return;
-    aura::Window* select = SelectWindowAt(mouse);
-    if (select) {
-      mouse->SetHandled();
-      delegate_->OnSelectWindow(select);
+  // Scroll the window list by |delta_y| amount. |delta_y| is negative when
+  // scrolling up; and positive when scrolling down.
+  void DoScroll(float delta_y) {
+    const float kEpsilon = 1e-3f;
+    aura::Window::Windows windows = container_->children();
+    float delta_y_p = std::abs(delta_y) / GetScrollableHeight();
+    if (delta_y < 0) {
+      // Scroll up. Start with the top-most (i.e. behind-most in terms of
+      // z-index) window, and try to scroll them up.
+      for (aura::Window::Windows::iterator iter = windows.begin();
+           delta_y_p > kEpsilon && iter != windows.end();
+           ++iter) {
+        aura::Window* window = (*iter);
+        WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+        if (state->progress > kEpsilon) {
+          // It is possible to scroll |window| up. Scroll it up, and update
+          // |delta_y_p| for the next window.
+          float apply = delta_y_p * state->progress;
+          SetWindowProgress(window, std::max(0.f, state->progress - apply * 3));
+          delta_y_p -= apply;
+        }
+      }
+    } else {
+      // Scroll down. Start with the bottom-most (i.e. front-most in terms of
+      // z-index) window, and try to scroll them down.
+      for (aura::Window::Windows::reverse_iterator iter = windows.rbegin();
+           delta_y_p > kEpsilon && iter != windows.rend();
+           ++iter) {
+        aura::Window* window = (*iter);
+        WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+        if (1.f - state->progress > kEpsilon) {
+          // It is possible to scroll |window| down. Scroll it down, and update
+          // |delta_y_p| for the next window.
+          SetWindowProgress(window, std::min(1.f, state->progress + delta_y_p));
+          delta_y_p /= 2.f;
+        }
+      }
     }
   }
 
+  int GetScrollableHeight() const {
+    const float kScrollableFraction = 0.65f;
+    return container_->bounds().height() * kScrollableFraction;
+  }
+
+  // ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
+    if (mouse->type() == ui::ET_MOUSE_PRESSED) {
+      aura::Window* select = SelectWindowAt(mouse);
+      if (select) {
+        mouse->SetHandled();
+        delegate_->OnSelectWindow(select);
+      }
+    } else if (mouse->type() == ui::ET_MOUSEWHEEL) {
+      DoScroll(static_cast<ui::MouseWheelEvent*>(mouse)->y_offset());
+    }
+  }
+
+  virtual void OnScrollEvent(ui::ScrollEvent* scroll) OVERRIDE {
+    if (scroll->type() == ui::ET_SCROLL)
+      DoScroll(scroll->y_offset());
+  }
+
   virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
-    if (gesture->type() != ui::ET_GESTURE_TAP)
-      return;
-    aura::Window* select = SelectWindowAt(gesture);
-    if (select) {
-      gesture->SetHandled();
-      delegate_->OnSelectWindow(select);
+    if (gesture->type() == ui::ET_GESTURE_TAP) {
+      aura::Window* select = SelectWindowAt(gesture);
+      if (select) {
+        gesture->SetHandled();
+        delegate_->OnSelectWindow(select);
+      }
+    } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+      DoScroll(gesture->details().scroll_y());
     }
   }
 
