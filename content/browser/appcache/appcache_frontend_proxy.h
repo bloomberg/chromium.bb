@@ -22,16 +22,16 @@ class AppCacheFrontendProxy : public appcache::AppCacheFrontend {
   virtual void OnCacheSelected(int host_id,
                                const appcache::AppCacheInfo& info) OVERRIDE;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               appcache::Status status) OVERRIDE;
+                               appcache::AppCacheStatus status) OVERRIDE;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             appcache::EventID event_id) OVERRIDE;
+                             appcache::AppCacheEventID event_id) OVERRIDE;
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
                                      int num_total, int num_complete) OVERRIDE;
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::ErrorDetails& details)
+                                  const appcache::AppCacheErrorDetails& details)
       OVERRIDE;
-  virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
+  virtual void OnLogMessage(int host_id, appcache::AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE;
   virtual void OnContentBlocked(int host_id,
                                 const GURL& manifest_url) OVERRIDE;

@@ -9,9 +9,10 @@
 
 #define IPC_MESSAGE_START AppCacheMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(appcache::EventID, appcache::EVENT_ID_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(appcache::Status, appcache::STATUS_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(appcache::ErrorReason, appcache::ERROR_REASON_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheEventID, appcache::EVENT_ID_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheStatus, appcache::STATUS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheErrorReason,
+    appcache::ERROR_REASON_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)
@@ -35,7 +36,7 @@ IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheResourceInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_explicit)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(appcache::ErrorDetails)
+IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheErrorDetails)
 IPC_STRUCT_TRAITS_MEMBER(message)
 IPC_STRUCT_TRAITS_MEMBER(reason)
 IPC_STRUCT_TRAITS_MEMBER(url)
@@ -93,7 +94,7 @@ IPC_MESSAGE_CONTROL3(AppCacheHostMsg_MarkAsForeignEntry,
 // Returns the status of the appcache associated with host_id.
 IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheHostMsg_GetStatus,
                             int /* host_id */,
-                            appcache::Status)
+                            appcache::AppCacheStatus)
 
 // Initiates an update of the appcache associated with host_id.
 IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheHostMsg_StartUpdate,
@@ -123,13 +124,13 @@ IPC_MESSAGE_CONTROL2(AppCacheMsg_CacheSelected,
 // Notifies the renderer of an AppCache status change.
 IPC_MESSAGE_CONTROL2(AppCacheMsg_StatusChanged,
                      std::vector<int> /* host_ids */,
-                     appcache::Status)
+                     appcache::AppCacheStatus)
 
 // Notifies the renderer of an AppCache event other than the
 // progress event which has a seperate message.
 IPC_MESSAGE_CONTROL2(AppCacheMsg_EventRaised,
                      std::vector<int> /* host_ids */,
-                     appcache::EventID)
+                     appcache::AppCacheEventID)
 
 // Notifies the renderer of an AppCache progress event.
 IPC_MESSAGE_CONTROL4(AppCacheMsg_ProgressEventRaised,
@@ -141,7 +142,7 @@ IPC_MESSAGE_CONTROL4(AppCacheMsg_ProgressEventRaised,
 // Notifies the renderer of an AppCache error event.
 IPC_MESSAGE_CONTROL2(AppCacheMsg_ErrorEventRaised,
                      std::vector<int> /* host_ids */,
-                     appcache::ErrorDetails)
+                     appcache::AppCacheErrorDetails)
 
 // Notifies the renderer of an AppCache logging message.
 IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,

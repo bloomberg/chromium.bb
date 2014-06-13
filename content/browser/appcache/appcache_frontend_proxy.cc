@@ -18,12 +18,12 @@ void AppCacheFrontendProxy::OnCacheSelected(
 }
 
 void AppCacheFrontendProxy::OnStatusChanged(const std::vector<int>& host_ids,
-                                            appcache::Status status) {
+                                            appcache::AppCacheStatus status) {
   sender_->Send(new AppCacheMsg_StatusChanged(host_ids, status));
 }
 
 void AppCacheFrontendProxy::OnEventRaised(const std::vector<int>& host_ids,
-                                          appcache::EventID event_id) {
+                                          appcache::AppCacheEventID event_id) {
   DCHECK_NE(appcache::PROGRESS_EVENT, event_id);  // See OnProgressEventRaised.
   sender_->Send(new AppCacheMsg_EventRaised(host_ids, event_id));
 }
@@ -37,12 +37,12 @@ void AppCacheFrontendProxy::OnProgressEventRaised(
 
 void AppCacheFrontendProxy::OnErrorEventRaised(
     const std::vector<int>& host_ids,
-    const appcache::ErrorDetails& details) {
+    const appcache::AppCacheErrorDetails& details) {
   sender_->Send(new AppCacheMsg_ErrorEventRaised(host_ids, details));
 }
 
 void AppCacheFrontendProxy::OnLogMessage(int host_id,
-                                         appcache::LogLevel log_level,
+                                         appcache::AppCacheLogLevel log_level,
                                          const std::string& message) {
   sender_->Send(new AppCacheMsg_LogMessage(host_id, log_level, message));
 }

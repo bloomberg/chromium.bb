@@ -28,7 +28,7 @@ static const int64 kNoCacheId = 0;
 static const int64 kNoResponseId = 0;
 static const int64 kUnknownCacheId = -1;
 
-enum Status {
+enum AppCacheStatus {
   UNCACHED,
   IDLE,
   CHECKING,
@@ -38,7 +38,7 @@ enum Status {
   STATUS_LAST = OBSOLETE
 };
 
-enum EventID {
+enum AppCacheEventID {
   CHECKING_EVENT,
   ERROR_EVENT,
   NO_UPDATE_EVENT,
@@ -51,20 +51,20 @@ enum EventID {
 };
 
 // Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
-enum LogLevel {
+enum AppCacheLogLevel {
   LOG_DEBUG = 4,
   LOG_INFO = 1,
   LOG_WARNING = 2,
   LOG_ERROR = 3,
 };
 
-enum NamespaceType {
+enum AppCacheNamespaceType {
   FALLBACK_NAMESPACE,
   INTERCEPT_NAMESPACE,
   NETWORK_NAMESPACE
 };
 
-enum ErrorReason {
+enum AppCacheErrorReason {
   MANIFEST_ERROR,
   SIGNATURE_ERROR,
   RESOURCE_ERROR,
@@ -86,7 +86,7 @@ struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheInfo {
   base::Time last_access_time;
   int64 cache_id;
   int64 group_id;
-  Status status;
+  AppCacheStatus status;
   int64 size;
   bool is_complete;
 };
@@ -109,17 +109,17 @@ struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheResourceInfo {
   int64 response_id;
 };
 
-struct WEBKIT_STORAGE_COMMON_EXPORT ErrorDetails {
-  ErrorDetails();
-  ErrorDetails(std::string message,
-               ErrorReason reason,
+struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheErrorDetails {
+  AppCacheErrorDetails();
+  AppCacheErrorDetails(std::string message,
+               AppCacheErrorReason reason,
                GURL url,
                int status,
                bool is_cross_origin);
-  ~ErrorDetails();
+  ~AppCacheErrorDetails();
 
   std::string message;
-  ErrorReason reason;
+  AppCacheErrorReason reason;
   GURL url;
   int status;
   bool is_cross_origin;
@@ -129,15 +129,15 @@ typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
 struct WEBKIT_STORAGE_COMMON_EXPORT Namespace {
   Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
-  Namespace(NamespaceType type, const GURL& url, const GURL& target,
+  Namespace(AppCacheNamespaceType type, const GURL& url, const GURL& target,
             bool is_pattern);
-  Namespace(NamespaceType type, const GURL& url, const GURL& target,
+  Namespace(AppCacheNamespaceType type, const GURL& url, const GURL& target,
             bool is_pattern, bool is_executable);
   ~Namespace();
 
   bool IsMatch(const GURL& url) const;
 
-  NamespaceType type;
+  AppCacheNamespaceType type;
   GURL namespace_url;
   GURL target_url;
   bool is_pattern;
@@ -152,17 +152,18 @@ class WEBKIT_STORAGE_COMMON_EXPORT AppCacheFrontend {
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info) = 0;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               Status status) = 0;
+                               AppCacheStatus status) = 0;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             EventID event_id) = 0;
+                             AppCacheEventID event_id) = 0;
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
                                      int num_total, int num_complete) = 0;
-  virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::ErrorDetails& details) = 0;
+  virtual void OnErrorEventRaised(
+      const std::vector<int>& host_ids,
+      const appcache::AppCacheErrorDetails& details) = 0;
   virtual void OnContentBlocked(int host_id,
                                 const GURL& manifest_url) = 0;
-  virtual void OnLogMessage(int host_id, LogLevel log_level,
+  virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
                             const std::string& message) = 0;
   virtual ~AppCacheFrontend() {}
 };
@@ -186,7 +187,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT AppCacheBackend {
                            int64 appcache_id) = 0;
   virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
                                   int64 cache_document_was_loaded_from) = 0;
-  virtual Status GetStatus(int host_id) = 0;
+  virtual AppCacheStatus GetStatus(int host_id) = 0;
   virtual bool StartUpdate(int host_id) = 0;
   virtual bool SwapCache(int host_id) = 0;
   virtual void GetResourceList(

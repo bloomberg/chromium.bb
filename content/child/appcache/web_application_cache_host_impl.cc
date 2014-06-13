@@ -82,11 +82,13 @@ void WebApplicationCacheHostImpl::OnCacheSelected(
   client_->didChangeCacheAssociation();
 }
 
-void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
+void WebApplicationCacheHostImpl::OnStatusChanged(
+    appcache::AppCacheStatus status) {
   // TODO(michaeln): delete me, not used
 }
 
-void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
+void WebApplicationCacheHostImpl::OnEventRaised(
+    appcache::AppCacheEventID event_id) {
   DCHECK(event_id != appcache::PROGRESS_EVENT);  // See OnProgressEventRaised.
   DCHECK(event_id != appcache::ERROR_EVENT);  // See OnErrorEventRaised.
 
@@ -135,7 +137,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
 }
 
 void WebApplicationCacheHostImpl::OnErrorEventRaised(
-    const appcache::ErrorDetails& details) {
+    const appcache::AppCacheErrorDetails& details) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char* kFormatString = "Application Cache Error event: %s";

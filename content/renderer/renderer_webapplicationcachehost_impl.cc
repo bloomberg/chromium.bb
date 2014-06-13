@@ -25,7 +25,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
 }
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
-    appcache::LogLevel log_level, const std::string& message) {
+    appcache::AppCacheLogLevel log_level, const std::string& message) {
   if (RenderThreadImpl::current()->layout_test_mode())
     return;
 

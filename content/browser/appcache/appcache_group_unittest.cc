@@ -37,15 +37,15 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               appcache::Status status) OVERRIDE {
+                               appcache::AppCacheStatus status) OVERRIDE {
   }
 
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             appcache::EventID event_id) OVERRIDE {
+                             appcache::AppCacheEventID event_id) OVERRIDE {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::ErrorDetails& details)
+                                  const appcache::AppCacheErrorDetails& details)
       OVERRIDE {}
 
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
@@ -53,7 +53,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
                                      int num_total, int num_complete) OVERRIDE {
   }
 
-  virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
+  virtual void OnLogMessage(int host_id, appcache::AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE {
   }
 
@@ -63,7 +63,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
 
   int last_host_id_;
   int64 last_cache_id_;
-  appcache::Status last_status_;
+  appcache::AppCacheStatus last_status_;
 };
 
 }  // namespace anon

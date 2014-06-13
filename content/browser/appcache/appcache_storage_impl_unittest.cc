@@ -48,14 +48,14 @@ using appcache::AppCacheStorage;
 using appcache::AppCacheStorageImpl;
 using appcache::AppCacheStorageReference;
 using appcache::AppCache;
-using appcache::ErrorDetails;
-using appcache::EventID;
+using appcache::AppCacheErrorDetails;
+using appcache::AppCacheEventID;
 using appcache::kNoCacheId;
 using appcache::kNoResponseId;
 using appcache::INTERCEPT_NAMESPACE;
-using appcache::LogLevel;
+using appcache::AppCacheLogLevel;
 using appcache::Namespace;
-using appcache::Status;
+using appcache::AppCacheStatus;
 
 namespace content {
 
@@ -1623,19 +1623,19 @@ class AppCacheStorageImplTest : public testing::Test {
     virtual void OnCacheSelected(
         int host_id, const AppCacheInfo& info) OVERRIDE {}
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 Status status) OVERRIDE {}
+                                 AppCacheStatus status) OVERRIDE {}
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               EventID event_id) OVERRIDE {}
+                               AppCacheEventID event_id) OVERRIDE {}
     virtual void OnProgressEventRaised(
         const std::vector<int>& host_ids,
         const GURL& url,
         int num_total, int num_complete) OVERRIDE {}
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const ErrorDetails& details)
+                                    const AppCacheErrorDetails& details)
         OVERRIDE {
       error_event_was_raised_ = true;
     }
-    virtual void OnLogMessage(int host_id, LogLevel log_level,
+    virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
                               const std::string& message) OVERRIDE {}
     virtual void OnContentBlocked(
         int host_id, const GURL& manifest_url) OVERRIDE {}

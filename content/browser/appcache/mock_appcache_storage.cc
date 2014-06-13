@@ -30,7 +30,7 @@ using appcache::AppCacheServiceImpl;
 using appcache::FALLBACK_NAMESPACE;
 using appcache::INTERCEPT_NAMESPACE;
 using appcache::kNoCacheId;
-using appcache::NamespaceType;
+using appcache::AppCacheNamespaceType;
 
 namespace content {
 
@@ -258,7 +258,7 @@ struct FoundCandidate {
 };
 
 void MaybeTakeNewNamespaceEntry(
-    NamespaceType namespace_type,
+    AppCacheNamespaceType namespace_type,
     const AppCacheEntry &entry,
     const GURL& namespace_url,
     bool cache_is_in_use,

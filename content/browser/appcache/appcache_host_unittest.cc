@@ -27,7 +27,7 @@ using appcache::ERROR_EVENT;
 using appcache::OBSOLETE;
 using appcache::OBSOLETE_EVENT;
 using appcache::PROGRESS_EVENT;
-using appcache::Status;
+using appcache::AppCacheStatus;
 using appcache::UNCACHED;
 
 namespace content {
@@ -64,18 +64,18 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 appcache::Status status) OVERRIDE {
+                                 appcache::AppCacheStatus status) OVERRIDE {
       last_status_changed_ = status;
     }
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               appcache::EventID event_id) OVERRIDE {
+                               appcache::AppCacheEventID event_id) OVERRIDE {
       last_event_id_ = event_id;
     }
 
-    virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const appcache::ErrorDetails& details)
-        OVERRIDE {
+    virtual void OnErrorEventRaised(
+        const std::vector<int>& host_ids,
+        const appcache::AppCacheErrorDetails& details) OVERRIDE {
       last_event_id_ = ERROR_EVENT;
     }
 
@@ -87,7 +87,7 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnLogMessage(int host_id,
-                              appcache::LogLevel log_level,
+                              appcache::AppCacheLogLevel log_level,
                               const std::string& message) OVERRIDE {
     }
 
@@ -98,9 +98,9 @@ class AppCacheHostTest : public testing::Test {
 
     int last_host_id_;
     int64 last_cache_id_;
-    appcache::Status last_status_;
-    appcache::Status last_status_changed_;
-    appcache::EventID last_event_id_;
+    appcache::AppCacheStatus last_status_;
+    appcache::AppCacheStatus last_status_changed_;
+    appcache::AppCacheEventID last_event_id_;
     bool content_blocked_;
   };
 
@@ -150,7 +150,7 @@ class AppCacheHostTest : public testing::Test {
     virtual ~MockQuotaManagerProxy() {}
   };
 
-  void GetStatusCallback(Status status, void* param) {
+  void GetStatusCallback(AppCacheStatus status, void* param) {
     last_status_result_ = status;
     last_callback_param_ = param;
   }
@@ -176,7 +176,7 @@ class AppCacheHostTest : public testing::Test {
   appcache::StartUpdateCallback start_update_callback_;
   appcache::SwapCacheCallback swap_cache_callback_;
 
-  Status last_status_result_;
+  AppCacheStatus last_status_result_;
   bool last_swap_result_;
   bool last_start_result_;
   void* last_callback_param_;

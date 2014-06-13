@@ -48,7 +48,7 @@ class AppCache;
 class AppCacheFrontend;
 class AppCacheRequestHandler;
 
-typedef base::Callback<void(Status, void*)> GetStatusCallback;
+typedef base::Callback<void(AppCacheStatus, void*)> GetStatusCallback;
 typedef base::Callback<void(bool, void*)> StartUpdateCallback;
 typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
@@ -183,7 +183,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   friend class content::AppCacheRequestHandlerTest;
   friend class content::AppCacheUpdateJobTest;
 
-  Status GetStatus();
+  AppCacheStatus GetStatus();
   void LoadSelectedCache(int64 cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 

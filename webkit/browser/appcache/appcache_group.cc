@@ -240,7 +240,7 @@ void AppCacheGroup::HostDestructionImminent(AppCacheHost* host) {
     restart_update_task_.Cancel();
 }
 
-void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
+void AppCacheGroup::SetUpdateAppCacheStatus(UpdateAppCacheStatus status) {
   if (status == update_status_)
     return;
 

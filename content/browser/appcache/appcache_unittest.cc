@@ -14,18 +14,18 @@ using appcache::AppCacheFrontend;
 using appcache::AppCacheGroup;
 using appcache::AppCacheHost;
 using appcache::AppCacheInfo;
-using appcache::ErrorDetails;
-using appcache::EventID;
+using appcache::AppCacheErrorDetails;
+using appcache::AppCacheEventID;
 using appcache::FALLBACK_NAMESPACE;
 using appcache::INTERCEPT_NAMESPACE;
-using appcache::LogLevel;
+using appcache::AppCacheLogLevel;
 using appcache::Manifest;
 using appcache::Namespace;
 using appcache::NamespaceVector;
 using appcache::NETWORK_NAMESPACE;
 using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
 using appcache::PARSE_MANIFEST_PER_STANDARD;
-using appcache::Status;
+using appcache::AppCacheStatus;
 
 namespace content {
 
@@ -36,16 +36,17 @@ class MockAppCacheFrontend : public AppCacheFrontend {
   virtual void OnCacheSelected(int host_id, const AppCacheInfo& info) OVERRIDE {
   }
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               Status status) OVERRIDE {}
+                               AppCacheStatus status) OVERRIDE {}
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             EventID event_id) OVERRIDE {}
+                             AppCacheEventID event_id) OVERRIDE {}
   virtual void OnProgressEventRaised(
       const std::vector<int>& host_ids,
       const GURL& url,
       int num_total, int num_complete) OVERRIDE {}
-  virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const ErrorDetails& details) OVERRIDE {}
-  virtual void OnLogMessage(int host_id, LogLevel log_level,
+  virtual void OnErrorEventRaised(
+      const std::vector<int>& host_ids,
+      const AppCacheErrorDetails& details) OVERRIDE {}
+  virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE {}
   virtual void OnContentBlocked(
       int host_id, const GURL& manifest_url) OVERRIDE {}

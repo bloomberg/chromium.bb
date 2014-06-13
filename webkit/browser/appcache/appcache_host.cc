@@ -20,7 +20,7 @@ namespace {
 
 void FillCacheInfo(const AppCache* cache,
                    const GURL& manifest_url,
-                   Status status, AppCacheInfo* info) {
+                   AppCacheStatus status, AppCacheInfo* info) {
   info->manifest_url = manifest_url;
   info->status = status;
 
@@ -117,11 +117,12 @@ void AppCacheHost::SelectCache(const GURL& document_url,
       frontend_->OnEventRaised(host_ids, CHECKING_EVENT);
       frontend_->OnErrorEventRaised(
           host_ids,
-          ErrorDetails("Cache creation was blocked by the content policy",
-                       POLICY_ERROR,
-                       GURL(),
-                       0,
-                       false /*is_cross_origin*/));
+          AppCacheErrorDetails(
+              "Cache creation was blocked by the content policy",
+              POLICY_ERROR,
+              GURL(),
+              0,
+              false /*is_cross_origin*/));
       frontend_->OnContentBlocked(host_id_, manifest_url);
       return;
     }
@@ -312,7 +313,7 @@ void AppCacheHost::GetResourceList(
     associated_cache_->ToResourceInfoVector(resource_infos);
 }
 
-Status AppCacheHost::GetStatus() {
+AppCacheStatus AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
   if (!cache)

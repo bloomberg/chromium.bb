@@ -54,8 +54,8 @@ void AppCacheBackendProxy::MarkAsForeignEntry(
                                     cache_document_was_loaded_from));
 }
 
-appcache::Status AppCacheBackendProxy::GetStatus(int host_id) {
-  appcache::Status status = appcache::UNCACHED;
+appcache::AppCacheStatus AppCacheBackendProxy::GetStatus(int host_id) {
+  appcache::AppCacheStatus status = appcache::UNCACHED;
   sender_->Send(new AppCacheHostMsg_GetStatus(host_id, &status));
   return status;
 }

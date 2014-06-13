@@ -951,7 +951,8 @@ void AppCacheDatabase::ReadNamespaceRecords(
       NamespaceRecordVector* intercepts,
       NamespaceRecordVector* fallbacks) {
   while (statement->Step()) {
-    NamespaceType type = static_cast<NamespaceType>(statement->ColumnInt(2));
+    AppCacheNamespaceType type = static_cast<AppCacheNamespaceType>(
+        statement->ColumnInt(2));
     NamespaceRecordVector* records =
         (type == FALLBACK_NAMESPACE) ? fallbacks : intercepts;
     records->push_back(NamespaceRecord());
@@ -970,7 +971,7 @@ void AppCacheDatabase::ReadNamespaceRecord(
 
   // Note: quick and dirty storage for the 'executable' bit w/o changing
   // schemas, we use the high bit of 'type' field.
-  record->namespace_.type = static_cast<NamespaceType>
+  record->namespace_.type = static_cast<AppCacheNamespaceType>
       (type_with_executable_bit & 0x7ffffff);
   record->namespace_.is_executable =
       (type_with_executable_bit & 0x80000000) != 0;

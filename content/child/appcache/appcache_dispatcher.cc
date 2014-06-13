@@ -37,12 +37,12 @@ void AppCacheDispatcher::OnCacheSelected(
 }
 
 void AppCacheDispatcher::OnStatusChanged(const std::vector<int>& host_ids,
-                                         appcache::Status status) {
+                                         appcache::AppCacheStatus status) {
   frontend_->OnStatusChanged(host_ids, status);
 }
 
 void AppCacheDispatcher::OnEventRaised(const std::vector<int>& host_ids,
-                                       appcache::EventID event_id) {
+                                       appcache::AppCacheEventID event_id) {
   frontend_->OnEventRaised(host_ids, event_id);
 }
 
@@ -54,14 +54,14 @@ void AppCacheDispatcher::OnProgressEventRaised(
 
 void AppCacheDispatcher::OnErrorEventRaised(
     const std::vector<int>& host_ids,
-    const appcache::ErrorDetails& details) {
+    const appcache::AppCacheErrorDetails& details) {
   frontend_->OnErrorEventRaised(host_ids, details);
 }
 
 void AppCacheDispatcher::OnLogMessage(
     int host_id, int log_level, const std::string& message) {
   frontend_->OnLogMessage(
-      host_id, static_cast<appcache::LogLevel>(log_level), message);
+      host_id, static_cast<appcache::AppCacheLogLevel>(log_level), message);
 }
 
 void AppCacheDispatcher::OnContentBlocked(int host_id,

@@ -31,11 +31,11 @@ class WebApplicationCacheHostImpl
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const appcache::AppCacheInfo& info);
-  void OnStatusChanged(appcache::Status);
-  void OnEventRaised(appcache::EventID);
+  void OnStatusChanged(appcache::AppCacheStatus);
+  void OnEventRaised(appcache::AppCacheEventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
-  void OnErrorEventRaised(const appcache::ErrorDetails& details);
-  virtual void OnLogMessage(appcache::LogLevel log_level,
+  void OnErrorEventRaised(const appcache::AppCacheErrorDetails& details);
+  virtual void OnLogMessage(appcache::AppCacheLogLevel log_level,
                             const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
@@ -64,7 +64,7 @@ class WebApplicationCacheHostImpl
   blink::WebApplicationCacheHostClient* client_;
   appcache::AppCacheBackend* backend_;
   int host_id_;
-  appcache::Status status_;
+  appcache::AppCacheStatus status_;
   blink::WebURLResponse document_response_;
   GURL document_url_;
   bool is_scheme_supported_;

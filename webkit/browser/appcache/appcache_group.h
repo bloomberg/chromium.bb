@@ -48,7 +48,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
       virtual ~UpdateObserver() {}
   };
 
-  enum UpdateStatus {
+  enum UpdateAppCacheStatus {
     IDLE,
     CHECKING,
     DOWNLOADING,
@@ -80,7 +80,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
 
   void AddNewlyDeletableResponseIds(std::vector<int64>* response_ids);
 
-  UpdateStatus update_status() const { return update_status_; }
+  UpdateAppCacheStatus update_status() const { return update_status_; }
 
   // Starts an update via update() javascript API.
   void StartUpdate() {
@@ -117,7 +117,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
   static const int kUpdateRestartDelayMs = 1000;
 
   AppCacheUpdateJob* update_job() { return update_job_; }
-  void SetUpdateStatus(UpdateStatus status);
+  void SetUpdateAppCacheStatus(UpdateAppCacheStatus status);
 
   void NotifyContentBlocked();
 
@@ -134,7 +134,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
   const int64 group_id_;
   const GURL manifest_url_;
   base::Time creation_time_;
-  UpdateStatus update_status_;
+  UpdateAppCacheStatus update_status_;
   bool is_obsolete_;
   bool is_being_deleted_;
   std::vector<int64> newly_deletable_response_ids_;

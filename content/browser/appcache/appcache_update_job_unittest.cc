@@ -32,7 +32,7 @@ using appcache::CACHED_EVENT;
 using appcache::CHECKING_EVENT;
 using appcache::DOWNLOADING_EVENT;
 using appcache::ERROR_EVENT;
-using appcache::EventID;
+using appcache::AppCacheEventID;
 using appcache::FALLBACK_NAMESPACE;
 using appcache::HttpResponseInfoIOBuffer;
 using appcache::kNoCacheId;
@@ -43,7 +43,7 @@ using appcache::NO_UPDATE_EVENT;
 using appcache::OBSOLETE_EVENT;
 using appcache::PROGRESS_EVENT;
 using appcache::UPDATE_READY_EVENT;
-using appcache::Status;
+using appcache::AppCacheStatus;
 
 namespace content {
 class AppCacheUpdateJobTest;
@@ -248,11 +248,11 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               Status status) OVERRIDE {
+                               AppCacheStatus status) OVERRIDE {
   }
 
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             EventID event_id) OVERRIDE {
+                             AppCacheEventID event_id) OVERRIDE {
     raised_events_.push_back(RaisedEvent(host_ids, event_id));
 
     // Trigger additional updates if requested.
@@ -268,7 +268,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const appcache::ErrorDetails& details)
+                                  const appcache::AppCacheErrorDetails& details)
       OVERRIDE {
     error_message_ = details.message;
     OnEventRaised(host_ids, ERROR_EVENT);
@@ -306,7 +306,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnLogMessage(int host_id,
-                            appcache::LogLevel log_level,
+                            appcache::AppCacheLogLevel log_level,
                             const std::string& message) OVERRIDE {
   }
 
@@ -314,7 +314,8 @@ class MockFrontend : public AppCacheFrontend {
                                 const GURL& manifest_url) OVERRIDE {
   }
 
-  void AddExpectedEvent(const std::vector<int>& host_ids, EventID event_id) {
+  void AddExpectedEvent(const std::vector<int>& host_ids,
+      AppCacheEventID event_id) {
     DCHECK(!ignore_progress_events_ || event_id != PROGRESS_EVENT);
     expected_events_.push_back(RaisedEvent(host_ids, event_id));
   }
@@ -333,7 +334,7 @@ class MockFrontend : public AppCacheFrontend {
     verify_progress_events_ = verify;
   }
 
-  void TriggerAdditionalUpdates(EventID trigger_event,
+  void TriggerAdditionalUpdates(AppCacheEventID trigger_event,
                                 AppCacheUpdateJob* update) {
     start_update_trigger_ = trigger_event;
     update_ = update;
@@ -344,7 +345,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   typedef std::vector<int> HostIds;
-  typedef std::pair<HostIds, EventID> RaisedEvent;
+  typedef std::pair<HostIds, AppCacheEventID> RaisedEvent;
   typedef std::vector<RaisedEvent> RaisedEvents;
   RaisedEvents raised_events_;
   std::string error_message_;
@@ -360,7 +361,7 @@ class MockFrontend : public AppCacheFrontend {
   int last_progress_complete_;
 
   // Add ability for frontend to add master entries to an inprogress update.
-  EventID start_update_trigger_;
+  AppCacheEventID start_update_trigger_;
   AppCacheUpdateJob* update_;
   std::vector<AppCacheHost*> update_hosts_;
 };

@@ -38,7 +38,7 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
       int host_id,
       const GURL& document_url,
       int64 cache_document_was_loaded_from) OVERRIDE;
-  virtual appcache::Status GetStatus(int host_id) OVERRIDE;
+  virtual appcache::AppCacheStatus GetStatus(int host_id) OVERRIDE;
   virtual bool StartUpdate(int host_id) OVERRIDE;
   virtual bool SwapCache(int host_id) OVERRIDE;
   virtual void GetResourceList(

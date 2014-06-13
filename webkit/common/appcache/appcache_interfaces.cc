@@ -49,16 +49,16 @@ AppCacheResourceInfo::AppCacheResourceInfo()
 AppCacheResourceInfo::~AppCacheResourceInfo() {
 }
 
-ErrorDetails::ErrorDetails()
+AppCacheErrorDetails::AppCacheErrorDetails()
     : message(),
       reason(UNKNOWN_ERROR),
       url(),
       status(0),
       is_cross_origin(false) {}
 
-ErrorDetails::ErrorDetails(
+AppCacheErrorDetails::AppCacheErrorDetails(
     std::string in_message,
-    ErrorReason in_reason,
+    AppCacheErrorReason in_reason,
     GURL in_url,
     int in_status,
     bool in_is_cross_origin)
@@ -68,7 +68,7 @@ ErrorDetails::ErrorDetails(
       status(in_status),
       is_cross_origin(in_is_cross_origin) {}
 
-ErrorDetails::~ErrorDetails() {}
+AppCacheErrorDetails::~AppCacheErrorDetails() {}
 
 Namespace::Namespace()
     : type(FALLBACK_NAMESPACE),
@@ -77,7 +77,8 @@ Namespace::Namespace()
 }
 
 Namespace::Namespace(
-    NamespaceType type, const GURL& url, const GURL& target, bool is_pattern)
+    AppCacheNamespaceType type, const GURL& url, const GURL& target,
+    bool is_pattern)
     : type(type),
       namespace_url(url),
       target_url(target),
@@ -86,7 +87,7 @@ Namespace::Namespace(
 }
 
 Namespace::Namespace(
-    NamespaceType type, const GURL& url, const GURL& target,
+    AppCacheNamespaceType type, const GURL& url, const GURL& target,
     bool is_pattern, bool is_executable)
     : type(type),
       namespace_url(url),

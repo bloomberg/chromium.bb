@@ -55,7 +55,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   void OnGetResourceList(
       int host_id,
       std::vector<appcache::AppCacheResourceInfo>* resource_infos);
-  void GetStatusCallback(appcache::Status status, void* param);
+  void GetStatusCallback(appcache::AppCacheStatus status, void* param);
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);
 
