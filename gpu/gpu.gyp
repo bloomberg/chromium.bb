@@ -567,6 +567,28 @@
     ['disable_nacl!=1 and OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
+          'target_name': 'command_buffer_common_win64',
+          'type': 'static_library',
+          'variables': {
+            'nacl_win64_target': 1,
+          },
+          'includes': [
+            'command_buffer_common.gypi',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base_win64',
+          ],
+          'defines': [
+            '<@(nacl_win64_defines)',
+            'GPU_IMPLEMENTATION',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        {
           'target_name': 'gpu_ipc_win64',
           'type': 'static_library',
           'variables': {
@@ -578,6 +600,7 @@
           'dependencies': [
             '../base/base.gyp:base_win64',
             '../ipc/ipc.gyp:ipc_win64',
+            'command_buffer_common_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',
