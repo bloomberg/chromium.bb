@@ -1641,8 +1641,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   }
 }
 
-// TODO(enne): Convert this to PictureLayerImpl
-class DidDrawCheckLayer : public TiledLayerImpl {
+class DidDrawCheckLayer : public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return scoped_ptr<LayerImpl>(new DidDrawCheckLayer(tree_impl, id));
@@ -1653,18 +1652,18 @@ class DidDrawCheckLayer : public TiledLayerImpl {
     will_draw_called_ = true;
     if (will_draw_returns_false_)
       return false;
-    return TiledLayerImpl::WillDraw(draw_mode, provider);
+    return LayerImpl::WillDraw(draw_mode, provider);
   }
 
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE {
     append_quads_called_ = true;
-    TiledLayerImpl::AppendQuads(quad_sink, append_quads_data);
+    LayerImpl::AppendQuads(quad_sink, append_quads_data);
   }
 
   virtual void DidDraw(ResourceProvider* provider) OVERRIDE {
     did_draw_called_ = true;
-    TiledLayerImpl::DidDraw(provider);
+    LayerImpl::DidDraw(provider);
   }
 
   bool will_draw_called() const { return will_draw_called_; }
@@ -1681,7 +1680,7 @@ class DidDrawCheckLayer : public TiledLayerImpl {
 
  protected:
   DidDrawCheckLayer(LayerTreeImpl* tree_impl, int id)
-      : TiledLayerImpl(tree_impl, id),
+      : LayerImpl(tree_impl, id),
         will_draw_returns_false_(false),
         will_draw_called_(false),
         append_quads_called_(false),
@@ -1689,14 +1688,7 @@ class DidDrawCheckLayer : public TiledLayerImpl {
     SetBounds(gfx::Size(10, 10));
     SetContentBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
-    set_skips_draw(false);
     draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
-
-    scoped_ptr<LayerTilingData> tiler =
-        LayerTilingData::Create(gfx::Size(100, 100),
-                                LayerTilingData::HAS_BORDER_TEXELS);
-    tiler->SetTilingRect(gfx::Rect(content_bounds()));
-    SetTilingData(*tiler.get());
   }
 
  private:
@@ -1872,69 +1864,59 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl,
                                       int id,
                                       bool tile_missing,
-                                      bool skips_draw,
+                                      bool had_incomplete_tile,
                                       bool animating,
                                       ResourceProvider* resource_provider) {
-    return scoped_ptr<LayerImpl>(new MissingTextureAnimatingLayer(
-        tree_impl,
-        id,
-        tile_missing,
-        skips_draw,
-        animating,
-        resource_provider));
+    return scoped_ptr<LayerImpl>(
+        new MissingTextureAnimatingLayer(tree_impl,
+                                         id,
+                                         tile_missing,
+                                         had_incomplete_tile,
+                                         animating,
+                                         resource_provider));
   }
 
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE {
-    TiledLayerImpl::AppendQuads(quad_sink, append_quads_data);
-    if (tile_missing_)
+    LayerImpl::AppendQuads(quad_sink, append_quads_data);
+    if (had_incomplete_tile_)
       append_quads_data->had_incomplete_tile = true;
+    if (tile_missing_)
+      append_quads_data->num_missing_tiles++;
   }
 
  private:
   MissingTextureAnimatingLayer(LayerTreeImpl* tree_impl,
                                int id,
                                bool tile_missing,
-                               bool skips_draw,
+                               bool had_incomplete_tile,
                                bool animating,
                                ResourceProvider* resource_provider)
-      : DidDrawCheckLayer(tree_impl, id), tile_missing_(tile_missing) {
-    scoped_ptr<LayerTilingData> tiling_data =
-        LayerTilingData::Create(gfx::Size(10, 10),
-                                LayerTilingData::NO_BORDER_TEXELS);
-    tiling_data->SetTilingRect(gfx::Rect(bounds()));
-    SetTilingData(*tiling_data.get());
-    set_skips_draw(skips_draw);
-    if (!tile_missing) {
-      ResourceProvider::ResourceId resource =
-          resource_provider->CreateResource(gfx::Size(1, 1),
-                                            GL_CLAMP_TO_EDGE,
-                                            ResourceProvider::TextureUsageAny,
-                                            RGBA_8888);
-      resource_provider->AllocateForTesting(resource);
-      PushTileProperties(0, 0, resource, gfx::Rect(), false);
-    }
+      : DidDrawCheckLayer(tree_impl, id),
+        tile_missing_(tile_missing),
+        had_incomplete_tile_(had_incomplete_tile) {
     if (animating)
       AddAnimatedTransformToLayer(this, 10.0, 3, 0);
   }
 
   bool tile_missing_;
+  bool had_incomplete_tile_;
 };
 
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenNoTexturesMissing) {
+TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsOnDefault) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
 
   bool tile_missing = false;
-  bool skips_draw = false;
+  bool had_incomplete_tile = false;
   bool is_animating = false;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            2,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
 
@@ -1951,13 +1933,13 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithAnimatedLayer) {
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   bool tile_missing = false;
-  bool skips_draw = false;
+  bool had_incomplete_tile = false;
   bool is_animating = true;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            2,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
 
@@ -1968,23 +1950,20 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithAnimatedLayer) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawSucceedsWithNonAnimatedMissingTexture) {
-  // When a texture is missing and we're not animating, we draw as usual with
-  // checkerboarding.
+TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithMissingTiles) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 3));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
 
   bool tile_missing = true;
-  bool skips_draw = false;
+  bool had_incomplete_tile = false;
   bool is_animating = false;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            4,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
   LayerTreeHostImpl::FrameData frame;
@@ -1993,21 +1972,42 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
-  // When a texture is missing and we're animating, we don't want to draw
-  // anything.
+TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithIncompleteTile) {
+  host_impl_->active_tree()->SetRootLayer(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), 3));
+  DidDrawCheckLayer* root =
+      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+
+  bool tile_missing = false;
+  bool had_incomplete_tile = true;
+  bool is_animating = false;
+  root->AddChild(
+      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
+                                           4,
+                                           tile_missing,
+                                           had_incomplete_tile,
+                                           is_animating,
+                                           host_impl_->resource_provider()));
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
+TEST_F(LayerTreeHostImplTest,
+       PrepareToDrawFailsWithAnimationAndMissingTilesUsesCheckerboard) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   bool tile_missing = true;
-  bool skips_draw = false;
+  bool had_incomplete_tile = false;
   bool is_animating = true;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            6,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
   LayerTreeHostImpl::FrameData frame;
@@ -2018,20 +2018,19 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawFailsWhenAnimationUsesCheckerboard) {
 }
 
 TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawSucceedsWithMissingSkippedAnimatedLayer) {
-  // When the layer skips draw and we're animating, we still draw the frame.
+       PrepareToDrawSucceedsWithAnimationAndIncompleteTiles) {
   host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   bool tile_missing = false;
-  bool skips_draw = true;
+  bool had_incomplete_tile = true;
   bool is_animating = true;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           8,
+                                           6,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
   LayerTreeHostImpl::FrameData frame;
@@ -2040,21 +2039,19 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawSucceedsWhenHighResRequiredButNoMissingTextures) {
-  // When the layer skips draw and we're animating, we still draw the frame.
+TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   bool tile_missing = false;
-  bool skips_draw = false;
+  bool had_incomplete_tile = false;
   bool is_animating = false;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            8,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
@@ -2065,26 +2062,48 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawFailsWhenHighResRequiredAndMissingTextures) {
-  // When the layer skips draw and we're animating, we still draw the frame.
+       PrepareToDrawFailsWhenHighResRequiredAndIncompleteTiles) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  bool tile_missing = true;
-  bool skips_draw = false;
+  bool tile_missing = false;
+  bool had_incomplete_tile = true;
   bool is_animating = false;
   root->AddChild(
       MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
                                            8,
                                            tile_missing,
-                                           skips_draw,
+                                           had_incomplete_tile,
                                            is_animating,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
             host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
+TEST_F(LayerTreeHostImplTest,
+       PrepareToDrawSucceedsWhenHighResRequiredAndMissingTile) {
+  host_impl_->active_tree()->SetRootLayer(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
+  DidDrawCheckLayer* root =
+      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
+  bool tile_missing = true;
+  bool had_incomplete_tile = false;
+  bool is_animating = false;
+  root->AddChild(
+      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
+                                           8,
+                                           tile_missing,
+                                           had_incomplete_tile,
+                                           is_animating,
+                                           host_impl_->resource_provider()));
+  host_impl_->active_tree()->SetRequiresHighResToDraw();
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
