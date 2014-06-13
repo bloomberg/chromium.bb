@@ -1074,5 +1074,3 @@ crbug.com/383596 fast/js/reserved-words-as-property.html [ Failure ]
 crbug.com/383596 inspector-protocol/runtime/runtime-getProperties.html [ Failure ]
 crbug.com/383596 inspector/console/console-eval-scoped.html [ Failure ]
 crbug.com/383596 inspector/console/console-object-preview-accessors.html [ Failure ]
-
-crbug.com/382872 svg/custom/use-instanceRoot-event-bubbling.xhtml [ NeedsRebaseline ]
