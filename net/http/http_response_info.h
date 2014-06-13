@@ -85,8 +85,10 @@ class NET_EXPORT HttpResponseInfo {
 
   // True if the request was fetched via an explicit proxy.  The proxy could
   // be any type of proxy, HTTP or SOCKS.  Note, we do not know if a
-  // transparent proxy may have been involved.
+  // transparent proxy may have been involved. If true, |proxy_server| contains
+  // the name of the proxy server that was used.
   bool was_fetched_via_proxy;
+  HostPortPair proxy_server;
 
   // Whether the request use http proxy or server authentication.
   bool did_use_http_auth;

@@ -41,41 +41,41 @@ const unsigned int kNumDaysInHistorySummary = 30;
 COMPILE_ASSERT(kNumDaysInHistorySummary <= kNumDaysInHistory,
                DataReductionProxySettings_summary_too_long);
 
-  // Values of the UMA DataReductionProxy.StartupState histogram.
-  // This enum must remain synchronized with DataReductionProxyStartupState
-  // in metrics/histograms/histograms.xml.
-  enum ProxyStartupState {
-    PROXY_NOT_AVAILABLE = 0,
-    PROXY_DISABLED,
-    PROXY_ENABLED,
-    PROXY_STARTUP_STATE_COUNT,
-  };
+// Values of the UMA DataReductionProxy.StartupState histogram.
+// This enum must remain synchronized with DataReductionProxyStartupState
+// in metrics/histograms/histograms.xml.
+enum ProxyStartupState {
+  PROXY_NOT_AVAILABLE = 0,
+  PROXY_DISABLED,
+  PROXY_ENABLED,
+  PROXY_STARTUP_STATE_COUNT,
+};
 
-  // Values of the UMA DataReductionProxy.ProbeURL histogram.
-  // This enum must remain synchronized with
-  // DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
-  // TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
-  //     their names match the behavior they track.
-  enum ProbeURLFetchResult {
-    // The probe failed because the Internet was disconnected.
-    INTERNET_DISCONNECTED = 0,
+// Values of the UMA DataReductionProxy.ProbeURL histogram.
+// This enum must remain synchronized with
+// DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
+// TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
+//     their names match the behavior they track.
+enum ProbeURLFetchResult {
+  // The probe failed because the Internet was disconnected.
+  INTERNET_DISCONNECTED = 0,
 
-    // The probe failed for any other reason, and as a result, the proxy was
-    // disabled.
-    FAILED_PROXY_DISABLED,
+  // The probe failed for any other reason, and as a result, the proxy was
+  // disabled.
+  FAILED_PROXY_DISABLED,
 
-    // The probe failed, but the proxy was already restricted.
-    FAILED_PROXY_ALREADY_DISABLED,
+  // The probe failed, but the proxy was already restricted.
+  FAILED_PROXY_ALREADY_DISABLED,
 
-    // THe probe succeeded, and as a result the proxy was restricted.
-    SUCCEEDED_PROXY_ENABLED,
+  // The probe succeeded, and as a result the proxy was restricted.
+  SUCCEEDED_PROXY_ENABLED,
 
-    // The probe succeeded, but the proxy was already restricted.
-    SUCCEEDED_PROXY_ALREADY_ENABLED,
+  // The probe succeeded, but the proxy was already restricted.
+  SUCCEEDED_PROXY_ALREADY_ENABLED,
 
-    // This must always be last.
-    PROBE_URL_FETCH_RESULT_COUNT
-  };
+  // This must always be last.
+  PROBE_URL_FETCH_RESULT_COUNT
+};
 
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
@@ -141,7 +141,7 @@ class DataReductionProxySettings
   bool IsDataReductionProxyEnabled();
 
   // Returns true if the alternative proxy is enabled.
-  bool IsDataReductionProxyAlternativeEnabled();
+  bool IsDataReductionProxyAlternativeEnabled() const;
 
   // Returns true if the proxy is managed by an adminstrator's policy.
   bool IsDataReductionProxyManaged();

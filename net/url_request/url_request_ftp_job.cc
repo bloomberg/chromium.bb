@@ -218,6 +218,7 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
   if (result == OK) {
     if (http_transaction_) {
       http_response_info_ = http_transaction_->GetResponseInfo();
+      SetProxyServer(http_response_info_->proxy_server);
 
       if (http_response_info_->headers->response_code() == 401 ||
           http_response_info_->headers->response_code() == 407) {

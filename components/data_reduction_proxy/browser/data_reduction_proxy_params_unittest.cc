@@ -42,6 +42,7 @@ static const unsigned int HAS_EVERYTHING = 0xff;
 }  // namespace
 
 namespace data_reduction_proxy {
+namespace {
 class TestDataReductionProxyParams : public DataReductionProxyParams {
  public:
 
@@ -101,6 +102,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   unsigned int has_definitions_;
   bool init_result_;
 };
+}  // namespace
 
 class DataReductionProxyParamsTest : public testing::Test {
  public:
@@ -289,6 +291,87 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
         flags,
         HAS_EVERYTHING & ~(tests[i].missing_definitions));
     EXPECT_EQ(tests[i].expected_result, params.init_result());
+  }
+}
+
+TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
+  const struct {
+    net::HostPortPair host_port_pair;
+    bool fallback_allowed;
+    bool expected_result;
+    net::HostPortPair expected_first;
+    net::HostPortPair expected_second;
+  } tests[]  = {
+      { net::HostPortPair::FromURL(GURL(kDefaultOrigin)),
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultOrigin)),
+        net::HostPortPair::FromURL(GURL(kDefaultFallbackOrigin))
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultOrigin)),
+        false,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultOrigin)),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultFallbackOrigin)),
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultFallbackOrigin)),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultFallbackOrigin)),
+        false,
+        false,
+        net::HostPortPair::FromURL(GURL()),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultAltOrigin)),
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultAltOrigin)),
+        net::HostPortPair::FromURL(GURL(kDefaultAltFallbackOrigin))
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultAltOrigin)),
+        false,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultAltOrigin)),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultAltFallbackOrigin)),
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultAltFallbackOrigin)),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultAltFallbackOrigin)),
+        false,
+        false,
+        net::HostPortPair::FromURL(GURL()),
+        net::HostPortPair::FromURL(GURL())
+      },
+      { net::HostPortPair::FromURL(GURL(kDefaultSSLOrigin)),
+        true,
+        true,
+        net::HostPortPair::FromURL(GURL(kDefaultSSLOrigin)),
+        net::HostPortPair::FromURL(GURL())
+      },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    int flags = DataReductionProxyParams::kAllowed |
+                DataReductionProxyParams::kAlternativeAllowed;
+    if (tests[i].fallback_allowed)
+      flags |= DataReductionProxyParams::kFallbackAllowed;
+    TestDataReductionProxyParams params(flags,
+                                        HAS_EVERYTHING & ~HAS_DEV_ORIGIN);
+    std::pair<GURL, GURL> proxy_servers;
+    EXPECT_EQ(tests[i].expected_result,
+              params.IsDataReductionProxy(
+                  tests[i].host_port_pair, &proxy_servers));
+    EXPECT_TRUE(tests[i].expected_first.Equals(
+        net::HostPortPair::FromURL(proxy_servers.first)));
+    EXPECT_TRUE(tests[i].expected_second.Equals(
+        net::HostPortPair::FromURL(proxy_servers.second)));
   }
 }
 

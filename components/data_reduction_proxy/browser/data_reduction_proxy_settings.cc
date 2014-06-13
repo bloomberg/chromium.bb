@@ -247,7 +247,8 @@ bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
       DataReductionProxyParams::IsKeySetOnCommandLine();
 }
 
-bool DataReductionProxySettings::IsDataReductionProxyAlternativeEnabled() {
+bool
+DataReductionProxySettings::IsDataReductionProxyAlternativeEnabled() const {
   return data_reduction_proxy_alternative_enabled_.GetValue();
 }
 
@@ -590,6 +591,7 @@ net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
   // Configure max retries to be at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
   fetcher->SetMaxRetriesOn5xx(kMaxRetries);
+  fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
   return fetcher;
 }
 

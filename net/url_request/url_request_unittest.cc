@@ -1863,6 +1863,8 @@ TEST_F(URLRequestTest, NetworkDelegateProxyError) {
 
   // Check we see a failed request.
   EXPECT_FALSE(req.status().is_success());
+  // The proxy server is not set before failure.
+  EXPECT_TRUE(req.proxy_server().IsEmpty());
   EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, req.status().error());
 
@@ -2737,6 +2739,8 @@ TEST_F(URLRequestTestHTTP, ProxyTunnelRedirectTest) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    // The proxy server is not set before failure.
+    EXPECT_TRUE(r.proxy_server().IsEmpty());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r.status().error());
     EXPECT_EQ(1, d.response_started_count());
     // We should not have followed the redirect.
@@ -2763,6 +2767,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateTunnelConnectionFailed) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    // The proxy server is not set before failure.
+    EXPECT_TRUE(r.proxy_server().IsEmpty());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r.status().error());
     EXPECT_EQ(1, d.response_started_count());
     // We should not have followed the redirect.
@@ -2837,6 +2843,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelRequest) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    // The proxy server is not set before cancellation.
+    EXPECT_TRUE(r.proxy_server().IsEmpty());
     EXPECT_EQ(ERR_EMPTY_RESPONSE, r.status().error());
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
@@ -2867,6 +2875,8 @@ void NetworkDelegateCancelRequest(BlockingNetworkDelegate::BlockMode block_mode,
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    // The proxy server is not set before cancellation.
+    EXPECT_TRUE(r.proxy_server().IsEmpty());
     EXPECT_EQ(ERR_BLOCKED_BY_CLIENT, r.status().error());
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
@@ -2943,6 +2953,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
     EXPECT_EQ(0, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());
@@ -2975,6 +2986,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
     EXPECT_EQ(0, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());
@@ -3050,6 +3062,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
     EXPECT_EQ(net::OK, r.status().error());
     EXPECT_EQ(redirect_url, r.url());
     EXPECT_EQ(original_url, r.original_url());
@@ -3506,6 +3519,8 @@ TEST_F(URLRequestTestHTTP, UnexpectedServerAuthTest) {
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    // The proxy server is not set before failure.
+    EXPECT_TRUE(r.proxy_server().IsEmpty());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r.status().error());
   }
 }

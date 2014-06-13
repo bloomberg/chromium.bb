@@ -113,6 +113,7 @@ HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
       was_fetched_via_spdy(rhs.was_fetched_via_spdy),
       was_npn_negotiated(rhs.was_npn_negotiated),
       was_fetched_via_proxy(rhs.was_fetched_via_proxy),
+      proxy_server(rhs.proxy_server),
       did_use_http_auth(rhs.did_use_http_auth),
       socket_address(rhs.socket_address),
       npn_negotiated_protocol(rhs.npn_negotiated_protocol),
@@ -135,6 +136,7 @@ HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   server_data_unavailable = rhs.server_data_unavailable;
   network_accessed = rhs.network_accessed;
   was_fetched_via_spdy = rhs.was_fetched_via_spdy;
+  proxy_server = rhs.proxy_server;
   was_npn_negotiated = rhs.was_npn_negotiated;
   was_fetched_via_proxy = rhs.was_fetched_via_proxy;
   did_use_http_auth = rhs.did_use_http_auth;

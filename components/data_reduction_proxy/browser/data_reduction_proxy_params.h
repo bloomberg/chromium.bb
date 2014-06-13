@@ -5,19 +5,27 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_PARAMS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_PARAMS_H_
 
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
+#include "net/base/host_port_pair.h"
 #include "url/gurl.h"
 
-namespace data_reduction_proxy {
+namespace net {
+class URLRequest;
+}
 
+namespace data_reduction_proxy {
 // Provides initialization parameters. Proxy origins, the probe url, and the
 // authentication key are taken from flags if available and from preprocessor
-// constants otherwise. Only the key may be changed after construction.
+// constants otherwise. Only the key may be changed after construction. The
+// DataReductionProxySettings class and others use this class to determine
+// the necessary DNS names and keys to configure use of the data reduction
+// proxy.
 class DataReductionProxyParams {
  public:
-
   static const unsigned int kAllowed = (1 << 0);
   static const unsigned int kFallbackAllowed = (1 << 1);
   static const unsigned int kAlternativeAllowed = (1 << 2);
@@ -60,6 +68,25 @@ class DataReductionProxyParams {
   DataReductionProxyParams(int flags);
 
   virtual ~DataReductionProxyParams();
+
+  // Returns true if a data reduction proxy was used for the given |request|.
+  // If true, |proxy_servers.first| will contain the name of the proxy that was
+  // used. |proxy_servers.second| will contain the name of the data reduction
+  // proxy server that would be used if |proxy_server.first| is bypassed, if one
+  // exists. |proxy_servers| can be NULL if the caller isn't interested in its
+  // values.
+  virtual bool WasDataReductionProxyUsed(
+      const net::URLRequest* request,
+      std::pair<GURL, GURL>* proxy_servers) const;
+
+  // Returns true if the specified |host_port_pair| matches a data reduction
+  // proxy. If true, |proxy_servers.first| will contain the name of the proxy
+  // that matches. |proxy_servers.second| will contain the name of the
+  // data reduction proxy server that would be used if |proxy_server.first| is
+  // bypassed, if one exists. |proxy_servers| can be NULL if the caller isn't
+  // interested in its values.
+  bool IsDataReductionProxy(const net::HostPortPair& host_port_pair,
+                            std::pair<GURL, GURL>* proxy_servers) const;
 
   // Returns the data reduction proxy primary origin.
   const GURL& origin() const {

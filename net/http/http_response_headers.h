@@ -15,10 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/http/http_version.h"
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 #include "net/proxy/proxy_service.h"
-#endif
 
 class Pickle;
 class PickleIterator;
@@ -267,7 +264,6 @@ class NET_EXPORT HttpResponseHeaders
   // Returns true if the response is chunk-encoded.
   bool IsChunkEncoded() const;
 
-#if defined (SPDY_PROXY_AUTH_ORIGIN)
   // Contains instructions contained in the Chrome-Proxy header.
   struct DataReductionProxyInfo {
     DataReductionProxyInfo() : bypass_all(false) {}
@@ -294,7 +290,6 @@ class NET_EXPORT HttpResponseHeaders
   ProxyService::DataReductionProxyBypassEventType
   GetDataReductionProxyBypassEventType(
       DataReductionProxyInfo* proxy_info) const;
-#endif
 
   // Returns true if response headers contain the data reduction proxy Via
   // header value.
@@ -398,12 +393,10 @@ class NET_EXPORT HttpResponseHeaders
   // Adds the set of transport security state headers.
   static void AddSecurityStateHeaders(HeaderSet* header_names);
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Searches for the specified Chrome-Proxy action, and if present interprets
   // its value as a duration in seconds.
   bool GetDataReductionProxyBypassDuration(const std::string& action_prefix,
                                            base::TimeDelta* duration) const;
-#endif
 
   // We keep a list of ParsedHeader objects.  These tell us where to locate the
   // header-value pairs within raw_headers_.

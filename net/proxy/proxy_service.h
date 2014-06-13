@@ -269,7 +269,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   bool quick_check_enabled() const { return quick_check_enabled_; }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Values of the UMA DataReductionProxy.BypassInfo{Primary|Fallback}
   // histograms. This enum must remain synchronized with the enum of the same
   // name in metrics/histograms/histograms.xml.
@@ -309,7 +308,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
       bool is_primary,
       const ProxyServer& proxy_server,
       int net_error);
-#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigAfterFailedAutodetect);

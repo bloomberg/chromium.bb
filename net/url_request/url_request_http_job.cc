@@ -806,6 +806,9 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   }
 
   if (result == OK) {
+    if (transaction_ && transaction_->GetResponseInfo()) {
+      SetProxyServer(transaction_->GetResponseInfo()->proxy_server);
+    }
     scoped_refptr<HttpResponseHeaders> headers = GetResponseHeaders();
     if (network_delegate()) {
       // Note that |this| may not be deleted until

@@ -30,6 +30,8 @@
         'data_reduction_proxy/browser/data_reduction_proxy_params.h',
         'data_reduction_proxy/browser/data_reduction_proxy_prefs.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_prefs.h',
+        'data_reduction_proxy/browser/data_reduction_proxy_protocol.cc',
+        'data_reduction_proxy/browser/data_reduction_proxy_protocol.h',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.cc',
         'data_reduction_proxy/browser/data_reduction_proxy_settings.h',
         'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.cc',

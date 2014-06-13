@@ -24,12 +24,9 @@
 #include "net/base/escape.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_log_util.h"
-#include "net/http/http_util.h"
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/proxy/proxy_service.h"
-#endif
 
 using base::StringPiece;
 using base::Time;
@@ -1396,7 +1393,6 @@ bool HttpResponseHeaders::IsChunkEncoded() const {
       HasHeaderValue("Transfer-Encoding", "chunked");
 }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 bool HttpResponseHeaders::GetDataReductionProxyBypassDuration(
     const std::string& action_prefix,
     base::TimeDelta* duration) const {
@@ -1451,7 +1447,6 @@ bool HttpResponseHeaders::GetDataReductionProxyInfo(
   }
   return false;
 }
-#endif  // SPDY_PROXY_AUTH_ORIGIN
 
 bool HttpResponseHeaders::IsDataReductionProxyResponse() const {
   const size_t kVersionSize = 4;
@@ -1480,7 +1475,6 @@ bool HttpResponseHeaders::IsDataReductionProxyResponse() const {
   return false;
 }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 ProxyService::DataReductionProxyBypassEventType
 HttpResponseHeaders::GetDataReductionProxyBypassEventType(
     DataReductionProxyInfo* data_reduction_proxy_info) const {
@@ -1516,6 +1510,5 @@ HttpResponseHeaders::GetDataReductionProxyBypassEventType(
   // There is no bypass event.
   return ProxyService::BYPASS_EVENT_TYPE_MAX;
 }
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 }  // namespace net

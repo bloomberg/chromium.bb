@@ -35,6 +35,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -361,7 +363,8 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       received_content_length_(0),
       original_content_length_(0),
       first_request_(true),
-      prerender_tracker_(NULL) {
+      prerender_tracker_(NULL),
+      data_reduction_proxy_params_(NULL) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
 }
@@ -548,6 +551,15 @@ int ChromeNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
+
+  if (data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
+      data_reduction_proxy_params_,
+      request,
+      original_response_headers,
+      override_response_headers)) {
+    return net::OK;
+  }
+
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
       profile_,
       extension_info_map_.get(),

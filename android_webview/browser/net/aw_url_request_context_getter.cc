@@ -188,7 +188,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   net::URLRequestContextBuilder builder;
   builder.set_user_agent(GetUserAgent());
-  builder.set_network_delegate(new AwNetworkDelegate());
+  AwNetworkDelegate* aw_network_delegate = new AwNetworkDelegate();
+  builder.set_network_delegate(aw_network_delegate);
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -228,6 +229,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DataReductionProxySettings* drp_settings =
       browser_context->GetDataReductionProxySettings();
   if (drp_settings) {
+    aw_network_delegate->set_data_reduction_proxy_params(
+        drp_settings->params());
     std::string drp_key = drp_settings->params()->key();
     // Only precache credentials if a key is available at URLRequestContext
     // initialization.

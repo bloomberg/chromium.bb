@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_transaction_test_util.h"
@@ -276,6 +277,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
   socket_data(0)->RunFor(4);
 
   EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_TRUE(url_request.proxy_server().Equals(
+      net::HostPortPair::FromString("localhost:80")));
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
   EXPECT_FALSE(request_delegate.auth_required_called());
@@ -329,6 +332,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {
   socket_data(0)->RunFor(5);
 
   EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_TRUE(url_request.proxy_server().Equals(
+      net::HostPortPair::FromString("localhost:80")));
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
   EXPECT_TRUE(request_delegate.auth_required_called());
@@ -627,6 +632,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
   socket_data(0)->RunFor(4);
 
   EXPECT_TRUE(url_request1.status().is_success());
+  EXPECT_TRUE(url_request1.proxy_server().Equals(
+      net::HostPortPair::FromString("localhost:80")));
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
   EXPECT_FALSE(request_delegate1.auth_required_called());

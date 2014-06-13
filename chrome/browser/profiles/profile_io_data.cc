@@ -940,6 +940,8 @@ void ProfileIOData::Init(
       new ChromeNetworkDelegate(
           io_thread_globals->extension_event_router_forwarder.get(),
           &enable_referrers_);
+  network_delegate->set_data_reduction_proxy_params(
+      io_thread_globals->data_reduction_proxy_params.get());
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
   network_delegate->set_extension_info_map(

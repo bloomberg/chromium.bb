@@ -32,6 +32,10 @@ class ConnectInterceptor;
 class Predictor;
 }
 
+namespace data_reduction_proxy {
+class DataReductionProxyParams;
+}
+
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
@@ -112,6 +116,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   void set_prerender_tracker(prerender::PrerenderTracker* prerender_tracker) {
     prerender_tracker_ = prerender_tracker;
+  }
+
+  void set_data_reduction_proxy_params(
+      data_reduction_proxy::DataReductionProxyParams* params) {
+    data_reduction_proxy_params_ = params;
   }
 
   // Adds the Client Hints header to HTTP requests.
@@ -237,6 +246,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   bool first_request_;
 
   prerender::PrerenderTracker* prerender_tracker_;
+
+  data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

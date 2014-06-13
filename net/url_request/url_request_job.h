@@ -333,6 +333,9 @@ class NET_EXPORT URLRequestJob
   // Set the status of the job.
   void SetStatus(const URLRequestStatus& status);
 
+  // Set the proxy server that was used, if any.
+  void SetProxyServer(const HostPortPair& proxy_server);
+
   // The number of bytes read before passing to the filter.
   int prefilter_bytes_read() const { return prefilter_bytes_read_; }
 

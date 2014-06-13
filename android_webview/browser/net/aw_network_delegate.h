@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "net/base/network_delegate.h"
 
 namespace android_webview {
@@ -15,6 +16,14 @@ class AwNetworkDelegate : public net::NetworkDelegate {
  public:
   AwNetworkDelegate();
   virtual ~AwNetworkDelegate();
+
+  // Sets the |DataReductionProxySettings| object to use. If not set, the
+  // NetworkDelegate will not perform any operations related to the data
+  // reduction proxy.
+  void set_data_reduction_proxy_params(
+      data_reduction_proxy::DataReductionProxyParams* params) {
+    data_reduction_proxy_params_ = params;
+  }
 
  private:
   // NetworkDelegate implementation.
@@ -58,6 +67,9 @@ class AwNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) OVERRIDE;
+
+  // Data reduction proxy parameters object. Must outlive this.
+  data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;
 
   DISALLOW_COPY_AND_ASSIGN(AwNetworkDelegate);
 };

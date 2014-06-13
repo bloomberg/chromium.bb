@@ -683,6 +683,10 @@ void URLRequestJob::SetStatus(const URLRequestStatus &status) {
     request_->set_status(status);
 }
 
+void URLRequestJob::SetProxyServer(const HostPortPair& proxy_server) {
+  request_->proxy_server_ = proxy_server;
+}
+
 bool URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
   bool rv = false;
 

@@ -665,6 +665,12 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     return received_response_content_length_;
   }
 
+  // Available at NetworkDelegate::NotifyHeadersReceived() time, which is before
+  // the more general response_info() is available, even though it is a subset.
+  const HostPortPair& proxy_server() const {
+    return proxy_server_;
+  }
+
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -872,6 +878,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // The cookie store to be used for this request.
   scoped_refptr<CookieStore> cookie_store_;
+
+  // The proxy server used for this request, if any.
+  HostPortPair proxy_server_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

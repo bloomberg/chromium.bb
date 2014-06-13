@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "net/url_request/url_request.h"
 
 using base::FieldTrialList;
 
@@ -25,7 +26,7 @@ bool DataReductionProxyParams::IsIncludedInFieldTrial() {
 // static
 bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
   return base::FieldTrialList::FindFullName(
-              "DataCompressionProxyAlternativeConfiguration") == kEnabled;
+      "DataCompressionProxyAlternativeConfiguration") == kEnabled;
 }
 
 // static
@@ -223,6 +224,59 @@ void DataReductionProxyParams::InitWithoutChecks() {
   alt_fallback_origin_ = GURL(alt_fallback_origin);
   probe_url_ = GURL(probe_url);
 
+}
+
+bool DataReductionProxyParams::WasDataReductionProxyUsed(
+    const net::URLRequest* request,
+    std::pair<GURL, GURL>* proxy_servers) const {
+  DCHECK(request);
+  return IsDataReductionProxy(request->proxy_server(), proxy_servers);
+}
+
+bool DataReductionProxyParams::IsDataReductionProxy(
+    const net::HostPortPair& host_port_pair,
+    std::pair<GURL, GURL>* proxy_servers) const {
+  if (net::HostPortPair::FromURL(origin()).Equals(host_port_pair)) {
+    if (proxy_servers) {
+      (*proxy_servers).first = origin();
+      if (fallback_allowed())
+        (*proxy_servers).second = fallback_origin();
+    }
+    return true;
+  }
+  if (fallback_allowed() &&
+      net::HostPortPair::FromURL(fallback_origin()).Equals(host_port_pair)) {
+    if (proxy_servers) {
+      (*proxy_servers).first = fallback_origin();
+      (*proxy_servers).second = GURL();
+    }
+    return true;
+  }
+  if (net::HostPortPair::FromURL(alt_origin()).Equals(host_port_pair)) {
+    if (proxy_servers) {
+      (*proxy_servers).first = alt_origin();
+      if (fallback_allowed())
+        (*proxy_servers).second = alt_fallback_origin();
+    }
+    return true;
+  }
+  if (fallback_allowed() &&
+      net::HostPortPair::FromURL(alt_fallback_origin()).Equals(
+      host_port_pair)) {
+    if (proxy_servers) {
+      (*proxy_servers).first = alt_fallback_origin();
+      (*proxy_servers).second = GURL();
+    }
+    return true;
+  }
+  if (net::HostPortPair::FromURL(ssl_origin()).Equals(host_port_pair)) {
+    if (proxy_servers) {
+      (*proxy_servers).first = ssl_origin();
+      (*proxy_servers).second = GURL();
+    }
+    return true;
+  }
+  return false;
 }
 
 std::string DataReductionProxyParams::GetDefaultKey() const {

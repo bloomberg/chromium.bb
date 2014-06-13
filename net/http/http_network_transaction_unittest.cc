@@ -946,6 +946,7 @@ TEST_P(HttpNetworkTransactionTest, TwoIdenticalLocationHeaders) {
   std::string url;
   EXPECT_TRUE(response->headers->IsRedirect(&url));
   EXPECT_EQ("http://good.com/", url);
+  EXPECT_TRUE(response->proxy_server.IsEmpty());
 }
 
 // Checks that two distinct Location headers result in an error.
@@ -1008,6 +1009,7 @@ TEST_P(HttpNetworkTransactionTest, Head) {
   EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ(1234, response->headers->GetContentLength());
   EXPECT_EQ("HTTP/1.1 404 Not Found", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->proxy_server.IsEmpty());
 
   std::string server_header;
   void* iter = NULL;
@@ -1063,6 +1065,7 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
 
     EXPECT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+    EXPECT_TRUE(response->proxy_server.IsEmpty());
 
     std::string response_data;
     rv = ReadTransaction(trans.get(), &response_data);
@@ -10275,6 +10278,8 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(response->was_fetched_via_proxy);
+  EXPECT_TRUE(
+      response->proxy_server.Equals(HostPortPair::FromString("myproxy:70")));
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
   LoadTimingInfo load_timing_info;
@@ -10349,6 +10354,8 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(response->was_fetched_via_proxy);
+  EXPECT_TRUE(
+      response->proxy_server.Equals(HostPortPair::FromString("myproxy:70")));
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));

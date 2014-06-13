@@ -486,7 +486,8 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
       stream_request_->protocol_negotiated());
   response_.was_fetched_via_spdy = stream_request_->using_spdy();
   response_.was_fetched_via_proxy = !proxy_info_.is_direct();
-
+  if (response_.was_fetched_via_proxy && !proxy_info_.is_empty())
+    response_.proxy_server = proxy_info_.proxy_server().host_port_pair();
   OnIOComplete(OK);
 }
 
@@ -999,69 +1000,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     ResetConnectionAndRequestForResend();
     return OK;
   }
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  // Server-induced fallback; see: http://crbug.com/143712
-  if (response_.was_fetched_via_proxy) {
-    ProxyService::DataReductionProxyBypassEventType proxy_bypass_event =
-        ProxyService::BYPASS_EVENT_TYPE_MAX;
-    bool data_reduction_proxy_used =
-        proxy_info_.proxy_server().isDataReductionProxy();
-    bool data_reduction_fallback_proxy_used = false;
-#if defined(DATA_REDUCTION_FALLBACK_HOST)
-    if (!data_reduction_proxy_used) {
-      data_reduction_fallback_proxy_used =
-          proxy_info_.proxy_server().isDataReductionProxyFallback();
-    }
-#endif
-
-    if (data_reduction_proxy_used || data_reduction_fallback_proxy_used) {
-      net::HttpResponseHeaders::DataReductionProxyInfo
-      data_reduction_proxy_info;
-      proxy_bypass_event
-          = response_.headers->GetDataReductionProxyBypassEventType(
-              &data_reduction_proxy_info);
-      if (proxy_bypass_event < ProxyService::BYPASS_EVENT_TYPE_MAX) {
-        ProxyService* proxy_service = session_->proxy_service();
-
-        proxy_service->RecordDataReductionProxyBypassInfo(
-            data_reduction_proxy_used, proxy_info_.proxy_server(),
-            proxy_bypass_event);
-
-        ProxyServer proxy_server;
-#if defined(DATA_REDUCTION_FALLBACK_HOST)
-        if (data_reduction_proxy_used && data_reduction_proxy_info.bypass_all) {
-          // TODO(bengr): Rename as DATA_REDUCTION_FALLBACK_ORIGIN.
-          GURL proxy_url(DATA_REDUCTION_FALLBACK_HOST);
-          if (proxy_url.SchemeIsHTTPOrHTTPS()) {
-            proxy_server = ProxyServer(proxy_url.SchemeIs("http") ?
-                                           ProxyServer::SCHEME_HTTP :
-                                           ProxyServer::SCHEME_HTTPS,
-                                       HostPortPair::FromURL(proxy_url));
-            }
-        }
-#endif
-        if (proxy_service->MarkProxiesAsBadUntil(
-                proxy_info_,
-                data_reduction_proxy_info.bypass_duration,
-                proxy_server,
-                net_log_)) {
-          // Only retry idempotent methods. We don't want to resubmit a POST
-          // if the proxy took some action.
-          if (request_->method == "GET" ||
-              request_->method == "OPTIONS" ||
-              request_->method == "HEAD" ||
-              request_->method == "PUT" ||
-              request_->method == "DELETE" ||
-              request_->method == "TRACE") {
-            ResetConnectionAndRequestForResend();
-            return OK;
-          }
-        }
-      }
-    }
-  }
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   // Like Net.HttpResponseCode, but only for MAIN_FRAME loads.
   if (request_->load_flags & LOAD_MAIN_FRAME) {

@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -43,11 +45,6 @@
 #include "net/proxy/proxy_config_service_linux.h"
 #elif defined(OS_ANDROID)
 #include "net/proxy/proxy_config_service_android.h"
-#endif
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "base/metrics/histogram.h"
-#include "base/metrics/sparse_histogram.h"
 #endif
 
 using base::TimeDelta;
@@ -1428,7 +1425,6 @@ scoped_ptr<ProxyService::PacPollPolicy>
   return scoped_ptr<PacPollPolicy>(new DefaultPollPolicy());
 }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
 void ProxyService::RecordDataReductionProxyBypassInfo(
     bool is_primary,
     const ProxyServer& proxy_server,
@@ -1464,7 +1460,6 @@ void ProxyService::RecordDataReductionProxyBypassOnNetworkError(
       "DataReductionProxy.BypassOnNetworkErrorFallback",
       std::abs(net_error));
 }
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 void ProxyService::OnProxyConfigChanged(
     const ProxyConfig& config,
