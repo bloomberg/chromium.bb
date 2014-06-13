@@ -35,11 +35,6 @@ using content::WebContents;
 
 namespace {
 
-bool IsSettingsWindowEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableSettingsWindow);
-}
-
 content::WebUIDataSource* CreateUberHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUberHost);
@@ -112,7 +107,7 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   // Group settings and help separately if settings in a window is enabled.
   base::string16 settings_group(ASCIIToUTF16("settings_group"));
   base::string16 other_group(ASCIIToUTF16(
-      IsSettingsWindowEnabled() ? "other_group" : "settings_group"));
+      ::switches::SettingsWindowEnabled() ? "other_group" : "settings_group"));
   source->AddString("extensionsHost",
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
   source->AddLocalizedString("extensionsDisplayName",

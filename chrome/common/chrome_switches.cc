@@ -599,8 +599,10 @@ const char kEnableSearchButtonInOmniboxForStrOrIip[] =
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 
-// Enable settings in a separate browser window per profile.
-const char kEnableSettingsWindow[]          = "enable-settings-window";
+// Enable or disable settings in a separate browser window per profile
+// (see SettingsWindowEnabled() below).
+const char kEnableSettingsWindow[]           = "enable-settings-window";
+const char kDisableSettingsWindow[]          = "disable-settings-window";
 
 // Enable SPDY/4, aka HTTP/2. This is a temporary testing flag.
 const char kEnableSpdy4[]                   = "enable-spdy4";
@@ -1387,6 +1389,16 @@ const char kDebugPrint[] = "debug-print";
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 #endif
+
+bool SettingsWindowEnabled() {
+#if defined(OS_CHROMEOS)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kDisableSettingsWindow);
+#else
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableSettingsWindow);
+#endif
+}
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

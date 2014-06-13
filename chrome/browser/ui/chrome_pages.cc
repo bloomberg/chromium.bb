@@ -108,11 +108,6 @@ void ShowHelpImpl(Browser* browser,
   ShowSingletonTab(browser, url);
 }
 
-bool IsSettingsWindowEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableSettingsWindow);
-}
-
 }  // namespace
 
 void ShowBookmarkManager(Browser* browser) {
@@ -234,7 +229,7 @@ void ShowSettings(Browser* browser) {
 }
 
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
-  if (IsSettingsWindowEnabled()) {
+  if (::switches::SettingsWindowEnabled()) {
     ShowSettingsSubPageForProfile(browser->profile(), sub_page);
     return;
   }
@@ -243,7 +238,7 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
-  if (IsSettingsWindowEnabled()) {
+  if (::switches::SettingsWindowEnabled()) {
     content::RecordAction(base::UserMetricsAction("ShowOptions"));
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
         profile, GetSettingsUrl(sub_page));

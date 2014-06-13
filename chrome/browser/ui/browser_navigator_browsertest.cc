@@ -196,6 +196,12 @@ void BrowserNavigatorTest::RunDoNothingIfIncognitoIsForcedTest(
             browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+void BrowserNavigatorTest::SetUpCommandLine(base::CommandLine* command_line) {
+  // Disable settings-in-a-window so that we can use the settings page and
+  // sub-pages to test browser navigation.
+  command_line->AppendSwitch(::switches::kDisableSettingsWindow);
+}
+
 void BrowserNavigatorTest::Observe(
     int type,
     const content::NotificationSource& source,

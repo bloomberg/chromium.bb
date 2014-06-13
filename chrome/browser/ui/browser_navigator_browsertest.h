@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace base {
+class CommandLine;
+}
+
 namespace chrome {
 struct NavigateParams;
 }
@@ -38,6 +42,9 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   void RunSuppressTest(WindowOpenDisposition disposition);
   void RunUseNonIncognitoWindowTest(const GURL& url);
   void RunDoNothingIfIncognitoIsForcedTest(const GURL& url);
+
+  // InProcessBrowserTest:
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

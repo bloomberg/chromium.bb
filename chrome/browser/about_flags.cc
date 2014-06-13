@@ -450,6 +450,14 @@ const Experiment::Choice kEnableFileManagerNewGalleryChoices[] = {
 };
 #endif
 
+const Experiment::Choice kEnableSettingsWindowChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    ::switches::kEnableSettingsWindow, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    ::switches::kDisableSettingsWindow, "" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1773,7 +1781,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SETTINGS_WINDOW_NAME,
     IDS_FLAGS_ENABLE_SETTINGS_WINDOW_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableSettingsWindow)
+    MULTI_VALUE_TYPE(kEnableSettingsWindowChoices)
   },
 #if defined(OS_ANDROID)
   {

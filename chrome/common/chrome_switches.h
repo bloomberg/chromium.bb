@@ -175,6 +175,7 @@ extern const char kEnableSearchButtonInOmniboxForStr[];
 extern const char kEnableSearchButtonInOmniboxForStrOrIip[];
 extern const char kEnableSessionCrashedBubble[];
 extern const char kEnableSettingsWindow[];
+extern const char kDisableSettingsWindow[];
 extern const char kEnableSpdy4[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
@@ -403,6 +404,8 @@ extern const char kDebugPrint[];
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
 #endif
+
+bool SettingsWindowEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
