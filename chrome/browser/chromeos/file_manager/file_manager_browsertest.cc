@@ -1015,6 +1015,19 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToUsb"),
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToLocal")));
 
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_ShowGridView DISABLED_ShowGridView
+#else
+#define MAYBE_ShowGridView ShowGridView
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_ShowGridView,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
+                      TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const email;
@@ -1279,7 +1292,6 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        OpenMultipleImagesOnDownloads) {
-  AddScript("gallery/test_util.js");
   AddScript("gallery/open_image_files.js");
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();

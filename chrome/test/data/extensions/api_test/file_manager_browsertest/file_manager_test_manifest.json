@@ -17,6 +17,7 @@
       "file_manager/execute_default_task.js",
       "file_manager/file_display.js",
       "file_manager/folder_shortcuts.js",
+      "file_manager/grid_view.js",
       "file_manager/keyboard_operations.js",
       "file_manager/multi_profile.js",
       "file_manager/navigation_list.js",

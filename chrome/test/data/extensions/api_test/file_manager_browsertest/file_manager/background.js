@@ -268,16 +268,13 @@ function testPromise(promise) {
  *     result.
  */
 function fakeKeyDown(windowId, query, keyIdentifer, ctrlKey) {
-  return new Promise(function(fulfill, reject) {
-    callRemoteTestUtil('fakeKeyDown',
-                       windowId,
-                       [query, keyIdentifer, ctrlKey],
-                       function(result) {
-                         if (result)
-                           fulfill();
-                         else
-                           reject(new Error('Fail to fake key down.'));
-                       });
+  var resultPromise = callRemoteTestUtil(
+      'fakeKeyDown', windowId, [query, keyIdentifer, ctrlKey]);
+  return resultPromise.then(function(result) {
+    if (result)
+      return true;
+    else
+      return Promise.reject('Fail to fake key down.');
   });
 }
 
@@ -433,12 +430,10 @@ var SHARED_WITH_ME_ENTRY_SET = [
  *     Can be null.
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
- * @param {function(string)} Callback with the app id.
+ * @param {function(string)=} opt_callback Callback with the app id.
  * @return {Promise} Promise to be fulfilled after window creating.
  */
-function openNewWindow(appState, initialRoot, callback) {
-  var appId;
-
+function openNewWindow(appState, initialRoot, opt_callback) {
   // TODO(mtomasz): Migrate from full paths to a pair of a volumeId and a
   // relative path. To compose the URL communicate via messages with
   // file_manager_browser_test.cc.
@@ -452,7 +447,7 @@ function openNewWindow(appState, initialRoot, callback) {
   return callRemoteTestUtil('openMainWindow',
                             null,
                             [processedAppState],
-                            callback);
+                            opt_callback);
 }
 
 /**
@@ -466,36 +461,36 @@ function openNewWindow(appState, initialRoot, callback) {
  *     Can be null.
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
- * @param {function(string, Array.<Array.<string>>)} Callback with the app id
- *     and with the file list.
+ * @param {function(string, Array.<Array.<string>>)=} opt_callback Callback with
+ *     the window ID and with the file list.
+ * @return {Promise} Promise to be fulfilled with window ID.
  */
-function setupAndWaitUntilReady(appState, initialRoot, callback) {
-  var appId;
+function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
+  var windowPromise = openNewWindow(appState, initialRoot);
+  var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
+  var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
+  var detailedTablePromise = windowPromise.then(function(windowId) {
+    return waitForElement(windowId, '#detail-table').then(function() {
+      // Wait until the elements are loaded in the table.
+      return waitForFileListChange(windowId, 0);
+    });
+  });
 
-  StepsRunner.run([
-    function() {
-      openNewWindow(appState, initialRoot, this.next);
-    },
-    function(inAppId) {
-      appId = inAppId;
-      addEntries(['local'], BASIC_LOCAL_ENTRY_SET, this.next);
-    },
-    function(success) {
-      chrome.test.assertTrue(success);
-      addEntries(['drive'], BASIC_DRIVE_ENTRY_SET, this.next);
-    },
-    function(success) {
-      chrome.test.assertTrue(success);
-      waitForElement(appId, '#detail-table').then(this.next);
-    },
-    function(success) {
-      waitForFileListChange(appId, 0).then(this.next);
-    },
-    function(fileList) {
-      callback(appId, fileList);
-      this.next();
-    }
-  ]);
+  if (opt_callback)
+    opt_callback = chrome.test.callbackPass(opt_callback);
+
+  return Promise.all([
+    windowPromise,
+    localEntriesPromise,
+    driveEntriesPromise,
+    detailedTablePromise
+  ]).then(function(results) {
+    if (opt_callback)
+      opt_callback(results[0], results[3]);
+    return results[0];
+  }).catch(function(e) {
+    chrome.test.fail(e.stack || e);
+  });
 }
 
 /**
