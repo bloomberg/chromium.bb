@@ -699,13 +699,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableFastUnload)
   },
   {
-    "enable-adview",
-    IDS_FLAGS_ENABLE_ADVIEW_NAME,
-    IDS_FLAGS_ENABLE_ADVIEW_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableAdview)
-  },
-  {
     "enable-app-window-controls",
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME,
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION,

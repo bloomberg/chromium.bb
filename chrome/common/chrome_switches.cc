@@ -417,9 +417,6 @@ extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
 extern const char kEnableAccessRequestNotifications[] =
     "enable-access-request-notifications";
 
-// Enables the <adview> tag in packaged apps.
-const char kEnableAdview[]                  = "enable-adview";
-
 // Enable Answers in Suggest.
 const char kEnableAnswersInSuggest[]        = "enable-answers-in-suggest";
 

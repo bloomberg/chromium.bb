@@ -872,7 +872,6 @@
         'browser/accessibility/accessibility_extension_apitest.cc',
         'browser/accessibility/browser_accessibility_state_browsertest.cc',
         'browser/app_controller_mac_browsertest.mm',
-        'browser/apps/ad_view_browsertest.cc',
         'browser/apps/app_browsertest.cc',
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',

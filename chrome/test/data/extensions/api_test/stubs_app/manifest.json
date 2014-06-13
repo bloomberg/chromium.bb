@@ -8,7 +8,6 @@
     }
   },
   "permissions": [
-    "adview",
     "alarms",
     "audio",
     "audioCapture",

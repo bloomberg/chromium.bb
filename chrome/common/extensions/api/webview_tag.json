@@ -243,10 +243,6 @@
           "url": {
             "description": "The URL of the frame requesting access to local file system.",
             "type": "string"
-          },
-          "allowed_by_default": {
-            "description": "The default permission according to cookie setting. This is the default behaviour if <code>allow</code> is not called",
-            "type": "bool"
           }
         },
         "functions": [

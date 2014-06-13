@@ -560,7 +560,6 @@
   [
     404,
     "apps/declare_permissions.html",
-    "apps/adview.html",
     "target page not found"
   ],
   [
@@ -662,7 +661,6 @@
   [
     404,
     "apps/private_apis.html",
-    "apps/adview.html",
     "target page not found"
   ],
   [
@@ -1628,7 +1626,6 @@
   [
     404,
     "extensions/private_apis.html",
-    "extensions/adview.html",
     "target page not found"
   ],
   [

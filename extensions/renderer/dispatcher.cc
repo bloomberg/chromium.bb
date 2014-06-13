@@ -837,8 +837,6 @@ void Dispatcher::UpdateOriginPermissions(
 
 void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
-  // TODO(fsamuel): Add <adview> to the whitelist once it has been converted
-  // into a custom element.
   blink::WebCustomElement::addEmbedderCustomElementName("browser-plugin");
 }
 

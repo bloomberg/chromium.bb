@@ -91,7 +91,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kAccessibilityPrivate, "accessibilityPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kActiveTab, "activeTab"},
-      {APIPermission::kAdView, "adview"},
       {APIPermission::kAlarms, "alarms"},
       {APIPermission::kBookmark, "bookmarks", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS, PermissionMessage::kBookmarks},

@@ -249,8 +249,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("webViewRequest",
                              IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
-  source_map->RegisterSource("adView", IDR_AD_VIEW_JS);
-  source_map->RegisterSource("denyAdView", IDR_AD_VIEW_DENY_JS);
   source_map->RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
 
@@ -296,20 +294,6 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
       }
     } else {
       module_system->Require("denyWebView");
-    }
-  }
-
-  // Same comment as above for <adview> tag.
-  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
-      is_within_platform_app) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kEnableAdview)) {
-      if (extension->permissions_data()->HasAPIPermission(
-              extensions::APIPermission::kAdView)) {
-        module_system->Require("adView");
-      } else {
-        module_system->Require("denyAdView");
-      }
     }
   }
 }

@@ -159,7 +159,6 @@ using blink::WebVector;
 namespace {
 
 const char kWebViewTagName[] = "WEBVIEW";
-const char kAdViewTagName[] = "ADVIEW";
 
 ChromeContentRendererClient* g_current_client;
 
@@ -502,7 +501,6 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     if (extension) {
       const extensions::APIPermission::ID perms[] = {
         extensions::APIPermission::kWebView,
-        extensions::APIPermission::kAdView
       };
       for (size_t i = 0; i < arraysize(perms); ++i) {
         if (extension->permissions_data()->HasAPIPermission(perms[i]))
@@ -1397,14 +1395,14 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
 bool ChromeContentRendererClient::AllowBrowserPlugin(
     blink::WebPluginContainer* container) {
   // If this |BrowserPlugin| <object> in the |container| is not inside a
-  // <webview>/<adview> shadowHost, we disable instantiating this plugin. This
+  // <webview> shadowHost, we disable instantiating this plugin. This
   // is to discourage and prevent developers from accidentally attaching
   // <object> directly in apps.
   //
   // Note that this check below does *not* ensure any security, it is still
   // possible to bypass this check.
   // TODO(lazyboy): http://crbug.com/178663, Ensure we properly disallow
-  // instantiating BrowserPlugin outside of the <webview>/<adview> shim.
+  // instantiating BrowserPlugin outside of the <webview> shim.
   if (container->element().isNull())
     return false;
 
@@ -1412,8 +1410,7 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
     return false;
 
   WebString tag_name = container->element().shadowHost().tagName();
-  return tag_name.equals(WebString::fromUTF8(kWebViewTagName)) ||
-    tag_name.equals(WebString::fromUTF8(kAdViewTagName));
+  return tag_name.equals(WebString::fromUTF8(kWebViewTagName));
 }
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(

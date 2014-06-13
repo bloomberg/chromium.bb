@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
@@ -95,10 +94,6 @@ GuestViewBase* GuestViewBase::Create(
     return new WebViewGuest(guest_instance_id,
                             guest_web_contents,
                             embedder_extension_id);
-  } else if (view_type == "adview") {
-    return new AdViewGuest(guest_instance_id,
-                           guest_web_contents,
-                           embedder_extension_id);
   }
   NOTREACHED();
   return NULL;
