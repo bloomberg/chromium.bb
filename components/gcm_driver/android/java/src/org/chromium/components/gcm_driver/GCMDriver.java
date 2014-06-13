@@ -14,6 +14,8 @@ import com.google.android.gcm.GCMRegistrar;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,10 +155,25 @@ public class GCMDriver {
         }
     }
 
-    static void onMessageReceived(final String appId, final Bundle extras) {
+    static void onMessageReceived(Context context, final String appId, final Bundle extras) {
+        final String PUSH_API_DATA_KEY = "data";
+        if (!extras.containsKey(PUSH_API_DATA_KEY)) {
+            // For now on Android only the Push API uses GCMDriver. To avoid double-handling of
+            // messages already handled in Java by other implementations of MultiplexingGcmListener,
+            // and unnecessarily waking up the browser processes for all existing GCM messages that
+            // are received by Chrome on Android, we currently discard messages unless they are
+            // destined for the Push API.
+            // TODO(johnme): Find a better way of distinguishing messages that should be delivered
+            // to native from messages that have already been delivered to Java, for example by
+            // refactoring other implementations of MultiplexingGcmListener to instead register with
+            // this class, and distinguish them based on appId (which also requires GCM to start
+            // sending us the app IDs).
+            return;
+        }
+
         // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
         ThreadUtils.assertOnUiThread();
-        launchNativeThen(new Runnable() {
+        launchNativeThen(context, new Runnable() {
             @Override public void run() {
                 final String BUNDLE_SENDER_ID = "from";
                 final String BUNDLE_COLLAPSE_KEY = "collapse_key";
@@ -182,10 +199,10 @@ public class GCMDriver {
         });
     }
 
-    static void onMessagesDeleted(final String appId) {
+    static void onMessagesDeleted(Context context, final String appId) {
         // TODO(johnme): Store event and redeliver later if Chrome is killed before delivery.
         ThreadUtils.assertOnUiThread();
-        launchNativeThen(new Runnable() {
+        launchNativeThen(context, new Runnable() {
             @Override public void run() {
                 sInstance.nativeOnMessagesDeleted(sInstance.mNativeGCMDriverAndroid, appId);
             }
@@ -200,12 +217,31 @@ public class GCMDriver {
             String senderId, String collapseKey, String[] dataKeysAndValues);
     private native void nativeOnMessagesDeleted(long nativeGCMDriverAndroid, String appId);
 
-    private static void launchNativeThen(Runnable task) {
+    private static void launchNativeThen(Context context, Runnable task) {
         if (sInstance != null) {
             task.run();
             return;
         }
 
-        throw new UnsupportedOperationException("Native startup not yet implemented");
+        // TODO(johnme): Call ChromeMobileApplication.initCommandLine(context) or
+        // ChromeShellApplication.initCommandLine() as appropriate.
+
+        try {
+            final int MAX_RENDERERS = 1;
+            BrowserStartupController.get(context).startBrowserProcessesSync(MAX_RENDERERS);
+            // TODO(johnme): Explicitly call a JNI method that starts up GCMDriver,
+            // rather than relying on it being started automatically by
+            // ProfileSyncServiceFactory::BuildServiceInstanceFor.
+            if (sInstance != null) {
+                task.run();
+            } else {
+                Log.e(TAG, "Started browser process, but failed to instantiate GCMDriver.");
+            }
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Failed to start browser process.", e);
+            System.exit(-1);
+        }
+
+        // TODO(johnme): Now we should probably exit?
     }
 }

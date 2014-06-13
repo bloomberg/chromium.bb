@@ -1,5 +1,7 @@
 include_rules = [
   "+components/os_crypt",
+  # TODO(johnme): Fix this layering violation.
+  "!content/public/android/java",
   "+google_apis/gaia",
   "+google_apis/gcm",
   "+jni",

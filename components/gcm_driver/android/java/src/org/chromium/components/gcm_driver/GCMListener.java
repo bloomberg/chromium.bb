@@ -58,7 +58,8 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
                 // TODO(johnme): Get app ID.
-                GCMDriver.onMessageReceived("unknown-app-id", intent.getExtras());
+                GCMDriver.onMessageReceived(getApplicationContext(), "unknown-app-id",
+                    intent.getExtras());
             }
         });
     }
@@ -68,7 +69,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
                 // TODO(johnme): Get app ID.
-                GCMDriver.onMessagesDeleted("unknown-app-id");
+                GCMDriver.onMessagesDeleted(getApplicationContext(), "unknown-app-id");
             }
         });
     }

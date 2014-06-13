@@ -107,6 +107,8 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
+            # TODO(johnme): Fix the layering violation of depending on content/
+            '../content/content.gyp:content_java',
             '../sync/sync.gyp:sync_java',
           ],
           'variables': {
