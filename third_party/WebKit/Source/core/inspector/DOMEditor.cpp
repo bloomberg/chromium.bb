@@ -42,6 +42,8 @@
 #include "core/inspector/InspectorHistory.h"
 #include "wtf/RefPtr.h"
 
+using namespace std;
+
 namespace WebCore {
 
 class DOMEditor::RemoveChildAction FINAL : public InspectorHistory::Action {

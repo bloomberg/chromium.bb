@@ -33,6 +33,8 @@
 #include "platform/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 
+using namespace std;
+
 namespace WebCore {
 
 static const int maxIntervalForUserGestureForwarding = 1000; // One second matches Gecko.
@@ -96,7 +98,7 @@ DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
 
-    double intervalMilliseconds = std::max(oneMillisecond, interval * oneMillisecond);
+    double intervalMilliseconds = max(oneMillisecond, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
         intervalMilliseconds = minimumInterval;
     if (singleShot)

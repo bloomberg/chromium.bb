@@ -75,6 +75,7 @@
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;
+using namespace std;
 
 namespace OverlayZOrders {
 // Use 99 as a big z-order number so that highlight is above other overlays.

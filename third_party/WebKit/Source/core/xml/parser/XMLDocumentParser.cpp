@@ -72,6 +72,8 @@
 #include "wtf/Vector.h"
 #include "wtf/unicode/UTF8.h"
 
+using namespace std;
+
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -32,6 +32,7 @@
 #include "bindings/v8/V8Callback.h"
 #include "modules/geolocation/Geolocation.h"
 
+using namespace std;
 using namespace WTF;
 
 namespace WebCore {

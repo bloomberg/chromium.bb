@@ -41,6 +41,7 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
 
+using namespace std;
 using namespace WebCore;
 
 namespace blink {

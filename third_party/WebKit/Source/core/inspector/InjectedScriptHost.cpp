@@ -41,6 +41,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace std;
+
 namespace WebCore {
 
 PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()

@@ -51,6 +51,8 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 
+using namespace std;
+
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -33,6 +33,8 @@
 #include "bindings/v8/ScriptRegexp.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace std;
+
 namespace WebCore {
 namespace ContentSearchUtils {
 

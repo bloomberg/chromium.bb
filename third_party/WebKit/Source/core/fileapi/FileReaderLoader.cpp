@@ -50,6 +50,8 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace std;
+
 namespace WebCore {
 
 FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* client)
@@ -197,7 +199,7 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
         // Check that we can cast to unsigned since we have to do
         // so to call ArrayBuffer's create function.
         // FIXME: Support reading more than the current size limit of ArrayBuffer.
-        if (initialBufferLength > std::numeric_limits<unsigned>::max()) {
+        if (initialBufferLength > numeric_limits<unsigned>::max()) {
             failed(FileError::NOT_READABLE_ERR);
             return;
         }

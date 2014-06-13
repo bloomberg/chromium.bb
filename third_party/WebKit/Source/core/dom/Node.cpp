@@ -96,6 +96,8 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace std;
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -1620,7 +1622,7 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
     unsigned connection = start1->treeScope() != start2->treeScope() ? DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC : 0;
 
     // Walk the two chains backwards and look for the first difference.
-    for (unsigned i = std::min(index1, index2); i; --i) {
+    for (unsigned i = min(index1, index2); i; --i) {
         const Node* child1 = chain1[--index1];
         const Node* child2 = chain2[--index2];
         if (child1 != child2) {

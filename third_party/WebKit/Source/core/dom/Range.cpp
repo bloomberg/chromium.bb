@@ -53,6 +53,7 @@
 
 namespace WebCore {
 
+using namespace std;
 using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, rangeCounter, ("Range"));
@@ -934,8 +935,8 @@ String Range::toString() const
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             String data = toCharacterData(n)->data();
             int length = data.length();
-            int start = (n == m_start.container()) ? std::min(std::max(0, m_start.offset()), length) : 0;
-            int end = (n == m_end.container()) ? std::min(std::max(start, m_end.offset()), length) : length;
+            int start = (n == m_start.container()) ? min(max(0, m_start.offset()), length) : 0;
+            int end = (n == m_end.container()) ? min(max(start, m_end.offset()), length) : length;
             builder.append(data, start, end - start);
         }
     }
@@ -1339,7 +1340,7 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight, RangeInFi
             continue;
         RenderText* renderText = toRenderText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
-        int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
+        int endOffset = node == endContainer ? m_end.offset() : numeric_limits<int>::max();
         bool isFixed = false;
         renderText->absoluteRectsForRange(rects, startOffset, endOffset, useSelectionHeight, &isFixed);
         allFixed &= isFixed;
@@ -1367,7 +1368,7 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight, RangeIn
             continue;
         RenderText* renderText = toRenderText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
-        int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
+        int endOffset = node == endContainer ? m_end.offset() : numeric_limits<int>::max();
         bool isFixed = false;
         renderText->absoluteQuadsForRange(quads, startOffset, endOffset, useSelectionHeight, &isFixed);
         allFixed &= isFixed;

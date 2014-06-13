@@ -39,6 +39,8 @@
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
 
+using namespace std;
+
 namespace WebCore {
 
 XMLTreeViewer::XMLTreeViewer(Document* document)

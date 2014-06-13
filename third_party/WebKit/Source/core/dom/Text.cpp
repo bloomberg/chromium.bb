@@ -40,6 +40,8 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace std;
+
 namespace WebCore {
 
 PassRefPtrWillBeRawPtr<Text> Text::create(Document& document, const String& data)

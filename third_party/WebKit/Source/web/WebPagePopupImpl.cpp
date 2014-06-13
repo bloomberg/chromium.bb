@@ -52,6 +52,7 @@
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;
+using namespace std;
 
 namespace blink {
 
