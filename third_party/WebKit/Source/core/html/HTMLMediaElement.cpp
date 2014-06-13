@@ -3190,8 +3190,12 @@ bool HTMLMediaElement::hasPendingActivity() const
 
 void HTMLMediaElement::contextDestroyed()
 {
+    // With Oilpan the ExecutionContext is weakly referenced from the media
+    // controller and so it will clear itself on destruction.
+#if !ENABLE(OILPAN)
     if (m_mediaController)
         m_mediaController->clearExecutionContext();
+#endif
     ActiveDOMObject::contextDestroyed();
 }
 

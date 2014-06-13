@@ -84,7 +84,9 @@ public:
     bool isRestrained() const;
     bool isBlocked() const;
 
-    void clearExecutionContext() { m_executionContext = 0; }
+#if !ENABLE(OILPAN)
+    void clearExecutionContext() { m_executionContext = nullptr; }
+#endif
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -124,7 +126,7 @@ private:
     OwnPtrWillBeMember<GenericEventQueue> m_pendingEventsQueue;
     mutable Timer<MediaController> m_clearPositionTimer;
     OwnPtr<Clock> m_clock;
-    ExecutionContext* m_executionContext;
+    RawPtrWillBeWeakMember<ExecutionContext> m_executionContext;
     Timer<MediaController> m_timeupdateTimer;
     double m_previousTimeupdateTime;
 };

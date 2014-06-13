@@ -613,6 +613,7 @@ void MediaController::trace(Visitor* visitor)
 {
     visitor->trace(m_mediaElements);
     visitor->trace(m_pendingEventsQueue);
+    visitor->trace(m_executionContext);
     EventTargetWithInlineData::trace(visitor);
 }
 
