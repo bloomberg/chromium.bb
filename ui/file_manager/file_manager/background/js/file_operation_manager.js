@@ -181,13 +181,14 @@ fileOperationUtil.copyTo = function(
           // TODO(mtomasz): Convert URL to Entry in custom bindings.
           util.URLsToEntries(
               [status.destinationUrl], function(destinationEntries) {
-            entryChangedCallback(source, destinationEntries[0] || null);
-            callback();
-          });
+                entryChangedCallback(status.sourceUrl,
+                                     destinationEntries[0] || null);
+                callback();
+              });
           break;
 
         case 'progress':
-          progressCallback(source, status.size);
+          progressCallback(status.sourceUrl, status.size);
           callback();
           break;
 
@@ -528,6 +529,14 @@ FileOperationManager.CopyTask = function(sourceEntries,
       sourceEntries,
       targetDirEntry);
   this.deleteAfterCopy = deleteAfterCopy;
+
+  /*
+   * Rate limiter which is used to avoid sending update request for progress bar
+   * too frequently.
+   * @type {AsyncUtil.RateLimiter}
+   * @private
+   */
+  this.updateProgressRateLimiter_ = null
 };
 
 /**
@@ -624,6 +633,34 @@ FileOperationManager.CopyTask.prototype.run = function(
     }
   }.bind(this);
 
+  /**
+   * Accumulates processed bytes and call |progressCallback| if needed.
+   *
+   * @param {number} index The index of processing source.
+   * @param {string} sourceEntryUrl URL of the entry which has been processed.
+   * @param {number=} opt_size Processed bytes of the |sourceEntry|. If it is
+   *     dropped, all bytes of the entry are considered to be processed.
+   */
+  var updateProgress = function(index, sourceEntryUrl, opt_size) {
+    if (!sourceEntryUrl)
+      return;
+
+    var processedEntry = this.processingEntries[index][sourceEntryUrl];
+    if (!processedEntry)
+      return;
+
+    // Accumulates newly processed bytes.
+    var size = opt_size || processedEntry.size;
+    this.processedBytes += size - processedEntry.processedBytes;
+    processedEntry.processedBytes = size;
+
+    // Updates progress bar in limited frequency so that intervals between
+    // updates have at least 200ms.
+    this.updateProgressRateLimiter_.run();
+  }.bind(this);
+
+  this.updateProgressRateLimiter_ = new AsyncUtil.RateLimiter(progressCallback);
+
   AsyncUtil.forEach(
       this.sourceEntries,
       function(callback, entry, index) {
@@ -636,31 +673,31 @@ FileOperationManager.CopyTask.prototype.run = function(
         progressCallback();
         this.processEntry_(
             entry, this.targetDirEntry,
-            function(sourceEntry, destinationEntry) {
+            function(sourceEntryUrl, destinationEntry) {
+              updateProgress(index, sourceEntryUrl);
               // The destination entry may be null, if the copied file got
               // deleted just after copying.
               if (destinationEntry) {
                 entryChangedCallback(
                     util.EntryChangedKind.CREATED, destinationEntry);
               }
-            }.bind(this),
-            function(sourceEntry, size) {
-              var sourceEntryURL = sourceEntry.toURL();
-              var processedEntry =
-                  this.processingEntries[index][sourceEntryURL];
-              if (processedEntry) {
-                this.processedBytes += size - processedEntry.processedBytes;
-                processedEntry.processedBytes = size;
-                progressCallback();
-              }
-            }.bind(this),
+            },
+            function(sourceEntryUrl, size) {
+              updateProgress(index, sourceEntryUrl, size);
+            },
             function() {
+              // Finishes off delayed updates if necessary.
+              this.updateProgressRateLimiter_.runImmediately();
               // Update current source index and processing bytes.
               this.processingSourceIndex_ = index + 1;
               this.processedBytes = this.calcProcessedBytes_();
               callback();
             }.bind(this),
-            errorCallback);
+            function(error) {
+              // Finishes off delayed updates if necessary.
+              this.updateProgressRateLimiter_.runImmediately();
+              errorCallback(error);
+            }.bind(this));
       },
       function() {
         if (this.deleteAfterCopy) {
@@ -1080,7 +1117,7 @@ FileOperationManager.prototype.paste = function(
   resolveGroup.run(function(callback) {
     // Do nothing, if we have no entries to be pasted.
     if (filteredEntries.length === 0)
-       return;
+      return;
 
     this.queueCopy_(targetEntry, filteredEntries, isMove);
   }.bind(this));
