@@ -5,7 +5,6 @@
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
 #import <IOBluetooth/objc/IOBluetoothDevice.h>
-#import <IOBluetooth/objc/IOBluetoothDeviceInquiry.h>
 #import <IOBluetooth/objc/IOBluetoothHostController.h>
 
 #include <string>
@@ -24,42 +23,6 @@
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-
-@interface BluetoothAdapterMacDelegate
-    : NSObject <IOBluetoothDeviceInquiryDelegate> {
- @private
-  device::BluetoothAdapterMac* adapter_;  // weak
-}
-
-- (id)initWithAdapter:(device::BluetoothAdapterMac*)adapter;
-
-@end
-
-@implementation BluetoothAdapterMacDelegate
-
-- (id)initWithAdapter:(device::BluetoothAdapterMac*)adapter {
-  if ((self = [super init]))
-    adapter_ = adapter;
-
-  return self;
-}
-
-- (void)deviceInquiryStarted:(IOBluetoothDeviceInquiry*)sender {
-  adapter_->DeviceInquiryStarted(sender);
-}
-
-- (void)deviceInquiryDeviceFound:(IOBluetoothDeviceInquiry*)sender
-                          device:(IOBluetoothDevice*)device {
-  adapter_->DeviceFound(sender, device);
-}
-
-- (void)deviceInquiryComplete:(IOBluetoothDeviceInquiry*)sender
-                        error:(IOReturn)error
-                      aborted:(BOOL)aborted {
-  adapter_->DeviceInquiryComplete(sender, error, aborted);
-}
-
-@end
 
 namespace {
 
@@ -85,13 +48,11 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterMac::CreateAdapter() {
 BluetoothAdapterMac::BluetoothAdapterMac()
     : BluetoothAdapter(),
       powered_(false),
-      discovery_status_(NOT_DISCOVERING),
-      adapter_delegate_(
-          [[BluetoothAdapterMacDelegate alloc] initWithAdapter:this]),
-      device_inquiry_(
-          [[IOBluetoothDeviceInquiry
-              inquiryWithDelegate:adapter_delegate_] retain]),
+      num_discovery_sessions_(0),
+      classic_discovery_manager_(
+          BluetoothDiscoveryManagerMac::CreateClassic(this)),
       weak_ptr_factory_(this) {
+  DCHECK(classic_discovery_manager_.get());
 }
 
 BluetoothAdapterMac::~BluetoothAdapterMac() {
@@ -152,8 +113,7 @@ void BluetoothAdapterMac::SetDiscoverable(
 }
 
 bool BluetoothAdapterMac::IsDiscovering() const {
-  return discovery_status_ == DISCOVERING ||
-      discovery_status_ == DISCOVERY_STOPPING;
+  return classic_discovery_manager_->IsDiscovering();
 }
 
 void BluetoothAdapterMac::CreateRfcommService(
@@ -176,29 +136,86 @@ void BluetoothAdapterMac::CreateL2capService(
       this, uuid, psm, base::Bind(callback, socket), error_callback);
 }
 
+void BluetoothAdapterMac::DeviceFound(BluetoothDiscoveryManagerMac* manager,
+                                      IOBluetoothDevice* device) {
+  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
+  if (discovered_devices_.find(device_address) == discovered_devices_.end()) {
+    BluetoothDeviceMac device_mac(device);
+    FOR_EACH_OBSERVER(
+        BluetoothAdapter::Observer, observers_, DeviceAdded(this, &device_mac));
+    discovered_devices_.insert(device_address);
+  }
+}
+
+void BluetoothAdapterMac::DiscoveryStopped(
+    BluetoothDiscoveryManagerMac* manager,
+    bool unexpected) {
+  DCHECK_EQ(manager, classic_discovery_manager_.get());
+  if (unexpected) {
+    DVLOG(1) << "Discovery stopped unexpectedly";
+    num_discovery_sessions_ = 0;
+    MarkDiscoverySessionsAsInactive();
+  }
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    AdapterDiscoveringChanged(this, false));
+}
+
 void BluetoothAdapterMac::AddDiscoverySession(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  if (discovery_status_ == DISCOVERING) {
-    num_discovery_listeners_++;
+  DVLOG(1) << __func__;
+  if (num_discovery_sessions_ > 0) {
+    DCHECK(IsDiscovering());
+    num_discovery_sessions_++;
     callback.Run();
     return;
   }
-  on_start_discovery_callbacks_.push_back(
-      std::make_pair(callback, error_callback));
-  MaybeStartDeviceInquiry();
+
+  DCHECK_EQ(0, num_discovery_sessions_);
+
+  if (!classic_discovery_manager_->StartDiscovery()) {
+    DVLOG(1) << "Failed to add a discovery session";
+    error_callback.Run();
+    return;
+  }
+
+  DVLOG(1) << "Added a discovery session";
+  num_discovery_sessions_++;
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    AdapterDiscoveringChanged(this, true));
+  callback.Run();
 }
 
 void BluetoothAdapterMac::RemoveDiscoverySession(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  if (discovery_status_ == NOT_DISCOVERING) {
+  DVLOG(1) << __func__;
+
+  if (num_discovery_sessions_ > 1) {
+    // There are active sessions other than the one currently being removed.
+    DCHECK(IsDiscovering());
+    num_discovery_sessions_--;
+    callback.Run();
+    return;
+  }
+
+  if (num_discovery_sessions_ == 0) {
+    DVLOG(1) << "No active discovery sessions. Returning error.";
     error_callback.Run();
     return;
   }
-  on_stop_discovery_callbacks_.push_back(
-      std::make_pair(callback, error_callback));
-  MaybeStopDeviceInquiry();
+
+  if (!classic_discovery_manager_->StopDiscovery()) {
+    DVLOG(1) << "Failed to stop discovery";
+    error_callback.Run();
+    return;
+  }
+
+  DVLOG(1) << "Discovery stopped";
+  num_discovery_sessions_--;
+  callback.Run();
 }
 
 void BluetoothAdapterMac::RemovePairingDelegateInternal(
@@ -264,101 +281,13 @@ void BluetoothAdapterMac::PollAdapter() {
 }
 
 void BluetoothAdapterMac::UpdateDevices(NSArray* devices) {
+  // TODO(armansito): This code never calls
+  // BluetoothAdapter::Observer::DeviceRemoved. It should, if a device
+  // no longer exists.
   STLDeleteValues(&devices_);
   for (IOBluetoothDevice* device in devices) {
     std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
     devices_[device_address] = new BluetoothDeviceMac(device);
-  }
-}
-
-void BluetoothAdapterMac::DeviceInquiryStarted(
-    IOBluetoothDeviceInquiry* inquiry) {
-  DCHECK_EQ(device_inquiry_, inquiry);
-  if (discovery_status_ == DISCOVERING)
-    return;
-
-  discovery_status_ = DISCOVERING;
-  RunCallbacks(on_start_discovery_callbacks_, true);
-  num_discovery_listeners_ = on_start_discovery_callbacks_.size();
-  on_start_discovery_callbacks_.clear();
-
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterDiscoveringChanged(this, true));
-  MaybeStopDeviceInquiry();
-}
-
-void BluetoothAdapterMac::DeviceFound(IOBluetoothDeviceInquiry* inquiry,
-                                      IOBluetoothDevice* device) {
-  DCHECK_EQ(device_inquiry_, inquiry);
-  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
-  if (discovered_devices_.find(device_address) == discovered_devices_.end()) {
-    BluetoothDeviceMac device_mac(device);
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, &device_mac));
-    discovered_devices_.insert(device_address);
-  }
-}
-
-void BluetoothAdapterMac::DeviceInquiryComplete(
-    IOBluetoothDeviceInquiry* inquiry,
-    IOReturn error,
-    bool aborted) {
-  DCHECK_EQ(device_inquiry_, inquiry);
-  if (discovery_status_ == DISCOVERING &&
-      [device_inquiry_ start] == kIOReturnSuccess) {
-    return;
-  }
-
-  // Device discovery is done.
-  discovered_devices_.clear();
-  discovery_status_ = NOT_DISCOVERING;
-  RunCallbacks(on_stop_discovery_callbacks_, error == kIOReturnSuccess);
-  num_discovery_listeners_ = 0;
-  on_stop_discovery_callbacks_.clear();
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterDiscoveringChanged(this, false));
-  MaybeStartDeviceInquiry();
-}
-
-void BluetoothAdapterMac::MaybeStartDeviceInquiry() {
-  if (discovery_status_ == NOT_DISCOVERING &&
-      !on_start_discovery_callbacks_.empty()) {
-    discovery_status_ = DISCOVERY_STARTING;
-    if ([device_inquiry_ start] != kIOReturnSuccess) {
-      discovery_status_ = NOT_DISCOVERING;
-      RunCallbacks(on_start_discovery_callbacks_, false);
-      on_start_discovery_callbacks_.clear();
-    }
-  }
-}
-
-void BluetoothAdapterMac::MaybeStopDeviceInquiry() {
-  if (discovery_status_ != DISCOVERING)
-    return;
-
-  if (on_stop_discovery_callbacks_.size() < num_discovery_listeners_) {
-    RunCallbacks(on_stop_discovery_callbacks_, true);
-    num_discovery_listeners_ -= on_stop_discovery_callbacks_.size();
-    on_stop_discovery_callbacks_.clear();
-    return;
-  }
-
-  discovery_status_ = DISCOVERY_STOPPING;
-  if ([device_inquiry_ stop] != kIOReturnSuccess) {
-    RunCallbacks(on_stop_discovery_callbacks_, false);
-    on_stop_discovery_callbacks_.clear();
-  }
-}
-
-void BluetoothAdapterMac::RunCallbacks(
-    const DiscoveryCallbackList& callback_list, bool success) const {
-  for (DiscoveryCallbackList::const_iterator iter = callback_list.begin();
-       iter != callback_list.end();
-       ++iter) {
-    if (success)
-      ui_task_runner_->PostTask(FROM_HERE, iter->first);
-    else
-      ui_task_runner_->PostTask(FROM_HERE, iter->second);
   }
 }
 
