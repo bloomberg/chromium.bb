@@ -328,6 +328,11 @@ class OutOfProcessInstance : public pp::Instance,
   // be painted until this is received.
   bool received_viewport_message_;
 
+  // If true, this means we told the RenderView that we're starting a network
+  // request so that it can start the throbber. We will tell it again once the
+  // document finishes loading.
+  bool did_call_start_loading_;
+
   // The callback for receiving the password from the page.
   scoped_ptr<pp::CompletionCallbackWithOutput<pp::Var> > password_callback_;
 };

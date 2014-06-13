@@ -243,7 +243,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       print_preview_page_count_(0),
       last_progress_sent_(0),
       recently_sent_find_update_(false),
-      received_viewport_message_(false) {
+      received_viewport_message_(false),
+      did_call_start_loading_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -1002,6 +1003,19 @@ std::string OutOfProcessInstance::ShowFileSelectionDialog() {
 }
 
 pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
+  if (full_) {
+    if (!did_call_start_loading_) {
+      did_call_start_loading_ = true;
+      pp::PDF::DidStartLoading(this);
+    }
+
+    // Disable save and print until the document is fully loaded, since they
+    // would generate an incomplete document.  Need to do this each time we
+    // call DidStartLoading since that resets the content restrictions.
+    pp::PDF::SetContentRestriction(this, CONTENT_RESTRICTION_SAVE |
+                                   CONTENT_RESTRICTION_PRINT);
+  }
+
   return CreateURLLoaderInternal();
 }
 
@@ -1065,7 +1079,10 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   if (!full_)
     return;
 
-  pp::PDF::DidStopLoading(this);
+  if (did_call_start_loading_) {
+    pp::PDF::DidStopLoading(this);
+    did_call_start_loading_ = false;
+  }
 
   int content_restrictions =
       CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
@@ -1119,10 +1136,12 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   DCHECK(document_load_state_ == LOAD_STATE_LOADING);
   UserMetricsRecordAction("PDF.LoadFailure");
 
-  if (full_)
+  if (did_call_start_loading_) {
     pp::PDF::DidStopLoading(this);
-  document_load_state_ = LOAD_STATE_FAILED;
+    did_call_start_loading_ = false;
+  }
 
+  document_load_state_ = LOAD_STATE_FAILED;
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
 
   // Send a progress value of -1 to indicate a failure.
@@ -1263,16 +1282,6 @@ void OutOfProcessInstance::LoadUrlInternal(
 }
 
 pp::URLLoader OutOfProcessInstance::CreateURLLoaderInternal() {
-  if (full_) {
-    pp::PDF::DidStartLoading(this);
-
-    // Disable save and print until the document is fully loaded, since they
-    // would generate an incomplete document.  Need to do this each time we
-    // call DidStartLoading since that resets the content restrictions.
-    pp::PDF::SetContentRestriction(this, CONTENT_RESTRICTION_SAVE |
-                                   CONTENT_RESTRICTION_PRINT);
-  }
-
   pp::URLLoader loader(this);
 
   const PPB_URLLoaderTrusted* trusted_interface =
