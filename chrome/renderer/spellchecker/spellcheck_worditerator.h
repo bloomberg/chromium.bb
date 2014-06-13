@@ -12,9 +12,15 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "third_party/icu/source/common/unicode/ubrk.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+
+namespace base {
+namespace i18n {
+class BreakIterator;
+} // namespace i18n
+} // namespace base
 
 // A class which encapsulates language-specific operations used by
 // SpellcheckWordIterator. When we set the spellchecker language, this class
@@ -156,18 +162,12 @@ class SpellcheckWordIterator {
   // The pointer to the input string from which we are extracting words.
   const base::char16* text_;
 
-  // The length of the original string.
-  int length_;
-
-  // The current position in the original string.
-  int position_;
-
   // The language-specific attributes used for filtering out non-word
   // characters.
   const SpellcheckCharAttribute* attribute_;
 
-  // The ICU break iterator.
-  UBreakIterator* iterator_;
+  // The break iterator.
+  scoped_ptr<base::i18n::BreakIterator> iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckWordIterator);
 };

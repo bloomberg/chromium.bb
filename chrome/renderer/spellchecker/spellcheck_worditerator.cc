@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -299,10 +300,8 @@ bool SpellcheckCharAttribute::OutputDefault(UChar c,
 
 SpellcheckWordIterator::SpellcheckWordIterator()
     : text_(NULL),
-      length_(0),
-      position_(UBRK_DONE),
       attribute_(NULL),
-      iterator_(NULL) {
+      iterator_() {
 }
 
 SpellcheckWordIterator::~SpellcheckWordIterator() {
@@ -315,18 +314,22 @@ bool SpellcheckWordIterator::Initialize(
   // Create a custom ICU break iterator with empty text used in this object. (We
   // allow setting text later so we can re-use this iterator.)
   DCHECK(attribute);
-  UErrorCode open_status = U_ZERO_ERROR;
-  UParseError parse_status;
-  base::string16 rule(attribute->GetRuleSet(allow_contraction));
+  const base::string16 rule(attribute->GetRuleSet(allow_contraction));
 
   // If there is no rule set, the attributes were invalid.
   if (rule.empty())
     return false;
 
-  iterator_ = ubrk_openRules(rule.c_str(), rule.length(), NULL, 0,
-                             &parse_status, &open_status);
-  if (U_FAILURE(open_status))
+  scoped_ptr<base::i18n::BreakIterator> iterator(
+      new base::i18n::BreakIterator(base::string16(), rule));
+  if (!iterator->Init()) {
+    // Since we're not passing in any text, the only reason this could fail
+    // is if we fail to parse the rules. Since the rules are hardcoded,
+    // that would be a bug in this class.
+    NOTREACHED() << "failed to open iterator (broken rules)";
     return false;
+  }
+  iterator_ = iterator.Pass();
 
   // Set the character attributes so we can normalize the words extracted by
   // this iterator.
@@ -335,7 +338,7 @@ bool SpellcheckWordIterator::Initialize(
 }
 
 bool SpellcheckWordIterator::IsInitialized() const {
-  // Return true if we have an ICU custom iterator.
+  // Return true iff we have an iterator.
   return !!iterator_;
 }
 
@@ -343,66 +346,51 @@ bool SpellcheckWordIterator::SetText(const base::char16* text, size_t length) {
   DCHECK(!!iterator_);
 
   // Set the text to be split by this iterator.
-  UErrorCode status = U_ZERO_ERROR;
-  ubrk_setText(iterator_, text, length, &status);
-  if (U_FAILURE(status))
+  if (!iterator_->SetText(text, length)) {
+    LOG(ERROR) << "failed to set text";
     return false;
-
-  // Retrieve the position to the first word in this text. We return false if
-  // this text does not have any words. (For example, The input text consists
-  // only of Chinese characters while the spellchecker language is English.)
-  position_ = ubrk_first(iterator_);
-  if (position_ == UBRK_DONE)
-    return false;
+  }
 
   text_ = text;
-  length_ = static_cast<int>(length);
   return true;
 }
 
 bool SpellcheckWordIterator::GetNextWord(base::string16* word_string,
                                          int* word_start,
                                          int* word_length) {
-  DCHECK(!!text_ && length_ > 0);
+  DCHECK(!!text_);
 
   word_string->clear();
   *word_start = 0;
   *word_length = 0;
 
-  if (!text_ || position_ == UBRK_DONE)
+  if (!text_) {
     return false;
+  }
 
   // Find a word that can be checked for spelling. Our rule sets filter out
   // invalid words (e.g. numbers and characters not supported by the
   // spellchecker language) so this ubrk_getRuleStatus() call returns
   // UBRK_WORD_NONE when this iterator finds an invalid word. So, we skip such
   // words until we can find a valid word or reach the end of the input string.
-  int next = ubrk_next(iterator_);
-  while (next != UBRK_DONE) {
-    if (ubrk_getRuleStatus(iterator_) != UBRK_WORD_NONE) {
-      if (Normalize(position_, next - position_, word_string)) {
-        *word_start = position_;
-        *word_length = next - position_;
-        position_ = next;
+  while (iterator_->Advance()) {
+    const size_t start = iterator_->prev();
+    const size_t length = iterator_->pos() - start;
+    if (iterator_->IsWord()) {
+      if (Normalize(start, length, word_string)) {
+        *word_start = start;
+        *word_length = length;
         return true;
       }
     }
-    position_ = next;
-    next = ubrk_next(iterator_);
   }
 
-  // There aren't any more words in the given text. Set the position to
-  // UBRK_DONE to prevent from calling ubrk_next() next time when this function
-  // is called.
-  position_ = UBRK_DONE;
+  // There aren't any more words in the given text.
   return false;
 }
 
 void SpellcheckWordIterator::Reset() {
-  if (iterator_) {
-    ubrk_close(iterator_);
-    iterator_ = NULL;
-  }
+  iterator_.reset();
 }
 
 bool SpellcheckWordIterator::Normalize(int input_start,
