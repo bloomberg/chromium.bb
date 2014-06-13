@@ -8,12 +8,14 @@
 
 #include "athena/home/public/app_model_builder.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/gfx/image/image_skia.h"
@@ -30,6 +32,28 @@ AppListViewDelegate::AppListViewDelegate(AppModelBuilder* model_builder)
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
+  for (size_t i = 0; i < search_providers_.size(); ++i)
+    search_providers_[i]->set_result_changed_callback(base::Closure());
+}
+
+void AppListViewDelegate::RegisterSearchProvider(
+    app_list::SearchProvider* search_provider) {
+  // Right now we allow only one provider.
+  // TODO(mukai): port app-list's mixer and remove this restriction.
+  DCHECK(search_providers_.empty());
+  search_provider->set_result_changed_callback(base::Bind(
+      &AppListViewDelegate::SearchResultChanged, base::Unretained(this)));
+  search_providers_.push_back(search_provider);
+}
+
+void AppListViewDelegate::SearchResultChanged() {
+  // TODO(mukai): port app-list's Mixer to reorder the results properly.
+  app_list::SearchProvider* search_provider = search_providers_[0];
+  std::vector<app_list::SearchResult*> results;
+  search_provider->ReleaseResult(&results);
+  model_->results()->DeleteAll();
+  for (size_t i = 0; i < results.size(); ++i)
+    model_->results()->Add(results[i]);
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {
@@ -55,17 +79,19 @@ void AppListViewDelegate::GetShortcutPathForApp(
 }
 
 void AppListViewDelegate::StartSearch() {
-  // TODO(mukai): implement this.
+  for (size_t i = 0; i < search_providers_.size(); ++i)
+    search_providers_[i]->Start(model_->search_box()->text());
 }
 
 void AppListViewDelegate::StopSearch() {
-  // TODO(mukai): implement this.
+  for (size_t i = 0; i < search_providers_.size(); ++i)
+    search_providers_[i]->Stop();
 }
 
 void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
                                            bool auto_launch,
                                            int event_flags) {
-  // TODO(mukai): implement this.
+  result->Open(event_flags);
 }
 
 void AppListViewDelegate::InvokeSearchResultAction(

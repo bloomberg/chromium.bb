@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "ui/app_list/search_provider.h"
 
 namespace app_list {
 
@@ -145,7 +145,8 @@ class Mixer::Group {
         }
 
         results_.push_back(
-            SortData(*result_it, (*result_it)->relevance() + boost));
+            SortData(static_cast<ChromeSearchResult*>(*result_it),
+                     (*result_it)->relevance() + boost));
       }
     }
 

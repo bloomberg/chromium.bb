@@ -7,17 +7,27 @@
 
 #include "athena/athena_export.h"
 
+namespace app_list {
+class SearchProvider;
+}
+
 namespace athena {
 class AppModelBuilder;
 
 class ATHENA_EXPORT HomeCard {
  public:
-  // Creates and deletes the singleton object of the HomeCard
+  // Creates/deletes/gets the singleton object of the HomeCard
   // implementation. Takes the ownership of |model_builder|.
   static HomeCard* Create(AppModelBuilder* model_builder);
   static void Shutdown();
+  static HomeCard* Get();
 
   virtual ~HomeCard() {}
+
+  // Registers a search_provider to the HomeCard. Receiver will take
+  // the ownership of the specified provider.
+  virtual void RegisterSearchProvider(
+      app_list::SearchProvider* search_provider) = 0;
 };
 
 }  // namespace athena

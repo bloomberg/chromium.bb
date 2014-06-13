@@ -1,23 +1,24 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_
+#ifndef UI_APP_LIST_SEARCH_PROVIDER_H_
+#define UI_APP_LIST_SEARCH_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "ui/app_list/app_list_export.h"
 
 namespace app_list {
 
-class ChromeSearchResult;
+class SearchResult;
 
-class SearchProvider {
+class APP_LIST_EXPORT SearchProvider {
  public:
-  typedef ScopedVector<ChromeSearchResult> Results;
+  typedef ScopedVector<SearchResult> Results;
   typedef base::Closure ResultChangedCallback;
 
   SearchProvider();
@@ -33,11 +34,14 @@ class SearchProvider {
     result_changed_callback_ = callback;
   }
 
+  // TODO(mukai): Fix the ownership and copying of the results.
+  void ReleaseResult(std::vector<SearchResult*>* results);
+
   const Results& results() const { return results_; }
 
  protected:
   // Interface for the derived class to generate search results.
-  void Add(scoped_ptr<ChromeSearchResult> result);
+  void Add(scoped_ptr<SearchResult> result);
   void ClearResults();
 
  private:
@@ -51,4 +55,4 @@ class SearchProvider {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_
+#endif  // UI_APP_LIST_SEARCH_PROVIDER_H_

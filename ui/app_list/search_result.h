@@ -88,6 +88,9 @@ class APP_LIST_EXPORT SearchResult {
   const Tags& details_tags() const { return details_tags_; }
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
 
+  const std::string& id() const { return id_; }
+  double relevance() { return relevance_; }
+
   const Actions& actions() const {
     return actions_;
   }
@@ -105,10 +108,20 @@ class APP_LIST_EXPORT SearchResult {
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
 
+  // Opens the result.
+  virtual void Open(int event_flags);
+
+  // Invokes a custom action on the result.
+  virtual void InvokeAction(int action_index, int event_flags);
+
   // Returns the context menu model for this item, or NULL if there is currently
   // no menu for the item (e.g. during install).
   // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
+
+ protected:
+  void set_id(const std::string& id) { id_ = id; }
+  void set_relevance(double relevance) { relevance_ = relevance; }
 
  private:
   gfx::ImageSkia icon_;
@@ -118,6 +131,9 @@ class APP_LIST_EXPORT SearchResult {
 
   base::string16 details_;
   Tags details_tags_;
+
+  std::string id_;
+  double relevance_;
 
   Actions actions_;
 

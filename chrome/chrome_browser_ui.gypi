@@ -227,8 +227,6 @@
         'browser/ui/app_list/search/people/person.h',
         'browser/ui/app_list/search/search_controller.cc',
         'browser/ui/app_list/search/search_controller.h',
-        'browser/ui/app_list/search/search_provider.cc',
-        'browser/ui/app_list/search/search_provider.h',
         'browser/ui/app_list/search/search_webstore_result.cc',
         'browser/ui/app_list/search/search_webstore_result.h',
         'browser/ui/app_list/search/term_break_iterator.cc',

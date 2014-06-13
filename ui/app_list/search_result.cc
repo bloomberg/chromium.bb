@@ -24,7 +24,9 @@ SearchResult::Action::Action(const base::string16& label_text,
 
 SearchResult::Action::~Action() {}
 
-SearchResult::SearchResult() : is_installing_(false), percent_downloaded_(0) {}
+SearchResult::SearchResult()
+    : relevance_(0), is_installing_(false), percent_downloaded_(0) {
+}
 
 SearchResult::~SearchResult() {}
 
@@ -76,6 +78,12 @@ void SearchResult::AddObserver(SearchResultObserver* observer) {
 
 void SearchResult::RemoveObserver(SearchResultObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void SearchResult::Open(int event_flags) {
+}
+
+void SearchResult::InvokeAction(int action_index, int event_flags) {
 }
 
 ui::MenuModel* SearchResult::GetContextMenuModel() {

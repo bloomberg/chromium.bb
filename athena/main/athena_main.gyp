@@ -16,6 +16,7 @@
         '../../apps/shell/app_shell.gyp:app_shell_lib',
         '../../skia/skia.gyp:skia',
         '../../ui/accessibility/accessibility.gyp:ax_gen',
+        '../../ui/app_list/app_list.gyp:app_list',
         '../../ui/views/views.gyp:views',
         '../../url/url.gyp:url_lib',
       ],
@@ -25,6 +26,8 @@
       'sources': [
         'athena_launcher.cc',
         'athena_launcher.h',
+        'url_search_provider.cc',
+        'url_search_provider.h',
         'athena_main.cc',
         'placeholder.cc',
         'placeholder.h',

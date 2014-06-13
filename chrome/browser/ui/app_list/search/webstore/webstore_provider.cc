@@ -76,8 +76,7 @@ void WebstoreProvider::Start(const base::string16& query) {
 
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
-  Add(scoped_ptr<ChromeSearchResult>(
-      new SearchWebstoreResult(profile_, query_)).Pass());
+  Add(scoped_ptr<SearchResult>(new SearchWebstoreResult(profile_, query_)));
 }
 
 void WebstoreProvider::Stop() {
@@ -121,7 +120,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 
-    scoped_ptr<ChromeSearchResult> result(CreateResult(*dict));
+    scoped_ptr<SearchResult> result(CreateResult(*dict));
     if (!result)
       continue;
 

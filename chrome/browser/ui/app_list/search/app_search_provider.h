@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "ui/app_list/search_provider.h"
 
 class AppListControllerDelegate;
 class Profile;

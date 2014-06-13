@@ -174,7 +174,7 @@ void PeopleProvider::ProcessPeopleSearchResults(
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 
-    scoped_ptr<ChromeSearchResult> result(CreateResult(*dict));
+    scoped_ptr<SearchResult> result(CreateResult(*dict));
     if (!result)
       continue;
 

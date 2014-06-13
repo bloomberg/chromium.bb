@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/history_types.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/search_provider.h"
 
 namespace app_list {
 namespace test {
@@ -56,8 +56,7 @@ class TestSearchProvider : public SearchProvider {
       const std::string id =
           base::StringPrintf("%s%d", prefix_.c_str(), static_cast<int>(i));
       const double relevance = 1.0 - i / 10.0;
-      Add(scoped_ptr<ChromeSearchResult>(
-          new TestSearchResult(id, relevance)).Pass());
+      Add(scoped_ptr<SearchResult>(new TestSearchResult(id, relevance)).Pass());
     }
   }
   virtual void Stop() OVERRIDE {}

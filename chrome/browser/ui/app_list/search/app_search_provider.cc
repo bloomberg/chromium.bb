@@ -67,7 +67,7 @@ void AppSearchProvider::Start(const base::string16& query) {
     scoped_ptr<AppResult> result(
         new AppResult(profile_, (*app_it)->app_id(), list_controller_));
     result->UpdateFromMatch((*app_it)->indexed_name(), match);
-    Add(result.PassAs<ChromeSearchResult>());
+    Add(result.PassAs<SearchResult>());
   }
 }
 

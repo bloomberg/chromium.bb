@@ -8,8 +8,10 @@
 #include "apps/shell/browser/shell_extension_system.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
+#include "athena/home/public/home_card.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
+#include "athena/main/url_search_provider.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "content/public/app/content_main.h"
@@ -31,6 +33,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
         apps::ShellDesktopController::instance()->host()->window(),
         new athena::ContentActivityFactory(),
         new athena::ContentAppModelBuilder(context));
+    athena::HomeCard::Get()->RegisterSearchProvider(
+        new athena::UrlSearchProvider(context));
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(kAppSwitch)) {
       base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));

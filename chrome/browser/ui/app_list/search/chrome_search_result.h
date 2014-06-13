@@ -34,31 +34,19 @@ enum ChromeSearchResultType {
 // underlying  UI is activated.
 class ChromeSearchResult : public SearchResult {
  public:
-  ChromeSearchResult() : relevance_(0.0) {}
+  ChromeSearchResult() {}
   virtual ~ChromeSearchResult() {}
-
-  // Opens the result.
-  virtual void Open(int event_flags) = 0;
-
-  // Invokes a custom action on the result.
-  virtual void InvokeAction(int action_index, int event_flags) = 0;
 
   // Creates a copy of the result.
   virtual scoped_ptr<ChromeSearchResult> Duplicate() = 0;
 
   virtual ChromeSearchResultType GetType() = 0;
 
-  const std::string& id() const { return id_; }
-  double relevance() { return relevance_; }
-
- protected:
-  void set_id(const std::string& id) { id_ = id; }
-  void set_relevance(double relevance) { relevance_ = relevance; }
+  // Overridden from SearchResult:
+  virtual void Open(int event_flags) = 0;
+  virtual void InvokeAction(int action_index, int event_flags) = 0;
 
  private:
-  std::string id_;
-  double relevance_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeSearchResult);
 };
 

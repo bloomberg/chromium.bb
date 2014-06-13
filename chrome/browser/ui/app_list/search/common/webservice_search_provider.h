@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "ui/app_list/search_provider.h"
 
 class Profile;
 

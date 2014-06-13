@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "ui/app_list/search_provider.h"
 
 class AutocompleteController;
 class AutocompleteResult;

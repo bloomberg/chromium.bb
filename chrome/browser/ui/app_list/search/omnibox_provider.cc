@@ -166,8 +166,7 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
     if (!it->destination_url.is_valid())
       continue;
 
-    Add(scoped_ptr<ChromeSearchResult>(
-        new OmniboxResult(profile_, *it)).Pass());
+    Add(scoped_ptr<SearchResult>(new OmniboxResult(profile_, *it)));
   }
 }
 
