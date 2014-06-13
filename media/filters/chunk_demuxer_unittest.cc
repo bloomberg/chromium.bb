@@ -1223,6 +1223,41 @@ TEST_P(ChunkDemuxerTest, SingleTextTrackIdChange) {
   ShutdownDemuxer();
 }
 
+TEST_P(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
+  // Tests that non-keyframes following an init segment are allowed
+  // and dropped, as expected if the initialization segment received
+  // algorithm correctly sets the needs random access point flag to true for all
+  // track buffers. Note that the first initialization segment is insufficient
+  // to fully test this since needs random access point flag initializes to
+  // true.
+  CreateNewDemuxer();
+  DemuxerStream* text_stream = NULL;
+  EXPECT_CALL(host_, AddTextStream(_, _))
+      .WillOnce(SaveArg<0>(&text_stream));
+  ASSERT_TRUE(InitDemuxerWithEncryptionInfo(
+      HAS_TEXT | HAS_AUDIO | HAS_VIDEO, false, false));
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(audio_stream && video_stream && text_stream);
+
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0 23K");
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0 30K");
+  AppendSingleStreamCluster(kSourceId, kTextTrackNum, "0 40K");
+  CheckExpectedRanges(kSourceId, "{ [30,46) }");
+
+  AppendInitSegment(HAS_TEXT | HAS_AUDIO | HAS_VIDEO);
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "46 69K");
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "60 90K");
+  AppendSingleStreamCluster(kSourceId, kTextTrackNum, "80 90K");
+  CheckExpectedRanges(kSourceId, "{ [30,92) }");
+
+  CheckExpectedBuffers(audio_stream, "23 69");
+  CheckExpectedBuffers(video_stream, "30 90");
+
+  // WebM parser marks all text buffers as keyframes.
+  CheckExpectedBuffers(text_stream, "0 40 80 90");
+}
+
 // Make sure that the demuxer reports an error if Shutdown()
 // is called before all the initialization segments are appended.
 TEST_P(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {

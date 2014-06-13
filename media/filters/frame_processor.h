@@ -41,9 +41,6 @@ class MEDIA_EXPORT FrameProcessor : public FrameProcessorBase {
                     base::TimeDelta* timestamp_offset,
                     bool* new_media_segment);
 
-  // Sets the need random access point flag on all track buffers to true.
-  void SetAllTrackBuffersNeedRandomAccessPoint();
-
   // Tracks the MSE coded frame processing variable of same name. It stores the
   // highest coded frame end timestamp across all coded frames in the current
   // coded frame group. It is set to 0 when the SourceBuffer object is created

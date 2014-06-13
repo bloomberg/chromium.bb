@@ -156,6 +156,9 @@ class MEDIA_EXPORT FrameProcessorBase {
   // |new_id|. Otherwise returns true.
   bool UpdateTrack(StreamParser::TrackId old_id, StreamParser::TrackId new_id);
 
+  // Sets the need random access point flag on all track buffers to true.
+  void SetAllTrackBuffersNeedRandomAccessPoint();
+
   // Resets state for the coded frame processing algorithm as described in steps
   // 2-5 of the MSE Reset Parser State algorithm described at
   // http://www.w3.org/TR/media-source/#sourcebuffer-reset-parser-state

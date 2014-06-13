@@ -662,6 +662,8 @@ bool SourceState::OnNewConfigs(
     }
   }
 
+  frame_processor_->SetAllTrackBuffersNeedRandomAccessPoint();
+
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
   return success;
 }

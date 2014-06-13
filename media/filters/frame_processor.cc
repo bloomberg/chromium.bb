@@ -370,11 +370,4 @@ bool FrameProcessor::ProcessFrame(
   return false;
 }
 
-void FrameProcessor::SetAllTrackBuffersNeedRandomAccessPoint() {
-  for (TrackBufferMap::iterator itr = track_buffers_.begin();
-       itr != track_buffers_.end(); ++itr) {
-    itr->second->set_needs_random_access_point(true);
-  }
-}
-
 }  // namespace media
