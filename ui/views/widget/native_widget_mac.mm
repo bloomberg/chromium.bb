@@ -4,10 +4,13 @@
 
 #include "ui/views/widget/native_widget_mac.h"
 
-#include <Cocoa/Cocoa.h>
+#import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
+#import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 
 namespace views {
 
@@ -15,7 +18,7 @@ namespace views {
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate), window_(nil) {
+    : delegate_(delegate), bridge_(new BridgedNativeWidget) {
 }
 
 NativeWidgetMac::~NativeWidgetMac() {
@@ -31,10 +34,12 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(tapted): Determine a good initial style mask from |params|.
   NSInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSResizableWindowMask;
-  window_.reset([[NSWindow alloc] initWithContentRect:content_rect
-                                            styleMask:style_mask
-                                              backing:NSBackingStoreBuffered
-                                                defer:NO]);
+  base::scoped_nsobject<NSWindow> window(
+      [[NSWindow alloc] initWithContentRect:content_rect
+                                  styleMask:style_mask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
+  bridge_->Init(window);
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
@@ -63,11 +68,11 @@ const Widget* NativeWidgetMac::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetMac::GetNativeView() const {
-  return [window_ contentView];
+  return bridge_->ns_view();
 }
 
 gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
-  return window_;
+  return bridge_->ns_window();
 }
 
 Widget* NativeWidgetMac::GetTopLevelWidget() {
@@ -91,7 +96,7 @@ ui::Layer* NativeWidgetMac::GetLayer() {
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
-  NOTIMPLEMENTED();
+  bridge_->SetRootView(GetWidget()->GetRootView());
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
@@ -183,7 +188,7 @@ void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMac::SetSize(const gfx::Size& size) {
-  [window_ setContentSize:NSMakeSize(size.width(), size.height())];
+  [bridge_->ns_window() setContentSize:NSMakeSize(size.width(), size.height())];
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
@@ -310,7 +315,9 @@ void NativeWidgetMac::RunShellDrag(View* view,
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  // TODO(tapted): This should use setNeedsDisplayInRect:, once the coordinate
+  // system of |rect| has been converted.
+  [bridge_->ns_view() setNeedsDisplay:YES];
 }
 
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
