@@ -131,6 +131,7 @@ public class TabManager extends LinearLayout {
             @Override
             public void onContentChanged(Tab tab) {
                 mContentViewHolder.removeView(mCurrentView);
+                mCurrentView = tab.getView();
                 setupContent(tab);
             }
         });
