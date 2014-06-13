@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 from metrics import Metric
+from telemetry.value import scalar
+
 
 class CpuMetric(Metric):
   """Calulates CPU load over a span of time."""
@@ -32,8 +34,9 @@ class CpuMetric(Metric):
     for process_type in self._results:
       trace_name_for_process = '%s_%s' % (trace_name, process_type.lower())
       cpu_percent = 100 * self._results[process_type]
-      results.Add(trace_name_for_process, '%', cpu_percent,
-                  chart_name='cpu_utilization', data_type='unimportant')
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'cpu_utilization.%s' % trace_name_for_process,
+          '%', cpu_percent, important=False))
 
 
 def _SubtractCpuStats(cpu_stats, start_cpu_stats):
