@@ -25,7 +25,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
         }
     """)
     self._power_metric.Start(page, tab)
-    tab.browser.StartTracing('webkit,webkit.console')
+    tab.browser.StartTracing('devtools,webkit.console')
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
@@ -43,8 +43,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
     def _IsDone():
       return tab.EvaluateJavaScript('isDone')
 
-    decode_image_events = \
-        timeline_model.GetAllEventsOfName('Decode Image')
+    decode_image_events = timeline_model.GetAllEventsOfName('Decode Image')
 
     # If it is a real image page, then store only the last-minIterations
     # decode tasks.
@@ -56,8 +55,8 @@ class ImageDecoding(page_measurement.PageMeasurement):
       decode_image_events = decode_image_events[-min_iterations:]
 
     durations = [d.duration for d in decode_image_events]
-    if not durations:
-      return
+    assert durations, 'Failed to find "Decode Image" trace events.'
+
     image_decoding_avg = sum(durations) / len(durations)
     results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
     results.Add('ImageLoading_avg', 'ms',
