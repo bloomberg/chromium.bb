@@ -134,6 +134,12 @@ bool LinkImport::hasLoaded() const
     return m_child && m_child->isDone() && !m_child->loader()->hasError();
 }
 
+void LinkImport::ownerInserted()
+{
+    if (m_child)
+        m_child->ownerInserted();
+}
+
 void LinkImport::trace(Visitor* visitor)
 {
     visitor->trace(m_child);

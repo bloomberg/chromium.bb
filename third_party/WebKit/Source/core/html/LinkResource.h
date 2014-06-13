@@ -58,6 +58,7 @@ public:
     virtual Type type() const = 0;
     virtual void process() = 0;
     virtual void ownerRemoved() { }
+    virtual void ownerInserted() { }
     virtual bool hasLoaded() const = 0;
 
     virtual void trace(Visitor*);

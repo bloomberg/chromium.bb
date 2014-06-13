@@ -270,6 +270,10 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
     document().styleEngine()->addStyleSheetCandidateNode(this, m_createdByParser);
 
     process();
+
+    if (m_link)
+        m_link->ownerInserted();
+
     return InsertionDone;
 }
 

@@ -65,6 +65,13 @@ HTMLImportChild::~HTMLImportChild()
 #endif
 }
 
+void HTMLImportChild::ownerInserted()
+{
+    if (!m_loader->isDone())
+        return;
+    root()->document()->styleResolverChanged();
+}
+
 void HTMLImportChild::didShareLoader()
 {
     createCustomElementMicrotaskStepIfNeeded();

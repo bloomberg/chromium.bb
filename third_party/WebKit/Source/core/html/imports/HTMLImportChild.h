@@ -58,6 +58,7 @@ public:
     HTMLLinkElement* link() const;
     const KURL& url() const { return m_url; }
 
+    void ownerInserted();
     void didShareLoader();
     void didStartLoading();
 #if !ENABLE(OILPAN)

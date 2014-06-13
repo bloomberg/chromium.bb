@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Styles in grandchild are re-applied after removed imports are re-added 
+Harness: the test ran to completion.
+

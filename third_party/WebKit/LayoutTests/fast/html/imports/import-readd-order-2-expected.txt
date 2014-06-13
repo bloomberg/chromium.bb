@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Styles are re-applied in correct ordder after removed imports are re-added in new place 
+Harness: the test ran to completion.
+

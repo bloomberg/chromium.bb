@@ -60,6 +60,7 @@ public:
     virtual Type type() const OVERRIDE { return Import; }
     virtual bool hasLoaded() const OVERRIDE;
     virtual void trace(Visitor*) OVERRIDE;
+    virtual void ownerInserted() OVERRIDE;
 
     // HTMLImportChildClient
     virtual void didFinish() OVERRIDE;
