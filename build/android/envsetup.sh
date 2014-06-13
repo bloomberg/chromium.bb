@@ -14,7 +14,8 @@ fi
 
 # This only exists to set local variables. Don't call this manually.
 android_envsetup_main() {
-  local SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
+  local SCRIPT_PATH="$1"
+  local SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 
   local CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
   if [[ -z "${CHROME_SRC}" ]]; then
@@ -48,7 +49,9 @@ android_envsetup_main() {
 
   export ENVSETUP_GYP_CHROME_SRC=${CHROME_SRC}  # TODO(thakis): Remove.
 }
-android_envsetup_main
+# In zsh, $0 is the name of the file being sourced.
+android_envsetup_main "${BASH_SOURCE:-$0}"
+unset -f android_envsetup_main
 
 android_gyp() {
   echo "Please call build/gyp_chromium instead. android_gyp is going away."
