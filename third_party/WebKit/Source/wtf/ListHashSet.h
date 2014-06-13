@@ -998,13 +998,9 @@ namespace WTF {
     {
         COMPILE_ASSERT(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, ListHashSetDoesNotSupportWeakness);
         // This marks all the nodes and their contents live that can be
-        // accessed through the HashTable.
+        // accessed through the HashTable. That includes m_head and m_tail
+        // so we do not have to explicitly trace them here.
         m_impl.trace(visitor);
-        // Due to the order in which entries are added to the hash table vs.
-        // when they are put in the linked list we have now marked all the
-        // nodes live.
-        ASSERT(!m_head || Allocator::isAlive(visitor, m_head));
-        ASSERT(!m_tail || Allocator::isAlive(visitor, m_tail));
     }
 
 } // namespace WTF
