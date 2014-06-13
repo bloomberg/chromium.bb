@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -116,6 +117,13 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 // running a renderer needs to also be reflected in chrome_main.cc for
 // --single-process support.
 void RendererMainPlatformDelegate::PlatformInitialize() {
+  if (base::mac::IsOSYosemiteOrLater()) {
+    // This is needed by the NSAnimations run for the scrollbars. If we switch
+    // from native scrollers to drawing them in some other way, this warmup can
+    // be removed <http://crbug.com/306348>.
+    [NSScreen screens];
+  }
+
   if (![NSThread isMultiThreaded]) {
     NSString* string = @"";
     [NSThread detachNewThreadSelector:@selector(length)
