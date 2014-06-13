@@ -11,8 +11,10 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 using content::BrowserContext;
+using content::BrowserThread;
 
 // static
 HotwordService* HotwordServiceFactory::GetForProfile(BrowserContext* context) {
@@ -45,14 +47,49 @@ int HotwordServiceFactory::GetCurrentError(BrowserContext* context) {
   return hotword_service->error_message();
 }
 
+// static
+bool HotwordServiceFactory::IsMicrophoneAvailable() {
+  return GetInstance()->microphone_available();
+}
+
 HotwordServiceFactory::HotwordServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "HotwordService",
-        BrowserContextDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()),
+      microphone_available_(false) {
   // No dependencies.
+
+  // Register with the device observer list to update the microphone
+  // availability.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&HotwordServiceFactory::InitializeMicrophoneObserver,
+                 base::Unretained(this)));
 }
 
 HotwordServiceFactory::~HotwordServiceFactory() {
+}
+
+void HotwordServiceFactory::InitializeMicrophoneObserver() {
+  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
+}
+
+void HotwordServiceFactory::OnUpdateAudioDevices(
+    const content::MediaStreamDevices& devices) {
+  microphone_available_ = !devices.empty();
+}
+
+void HotwordServiceFactory::UpdateMicrophoneState() {
+  // In order to trigger the monitor, just call getAudioCaptureDevices.
+  content::MediaStreamDevices devices =
+      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices();
+
+  // If the monitor had not previously been started, there may be 0 devices
+  // even if that is not accurate. However, we can update the microphone
+  // availability state now. Either the number of devices will be correct or
+  // we know that the call above will start the monitor and the microphone
+  // state will be updated very soon and call OnUpdateAudioDevices.
+  OnUpdateAudioDevices(devices);
 }
 
 void HotwordServiceFactory::RegisterProfilePrefs(
