@@ -986,17 +986,6 @@ crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure
 crbug.com/371651 svg/filters/filter-refresh.svg [ Failure ]
 crbug.com/371651 svg/text/text-text-05-t.svg [ Failure ]
 
-Bug(abarth) fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/clipped-overflow-visible-subtree.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/crbug-371640-2.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/crbug-371640-3.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/crbug-371640-4.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/crbug-371640.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/float-overflow.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/layout-state-scrolloffset2.html [ NeedsRebaseline ]
-Bug(abarth) fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
-
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
