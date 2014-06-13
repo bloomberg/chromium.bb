@@ -672,6 +672,8 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
     if (layer->compositingState() == PaintsIntoOwnBacking)
         layer->repainter().setBackingNeedsRepaint();
 
+    layer->stackingNode()->updateLayerListsIfNeeded();
+
 #if ASSERT_ENABLED
     LayerListMutationDetector mutationChecker(layer->stackingNode());
 #endif
