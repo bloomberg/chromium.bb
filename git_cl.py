@@ -658,7 +658,14 @@ or verify this branch is set up to track another (via the --track argument to
     Returns None if there is no remote.
     """
     remote, _ = self.GetRemoteBranch()
-    return RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
+    url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
+
+    # If URL is pointing to a local directory, it is probably a git cache.
+    if os.path.isdir(url):
+      url = RunGit(['config', 'remote.%s.url' % remote],
+                   error_ok=True,
+                   cwd=url).strip()
+    return url
 
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
