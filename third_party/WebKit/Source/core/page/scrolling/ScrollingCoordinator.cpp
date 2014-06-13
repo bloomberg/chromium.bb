@@ -793,13 +793,19 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     // then we can quickly mark the entire document and skip looking at any other handlers.
     // Note that technically a handler on the body doesn't cover the whole document, but it's
     // reasonable to be conservative and report the whole document anyway.
-    for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
-        Node* target = iter->key;
-        if (target == document || target == document->documentElement() || target == document->body()) {
-            if (RenderView* rendererView = document->renderView()) {
-                rendererView->computeLayerHitTestRects(rects);
+    //
+    // Fullscreen HTML5 video when OverlayFullscreenVideo is enabled is implemented by replacing the
+    // root cc::layer with the video layer so doing this optimization causes the compositor to think
+    // that there are no handlers, therefore skip it.
+    if (!document->renderView()->compositor()->inOverlayFullscreenVideo()) {
+        for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
+            Node* target = iter->key;
+            if (target == document || target == document->documentElement() || target == document->body()) {
+                if (RenderView* rendererView = document->renderView()) {
+                    rendererView->computeLayerHitTestRects(rects);
+                }
+                return;
             }
-            return;
         }
     }
 
@@ -808,8 +814,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         if (!target->inDocument())
             continue;
 
-        if (target->isDocumentNode()) {
-            ASSERT(target != document);
+        if (target->isDocumentNode() && target != document) {
             accumulateDocumentTouchEventTargetRects(rects, toDocument(target));
         } else if (RenderObject* renderer = target->renderer()) {
             // If the set also contains one of our ancestor nodes then processing

@@ -67,6 +67,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_needsUpdateFixedBackground(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
+    , m_inOverlayFullscreenVideo(false)
 {
     updateAcceleratedCompositingSettings();
 }
@@ -256,6 +257,7 @@ void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 
 void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
 {
+    m_inOverlayFullscreenVideo = false;
     if (!m_rootContentLayer)
         return;
 
@@ -284,6 +286,7 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
     m_overflowControlsHostLayer->addChild(videoLayer);
     if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
         backgroundLayer->removeFromParent();
+    m_inOverlayFullscreenVideo = true;
 }
 
 void RenderLayerCompositor::updateIfNeeded()
