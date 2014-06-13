@@ -121,5 +121,9 @@ template("proto_library") {
       ":$action_name",
       "//third_party/protobuf:protobuf_lite",
     ]
+
+    # The generated headers reference headers within protobuf_lite, so
+    # dependencies must be able to find those headers too.
+    forward_dependent_configs_from = [ "//third_party/protobuf:protobuf_lite" ]
   }
 }

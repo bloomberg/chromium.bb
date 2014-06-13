@@ -45,7 +45,46 @@ source_set("includes") {
   ]
 }
 
-source_set("translator_lib") {
+static_library("preprocessor") {
+  sources = [
+    "src/compiler/preprocessor/DiagnosticsBase.cpp",
+    "src/compiler/preprocessor/DiagnosticsBase.h",
+    "src/compiler/preprocessor/DirectiveHandlerBase.cpp",
+    "src/compiler/preprocessor/DirectiveHandlerBase.h",
+    "src/compiler/preprocessor/DirectiveParser.cpp",
+    "src/compiler/preprocessor/DirectiveParser.h",
+    "src/compiler/preprocessor/ExpressionParser.cpp",
+    "src/compiler/preprocessor/ExpressionParser.h",
+    "src/compiler/preprocessor/ExpressionParser.y",
+    "src/compiler/preprocessor/Input.cpp",
+    "src/compiler/preprocessor/Input.h",
+    "src/compiler/preprocessor/Lexer.cpp",
+    "src/compiler/preprocessor/Lexer.h",
+    "src/compiler/preprocessor/Macro.cpp",
+    "src/compiler/preprocessor/Macro.h",
+    "src/compiler/preprocessor/MacroExpander.cpp",
+    "src/compiler/preprocessor/MacroExpander.h",
+    "src/compiler/preprocessor/Preprocessor.cpp",
+    "src/compiler/preprocessor/Preprocessor.h",
+    "src/compiler/preprocessor/SourceLocation.h",
+    "src/compiler/preprocessor/Token.cpp",
+    "src/compiler/preprocessor/Token.h",
+    "src/compiler/preprocessor/Tokenizer.cpp",
+    "src/compiler/preprocessor/Tokenizer.h",
+    "src/compiler/preprocessor/Tokenizer.l",
+    "src/compiler/preprocessor/numeric_lex.h",
+    "src/compiler/preprocessor/pp_utils.h",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    ":internal_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
+
+}
+
+static_library("translator_lib") {
   sources = [
     "src/common/RefCountObject.cpp",
     "src/common/RefCountObject.h",
@@ -194,6 +233,7 @@ source_set("translator_lib") {
 
   deps = [
     ":includes",
+    ":preprocessor",
   ]
 }
 
@@ -201,7 +241,7 @@ config("translator_static_config") {
   defines = [ "ANGLE_TRANSLATOR_STATIC" ]
 }
 
-source_set("translator_static") {
+static_library("translator_static") {
   sources = [
     "src/compiler/translator/ShaderLang.cpp",
   ]
@@ -233,7 +273,23 @@ if (false) {
     ]
   }
 } else {
-  group("commit_id") {}
+  # While Angle is being updated, we copy a temporary hardcoded commit.h. This
+  # is copied both as commit.h and angle_commit.h. The angle roll will rename
+  # this file from commit.h to angle_commit.h and we don't want to make the
+  # udpate more complicated than necessary.
+  group("commit_id") {
+    deps = [ ":copy_angle_commit_h", ":copy_commit_h" ]
+  }
+
+  hardcoded_commit = [ "//tools/gn/secondary/third_party/angle/angle_commit.h" ]
+  copy("copy_angle_commit_h") {
+    sources = hardcoded_commit
+    outputs = [ "$root_gen_dir/angle_commit.h" ]
+  }
+  copy("copy_commit_h") {
+    sources = hardcoded_commit
+    outputs = [ "$root_gen_dir/commit.h" ]
+  }
 }
 
 if (is_win) {
@@ -357,7 +413,10 @@ if (is_win) {
 
     defines = [
       "ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ " +
-        "TEXT(\"d3dcompiler_46.dll\"), \"TEXT(\"d3dcompiler_43.dll\") }"
+        "TEXT(\"d3dcompiler_46.dll\"), TEXT(\"d3dcompiler_43.dll\") }",
+      "GL_APICALL=",
+      "GL_GLEXT_PROTOTYPES=",
+      "EGLAPI=",
     ]
     libs = []
 

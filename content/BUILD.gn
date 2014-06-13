@@ -58,15 +58,37 @@ config("libjingle_stub_config") {
   }
 }
 
-# This config is a placeholder to set up the V8 include path while Blink is
-# being worked on. Some targets include blink headers which include "v8.h",
-# expecting //v8/include to be on the include search path. We need to track
-# this down and set the include paths properly.
-config("v8_stub_config") {
-  include_dirs = [ "//v8/include" ]
-}
-
 config("widevine_stub_config") {
   # The real implementation does a copy rule to copy the header to the gen dir.
   include_dirs = [ "//third_party/widevine/cdm" ]
+}
+
+# Sets up include dirs while webrtc is being converted to GN.
+# TODO(GYP) remove when webrtc is ready.
+config("webrtc_stub_config") {
+  defines = [ "WEBRTC_CHROMIUM_BUILD" ]
+  include_dirs = [
+    "//third_party/webrtc/overrides",  # Must be first.
+    "//third_party",
+  ]
+
+  if (is_mac) {
+    defines += [ "WEBRTC_MAC" ]
+  } else if (is_win) {
+    defines += [ "WEBRTC_WIN" ]
+  } else if (is_linux) {
+    defines += [ "WEBRTC_LINUX" ]
+  } else if (is_ios) {
+    defines += [ "WEBRTC_MAC", "WEBRTC_IOS" ]
+  } else if (is_android) {
+    defines += [ "WEBRTC_LINUX", "WEBRTC_ANDROID" ]
+    import("//build/config/crypto.gni")
+    if (use_openssl) {
+      defines += [ "WEBRTC_ANDROID_OPENSLEQS" ]
+    }
+  }
+
+  if (is_posix) {
+    defines += [ "WEBRTC_POSIX" ]
+  }
 }

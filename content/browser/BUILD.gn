@@ -13,7 +13,7 @@ source_set("browser") {
   defines = []
   libs = []
   ldflags = []
-  
+
   # Shared deps. See also non-iOS deps below.
   deps = [
     "//base",
@@ -84,14 +84,17 @@ source_set("browser") {
       "//content/browser/devtools:resources",
       "//content/common:mojo_bindings",
       "//cc",
-      "//cc:surfaces",
+      "//cc:cc_surfaces",
       "//mojo/public/cpp/bindings",
       "//mojo/public/interfaces/service_provider:service_provider",
       "//mojo/public/js/bindings",
       "//net:http_server",
+      "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libyuv",
+      "//ui/resources",
       "//ui/surface",
+      "//ui/webui/resources",
       "//webkit:resources",
       "//webkit:strings",
       "//webkit/browser:storage",
@@ -102,7 +105,11 @@ source_set("browser") {
     ]
   }
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//content:libjingle_stub_config",  # TODO(GYP) remove when libjingle is ready.
+    "//content:webrtc_stub_config",  # TODO(GYP) remove when webrtc is ready.
+  ]
 
   if (toolkit_views) {
     deps += [ "//ui/events" ]
@@ -110,12 +117,13 @@ source_set("browser") {
 
   if (is_win) {
     sources += [
-      "power_profiles/power_data_provider_ia_win.cc",
-      "power_profiles/power_data_provider_ia_win.h",
+      "power_profiler/power_data_provider_ia_win.cc",
+      "power_profiler/power_data_provider_ia_win.h",
     ]
     deps += [ "//third_party/power_gadget" ]
   } else {
     sources += [ "power_profiler/power_data_provider_dummy.cc" ]
+    sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
 
   if (!is_win && !is_mac && (!is_linux || !use_udev)) {
@@ -136,8 +144,7 @@ source_set("browser") {
     deps += [ "//sandbox" ]
   }
   if (!is_android && !is_ios) {
-    # TODO(GYP)
-    #deps += [ "//content/browser/tracing:resources" ]
+    deps += [ "//content/browser/tracing:resources" ]
   }
 
   if (enable_webrtc) {
@@ -208,10 +215,15 @@ source_set("browser") {
     sources -= [
       "device_monitor_udev.cc",
       "device_monitor_udev.h",
-      "gamepad/gamepad_platform_data_fetcher_linux.cc",
-      "udev_linux.cc",
-      "udev_linux.h",
     ]
+    if (is_linux) {
+      # Already filtered out on non-Linux.
+      sources -= [
+        "gamepad/gamepad_platform_data_fetcher_linux.cc",
+        "udev_linux.cc",
+        "udev_linux.h",
+      ]
+    }
   }
 
   if (enable_plugins) {
@@ -232,6 +244,8 @@ source_set("browser") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+  } else {
+    sources -= [ "renderer_host/web_input_event_aurax11.cc" ]
   }
 
   if (use_pango) {
@@ -330,20 +344,20 @@ source_set("browser") {
 
   if (enable_speech_input) {
     deps += [
-      #"//third_party/flac",  TODO(GYP)
-      #"//third_party/speex",  TODO(GYP)
+      "//third_party/flac",
+      "//third_party/speex",
     ]
   }
 
-  if (is_linux && use_dbus) {
-    sources -= [
-      "geolocation/empty_wifi_data_provider.cc",
-    ]
-    deps += [ "//dbus" ]
-  } else {
-    if (!use_dbus) {
+  if (is_linux) {
+    if (use_dbus) {
+      sources -= [
+        "geolocation/empty_wifi_data_provider.cc",
+      ]
+      deps += [ "//dbus" ]
+    } else {
       # This will already have gotten removed for all non-Linux cases.
-     sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
+       sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
     }
   }
 }

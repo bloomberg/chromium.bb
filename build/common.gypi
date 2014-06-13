@@ -2361,6 +2361,9 @@
       # Temporary suppression until Blink code can be removed.
       'BLINK_SCALE_FILTERS_AT_RECORD_TIME',
     ],
+    'include_dirs': [
+      '<(SHARED_INTERMEDIATE_DIR)',
+    ],
     'conditions': [
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [

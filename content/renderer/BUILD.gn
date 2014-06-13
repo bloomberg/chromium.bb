@@ -16,7 +16,6 @@ source_set("renderer") {
   configs += [
     "//content:content_implementation",
     "//content:libjingle_stub_config",
-    "//content:v8_stub_config",
     "//content:widevine_stub_config",
   ]
 
