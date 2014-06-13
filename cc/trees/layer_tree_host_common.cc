@@ -932,9 +932,19 @@ static inline void UpdateLayerScaleDrawProperties(
   layer->draw_properties().device_scale_factor = device_scale_factor;
 }
 
-template <typename LayerType>
 static inline void CalculateContentsScale(
-    LayerType* layer,
+    LayerImpl* layer,
+    float contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
+    float maximum_animation_contents_scale,
+    bool animating_transform_to_screen) {
+  // LayerImpl has all of its content scales and bounds pushed from the Main
+  // thread during commit and just uses those values as-is.
+}
+
+static inline void CalculateContentsScale(
+    Layer* layer,
     float contents_scale,
     float device_scale_factor,
     float page_scale_factor,
@@ -949,7 +959,7 @@ static inline void CalculateContentsScale(
                                 &layer->draw_properties().contents_scale_y,
                                 &layer->draw_properties().content_bounds);
 
-  LayerType* mask_layer = layer->mask_layer();
+  Layer* mask_layer = layer->mask_layer();
   if (mask_layer) {
     mask_layer->CalculateContentsScale(
         contents_scale,
@@ -962,7 +972,7 @@ static inline void CalculateContentsScale(
         &mask_layer->draw_properties().content_bounds);
   }
 
-  LayerType* replica_mask_layer =
+  Layer* replica_mask_layer =
       layer->replica_layer() ? layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
     replica_mask_layer->CalculateContentsScale(
