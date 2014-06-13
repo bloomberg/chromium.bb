@@ -15,6 +15,7 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 # pylint: disable=W0401,W0614
 from telemetry.page.actions.all_page_actions import *
+from telemetry.value import scalar
 
 
 class _MapsMeasurement(page_measurement.PageMeasurement):
@@ -24,8 +25,10 @@ class _MapsMeasurement(page_measurement.PageMeasurement):
 
     total = re.search('total=([0-9]+)', test_results).group(1)
     render = re.search('render=([0-9.]+),([0-9.]+)', test_results).group(2)
-    results.Add('total_time', 'ms', total)
-    results.Add('render_mean_time', 'ms', render)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'total_time', 'ms', total))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'render_mean_time', 'ms', render))
 
 class MapsPage(page_module.Page):
   def __init__(self, page_set, base_dir):
