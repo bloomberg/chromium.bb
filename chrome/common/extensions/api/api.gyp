@@ -75,6 +75,7 @@
               'file_system_provider.idl',
               'file_system_provider_internal.idl',
               'font_settings.json',
+              'gcd_private.idl',
               'gcm.json',
               'guest_view_internal.json',
               'hangouts_private.idl',

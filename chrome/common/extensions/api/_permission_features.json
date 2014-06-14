@@ -464,6 +464,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "gcdPrivate": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"]
+  },
   "gcm": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]

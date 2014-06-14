@@ -312,6 +312,8 @@
         'browser/extensions/api/file_system/file_system_api.h',
         'browser/extensions/api/font_settings/font_settings_api.cc',
         'browser/extensions/api/font_settings/font_settings_api.h',
+        'browser/extensions/api/gcd_private/gcd_private_api.cc',
+        'browser/extensions/api/gcd_private/gcd_private_api.h',
         'browser/extensions/api/gcm/gcm_api.cc',
         'browser/extensions/api/gcm/gcm_api.h',
         'browser/extensions/api/guest_view/guest_view_internal_api.cc',

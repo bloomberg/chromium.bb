@@ -1,0 +1,43 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.gcdPrivate</code> API to discover GCD APIs and register
+// them.
+namespace gcdPrivate {
+
+  enum SetupType { mdns, wifi, cloud };
+
+  // Represents a GCD device discovered locally or registered to a given user.
+  dictionary GCDDevice {
+    // How this device was discovered.
+    SetupType setupType;
+
+    // Opaque device identifier to be passed to API.
+    DOMString idString;
+
+    // Cloud identifier string.
+    DOMString? cloudId;
+
+    // Device type (camera, printer, etc)
+    DOMString deviceType;
+
+    // Device human readable name
+    DOMString deviceName;
+
+    // Device human readable description
+    DOMString deviceDescription;
+  };
+
+  callback CloudDeviceListCallback = void(GCDDevice[] devices);
+
+  interface Functions {
+    static void getCloudDeviceList(CloudDeviceListCallback callback);
+  };
+
+  interface Events {
+    // Subscribe to this event to start listening to cloud devices. New
+    // listeners will get called with all known devices on the network.
+    static void onCloudDeviceStateChanged(boolean available, GCDDevice device);
+  };
+};

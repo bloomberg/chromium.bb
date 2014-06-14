@@ -92,6 +92,7 @@ class APIPermission {
     kFileSystemWriteDirectory,
     kFontSettings,
     kFullscreen,
+    kGcdPrivate,
     kGcm,
     kGeolocation,
     kHid,

@@ -77,6 +77,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kNotification, "notifications"},
       {APIPermission::kUnlimitedStorage, "unlimitedStorage",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kGcdPrivate, "gcdPrivate"},
       {APIPermission::kGcm, "gcm"},
 
       // Register extension permissions.
